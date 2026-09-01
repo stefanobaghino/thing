@@ -108,6 +108,38 @@ impl<'a> Parser<'a> {
                     span: Span::new(start, end),
                 })
             }
+            TokenKind::If => {
+                self.advance();
+                let cond = self.expr_bp(0)?;
+                let then = self.block_stmt("after 'if' condition")?;
+                let els = if self.peek() == &TokenKind::Else {
+                    self.advance();
+                    // `else if ...` chains; otherwise a block is required.
+                    let branch = if self.peek() == &TokenKind::If {
+                        self.statement()?
+                    } else {
+                        self.block_stmt("after 'else'")?
+                    };
+                    Some(Box::new(branch))
+                } else {
+                    None
+                };
+                let end = els.as_ref().map_or_else(|| then.span.end, |e| e.span.end);
+                Ok(Stmt {
+                    kind: StmtKind::If(cond, Box::new(then), els),
+                    span: Span::new(start, end),
+                })
+            }
+            TokenKind::While => {
+                self.advance();
+                let cond = self.expr_bp(0)?;
+                let body = self.block_stmt("after 'while' condition")?;
+                let end = body.span.end;
+                Ok(Stmt {
+                    kind: StmtKind::While(cond, Box::new(body)),
+                    span: Span::new(start, end),
+                })
+            }
             _ => {
                 let expr = self.expr_bp(0)?;
                 // `name = expr;` is an assignment, only valid on a bare variable.
@@ -133,6 +165,17 @@ impl<'a> Parser<'a> {
                 })
             }
         }
+    }
+
+    /// Parse a `{ ... }` block, with a context note for the error message.
+    fn block_stmt(&mut self, context: &str) -> Result<Stmt, ParseError> {
+        if self.peek() != &TokenKind::LBrace {
+            return Err(self.error(format!(
+                "expected '{{' {context}, found {}",
+                describe(self.peek())
+            )));
+        }
+        self.statement()
     }
 
     fn expr_bp(&mut self, min_bp: u8) -> Result<Expr, ParseError> {
@@ -459,6 +502,39 @@ mod tests {
     fn invalid_assignment_target_is_an_error() {
         assert_eq!(program_err("1 = 2;"), "invalid assignment target");
         assert_eq!(program_err("f() = 2;"), "invalid assignment target");
+    }
+
+    #[test]
+    fn if_else_and_else_if_chain() {
+        assert_eq!(
+            program("if a { 1; } else if b { 2; } else { 3; }"),
+            "(if a (block 1) (if b (block 2) (block 3)))"
+        );
+        assert_eq!(program("if a { 1; }"), "(if a (block 1))");
+    }
+
+    #[test]
+    fn while_loop() {
+        assert_eq!(
+            program("while i < 3 { i = i + 1; }"),
+            "(while (< i 3) (block (= i (+ i 1))))"
+        );
+    }
+
+    #[test]
+    fn control_flow_requires_braces() {
+        assert_eq!(
+            program_err("if a 1;"),
+            "expected '{' after 'if' condition, found integer '1'"
+        );
+        assert_eq!(
+            program_err("if a { 1; } else 2;"),
+            "expected '{' after 'else', found integer '2'"
+        );
+        assert_eq!(
+            program_err("while a 1;"),
+            "expected '{' after 'while' condition, found integer '1'"
+        );
     }
 
     #[test]

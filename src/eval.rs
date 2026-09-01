@@ -73,6 +73,21 @@ impl<W: Write> Interpreter<W> {
                 self.scopes.pop();
                 result
             }
+            StmtKind::If(cond, then, els) => {
+                if as_bool(self.eval(cond)?, cond.span)? {
+                    self.exec(then)
+                } else if let Some(els) = els {
+                    self.exec(els)
+                } else {
+                    Ok(())
+                }
+            }
+            StmtKind::While(cond, body) => {
+                while as_bool(self.eval(cond)?, cond.span)? {
+                    self.exec(body)?;
+                }
+                Ok(())
+            }
         }
     }
 
@@ -477,6 +492,41 @@ mod tests {
     fn block_locals_do_not_leak() {
         assert!(
             program_err("{ let y = 1; } print(y);").contains("undefined variable 'y'")
+        );
+    }
+
+    #[test]
+    fn if_else_branches() {
+        assert_eq!(
+            output("let x = 5; if x > 3 { print(\"big\"); } else { print(\"small\"); }"),
+            "big\n"
+        );
+        assert_eq!(
+            output("let x = 1; if x > 3 { print(\"big\"); } else if x > 0 { print(\"mid\"); } else { print(\"small\"); }"),
+            "mid\n"
+        );
+        assert_eq!(output("if false { print(\"no\"); }"), "");
+    }
+
+    #[test]
+    fn while_countdown() {
+        assert_eq!(
+            output("let i = 3; while i > 0 { print(i); i = i - 1; }"),
+            "3\n2\n1\n"
+        );
+    }
+
+    #[test]
+    fn while_false_never_runs() {
+        assert_eq!(output("while false { print(\"no\"); }"), "");
+    }
+
+    #[test]
+    fn conditions_must_be_bool() {
+        assert_eq!(program_err("if 1 { print(1); }"), "expected bool, got int");
+        assert_eq!(
+            program_err("while \"x\" { print(1); }"),
+            "expected bool, got string"
         );
     }
 

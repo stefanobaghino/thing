@@ -17,16 +17,15 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Control flow: `if`/`else`, `while`.
-2. Functions and closures.
-3. Data: strings ops, lists, maps, indexing.
-4. Builtins: `len`, `push`, type conversion, basic I/O.
-5. REPL with line editing (std-only; no deps).
-6. Diagnostics: spans in error messages, source excerpts.
-7. Example programs under `examples/`, run as integration tests.
-8. Language reference in `docs/`.
-9. GitHub Actions CI (build + test on push).
-10. Tagged release with prebuilt binaries.
+1. Functions and closures.
+2. Data: strings ops, lists, maps, indexing.
+3. Builtins: `len`, `push`, type conversion, basic I/O.
+4. REPL with line editing (std-only; no deps).
+5. Diagnostics: spans in error messages, source excerpts.
+6. Example programs under `examples/`, run as integration tests.
+7. Language reference in `docs/`.
+8. GitHub Actions CI (build + test on push).
+9. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -43,6 +42,8 @@ release binaries on GitHub.
 - Statements: `let`/assignment/blocks/`print` with a scope stack in
   `Interpreter`; semicolons mandatory; 11 tests. `ting <file>` runs a
   whole program.
+- Control flow: `if`/`else if`/`else` and `while`, brace-required,
+  strict-bool conditions; 7 tests. fib(10) works.
 
 ## Blockers
 

@@ -19,6 +19,10 @@ pub enum StmtKind {
     Expr(Expr),
     /// `{ ... }` — introduces a scope.
     Block(Vec<Stmt>),
+    /// `if cond { ... } else { ... }` — else branch is a Block or another If.
+    If(Expr, Box<Stmt>, Option<Box<Stmt>>),
+    /// `while cond { ... }`
+    While(Expr, Box<Stmt>),
 }
 
 impl fmt::Display for Stmt {
@@ -34,6 +38,9 @@ impl fmt::Display for Stmt {
                 }
                 f.write_str(")")
             }
+            StmtKind::If(cond, then, None) => write!(f, "(if {cond} {then})"),
+            StmtKind::If(cond, then, Some(els)) => write!(f, "(if {cond} {then} {els})"),
+            StmtKind::While(cond, body) => write!(f, "(while {cond} {body})"),
         }
     }
 }

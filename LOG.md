@@ -164,3 +164,25 @@ Semantics decisions:
 
 Session note: the human pushed main to origin with tracking; `git push`
 is now enough when publishing lands.
+
+---
+
+## 2026-09-01 — Iteration 6: control flow
+
+Added `if`/`else` (with `else if` chaining) and `while` to AST, parser,
+and interpreter. 7 new tests; suite is now 61. First real program works:
+iterative fib(10) = 55.
+
+Decisions:
+- **Braces are mandatory, parentheses around conditions are not**
+  (Rust/Go style: `if x > 3 { ... }`). No dangling-else ambiguity, and
+  error messages say what the brace was expected after.
+- **`else` takes either a block or another `if`** — chaining is
+  recursion in the parser, not a dedicated elif node.
+- **Conditions are strictly bool** (consistent with iteration 4's
+  no-truthiness decision).
+- No `break`/`continue` yet — deferred until functions/`return`
+  introduce non-local exits (one mechanism for all three).
+
+From here each green iteration also pushes to origin, since the human
+set up the remote and tracking.
