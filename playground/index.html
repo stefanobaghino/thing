@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ting playground</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: #14161a; color: #e6e6e6;
+    font: 14px/1.5 system-ui, sans-serif;
+    display: flex; flex-direction: column; height: 100vh;
+  }
+  header {
+    display: flex; align-items: baseline; gap: 1rem;
+    padding: .6rem 1rem; border-bottom: 1px solid #2a2f38;
+  }
+  header h1 { font-size: 1.05rem; margin: 0; }
+  header .sub { color: #8a919e; font-size: .85rem; }
+  header a { color: #8a919e; }
+  header .spacer { flex: 1; }
+  select, button {
+    background: #1d2026; color: #e6e6e6; border: 1px solid #2a2f38;
+    border-radius: 6px; padding: .35rem .7rem; font: inherit;
+  }
+  button.run { border-color: #3c5a3c; color: #9fd89f; cursor: pointer; }
+  button.run:hover { background: #22301f; }
+  main {
+    flex: 1; display: grid; grid-template-columns: 1fr 1fr; min-height: 0;
+  }
+  textarea, pre {
+    margin: 0; padding: .8rem 1rem; border: 0; min-width: 0;
+    font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  }
+  textarea {
+    background: #14161a; color: #e6e6e6; resize: none; outline: none;
+    border-right: 1px solid #2a2f38; white-space: pre; overflow: auto;
+  }
+  pre {
+    background: #101216; color: #cfd6df; overflow: auto; white-space: pre-wrap;
+  }
+  pre.err { color: #e07a7a; }
+  footer {
+    padding: .35rem 1rem; border-top: 1px solid #2a2f38;
+    color: #8a919e; font-size: .8rem; display: flex; gap: 1rem;
+  }
+  @media (max-width: 720px) {
+    main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
+    textarea { border-right: 0; border-bottom: 1px solid #2a2f38; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>ting playground</h1>
+  <span class="sub">a tiny scripting language, running in your browser</span>
+  <span class="spacer"></span>
+  <select id="examples" aria-label="examples"></select>
+  <button class="run" id="run" title="ctrl+enter">run &#9654;</button>
+  <a href="https://github.com/stefanobaghino/thing">source</a>
+</header>
+<main>
+  <textarea id="editor" spellcheck="false" aria-label="editor"></textarea>
+  <pre id="output" aria-label="output"></pre>
+</main>
+<footer>
+  <span id="status">loading wasm&hellip;</span>
+  <span>everything runs locally; nothing leaves this page</span>
+</footer>
+<script>
+"use strict";
+
+const EXAMPLES = {
+  "hello": `print("hello from ting!");
+`,
+  "fizzbuzz": `for n in range(1, 21) {
+  if n % 15 == 0 { print("FizzBuzz"); }
+  else if n % 3 == 0 { print("Fizz"); }
+  else if n % 5 == 0 { print("Buzz"); }
+  else { print(n); }
+}
+`,
+  "closures": `fn make_counter() {
+  let n = 0;
+  fn tick() { n = n + 1; return n; }
+  return tick;
+}
+let c = make_counter();
+print(c(), c(), c());
+`,
+  "word frequency": `let text = "the cat sat on the mat and the cat slept";
+let counts = {};
+for w in split(text, " ") {
+  if has(counts, w) { counts[w] = counts[w] + 1; }
+  else { counts[w] = 1; }
+}
+for w in sort_by(keys(counts), fn(w) { return 0 - counts[w]; }) {
+  print(counts[w], w);
+}
+`,
+  "error recovery": `fn risky(s) {
+  let n = int(s);          # errors on non-numeric input
+  if n < 0 { fail("no negatives, please"); }
+  return n * 2;
+}
+for raw in ["21", "-4", "many"] {
+  let r = try(fn() { return risky(raw); });
+  if has(r, "ok") { print(raw, "->", r["ok"]); }
+  else { print(raw, "-> error:", r["err"]); }
+}
+`,
+  "diagnostics": `# Errors point at the offending code:
+let total = 40 + 2;
+print(totl);
+`,
+};
+
+const editor = document.getElementById("editor");
+const output = document.getElementById("output");
+const status = document.getElementById("status");
+const runBtn = document.getElementById("run");
+const examples = document.getElementById("examples");
+
+for (const name of Object.keys(EXAMPLES)) {
+  const opt = document.createElement("option");
+  opt.value = name;
+  opt.textContent = name;
+  examples.appendChild(opt);
+}
+editor.value = EXAMPLES["hello"];
+examples.onchange = () => { editor.value = EXAMPLES[examples.value]; run(); };
+
+// The interpreter runs in a worker so a runaway script can't freeze
+// the page; after TIMEOUT_MS the worker is killed and rebuilt.
+const TIMEOUT_MS = 5000;
+const WASM_URL = new URL("ting.wasm", location.href).href;
+const WORKER_SRC = `
+let exportsPromise = null;
+async function load(url) {
+  const resp = await fetch(url);
+  if (!resp.ok) throw new Error("cannot fetch ting.wasm (" + resp.status + ")");
+  const { instance } = await WebAssembly.instantiate(await resp.arrayBuffer(), {});
+  return instance.exports;
+}
+onmessage = async (ev) => {
+  const { url, src } = ev.data;
+  try {
+    if (!exportsPromise) exportsPromise = load(url);
+    const e = await exportsPromise;
+    const buf = new TextEncoder().encode(src);
+    const ptr = e.ting_alloc(buf.length);
+    new Uint8Array(e.memory.buffer, ptr, buf.length).set(buf);
+    const ok = e.ting_run(ptr, buf.length) === 1;
+    e.ting_dealloc(ptr, buf.length);
+    const out = new TextDecoder().decode(
+      new Uint8Array(e.memory.buffer, e.ting_result_ptr(), e.ting_result_len()));
+    postMessage({ ok, out });
+  } catch (err) {
+    postMessage({ ok: false, out: "playground error: " + err.message });
+  }
+};
+`;
+const workerUrl = URL.createObjectURL(new Blob([WORKER_SRC], { type: "text/javascript" }));
+let worker = null;
+let timer = null;
+
+function freshWorker() {
+  if (worker) worker.terminate();
+  worker = new Worker(workerUrl);
+  worker.onmessage = (ev) => {
+    clearTimeout(timer);
+    const { ok, out } = ev.data;
+    output.textContent = out === "" ? "(no output)" : out;
+    output.className = ok ? "" : "err";
+    status.textContent = ok ? "ok" : "error";
+    runBtn.disabled = false;
+  };
+}
+freshWorker();
+
+function run() {
+  runBtn.disabled = true;
+  status.textContent = "running…";
+  output.className = "";
+  output.textContent = "";
+  worker.postMessage({ url: WASM_URL, src: editor.value });
+  timer = setTimeout(() => {
+    freshWorker();
+    output.textContent = "timed out after " + TIMEOUT_MS / 1000 + "s (infinite loop?)";
+    output.className = "err";
+    status.textContent = "timed out";
+    runBtn.disabled = false;
+  }, TIMEOUT_MS);
+}
+
+runBtn.onclick = run;
+editor.addEventListener("keydown", (ev) => {
+  if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); run(); }
+  if (ev.key === "Tab") {
+    ev.preventDefault();
+    const { selectionStart: s, selectionEnd: e } = editor;
+    editor.setRangeText("  ", s, e, "end");
+  }
+});
+
+status.textContent = "ready";
+run();
+</script>
+</body>
+</html>

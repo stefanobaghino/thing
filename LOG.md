@@ -639,3 +639,17 @@ filename collision). Verified beyond compilation: instantiated the
 294KB ting.wasm in Node and ran three programs through the raw ABI —
 loops+builtins, a caret diagnostic, fib(20) — all correct. Suite at
 136.
+
+---
+
+## 2026-09-01 — Iteration 27: browser playground
+
+`playground/index.html`: a single static page — editor, output pane,
+six example programs, ctrl+enter — that drives the wasm ABI. The
+interpreter runs in a Web Worker built from a Blob (still one file), so
+a runaway script can't freeze the tab: after 5s the worker is killed
+and rebuilt. `playground/build.sh` compiles and copies ting.wasm (the
+artifact is gitignored; the Pages workflow will build it). Verified in
+a real browser via Playwright against a local static server: examples
+produce correct output, caret diagnostics render, `while true {}`
+times out and the page recovers and runs again. Next: the Pages deploy.
