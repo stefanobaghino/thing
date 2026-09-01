@@ -20,12 +20,9 @@ release binaries on GitHub.
 Milestone **v0.5.0 — expressiveness** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. assert(cond, msg) builtin + self-hosted test suite: ting programs
-   under selftest/ that test the language, run by CI via the real
-   binary (new integration test).
-2. Modules: import(path) — one design iteration first (return value
+1. Modules: import(path) — one design iteration first (return value
    vs. namespace map, caching, cycles), then implement.
-3. Release v0.5.0.
+2. Release v0.5.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -100,6 +97,9 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v0.4.0
 - map/filter/reduce/min/max/abs (35 builtins); playground "map &
   filter" example; 143 tests.
+- assert builtin + self-hosted selftest/ suite (5 ting programs, 100+
+  assertions, exit-0-and-silent enforced by tests/selftest.rs); 36
+  builtins, 144 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
