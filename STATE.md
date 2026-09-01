@@ -20,8 +20,7 @@ release binaries on GitHub.
 Milestone **v0.6.0 — performance + polish** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Tutorial: a modules section (import, exports map, caching).
-2. Release v0.6.0.
+1. Release v0.6.0 (bump, tag, verify assets).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -111,6 +110,8 @@ green.
   scopes skipped, Rc<str> env keys); BASELINE.md updated.
 - Playground share-by-URL (fragment-encoded source, auto-run on
   open); browser-verified.
+- Tutorial modules section (self-contained write_file+import snippet;
+  10 verified snippets).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
