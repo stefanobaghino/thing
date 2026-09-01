@@ -1622,3 +1622,17 @@ Guards: five unit tests plus tests/fmt.rs, which formats every .ting
 file in the repo (21) and asserts idempotence AND that the formatted
 output parses to the byte-identical AST s-expression rendering. All
 green. Next: the --fmt CLI + reformat the repo.
+
+---
+
+## 2026-09-01 — Iteration 91: ting --fmt, and the repo formats itself
+
+`ting --fmt <files>` rewrites in place; `--fmt-check` reports and
+exits 1 (CI-friendly). Dogfooding on the repo's own 21 .ting files
+immediately surfaced three style bugs the sample tests missed —
+`fn ()` with a space, map literals after `in` treated as blocks, and
+`! (` / unary `- (` before parens — each fixed with a unit test
+before re-running. Final reformat touched only comment alignment
+(aligned trailing comments become the canonical two spaces). The
+repo-wide guard now also asserts every .ting file IS formatted, so
+CI enforces the style from here on. 14 suites green.

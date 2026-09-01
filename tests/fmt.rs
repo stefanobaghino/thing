@@ -29,6 +29,12 @@ fn formatting_is_idempotent_and_ast_preserving() {
             let twice = ting::fmt::format(&once).unwrap();
             assert_eq!(once, twice, "not idempotent: {}", path.display());
             assert_eq!(
+                once,
+                src,
+                "not formatted (run: ting --fmt {}):",
+                path.display()
+            );
+            assert_eq!(
                 ast_fingerprint(&src),
                 ast_fingerprint(&once),
                 "AST changed by formatting: {}",

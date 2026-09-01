@@ -9,6 +9,13 @@ fn main() -> ExitCode {
         _ => Engine::Vm,
     };
     let mut args = std::env::args().skip(1).peekable();
+    if matches!(
+        args.peek().map(String::as_str),
+        Some("--fmt") | Some("--fmt-check")
+    ) {
+        let check = args.next().as_deref() == Some("--fmt-check");
+        return run_fmt(check, args.collect());
+    }
     if args.peek().map(String::as_str) == Some("--lsp") {
         return match ting::lsp::run() {
             0 => ExitCode::SUCCESS,
@@ -60,5 +67,45 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitC
             eprintln!("{diagnostic}");
             ExitCode::FAILURE
         }
+    }
+}
+
+fn run_fmt(check: bool, files: Vec<String>) -> ExitCode {
+    if files.is_empty() {
+        eprintln!("usage: ting --fmt <files...> | ting --fmt-check <files...>");
+        return ExitCode::FAILURE;
+    }
+    let mut dirty = false;
+    for f in &files {
+        let src = match std::fs::read_to_string(f) {
+            Ok(src) => src,
+            Err(e) => {
+                eprintln!("ting: cannot read {f}: {e}");
+                return ExitCode::FAILURE;
+            }
+        };
+        match ting::fmt::format(&src) {
+            Ok(formatted) if formatted != src => {
+                if check {
+                    println!("would reformat {f}");
+                    dirty = true;
+                } else if let Err(e) = std::fs::write(f, formatted) {
+                    eprintln!("ting: cannot write {f}: {e}");
+                    return ExitCode::FAILURE;
+                } else {
+                    println!("reformatted {f}");
+                }
+            }
+            Ok(_) => {}
+            Err(e) => {
+                eprintln!("{}", ting::diag::render(f, &src, &e.message, e.span));
+                return ExitCode::FAILURE;
+            }
+        }
+    }
+    if check && dirty {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
     }
 }

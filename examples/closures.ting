@@ -11,7 +11,7 @@ fn make_counter() {
 let c1 = make_counter();
 let c2 = make_counter();
 print(c1(), c1(), c1());  # each call advances the same n
-print(c2());              # a fresh counter starts over
+print(c2());  # a fresh counter starts over
 
 fn compose(f, g) {
   return fn(x) { return f(g(x)); };

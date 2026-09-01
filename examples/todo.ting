@@ -14,7 +14,7 @@ if path == nil { path = "todo.json"; }
 fn load() {
   let r = try(fn() { return json_parse(read_file(path)); });
   if has(r, "ok") { return r["ok"]; }
-  return [];                       # missing or corrupt file: start fresh
+  return [];  # missing or corrupt file: start fresh
 }
 
 fn save(items) { write_file(path, json_str(items)); }

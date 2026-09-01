@@ -79,7 +79,8 @@ fn brace_is_map(prev: Option<&TokenKind>) -> bool {
     matches!(
         prev,
         Some(
-            Eq | LParen
+            In | Eq
+                | LParen
                 | LBracket
                 | Comma
                 | Colon
@@ -106,7 +107,12 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
     use TokenKind::*;
     match cur {
         Comma | Semi | Colon | RParen | RBracket | Dot => false,
-        LParen | LBracket => !matches!(prev, LParen | LBracket) && !value_like(prev),
+        // `fn(`, `!(`, and unary `-(` stay tight.
+        LParen | LBracket => {
+            !matches!(prev, LParen | LBracket | Fn | Bang)
+                && !(matches!(prev, Minus) && !prev2.map(value_like).unwrap_or(false))
+                && !value_like(prev)
+        }
         _ => match prev {
             LParen | LBracket | Dot => false,
             Bang => false,
@@ -214,6 +220,10 @@ mod tests {
             "let m = {\"a\": 1, \"b\": [1, 2]};\n"
         );
         assert_eq!(format("let y=-x+f(-1);").unwrap(), "let y = -x + f(-1);\n");
+        assert_eq!(
+            format("print(! ( a )&&- ( b ));").unwrap(),
+            "print(!(a) && -(b));\n"
+        );
         assert_eq!(format("if !ok&&a<b { }").unwrap(), "if !ok && a < b { }\n");
     }
 
@@ -232,6 +242,18 @@ mod tests {
         assert_eq!(
             format(src).unwrap(),
             "# header\n\nlet x = 1;  # trailing\n# footer\n"
+        );
+    }
+
+    #[test]
+    fn anonymous_fn_and_map_after_in() {
+        assert_eq!(
+            format("let f=fn (x) {return x;};").unwrap(),
+            "let f = fn(x) { return x; };\n"
+        );
+        assert_eq!(
+            format("for k in { \"a\" : 1 } { print(k); }").unwrap(),
+            "for k in {\"a\": 1} { print(k); }\n"
         );
     }
 
