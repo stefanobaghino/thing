@@ -1796,3 +1796,23 @@ runner + differential harness. Correct output first run; passes
 Milestone complete; version bumped, CHANGELOG updated, tag pushed.
 v1.9.0 over v1.8.0: fuzz grammar v2 and the calc.ting meta showcase.
 Asset verification when the workflow finishes.
+
+**v1.9.0 verified:** release workflow green; three assets; the calc
+showcase ran correctly on the shipped binary. Nineteenth release.
+
+---
+
+## 2026-09-01 — Replenishment: v2.0.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v2.0.0 — maturity**. Not new
+features — a grand audit and a promise: (1) a full-system
+verification sweep, scripted and logged: both engines across every
+suite, the wasm build driven in Node, the LSP over pipes, the
+formatter round trip, every live site page, every current release
+asset re-downloaded and exercised; (2) a docs pass — README/--help/
+reference consistency, CHANGELOG links; (3) a stability promise in
+the reference: the language as specified is stable; breaking changes
+would mean a 3.0 (semver applied to a language spec); (4) release
+v2.0.0. After 2.0 the loop continues with smaller strokes — the
+no-idle rule stands, but maturity is allowed to look like polish,
+hardening, and responsiveness rather than headline features.
