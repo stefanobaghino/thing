@@ -1140,21 +1140,53 @@ impl<W: Write> Interpreter<W> {
                 span,
             ));
         }
-        let mut vars = HashMap::with_capacity(func.params.len());
-        for (p, a) in func.params.iter().zip(args) {
-            vars.insert(Rc::clone(p), a);
-        }
-        let frame = Rc::new(RefCell::new(Env {
-            vars,
-            parent: Some(Rc::clone(&func.env)),
-        }));
+        let (frame, mut locals) = match &func.body {
+            FnBody::Ast(_) => {
+                let mut vars = HashMap::with_capacity(func.params.len());
+                for (p, a) in func.params.iter().zip(args) {
+                    vars.insert(Rc::clone(p), a);
+                }
+                (
+                    Rc::new(RefCell::new(Env {
+                        vars,
+                        parent: Some(Rc::clone(&func.env)),
+                    })),
+                    Vec::new(),
+                )
+            }
+            FnBody::Chunk(chunk) => {
+                let mut locals = vec![Value::Nil; chunk.slots as usize];
+                let mut env_params = HashMap::new();
+                for ((p, a), loc) in func.params.iter().zip(args).zip(&chunk.param_locs) {
+                    match loc {
+                        Some(i) => locals[*i as usize] = a,
+                        None => {
+                            env_params.insert(Rc::clone(p), a);
+                        }
+                    }
+                }
+                // Closure-free bodies keep all state in slots and run
+                // directly against the captured env: no Env allocation.
+                let frame = if chunk.needs_env_frame {
+                    Rc::new(RefCell::new(Env {
+                        vars: env_params,
+                        parent: Some(Rc::clone(&func.env)),
+                    }))
+                } else {
+                    Rc::clone(&func.env)
+                };
+                (frame, locals)
+            }
+        };
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
         let result = match &func.body {
             FnBody::Ast(stmts) => self.run_block(stmts).map(ControlOrValue::Control),
             // Compiled bodies cannot leak break/continue (the compiler
             // rejects them), so the VM returns a plain value.
-            FnBody::Chunk(chunk) => crate::vm::run_chunk(self, chunk).map(ControlOrValue::Value),
+            FnBody::Chunk(chunk) => {
+                crate::vm::run_chunk_with(self, chunk, &mut locals).map(ControlOrValue::Value)
+            }
         };
         self.depth -= 1;
         self.env = saved;

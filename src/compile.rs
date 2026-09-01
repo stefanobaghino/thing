@@ -57,6 +57,10 @@ pub enum Op {
     MakeFn(u32),
     /// Pop the return value and leave the current function frame.
     Return,
+    /// Push frame slot i (function locals resolved by the compiler).
+    GetSlot(u16),
+    /// Pop into frame slot i.
+    SetSlot(u16),
 }
 
 #[derive(Debug)]
@@ -64,6 +68,12 @@ pub struct Chunk {
     pub code: Vec<Op>,
     pub consts: Vec<Value>,
     pub names: Vec<String>,
+    /// Frame slot count (function chunks; 0 at top level).
+    pub slots: u16,
+    /// Where each parameter lives: Some(slot) or None (Env, captured).
+    pub param_locs: Vec<Option<u16>>,
+    /// Whether calls must allocate an Env frame (any captured binding).
+    pub needs_env_frame: bool,
     /// Function bodies stay AST: the VM builds ordinary closures that
     /// the reference engine executes (docs/vm.md hybrid step).
     pub protos: Vec<FnProto>,
@@ -90,26 +100,140 @@ fn unsupported(what: &str, span: Span) -> CompileError {
 }
 
 pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
-    compile_stmts(stmts, false)
+    compile_stmts(stmts, None)
 }
 
-fn compile_stmts(stmts: &[Stmt], in_function: bool) -> Result<Chunk, CompileError> {
+/// Per-function resolver state: lexical scopes mapping names to frame
+/// slots (or None for Env-allocated, i.e. captured, bindings).
+struct FnCtx {
+    scopes: Vec<Vec<(String, Option<u16>)>>,
+    captured: std::collections::HashSet<String>,
+    next_slot: u16,
+    uses_env: bool,
+}
+
+fn compile_stmts(stmts: &[Stmt], func: Option<(&[String], FnCtx)>) -> Result<Chunk, CompileError> {
+    let (params, fn_ctx) = match func {
+        Some((p, ctx)) => (p.to_vec(), Some(ctx)),
+        None => (Vec::new(), None),
+    };
     let mut c = Compiler {
         chunk: Chunk {
             code: Vec::new(),
             consts: Vec::new(),
             names: Vec::new(),
+            slots: 0,
+            param_locs: Vec::new(),
+            needs_env_frame: false,
             protos: Vec::new(),
             spans: Vec::new(),
         },
         loops: Vec::new(),
         scope_depth: 0,
-        in_function,
+        in_function: fn_ctx.is_some(),
+        fn_ctx,
     };
+    // Parameters are the function's outermost bindings.
+    for p in &params {
+        let loc = c.bind(p);
+        c.chunk.param_locs.push(loc);
+    }
     for s in stmts {
         c.stmt(s)?;
     }
+    if let Some(ctx) = &c.fn_ctx {
+        c.chunk.slots = ctx.next_slot;
+        c.chunk.needs_env_frame = ctx.uses_env;
+    }
     Ok(c.chunk)
+}
+
+/// Every identifier mentioned inside nested fn literals of `stmts` —
+/// a conservative over-approximation of what those closures capture.
+fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
+    fn walk_stmt(s: &Stmt, in_fn: bool, out: &mut std::collections::HashSet<String>) {
+        match &s.kind {
+            StmtKind::Let(n, e) => {
+                if in_fn {
+                    out.insert(n.clone());
+                }
+                walk_expr(e, in_fn, out);
+            }
+            StmtKind::Assign(n, e) => {
+                if in_fn {
+                    out.insert(n.clone());
+                }
+                walk_expr(e, in_fn, out);
+            }
+            StmtKind::IndexAssign(a, b, c) => {
+                walk_expr(a, in_fn, out);
+                walk_expr(b, in_fn, out);
+                walk_expr(c, in_fn, out);
+            }
+            StmtKind::Expr(e) => walk_expr(e, in_fn, out),
+            StmtKind::Block(ss) => ss.iter().for_each(|s| walk_stmt(s, in_fn, out)),
+            StmtKind::If(c, t, e) => {
+                walk_expr(c, in_fn, out);
+                walk_stmt(t, in_fn, out);
+                if let Some(e) = e {
+                    walk_stmt(e, in_fn, out);
+                }
+            }
+            StmtKind::While(c, b) => {
+                walk_expr(c, in_fn, out);
+                walk_stmt(b, in_fn, out);
+            }
+            StmtKind::For(v, i, b) => {
+                if in_fn {
+                    out.insert(v.clone());
+                }
+                walk_expr(i, in_fn, out);
+                walk_stmt(b, in_fn, out);
+            }
+            StmtKind::Break | StmtKind::Continue => {}
+            StmtKind::Return(e) => {
+                if let Some(e) = e {
+                    walk_expr(e, in_fn, out);
+                }
+            }
+        }
+    }
+    fn walk_expr(e: &Expr, in_fn: bool, out: &mut std::collections::HashSet<String>) {
+        match &e.kind {
+            ExprKind::Var(n) => {
+                if in_fn {
+                    out.insert(n.clone());
+                }
+            }
+            ExprKind::List(xs) => xs.iter().for_each(|x| walk_expr(x, in_fn, out)),
+            ExprKind::Map(kvs) => kvs.iter().for_each(|(k, v)| {
+                walk_expr(k, in_fn, out);
+                walk_expr(v, in_fn, out);
+            }),
+            ExprKind::Unary(_, x) => walk_expr(x, in_fn, out),
+            ExprKind::Binary(_, a, b) => {
+                walk_expr(a, in_fn, out);
+                walk_expr(b, in_fn, out);
+            }
+            ExprKind::Index(a, b) => {
+                walk_expr(a, in_fn, out);
+                walk_expr(b, in_fn, out);
+            }
+            ExprKind::Call(c, args) => {
+                walk_expr(c, in_fn, out);
+                args.iter().for_each(|a| walk_expr(a, in_fn, out));
+            }
+            // Everything inside a nested fn literal is "captured".
+            ExprKind::Fn(params, body) => {
+                if in_fn {
+                    out.extend(params.iter().cloned());
+                }
+                body.iter().for_each(|s| walk_stmt(s, true, out));
+            }
+            _ => {}
+        }
+    }
+    stmts.iter().for_each(|s| walk_stmt(s, false, out));
 }
 
 /// Per-loop bookkeeping for break/continue lowering.
@@ -130,6 +254,7 @@ struct Compiler {
     loops: Vec<LoopCtx>,
     scope_depth: usize,
     in_function: bool,
+    fn_ctx: Option<FnCtx>,
 }
 
 impl Compiler {
@@ -151,17 +276,85 @@ impl Compiler {
         (self.chunk.names.len() - 1) as u32
     }
 
+    /// Bind a fresh local: a frame slot when possible, Env when the
+    /// name is captured by a nested closure (or at top level).
+    fn bind(&mut self, n: &str) -> Option<u16> {
+        let Some(ctx) = &mut self.fn_ctx else {
+            return None;
+        };
+        let loc = if ctx.captured.contains(n) {
+            ctx.uses_env = true;
+            None
+        } else {
+            let slot = ctx.next_slot;
+            ctx.next_slot += 1;
+            Some(slot)
+        };
+        ctx.scopes
+            .last_mut()
+            .expect("resolver scope")
+            .push((n.to_string(), loc));
+        loc
+    }
+
+    /// Resolve a name: innermost local first, else Env (outer/global).
+    fn resolve(&self, n: &str) -> Option<u16> {
+        let ctx = self.fn_ctx.as_ref()?;
+        for scope in ctx.scopes.iter().rev() {
+            for (name, loc) in scope.iter().rev() {
+                if name == n {
+                    return *loc;
+                }
+            }
+        }
+        None
+    }
+
+    fn enter_scope(&mut self) {
+        if let Some(ctx) = &mut self.fn_ctx {
+            ctx.scopes.push(Vec::new());
+        }
+    }
+
+    fn leave_scope(&mut self) {
+        if let Some(ctx) = &mut self.fn_ctx {
+            ctx.scopes.pop();
+        }
+    }
+
+    /// Does this block need a runtime Env scope? Only when it directly
+    /// declares an Env-allocated (captured) binding.
+    fn block_needs_env(&self, stmts: &[Stmt]) -> bool {
+        stmts.iter().any(|st| match &st.kind {
+            StmtKind::Let(n, _) => match &self.fn_ctx {
+                Some(ctx) => ctx.captured.contains(n),
+                None => true,
+            },
+            _ => false,
+        })
+    }
+
     fn stmt(&mut self, s: &Stmt) -> Result<(), CompileError> {
         match &s.kind {
             StmtKind::Let(name, init) => {
                 self.expr(init)?;
-                let i = self.name(name);
-                self.emit(Op::Define(i), s.span);
+                match self.bind(name) {
+                    Some(slot) => self.emit(Op::SetSlot(slot), s.span),
+                    None => {
+                        let i = self.name(name);
+                        self.emit(Op::Define(i), s.span);
+                    }
+                }
             }
             StmtKind::Assign(name, value) => {
                 self.expr(value)?;
-                let i = self.name(name);
-                self.emit(Op::SetVar(i), s.span);
+                match self.resolve(name) {
+                    Some(slot) => self.emit(Op::SetSlot(slot), s.span),
+                    None => {
+                        let i = self.name(name);
+                        self.emit(Op::SetVar(i), s.span);
+                    }
+                }
             }
             StmtKind::IndexAssign(base, idx, value) => {
                 self.expr(base)?;
@@ -173,10 +366,11 @@ impl Compiler {
                 self.expr(e)?;
                 self.emit(Op::Pop, s.span);
             }
-            // Same rule as the tree-walker: only a block with direct
-            // declarations needs its own scope.
+            // A runtime Env scope only when the block directly declares
+            // an Env-allocated binding; slot locals need no scope ops.
             StmtKind::Block(stmts) => {
-                let scoped = stmts.iter().any(|st| matches!(st.kind, StmtKind::Let(..)));
+                let scoped = self.block_needs_env(stmts);
+                self.enter_scope();
                 if scoped {
                     self.emit(Op::PushScope, s.span);
                     self.scope_depth += 1;
@@ -188,6 +382,7 @@ impl Compiler {
                     self.scope_depth -= 1;
                     self.emit(Op::PopScope, s.span);
                 }
+                self.leave_scope();
             }
             StmtKind::If(cond, then, els) => {
                 self.expr(cond)?;
@@ -242,14 +437,27 @@ impl Compiler {
                     break_patches: vec![next_ip],
                     scope_depth: self.scope_depth,
                 });
-                // Fresh scope per iteration, like the tree-walker.
-                self.emit(Op::PushScope, s.span);
-                self.scope_depth += 1;
-                let vi = self.name(var);
-                self.emit(Op::Define(vi), s.span);
-                self.stmt(body)?;
-                self.scope_depth -= 1;
-                self.emit(Op::PopScope, s.span);
+                self.enter_scope();
+                match self.bind(var) {
+                    // Uncaptured loop var: a slot reused per iteration
+                    // is observationally identical to a fresh binding.
+                    Some(slot) => {
+                        self.emit(Op::SetSlot(slot), s.span);
+                        self.stmt(body)?;
+                    }
+                    // Captured (or top-level): fresh scope per
+                    // iteration, like the tree-walker.
+                    None => {
+                        self.emit(Op::PushScope, s.span);
+                        self.scope_depth += 1;
+                        let vi = self.name(var);
+                        self.emit(Op::Define(vi), s.span);
+                        self.stmt(body)?;
+                        self.scope_depth -= 1;
+                        self.emit(Op::PopScope, s.span);
+                    }
+                }
+                self.leave_scope();
                 let back = self.chunk.code.len();
                 self.emit(Op::Jump(0), s.span);
                 self.patch(back, next_ip as i32);
@@ -332,10 +540,13 @@ impl Compiler {
             ExprKind::Bool(true) => self.emit(Op::True, e.span),
             ExprKind::Bool(false) => self.emit(Op::False, e.span),
             ExprKind::Nil => self.emit(Op::Nil, e.span),
-            ExprKind::Var(name) => {
-                let i = self.name(name);
-                self.emit(Op::GetVar(i), e.span);
-            }
+            ExprKind::Var(name) => match self.resolve(name) {
+                Some(slot) => self.emit(Op::GetSlot(slot), e.span),
+                None => {
+                    let i = self.name(name);
+                    self.emit(Op::GetVar(i), e.span);
+                }
+            },
             ExprKind::List(items) => {
                 for it in items {
                     self.expr(it)?;
@@ -393,7 +604,15 @@ impl Compiler {
                 self.emit(Op::Call(args.len() as u8, callee.span), e.span);
             }
             ExprKind::Fn(params, body) => {
-                let chunk = compile_stmts(body, true)?;
+                let mut captured = std::collections::HashSet::new();
+                captured_names(body, &mut captured);
+                let ctx = FnCtx {
+                    scopes: vec![Vec::new()],
+                    captured,
+                    next_slot: 0,
+                    uses_env: false,
+                };
+                let chunk = compile_stmts(body, Some((params, ctx)))?;
                 self.chunk.protos.push(FnProto {
                     params: params.clone(),
                     chunk: std::rc::Rc::new(chunk),

@@ -1282,3 +1282,26 @@ lever with a mechanism behind it is local slot resolution (params and
 un-captured locals as frame stack slots, killing the per-call HashMap
 and per-access hashing). Per the milestone plan, that's next; if it
 doesn't deliver either, the retire option is on the table.
+
+---
+
+## 2026-09-01 — Iteration 61: local slot resolution — the VM wins
+
+Params and un-captured locals in compiled function bodies now live in
+a per-call slot frame (Vec<Value>) instead of the Env HashMap:
+GetSlot/SetSlot ops, a lexical resolver in the compiler, and a
+conservative capture analysis (every identifier mentioned inside a
+nested fn literal stays Env-allocated — over-approximate but sound).
+Closure-free bodies allocate NO Env at all (they run against the
+captured env directly); uncaptured for-loop variables reuse a slot
+instead of a fresh per-iteration scope (observationally identical —
+captured ones keep the scope). One real stumble: a python patch of
+eval::call silently no-opped after fmt drift and the old path
+shipped locals of len 0 — caught immediately by the differential
+corpus panicking, fixed via a proper edit. All parity guards green
+(both engine suites, differential fuzzing, selftests).
+
+Benchmarks: fib -35%, lists -29%, strings -11%, maps +1% (its hot
+loop is top-level, frameless — nothing to win). The VM is now clearly
+faster wherever functions run, with no regressions. Per the milestone
+rule, the default flips next iteration (with an eval escape hatch).

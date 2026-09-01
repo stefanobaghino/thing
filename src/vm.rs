@@ -15,6 +15,16 @@ pub fn run_chunk<W: Write>(
     interp: &mut Interpreter<W>,
     chunk: &Chunk,
 ) -> Result<Option<Value>, RuntimeError> {
+    run_chunk_with(interp, chunk, &mut [])
+}
+
+/// `run_chunk` with a caller-prepared locals frame (function calls;
+/// eval::call fills parameter slots before entry).
+pub fn run_chunk_with<W: Write>(
+    interp: &mut Interpreter<W>,
+    chunk: &Chunk,
+    locals: &mut [Value],
+) -> Result<Option<Value>, RuntimeError> {
     let mut stack: Vec<Value> = Vec::with_capacity(64);
     let mut ip = 0usize;
     while ip < chunk.code.len() {
@@ -200,6 +210,10 @@ pub fn run_chunk<W: Write>(
             Op::Return => {
                 let v = stack.pop().expect("stack underflow");
                 return Ok(Some(v));
+            }
+            Op::GetSlot(i) => stack.push(locals[*i as usize].clone()),
+            Op::SetSlot(i) => {
+                locals[*i as usize] = stack.pop().expect("stack underflow");
             }
             Op::PushScope => interp.push_scope(),
             Op::PopScope => interp.pop_scope(),
