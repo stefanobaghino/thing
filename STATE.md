@@ -21,10 +21,9 @@ release binaries on GitHub.
 Milestone **v1.4.0 — sharper tools** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. lib/test.ting: a tiny test framework in ting; selftest dogfoods it.
-2. Measured VM micro-pass (const dedup, global-lookup caching) — keep
+1. Measured VM micro-pass (const dedup, global-lookup caching) — keep
    only what benchmarks justify.
-3. Release v1.4.0.
+2. Release v1.4.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -189,6 +188,8 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v1.3.0
 - LSP completions (builtins+docs, keywords, document identifiers);
   tested.
+- lib/test.ting framework (+selftest/testlib.ting, examples/
+  testing.ting golden).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
