@@ -20,9 +20,7 @@ release binaries on GitHub.
 Milestone **v0.4.0 — ting in the browser + robustness** (designed in
 LOG.md replenishment entry; keeps zero deps by avoiding wasm-bindgen):
 
-1. Robustness: deterministic pseudo-random program generator test —
-   arbitrary token soup must produce clean errors, never panics.
-2. Release v0.4.0.
+1. Release v0.4.0 (bump, tag, verify assets + live playground).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -89,6 +87,9 @@ green.
 - Playground LIVE on GitHub Pages (pages.yml, path-filtered);
   verified in-browser at http://www.baghino.me/thing/; README links
   it.
+- Fuzz tests (tests/fuzz.rs: token soup, example mutants, deep
+  nesting); found+fixed a real describe() panic on stray ':'; 141
+  tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
