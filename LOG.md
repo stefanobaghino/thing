@@ -686,3 +686,15 @@ misplaced `:` (e.g. `1 : 2;`) crashed the parser instead of printing a
 diagnostic, reachable from the released binary and the playground.
 Fixed (Colon arm + harmless fallback instead of unreachable!), plus a
 direct regression test. Suite at 141.
+
+---
+
+## 2026-09-01 — Iteration 30: v0.4.0 released
+
+Milestone complete; version bumped, tag v0.4.0 pushed. v0.4.0 over
+v0.3.0, "ting in the browser + robustness": interpreter as a library
+(lib.rs/run_source), wasm cdylib with a hand-rolled ABI (no
+wasm-bindgen, still zero dependencies), the browser playground live on
+GitHub Pages, fuzz tests (which found and fixed a real parser panic on
+stray ':'), and the describe() hardening. 141 tests. Asset verification
+follows when the release workflow finishes.
