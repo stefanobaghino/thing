@@ -53,14 +53,24 @@ pub enum Op {
     /// stack: [snap, idx]. If idx == len(snap): jump. Else: bump idx
     /// and push snap[idx].
     IterNext(i32),
+    /// Create a closure from protos[i], capturing the current env.
+    MakeFn(u32),
 }
 
 pub struct Chunk {
     pub code: Vec<Op>,
     pub consts: Vec<Value>,
     pub names: Vec<String>,
+    /// Function bodies stay AST: the VM builds ordinary closures that
+    /// the reference engine executes (docs/vm.md hybrid step).
+    pub protos: Vec<FnProto>,
     /// spans[i] belongs to code[i]; used for diagnostics.
     pub spans: Vec<Span>,
+}
+
+pub struct FnProto {
+    pub params: Vec<String>,
+    pub body: std::rc::Rc<Vec<Stmt>>,
 }
 
 pub struct CompileError {
@@ -81,6 +91,7 @@ pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
             code: Vec::new(),
             consts: Vec::new(),
             names: Vec::new(),
+            protos: Vec::new(),
             spans: Vec::new(),
         },
         loops: Vec::new(),
@@ -275,7 +286,15 @@ impl Compiler {
                 self.emit(Op::Jump(0), s.span);
                 self.patch(at, target as i32);
             }
-            StmtKind::Return(..) => return Err(unsupported("return", s.span)),
+            // Function bodies are never compiled (they stay AST), so a
+            // return reaching the compiler is at top level. Same message
+            // as the tree-walker, surfaced at compile time.
+            StmtKind::Return(..) => {
+                return Err(CompileError {
+                    message: "return outside function".to_string(),
+                    span: s.span,
+                });
+            }
         }
         Ok(())
     }
@@ -357,7 +376,14 @@ impl Compiler {
                 }
                 self.emit(Op::Call(args.len() as u8, callee.span), e.span);
             }
-            ExprKind::Fn(..) => return Err(unsupported("fn literals", e.span)),
+            ExprKind::Fn(params, body) => {
+                self.chunk.protos.push(FnProto {
+                    params: params.clone(),
+                    body: std::rc::Rc::clone(body),
+                });
+                let i = (self.chunk.protos.len() - 1) as u32;
+                self.emit(Op::MakeFn(i), e.span);
+            }
         }
         Ok(())
     }

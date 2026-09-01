@@ -127,6 +127,11 @@ impl<W: Write> Interpreter<W> {
         self.env.borrow_mut().vars.insert(Rc::from(name), v);
     }
 
+    /// The current environment handle (VM closure capture).
+    pub(crate) fn env_handle(&self) -> Rc<RefCell<Env>> {
+        Rc::clone(&self.env)
+    }
+
     /// Enter a fresh lexical scope (VM block/loop-iteration support).
     pub(crate) fn push_scope(&mut self) {
         self.env = Env::child(&self.env);

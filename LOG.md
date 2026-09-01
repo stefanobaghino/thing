@@ -1120,3 +1120,19 @@ earlier-surfacing divergence, pinned by its own test). 19 new
 control-flow programs in the differential corpus — all byte-identical
 across engines, including error spans inside loops. Only fn/return
 remain. Suite at 156.
+
+---
+
+## 2026-09-01 — Iteration 53: functions in the VM — full parity
+
+Rollout step 3, and it completes the language: MakeFn builds the very
+same Function value the tree-walker builds (AST body + captured Env
+from the VM's real scope chain), so closures, return, try, the depth
+cap, and import inherit reference semantics wholesale — function
+bodies tree-walk while straight-line code runs on bytecode, exactly
+the hybrid docs/vm.md planned. Top-level `return` joins break/continue
+as a compile-time error with the tree-walker's message. Differential
+coverage now includes an 11-program function corpus AND the entire
+selftest suite (8 ting programs, 130+ assertions) — all byte-identical
+across engines. The whole language now runs under --vm. Next:
+benchmark, then decide the default. Suite at 158.

@@ -108,14 +108,69 @@ fn control_flow_matches_across_engines() {
 }
 
 #[test]
-fn vm_reports_unsupported_constructs() {
-    let err = run(Engine::Vm, "fn f() { return 1; } print(f());").unwrap_err();
-    assert!(err.contains("not yet supported by --vm"), "{err}");
-    // The reference engine still runs them.
-    assert_eq!(
-        run(Engine::Eval, "fn f() { return 1; } print(f());").unwrap(),
-        "1\n"
+fn functions_match_across_engines() {
+    let corpus: &[&str] = &[
+        "fn add(a, b) { return a + b; } print(add(2, 40));",
+        // closures share captured state; independent instances
+        "fn mk() { let n = 0; fn t() { n = n + 1; return n; } return t; } \
+         let a = mk(); let b = mk(); print(a(), a(), b());",
+        // recursion + depth cap through try
+        "fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); } print(fib(15));",
+        "fn f() { return f(); } let r = try(f); print(has(r, \"err\"));",
+        // higher-order builtins with fn literals
+        "print(map([1, 2, 3], fn(x) { return x * x; }));",
+        "print(sort_by([[2, \"b\"], [1, \"a\"]], fn(p) { return p[0]; }));",
+        // try/fail round trip, arity errors, implicit nil
+        "let r = try(fn() { fail(\"boom\"); }); print(r[\"err\"]);",
+        "fn one(a) { return a; } print(one(1, 2));",
+        "fn nothing() { } print(nothing());",
+        // loop-variable capture per iteration
+        "let fs = []; for x in range(3) { push(fs, fn() { return x; }); } \
+         print(fs[0](), fs[1](), fs[2]());",
+        // fn value display + identity equality
+        "fn g(x) { return x; } print(g == g, g);",
+    ];
+    for src in corpus {
+        same(src);
+    }
+}
+
+#[test]
+fn selftest_programs_match_across_engines() {
+    // The whole self-hosted suite through both engines: silent success
+    // on each, byte-identical otherwise.
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("selftest");
+    let mut checked = 0;
+    for entry in std::fs::read_dir(&dir).expect("selftest/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) != Some("ting") {
+            continue;
+        }
+        let src = std::fs::read_to_string(&path).unwrap();
+        let p = path.to_str().unwrap();
+        let run_file = |engine: Engine| {
+            let mut out = Vec::new();
+            let r = run_source_engine(engine, p, &src, &mut out, Vec::new());
+            (String::from_utf8(out).unwrap(), r)
+        };
+        let (out_a, res_a) = run_file(Engine::Eval);
+        let (out_b, res_b) = run_file(Engine::Vm);
+        assert_eq!(res_a.is_ok(), res_b.is_ok(), "{p} verdicts differ");
+        assert_eq!(out_a, out_b, "{p} outputs differ");
+        assert!(res_b.is_ok(), "{p} failed under vm: {:?}", res_b.err());
+        checked += 1;
+    }
+    assert!(
+        checked >= 8,
+        "expected at least 8 selftests, found {checked}"
     );
+}
+
+#[test]
+fn vm_rejects_stray_return_at_compile_time() {
+    // Accepted divergence (docs/vm.md): same message, surfaces earlier.
+    let err = run(Engine::Vm, "return 1;").unwrap_err();
+    assert!(err.contains("return outside function"), "{err}");
 }
 
 #[test]

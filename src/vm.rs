@@ -183,6 +183,14 @@ pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result
             Op::Pop => {
                 stack.pop();
             }
+            Op::MakeFn(i) => {
+                let proto = &chunk.protos[*i as usize];
+                stack.push(Value::Fn(std::rc::Rc::new(eval::Function {
+                    params: proto.params.iter().map(|p| p.as_str().into()).collect(),
+                    body: std::rc::Rc::clone(&proto.body),
+                    env: interp.env_handle(),
+                })));
+            }
             Op::PushScope => interp.push_scope(),
             Op::PopScope => interp.pop_scope(),
             Op::IterNew => {
