@@ -18,10 +18,15 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.4.0 — sharper tools** (designed in LOG.md
+Milestone **v1.5.0 — the stdlib everywhere** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Release v1.4.0.
+1. Embed lib/*.ting in the binary; import() falls back to the
+   embedded stdlib for "lib/..." paths (filesystem wins); sync guard
+   test; works in REPL, any cwd, and the wasm playground.
+2. Playground example using the stdlib.
+3. docs/stdlib.md documenting the three modules; rendered on the site.
+4. Release v1.5.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -190,6 +195,9 @@ green.
   testing.ting golden).
 - VM micro-pass: buffer pooling (fib/lists now -45% vs eval) + const
   dedup; BASELINE updated.
+- v1.4.0 RELEASED and verified: 3 assets; test framework + stdlib ran
+  from the shipped archive.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.4.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
