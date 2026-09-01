@@ -17,11 +17,10 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Diagnostics: spans in error messages, source excerpts.
-2. Example programs under `examples/`, run as integration tests.
-3. Language reference in `docs/`.
-4. GitHub Actions CI (build + test on push).
-5. Tagged release with prebuilt binaries.
+1. Example programs under `examples/`, run as integration tests.
+2. Language reference in `docs/`.
+3. GitHub Actions CI (build + test on push).
+4. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -49,6 +48,8 @@ release binaries on GitHub.
   str, int, float, type, range; 7 tests.
 - REPL (`src/repl.rs`): expression echo, multi-line continuation,
   auto-semicolon, pipe-friendly, persistent session; 8 tests.
+- Diagnostics (`src/diag.rs`): caret underlines with source excerpt on
+  all script error paths; 6 tests.
 
 ## Blockers
 

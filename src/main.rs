@@ -1,4 +1,5 @@
 mod ast;
+mod diag;
 mod eval;
 mod lexer;
 mod parser;
@@ -56,7 +57,6 @@ fn run_file_inner(path: &str) -> ExitCode {
 }
 
 fn report(path: &str, src: &str, message: &str, span: lexer::Span) -> ExitCode {
-    let (line, col) = span.line_col(src);
-    eprintln!("{path}:{line}:{col}: error: {message}");
+    eprintln!("{}", diag::render(path, src, message, span));
     ExitCode::FAILURE
 }

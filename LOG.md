@@ -298,3 +298,20 @@ Decisions:
   zero-dependency decision, which wins).
 - Session state persists across chunks (one Interpreter for the whole
   session); errors leave the session usable.
+
+---
+
+## 2026-09-01 — Iteration 11: caret diagnostics
+
+Added `src/diag.rs`: script errors now print the offending source line
+with a caret underline sized to the span, rustc-style. 6 new tests;
+suite is now 108. Every error path (lex, parse, runtime) flows through
+it because iterations 2-7 put byte spans on tokens, AST nodes, and
+runtime errors — that early decision paid off here with a ~40-line
+renderer.
+
+Details: multi-line spans clamp to their first line; tabs in the
+underline prefix stay tabs so carets align in terminals; caret width
+counts chars (not bytes) so unicode lines up; zero-width spans (EOF
+errors) get one caret. REPL errors stay message-only for now — chunks
+are short and the buffer is on screen.
