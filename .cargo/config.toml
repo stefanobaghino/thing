@@ -1,0 +1,4 @@
+# Test threads inherit RUST_MIN_STACK; deep ting recursion (capped at
+# MAX_DEPTH in eval.rs) needs more than the 2MB default in debug builds.
+[env]
+RUST_MIN_STACK = "33554432"

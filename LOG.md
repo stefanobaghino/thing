@@ -218,3 +218,34 @@ Design decisions:
   thread).
 - `break`/`continue` still deferred; `Control` now gives them an obvious
   home next time loops come up.
+
+---
+
+## 2026-09-01 — Iteration 8: maps and index assignment
+
+Added map literals `{"k": v}`, map indexing, index assignment
+(`xs[i] = v`, `m["k"] = v`, nested `grid[1][0] = 5`), and switched lists
+and maps to reference semantics. 10 new tests; suite is now 87.
+
+Design decisions (the big one first):
+- **Lists and maps are now reference types** —
+  `Rc<RefCell<...>>`, like Python/JS/Lua. Motivation: index assignment
+  through nested structures and (next iteration) in-place builtins like
+  `push` fall out for free; `eval(base)` hands back a shared handle, so
+  `m["a"]["b"] = 2` needs no place-resolution machinery. Equality stays
+  structural (deep), with an `Rc::ptr_eq` fast path. `+` on lists still
+  builds a fresh list (tested: mutating the concat result leaves the
+  operand alone). Aliasing is now observable and tested (`let b = a;
+  b[0] = 2` changes `a`).
+- **Map keys are strings only**, stored in a `BTreeMap` so display order
+  is sorted and deterministic. Missing-key reads are runtime errors
+  (consistent with the language's strictness); `has`/`keys` builtins
+  next iteration make that livable.
+- **Map literals don't parse at statement start** (`{` opens a block
+  there) — noted in a parser comment; harmless in practice since a bare
+  map statement is useless.
+- **`:` added to the lexer** (maps needed it; it was the only new token).
+- The runaway-recursion test overflowed the test-thread stack again
+  (bigger `Value` enum → bigger frames). Fix: `.cargo/config.toml` sets
+  `RUST_MIN_STACK=32MB` so test threads match main's interpreter thread,
+  keeping MAX_DEPTH at 200.

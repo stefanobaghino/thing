@@ -191,18 +191,23 @@ impl<'a> Parser<'a> {
             }
             _ => {
                 let expr = self.expr_bp(0)?;
-                // `name = expr;` is an assignment, only valid on a bare variable.
+                // Assignment targets: a bare variable or an index expression.
                 if self.peek() == &TokenKind::Eq {
-                    let name = match &expr.kind {
-                        ExprKind::Var(name) => name.clone(),
+                    let kind = match expr.kind {
+                        ExprKind::Var(name) => {
+                            self.advance();
+                            StmtKind::Assign(name, self.expr_bp(0)?)
+                        }
+                        ExprKind::Index(base, idx) => {
+                            self.advance();
+                            StmtKind::IndexAssign(*base, *idx, self.expr_bp(0)?)
+                        }
                         _ => return Err(self.error("invalid assignment target")),
                     };
-                    self.advance();
-                    let value = self.expr_bp(0)?;
                     let end = self.span().end;
                     self.expect(&TokenKind::Semi, "';'")?;
                     return Ok(Stmt {
-                        kind: StmtKind::Assign(name, value),
+                        kind,
                         span: Span::new(start, end),
                     });
                 }
@@ -364,6 +369,34 @@ impl<'a> Parser<'a> {
                 let (params, body, end) = self.fn_params_and_body()?;
                 return Ok(Expr {
                     kind: ExprKind::Fn(params, body),
+                    span: Span::new(span.start, end),
+                });
+            }
+            // Map literal. Note: at statement position `{` starts a block,
+            // so a map literal statement needs to sit inside an expression.
+            TokenKind::LBrace => {
+                self.advance();
+                let mut entries = Vec::new();
+                if self.peek() != &TokenKind::RBrace {
+                    loop {
+                        let key = self.expr_bp(0)?;
+                        self.expect(&TokenKind::Colon, "':'")?;
+                        let value = self.expr_bp(0)?;
+                        entries.push((key, value));
+                        if self.peek() == &TokenKind::Comma {
+                            self.advance();
+                            if self.peek() == &TokenKind::RBrace {
+                                break; // trailing comma
+                            }
+                        } else {
+                            break;
+                        }
+                    }
+                }
+                let end = self.span().end;
+                self.expect(&TokenKind::RBrace, "'}'")?;
+                return Ok(Expr {
+                    kind: ExprKind::Map(entries),
                     span: Span::new(span.start, end),
                 });
             }
@@ -630,6 +663,26 @@ mod tests {
         assert_eq!(
             program_err("while a 1;"),
             "expected '{' after 'while' condition, found integer '1'"
+        );
+    }
+
+    #[test]
+    fn map_literals() {
+        assert_eq!(sexpr("{}"), "(map)");
+        assert_eq!(
+            sexpr("{\"a\": 1, \"b\": 2 + 3,}"),
+            "(map (\"a\" 1) (\"b\" (+ 2 3)))"
+        );
+        assert_eq!(err("{1: 2"), "expected '}', found end of input");
+        assert_eq!(err("{1, 2}"), "expected ':', found ','");
+    }
+
+    #[test]
+    fn index_assignment_statements() {
+        assert_eq!(program("xs[0] = 1;"), "(=[] xs 0 1)");
+        assert_eq!(
+            program("m[\"a\"][\"b\"] = 2;"),
+            "(=[] (index m \"a\") \"b\" 2)"
         );
     }
 

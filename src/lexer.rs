@@ -71,6 +71,7 @@ pub enum TokenKind {
     Comma,
     Semi,
     Dot,
+    Colon,
     Eof,
 }
 
@@ -153,6 +154,7 @@ impl<'a> Lexer<'a> {
                 b',' => TokenKind::Comma,
                 b';' => TokenKind::Semi,
                 b'.' => TokenKind::Dot,
+                b':' => TokenKind::Colon,
                 b'=' => self.two(b'=', TokenKind::EqEq, TokenKind::Eq),
                 b'!' => self.two(b'=', TokenKind::BangEq, TokenKind::Bang),
                 b'<' => self.two(b'=', TokenKind::LtEq, TokenKind::Lt),
@@ -396,7 +398,7 @@ mod tests {
     #[test]
     fn punctuation() {
         assert_eq!(
-            kinds("( ) { } [ ] , ; . + - * / %"),
+            kinds("( ) { } [ ] , ; . : + - * / %"),
             vec![
                 TokenKind::LParen,
                 TokenKind::RParen,
@@ -407,6 +409,7 @@ mod tests {
                 TokenKind::Comma,
                 TokenKind::Semi,
                 TokenKind::Dot,
+                TokenKind::Colon,
                 TokenKind::Plus,
                 TokenKind::Minus,
                 TokenKind::Star,

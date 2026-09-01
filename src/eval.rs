@@ -132,6 +132,31 @@ impl<W: Write> Interpreter<W> {
                     ))
                 }
             }
+            StmtKind::IndexAssign(base, idx, value) => {
+                let b = self.eval(base)?;
+                let i = self.eval(idx)?;
+                let v = self.eval(value)?;
+                match (b, i) {
+                    (Value::List(items), Value::Int(n)) => {
+                        let mut items = items.borrow_mut();
+                        let eff = effective_index(n, items.len(), stmt.span)?;
+                        items[eff] = v;
+                        Ok(Control::Normal)
+                    }
+                    (Value::Map(entries), Value::Str(k)) => {
+                        entries.borrow_mut().insert(k, v);
+                        Ok(Control::Normal)
+                    }
+                    (b, i) => Err(error(
+                        format!(
+                            "cannot index-assign {} with {}",
+                            b.type_name(),
+                            i.type_name()
+                        ),
+                        stmt.span,
+                    )),
+                }
+            }
             StmtKind::Expr(e) => {
                 self.eval(e)?;
                 Ok(Control::Normal)
@@ -219,7 +244,23 @@ impl<W: Write> Interpreter<W> {
                 for it in items {
                     vals.push(self.eval(it)?);
                 }
-                Ok(Value::List(vals))
+                Ok(Value::list(vals))
+            }
+            ExprKind::Map(entries) => {
+                let mut map = std::collections::BTreeMap::new();
+                for (k, v) in entries {
+                    let key = match self.eval(k)? {
+                        Value::Str(s) => s,
+                        other => {
+                            return Err(error(
+                                format!("map keys must be strings, got {}", other.type_name()),
+                                k.span,
+                            ));
+                        }
+                    };
+                    map.insert(key, self.eval(v)?);
+                }
+                Ok(Value::map(map))
             }
             ExprKind::Var(name) => match self.lookup(name) {
                 Some(v) => Ok(v),
@@ -323,9 +364,11 @@ fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, Runtime
                 .map(Int)
                 .ok_or_else(|| error("integer overflow", span)),
             (Str(a), Str(b)) => Ok(Str(a + &b)),
-            (List(mut a), List(b)) => {
-                a.extend(b);
-                Ok(List(a))
+            // Concatenation builds a fresh list; neither operand is mutated.
+            (List(a), List(b)) => {
+                let mut out = a.borrow().clone();
+                out.extend(b.borrow().iter().cloned());
+                Ok(Value::list(out))
             }
             (l, r) => numeric_or_type_error(op, l, r, span, |a, b| a + b),
         },
@@ -423,18 +466,29 @@ fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, Runtim
     Ok(Value::Bool(b))
 }
 
+/// Resolve a possibly negative index against a length; negative indices
+/// count from the end, Python-style.
+fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, RuntimeError> {
+    let len = len as i64;
+    let eff = if i < 0 { i + len } else { i };
+    if eff < 0 || eff >= len {
+        Err(error(format!("index {i} out of bounds (len {len})"), span))
+    } else {
+        Ok(eff as usize)
+    }
+}
+
 fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
     match (base, idx) {
         (Value::List(items), Value::Int(i)) => {
-            let len = items.len() as i64;
-            // Negative indices count from the end, Python-style.
-            let eff = if i < 0 { i + len } else { i };
-            if eff < 0 || eff >= len {
-                Err(error(format!("index {i} out of bounds (len {len})"), span))
-            } else {
-                Ok(items[eff as usize].clone())
-            }
+            let items = items.borrow();
+            let eff = effective_index(i, items.len(), span)?;
+            Ok(items[eff].clone())
         }
+        (Value::Map(entries), Value::Str(k)) => match entries.borrow().get(&k) {
+            Some(v) => Ok(v.clone()),
+            None => Err(error(format!("key {k:?} not found"), span)),
+        },
         (Value::Str(s), Value::Int(i)) => {
             let chars: Vec<char> = s.chars().collect();
             let len = chars.len() as i64;
@@ -514,7 +568,7 @@ mod tests {
         assert_eq!(run("\"foo\" + \"bar\""), Value::Str("foobar".into()));
         assert_eq!(
             run("[1] + [2, 3]"),
-            Value::List(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
+            Value::list(vec![Value::Int(1), Value::Int(2), Value::Int(3)])
         );
     }
 
@@ -582,6 +636,88 @@ mod tests {
         assert_eq!(run("\"héllo\"[1]"), Value::Str("é".into()));
         assert_eq!(run_err("[1][5]"), "index 5 out of bounds (len 1)");
         assert_eq!(run_err("[1][-2]"), "index -2 out of bounds (len 1)");
+    }
+
+    #[test]
+    fn map_literals_get_and_set() {
+        assert_eq!(output("let m = {\"a\": 1, \"b\": 2}; print(m[\"a\"] + m[\"b\"]);"), "3\n");
+        assert_eq!(
+            output("let m = {}; m[\"x\"] = 10; m[\"x\"] = m[\"x\"] + 1; print(m);"),
+            "{\"x\": 11}\n"
+        );
+        assert_eq!(output("print({\"b\": 2, \"a\": [1, \"s\"]});"), "{\"a\": [1, \"s\"], \"b\": 2}\n");
+    }
+
+    #[test]
+    fn missing_map_key_errors() {
+        assert_eq!(program_err("let m = {}; m[\"nope\"];"), "key \"nope\" not found");
+    }
+
+    #[test]
+    fn map_keys_must_be_strings() {
+        assert_eq!(
+            program_err("let m = {1: 2};"),
+            "map keys must be strings, got int"
+        );
+        assert_eq!(
+            program_err("let m = {\"a\": 1}; m[0];"),
+            "cannot index map with int"
+        );
+    }
+
+    #[test]
+    fn list_index_assignment() {
+        assert_eq!(
+            output("let xs = [1, 2, 3]; xs[0] = 10; xs[-1] = 30; print(xs);"),
+            "[10, 2, 30]\n"
+        );
+        assert_eq!(
+            program_err("let xs = [1]; xs[5] = 0;"),
+            "index 5 out of bounds (len 1)"
+        );
+    }
+
+    #[test]
+    fn nested_index_assignment() {
+        assert_eq!(
+            output("let m = {\"a\": {\"b\": 1}}; m[\"a\"][\"b\"] = 2; print(m[\"a\"][\"b\"]);"),
+            "2\n"
+        );
+        assert_eq!(
+            output("let grid = [[0, 0], [0, 0]]; grid[1][0] = 5; print(grid);"),
+            "[[0, 0], [5, 0]]\n"
+        );
+    }
+
+    #[test]
+    fn lists_and_maps_are_references() {
+        assert_eq!(
+            output("let a = [1]; let b = a; b[0] = 2; print(a[0]);"),
+            "2\n"
+        );
+        assert_eq!(
+            output("fn poke(m) { m[\"k\"] = 1; } let m = {}; poke(m); print(m[\"k\"]);"),
+            "1\n"
+        );
+        // concat still copies
+        assert_eq!(
+            output("let a = [1]; let c = a + [2]; c[0] = 9; print(a, c);"),
+            "[1] [9, 2]\n"
+        );
+    }
+
+    #[test]
+    fn map_equality_is_structural() {
+        assert_eq!(output("print({\"a\": 1} == {\"a\": 1});"), "true\n");
+        assert_eq!(output("print({\"a\": 1} == {\"a\": 2});"), "false\n");
+    }
+
+    #[test]
+    fn index_assign_type_errors() {
+        assert_eq!(
+            program_err("let s = \"abc\"; s[0] = \"x\";"),
+            "cannot index-assign string with int"
+        );
     }
 
     #[test]

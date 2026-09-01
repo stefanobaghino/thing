@@ -16,6 +16,8 @@ pub enum StmtKind {
     Let(String, Expr),
     /// `name = expr;` — rebinds an existing variable.
     Assign(String, Expr),
+    /// `base[index] = expr;` — writes into a list slot or map key.
+    IndexAssign(Expr, Expr, Expr),
     /// Bare expression followed by `;`.
     Expr(Expr),
     /// `{ ... }` — introduces a scope.
@@ -33,6 +35,7 @@ impl fmt::Display for Stmt {
         match &self.kind {
             StmtKind::Let(name, e) => write!(f, "(let {name} {e})"),
             StmtKind::Assign(name, e) => write!(f, "(= {name} {e})"),
+            StmtKind::IndexAssign(base, idx, e) => write!(f, "(=[] {base} {idx} {e})"),
             StmtKind::Expr(e) => write!(f, "{e}"),
             StmtKind::Block(stmts) => {
                 f.write_str("(block")?;
@@ -65,6 +68,8 @@ pub enum ExprKind {
     Nil,
     Var(String),
     List(Vec<Expr>),
+    /// `{k: v, ...}` — keys must evaluate to strings at runtime.
+    Map(Vec<(Expr, Expr)>),
     Unary(UnaryOp, Box<Expr>),
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     Call(Box<Expr>, Vec<Expr>),
@@ -140,6 +145,13 @@ impl fmt::Display for Expr {
                 f.write_str("(list")?;
                 for it in items {
                     write!(f, " {it}")?;
+                }
+                f.write_str(")")
+            }
+            ExprKind::Map(entries) => {
+                f.write_str("(map")?;
+                for (k, v) in entries {
+                    write!(f, " ({k} {v})")?;
                 }
                 f.write_str(")")
             }

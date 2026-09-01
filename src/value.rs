@@ -1,8 +1,15 @@
 //! Runtime values for ting.
 
 use crate::eval::Function;
+use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::fmt;
 use std::rc::Rc;
+
+/// Lists and maps have reference semantics (like Python/JS/Lua):
+/// assigning or passing one shares the same underlying storage.
+pub type ListRef = Rc<RefCell<Vec<Value>>>;
+pub type MapRef = Rc<RefCell<BTreeMap<String, Value>>>;
 
 #[derive(Debug, Clone)]
 pub enum Value {
@@ -11,12 +18,22 @@ pub enum Value {
     Str(String),
     Bool(bool),
     Nil,
-    List(Vec<Value>),
+    List(ListRef),
+    Map(MapRef),
     Fn(Rc<Function>),
 }
 
-/// Structural equality, except functions: two closures are equal only if
-/// they are the same closure.
+impl Value {
+    pub fn list(items: Vec<Value>) -> Value {
+        Value::List(Rc::new(RefCell::new(items)))
+    }
+
+    pub fn map(entries: BTreeMap<String, Value>) -> Value {
+        Value::Map(Rc::new(RefCell::new(entries)))
+    }
+}
+
+/// Structural (deep) equality for data; identity for functions.
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
@@ -25,7 +42,10 @@ impl PartialEq for Value {
             (Value::Str(a), Value::Str(b)) => a == b,
             (Value::Bool(a), Value::Bool(b)) => a == b,
             (Value::Nil, Value::Nil) => true,
-            (Value::List(a), Value::List(b)) => a == b,
+            (Value::List(a), Value::List(b)) => {
+                Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow()
+            }
+            (Value::Map(a), Value::Map(b)) => Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow(),
             (Value::Fn(a), Value::Fn(b)) => Rc::ptr_eq(a, b),
             _ => false,
         }
@@ -42,8 +62,18 @@ impl Value {
             Value::Bool(_) => "bool",
             Value::Nil => "nil",
             Value::List(_) => "list",
+            Value::Map(_) => "map",
             Value::Fn(_) => "function",
         }
+    }
+}
+
+/// Elements inside containers print with strings quoted, so nested
+/// output stays unambiguous.
+fn write_element(f: &mut fmt::Formatter<'_>, v: &Value) -> fmt::Result {
+    match v {
+        Value::Str(s) => write!(f, "{s:?}"),
+        other => write!(f, "{other}"),
     }
 }
 
@@ -63,17 +93,24 @@ impl fmt::Display for Value {
             Value::Nil => f.write_str("nil"),
             Value::List(items) => {
                 f.write_str("[")?;
-                for (i, it) in items.iter().enumerate() {
+                for (i, it) in items.borrow().iter().enumerate() {
                     if i > 0 {
                         f.write_str(", ")?;
                     }
-                    // Strings inside lists are quoted to keep output unambiguous.
-                    match it {
-                        Value::Str(s) => write!(f, "{s:?}")?,
-                        other => write!(f, "{other}")?,
-                    }
+                    write_element(f, it)?;
                 }
                 f.write_str("]")
+            }
+            Value::Map(entries) => {
+                f.write_str("{")?;
+                for (i, (k, v)) in entries.borrow().iter().enumerate() {
+                    if i > 0 {
+                        f.write_str(", ")?;
+                    }
+                    write!(f, "{k:?}: ")?;
+                    write_element(f, v)?;
+                }
+                f.write_str("}")
             }
             Value::Fn(func) => write!(f, "<fn({})>", func.params.join(", ")),
         }
