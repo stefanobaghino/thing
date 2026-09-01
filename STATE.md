@@ -20,13 +20,11 @@ release binaries on GitHub.
 Milestone **v0.7.0 — developer experience** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. TextMate grammar (editor/ting.tmLanguage.json) + editor/README.md
-   install steps for VS Code/Sublime/Zed. No marketplace.
-2. Playground syntax highlighting: small JS tokenizer + overlay;
+1. Playground syntax highlighting: small JS tokenizer + overlay;
    verify via Playwright.
-3. Docs on Pages: tools/md2html.py (stdlib only) renders docs/ +
+2. Docs on Pages: tools/md2html.py (stdlib only) renders docs/ +
    README into the site; pages.yml wires it in; playground links docs.
-4. Release v0.7.0.
+3. Release v0.7.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -122,6 +120,8 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v0.6.0
 - format() builtin (strict placeholders; 38 builtins; selftest
   coverage).
+- TextMate grammar (editor/) + install README + builtin-sync guard
+  test; 146 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
