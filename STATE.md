@@ -20,13 +20,10 @@ release binaries on GitHub.
 Milestone **v0.6.0 — performance + polish** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Interpreter optimization, measured: profile the benchmarks, pick
-   the top cost (candidates: env lookup, per-call allocs, Value clone
-   traffic), optimize, show before/after in LOG.md.
-2. Playground share-by-URL: encode the editor source in the location
+1. Playground share-by-URL: encode the editor source in the location
    fragment on demand; load it on open. Still fully static.
-3. Tutorial: a modules section (import, exports map, caching).
-4. Release v0.6.0.
+2. Tutorial: a modules section (import, exports map, caching).
+3. Release v0.6.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -112,6 +109,8 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v0.5.0
 - Benchmark harness (bench/ + run.py + BASELINE.md: fib 295ms, lists
   101ms, maps 112ms, strings 54ms on the dev machine).
+- Measured optimization pass: ~10% across benches (inert block
+  scopes skipped, Rc<str> env keys); BASELINE.md updated.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
