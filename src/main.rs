@@ -24,6 +24,7 @@ fn main() -> ExitCode {
                  \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
                  \x20 ting --fmt <files...>       reformat files in place\n\
                  \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
+                 \x20 ting --check <files...>     report syntax errors without running\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -40,6 +41,10 @@ fn main() -> ExitCode {
     ) {
         let check = args.next().as_deref() == Some("--fmt-check");
         return run_fmt(check, args.collect());
+    }
+    if args.peek().map(String::as_str) == Some("--check") {
+        args.next();
+        return run_check(args.collect());
     }
     if args.peek().map(String::as_str) == Some("--lsp") {
         return match ting::lsp::run() {
@@ -92,6 +97,32 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitC
             eprintln!("{diagnostic}");
             ExitCode::FAILURE
         }
+    }
+}
+
+fn run_check(files: Vec<String>) -> ExitCode {
+    if files.is_empty() {
+        eprintln!("usage: ting --check <files...>");
+        return ExitCode::FAILURE;
+    }
+    let mut failed = false;
+    for f in &files {
+        let src = match std::fs::read_to_string(f) {
+            Ok(src) => src,
+            Err(e) => {
+                eprintln!("ting: cannot read {f}: {e}");
+                return ExitCode::FAILURE;
+            }
+        };
+        if let Err(diagnostic) = ting::check_source(f, &src) {
+            eprintln!("{diagnostic}");
+            failed = true;
+        }
+    }
+    if failed {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
     }
 }
 

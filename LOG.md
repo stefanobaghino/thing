@@ -1950,3 +1950,15 @@ earned its keep — drafts wrongly assumed push() returns the list
 (it mutates, returns nil), spaces in compact output, and a made-up
 parse-error message; all three caught by tests/tutorial.rs before
 shipping. Full suite 14/14.
+
+---
+
+## 2026-09-01 — Iteration 134: ting --check
+
+Maintenance: all green, nothing external. Small stroke: `--check
+<files...>` — lex + parse + compile without running, one diagnostic
+per bad file, exit 1 if any fail. Built on a new `check_source` in
+lib.rs (the static half of run_source_engine). CLI test proves the
+program is *not* executed (a clean file containing exit(7) checks as
+0). Help text and reference Running section updated. 14/14 suites.
+Fits the pre-commit-hook use case the formatter already serves.

@@ -9,6 +9,8 @@ sitting.
 ```sh
 ting script.ting [args...]   # run a file; extra args go to args()
 ting                         # interactive REPL (ctrl-d exits)
+ting --check files...        # report syntax errors without running
+ting --fmt files...          # reformat in place (--fmt-check to verify)
 ```
 
 Scripts run on the bytecode VM by default; `--eval` (or

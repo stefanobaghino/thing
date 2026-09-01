@@ -39,6 +39,16 @@ pub fn run_source<W: Write>(
     run_source_engine(Engine::Vm, path, src, out, script_args)
 }
 
+/// Lex, parse, and compile without running: everything that can be
+/// diagnosed statically. Returns the rendered diagnostic on failure.
+pub fn check_source(path: &str, src: &str) -> Result<(), String> {
+    let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
+    let tokens = lexer::lex(src).map_err(|e| render(&e.message, e.span))?;
+    let program = parser::parse_program(&tokens).map_err(|e| render(&e.message, e.span))?;
+    compile::compile_program(&program).map_err(|e| render(&e.message, e.span))?;
+    Ok(())
+}
+
 /// `run_source` with an explicit engine choice.
 pub fn run_source_engine<W: Write>(
     engine: Engine,
@@ -76,6 +86,13 @@ mod tests {
         let mut out = Vec::new();
         run_source("t", "print(6 * 7);", &mut out, Vec::new()).unwrap();
         assert_eq!(String::from_utf8(out).unwrap(), "42\n");
+    }
+
+    #[test]
+    fn check_source_reports_static_errors_only() {
+        check_source("t", "print(x);").unwrap();
+        let err = check_source("t", "let = 3;").unwrap_err();
+        assert!(err.contains("error"), "got: {err}");
     }
 
     #[test]

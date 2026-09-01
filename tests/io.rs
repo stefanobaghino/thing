@@ -73,3 +73,30 @@ fn env_exit_and_time_reach_the_process() {
     assert_eq!(out.status.code(), Some(3), "exit code must be 3");
     let _ = std::fs::remove_file(&script);
 }
+
+#[test]
+fn check_flag_reports_without_running() {
+    let dir = std::env::temp_dir();
+    let good = dir.join(format!("ting-check-good-{}.ting", std::process::id()));
+    let bad = dir.join(format!("ting-check-bad-{}.ting", std::process::id()));
+    // exit(7) proves --check never executes the program.
+    std::fs::write(&good, "exit(7);\n").unwrap();
+    std::fs::write(&bad, "let = 3;\n").unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", good.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "clean file, not executed");
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", good.to_str().unwrap(), bad.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1), "bad file fails the batch");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("expected variable name"), "got: {stderr}");
+
+    let _ = std::fs::remove_file(&good);
+    let _ = std::fs::remove_file(&bad);
+}
