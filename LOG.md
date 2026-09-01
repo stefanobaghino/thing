@@ -272,3 +272,29 @@ Decisions:
 - `keys` returns sorted keys for free via the BTreeMap decision.
 - Skipped `input()`/file I/O for now: the Interpreter would need a
   reader handle; deferred until after the REPL exists.
+
+---
+
+## 2026-09-01 — Iteration 10: REPL
+
+Added `src/repl.rs`; `ting` with no arguments now starts an interactive
+session. 8 new tests; suite is now 102.
+
+Decisions:
+- **The core is a pure, testable function** `eval_chunk(interp, src)` →
+  Incomplete | Unit | Value(string) | Error(string); the I/O loop around
+  it is thin. All REPL behavior is unit-tested without a TTY.
+- **Expression echo**: a chunk that parses as a single expression is
+  evaluated and echoed (strings quoted); nil results stay silent.
+  Otherwise the chunk runs as statements.
+- **Multi-line input**: a parse error at end-of-input first retries with
+  `;` appended (so `let x = 1` just works), else prints a `.. `
+  continuation prompt. An empty line cancels the pending buffer.
+- **Pipe-friendly**: prompts and the banner appear only when stdin is a
+  TTY (`IsTerminal`), so `echo 'expr' | ting` emits clean output.
+- **No line editing** — std-only rules out readline; the terminal's
+  cooked mode provides basics. Documented trade-off, not an oversight
+  (backlog originally said "line editing"; scoped down to honor the
+  zero-dependency decision, which wins).
+- Session state persists across chunks (one Interpreter for the whole
+  session); errors leave the session usable.

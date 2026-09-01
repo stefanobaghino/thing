@@ -101,6 +101,13 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
+    /// Consume the interpreter, handing back its output writer (used by
+    /// tests to inspect what a session printed).
+    #[cfg(test)]
+    pub fn into_out(self) -> W {
+        self.out
+    }
+
     pub fn run(&mut self, stmts: &[Stmt]) -> Result<(), RuntimeError> {
         match self.run_block(stmts)? {
             Control::Normal => Ok(()),

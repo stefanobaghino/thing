@@ -21,9 +21,7 @@ pub fn parse_program(tokens: &[Token]) -> Result<Vec<Stmt>, ParseError> {
 }
 
 /// Parse a complete expression; every token before Eof must be consumed.
-/// Currently exercised only by tests; the REPL will use it for echoing
-/// expression results.
-#[cfg(test)]
+/// Used by the REPL to echo expression results.
 pub fn parse_expr(tokens: &[Token]) -> Result<Expr, ParseError> {
     let mut p = Parser { tokens, pos: 0 };
     let expr = p.expr_bp(0)?;

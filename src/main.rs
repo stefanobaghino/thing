@@ -2,6 +2,7 @@ mod ast;
 mod eval;
 mod lexer;
 mod parser;
+mod repl;
 mod value;
 
 use std::process::ExitCode;
@@ -9,10 +10,7 @@ use std::process::ExitCode;
 fn main() -> ExitCode {
     let args: Vec<String> = std::env::args().collect();
     match args.as_slice() {
-        [_] => {
-            eprintln!("ting: REPL not implemented yet; usage: ting <script>");
-            ExitCode::FAILURE
-        }
+        [_] => repl::run(),
         [_, path] => run_file(path),
         _ => {
             eprintln!("usage: ting [script]");

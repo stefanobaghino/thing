@@ -17,12 +17,11 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. REPL with line editing (std-only; no deps).
-2. Diagnostics: spans in error messages, source excerpts.
-3. Example programs under `examples/`, run as integration tests.
-4. Language reference in `docs/`.
-5. GitHub Actions CI (build + test on push).
-6. Tagged release with prebuilt binaries.
+1. Diagnostics: spans in error messages, source excerpts.
+2. Example programs under `examples/`, run as integration tests.
+3. Language reference in `docs/`.
+4. GitHub Actions CI (build + test on push).
+5. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -48,6 +47,8 @@ release binaries on GitHub.
   nested; lists/maps now reference types (Rc<RefCell>); 10 tests.
 - Builtins as first-class values: print, len, push, pop, keys, has,
   str, int, float, type, range; 7 tests.
+- REPL (`src/repl.rs`): expression echo, multi-line continuation,
+  auto-semicolon, pipe-friendly, persistent session; 8 tests.
 
 ## Blockers
 
