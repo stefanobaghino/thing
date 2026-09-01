@@ -20,9 +20,7 @@ release binaries on GitHub.
 Milestone **v0.7.0 — developer experience** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Docs on Pages: tools/md2html.py (stdlib only) renders docs/ +
-   README into the site; pages.yml wires it in; playground links docs.
-2. Release v0.7.0.
+1. Verify docs live on Pages, then release v0.7.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -122,6 +120,8 @@ green.
   test; 146 tests.
 - Playground syntax highlighting (overlay + regex tokenizer);
   Playwright-verified alignment and live update.
+- Docs rendered to Pages (tools/md2html.py, nav-linked from the
+  playground); local render verified.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
