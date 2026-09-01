@@ -20,16 +20,13 @@ release binaries on GitHub.
 Milestone **v0.6.0 — performance + polish** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Benchmark harness: bench/*.ting scripts (fib, string churn, map
-   churn, sort) + a runner that times the release binary and writes
-   bench/BASELINE.md; not part of CI's pass/fail.
-2. Interpreter optimization, measured: profile the benchmarks, pick
+1. Interpreter optimization, measured: profile the benchmarks, pick
    the top cost (candidates: env lookup, per-call allocs, Value clone
    traffic), optimize, show before/after in LOG.md.
-3. Playground share-by-URL: encode the editor source in the location
+2. Playground share-by-URL: encode the editor source in the location
    fragment on demand; load it on open. Still fully static.
-4. Tutorial: a modules section (import, exports map, caching).
-5. Release v0.6.0.
+3. Tutorial: a modules section (import, exports map, caching).
+4. Release v0.6.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -113,6 +110,8 @@ green.
 - v0.5.0 RELEASED and verified: 3 assets; darwin binary ran a
   two-file import/map/reduce program correctly.
   https://github.com/stefanobaghino/thing/releases/tag/v0.5.0
+- Benchmark harness (bench/ + run.py + BASELINE.md: fib 295ms, lists
+  101ms, maps 112ms, strings 54ms on the dev machine).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
