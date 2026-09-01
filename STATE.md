@@ -240,6 +240,8 @@ green.
   updated) — accumulating toward v2.2.0.
 - Tutorial "Working with JSON" section (snippets CI-tested).
 - ting --check: static verification CLI (lex/parse/compile only).
+- v2.2.0 tagged (json_str pretty + --check + tutorial JSON);
+  release run in flight — verify assets next tick.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
