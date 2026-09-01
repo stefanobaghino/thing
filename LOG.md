@@ -765,3 +765,13 @@ is more ting-like than magic bindings. selftest gains modules.ting +
 _lib.ting (self-hosted import tests); a Rust test covers nested
 imports, cycles, and module diagnostics. 37 builtins; suite at 145
 (+7 ting programs).
+
+---
+
+## 2026-09-01 — Iteration 34: v0.5.0 released
+
+Milestone complete; version bumped, tag v0.5.0 pushed. v0.5.0 over
+v0.4.0, "expressiveness": map/filter/reduce/min/max/abs, assert + the
+self-hosted selftest/ suite (7 ting programs now), and import()
+modules. 37 builtins, 145 host tests. Asset verification follows when
+the release workflow finishes.
