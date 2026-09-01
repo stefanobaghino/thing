@@ -589,3 +589,23 @@ upper/lower/slice), script I/O (args/input/read_file/write_file with
 argv forwarding), stable sort/sort_by, try/fail error recovery, and an
 executable tutorial. 29 builtins, 131 tests. Verification of the
 release assets follows when the workflow finishes.
+
+**v0.3.0 verified:** release workflow green; all three assets present;
+downloaded the darwin binary, ran fizzbuzz and a smoke test exercising
+the new builtins (`try`/`slice`/`upper`) — correct output.
+
+---
+
+## 2026-09-01 — Replenishment: v0.4.0 milestone
+
+Backlog was empty, so per LOOP.md "No idle" this iteration designs the
+next milestone. Candidates weighed: WASM playground (high reach, keeps
+the no-service rule — a static page anyone can open or self-host),
+fuzz-style robustness testing (cheap, catches panics), bytecode VM
+(large internal rewrite, little visible value now — parked). Chosen:
+**v0.4.0 — ting in the browser + robustness**. The interesting
+constraint is keeping the zero-dependency claim: no wasm-bindgen —
+instead a cdylib with a small hand-rolled extern "C" ABI (alloc/run
+returning UTF-8 in wasm memory), which a dozen lines of JS can call.
+Step 1 is extracting a lib.rs so the interpreter is linkable from both
+the binary and the wasm cdylib.
