@@ -1685,3 +1685,12 @@ preloaded and auto-runs (13 links on the tutorial page; decode of the
 first verified to match its snippet). And the CLI finally has
 `--version` and `--help` (usage covering REPL/script/engines/fmt/
 lsp). All 14 suites green. v1.7.0's last task is the release.
+
+---
+
+## 2026-09-01 — Iteration 100: v1.7.0 released
+
+Run-links live-verified on the deployed tutorial (13 on the page).
+Version bumped, CHANGELOG updated, tag pushed. v1.7.0 over v1.6.0:
+docs run-links and --version/--help. One hundred logged iterations.
+Asset verification when the workflow finishes.

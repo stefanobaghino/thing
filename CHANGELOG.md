@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.7.0 — finishing touches (2026-09-01)
+
+- Every ting snippet on the docs site now carries a "run it in the
+  playground" link that opens it preloaded and running.
+- `ting --version` and `ting --help`.
+
 ## v1.6.0 — a formatter (2026-09-01)
 
 - `ting --fmt` / `ting --fmt-check`: a canonical formatter that
