@@ -428,3 +428,27 @@ Decisions:
   consistent with `+`.
 - `trim` included beyond the original stretch note: trivial and pairs
   naturally with `split` for input handling.
+
+---
+
+## 2026-09-01 — Iteration 17: for-in, break, continue (stretch)
+
+Added `for x in iterable { ... }`, `break`, and `continue` (new keywords
+`for`/`in`/`break`/`continue`). 8 new tests; suite is now 118. The
+collections example now reads idiomatically (split + two for loops) and
+its golden file was regenerated; the reference documents the semantics.
+
+Design decisions:
+- **Iteration targets**: lists (elements), strings (chars), maps (keys,
+  sorted). Anything else errors.
+- **Snapshot semantics**: the iterable is copied shallowly at loop
+  entry, so the body can safely mutate the underlying list/map (tested:
+  pushing while iterating terminates).
+- **Per-iteration binding**: each iteration gets a fresh scope for the
+  loop variable, so closures capture that iteration's value (tested:
+  three closures print 0 1 2, not 2 2 2 — avoids the classic JS `var`
+  trap).
+- **`break`/`continue` ride the existing `Control` enum** (the payoff
+  predicted in iteration 7). They stop at the innermost loop, error at
+  top level, and error when escaping a function boundary (tested).
+- CI green on the split/join/trim commit confirmed before starting.

@@ -88,14 +88,24 @@ xs[0] = 9;          # write a list slot / insert or update a map key
 { let y = 1; }      # block: introduces a scope; y does not leak
 if c { } else if d { } else { }
 while c { }
+for x in xs { }     # iterate a list, a string (chars), or a map (keys)
+break;              # exit the innermost loop
+continue;           # next iteration of the innermost loop
 fn add(a, b) { return a + b; }
 return expr;        # only inside a function; bare `return;` yields nil
 expr;               # expression statement (e.g. a call)
 ```
 
-`if`/`while` require braces and take no parentheses around the
+`if`/`while`/`for` require braces and take no parentheses around the
 condition. Assignment is a statement, not an expression (`a = b = c` and
 `1 = 2` are parse errors).
+
+`for` iterates over a **snapshot** taken when the loop starts, so the
+body may mutate the list or map it is iterating. Map iteration visits
+keys in sorted order. The loop variable is a fresh binding each
+iteration, so closures created in the body capture that iteration's
+value. `break`/`continue` apply to the innermost `while`/`for` and may
+not cross a function boundary.
 
 ## Functions
 

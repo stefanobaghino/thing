@@ -68,10 +68,12 @@ pub struct Function {
     pub env: Rc<RefCell<Env>>,
 }
 
-/// How a statement finished: fell through, or hit `return`.
+/// How a statement finished: fell through, or hit a non-local exit.
 enum Control {
     Normal,
     Return(Value, Span),
+    Break(Span),
+    Continue(Span),
 }
 
 /// Call-depth cap; ting recursion consumes the host stack, so trap it
@@ -112,6 +114,8 @@ impl<W: Write> Interpreter<W> {
         match self.run_block(stmts)? {
             Control::Normal => Ok(()),
             Control::Return(_, span) => Err(error("return outside function", span)),
+            Control::Break(span) => Err(error("break outside loop", span)),
+            Control::Continue(span) => Err(error("continue outside loop", span)),
         }
     }
 
@@ -191,12 +195,45 @@ impl<W: Write> Interpreter<W> {
             StmtKind::While(cond, body) => {
                 while as_bool(self.eval(cond)?, cond.span)? {
                     match self.exec(body)? {
-                        Control::Normal => {}
-                        ret => return Ok(ret),
+                        Control::Normal | Control::Continue(_) => {}
+                        Control::Break(_) => break,
+                        ret @ Control::Return(..) => return Ok(ret),
                     }
                 }
                 Ok(Control::Normal)
             }
+            StmtKind::For(var, iterable, body) => {
+                let items: Vec<Value> = match self.eval(iterable)? {
+                    // Iterate a snapshot, so the body may mutate the
+                    // original list/map safely.
+                    Value::List(l) => l.borrow().clone(),
+                    Value::Str(s) => s.chars().map(|c| Value::Str(c.to_string())).collect(),
+                    Value::Map(m) => m.borrow().keys().cloned().map(Value::Str).collect(),
+                    v => {
+                        return Err(error(
+                            format!("cannot iterate over {}", v.type_name()),
+                            iterable.span,
+                        ));
+                    }
+                };
+                for item in items {
+                    // A fresh scope per iteration: closures made in the
+                    // body capture that iteration's binding.
+                    let saved = Rc::clone(&self.env);
+                    self.env = Env::child(&saved);
+                    self.env.borrow_mut().vars.insert(var.clone(), item);
+                    let result = self.exec(body);
+                    self.env = saved;
+                    match result? {
+                        Control::Normal | Control::Continue(_) => {}
+                        Control::Break(_) => break,
+                        ret @ Control::Return(..) => return Ok(ret),
+                    }
+                }
+                Ok(Control::Normal)
+            }
+            StmtKind::Break => Ok(Control::Break(stmt.span)),
+            StmtKind::Continue => Ok(Control::Continue(stmt.span)),
             StmtKind::Return(value) => {
                 let v = match value {
                     Some(e) => self.eval(e)?,
@@ -461,6 +498,8 @@ impl<W: Write> Interpreter<W> {
         match result? {
             Control::Return(v, _) => Ok(v),
             Control::Normal => Ok(Value::Nil),
+            Control::Break(span) => Err(error("break outside loop", span)),
+            Control::Continue(span) => Err(error("continue outside loop", span)),
         }
     }
 
@@ -910,6 +949,81 @@ mod tests {
         assert_eq!(
             output("{ let len = 5; print(len); } print(len(\"ab\"));"),
             "5\n2\n"
+        );
+    }
+
+    #[test]
+    fn for_iterates_lists_strings_maps() {
+        assert_eq!(output("for x in [1, 2, 3] { print(x); }"), "1\n2\n3\n");
+        assert_eq!(output("for c in \"héj\" { print(c); }"), "h\né\nj\n");
+        assert_eq!(
+            output("for k in {\"b\": 2, \"a\": 1} { print(k); }"),
+            "a\nb\n"
+        );
+        assert_eq!(output("for x in [] { print(x); }"), "");
+        assert_eq!(program_err("for x in 5 { }"), "cannot iterate over int");
+    }
+
+    #[test]
+    fn break_and_continue() {
+        assert_eq!(
+            output("for x in range(10) { if x == 3 { break; } print(x); }"),
+            "0\n1\n2\n"
+        );
+        assert_eq!(
+            output("for x in range(5) { if x % 2 == 0 { continue; } print(x); }"),
+            "1\n3\n"
+        );
+        assert_eq!(
+            output("let i = 0; while true { i = i + 1; if i == 2 { break; } } print(i);"),
+            "2\n"
+        );
+    }
+
+    #[test]
+    fn break_only_exits_innermost_loop() {
+        assert_eq!(
+            output("for a in range(2) { for b in range(9) { if b == 1 { break; } } print(a); }"),
+            "0\n1\n"
+        );
+    }
+
+    #[test]
+    fn return_escapes_a_for_loop() {
+        assert_eq!(
+            output(
+                "fn find(xs, want) { for x in xs { if x == want { return true; } } return false; } print(find([1, 2], 2), find([1], 9));"
+            ),
+            "true false\n"
+        );
+    }
+
+    #[test]
+    fn break_continue_outside_loop_error() {
+        assert_eq!(program_err("break;"), "break outside loop");
+        assert_eq!(program_err("continue;"), "continue outside loop");
+        assert_eq!(
+            program_err("for x in [1] { let f = fn() { break; }; f(); }"),
+            "break outside loop"
+        );
+    }
+
+    #[test]
+    fn for_iterates_a_snapshot() {
+        assert_eq!(
+            output("let xs = [1, 2]; for x in xs { push(xs, x); } print(xs);"),
+            "[1, 2, 1, 2]\n"
+        );
+    }
+
+    #[test]
+    fn loop_variable_is_per_iteration() {
+        assert_eq!(
+            output(
+                "let fs = []; for x in range(3) { push(fs, fn() { return x; }); } \
+                 print(fs[0](), fs[1](), fs[2]());"
+            ),
+            "0 1 2\n"
         );
     }
 

@@ -1,22 +1,16 @@
-# Lists, maps, and the container builtins.
-let words = ["the", "cat", "sat", "on", "the", "mat", "the", "end"];
+# Lists, maps, for-in, and the container builtins.
+let words = split("the cat sat on the mat the end", " ");
 
 let counts = {};
-let i = 0;
-while i < len(words) {
-  let w = words[i];
+for w in words {
   if has(counts, w) {
     counts[w] = counts[w] + 1;
   } else {
     counts[w] = 1;
   }
-  i = i + 1;
 }
 
-# keys() is always sorted, so this output is deterministic.
-let ks = keys(counts);
-let j = 0;
-while j < len(ks) {
-  print(ks[j], counts[ks[j]]);
-  j = j + 1;
+# Map iteration visits keys in sorted order, so this is deterministic.
+for k in counts {
+  print(k, counts[k]);
 }

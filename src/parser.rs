@@ -187,6 +187,46 @@ impl<'a> Parser<'a> {
                     span: Span::new(start, end),
                 })
             }
+            TokenKind::For => {
+                self.advance();
+                let var = match self.peek().clone() {
+                    TokenKind::Ident(name) => {
+                        self.advance();
+                        name
+                    }
+                    k => {
+                        return Err(
+                            self.error(format!("expected loop variable, found {}", describe(&k)))
+                        );
+                    }
+                };
+                self.expect(&TokenKind::In, "'in'")?;
+                let iterable = self.expr_bp(0)?;
+                let body = self.block_stmt("after 'for' iterable")?;
+                let end = body.span.end;
+                Ok(Stmt {
+                    kind: StmtKind::For(var, iterable, Box::new(body)),
+                    span: Span::new(start, end),
+                })
+            }
+            TokenKind::Break => {
+                self.advance();
+                let end = self.span().end;
+                self.expect(&TokenKind::Semi, "';'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Break,
+                    span: Span::new(start, end),
+                })
+            }
+            TokenKind::Continue => {
+                self.advance();
+                let end = self.span().end;
+                self.expect(&TokenKind::Semi, "';'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Continue,
+                    span: Span::new(start, end),
+                })
+            }
             _ => {
                 let expr = self.expr_bp(0)?;
                 // Assignment targets: a bare variable or an index expression.
@@ -463,6 +503,10 @@ fn describe(kind: &TokenKind) -> String {
                 TokenKind::If => "if",
                 TokenKind::Else => "else",
                 TokenKind::While => "while",
+                TokenKind::For => "for",
+                TokenKind::In => "in",
+                TokenKind::Break => "break",
+                TokenKind::Continue => "continue",
                 TokenKind::Return => "return",
                 TokenKind::True => "true",
                 TokenKind::False => "false",
@@ -682,6 +726,27 @@ mod tests {
             program("m[\"a\"][\"b\"] = 2;"),
             "(=[] (index m \"a\") \"b\" 2)"
         );
+    }
+
+    #[test]
+    fn for_break_continue_statements() {
+        assert_eq!(
+            program("for x in xs { if x == 0 { continue; } break; }"),
+            "(for x xs (block (if (== x 0) (block (continue))) (break)))"
+        );
+        assert_eq!(
+            program_err("for 1 in xs { }"),
+            "expected loop variable, found integer '1'"
+        );
+        assert_eq!(
+            program_err("for x xs { }"),
+            "expected 'in', found identifier 'xs'"
+        );
+        assert_eq!(
+            program_err("for x in xs 1;"),
+            "expected '{' after 'for' iterable, found integer '1'"
+        );
+        assert_eq!(program_err("break"), "expected ';', found end of input");
     }
 
     #[test]

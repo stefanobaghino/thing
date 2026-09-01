@@ -26,6 +26,10 @@ pub enum StmtKind {
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     /// `while cond { ... }`
     While(Expr, Box<Stmt>),
+    /// `for x in iterable { ... }` — iterates a snapshot of the iterable.
+    For(String, Expr, Box<Stmt>),
+    Break,
+    Continue,
     /// `return;` or `return expr;`
     Return(Option<Expr>),
 }
@@ -47,6 +51,9 @@ impl fmt::Display for Stmt {
             StmtKind::If(cond, then, None) => write!(f, "(if {cond} {then})"),
             StmtKind::If(cond, then, Some(els)) => write!(f, "(if {cond} {then} {els})"),
             StmtKind::While(cond, body) => write!(f, "(while {cond} {body})"),
+            StmtKind::For(var, iterable, body) => write!(f, "(for {var} {iterable} {body})"),
+            StmtKind::Break => f.write_str("(break)"),
+            StmtKind::Continue => f.write_str("(continue)"),
             StmtKind::Return(None) => f.write_str("(return)"),
             StmtKind::Return(Some(e)) => write!(f, "(return {e})"),
         }
