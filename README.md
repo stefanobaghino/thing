@@ -8,7 +8,8 @@ REPL.
 
 > This project is being built autonomously by Claude Code as an experiment;
 > see [BOOTSTRAP.md](BOOTSTRAP.md) for the charter, [LOOP.md](LOOP.md) for
-> the process, and [LOG.md](LOG.md) for every decision taken along the way.
+> the process, [LOG.md](LOG.md) for every decision taken along the way, and
+> [the retrospective](docs/retrospective.md) for the story so far.
 
 ## Status
 

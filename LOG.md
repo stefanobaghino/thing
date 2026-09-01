@@ -1427,3 +1427,16 @@ hoverProvider capability advertised. Test additions: hover over a
 keyword → null; hover over print → signature + markdown; the old
 MethodNotFound probe moved to textDocument/definition since hover is
 now real. Suite green.
+
+---
+
+## 2026-09-01 — Iteration 70: the retrospective
+
+docs/retrospective.md — the experiment's story, written for the human
+whose curiosity started it: the three-file loop, what got built, and
+what the log preserves that a changelog wouldn't (the three-attempt VM
+arc with its honest "not faster" verdicts, the bugs the harnesses
+caught, the scope-discipline episodes, the failed ideas kept on record
+so they aren't retried). Linked from the README banner, added to the
+site nav as "story", rendered by pages.yml. Every claim in it is
+traceable to a LOG.md entry.
