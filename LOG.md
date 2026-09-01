@@ -470,3 +470,7 @@ builtins, for-in loops with break/continue, REPL caret diagnostics.
 Backlog after this: idle maintenance. The loop will slow its cadence and
 look for external signals (issues, PRs) rather than inventing features —
 scope discipline is part of the experiment.
+
+**v0.2.0 verified:** CI and release workflows green; all three platform
+assets present on the release. The loop now enters idle maintenance at a
+slow cadence.
