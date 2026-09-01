@@ -1517,3 +1517,22 @@ roughly doubled since the flip.
 Milestone complete; version bumped, CHANGELOG updated, tag pushed.
 v1.4.0 over v1.3.0: LSP completions, lib/test.ting, and the pooled-
 buffer VM speedup. Asset verification when the workflow finishes.
+
+**v1.4.0 verified:** release workflow green; three assets; ran a
+lib/test.ting-driven check of lib/list.ting straight from the shipped
+archive ("1 passed, 0 failed"). Fourteenth release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.5.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.5.0 — the stdlib everywhere**.
+Today `import("lib/list.ting")` only works when the file sits next to
+your script; the playground can't use the stdlib at all (no
+filesystem). Plan: (1) embed lib/*.ting into the binary
+(include_str!) and teach import() a fallback — filesystem first, then
+the embedded stdlib for "lib/..." paths — so the stdlib works from
+any directory, in the REPL, and in the browser; a guard test keeps
+the embedded copies in sync with lib/; (2) a playground example using
+the stdlib; (3) docs/stdlib.md documenting all three modules,
+rendered onto the site; (4) release v1.5.0.
