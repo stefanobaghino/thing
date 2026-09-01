@@ -236,6 +236,23 @@ let r = try(fn() { return int(input()); });
 if has(r, "err") { print("not a number:", r["err"]); }
 ```
 
+## Tooling
+
+The `ting` binary is the whole toolchain — no separate installs:
+
+- `ting --fmt <files...>` reformats in place; `--fmt-check` exits 1
+  if anything would change (use it in CI). The formatter is
+  idempotent and never alters program meaning.
+- `ting --check <files...>` reports lexer, parser, and compiler
+  diagnostics without running anything — built for pre-commit hooks.
+- `ting --lsp` speaks the Language Server Protocol on stdio:
+  diagnostics as you type, hover docs for every builtin, completion,
+  whole-document formatting, an outline of top-level bindings
+  (document symbols), and go-to-definition for them.
+
+Point your editor's generic LSP client at `ting --lsp`; a TextMate
+grammar for syntax highlighting ships in the repo under `editor/`.
+
 ## Stability
 
 As of 2.0, the language described on this page is stable: programs

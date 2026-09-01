@@ -2002,3 +2002,13 @@ doesn't parse. The MethodNotFound probe in tests moved from
 definition (now real) to textDocument/references. Pipe test covers
 the hit, the miss (result:null), and the advertised capability.
 14/14 suites.
+
+---
+
+## 2026-09-01 — Iteration 138: reference Tooling section
+
+Docs stroke: the reference never described the toolchain. New
+"Tooling" section before Stability covers --fmt/--fmt-check,
+--check, and the six LSP capabilities, plus the TextMate grammar
+(corrected mid-draft: it lives in editor/, not syntax/). 14/14
+suites; Pages will re-render on push.
