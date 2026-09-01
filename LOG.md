@@ -1237,3 +1237,25 @@ byte-identical engines, a live playground and docs site, editor
 support, benchmarks, fuzzing, 159 host tests plus the self-hosted
 suite — all zero-dependency, all reproducible by anyone with a Rust
 toolchain. Asset verification when the release workflow finishes.
+
+**v1.0.0 verified:** release workflow green; three assets; the entire
+selftest suite passes on the shipped darwin binary under BOTH engines.
+Tenth release — 1.0.
+
+---
+
+## 2026-09-01 — Replenishment: v1.1.0 milestone
+
+Per LOOP.md "No idle". docs/vm.md's verdict named the two levers that
+could make the VM earn its keep; post-1.0 is the right time to pull
+them, still measured and still behind the flag. **v1.1.0 — the VM
+earns its keep (or proves it can't)**: (1) compile function bodies —
+real VM call frames instead of the tree-walking hybrid; closures keep
+Env capture; the entire differential apparatus (corpus, generated
+programs, selftests, TING_ENGINE=vm CI job) guards every step; (2)
+re-benchmark; (3) if still not clearly faster, resolve locals to
+stack slots and re-benchmark again; (4) flip the default ONLY if the
+numbers say so — either way the verdict lands in docs/vm.md; (5)
+release v1.1.0. The rule from v0.9 stands: an honest "still not
+faster" is an acceptable outcome; deleting the VM would also be a
+legitimate conclusion if the added complexity buys nothing.
