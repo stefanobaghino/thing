@@ -1919,3 +1919,7 @@ The first post-2.0 accumulation ships: the deep numeric-equality fix
 (the headline — a real spec-conformance bug), the edge selftest suite
 that caught it, and the playground calc example. Asset verification
 when the workflow finishes.
+
+**v2.1.0 verified:** release workflow green; three assets; the
+equality fix confirmed in the shipped binary on both engines.
+Twenty-first release.
