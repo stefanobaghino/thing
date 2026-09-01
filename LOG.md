@@ -576,3 +576,16 @@ snippets are standalone (the wordfreq one falls back to a built-in
 sample when no file argument is given, so it runs deterministically
 everywhere). README now leads with the tutorial and reflects 29
 builtins. Suite at 131.
+
+---
+
+## 2026-09-01 — Iteration 24: v0.3.0 released
+
+CI green on the tutorial commit closed out the milestone; version
+bumped and tag v0.3.0 pushed — the release workflow builds the three
+platform binaries. v0.3.0 over v0.2.0, "ting as a practical scripting
+tool": string builtins batch 2 (contains/replace/starts_with/ends_with/
+upper/lower/slice), script I/O (args/input/read_file/write_file with
+argv forwarding), stable sort/sort_by, try/fail error recovery, and an
+executable tutorial. 29 builtins, 131 tests. Verification of the
+release assets follows when the workflow finishes.
