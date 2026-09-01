@@ -621,3 +621,21 @@ strings; `src/main.rs` shrank to argv handling, the big-stack thread,
 and printing. The wasm cdylib (next task) will call `run_source` with a
 Vec<u8> writer. 2 lib tests; suite at 133. Unit tests moved with their
 modules untouched.
+
+---
+
+## 2026-09-01 — Iteration 26: wasm cdylib, no wasm-bindgen
+
+`src/wasm.rs`: a five-function extern "C" ABI (ting_alloc/ting_dealloc/
+ting_run/ting_result_ptr/ting_result_len); the result buffer lives in a
+thread-local and is valid until the next run — wasm is single-threaded,
+so that is effectively a global. On error the rendered caret diagnostic
+is appended after whatever the program printed. The module is plain
+Rust compiled on every target, so the host suite tests the ABI exactly
+as the JS glue will drive it (3 tests). Cargo grows `crate-type =
+["rlib", "cdylib"]`; the wasm build is `cargo build --release --lib
+--target wasm32-unknown-unknown` (--lib avoids a bin/lib ting.wasm
+filename collision). Verified beyond compilation: instantiated the
+294KB ting.wasm in Node and ran three programs through the raw ABI —
+loops+builtins, a caret diagnostic, fib(20) — all correct. Suite at
+136.

@@ -8,6 +8,7 @@ pub mod lexer;
 pub mod parser;
 pub mod repl;
 pub mod value;
+pub mod wasm;
 
 use std::io::Write;
 
