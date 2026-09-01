@@ -202,6 +202,12 @@ it is visible everywhere). Circular imports, missing files, and errors
 inside the module are ordinary runtime errors (the message carries the
 module's own line and column).
 
+The standard library (`lib/list.ting`, `lib/string.ting`,
+`lib/test.ting`) is also embedded in the binary: when an imported
+`lib/...` path has no matching file, the built-in copy is used — so
+`import("lib/list.ting")` works from any directory, in the REPL, and
+in the browser playground. A real file with that path always wins.
+
 ## Errors
 
 An unhandled runtime error stops the program with a diagnostic pointing

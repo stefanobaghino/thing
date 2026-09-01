@@ -49,9 +49,11 @@ fn exercise(src: &str) {
         return;
     };
     // `while` is the only unbounded construct (for iterates snapshots,
-    // recursion hits the depth cap), and `exit` would terminate the
-    // test process itself — programs mentioning either only get parsed.
-    if !src.contains("while") && !src.contains("exit") {
+    // recursion hits the depth cap); `exit` would terminate the test
+    // process itself, and `import` can reach exit (or the filesystem)
+    // through the imported module — programs mentioning any of these
+    // only get parsed.
+    if !src.contains("while") && !src.contains("exit") && !src.contains("import") {
         let mut interp = ting::eval::Interpreter::new(std::io::sink());
         let _ = interp.run(&program);
     }

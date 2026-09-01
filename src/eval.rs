@@ -106,6 +106,15 @@ pub struct Interpreter<W: Write> {
     importing: Vec<std::path::PathBuf>,
 }
 
+/// The standard library, baked into the binary at build time (always
+/// in sync with lib/ by construction). import() falls back to these
+/// when no matching file exists.
+const EMBEDDED_STDLIB: &[(&str, &str)] = &[
+    ("lib/list.ting", include_str!("../lib/list.ting")),
+    ("lib/string.ting", include_str!("../lib/string.ting")),
+    ("lib/test.ting", include_str!("../lib/test.ting")),
+];
+
 fn global_env() -> Rc<RefCell<Env>> {
     let mut globals = HashMap::new();
     for b in Builtin::ALL {
@@ -1051,15 +1060,34 @@ impl<W: Write> Interpreter<W> {
         } else {
             base.join(path)
         };
-        let resolved = raw.canonicalize().unwrap_or(raw);
+        let mut resolved = raw.canonicalize().unwrap_or(raw);
         if let Some(cached) = self.import_cache.get(&resolved) {
             return Ok(cached.clone());
         }
         if self.importing.contains(&resolved) {
             return Err(error(format!("circular import of {path:?}"), span));
         }
-        let src = std::fs::read_to_string(&resolved)
-            .map_err(|e| error(format!("cannot import {path:?}: {e}"), span))?;
+        // Filesystem first; a "lib/<name>.ting" path that has no file
+        // falls back to the stdlib embedded in the binary, so the
+        // standard library works from any directory, in the REPL, and
+        // in the wasm playground.
+        let src = match std::fs::read_to_string(&resolved) {
+            Ok(src) => src,
+            Err(e) => {
+                let key = path.trim_start_matches("./");
+                let hit = EMBEDDED_STDLIB
+                    .iter()
+                    .find(|(name, _)| key == *name || key.ends_with(&format!("/{name}")));
+                let Some((name, embedded)) = hit else {
+                    return Err(error(format!("cannot import {path:?}: {e}"), span));
+                };
+                resolved = std::path::PathBuf::from(format!("<embedded>/{name}"));
+                if let Some(cached) = self.import_cache.get(&resolved) {
+                    return Ok(cached.clone());
+                }
+                embedded.to_string()
+            }
+        };
         let in_module = |m: &str, s: Span, src: &str| {
             let (line, col) = s.line_col(src);
             error(
@@ -1900,6 +1928,41 @@ mod tests {
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
         );
+    }
+
+    #[test]
+    fn builtin_import_embedded_stdlib() {
+        use crate::parser::parse_program;
+        let empty = std::env::temp_dir().join(format!("ting-embed-{}", std::process::id()));
+        std::fs::create_dir_all(&empty).unwrap();
+
+        // No lib/ anywhere near the base dir: the embedded copy serves.
+        let mut interp = Interpreter::new(Vec::new());
+        interp.set_base_dir(empty.clone());
+        interp
+            .run(
+                &parse_program(
+                    &lex("let l = import(\"lib/list.ting\"); print(l[\"sum\"]([1, 2, 3]));")
+                        .unwrap(),
+                )
+                .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(String::from_utf8(interp.into_out()).unwrap(), "6\n");
+
+        // A real file with the same path wins over the embedded copy.
+        std::fs::create_dir_all(empty.join("lib")).unwrap();
+        std::fs::write(empty.join("lib/list.ting"), "let marker = \"fs\";\n").unwrap();
+        let mut interp = Interpreter::new(Vec::new());
+        interp.set_base_dir(empty.clone());
+        interp
+            .run(
+                &parse_program(&lex("print(import(\"lib/list.ting\")[\"marker\"]);").unwrap())
+                    .unwrap(),
+            )
+            .unwrap();
+        assert_eq!(String::from_utf8(interp.into_out()).unwrap(), "fs\n");
+        let _ = std::fs::remove_dir_all(&empty);
     }
 
     #[test]

@@ -1536,3 +1536,18 @@ any directory, in the REPL, and in the browser; a guard test keeps
 the embedded copies in sync with lib/; (2) a playground example using
 the stdlib; (3) docs/stdlib.md documenting all three modules,
 rendered onto the site; (4) release v1.5.0.
+
+---
+
+## 2026-09-01 — Iteration 82: the stdlib rides in the binary
+
+lib/*.ting are now embedded via include_str! (in sync with the files
+by construction) and import() gained a documented fallback:
+filesystem first, then the embedded copy for lib/... paths — so
+`import("lib/list.ting")` works from any directory, in the REPL, and
+(next iteration, verified) in the wasm playground. Unit test covers
+both the fallback and filesystem precedence. The change also smoked
+out a fuzz-harness gap: a mutant of examples/testing.ting reached
+exit(1) *through the imported test framework*, invisible to the
+source-string "exit" check — importing mutants are now parse-only.
+Reference updated; suite at 161 (13 suites).
