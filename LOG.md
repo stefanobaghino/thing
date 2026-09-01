@@ -1551,3 +1551,14 @@ out a fuzz-harness gap: a mutant of examples/testing.ting reached
 exit(1) *through the imported test framework*, invisible to the
 source-string "exit" check — importing mutants are now parse-only.
 Reference updated; suite at 161 (13 suites).
+
+---
+
+## 2026-09-01 — Iteration 84: stdlib in the playground
+
+New "stdlib" playground example importing lib/list.ting and
+lib/string.ting — which now works in the browser because the embedded
+fallback resolves inside wasm where there is no filesystem.
+Playwright-verified locally: reverse/sum/pad_left/title all correct
+([5,4,3,2,1] / "0015" / "The Ting Standard Library"). Deploys via the
+playground path filter.

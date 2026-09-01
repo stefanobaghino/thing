@@ -128,6 +128,15 @@ print(squares);
 print("sum:", reduce(squares, 0, fn(a, n) { return a + n; }));
 print("min/max:", min(squares), max(squares));
 `,
+  "stdlib": `# The standard library is embedded in the interpreter.
+let l = import("lib/list.ting");
+let s = import("lib/string.ting");
+
+let ns = l["reverse"](range(1, 6));
+print(ns);
+print("sum, padded:", s["pad_left"](str(l["sum"](ns)), 4, "0"));
+print(s["title"]("the ting standard library"));
+`,
   "error recovery": `fn risky(s) {
   let n = int(s);          # errors on non-numeric input
   if n < 0 { fail("no negatives, please"); }
