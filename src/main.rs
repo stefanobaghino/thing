@@ -29,21 +29,17 @@ fn run_file(path: &str) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    // Until statements land, running a file evaluates it as a single
-    // expression and prints the result.
     let tokens = match lexer::lex(&src) {
         Ok(tokens) => tokens,
         Err(e) => return report(path, &src, &e.message, e.span),
     };
-    let expr = match parser::parse_expr(&tokens) {
-        Ok(expr) => expr,
+    let program = match parser::parse_program(&tokens) {
+        Ok(program) => program,
         Err(e) => return report(path, &src, &e.message, e.span),
     };
-    match eval::eval(&expr) {
-        Ok(v) => {
-            println!("{v}");
-            ExitCode::SUCCESS
-        }
+    let mut interp = eval::Interpreter::new(std::io::stdout().lock());
+    match interp.run(&program) {
+        Ok(()) => ExitCode::SUCCESS,
         Err(e) => report(path, &src, &e.message, e.span),
     }
 }

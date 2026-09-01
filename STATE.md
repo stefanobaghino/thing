@@ -17,17 +17,16 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Statements: `let`, assignment, blocks, `print`.
-2. Control flow: `if`/`else`, `while`.
-3. Functions and closures.
-4. Data: strings ops, lists, maps, indexing.
-5. Builtins: `len`, `push`, type conversion, basic I/O.
-6. REPL with line editing (std-only; no deps).
-7. Diagnostics: spans in error messages, source excerpts.
-8. Example programs under `examples/`, run as integration tests.
-9. Language reference in `docs/`.
-10. GitHub Actions CI (build + test on push).
-11. Tagged release with prebuilt binaries.
+1. Control flow: `if`/`else`, `while`.
+2. Functions and closures.
+3. Data: strings ops, lists, maps, indexing.
+4. Builtins: `len`, `push`, type conversion, basic I/O.
+5. REPL with line editing (std-only; no deps).
+6. Diagnostics: spans in error messages, source excerpts.
+7. Example programs under `examples/`, run as integration tests.
+8. Language reference in `docs/`.
+9. GitHub Actions CI (build + test on push).
+10. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -41,6 +40,9 @@ release binaries on GitHub.
   int/float promotion and overflow checks, string/list concat, strict
   short-circuit booleans, structural equality, negative indexing; 14
   tests. `ting <file>` now evaluates one expression.
+- Statements: `let`/assignment/blocks/`print` with a scope stack in
+  `Interpreter`; semicolons mandatory; 11 tests. `ting <file>` runs a
+  whole program.
 
 ## Blockers
 

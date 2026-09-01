@@ -4,6 +4,41 @@ use crate::lexer::Span;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct Stmt {
+    pub kind: StmtKind,
+    pub span: Span,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub enum StmtKind {
+    /// `let name = expr;` — defines (or shadows) in the current scope.
+    Let(String, Expr),
+    /// `name = expr;` — rebinds an existing variable.
+    Assign(String, Expr),
+    /// Bare expression followed by `;`.
+    Expr(Expr),
+    /// `{ ... }` — introduces a scope.
+    Block(Vec<Stmt>),
+}
+
+impl fmt::Display for Stmt {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.kind {
+            StmtKind::Let(name, e) => write!(f, "(let {name} {e})"),
+            StmtKind::Assign(name, e) => write!(f, "(= {name} {e})"),
+            StmtKind::Expr(e) => write!(f, "{e}"),
+            StmtKind::Block(stmts) => {
+                f.write_str("(block")?;
+                for s in stmts {
+                    write!(f, " {s}")?;
+                }
+                f.write_str(")")
+            }
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Expr {
     pub kind: ExprKind,
     pub span: Span,

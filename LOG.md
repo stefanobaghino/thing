@@ -136,3 +136,31 @@ Semantics decisions (these define the language, so logged in detail):
 Session note: the human added the `origin` remote
 (github.com:stefanobaghino/thing); publishing/pushing joins the backlog
 near CI/release time.
+
+---
+
+## 2026-09-01 — Iteration 5: statements
+
+Added `Stmt` to the AST, a statement parser (`parse_program`), and rebuilt
+the evaluator as `Interpreter` with a scope stack. 11 new tests; suite is
+now 54. `ting <file>` now runs a whole program.
+
+Semantics decisions:
+- **`let` defines/shadows in the current scope; assignment rebinds the
+  nearest existing binding** and errors on undefined names — no implicit
+  globals. Block locals don't leak.
+- **Semicolons are mandatory** after let/assignment/expression statements;
+  blocks need none. Keeps the grammar unambiguous ahead of the REPL.
+- **Assignment is a statement, not an expression** (`1 = 2` and
+  `f() = 2` are parse errors; no chained `a = b = c`).
+- **`print` is a special-cased builtin call** for now: multiple args
+  joined by spaces plus newline, returns nil; shadowing `print` with a
+  variable disables it. Real builtin infrastructure arrives with
+  functions.
+- **Interpreter is generic over its output writer** — tests capture print
+  output in a `Vec<u8>`, main hands it a locked stdout.
+- `parse_expr` is `#[cfg(test)]`-gated until the REPL needs it (keeps
+  clippy's dead-code lint clean).
+
+Session note: the human pushed main to origin with tracking; `git push`
+is now enough when publishing lands.

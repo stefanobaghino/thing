@@ -1,6 +1,6 @@
 //! Pratt (precedence-climbing) expression parser for ting.
 
-use crate::ast::{BinaryOp, Expr, ExprKind, UnaryOp};
+use crate::ast::{BinaryOp, Expr, ExprKind, Stmt, StmtKind, UnaryOp};
 use crate::lexer::{Span, Token, TokenKind};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -9,7 +9,20 @@ pub struct ParseError {
     pub span: Span,
 }
 
+/// Parse a whole program: a sequence of statements up to Eof.
+pub fn parse_program(tokens: &[Token]) -> Result<Vec<Stmt>, ParseError> {
+    let mut p = Parser { tokens, pos: 0 };
+    let mut stmts = Vec::new();
+    while p.peek() != &TokenKind::Eof {
+        stmts.push(p.statement()?);
+    }
+    Ok(stmts)
+}
+
 /// Parse a complete expression; every token before Eof must be consumed.
+/// Currently exercised only by tests; the REPL will use it for echoing
+/// expression results.
+#[cfg(test)]
 pub fn parse_expr(tokens: &[Token]) -> Result<Expr, ParseError> {
     let mut p = Parser { tokens, pos: 0 };
     let expr = p.expr_bp(0)?;
@@ -54,6 +67,71 @@ impl<'a> Parser<'a> {
             Ok(())
         } else {
             Err(self.error(format!("expected {what}, found {}", describe(self.peek()))))
+        }
+    }
+
+    fn statement(&mut self) -> Result<Stmt, ParseError> {
+        let start = self.span().start;
+        match self.peek() {
+            TokenKind::Let => {
+                self.advance();
+                let name = match self.peek().clone() {
+                    TokenKind::Ident(name) => {
+                        self.advance();
+                        name
+                    }
+                    k => {
+                        return Err(
+                            self.error(format!("expected variable name, found {}", describe(&k)))
+                        );
+                    }
+                };
+                self.expect(&TokenKind::Eq, "'='")?;
+                let init = self.expr_bp(0)?;
+                let end = self.span().end;
+                self.expect(&TokenKind::Semi, "';'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Let(name, init),
+                    span: Span::new(start, end),
+                })
+            }
+            TokenKind::LBrace => {
+                self.advance();
+                let mut stmts = Vec::new();
+                while self.peek() != &TokenKind::RBrace && self.peek() != &TokenKind::Eof {
+                    stmts.push(self.statement()?);
+                }
+                let end = self.span().end;
+                self.expect(&TokenKind::RBrace, "'}'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Block(stmts),
+                    span: Span::new(start, end),
+                })
+            }
+            _ => {
+                let expr = self.expr_bp(0)?;
+                // `name = expr;` is an assignment, only valid on a bare variable.
+                if self.peek() == &TokenKind::Eq {
+                    let name = match &expr.kind {
+                        ExprKind::Var(name) => name.clone(),
+                        _ => return Err(self.error("invalid assignment target")),
+                    };
+                    self.advance();
+                    let value = self.expr_bp(0)?;
+                    let end = self.span().end;
+                    self.expect(&TokenKind::Semi, "';'")?;
+                    return Ok(Stmt {
+                        kind: StmtKind::Assign(name, value),
+                        span: Span::new(start, end),
+                    });
+                }
+                let end = self.span().end;
+                self.expect(&TokenKind::Semi, "';'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Expr(expr),
+                    span: Span::new(start, end),
+                })
+            }
         }
     }
 
@@ -340,6 +418,55 @@ mod tests {
     #[test]
     fn unclosed_paren_is_an_error() {
         assert_eq!(err("(1 + 2"), "expected ')', found end of input");
+    }
+
+    fn program(src: &str) -> String {
+        parse_program(&lex(src).unwrap())
+            .unwrap()
+            .iter()
+            .map(|s| s.to_string())
+            .collect::<Vec<_>>()
+            .join(" ")
+    }
+
+    fn program_err(src: &str) -> String {
+        parse_program(&lex(src).unwrap()).unwrap_err().message
+    }
+
+    #[test]
+    fn let_assign_expr_statements() {
+        assert_eq!(
+            program("let x = 1; x = x + 1; print(x);"),
+            "(let x 1) (= x (+ x 1)) (call print x)"
+        );
+    }
+
+    #[test]
+    fn nested_blocks() {
+        assert_eq!(
+            program("{ let a = 1; { a = 2; } }"),
+            "(block (let a 1) (block (= a 2)))"
+        );
+    }
+
+    #[test]
+    fn missing_semicolon_is_an_error() {
+        assert_eq!(program_err("let x = 1"), "expected ';', found end of input");
+        assert_eq!(program_err("1 + 2"), "expected ';', found end of input");
+    }
+
+    #[test]
+    fn invalid_assignment_target_is_an_error() {
+        assert_eq!(program_err("1 = 2;"), "invalid assignment target");
+        assert_eq!(program_err("f() = 2;"), "invalid assignment target");
+    }
+
+    #[test]
+    fn let_requires_a_name() {
+        assert_eq!(
+            program_err("let 1 = 2;"),
+            "expected variable name, found integer '1'"
+        );
     }
 
     #[test]
