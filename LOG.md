@@ -866,3 +866,23 @@ v0.5.0, "performance + polish": ~10% interpreter speedup (measured
 against the new bench/ harness with a recorded baseline), playground
 share-by-URL (live), and the tutorial's modules section. Asset
 verification follows when the release workflow finishes.
+
+**v0.6.0 verified:** release workflow green; three assets; darwin
+binary smoke-tested (fib(20) + assert). Sixth release.
+
+---
+
+## 2026-09-01 — Replenishment: v0.7.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v0.7.0 — developer experience**.
+The language is stable and fast enough; the friction now is around it:
+no string formatting, no editor highlighting, docs only readable as
+raw markdown. Backlog: (1) format(fmt, ...) builtin with {}
+placeholders and {{}} escapes — the everyday gap print+str leave; (2)
+a TextMate grammar under editor/ (installable by hand in VS Code/
+Sublime/Zed — no marketplace, per BOOTSTRAP's distribution rule); (3)
+playground syntax highlighting driven by a small JS tokenizer (verify
+via Playwright); (4) docs on the Pages site: a stdlib-only Python
+md→html converter in tools/, wired into pages.yml, so the tutorial and
+reference get real URLs next to the playground; (5) release v0.7.0.
+Bytecode VM stays parked.
