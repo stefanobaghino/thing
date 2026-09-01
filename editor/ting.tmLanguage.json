@@ -1,0 +1,82 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "ting",
+  "scopeName": "source.ting",
+  "fileTypes": ["ting"],
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#keywords" },
+    { "include": "#constants" },
+    { "include": "#function-definitions" },
+    { "include": "#builtins" },
+    { "include": "#function-calls" },
+    { "include": "#operators" },
+    { "include": "#identifiers" }
+  ],
+  "repository": {
+    "comments": {
+      "name": "comment.line.number-sign.ting",
+      "match": "#.*$"
+    },
+    "strings": {
+      "name": "string.quoted.double.ting",
+      "begin": "\"",
+      "end": "\"",
+      "patterns": [
+        {
+          "name": "constant.character.escape.ting",
+          "match": "\\\\[nt\\\\\"]"
+        },
+        {
+          "name": "invalid.illegal.escape.ting",
+          "match": "\\\\."
+        }
+      ]
+    },
+    "numbers": {
+      "name": "constant.numeric.ting",
+      "match": "\\b[0-9]+(\\.[0-9]+)?\\b"
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "name": "keyword.control.ting",
+          "match": "\\b(if|else|while|for|in|break|continue|return)\\b"
+        },
+        {
+          "name": "storage.type.ting",
+          "match": "\\b(let|fn)\\b"
+        }
+      ]
+    },
+    "constants": {
+      "name": "constant.language.ting",
+      "match": "\\b(true|false|nil)\\b"
+    },
+    "builtins": {
+      "name": "support.function.builtin.ting",
+      "match": "\\b(print|len|push|pop|keys|has|str|int|float|type|range|split|join|trim|contains|replace|starts_with|ends_with|upper|lower|slice|args|input|read_file|write_file|sort|sort_by|try|fail|map|filter|reduce|min|max|abs|assert|import|format)\\b(?=\\s*\\()"
+    },
+    "function-definitions": {
+      "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",
+      "captures": {
+        "1": { "name": "storage.type.ting" },
+        "2": { "name": "entity.name.function.ting" }
+      }
+    },
+    "function-calls": {
+      "name": "entity.name.function.call.ting",
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*(?=\\s*\\()"
+    },
+    "operators": {
+      "name": "keyword.operator.ting",
+      "match": "==|!=|<=|>=|&&|\\|\\||[+\\-*/%<>=!]"
+    },
+    "identifiers": {
+      "name": "variable.other.ting",
+      "match": "\\b[A-Za-z_][A-Za-z0-9_]*\\b"
+    }
+  }
+}

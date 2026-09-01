@@ -898,3 +898,18 @@ a stray `}` are all errors rather than silent output. Covered in the
 self-hosted suite (7 assertions in selftest/strings.ting) — the
 selftests are now the natural home for pure-language features.
 38 builtins; reference updated.
+
+---
+
+## 2026-09-01 — Iteration 41: TextMate grammar
+
+editor/ting.tmLanguage.json: comments, strings (with valid/invalid
+escape scopes), numbers, keywords, constants, all 38 builtins
+(lookahead-gated so shadowed names still read as calls), function
+defs/calls, operators. editor/README.md walks through hand-installing
+it in VS Code (local extension dir), Sublime, and Zed — no
+marketplace, per the distribution rule. Two verifications: the JSON
+parses and every regex compiles (checked via Python), and a new
+tests/grammar.rs asserts the grammar's builtin alternation matches
+Builtin::ALL exactly, so a future builtin can't ship without editor
+support. Suite at 146.
