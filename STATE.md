@@ -20,19 +20,17 @@ release binaries on GitHub.
 Milestone **v0.3.0 — ting as a practical scripting tool** (human
 directive 2026-09-01: keep building, never idle):
 
-1. String builtins, batch 2: `contains`, `replace`, `starts_with`,
-   `ends_with`, `upper`, `lower`, `slice(s, lo, hi)` (also for lists).
-2. Script I/O builtins: `args()`, `input()`, `read_file(path)`,
+1. Script I/O builtins: `args()`, `input()`, `read_file(path)`,
    `write_file(path, s)` — turns ting into a usable shell-script
    alternative. Update reference + an example that processes a file.
-3. `sort(xs)` and `sort_by(xs, f)` builtins (stable; error on mixed
+2. `sort(xs)` and `sort_by(xs, f)` builtins (stable; error on mixed
    incomparable types).
-4. Runtime error recovery: design and log the approach (leaning
+3. Runtime error recovery: design and log the approach (leaning
    `try(f)` builtin returning `{"ok": ..}`/`{"err": ..}` over new
    syntax), then implement.
-5. Tutorial (docs/tutorial.md): a guided walk from hello to a real
+4. Tutorial (docs/tutorial.md): a guided walk from hello to a real
    script, kept honest by running every snippet.
-6. Release v0.3.0 (bump, tag, verify assets).
+5. Release v0.3.0 (bump, tag, verify assets).
 
 After v0.3.0: replenish per LOOP.md "No idle" — candidates already on
 the radar: WASM/browser playground (static page, runs client-side),
@@ -80,6 +78,8 @@ green.
 - for-in (lists/strings/maps, snapshot, per-iteration binding) +
   break/continue; 8 tests. collections example modernized.
 - REPL caret diagnostics; v0.2.0 tagged and released.
+- String builtins batch 2: contains, replace, starts_with/ends_with,
+  upper/lower, slice (Python-style bounds; 21 builtins total); 5 tests.
 - v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
   asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 
