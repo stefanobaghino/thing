@@ -20,10 +20,7 @@ release binaries on GitHub.
 Milestone **v1.1.0 — the VM earns its keep (or proves it can't)**
 (designed in LOG.md replenishment entry, 2026-09-01):
 
-1. Flip the default engine to the VM (numbers: fib -35%, lists -29%,
-   strings -11%, maps +1%): --eval flag + TING_ENGINE=eval escape
-   hatch, docs/vm.md verdict updated, BASELINE regenerated.
-2. Release v1.1.0.
+1. Release v1.1.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -167,6 +164,8 @@ green.
   re-benchmarked: vm +2-7% (worse) — dispatch was never the cost.
 - Local slot resolution (capture analysis, GetSlot/SetSlot, no-Env
   frames): vm now -35% fib, -29% lists, -11% strings, +1% maps.
+- VM is now the DEFAULT engine (--eval escape hatch; CI test-eval
+  row; wasm playground on VM too); docs/README/BASELINE updated.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
