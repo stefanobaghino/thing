@@ -1879,3 +1879,14 @@ rendering, deeply nested closures, map-order interactions) so the
 self-hosted suite pins them on both engines; (3) a periodic
 maintenance stance alongside: issues/PRs/CI as always. v2.1.0 ships
 when these plus whatever follows add up to something worth a tag.
+
+---
+
+## 2026-09-01 — Iteration 124: calc in the playground
+
+The meta showcase reaches the browser: a compact integer calculator
+(tokenizer + recursive-descent parser, ~55 lines) as the
+"calc: a language in ting" playground example. Browser-verified: all
+four expressions evaluate correctly in wasm. Deploys via the
+playground path filter. First post-2.0 small stroke; v2.1.0 will
+collect these.

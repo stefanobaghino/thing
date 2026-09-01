@@ -137,6 +137,65 @@ print(ns);
 print("sum, padded:", s["pad_left"](str(l["sum"](ns)), 4, "0"));
 print(s["title"]("the ting standard library"));
 `,
+  "calc: a language in ting": `# A tiny calculator language, interpreted by ting.
+fn tokenize(src) {
+  let toks = [];
+  let i = 0;
+  while i < len(src) {
+    let c = src[i];
+    if c == " " { i = i + 1; continue; }
+    if contains("0123456789", c) {
+      let num = "";
+      while i < len(src) && contains("0123456789", src[i]) {
+        num = num + src[i];
+        i = i + 1;
+      }
+      push(toks, num);
+      continue;
+    }
+    push(toks, c);
+    i = i + 1;
+  }
+  push(toks, "<end>");
+  return toks;
+}
+
+fn factor(st) {
+  let t = st["toks"][st["pos"]];
+  st["pos"] = st["pos"] + 1;
+  if t == "(" {
+    let v = expr(st);
+    st["pos"] = st["pos"] + 1;  # the ")"
+    return v;
+  }
+  if t == "-" { return -factor(st); }
+  return int(t);
+}
+
+fn term(st) {
+  let v = factor(st);
+  while st["toks"][st["pos"]] == "*" || st["toks"][st["pos"]] == "/" {
+    let op = st["toks"][st["pos"]];
+    st["pos"] = st["pos"] + 1;
+    if op == "*" { v = v * factor(st); } else { v = v / factor(st); }
+  }
+  return v;
+}
+
+fn expr(st) {
+  let v = term(st);
+  while st["toks"][st["pos"]] == "+" || st["toks"][st["pos"]] == "-" {
+    let op = st["toks"][st["pos"]];
+    st["pos"] = st["pos"] + 1;
+    if op == "+" { v = v + term(st); } else { v = v - term(st); }
+  }
+  return v;
+}
+
+for src in ["1 + 2 * 3", "(1 + 2) * 3", "-(3 - 5) * 4", "100 / (2 + 3)"] {
+  print(src, "=", expr({"toks": tokenize(src), "pos": 0}));
+}
+`,
   "error recovery": `fn risky(s) {
   let n = int(s);          # errors on non-numeric input
   if n < 0 { fail("no negatives, please"); }
