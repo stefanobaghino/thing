@@ -1,0 +1,105 @@
+# calc: a tiny arithmetic language interpreted BY ting — a tokenizer,
+# a recursive-descent parser, and an evaluator, all in ting.
+
+fn tokenize(src) {
+  let toks = [];
+  let i = 0;
+  let n = len(src);
+  while i < n {
+    let c = src[i];
+    if c == " " {
+      i = i + 1;
+      continue;
+    }
+    if contains("0123456789", c) {
+      let num = "";
+      while i < n && contains("0123456789.", src[i]) {
+        num = num + src[i];
+        i = i + 1;
+      }
+      push(toks, {"kind": "num", "text": num});
+      continue;
+    }
+    if contains("+-*/()", c) {
+      push(toks, {"kind": c, "text": c});
+      i = i + 1;
+      continue;
+    }
+    let name = "";
+    while i < n && !contains(" +-*/()", src[i]) {
+      name = name + src[i];
+      i = i + 1;
+    }
+    push(toks, {"kind": "ident", "text": name});
+  }
+  push(toks, {"kind": "end", "text": "<end>"});
+  return toks;
+}
+
+# The parser state is a map — reference semantics make it shared.
+fn peek(st) { return st["toks"][st["pos"]]; }
+fn advance(st) { st["pos"] = st["pos"] + 1; }
+
+fn parse_factor(st) {
+  let t = peek(st);
+  if t["kind"] == "num" {
+    advance(st);
+    if contains(t["text"], ".") { return {"type": "num", "v": float(t["text"])}; }
+    return {"type": "num", "v": int(t["text"])};
+  }
+  if t["kind"] == "ident" {
+    advance(st);
+    return {"type": "var", "name": t["text"]};
+  }
+  if t["kind"] == "(" {
+    advance(st);
+    let e = parse_expr(st);
+    advance(st);  # the ')'
+    return e;
+  }
+  if t["kind"] == "-" {
+    advance(st);
+    return {"type": "neg", "e": parse_factor(st)};
+  }
+  fail(format("unexpected token {}", t["text"]));
+}
+
+fn parse_term(st) {
+  let node = parse_factor(st);
+  while peek(st)["kind"] == "*" || peek(st)["kind"] == "/" {
+    let op = peek(st)["kind"];
+    advance(st);
+    node = {"type": "bin", "op": op, "l": node, "r": parse_factor(st)};
+  }
+  return node;
+}
+
+fn parse_expr(st) {
+  let node = parse_term(st);
+  while peek(st)["kind"] == "+" || peek(st)["kind"] == "-" {
+    let op = peek(st)["kind"];
+    advance(st);
+    node = {"type": "bin", "op": op, "l": node, "r": parse_term(st)};
+  }
+  return node;
+}
+
+fn evaluate(node, vars) {
+  let t = node["type"];
+  if t == "num" { return node["v"]; }
+  if t == "var" { return vars[node["name"]]; }
+  if t == "neg" { return -evaluate(node["e"], vars); }
+  let l = evaluate(node["l"], vars);
+  let r = evaluate(node["r"], vars);
+  let op = node["op"];
+  if op == "+" { return l + r; }
+  if op == "-" { return l - r; }
+  if op == "*" { return l * r; }
+  return l / r;
+}
+
+let vars = {"pi": 3.14159, "x": 10};
+for src in ["1 + 2 * 3", "(1 + 2) * 3", "2 * pi", "x * (x - 1) / 2", "-(3 - 5) * 4"] {
+  let ast = parse_expr({"toks": tokenize(src), "pos": 0});
+  print(src, "=", evaluate(ast, vars));
+}

@@ -1774,3 +1774,17 @@ slice/str string operations, and 800 cases per run (up from 600).
 All byte-identical across engines on the first run — which is itself
 the result: after ten VM iterations the engines agree on everything
 the wider grammar can throw at them. Suite green.
+
+---
+
+## 2026-09-01 — Iteration 112: calc.ting — a language inside the language
+
+examples/calc.ting: a complete little interpreter written in ting —
+character-walking tokenizer, recursive-descent parser building AST
+maps (parser state shared through reference semantics), and a
+recursive evaluator with variables, precedence, parens, and unary
+minus. It exercises nearly everything at once: while/continue, maps,
+mutual fn references through the module env, fail/format, int/float
+promotion — and runs identically on both engines via the golden
+runner + differential harness. Correct output first run; passes
+--fmt-check as written. 9 golden examples now.
