@@ -4,6 +4,17 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.1.0 (2026-09-01)
+
+- Fix: `==` now compares ints and floats numerically at every depth —
+  `[1] == [1.0]` is true, matching the documented top-level rule
+  (this also corrects `contains` and `lib/list.ting`'s `unique` for
+  mixed int/float data).
+- `selftest/edge.ting`: 25 sharp-edge assertions pinned on both
+  engines (this suite is what caught the bug above).
+- Playground: a "calc" example — a tiny calculator language
+  interpreted by ting, in the browser.
+
 ## v2.0.0 — maturity (2026-09-01)
 
 No new features — a milestone of confidence. A seven-point

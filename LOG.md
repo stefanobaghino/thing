@@ -1910,3 +1910,12 @@ Fixed at the root: numeric promotion now lives in Value::PartialEq at
 every depth, and eval's values_equal delegates to it. This is a bug
 fix aligning the implementation with the documented spec, within the
 2.x stability promise. All 14 suites green on both engines.
+
+---
+
+## 2026-09-01 — Iteration 129: v2.1.0 released
+
+The first post-2.0 accumulation ships: the deep numeric-equality fix
+(the headline — a real spec-conformance bug), the edge selftest suite
+that caught it, and the playground calc example. Asset verification
+when the workflow finishes.
