@@ -1,8 +1,10 @@
 //! Runtime values for ting.
 
+use crate::eval::Function;
 use std::fmt;
+use std::rc::Rc;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone)]
 pub enum Value {
     Int(i64),
     Float(f64),
@@ -10,6 +12,24 @@ pub enum Value {
     Bool(bool),
     Nil,
     List(Vec<Value>),
+    Fn(Rc<Function>),
+}
+
+/// Structural equality, except functions: two closures are equal only if
+/// they are the same closure.
+impl PartialEq for Value {
+    fn eq(&self, other: &Self) -> bool {
+        match (self, other) {
+            (Value::Int(a), Value::Int(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => a == b,
+            (Value::Str(a), Value::Str(b)) => a == b,
+            (Value::Bool(a), Value::Bool(b)) => a == b,
+            (Value::Nil, Value::Nil) => true,
+            (Value::List(a), Value::List(b)) => a == b,
+            (Value::Fn(a), Value::Fn(b)) => Rc::ptr_eq(a, b),
+            _ => false,
+        }
+    }
 }
 
 impl Value {
@@ -22,6 +42,7 @@ impl Value {
             Value::Bool(_) => "bool",
             Value::Nil => "nil",
             Value::List(_) => "list",
+            Value::Fn(_) => "function",
         }
     }
 }
@@ -54,6 +75,7 @@ impl fmt::Display for Value {
                 }
                 f.write_str("]")
             }
+            Value::Fn(func) => write!(f, "<fn({})>", func.params.join(", ")),
         }
     }
 }

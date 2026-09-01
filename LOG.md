@@ -186,3 +186,35 @@ Decisions:
 
 From here each green iteration also pushes to origin, since the human
 set up the remote and tracking.
+
+---
+
+## 2026-09-01 — Iteration 7: functions and closures
+
+The biggest iteration so far. Added `fn` declarations, anonymous `fn`
+expressions, `return`, and full lexical closures. 16 new tests; suite is
+now 77 (recursion, mutable capture, independent closure instances,
+higher-order functions, arity errors, runaway-recursion trapping).
+
+Design decisions:
+- **Environments became `Rc<RefCell<Env>>` chains** (was: a scope-stack
+  `Vec<HashMap>`). Required for closures: a returned closure keeps its
+  defining environment alive, and assignments through it are visible to
+  every closure sharing it (verified: two counters advance independently,
+  one counter's three calls print 1 2 3).
+- **`fn name(...) {...}` desugars in the parser to `let name = fn...`**;
+  recursion still works because the closure captures the environment the
+  binding lands in. One function representation everywhere.
+- **`return` propagates as a `Control` enum** (Normal/Return) through
+  blocks and loops — not an Err hack; `return` at top level is an error.
+  Falling off a function's end yields nil. Exact arity is enforced.
+- **Functions compare by identity** (`Rc::ptr_eq`), display as
+  `<fn(a, b)>`.
+- **Call depth capped at 200**: the first depth-500 attempt overflowed
+  the 2MB test-thread stack in debug builds (caught by the runaway
+  recursion test aborting the whole test run). Fix: cap 200 + `main`
+  runs the interpreter on a dedicated 32MB-stack thread (the AST's `Rc`
+  isn't `Send`, so the whole lex/parse/run pipeline moved onto that
+  thread).
+- `break`/`continue` still deferred; `Control` now gives them an obvious
+  home next time loops come up.

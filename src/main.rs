@@ -22,6 +22,19 @@ fn main() -> ExitCode {
 }
 
 fn run_file(path: &str) -> ExitCode {
+    // The AST holds Rc (not Send), so the whole pipeline runs on one
+    // dedicated thread, sized generously because deep ting recursion
+    // consumes host stack.
+    let path = path.to_string();
+    std::thread::Builder::new()
+        .stack_size(32 * 1024 * 1024)
+        .spawn(move || run_file_inner(&path))
+        .expect("failed to spawn interpreter thread")
+        .join()
+        .expect("interpreter thread panicked")
+}
+
+fn run_file_inner(path: &str) -> ExitCode {
     let src = match std::fs::read_to_string(path) {
         Ok(src) => src,
         Err(e) => {

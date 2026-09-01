@@ -3,8 +3,10 @@
 use crate::ast::{BinaryOp, Expr, ExprKind, Stmt, StmtKind, UnaryOp};
 use crate::lexer::Span;
 use crate::value::Value;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::Write;
+use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct RuntimeError {
@@ -19,58 +21,126 @@ fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     }
 }
 
+/// A lexical environment: closures keep their defining Env alive via Rc,
+/// and RefCell lets assignments through a closure be seen everywhere.
+#[derive(Debug)]
+pub struct Env {
+    vars: HashMap<String, Value>,
+    parent: Option<Rc<RefCell<Env>>>,
+}
+
+impl Env {
+    fn child(parent: &Rc<RefCell<Env>>) -> Rc<RefCell<Env>> {
+        Rc::new(RefCell::new(Env {
+            vars: HashMap::new(),
+            parent: Some(Rc::clone(parent)),
+        }))
+    }
+
+    fn get(env: &Rc<RefCell<Env>>, name: &str) -> Option<Value> {
+        let e = env.borrow();
+        match e.vars.get(name) {
+            Some(v) => Some(v.clone()),
+            None => e.parent.as_ref().and_then(|p| Env::get(p, name)),
+        }
+    }
+
+    /// Rebind the nearest existing binding; false if none exists.
+    fn assign(env: &Rc<RefCell<Env>>, name: &str, v: Value) -> bool {
+        let mut e = env.borrow_mut();
+        if let Some(slot) = e.vars.get_mut(name) {
+            *slot = v;
+            true
+        } else {
+            match &e.parent {
+                Some(p) => Env::assign(&Rc::clone(p), name, v),
+                None => false,
+            }
+        }
+    }
+}
+
+/// A user-defined function: parameters, body, and the captured environment.
+#[derive(Debug)]
+pub struct Function {
+    pub params: Vec<String>,
+    pub body: Rc<Vec<Stmt>>,
+    pub env: Rc<RefCell<Env>>,
+}
+
+/// How a statement finished: fell through, or hit `return`.
+enum Control {
+    Normal,
+    Return(Value, Span),
+}
+
+/// Call-depth cap; ting recursion consumes the host stack, so trap it
+/// before Rust's stack overflows. 200 fits comfortably in a 2MB thread
+/// stack even in debug builds (tests run on such threads).
+const MAX_DEPTH: usize = 200;
+
 pub struct Interpreter<W: Write> {
-    /// Innermost scope last; index 0 is the global scope.
-    scopes: Vec<HashMap<String, Value>>,
+    env: Rc<RefCell<Env>>,
     out: W,
+    depth: usize,
 }
 
 impl<W: Write> Interpreter<W> {
     pub fn new(out: W) -> Self {
         Interpreter {
-            scopes: vec![HashMap::new()],
+            env: Rc::new(RefCell::new(Env {
+                vars: HashMap::new(),
+                parent: None,
+            })),
             out,
+            depth: 0,
         }
     }
 
     pub fn run(&mut self, stmts: &[Stmt]) -> Result<(), RuntimeError> {
-        for s in stmts {
-            self.exec(s)?;
+        match self.run_block(stmts)? {
+            Control::Normal => Ok(()),
+            Control::Return(_, span) => Err(error("return outside function", span)),
         }
-        Ok(())
     }
 
-    fn exec(&mut self, stmt: &Stmt) -> Result<(), RuntimeError> {
+    fn run_block(&mut self, stmts: &[Stmt]) -> Result<Control, RuntimeError> {
+        for s in stmts {
+            match self.exec(s)? {
+                Control::Normal => {}
+                ret => return Ok(ret),
+            }
+        }
+        Ok(Control::Normal)
+    }
+
+    fn exec(&mut self, stmt: &Stmt) -> Result<Control, RuntimeError> {
         match &stmt.kind {
             StmtKind::Let(name, init) => {
                 let v = self.eval(init)?;
-                self.scopes
-                    .last_mut()
-                    .expect("scope stack is never empty")
-                    .insert(name.clone(), v);
-                Ok(())
+                self.env.borrow_mut().vars.insert(name.clone(), v);
+                Ok(Control::Normal)
             }
             StmtKind::Assign(name, value) => {
                 let v = self.eval(value)?;
-                for scope in self.scopes.iter_mut().rev() {
-                    if let Some(slot) = scope.get_mut(name) {
-                        *slot = v;
-                        return Ok(());
-                    }
+                if Env::assign(&self.env, name, v) {
+                    Ok(Control::Normal)
+                } else {
+                    Err(error(
+                        format!("cannot assign to undefined variable '{name}'"),
+                        stmt.span,
+                    ))
                 }
-                Err(error(
-                    format!("cannot assign to undefined variable '{name}'"),
-                    stmt.span,
-                ))
             }
             StmtKind::Expr(e) => {
                 self.eval(e)?;
-                Ok(())
+                Ok(Control::Normal)
             }
             StmtKind::Block(stmts) => {
-                self.scopes.push(HashMap::new());
-                let result = self.run(stmts);
-                self.scopes.pop();
+                let saved = Rc::clone(&self.env);
+                self.env = Env::child(&saved);
+                let result = self.run_block(stmts);
+                self.env = saved;
                 result
             }
             StmtKind::If(cond, then, els) => {
@@ -79,20 +149,62 @@ impl<W: Write> Interpreter<W> {
                 } else if let Some(els) = els {
                     self.exec(els)
                 } else {
-                    Ok(())
+                    Ok(Control::Normal)
                 }
             }
             StmtKind::While(cond, body) => {
                 while as_bool(self.eval(cond)?, cond.span)? {
-                    self.exec(body)?;
+                    match self.exec(body)? {
+                        Control::Normal => {}
+                        ret => return Ok(ret),
+                    }
                 }
-                Ok(())
+                Ok(Control::Normal)
+            }
+            StmtKind::Return(value) => {
+                let v = match value {
+                    Some(e) => self.eval(e)?,
+                    None => Value::Nil,
+                };
+                Ok(Control::Return(v, stmt.span))
             }
         }
     }
 
-    fn lookup(&self, name: &str) -> Option<&Value> {
-        self.scopes.iter().rev().find_map(|s| s.get(name))
+    fn lookup(&self, name: &str) -> Option<Value> {
+        Env::get(&self.env, name)
+    }
+
+    fn call(&mut self, func: &Rc<Function>, args: Vec<Value>, span: Span) -> Result<Value, RuntimeError> {
+        if args.len() != func.params.len() {
+            return Err(error(
+                format!(
+                    "expected {} argument(s), got {}",
+                    func.params.len(),
+                    args.len()
+                ),
+                span,
+            ));
+        }
+        if self.depth >= MAX_DEPTH {
+            return Err(error(
+                format!("stack overflow (max call depth {MAX_DEPTH})"),
+                span,
+            ));
+        }
+        let frame = Env::child(&func.env);
+        for (p, a) in func.params.iter().zip(args) {
+            frame.borrow_mut().vars.insert(p.clone(), a);
+        }
+        let saved = std::mem::replace(&mut self.env, frame);
+        self.depth += 1;
+        let result = self.run_block(&func.body);
+        self.depth -= 1;
+        self.env = saved;
+        match result? {
+            Control::Return(v, _) => Ok(v),
+            Control::Normal => Ok(Value::Nil),
+        }
     }
 
     pub fn eval(&mut self, expr: &Expr) -> Result<Value, RuntimeError> {
@@ -110,12 +222,11 @@ impl<W: Write> Interpreter<W> {
                 Ok(Value::List(vals))
             }
             ExprKind::Var(name) => match self.lookup(name) {
-                Some(v) => Ok(v.clone()),
+                Some(v) => Ok(v),
                 None => Err(error(format!("undefined variable '{name}'"), expr.span)),
             },
             ExprKind::Call(callee, args) => {
-                // Until user functions land, the only callable is the
-                // built-in `print` (unless shadowed by a variable).
+                // `print` is a builtin unless shadowed by a variable.
                 if let ExprKind::Var(name) = &callee.kind
                     && name == "print"
                     && self.lookup("print").is_none()
@@ -128,8 +239,24 @@ impl<W: Write> Interpreter<W> {
                         .map_err(|e| error(format!("print failed: {e}"), expr.span))?;
                     return Ok(Value::Nil);
                 }
-                Err(error("functions are not implemented yet", expr.span))
+                let callee_v = self.eval(callee)?;
+                let mut arg_vals = Vec::with_capacity(args.len());
+                for a in args {
+                    arg_vals.push(self.eval(a)?);
+                }
+                match callee_v {
+                    Value::Fn(func) => self.call(&func, arg_vals, expr.span),
+                    other => Err(error(
+                        format!("{} is not callable", other.type_name()),
+                        callee.span,
+                    )),
+                }
             }
+            ExprKind::Fn(params, body) => Ok(Value::Fn(Rc::new(Function {
+                params: params.clone(),
+                body: Rc::clone(body),
+                env: Rc::clone(&self.env),
+            }))),
             ExprKind::Unary(op, operand) => {
                 let v = self.eval(operand)?;
                 unary(*op, v, expr.span)
@@ -539,10 +666,98 @@ mod tests {
     }
 
     #[test]
-    fn shadowed_print_is_not_callable_yet() {
+    fn shadowed_print_is_not_callable() {
+        assert_eq!(program_err("let print = 1; print(2);"), "int is not callable");
+    }
+
+    #[test]
+    fn function_declaration_and_call() {
         assert_eq!(
-            program_err("let print = 1; print(2);"),
-            "functions are not implemented yet"
+            output("fn add(a, b) { return a + b; } print(add(2, 40));"),
+            "42\n"
+        );
+    }
+
+    #[test]
+    fn recursion() {
+        assert_eq!(
+            output("fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); } print(fib(15));"),
+            "610\n"
+        );
+    }
+
+    #[test]
+    fn closures_capture_and_mutate() {
+        assert_eq!(
+            output(
+                "fn counter() { let n = 0; fn inc() { n = n + 1; return n; } return inc; } \
+                 let c = counter(); print(c(), c(), c());"
+            ),
+            "1 2 3\n"
+        );
+    }
+
+    #[test]
+    fn closures_are_independent() {
+        assert_eq!(
+            output(
+                "fn counter() { let n = 0; fn inc() { n = n + 1; return n; } return inc; } \
+                 let a = counter(); let b = counter(); print(a(), a(), b());"
+            ),
+            "1 2 1\n"
+        );
+    }
+
+    #[test]
+    fn anonymous_functions_and_higher_order() {
+        assert_eq!(
+            output("let twice = fn(f, x) { return f(f(x)); }; print(twice(fn(n) { return n * 3; }, 2));"),
+            "18\n"
+        );
+    }
+
+    #[test]
+    fn falling_off_the_end_returns_nil() {
+        assert_eq!(output("fn f() { 1; } print(f());"), "nil\n");
+        assert_eq!(output("fn f() { return; } print(f());"), "nil\n");
+    }
+
+    #[test]
+    fn return_stops_a_loop_inside_a_function() {
+        assert_eq!(
+            output("fn first() { let i = 0; while true { if i == 3 { return i; } i = i + 1; } } print(first());"),
+            "3\n"
+        );
+    }
+
+    #[test]
+    fn arity_mismatch_errors() {
+        assert_eq!(
+            program_err("fn f(a, b) { return a; } f(1);"),
+            "expected 2 argument(s), got 1"
+        );
+    }
+
+    #[test]
+    fn return_outside_function_errors() {
+        assert_eq!(program_err("return 1;"), "return outside function");
+    }
+
+    #[test]
+    fn runaway_recursion_is_trapped() {
+        assert_eq!(
+            program_err("fn f() { return f(); } f();"),
+            "stack overflow (max call depth 200)"
+        );
+    }
+
+    #[test]
+    fn functions_display_and_compare_by_identity() {
+        assert_eq!(output("fn f(a, b) { } print(f);"), "<fn(a, b)>\n");
+        assert_eq!(output("fn f() { } let g = f; print(f == g);"), "true\n");
+        assert_eq!(
+            output("let a = fn() { }; let b = fn() { }; print(a == b);"),
+            "false\n"
         );
     }
 

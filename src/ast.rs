@@ -2,6 +2,7 @@
 
 use crate::lexer::Span;
 use std::fmt;
+use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stmt {
@@ -23,6 +24,8 @@ pub enum StmtKind {
     If(Expr, Box<Stmt>, Option<Box<Stmt>>),
     /// `while cond { ... }`
     While(Expr, Box<Stmt>),
+    /// `return;` or `return expr;`
+    Return(Option<Expr>),
 }
 
 impl fmt::Display for Stmt {
@@ -41,6 +44,8 @@ impl fmt::Display for Stmt {
             StmtKind::If(cond, then, None) => write!(f, "(if {cond} {then})"),
             StmtKind::If(cond, then, Some(els)) => write!(f, "(if {cond} {then} {els})"),
             StmtKind::While(cond, body) => write!(f, "(while {cond} {body})"),
+            StmtKind::Return(None) => f.write_str("(return)"),
+            StmtKind::Return(Some(e)) => write!(f, "(return {e})"),
         }
     }
 }
@@ -64,6 +69,9 @@ pub enum ExprKind {
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     Call(Box<Expr>, Vec<Expr>),
     Index(Box<Expr>, Box<Expr>),
+    /// `fn(a, b) { ... }` — body is Rc-shared with the closures created
+    /// from it, so evaluating the same literal twice doesn't clone it.
+    Fn(Vec<String>, Rc<Vec<Stmt>>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -145,6 +153,13 @@ impl fmt::Display for Expr {
                 f.write_str(")")
             }
             ExprKind::Index(base, idx) => write!(f, "(index {base} {idx})"),
+            ExprKind::Fn(params, body) => {
+                write!(f, "(fn ({})", params.join(" "))?;
+                for s in body.iter() {
+                    write!(f, " {s}")?;
+                }
+                f.write_str(")")
+            }
         }
     }
 }

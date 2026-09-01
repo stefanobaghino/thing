@@ -17,15 +17,14 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Functions and closures.
-2. Data: strings ops, lists, maps, indexing.
-3. Builtins: `len`, `push`, type conversion, basic I/O.
-4. REPL with line editing (std-only; no deps).
-5. Diagnostics: spans in error messages, source excerpts.
-6. Example programs under `examples/`, run as integration tests.
-7. Language reference in `docs/`.
-8. GitHub Actions CI (build + test on push).
-9. Tagged release with prebuilt binaries.
+1. Data: strings ops, lists, maps, indexing.
+2. Builtins: `len`, `push`, type conversion, basic I/O.
+3. REPL with line editing (std-only; no deps).
+4. Diagnostics: spans in error messages, source excerpts.
+5. Example programs under `examples/`, run as integration tests.
+6. Language reference in `docs/`.
+7. GitHub Actions CI (build + test on push).
+8. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -44,6 +43,9 @@ release binaries on GitHub.
   whole program.
 - Control flow: `if`/`else if`/`else` and `while`, brace-required,
   strict-bool conditions; 7 tests. fib(10) works.
+- Functions and closures: `fn` decls (desugared to `let`), anonymous
+  fns, `return` via Control enum, Rc<RefCell<Env>> environments, depth
+  cap 200, 32MB interpreter thread; 16 tests.
 
 ## Blockers
 

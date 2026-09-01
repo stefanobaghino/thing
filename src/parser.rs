@@ -2,6 +2,7 @@
 
 use crate::ast::{BinaryOp, Expr, ExprKind, Stmt, StmtKind, UnaryOp};
 use crate::lexer::{Span, Token, TokenKind};
+use std::rc::Rc;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ParseError {
@@ -37,9 +38,17 @@ struct Parser<'a> {
     pos: usize,
 }
 
+/// (params, body, byte offset just past the closing brace)
+type FnParts = (Vec<String>, Rc<Vec<Stmt>>, usize);
+
 impl<'a> Parser<'a> {
     fn peek(&self) -> &TokenKind {
         &self.tokens[self.pos].kind
+    }
+
+    fn peek2(&self) -> &TokenKind {
+        let i = (self.pos + 1).min(self.tokens.len() - 1);
+        &self.tokens[i].kind
     }
 
     fn span(&self) -> Span {
@@ -130,6 +139,46 @@ impl<'a> Parser<'a> {
                     span: Span::new(start, end),
                 })
             }
+            // `fn name(...) { ... }` declaration; a lone `fn(...)` falls
+            // through to the expression path (anonymous function).
+            TokenKind::Fn if matches!(self.peek2(), TokenKind::Ident(_)) => {
+                self.advance();
+                let name = match self.peek().clone() {
+                    TokenKind::Ident(name) => {
+                        self.advance();
+                        name
+                    }
+                    _ => unreachable!("guarded by peek2"),
+                };
+                let (params, body, end) = self.fn_params_and_body()?;
+                // Desugars to `let name = fn(...) {...};` — recursion works
+                // because the closure and the binding share the same
+                // environment at call time.
+                Ok(Stmt {
+                    kind: StmtKind::Let(
+                        name,
+                        Expr {
+                            kind: ExprKind::Fn(params, body),
+                            span: Span::new(start, end),
+                        },
+                    ),
+                    span: Span::new(start, end),
+                })
+            }
+            TokenKind::Return => {
+                self.advance();
+                let value = if self.peek() == &TokenKind::Semi {
+                    None
+                } else {
+                    Some(self.expr_bp(0)?)
+                };
+                let end = self.span().end;
+                self.expect(&TokenKind::Semi, "';'")?;
+                Ok(Stmt {
+                    kind: StmtKind::Return(value),
+                    span: Span::new(start, end),
+                })
+            }
             TokenKind::While => {
                 self.advance();
                 let cond = self.expr_bp(0)?;
@@ -165,6 +214,45 @@ impl<'a> Parser<'a> {
                 })
             }
         }
+    }
+
+    /// Parse `(a, b, c) { stmts }` after `fn` [name]; returns params, body,
+    /// and the byte offset just past the closing brace.
+    fn fn_params_and_body(&mut self) -> Result<FnParts, ParseError> {
+        self.expect(&TokenKind::LParen, "'('")?;
+        let mut params = Vec::new();
+        if self.peek() != &TokenKind::RParen {
+            loop {
+                match self.peek().clone() {
+                    TokenKind::Ident(name) => {
+                        if params.contains(&name) {
+                            return Err(self.error(format!("duplicate parameter '{name}'")));
+                        }
+                        self.advance();
+                        params.push(name);
+                    }
+                    k => {
+                        return Err(
+                            self.error(format!("expected parameter name, found {}", describe(&k)))
+                        );
+                    }
+                }
+                if self.peek() == &TokenKind::Comma {
+                    self.advance();
+                } else {
+                    break;
+                }
+            }
+        }
+        self.expect(&TokenKind::RParen, "')'")?;
+        self.expect(&TokenKind::LBrace, "'{'")?;
+        let mut body = Vec::new();
+        while self.peek() != &TokenKind::RBrace && self.peek() != &TokenKind::Eof {
+            body.push(self.statement()?);
+        }
+        let end = self.span().end;
+        self.expect(&TokenKind::RBrace, "'}'")?;
+        Ok((params, Rc::new(body), end))
     }
 
     /// Parse a `{ ... }` block, with a context note for the error message.
@@ -270,6 +358,14 @@ impl<'a> Parser<'a> {
                 let inner = self.expr_bp(0)?;
                 self.expect(&TokenKind::RParen, "')'")?;
                 return Ok(inner);
+            }
+            TokenKind::Fn => {
+                self.advance();
+                let (params, body, end) = self.fn_params_and_body()?;
+                return Ok(Expr {
+                    kind: ExprKind::Fn(params, body),
+                    span: Span::new(span.start, end),
+                });
             }
             TokenKind::LBracket => {
                 self.advance();
@@ -534,6 +630,42 @@ mod tests {
         assert_eq!(
             program_err("while a 1;"),
             "expected '{' after 'while' condition, found integer '1'"
+        );
+    }
+
+    #[test]
+    fn fn_declaration_desugars_to_let() {
+        assert_eq!(
+            program("fn add(a, b) { return a + b; }"),
+            "(let add (fn (a b) (return (+ a b))))"
+        );
+        assert_eq!(program("fn noop() { }"), "(let noop (fn ()))");
+    }
+
+    #[test]
+    fn anonymous_fn_is_an_expression() {
+        assert_eq!(
+            program("let f = fn(x) { return x; };"),
+            "(let f (fn (x) (return x)))"
+        );
+        assert_eq!(sexpr("fn(x) { return x; }(1)"), "(call (fn (x) (return x)) 1)");
+    }
+
+    #[test]
+    fn return_forms() {
+        assert_eq!(program("fn f() { return; return 1; }"), "(let f (fn () (return) (return 1)))");
+    }
+
+    #[test]
+    fn duplicate_parameter_is_an_error() {
+        assert_eq!(program_err("fn f(a, a) { }"), "duplicate parameter 'a'");
+    }
+
+    #[test]
+    fn fn_param_errors() {
+        assert_eq!(
+            program_err("fn f(1) { }"),
+            "expected parameter name, found integer '1'"
         );
     }
 
