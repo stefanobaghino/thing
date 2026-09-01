@@ -1837,3 +1837,16 @@ Full-system sweep for v2.0.0, executed and verified in one pass:
 
 Nothing to fix. The audit is the evidence for the 2.0 stability
 promise; the docs pass and the promise itself are next.
+
+---
+
+## 2026-09-01 — Iteration 119: docs pass + the stability promise
+
+Consistency fixes: the README's intro still called ting "a
+tree-walking interpreter" — it now names what one binary actually
+contains (two engines, REPL, formatter, LSP) and points at --help.
+The reference gains a "Stability" section: the documented language is
+stable across 2.x; builtins only ever added; breaking syntax or
+semantics means a 3.0; both engines are held to the same document by
+the differential suite. The all-green audit two iterations ago is the
+evidence backing the promise. Release v2.0.0 is next.

@@ -234,6 +234,15 @@ let r = try(fn() { return int(input()); });
 if has(r, "err") { print("not a number:", r["err"]); }
 ```
 
+## Stability
+
+As of 2.0, the language described on this page is stable: programs
+relying on documented behavior keep working across 2.x releases.
+Builtins may be added in minor releases, never removed or changed
+incompatibly; a breaking change to syntax or semantics would require
+a 3.0. The two engines are held to this same document by differential
+tests.
+
 ## Limits
 
 - Call depth: 200.

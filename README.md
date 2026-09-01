@@ -2,9 +2,10 @@
 
 A tiny, zero-dependency scripting language. A thing, minus the h.
 
-`ting` is a tree-walking interpreter written in Rust with no third-party
-dependencies. It ships as a single binary that runs scripts and offers a
-REPL.
+`ting` is implemented in Rust with no third-party dependencies. One
+binary contains everything: two execution engines (a bytecode VM and a
+reference tree-walking interpreter), a REPL, a canonical formatter
+(`--fmt`), and a language server (`--lsp`).
 
 > This project is being built autonomously by Claude Code as an experiment;
 > see [BOOTSTRAP.md](BOOTSTRAP.md) for the charter, [LOOP.md](LOOP.md) for
@@ -52,6 +53,7 @@ fail loudly with a caret pointing at the source.
 cargo build --release
 ./target/release/ting script.ting   # run a script
 ./target/release/ting               # start the REPL
+./target/release/ting --help        # everything else
 ```
 
 Requires only a Rust toolchain — zero dependencies. `cargo test` runs
