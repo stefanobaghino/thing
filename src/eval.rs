@@ -631,6 +631,63 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Sort => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::List(items) => {
+                        let mut items = items.borrow().clone();
+                        ensure_sortable(items.iter(), "sort", span)?;
+                        items.sort_by(cmp_ordered);
+                        Ok(Value::list(items))
+                    }
+                    v => Err(error(
+                        format!("sort expects a list, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::SortBy => {
+                arity(2, 2)?;
+                let f = args[1].clone();
+                match (&args[0], &f) {
+                    (Value::List(items), Value::Fn(_) | Value::Builtin(_)) => {
+                        let snapshot = items.borrow().clone();
+                        let mut keyed = Vec::with_capacity(snapshot.len());
+                        for v in snapshot {
+                            let k = self.call_value(&f, vec![v.clone()], span)?;
+                            keyed.push((k, v));
+                        }
+                        ensure_sortable(keyed.iter().map(|(k, _)| k), "sort_by keys", span)?;
+                        keyed.sort_by(|a, b| cmp_ordered(&a.0, &b.0));
+                        Ok(Value::list(keyed.into_iter().map(|(_, v)| v).collect()))
+                    }
+                    (a, f) => Err(error(
+                        format!(
+                            "sort_by expects a list and a function, got {} and {}",
+                            a.type_name(),
+                            f.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+        }
+    }
+
+    /// Call any callable value (used by builtins that take functions).
+    fn call_value(
+        &mut self,
+        f: &Value,
+        args: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, RuntimeError> {
+        match f {
+            Value::Fn(func) => self.call(&Rc::clone(func), args, span),
+            Value::Builtin(b) => self.call_builtin(*b, args, span),
+            other => Err(error(
+                format!("{} is not callable", other.type_name()),
+                span,
+            )),
         }
     }
 
@@ -928,6 +985,48 @@ fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
             format!("cannot index {} with {}", base.type_name(), idx.type_name()),
             span,
         )),
+    }
+}
+
+/// All values orderable, and not strings mixed with numbers.
+fn ensure_sortable<'a>(
+    vals: impl Iterator<Item = &'a Value>,
+    who: &str,
+    span: Span,
+) -> Result<(), RuntimeError> {
+    let (mut nums, mut strs) = (false, false);
+    for v in vals {
+        match v {
+            Value::Int(_) | Value::Float(_) => nums = true,
+            Value::Str(_) => strs = true,
+            v => {
+                return Err(error(format!("{who} cannot order {}", v.type_name()), span));
+            }
+        }
+    }
+    if nums && strs {
+        return Err(error(
+            format!("{who} cannot order numbers and strings together"),
+            span,
+        ));
+    }
+    Ok(())
+}
+
+/// Total order over values ensure_sortable accepted. Int/Float compare
+/// numerically; NaN sorts as equal to everything (partial_cmp fallback).
+fn cmp_ordered(a: &Value, b: &Value) -> std::cmp::Ordering {
+    let as_f = |v: &Value| match v {
+        Value::Int(n) => *n as f64,
+        Value::Float(x) => *x,
+        _ => unreachable!("ensure_sortable admits only numbers and strings"),
+    };
+    match (a, b) {
+        (Value::Int(x), Value::Int(y)) => x.cmp(y),
+        (Value::Str(x), Value::Str(y)) => x.cmp(y),
+        _ => as_f(a)
+            .partial_cmp(&as_f(b))
+            .unwrap_or(std::cmp::Ordering::Equal),
     }
 }
 
@@ -1314,6 +1413,61 @@ mod tests {
         assert_eq!(
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
+        );
+    }
+
+    #[test]
+    fn builtin_sort() {
+        assert_eq!(
+            run("sort([3, 1.5, 2])"),
+            Value::list(vec![Value::Float(1.5), Value::Int(2), Value::Int(3)])
+        );
+        assert_eq!(
+            run("sort([\"pear\", \"fig\", \"kiwi\"])"),
+            Value::list(vec![
+                Value::Str("fig".into()),
+                Value::Str("kiwi".into()),
+                Value::Str("pear".into())
+            ])
+        );
+        assert_eq!(run("sort([])"), Value::list(vec![]));
+        // sort copies: the input list is untouched.
+        assert_eq!(
+            output("let a = [2, 1]; let b = sort(a); print(a, b);"),
+            "[2, 1] [1, 2]\n"
+        );
+        assert_eq!(
+            run_err("sort([1, \"a\"])"),
+            "sort cannot order numbers and strings together"
+        );
+        assert_eq!(run_err("sort([nil])"), "sort cannot order nil");
+        assert_eq!(run_err("sort(1)"), "sort expects a list, got int");
+    }
+
+    #[test]
+    fn builtin_sort_by() {
+        assert_eq!(
+            output("print(sort_by([\"kiwi\", \"fig\", \"pear\"], len));"),
+            "[\"fig\", \"kiwi\", \"pear\"]\n"
+        );
+        assert_eq!(
+            output(
+                "let xs = sort_by([[2, \"b\"], [1, \"a\"]], fn(p) { return p[0]; }); print(xs);"
+            ),
+            "[[1, \"a\"], [2, \"b\"]]\n"
+        );
+        // Stable: equal keys keep their original order.
+        assert_eq!(
+            output("print(sort_by([\"bb\", \"aa\", \"cc\"], len));"),
+            "[\"bb\", \"aa\", \"cc\"]\n"
+        );
+        assert_eq!(
+            program_err("sort_by([1], 2);"),
+            "sort_by expects a list and a function, got list and int"
+        );
+        assert_eq!(
+            program_err("sort_by([nil], fn(x) { return x; });"),
+            "sort_by keys cannot order nil"
         );
     }
 

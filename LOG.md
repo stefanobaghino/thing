@@ -531,3 +531,19 @@ errors carry the OS message. Deviation from the backlog: no golden
 example, because the example runner provides no stdin/args — instead
 `tests/io.rs` runs the real binary with piped stdin and argv. 25
 builtins, 127 tests, reference updated.
+
+---
+
+## 2026-09-01 — Iteration 21: sort and sort_by
+
+`sort(xs)` and `sort_by(xs, f)` in `src/eval.rs`. Decisions: both return
+a fresh list (consistent with `slice`; in-place mutation stays the
+domain of `push`/`pop`); `sort_by` takes a key function, not a
+comparator — cheaper to use, and keys are computed once
+(decorate-sort-undecorate) so user code runs len(xs) times, not
+O(n log n) times. Ordering rules: all numbers (int/float mixed) or all
+strings; anything else — including mixing the two classes — errors
+before sorting via `ensure_sortable`. Rust's stable `sort_by` gives
+stability for free (tested with equal keys). New `call_value` helper
+lets builtins invoke user functions — the piece `try(f)` will need
+next. 2 tests; suite at 129. Reference updated.

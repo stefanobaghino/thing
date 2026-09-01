@@ -159,6 +159,8 @@ scope).
 | `input()`      | one line from stdin without the newline; `nil` at end of input |
 | `read_file(path)` | the file's entire contents as a string; unreadable file errors |
 | `write_file(path, s)` | writes (or overwrites) the file; returns nil; failure errors |
+| `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
+| `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 
 ## Errors
 
