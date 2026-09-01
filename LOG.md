@@ -1224,3 +1224,16 @@ README rewritten to match reality: 43 builtins, modules, JSON, the
 two-engine story with differential testing, changelog/editor/bench
 links, honest test-count description. v1.0.0's last task is the
 release itself.
+
+---
+
+## 2026-09-01 — Iteration 59: v1.0.0 released
+
+The confidence milestone is complete: differential fuzzing, the VM CI
+job (validated on GitHub runners), doc-coverage guard, and a truthful
+README. Version bumped to 1.0.0, changelog section added, tag pushed.
+1.0 marks stability, not novelty: 43 builtins, modules, JSON, two
+byte-identical engines, a live playground and docs site, editor
+support, benchmarks, fuzzing, 159 host tests plus the self-hosted
+suite — all zero-dependency, all reproducible by anyone with a Rust
+toolchain. Asset verification when the release workflow finishes.

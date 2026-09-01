@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.0.0 — confidence (2026-09-01)
+
+The language and tooling are complete and held together by guards:
+grammar-directed differential fuzzing (600 random valid programs per
+test run, both engines byte-identical), a CI job that reruns the whole
+suite on the VM engine, and coverage guards that fail the build if a
+builtin ever ships without documentation or editor support. No
+language changes — 1.0 marks stability, not novelty.
+
 ## v0.9.0 — bytecode VM (2026-09-01)
 
 - A bytecode compiler and VM covering the whole language, selectable
