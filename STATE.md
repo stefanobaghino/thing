@@ -243,6 +243,7 @@ green.
 - v2.2.0 RELEASED and verified (json_str pretty + --check +
   tutorial JSON); darwin-arm64 asset smoke-tested cold.
 - LSP documentSymbol (outline view) — accumulating toward v2.3.0.
+- LSP go-to-definition for top-level bindings.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
