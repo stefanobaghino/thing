@@ -180,7 +180,7 @@ scope).
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
 | `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors |
 | `json_parse(s)` | JSON text to ting values (object→map, array→list, null→nil); malformed input errors with an offset |
-| `json_str(v)`  | ting value to compact JSON (map keys sorted); functions and non-finite floats error |
+| `json_str(v)` / `json_str(v, indent)` | ting value to JSON — compact, or pretty with `indent` spaces per level (map keys sorted); functions and non-finite floats error |
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |

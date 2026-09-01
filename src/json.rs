@@ -11,6 +11,65 @@ pub fn encode(v: &Value) -> Result<String, String> {
     Ok(out)
 }
 
+/// Pretty encoding: `indent` spaces per level, entries one per line.
+pub fn encode_pretty(v: &Value, indent: usize) -> Result<String, String> {
+    let mut out = String::new();
+    encode_pretty_into(v, indent, 0, &mut out)?;
+    Ok(out)
+}
+
+fn encode_pretty_into(
+    v: &Value,
+    indent: usize,
+    depth: usize,
+    out: &mut String,
+) -> Result<(), String> {
+    match v {
+        Value::List(items) => {
+            let items = items.borrow();
+            if items.is_empty() {
+                out.push_str("[]");
+                return Ok(());
+            }
+            out.push('[');
+            for (i, it) in items.iter().enumerate() {
+                if i > 0 {
+                    out.push(',');
+                }
+                out.push('\n');
+                out.push_str(&" ".repeat(indent * (depth + 1)));
+                encode_pretty_into(it, indent, depth + 1, out)?;
+            }
+            out.push('\n');
+            out.push_str(&" ".repeat(indent * depth));
+            out.push(']');
+        }
+        Value::Map(entries) => {
+            let entries = entries.borrow();
+            if entries.is_empty() {
+                out.push_str("{}");
+                return Ok(());
+            }
+            out.push('{');
+            for (i, (k, val)) in entries.iter().enumerate() {
+                if i > 0 {
+                    out.push(',');
+                }
+                out.push('\n');
+                out.push_str(&" ".repeat(indent * (depth + 1)));
+                encode_string(k, out);
+                out.push_str(": ");
+                encode_pretty_into(val, indent, depth + 1, out)?;
+            }
+            out.push('\n');
+            out.push_str(&" ".repeat(indent * depth));
+            out.push('}');
+        }
+        scalar => encode_into(scalar, out)?,
+    }
+    Ok(())
+}
+
 fn encode_into(v: &Value, out: &mut String) -> Result<(), String> {
     match v {
         Value::Nil => out.push_str("null"),
@@ -326,6 +385,17 @@ mod tests {
         );
         // Integral floats keep their float-ness.
         assert_eq!(roundtrip("[1.0]"), "[1.0]");
+    }
+
+    #[test]
+    fn pretty_encoding() {
+        let v = decode("{\"a\":[1,2],\"b\":{},\"c\":null}").unwrap();
+        assert_eq!(
+            encode_pretty(&v, 2).unwrap(),
+            "{\n  \"a\": [\n    1,\n    2\n  ],\n  \"b\": {},\n  \"c\": null\n}"
+        );
+        // Pretty output round-trips.
+        assert_eq!(decode(&encode_pretty(&v, 2).unwrap()).unwrap(), v);
     }
 
     #[test]

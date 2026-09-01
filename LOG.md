@@ -1923,3 +1923,16 @@ when the workflow finishes.
 **v2.1.0 verified:** release workflow green; three assets; the
 equality fix confirmed in the shipped binary on both engines.
 Twenty-first release.
+
+---
+
+## 2026-09-01 — Iteration 132: json_str grows pretty printing
+
+Maintenance check first: no issues, no PRs, CI green. Small stroke:
+`json_str(v, indent)` — the optional second argument pretty-prints
+with `indent` spaces per level (0-16; empty containers stay inline;
+compact single-arg behavior unchanged, so this is additive within the
+2.x promise). Rust unit test with exact expected shape + round trip;
+four selftest assertions including the indent type error; hover doc
+and reference row updated. All 14 suites green. Accumulating toward
+v2.2.0.

@@ -984,10 +984,23 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             Builtin::JsonStr => {
-                arity(1, 1)?;
-                crate::json::encode(&args[0])
-                    .map(Value::Str)
-                    .map_err(|m| error(m, span))
+                arity(1, 2)?;
+                let result = match args.get(1) {
+                    None => crate::json::encode(&args[0]),
+                    Some(Value::Int(n)) if *n >= 0 && *n <= 16 => {
+                        crate::json::encode_pretty(&args[0], *n as usize)
+                    }
+                    Some(v) => {
+                        return Err(error(
+                            format!(
+                                "json_str indent must be an int from 0 to 16, got {}",
+                                v.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                };
+                result.map(Value::Str).map_err(|m| error(m, span))
             }
             Builtin::Env => {
                 arity(1, 1)?;
