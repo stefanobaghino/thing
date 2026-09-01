@@ -21,12 +21,8 @@ Milestone **v1.2.0 — a language server** (designed in LOG.md
 replenishment entry, 2026-09-01; zero new dependencies — reuses
 src/json.rs, spans, diagnostics):
 
-1. `ting --lsp`: stdio JSON-RPC (Content-Length framing), lifecycle
-   (initialize/initialized/shutdown/exit), didOpen/didChange ->
-   publishDiagnostics with lex/parse/compile errors and real ranges.
-2. Integration test driving the server over pipes with LSP traffic.
-3. editor/README: VS Code / Neovim / Zed wiring.
-4. Release v1.2.0.
+1. Release v1.2.0 (LSP shipped: server + pipe-driven test + editor
+   wiring all landed in one iteration).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -175,6 +171,9 @@ green.
 - v1.1.0 RELEASED and verified: 3 assets; both engines correct in the
   shipped binary.
   https://github.com/stefanobaghino/thing/releases/tag/v1.1.0
+- LSP server (src/lsp.rs, ting --lsp): framing, lifecycle,
+  publishDiagnostics; tests/lsp.rs drives real pipes; editor wiring
+  docs; 160 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
