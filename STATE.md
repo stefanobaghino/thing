@@ -22,9 +22,8 @@ Milestone **v1.6.0 — a formatter** (designed in LOG.md replenishment
 entry, 2026-09-01; token-stream based to preserve comments; guarded by
 idempotence + AST-equality checks):
 
-1. `ting --fmt` / `--fmt-check`; reformat the repo's .ting files.
-2. LSP documentFormatting.
-3. Release v1.6.0.
+1. LSP documentFormatting.
+2. Release v1.6.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -205,6 +204,8 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v1.5.0
 - Formatter core (src/fmt.rs, gap-scan comments, brace-kind stack);
   idempotence+AST guards over all 21 repo .ting files; 14 suites.
+- ting --fmt/--fmt-check CLI; repo reformatted; formatted-ness now
+  CI-enforced (3 style bugs found by dogfooding, fixed+tested).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
