@@ -21,10 +21,7 @@ Milestone **v0.9.0 — bytecode VM** (designed in LOG.md replenishment
 entry, 2026-09-01; incremental, always shippable, --vm flag with the
 tree-walker as reference):
 
-1. Benchmark VM vs tree-walker; flip the default only if clearly
-   faster; keep both selectable.
-2. Release v0.9.0 (+ CI matrix row with TING_ENGINE=vm if the VM
-   becomes default-worthy).
+1. Release v0.9.0 (default stays eval per the measured verdict).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -149,6 +146,8 @@ green.
 - VM functions via MakeFn hybrid (AST bodies, captured Env): full
   language parity; selftest suite byte-identical on both engines;
   158 tests.
+- Engines benchmarked: vm +0-2% vs eval (no win; hybrid leaves hot
+  paths tree-walked) — default stays eval, verdict in docs/vm.md.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
