@@ -21,10 +21,9 @@ release binaries on GitHub.
 **Post-2.0 small strokes** (designed in LOG.md replenishment entry,
 2026-09-01; release v2.1.0 when value accumulates):
 
-1. Playground "calc" example.
-2. selftest/edge.ting: nastiest edge cases pinned in the self-hosted
+1. selftest/edge.ting: nastiest edge cases pinned in the self-hosted
    suite (unicode, negative modulo, float rendering, nesting).
-3. Ongoing: maintenance (issues/PRs/CI); replenish per LOOP.md.
+2. Ongoing: maintenance (issues/PRs/CI); replenish per LOOP.md.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -232,6 +231,7 @@ green.
 - v2.0.0 RELEASED and verified: 3 assets; both engines correct on the
   shipped binary. Twentieth release.
   https://github.com/stefanobaghino/thing/releases/tag/v2.0.0
+- Playground calc example (browser-verified).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
