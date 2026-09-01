@@ -1673,3 +1673,15 @@ md2html just needs to emit the links); verify one live; (2) CLI
 basics that are embarrassingly missing: `ting --version` and
 `ting --help` (usage covering script/REPL/--eval/--vm/--fmt/--lsp);
 (3) release v1.7.0.
+
+---
+
+## 2026-09-01 — Iteration 99: run-links + --version/--help
+
+Every ```ting block on the rendered docs pages now carries a "run it
+in the playground" link — md2html emits the same base64url fragment
+the playground's share button produces, so the snippet arrives
+preloaded and auto-runs (13 links on the tutorial page; decode of the
+first verified to match its snippet). And the CLI finally has
+`--version` and `--help` (usage covering REPL/script/engines/fmt/
+lsp). All 14 suites green. v1.7.0's last task is the release.

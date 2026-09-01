@@ -9,6 +9,31 @@ fn main() -> ExitCode {
         _ => Engine::Vm,
     };
     let mut args = std::env::args().skip(1).peekable();
+    match args.peek().map(String::as_str) {
+        Some("--version") => {
+            println!("ting {}", env!("CARGO_PKG_VERSION"));
+            return ExitCode::SUCCESS;
+        }
+        Some("--help") => {
+            println!(
+                "ting {} — a tiny, zero-dependency scripting language\n\n\
+                 usage:\n\
+                 \x20 ting                        start the REPL\n\
+                 \x20 ting <script> [args...]     run a script (argv reaches args())\n\
+                 \x20 ting --eval <script>        run on the reference tree-walker\n\
+                 \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
+                 \x20 ting --fmt <files...>       reformat files in place\n\
+                 \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
+                 \x20 ting --lsp                  language server on stdio\n\
+                 \x20 ting --version | --help\n\n\
+                 env: TING_ENGINE=eval|vm selects the engine\n\
+                 docs: http://www.baghino.me/thing/",
+                env!("CARGO_PKG_VERSION")
+            );
+            return ExitCode::SUCCESS;
+        }
+        _ => {}
+    }
     if matches!(
         args.peek().map(String::as_str),
         Some("--fmt") | Some("--fmt-check")

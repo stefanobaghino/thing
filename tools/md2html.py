@@ -8,6 +8,7 @@ tables, unordered lists, inline code/bold/links.
 Usage: python3 tools/md2html.py input.md output.html
 """
 
+import base64
 import html
 import re
 import sys
@@ -34,6 +35,8 @@ STYLE = """
   th, td { border: 1px solid #2a2f38; padding: .4rem .6rem;
            text-align: left; vertical-align: top; }
   th { background: #1d2026; }
+  .runlink { text-align: right; margin: -0.6rem 0 1rem; }
+  .runlink a { font-size: .85rem; color: #9fd89f; text-decoration: none; }
 """
 
 NAV = (
@@ -75,14 +78,28 @@ def convert(md: str) -> str:
     while i < len(lines):
         line = lines[i]
         if line.startswith("```"):
+            lang = line[3:].strip()
             flush_para()
             i += 1
             block = []
             while i < len(lines) and not lines[i].startswith("```"):
                 block.append(lines[i])
                 i += 1
-            code = html.escape("\n".join(block), quote=False)
+            raw = "\n".join(block)
+            code = html.escape(raw, quote=False)
             out.append(f"<pre><code>{code}</code></pre>")
+            if lang == "ting":
+                # Same fragment encoding the playground's share button
+                # uses: base64url of the UTF-8 source.
+                enc = (
+                    base64.urlsafe_b64encode((raw + "\n").encode())
+                    .decode()
+                    .rstrip("=")
+                )
+                out.append(
+                    f'<div class="runlink"><a href="./#code={enc}">'
+                    "run it in the playground &#9656;</a></div>"
+                )
         elif m := re.match(r"^(#{1,3}) (.*)$", line):
             flush_para()
             level = len(m.group(1))
