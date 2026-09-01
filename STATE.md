@@ -20,14 +20,12 @@ release binaries on GitHub.
 Milestone **v0.8.0 — a real scripting citizen** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. json_parse(s) / json_str(v) builtins: hand-rolled, zero-dep;
-   strict errors on malformed input; round-trip selftests.
-2. Process builtins: env(name) -> string|nil, exit(code),
+1. Process builtins: env(name) -> string|nil, exit(code),
    time_ms() -> int.
-3. Showcase: examples/todo.ting (JSON-file-backed todo CLI) + a new
+2. Showcase: examples/todo.ting (JSON-file-backed todo CLI) + a new
    integration test driving it with real argv and a temp data file.
-4. CHANGELOG.md: retroactive for v0.1.0..v0.7.0, then per release.
-5. Release v0.8.0.
+3. CHANGELOG.md: retroactive for v0.1.0..v0.7.0, then per release.
+4. Release v0.8.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -132,6 +130,8 @@ green.
 - v0.7.0 RELEASED and verified: 3 assets; format() smoke-tested in
   the shipped binary.
   https://github.com/stefanobaghino/thing/releases/tag/v0.7.0
+- JSON builtins (src/json.rs: full decoder incl. surrogate pairs;
+  sorted-key encoder); 40 builtins, 151 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
