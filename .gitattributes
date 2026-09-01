@@ -1,0 +1,3 @@
+# Golden example outputs are compared byte-for-byte against interpreter
+# output (always \n), so nothing may be CRLF-converted on checkout.
+* text=auto eol=lf
