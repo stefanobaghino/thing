@@ -169,6 +169,27 @@ scope).
 | `min(xs)` / `max(xs)` | smallest / largest element; `sort`'s ordering rules; empty list errors |
 | `abs(n)`       | absolute value of an int or float                            |
 | `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
+| `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
+
+### Modules
+
+`import(path)` loads another ting file, runs it in a fresh global
+scope, and returns a map of everything its top level defined:
+
+```ting
+# mathutils.ting
+fn double(x) { return x * 2; }
+
+# main.ting
+let m = import("mathutils.ting");
+print(m["double"](21));   # 42
+```
+
+Relative paths resolve against the importing file's directory. A module
+runs once per program: later imports return the very same map (mutating
+it is visible everywhere). Circular imports, missing files, and errors
+inside the module are ordinary runtime errors (the message carries the
+module's own line and column).
 
 ## Errors
 

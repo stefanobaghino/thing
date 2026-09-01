@@ -1,0 +1,18 @@
+# ting testing ting: import().
+
+let lib = import("_lib.ting");
+assert(lib["answer"] == 42, "module value");
+assert(lib["double"](21) == 42, "module function");
+assert(lib["greet"]("ting") == "hello, ting", "module closure");
+assert(!has(lib, "print"), "ambient builtins are not exports");
+
+# Imports are cached: the same map comes back every time.
+lib["extra"] = true;
+let again = import("_lib.ting");
+assert(has(again, "extra"), "second import returns the same map");
+
+# Failure modes are ordinary catchable errors.
+let missing = try(fn() { return import("no-such-module.ting"); });
+assert(contains(missing["err"], "cannot import"), "missing module");
+let notstr = try(fn() { return import(42); });
+assert(contains(notstr["err"], "string path"), "path must be a string");

@@ -744,3 +744,24 @@ arithmetic, strings, collections, functions/control-flow, errors —
 itself. `tests/selftest.rs` runs each through the real binary and
 requires exit 0 with empty stdout, so a stray print fails CI too.
 All passed first run. 36 builtins; suite at 144 (+5 ting programs).
+
+---
+
+## 2026-09-01 — Iteration 33: import() modules
+
+Design decided and implemented in one iteration (it stayed small
+because the builtin machinery already existed). `import(path)`: runs
+the file in a fresh global environment on the same interpreter (its
+prints still flow to the program's output), returns the module's
+top-level bindings as a map — builtins still bound to their own names
+are treated as ambient and excluded. Relative paths resolve against
+the importing file's directory (a dir_stack handles nesting); modules
+are cached by canonicalized path so every import returns the same map
+(reference semantics make that observable and useful); circular
+imports error; lex/parse/runtime errors inside a module surface as
+`error in module "x.ting" at LINE:COL: ...`. Why a map and not new
+syntax: no lexer/parser changes, and a namespace you can pass around
+is more ting-like than magic bindings. selftest gains modules.ting +
+_lib.ting (self-hosted import tests); a Rust test covers nested
+imports, cycles, and module diagnostics. 37 builtins; suite at 145
+(+7 ting programs).

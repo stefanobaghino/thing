@@ -26,6 +26,9 @@ pub fn run_source<W: Write>(
     let program = parser::parse_program(&tokens).map_err(|e| render(&e.message, e.span))?;
     let mut interp = eval::Interpreter::new(out);
     interp.set_args(script_args);
+    if let Some(dir) = std::path::Path::new(path).parent() {
+        interp.set_base_dir(dir.to_path_buf());
+    }
     interp.run(&program).map_err(|e| render(&e.message, e.span))
 }
 

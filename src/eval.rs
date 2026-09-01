@@ -86,28 +86,45 @@ pub struct Interpreter<W: Write> {
     out: W,
     depth: usize,
     script_args: Vec<String>,
+    /// Directory import paths resolve against; the top is the directory
+    /// of the file currently executing (script, or module mid-import).
+    dir_stack: Vec<std::path::PathBuf>,
+    import_cache: HashMap<std::path::PathBuf, Value>,
+    importing: Vec<std::path::PathBuf>,
+}
+
+fn global_env() -> Rc<RefCell<Env>> {
+    let mut globals = HashMap::new();
+    for b in Builtin::ALL {
+        globals.insert(b.name().to_string(), Value::Builtin(b));
+    }
+    Rc::new(RefCell::new(Env {
+        vars: globals,
+        parent: None,
+    }))
 }
 
 impl<W: Write> Interpreter<W> {
     pub fn new(out: W) -> Self {
-        let mut globals = HashMap::new();
-        for b in Builtin::ALL {
-            globals.insert(b.name().to_string(), Value::Builtin(b));
-        }
         Interpreter {
-            env: Rc::new(RefCell::new(Env {
-                vars: globals,
-                parent: None,
-            })),
+            env: global_env(),
             out,
             depth: 0,
             script_args: Vec::new(),
+            dir_stack: vec![std::path::PathBuf::new()],
+            import_cache: HashMap::new(),
+            importing: Vec::new(),
         }
     }
 
     /// Command-line arguments exposed to the script via `args()`.
     pub fn set_args(&mut self, args: Vec<String>) {
         self.script_args = args;
+    }
+
+    /// Directory that relative import() paths resolve against.
+    pub fn set_base_dir(&mut self, dir: std::path::PathBuf) {
+        self.dir_stack[0] = dir;
     }
 
     /// Consume the interpreter, handing back its output writer (used by
@@ -827,7 +844,80 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Import => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(path) => {
+                        let path = path.clone();
+                        self.import_module(&path, span)
+                    }
+                    v => Err(error(
+                        format!("import expects a string path, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
+    }
+
+    /// Load, run, and cache a module. The module executes in a fresh
+    /// global environment; its top-level bindings (minus untouched
+    /// builtins) come back as a map, the same map on every import.
+    fn import_module(&mut self, path: &str, span: Span) -> Result<Value, RuntimeError> {
+        let base = self.dir_stack.last().cloned().unwrap_or_default();
+        let raw = if std::path::Path::new(path).is_absolute() {
+            std::path::PathBuf::from(path)
+        } else {
+            base.join(path)
+        };
+        let resolved = raw.canonicalize().unwrap_or(raw);
+        if let Some(cached) = self.import_cache.get(&resolved) {
+            return Ok(cached.clone());
+        }
+        if self.importing.contains(&resolved) {
+            return Err(error(format!("circular import of {path:?}"), span));
+        }
+        let src = std::fs::read_to_string(&resolved)
+            .map_err(|e| error(format!("cannot import {path:?}: {e}"), span))?;
+        let in_module = |m: &str, s: Span, src: &str| {
+            let (line, col) = s.line_col(src);
+            error(
+                format!("error in module {path:?} at {line}:{col}: {m}"),
+                span,
+            )
+        };
+        let tokens = crate::lexer::lex(&src).map_err(|e| in_module(&e.message, e.span, &src))?;
+        let program = crate::parser::parse_program(&tokens)
+            .map_err(|e| in_module(&e.message, e.span, &src))?;
+
+        let saved_env = std::mem::replace(&mut self.env, global_env());
+        self.importing.push(resolved.clone());
+        self.dir_stack.push(
+            resolved
+                .parent()
+                .map(|p| p.to_path_buf())
+                .unwrap_or_default(),
+        );
+        let result = self.run(&program);
+        self.dir_stack.pop();
+        self.importing.pop();
+        let module_env = std::mem::replace(&mut self.env, saved_env);
+        result.map_err(|e| in_module(&e.message, e.span, &src))?;
+
+        let mut exports = std::collections::BTreeMap::new();
+        for (name, v) in module_env.borrow().vars.iter() {
+            // Builtins still bound to their own name are ambient, not
+            // something the module defined.
+            if let Value::Builtin(b) = v
+                && b.name() == name
+            {
+                continue;
+            }
+            exports.insert(name.clone(), v.clone());
+        }
+        let map = Value::map(exports);
+        self.import_cache.insert(resolved, map.clone());
+        Ok(map)
     }
 
     /// Call any callable value (used by builtins that take functions).
@@ -1570,6 +1660,53 @@ mod tests {
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
         );
+    }
+
+    #[test]
+    fn builtin_import() {
+        let dir = std::env::temp_dir().join(format!("ting-import-test-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        std::fs::write(
+            dir.join("lib.ting"),
+            "let x = 1;\nfn inc(n) { return n + 1; }\n",
+        )
+        .unwrap();
+        // nested.ting imports lib.ting relative to its own directory.
+        std::fs::write(
+            dir.join("nested.ting"),
+            "let lib = import(\"lib.ting\");\nlet y = lib[\"inc\"](lib[\"x\"]);\n",
+        )
+        .unwrap();
+        std::fs::write(dir.join("selfloop.ting"), "import(\"selfloop.ting\");\n").unwrap();
+        std::fs::write(dir.join("broken.ting"), "let = ;\n").unwrap();
+
+        use crate::parser::parse_program;
+        let run_in = |src: &str| -> Result<String, RuntimeError> {
+            let mut interp = Interpreter::new(Vec::new());
+            interp.set_base_dir(dir.clone());
+            interp.run(&parse_program(&lex(src).unwrap()).unwrap())?;
+            Ok(String::from_utf8(interp.into_out()).unwrap())
+        };
+
+        assert_eq!(
+            run_in("let m = import(\"nested.ting\"); print(m[\"y\"]);").unwrap(),
+            "2\n"
+        );
+        let cycle = run_in("import(\"selfloop.ting\");").unwrap_err();
+        assert!(
+            cycle.message.contains("circular import"),
+            "{}",
+            cycle.message
+        );
+        let broken = run_in("import(\"broken.ting\");").unwrap_err();
+        assert!(
+            broken
+                .message
+                .starts_with("error in module \"broken.ting\" at 1:5:"),
+            "{}",
+            broken.message
+        );
+        let _ = std::fs::remove_dir_all(&dir);
     }
 
     #[test]

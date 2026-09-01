@@ -1,0 +1,8 @@
+# A module for modules.ting to import. Also runs standalone as a
+# selftest (definitions only: silent, exit 0).
+
+let answer = 42;
+
+fn double(x) { return x * 2; }
+
+fn greet(name) { return "hello, " + name; }
