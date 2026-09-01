@@ -53,3 +53,27 @@ grammars directly.
 Zed consumes TextMate grammars through its extension format; point a
 local extension's `grammars` entry at this file. See Zed's docs on
 "languages" for the two-file scaffold.
+
+## Live diagnostics (LSP)
+
+The `ting` binary doubles as a language server: `ting --lsp` speaks
+JSON-RPC over stdio and pushes lex/parse/compile diagnostics on every
+open and change. Point any LSP client at it:
+
+**Neovim** (built-in LSP):
+
+```lua
+vim.api.nvim_create_autocmd("FileType", {
+  pattern = "ting",
+  callback = function()
+    vim.lsp.start({ name = "ting", cmd = { "ting", "--lsp" } })
+  end,
+})
+vim.filetype.add({ extension = { ting = "ting" } })
+```
+
+**VS Code**: any generic LSP-client extension works — configure the
+language id `ting` with server command `ting --lsp`.
+
+**Zed**: add a language entry for `.ting` whose `language_servers`
+command runs `ting --lsp`.

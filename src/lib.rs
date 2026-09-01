@@ -7,6 +7,7 @@ pub mod diag;
 pub mod eval;
 pub mod json;
 pub mod lexer;
+pub mod lsp;
 pub mod parser;
 pub mod repl;
 pub mod value;

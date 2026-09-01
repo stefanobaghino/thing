@@ -9,6 +9,12 @@ fn main() -> ExitCode {
         _ => Engine::Vm,
     };
     let mut args = std::env::args().skip(1).peekable();
+    if args.peek().map(String::as_str) == Some("--lsp") {
+        return match ting::lsp::run() {
+            0 => ExitCode::SUCCESS,
+            _ => ExitCode::FAILURE,
+        };
+    }
     match args.peek().map(String::as_str) {
         Some("--vm") => {
             engine = Engine::Vm;

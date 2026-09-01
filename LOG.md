@@ -1351,3 +1351,20 @@ ranges; (2) an integration test that drives the server over pipes with
 real LSP traffic; (3) editor/README wiring instructions (VS Code
 generic LSP client, Neovim, Zed); (4) release v1.2.0. Runtime errors
 stay out of scope (that's execution, not analysis).
+
+---
+
+## 2026-09-01 — Iteration 64: ting is a language server
+
+src/lsp.rs (~200 lines, zero new dependencies): `ting --lsp` speaks
+JSON-RPC over stdio — Content-Length framing, initialize/shutdown/
+exit lifecycle (exit code 0 only after shutdown, per spec),
+didOpen/didChange with full-text sync, and publishDiagnostics carrying
+the first lex/parse/compile error with a real 0-based range. The
+payloads are ordinary ting Values encoded by src/json.rs — the
+language's own JSON codec now powers its IDE support. Positions are
+Unicode-scalar (documented approximation vs UTF-16). tests/lsp.rs
+drives the real binary over pipes: init handshake, broken-file
+diagnostic, fixing didChange clears it, MethodNotFound for hover,
+clean shutdown/exit — passed first run. editor/README gains Neovim/
+VS Code/Zed wiring. Suite at 160 (13 suites).
