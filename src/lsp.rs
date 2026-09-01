@@ -106,6 +106,37 @@ fn document_symbols(src: &str) -> Value {
     Value::list(symbols)
 }
 
+/// Definition of the identifier at (line, character): the top-level
+/// `let` (or fn sugar) binding that name, as a Location in `uri`.
+fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Value {
+    let Some(name) = ident_at(src, line, character) else {
+        return Value::Nil;
+    };
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::Nil;
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Value::Nil;
+    };
+    for stmt in &program {
+        if let crate::ast::StmtKind::Let(n, _) = &stmt.kind
+            && n == &name
+        {
+            return obj(vec![
+                ("uri", s(uri)),
+                (
+                    "range",
+                    obj(vec![
+                        ("start", position(src, stmt.span.start)),
+                        ("end", position(src, stmt.span.end)),
+                    ]),
+                ),
+            ]);
+        }
+    }
+    Value::Nil
+}
+
 /// Lex + parse + compile; the first error becomes the diagnostic list.
 fn diagnostics(src: &str) -> Value {
     let err = match lexer::lex(src) {
@@ -252,6 +283,7 @@ pub fn run() -> i32 {
                             ("completionProvider", obj(vec![])),
                             ("documentFormattingProvider", Value::Bool(true)),
                             ("documentSymbolProvider", Value::Bool(true)),
+                            ("definitionProvider", Value::Bool(true)),
                         ]),
                     ),
                     (
@@ -325,6 +357,33 @@ pub fn run() -> i32 {
                 let result = uri
                     .and_then(|u| docs.get(&u).map(|src| completion_result(src)))
                     .unwrap_or(Value::Nil);
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/definition" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let result = match (uri, line, character) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
+                        .get(&uri)
+                        .map(|src| {
+                            definition_result(src, &uri, l.max(0) as usize, c.max(0) as usize)
+                        })
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
                 write_message(
                     &mut output,
                     &obj(vec![

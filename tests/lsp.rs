@@ -146,7 +146,7 @@ fn lsp_session_lifecycle_and_diagnostics() {
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/definition","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/references","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");
@@ -196,6 +196,49 @@ fn document_symbols_list_top_level_lets() {
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
+fn definition_jumps_to_top_level_binding() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"definitionProvider\":true"), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///d.ting","text":"let limit = 10;\nprint(limit);\n"}}}"#,
+    );
+    let _diags = recv(&mut reader);
+
+    // Cursor on the `limit` usage inside print(...) on line 1.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///d.ting"},"position":{"line":1,"character":8}}}"#,
+    );
+    let def = recv(&mut reader);
+    assert!(def.contains("\"uri\":\"file:///d.ting\""), "{def}");
+    assert!(def.contains("\"line\":0"), "{def}");
+
+    // An identifier with no top-level binding resolves to null.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///d.ting"},"position":{"line":1,"character":1}}}"#,
+    );
+    let none = recv(&mut reader);
+    assert!(none.contains("\"result\":null"), "{none}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
     );
     let _ = recv(&mut reader);
     send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);

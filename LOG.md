@@ -1990,3 +1990,15 @@ sugar surfacing as SymbolKind Function (12) and plain bindings as
 Variable (13); parse failures return an empty list. Capability
 advertised; pipe-driven test asserts both kinds and that bare
 expression statements don't leak in. 14/14 suites.
+
+---
+
+## 2026-09-01 — Iteration 137: LSP go-to-definition
+
+Small stroke pairing with 136's outline: textDocument/definition
+resolves the identifier under the cursor to its top-level let (fn
+sugar included) as a single Location; nil when unbound or the doc
+doesn't parse. The MethodNotFound probe in tests moved from
+definition (now real) to textDocument/references. Pipe test covers
+the hit, the miss (result:null), and the advertised capability.
+14/14 suites.
