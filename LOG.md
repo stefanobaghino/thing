@@ -52,3 +52,28 @@ language, the repo is the experiment. `cargo build` and `cargo test` pass
 on the default hello-world `main.rs`; real code starts next iteration with
 the lexer. Next wakeup scheduled short since the next task is fully
 specified.
+
+---
+
+## 2026-09-01 — Iteration 2: lexer
+
+Implemented `src/lexer.rs`: full token set (int/float/string/ident,
+9 keywords, all operators/punctuation), byte-offset `Span` on every token,
+`Span::line_col` for diagnostics, `#`-to-EOL comments. 15 unit tests cover
+literals, escapes, unicode, keyword/identifier boundaries, two-char
+operators, spans, and error cases.
+
+Decisions:
+- **Byte-level scanning** over `char_indices`: simpler peek/peek2 logic;
+  multi-byte UTF-8 is handled explicitly in strings and error re-sync.
+- **Separate Int(i64)/Float(f64)** rather than a single f64 number type —
+  integer semantics (exact arithmetic, indexing) are worth the small cost.
+- **`1.foo` lexes as Int, Dot, Ident** (float requires digit after the
+  dot), keeping the door open for method-call syntax.
+- **Newlines terminate strings with an error** — multiline strings can be
+  added later deliberately, not by accident.
+- Clippy denied `3.14` in a test (approx-PI lint); used `2.5` instead.
+  Clippy added to the verify step alongside `cargo test`.
+
+`main.rs` now runs a script file by dumping its token stream (placeholder
+until the parser lands). Smoke-tested on a sample script.
