@@ -155,6 +155,49 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
     )])
 }
 
+const KEYWORDS: &[&str] = &[
+    "let", "fn", "if", "else", "while", "for", "in", "break", "continue", "return", "true",
+    "false", "nil",
+];
+
+/// Completion items: every builtin (with docs), keywords, and the
+/// identifiers already present in the document.
+fn completion_result(src: &str) -> Value {
+    let mut items = Vec::new();
+    for b in Builtin::ALL {
+        let (sig, summary) = b.doc();
+        items.push(obj(vec![
+            ("label", s(b.name())),
+            ("kind", Value::Int(3)), // Function
+            ("detail", s(sig)),
+            ("documentation", s(summary)),
+        ]));
+    }
+    for kw in KEYWORDS {
+        items.push(obj(vec![("label", s(kw)), ("kind", Value::Int(14))]));
+    }
+    let mut seen: Vec<String> = Vec::new();
+    let mut word = String::new();
+    for c in src.chars().chain([' ']) {
+        if c.is_ascii_alphanumeric() || c == '_' {
+            word.push(c);
+        } else if !word.is_empty() {
+            let w = std::mem::take(&mut word);
+            if !w.chars().next().is_some_and(|c| c.is_ascii_digit())
+                && !KEYWORDS.contains(&w.as_str())
+                && Builtin::ALL.iter().all(|b| b.name() != w)
+                && !seen.contains(&w)
+            {
+                seen.push(w);
+            }
+        }
+    }
+    for w in seen {
+        items.push(obj(vec![("label", s(&w)), ("kind", Value::Int(6))])); // Variable
+    }
+    Value::list(items)
+}
+
 pub fn run() -> i32 {
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
@@ -175,6 +218,7 @@ pub fn run() -> i32 {
                         obj(vec![
                             ("textDocumentSync", Value::Int(1)),
                             ("hoverProvider", Value::Bool(true)),
+                            ("completionProvider", obj(vec![])),
                         ]),
                     ),
                     (
@@ -240,6 +284,22 @@ pub fn run() -> i32 {
                 {
                     docs.remove(&uri);
                 }
+            }
+            "textDocument/completion" => {
+                let uri = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let result = uri
+                    .and_then(|u| docs.get(&u).map(|src| completion_result(src)))
+                    .unwrap_or(Value::Nil);
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
             }
             "textDocument/hover" => {
                 let params = get(&msg, "params");

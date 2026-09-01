@@ -100,6 +100,24 @@ fn lsp_session_lifecycle_and_diagnostics() {
     assert!(hov.contains("print(...)"), "{hov}");
     assert!(hov.contains("markdown"), "{hov}");
 
+    // Completions include builtins with docs, keywords, and the
+    // document's own identifiers (the doc is now "print(1);" — add one
+    // with a variable first).
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///t.ting","version":4},"contentChanges":[{"text":"let counter_total = 1;"}]}}"#,
+    );
+    let _diag = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":7,"method":"textDocument/completion","params":{"textDocument":{"uri":"file:///t.ting"},"position":{"line":0,"character":0}}}"#,
+    );
+    let comp = recv(&mut reader);
+    assert!(comp.contains("\"label\":\"print\""), "{comp}");
+    assert!(comp.contains("print(...)"), "{comp}");
+    assert!(comp.contains("\"label\":\"while\""), "{comp}");
+    assert!(comp.contains("\"label\":\"counter_total\""), "{comp}");
+
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,

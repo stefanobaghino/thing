@@ -1468,3 +1468,14 @@ code), documented and dogfooded by a selftest; (3) measured VM
 micro-pass: dedup the constant pool and cache global lookups if
 profiling supports it — same rule as ever, keep only what benchmarks
 justify; (4) release v1.4.0.
+
+---
+
+## 2026-09-01 — Iteration 73: LSP completions
+
+textDocument/completion: all 43 builtins as Function items carrying
+their doc() signature and summary, the 13 keywords, and every
+identifier already present in the document (deduped, digits/keywords/
+builtins excluded) as Variable items. completionProvider advertised.
+Test drives it over pipes: builtin with detail, keyword, and a
+document-local name all present. Suite green.
