@@ -1201,3 +1201,14 @@ indexing, and type errors are generated naturally and must match).
 All green. docs/vm.md's testing plan is now fully implemented, with
 the soup-doesn't-parse finding logged as the reason for the pivot.
 Suite at 158.
+
+---
+
+## 2026-09-01 — Iteration 57: VM CI job
+
+ci.yml gains a test-vm job: the full test suite with TING_ENGINE=vm in
+the job environment, so every integration test that spawns the real
+binary (examples, selftests, tutorial snippets, io, todo scenario)
+runs end-to-end on the bytecode engine, on every push. Verified
+locally first: all 11 suites green under TING_ENGINE=vm. This
+completes docs/vm.md's testing plan item 3.

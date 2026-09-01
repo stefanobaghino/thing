@@ -26,3 +26,17 @@ jobs:
         run: cargo clippy --all-targets -- -D warnings
       - name: Tests
         run: cargo test
+
+  # The whole integration surface again with the binary forced onto the
+  # bytecode engine — end-to-end parity insurance beyond the in-process
+  # differential tests.
+  test-vm:
+    runs-on: ubuntu-latest
+    env:
+      TING_ENGINE: vm
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup update stable && rustup default stable
+      - name: Tests (VM engine)
+        run: cargo test
