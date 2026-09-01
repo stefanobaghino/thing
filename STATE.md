@@ -17,9 +17,8 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Tagged release with prebuilt binaries.
 
-2. Stretch (post-release): string split/join builtins, `for`-in loop,
+1. Stretch (post-release): string split/join builtins, `for`-in loop,
    `break`/`continue`, REPL diagnostics with carets.
 
 ## Done
@@ -57,6 +56,8 @@ release binaries on GitHub.
 - rustfmt applied tree-wide; CI (fmt+clippy+test, 3-OS matrix) on
   push/PR. Green on all 3 OSes after a Windows CRLF golden-file fix
   (.gitattributes eol=lf).
+- v0.1.0 tagged; release workflow builds and uploads 3-platform
+  binaries (run watched; confirm assets present).
 
 ## Blockers
 

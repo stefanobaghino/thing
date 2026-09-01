@@ -382,3 +382,25 @@ CRLF conversion rewrote the golden `.out` files on checkout, so the
 byte-for-byte comparison saw `\r\n` vs the interpreter's `\n`. Fix:
 `.gitattributes` with `* text=auto eol=lf` (run 33495058612 verifies).
 The 3-OS matrix earned its keep on its very first run.
+
+---
+
+## 2026-09-01 — Iteration 15: v0.1.0 release
+
+CI confirmed green on all three OSes, so the release shipped: added
+`.github/workflows/release.yml` (on `v*` tag: create the GitHub release,
+then a 3-target matrix builds `--release` and uploads
+`ting-v0.1.0-{x86_64-linux-gnu,aarch64-apple-darwin,x86_64-windows-msvc}`
+archives), tagged `v0.1.0`, and pushed the tag. Run 33495207887 is
+watched in the background.
+
+Decisions:
+- **Native-runner targets only** (no cross-compilation): three real
+  platforms with zero extra tooling. More targets can come later if
+  anyone asks.
+- **`gh release` CLI instead of third-party upload actions** — same
+  small-supply-chain reasoning as CI; `actions/checkout` remains the
+  only external action.
+- **Release notes point at docs/reference.md and LOG.md** — the decision
+  log is part of the product for this experiment.
+- Version stays 0.1.0 (first release, matching Cargo.toml).
