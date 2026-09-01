@@ -1319,3 +1319,14 @@ REPL deliberately stays on the tree-walker (incremental chunks fit it
 naturally; documented). Reference, vm.md (verdict section), README,
 CHANGELOG updated; BASELINE regenerated (fib -35%, lists -29%,
 strings -9%, maps +3%). Both engines' full suites green locally.
+
+---
+
+## 2026-09-01 — Iteration 63: v1.1.0 released
+
+Milestone complete; version bumped, CHANGELOG promoted, tag pushed.
+v1.1.0 over v1.0.0: compiled function bodies, local slot resolution,
+and the default flip — the VM went from "+2% and honest about it" to
+"-35% on fib, default engine" in three measured steps, with the
+reference tree-walker retained behind --eval and CI running both.
+Asset verification when the release workflow finishes.

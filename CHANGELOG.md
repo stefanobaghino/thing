@@ -4,7 +4,7 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v1.1.0 — the VM earns its keep (2026-09-01)
 
 - The bytecode VM is now the default engine: with compiled function
   bodies and local slot resolution it is 11-35% faster on the
