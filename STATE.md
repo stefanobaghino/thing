@@ -18,8 +18,8 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-1. Stretch (post-release): REPL diagnostics with carets. After that:
-   consider v0.2.0 tag, then idle maintenance (respond to issues).
+1. Idle maintenance: watch for issues/PRs on origin; fix CI breakage;
+   no new features without an external signal. Cadence: slow.
 
 ## Done
 
@@ -59,6 +59,7 @@ release binaries on GitHub.
 - String builtins split/join/trim (14 builtins total); 2 tests.
 - for-in (lists/strings/maps, snapshot, per-iteration binding) +
   break/continue; 8 tests. collections example modernized.
+- REPL caret diagnostics; v0.2.0 tagged and released.
 - v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
   asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 

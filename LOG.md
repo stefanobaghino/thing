@@ -452,3 +452,21 @@ Design decisions:
   predicted in iteration 7). They stop at the innermost loop, error at
   top level, and error when escaping a function boundary (tested).
 - CI green on the split/join/trim commit confirmed before starting.
+
+---
+
+## 2026-09-01 — Iteration 18: REPL carets + v0.2.0
+
+REPL errors now render with the same caret diagnostics as scripts
+(`repl:LINE:COL` against the current input chunk, so multi-line
+definitions point at the right line). This supersedes iteration 11's
+"message-only" note. 1 net new test; suite is now 119.
+
+That was the last stretch item, so v0.2.0 ships in the same iteration:
+version bumped in Cargo.toml, tagged, pushed — the release workflow
+builds the three platform binaries. v0.2.0 over v0.1.0: split/join/trim
+builtins, for-in loops with break/continue, REPL caret diagnostics.
+
+Backlog after this: idle maintenance. The loop will slow its cadence and
+look for external signals (issues, PRs) rather than inventing features —
+scope discipline is part of the experiment.

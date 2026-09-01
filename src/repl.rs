@@ -1,5 +1,6 @@
 //! Interactive REPL: std-only, persistent session, multi-line input.
 
+use crate::diag;
 use crate::eval::Interpreter;
 use crate::lexer;
 use crate::parser;
@@ -28,33 +29,37 @@ pub enum Outcome {
 pub fn eval_chunk<W: Write>(interp: &mut Interpreter<W>, src: &str) -> Outcome {
     let tokens = match lexer::lex(src) {
         Ok(t) => t,
-        Err(e) => return Outcome::Error(e.message),
+        Err(e) => return Outcome::Error(diag::render("repl", src, &e.message, e.span)),
     };
     if let Ok(expr) = parser::parse_expr(&tokens) {
         return match interp.eval(&expr) {
             Ok(Value::Nil) => Outcome::Unit,
             Ok(v) => Outcome::Value(render(&v)),
-            Err(e) => Outcome::Error(e.message),
+            Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
         };
     }
     match parser::parse_program(&tokens) {
-        Ok(prog) => run_program(interp, &prog),
+        Ok(prog) => run_program(interp, src, &prog),
         Err(e) if e.message.ends_with("found end of input") => {
             if let Ok(t2) = lexer::lex(&format!("{src};"))
                 && let Ok(prog) = parser::parse_program(&t2)
             {
-                return run_program(interp, &prog);
+                return run_program(interp, src, &prog);
             }
             Outcome::Incomplete
         }
-        Err(e) => Outcome::Error(e.message),
+        Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
     }
 }
 
-fn run_program<W: Write>(interp: &mut Interpreter<W>, prog: &[crate::ast::Stmt]) -> Outcome {
+fn run_program<W: Write>(
+    interp: &mut Interpreter<W>,
+    src: &str,
+    prog: &[crate::ast::Stmt],
+) -> Outcome {
     match interp.run(prog) {
         Ok(()) => Outcome::Unit,
-        Err(e) => Outcome::Error(e.message),
+        Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
     }
 }
 
@@ -119,7 +124,7 @@ fn run_inner() -> ExitCode {
             Outcome::Incomplete => continue,
             Outcome::Unit => {}
             Outcome::Value(s) => println!("{s}"),
-            Outcome::Error(msg) => eprintln!("error: {msg}"),
+            Outcome::Error(msg) => eprintln!("{msg}"),
         }
         buffer.clear();
     }
@@ -186,17 +191,32 @@ mod tests {
     }
 
     #[test]
-    fn errors_are_reported_and_session_survives() {
+    fn errors_are_rendered_with_carets_and_session_survives() {
         let mut i = fresh();
         assert_eq!(
             eval_chunk(&mut i, "xyz"),
-            Outcome::Error("undefined variable 'xyz'".into())
+            Outcome::Error("repl:1:1: error: undefined variable 'xyz'\n 1 | xyz\n   | ^^^".into())
         );
-        assert_eq!(
-            eval_chunk(&mut i, "1 = 2;"),
-            Outcome::Error("invalid assignment target".into())
-        );
+        match eval_chunk(&mut i, "1 = 2;") {
+            Outcome::Error(msg) => assert!(msg.contains("invalid assignment target")),
+            other => panic!("expected error, got {other:?}"),
+        }
         assert_eq!(eval_chunk(&mut i, "2 + 2"), Outcome::Value("4".into()));
+    }
+
+    #[test]
+    fn multiline_chunk_errors_point_at_the_right_line() {
+        let mut i = fresh();
+        match eval_chunk(&mut i, "fn f() {\n  return zzz;\n}\nf()") {
+            Outcome::Error(msg) => {
+                assert!(
+                    msg.starts_with("repl:2:10: error: undefined variable 'zzz'"),
+                    "got:\n{msg}"
+                );
+                assert!(msg.contains("  return zzz;"), "got:\n{msg}");
+            }
+            other => panic!("expected error, got {other:?}"),
+        }
     }
 
     #[test]
