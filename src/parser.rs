@@ -534,8 +534,12 @@ fn describe(kind: &TokenKind) -> String {
                 TokenKind::RBracket => "]",
                 TokenKind::Comma => ",",
                 TokenKind::Semi => ";",
+                TokenKind::Colon => ":",
                 TokenKind::Dot => ".",
-                _ => unreachable!(),
+                // Data-carrying kinds and Eof are handled above; keep a
+                // harmless fallback so a future token can't panic the
+                // error path (found by tests/fuzz.rs).
+                _ => return "token".to_string(),
             };
             format!("'{text}'")
         }
@@ -667,6 +671,13 @@ mod tests {
     fn missing_semicolon_is_an_error() {
         assert_eq!(program_err("let x = 1"), "expected ';', found end of input");
         assert_eq!(program_err("1 + 2"), "expected ';', found end of input");
+    }
+
+    #[test]
+    fn stray_colon_is_an_error_not_a_panic() {
+        // Regression: describe() missed Colon and panicked on this
+        // (found by tests/fuzz.rs).
+        assert_eq!(program_err("1 : 2;"), "expected ';', found ':'");
     }
 
     #[test]

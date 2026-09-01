@@ -668,3 +668,21 @@ word-frequency examples produce correct output. README now leads with
 the playground link. BOOTSTRAP note: this is still not an operated
 service — the site is a static artifact anyone can rebuild and host
 (`playground/build.sh` + any file server); Pages is just distribution.
+
+---
+
+## 2026-09-01 — Iteration 29: fuzz tests find and fix a real panic
+
+`tests/fuzz.rs`: a zero-dependency xorshift64* PRNG drives (a) 3000
+random token-soup programs, (b) 300 single-character mutations of every
+example, (c) 1000-deep nested expressions — all through
+lex/parse/execute (execution skipped when `while` appears, the one
+unbounded construct) under catch_unwind; any panic fails with the
+reproducing seed.
+
+It paid for itself on the first run: `parser.rs::describe()` missed
+`TokenKind::Colon` and hit `unreachable!()` — meaning any script with a
+misplaced `:` (e.g. `1 : 2;`) crashed the parser instead of printing a
+diagnostic, reachable from the released binary and the playground.
+Fixed (Colon arm + harmless fallback instead of unreachable!), plus a
+direct regression test. Suite at 141.
