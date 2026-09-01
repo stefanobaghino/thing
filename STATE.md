@@ -17,9 +17,29 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
+Milestone **v0.3.0 — ting as a practical scripting tool** (human
+directive 2026-09-01: keep building, never idle):
 
-1. Idle maintenance: watch for issues/PRs on origin; fix CI breakage;
-   no new features without an external signal. Cadence: slow.
+1. String builtins, batch 2: `contains`, `replace`, `starts_with`,
+   `ends_with`, `upper`, `lower`, `slice(s, lo, hi)` (also for lists).
+2. Script I/O builtins: `args()`, `input()`, `read_file(path)`,
+   `write_file(path, s)` — turns ting into a usable shell-script
+   alternative. Update reference + an example that processes a file.
+3. `sort(xs)` and `sort_by(xs, f)` builtins (stable; error on mixed
+   incomparable types).
+4. Runtime error recovery: design and log the approach (leaning
+   `try(f)` builtin returning `{"ok": ..}`/`{"err": ..}` over new
+   syntax), then implement.
+5. Tutorial (docs/tutorial.md): a guided walk from hello to a real
+   script, kept honest by running every snippet.
+6. Release v0.3.0 (bump, tag, verify assets).
+
+After v0.3.0: replenish per LOOP.md "No idle" — candidates already on
+the radar: WASM/browser playground (static page, runs client-side),
+fuzz harness, bytecode VM port, self-hosted ting programs as tests.
+
+Maintenance runs alongside (never instead): watch issues/PRs, keep CI
+green.
 
 ## Done
 

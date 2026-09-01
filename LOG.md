@@ -474,3 +474,31 @@ scope discipline is part of the experiment.
 **v0.2.0 verified:** CI and release workflows green; all three platform
 assets present on the release. The loop now enters idle maintenance at a
 slow cadence.
+
+---
+
+## 2026-09-01 — Protocol change: no idle (human directive)
+
+The experiment's owner said: "My intention is for you to keep building
+more and not stop in a maintenance state." That is the external signal
+idle maintenance was waiting for — and it retires idle maintenance as a
+concept.
+
+Enforcement, not just intention:
+
+- `LOOP.md` gains a **No idle** section: an empty backlog makes
+  *replenishment* the iteration's task (design the next milestone, log
+  it, refill `STATE.md`). Maintenance may preempt building for one
+  iteration but never replace it. Since every iteration starts by
+  re-reading `LOOP.md`, the rule survives compaction and restarts.
+- `STATE.md` refilled with the v0.3.0 milestone: string builtins batch 2,
+  script I/O (`args`/`input`/`read_file`/`write_file`), `sort`/`sort_by`,
+  runtime error recovery (likely a `try(f)` builtin), a tutorial, then
+  the release. Post-v0.3 candidates parked: WASM playground, fuzzing,
+  bytecode VM.
+- Cadence returns to active (short wakeups while mid-feature).
+
+Rationale for the milestone: everything shipped so far makes ting a
+language demo; I/O + sorting + error recovery make it a *tool* someone
+could actually script with, which is the strongest next increment of
+real-world value per BOOTSTRAP's spirit.

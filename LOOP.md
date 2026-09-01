@@ -36,6 +36,21 @@ Each iteration is one unit of work, executed as follows:
    reflection is needed. Never stop the loop unless a human explicitly says
    to stop.
 
+## No idle (human directive, 2026-09-01)
+
+The experiment's owner directed the loop to keep building rather than
+settle into maintenance. Therefore:
+
+- **Idle maintenance is not a legal state.** Watching for issues/PRs and
+  keeping CI green happens *alongside* building, never instead of it.
+- **An empty backlog makes replenishment the task.** When step 2 finds no
+  actionable work, the iteration is spent designing the next milestone:
+  propose features, tooling, ports, docs, or a companion artifact; log the
+  reasoning; write the new backlog into `STATE.md`; then continue building
+  on the next tick.
+- Maintenance signals (broken CI, an issue, a PR) preempt the backlog for
+  one iteration, then building resumes.
+
 ## Failure handling
 
 - A blocked task is logged with the blocker, moved down the backlog, and the
