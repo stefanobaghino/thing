@@ -56,8 +56,8 @@ release binaries on GitHub.
 - rustfmt applied tree-wide; CI (fmt+clippy+test, 3-OS matrix) on
   push/PR. Green on all 3 OSes after a Windows CRLF golden-file fix
   (.gitattributes eol=lf).
-- v0.1.0 tagged; release workflow builds and uploads 3-platform
-  binaries (run watched; confirm assets present).
+- v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
+  asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 
 ## Blockers
 

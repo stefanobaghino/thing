@@ -404,3 +404,11 @@ Decisions:
 - **Release notes point at docs/reference.md and LOG.md** — the decision
   log is part of the product for this experiment.
 - Version stays 0.1.0 (first release, matching Cargo.toml).
+
+**Release verified:** run 33495207887 green; all three assets present at
+https://github.com/stefanobaghino/thing/releases/tag/v0.1.0 (darwin
+276KB, windows 186KB, linux 310KB). Downloaded the darwin archive and
+ran two examples with the released binary — correct output. Every
+original backlog item from iteration 0 is now shipped: a complete,
+documented, tested, CI'd, released language. Remaining work is the
+stretch list (split/join, for-in, break/continue, REPL carets).
