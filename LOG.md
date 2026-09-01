@@ -1041,3 +1041,28 @@ promoted to v0.8.0, tag pushed. v0.8.0 over v0.7.0: JSON both ways,
 env/exit/time_ms, the todo.ting showcase with its scenario test, and
 the changelog itself. 43 builtins, 153 tests. Asset verification when
 the release workflow finishes.
+
+**v0.8.0 verified:** release workflow green; three assets; darwin
+binary ran the todo showcase end-to-end (add/done/list + correct JSON
+on disk). Eighth release.
+
+---
+
+## 2026-09-01 — Replenishment: v0.9.0 milestone
+
+Per LOOP.md "No idle". The parked bytecode VM finally earns its slot:
+the surface is complete (43 builtins, modules, JSON, playground,
+docs), iteration 36's profiling showed the tree-walker's cost is
+diffuse — dispatch overhead everywhere — which is precisely what a VM
+addresses structurally, and the project now has the safety net a
+rewrite needs: 153 host tests, 8 selftest programs, fuzz, benches.
+Chosen: **v0.9.0 — bytecode VM**, incremental and always shippable:
+(1) design doc (docs/vm.md): stack machine, chunk format, what stays
+(Env-chain closures at first — dispatch is the measured cost, not
+variable storage); (2) compiler+VM for expressions behind a --vm
+flag, differential-tested against the tree-walker; (3) statements,
+control flow, functions; (4) parity: the entire selftest suite and
+unit suite green under --vm; (5) benchmark, and only if clearly
+faster, flip the default; (6) release v0.9.0. Each step lands green
+on main; the flag keeps the tree-walker as the reference
+implementation throughout.
