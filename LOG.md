@@ -956,3 +956,22 @@ with a builtin-sync guard test, playground syntax highlighting, and
 the docs rendered onto the Pages site (live-verified, one converter
 bug fixed live). Asset verification follows when the release workflow
 finishes.
+
+**v0.7.0 verified:** release workflow green; three assets; darwin
+binary smoke-tested with format(). Seventh release.
+
+---
+
+## 2026-09-01 — Replenishment: v0.8.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v0.8.0 — a real scripting citizen**.
+Scripts talk to the world through data formats and the process
+environment; ting has neither. Backlog: (1) json_parse/json_str
+builtins — hand-rolled, zero-dep; ting maps/lists/strings/numbers/
+bools/nil map onto JSON naturally, and it makes ting usable in
+pipelines; (2) small process builtins: env(name) (string or nil),
+exit(code), time_ms() — deliberately tiny; (3) a showcase:
+examples/todo.ting, a JSON-file-backed todo CLI exercising
+args/io/json, driven by a new integration test with real argv+temp
+files; (4) CHANGELOG.md, retroactive from the release history and
+maintained per release; (5) release v0.8.0.
