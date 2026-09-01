@@ -13,9 +13,11 @@ REPL.
 ## Status
 
 The language core is complete: ints/floats/strings/bools/nil, lists and
-maps, functions and closures, control flow, 14 builtins, an interactive
-REPL, and rustc-style caret diagnostics. See the
-[language reference](docs/reference.md) and [examples/](examples/).
+maps, functions and closures, control flow, 29 builtins (including
+file/stdin I/O, sorting, and try/fail error recovery), an interactive
+REPL, and rustc-style caret diagnostics. Start with the
+[tutorial](docs/tutorial.md) — every snippet in it is run by CI — then
+the [language reference](docs/reference.md) and [examples/](examples/).
 
 ```ting
 fn make_counter() {

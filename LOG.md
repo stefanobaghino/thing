@@ -561,3 +561,18 @@ map-result shape composes with `has`. Verified the risky invariant:
 catches even a stack overflow and the interpreter stays usable after
 (tested). Reference's "no exception handling (yet)" note replaced with
 a recovery example. 1 test (8 assertions); suite at 130.
+
+---
+
+## 2026-09-01 — Iteration 23: tutorial, executable
+
+`docs/tutorial.md`: hello → values → loops → closures → reference
+semantics → try/fail → a word-frequency script that uses args, file I/O
+with recovery, maps, sort_by, and slice. The honesty mechanism is
+`tests/tutorial.rs`: it extracts every ```ting block, runs it through
+the real binary, and when a ```text block follows, diffs stdout against
+it exactly — the tutorial cannot rot without CI going red. All 9
+snippets are standalone (the wordfreq one falls back to a built-in
+sample when no file argument is given, so it runs deterministically
+everywhere). README now leads with the tutorial and reflects 29
+builtins. Suite at 131.
