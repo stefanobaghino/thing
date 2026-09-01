@@ -20,11 +20,10 @@ release binaries on GitHub.
 Milestone **v1.0.0 — confidence** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. CI matrix row: integration suites with TING_ENGINE=vm.
-2. Doc-coverage guard: every Builtin::ALL name present in
+1. Doc-coverage guard: every Builtin::ALL name present in
    docs/reference.md (like the grammar guard).
-3. README refresh (engines, changelog link, current numbers).
-4. Release v1.0.0.
+2. README refresh (engines, changelog link, current numbers).
+3. Release v1.0.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -157,6 +156,8 @@ green.
 - Grammar-directed differential fuzzing (600 valid generated
   programs per run, both engines byte-identical; token soup proved
   unparseable and was dropped).
+- CI test-vm job: full suite with TING_ENGINE=vm (verified locally
+  first).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
