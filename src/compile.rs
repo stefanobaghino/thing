@@ -55,8 +55,11 @@ pub enum Op {
     IterNext(i32),
     /// Create a closure from protos[i], capturing the current env.
     MakeFn(u32),
+    /// Pop the return value and leave the current function frame.
+    Return,
 }
 
+#[derive(Debug)]
 pub struct Chunk {
     pub code: Vec<Op>,
     pub consts: Vec<Value>,
@@ -68,9 +71,10 @@ pub struct Chunk {
     pub spans: Vec<Span>,
 }
 
+#[derive(Debug)]
 pub struct FnProto {
     pub params: Vec<String>,
-    pub body: std::rc::Rc<Vec<Stmt>>,
+    pub chunk: std::rc::Rc<Chunk>,
 }
 
 pub struct CompileError {
@@ -86,6 +90,10 @@ fn unsupported(what: &str, span: Span) -> CompileError {
 }
 
 pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
+    compile_stmts(stmts, false)
+}
+
+fn compile_stmts(stmts: &[Stmt], in_function: bool) -> Result<Chunk, CompileError> {
     let mut c = Compiler {
         chunk: Chunk {
             code: Vec::new(),
@@ -96,6 +104,7 @@ pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
         },
         loops: Vec::new(),
         scope_depth: 0,
+        in_function,
     };
     for s in stmts {
         c.stmt(s)?;
@@ -120,6 +129,7 @@ struct Compiler {
     chunk: Chunk,
     loops: Vec<LoopCtx>,
     scope_depth: usize,
+    in_function: bool,
 }
 
 impl Compiler {
@@ -286,14 +296,20 @@ impl Compiler {
                 self.emit(Op::Jump(0), s.span);
                 self.patch(at, target as i32);
             }
-            // Function bodies are never compiled (they stay AST), so a
-            // return reaching the compiler is at top level. Same message
-            // as the tree-walker, surfaced at compile time.
-            StmtKind::Return(..) => {
-                return Err(CompileError {
-                    message: "return outside function".to_string(),
-                    span: s.span,
-                });
+            StmtKind::Return(value) => {
+                if !self.in_function {
+                    // Same message as the tree-walker, surfaced at
+                    // compile time (accepted divergence).
+                    return Err(CompileError {
+                        message: "return outside function".to_string(),
+                        span: s.span,
+                    });
+                }
+                match value {
+                    Some(e) => self.expr(e)?,
+                    None => self.emit(Op::Nil, s.span),
+                }
+                self.emit(Op::Return, s.span);
             }
         }
         Ok(())
@@ -377,9 +393,10 @@ impl Compiler {
                 self.emit(Op::Call(args.len() as u8, callee.span), e.span);
             }
             ExprKind::Fn(params, body) => {
+                let chunk = compile_stmts(body, true)?;
                 self.chunk.protos.push(FnProto {
                     params: params.clone(),
-                    body: std::rc::Rc::clone(body),
+                    chunk: std::rc::Rc::new(chunk),
                 });
                 let i = (self.chunk.protos.len() - 1) as u32;
                 self.emit(Op::MakeFn(i), e.span);

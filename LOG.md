@@ -1259,3 +1259,26 @@ numbers say so — either way the verdict lands in docs/vm.md; (5)
 release v1.1.0. The rule from v0.9 stands: an honest "still not
 faster" is an acceptable outcome; deleting the VM would also be a
 legitimate conclusion if the added complexity buys nothing.
+
+---
+
+## 2026-09-01 — Iteration 60: compiled function bodies — still not faster
+
+The hybrid is gone: fn literals now compile their bodies to chunks
+(recursively; nested literals get their own), Function grew a FnBody
+enum (Ast from the tree-walker, Chunk from the VM), and eval::call
+dispatches on it — so either engine can call closures made by the
+other, builtins included, and arity/depth/frame handling stays shared.
+return compiles to an Op::Return that unwinds the VM frame; break/
+continue can no longer leak from compiled bodies (compile-time error,
+same accepted-divergence class). All guards green: full suite,
+TING_ENGINE=vm suite, differential fuzzing.
+
+Re-benchmark: vm now +2-7% (slightly WORSE than the +0-2% hybrid).
+The lesson is crisp: AST dispatch was never the cost — stack-machine
+push/pop of cloned Values plus per-access Env HashMap lookups cost
+more than the match on ExprKind they replaced. The one remaining
+lever with a mechanism behind it is local slot resolution (params and
+un-captured locals as frame stack slots, killing the per-call HashMap
+and per-access hashing). Per the milestone plan, that's next; if it
+doesn't deliver either, the retire option is on the table.

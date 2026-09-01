@@ -57,7 +57,9 @@ pub fn run_source_engine<W: Write>(
         Engine::Vm => {
             let chunk =
                 compile::compile_program(&program).map_err(|e| render(&e.message, e.span))?;
-            vm::run_chunk(&mut interp, &chunk).map_err(|e| render(&e.message, e.span))
+            vm::run_chunk(&mut interp, &chunk)
+                .map(|_| ())
+                .map_err(|e| render(&e.message, e.span))
         }
     }
 }

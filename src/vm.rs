@@ -8,7 +8,13 @@ use crate::value::Value;
 use std::collections::BTreeMap;
 use std::io::Write;
 
-pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result<(), RuntimeError> {
+/// Execute a chunk. `Ok(Some(v))` means an Op::Return fired (function
+/// frames); `Ok(None)` means the code ran off the end (top level, or a
+/// function falling through to an implicit nil).
+pub fn run_chunk<W: Write>(
+    interp: &mut Interpreter<W>,
+    chunk: &Chunk,
+) -> Result<Option<Value>, RuntimeError> {
     let mut stack: Vec<Value> = Vec::with_capacity(64);
     let mut ip = 0usize;
     while ip < chunk.code.len() {
@@ -187,9 +193,13 @@ pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result
                 let proto = &chunk.protos[*i as usize];
                 stack.push(Value::Fn(std::rc::Rc::new(eval::Function {
                     params: proto.params.iter().map(|p| p.as_str().into()).collect(),
-                    body: std::rc::Rc::clone(&proto.body),
+                    body: eval::FnBody::Chunk(std::rc::Rc::clone(&proto.chunk)),
                     env: interp.env_handle(),
                 })));
+            }
+            Op::Return => {
+                let v = stack.pop().expect("stack underflow");
+                return Ok(Some(v));
             }
             Op::PushScope => interp.push_scope(),
             Op::PopScope => interp.pop_scope(),
@@ -228,7 +238,7 @@ pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result
         }
         ip += 1;
     }
-    Ok(())
+    Ok(None)
 }
 
 fn offset(ip: usize, rel: i32) -> usize {

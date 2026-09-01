@@ -60,12 +60,25 @@ impl Env {
     }
 }
 
-/// A user-defined function: parameters, body, and the captured environment.
+/// A user-defined function: parameters, body, and the captured
+/// environment. The body is AST when the tree-walker created the
+/// closure, bytecode when the VM did — either engine can call either.
 #[derive(Debug)]
 pub struct Function {
     pub params: Vec<Rc<str>>,
-    pub body: Rc<Vec<Stmt>>,
+    pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
+}
+
+#[derive(Debug)]
+pub enum FnBody {
+    Ast(Rc<Vec<Stmt>>),
+    Chunk(Rc<crate::compile::Chunk>),
+}
+
+enum ControlOrValue {
+    Control(Control),
+    Value(Option<Value>),
 }
 
 /// How a statement finished: fell through, or hit a non-local exit.
@@ -1137,14 +1150,22 @@ impl<W: Write> Interpreter<W> {
         }));
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
-        let result = self.run_block(&func.body);
+        let result = match &func.body {
+            FnBody::Ast(stmts) => self.run_block(stmts).map(ControlOrValue::Control),
+            // Compiled bodies cannot leak break/continue (the compiler
+            // rejects them), so the VM returns a plain value.
+            FnBody::Chunk(chunk) => crate::vm::run_chunk(self, chunk).map(ControlOrValue::Value),
+        };
         self.depth -= 1;
         self.env = saved;
         match result? {
-            Control::Return(v, _) => Ok(v),
-            Control::Normal => Ok(Value::Nil),
-            Control::Break(span) => Err(error("break outside loop", span)),
-            Control::Continue(span) => Err(error("continue outside loop", span)),
+            ControlOrValue::Value(v) => Ok(v.unwrap_or(Value::Nil)),
+            ControlOrValue::Control(Control::Return(v, _)) => Ok(v),
+            ControlOrValue::Control(Control::Normal) => Ok(Value::Nil),
+            ControlOrValue::Control(Control::Break(span)) => Err(error("break outside loop", span)),
+            ControlOrValue::Control(Control::Continue(span)) => {
+                Err(error("continue outside loop", span))
+            }
         }
     }
 
@@ -1199,7 +1220,7 @@ impl<W: Write> Interpreter<W> {
             }
             ExprKind::Fn(params, body) => Ok(Value::Fn(Rc::new(Function {
                 params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
-                body: Rc::clone(body),
+                body: FnBody::Ast(Rc::clone(body)),
                 env: Rc::clone(&self.env),
             }))),
             ExprKind::Unary(op, operand) => {
