@@ -21,14 +21,12 @@ Milestone **v0.9.0 — bytecode VM** (designed in LOG.md replenishment
 entry, 2026-09-01; incremental, always shippable, --vm flag with the
 tree-walker as reference):
 
-1. Compiler + VM for expressions behind --vm; differential tests
-   (same programs through both engines, identical results).
-2. Statements + control flow under --vm.
-3. Functions/closures/builtins under --vm; full parity: entire unit +
-   selftest suites green on both engines.
-4. Benchmark VM vs tree-walker; flip the default only if clearly
+1. Statements + control flow under --vm.
+2. Functions/closures/try/import under --vm; full parity: entire
+   unit + selftest suites green on both engines.
+3. Benchmark VM vs tree-walker; flip the default only if clearly
    faster; keep both selectable.
-5. Release v0.9.0.
+4. Release v0.9.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -145,6 +143,9 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v0.8.0
 - VM design doc (docs/vm.md: stack machine, span-parallel chunks,
   Env kept, differential-testing plan).
+- Expression VM (compile.rs+vm.rs) behind --vm; differential corpus
+  byte-identical incl. diagnostics (2 span divergences caught+fixed);
+  155 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
