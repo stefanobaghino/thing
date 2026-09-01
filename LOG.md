@@ -832,3 +832,15 @@ strings -8%; all checksums unchanged, 145 tests green. A `sample`
 profile guided change 3 (allocator frames visible; cost otherwise
 diffuse across eval/exec/call — noted as the honest argument for the
 parked bytecode VM, which stays parked). BASELINE.md regenerated.
+
+---
+
+## 2026-09-01 — Iteration 37: playground share-by-URL
+
+A "share" button encodes the editor source as base64url in the
+location fragment (`#code=...`) and copies the link; opening such a
+link decodes, loads, and auto-runs the code. Fragments never reach the
+server, so sharing stays fully static and private. Unicode survives
+the round trip (TextEncoder → btoa; verified with "héllo wörld").
+Browser-verified via Playwright: link-load auto-run, share hash,
+clipboard status. Deploys via pages.yml's playground/ path filter.

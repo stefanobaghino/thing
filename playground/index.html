@@ -57,6 +57,7 @@
   <span class="spacer"></span>
   <select id="examples" aria-label="examples"></select>
   <button class="run" id="run" title="ctrl+enter">run &#9654;</button>
+  <button class="run" id="share" title="copy a link to this code">share</button>
   <a href="https://github.com/stefanobaghino/thing">source</a>
 </header>
 <main>
@@ -134,8 +135,36 @@ for (const name of Object.keys(EXAMPLES)) {
   opt.textContent = name;
   examples.appendChild(opt);
 }
-editor.value = EXAMPLES["hello"];
+// Share-by-URL: the source travels base64url-encoded in the fragment,
+// so shared links stay fully static and nothing is sent anywhere.
+function encodeSource(src) {
+  const bytes = new TextEncoder().encode(src);
+  let bin = "";
+  for (const b of bytes) bin += String.fromCharCode(b);
+  return btoa(bin).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
+}
+function decodeSource(enc) {
+  const bin = atob(enc.replace(/-/g, "+").replace(/_/g, "/"));
+  return new TextDecoder().decode(Uint8Array.from(bin, c => c.charCodeAt(0)));
+}
+function sourceFromHash() {
+  const m = location.hash.match(/^#code=([A-Za-z0-9_-]+)$/);
+  if (!m) return null;
+  try { return decodeSource(m[1]); } catch { return null; }
+}
+
+editor.value = sourceFromHash() ?? EXAMPLES["hello"];
 examples.onchange = () => { editor.value = EXAMPLES[examples.value]; run(); };
+
+document.getElementById("share").onclick = async () => {
+  location.hash = "code=" + encodeSource(editor.value);
+  try {
+    await navigator.clipboard.writeText(location.href);
+    status.textContent = "link copied";
+  } catch {
+    status.textContent = "link is in the address bar";
+  }
+};
 
 // The interpreter runs in a worker so a runaway script can't freeze
 // the page; after TIMEOUT_MS the worker is killed and rebuilt.
