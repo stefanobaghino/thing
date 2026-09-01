@@ -18,10 +18,14 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.8.0 — the second act** (designed in LOG.md
-replenishment entry, 2026-09-01):
+Milestone **v1.9.0 — depth** (designed in LOG.md replenishment
+entry, 2026-09-01):
 
-1. Release v1.8.0.
+1. Differential fuzz generator v2: bounded while, fn defs+calls, try,
+   string ops.
+2. examples/calc.ting: an expression interpreter written in ting
+   (lexer + parser), golden-tested.
+3. Release v1.9.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -215,6 +219,8 @@ green.
 - Retrospective refreshed (full VM arc, tooling act, current
   numbers).
 - lib/map.ting (embedded, selftested, documented) + rlwrap note.
+- v1.8.0 RELEASED and verified: 3 assets; embedded map module served.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.8.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
