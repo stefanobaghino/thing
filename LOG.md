@@ -945,3 +945,14 @@ Pages site with correct nav, tables, and code blocks; playground links
 them. Found and fixed one converter bug live: escaped pipes (`\|`) in
 table cells split the operators row — cells now split on unescaped
 pipes only.
+
+---
+
+## 2026-09-01 — Iteration 44: v0.7.0 released
+
+Milestone complete; version bumped, tag v0.7.0 pushed. v0.7.0 over
+v0.6.0, "developer experience": format() builtin, TextMate grammar
+with a builtin-sync guard test, playground syntax highlighting, and
+the docs rendered onto the Pages site (live-verified, one converter
+bug fixed live). Asset verification follows when the release workflow
+finishes.
