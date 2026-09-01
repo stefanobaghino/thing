@@ -118,16 +118,25 @@ Parity is the whole game:
 Non-goals for v0.9.0: serialized bytecode, register allocation, local
 slot resolution, inline caches, GC changes.
 
-## Measured outcome (v0.9.0)
+## Measured outcome (v0.9.0, superseded)
 
-Full parity achieved (differential corpus + the entire selftest suite
-byte-identical). Performance: **no speedup** — +0-2% vs the
-tree-walker on all four benchmarks (see bench/BASELINE.md). Reasons:
-function bodies and builtins still tree-walk under the hybrid, which
-is where fib/lists/maps spend their time, and the remaining per-op
-costs (Env HashMap lookups, Value clone traffic) dominate over AST
-dispatch. Per the rule above, the default engine remains the
-tree-walker; `--vm` / `TING_ENGINE=vm` stay available and at parity.
-The next levers, if performance becomes a goal again: compile function
-bodies (remove the hybrid) and resolve locals to stack slots — both
-larger than dispatch-only and to be measured on their own.
+The first VM (hybrid: function bodies tree-walked) reached full parity
+but no speedup (+0-2%): dispatch was never the dominant cost.
+
+## Measured outcome (v1.1.0) — the VM is the default
+
+Two further steps changed the verdict:
+
+1. **Compiled function bodies** (no hybrid): parity held, still +2-7%
+   — stack push/pop and Env lookups outweighed dispatch savings.
+2. **Local slot resolution**: params and un-captured locals live in a
+   per-call slot frame; capture analysis (conservative, name-based)
+   keeps closure-visible bindings in Env; closure-free bodies allocate
+   no Env at all.
+
+Result: **fib -35%, lists -29%, strings -11%, maps +1%** (that bench's
+hot loop is top-level and frameless). No regressions anywhere, so the
+VM is now the default engine; `--eval` / `TING_ENGINE=eval` select the
+reference tree-walker, which CI still runs against the entire
+integration suite. The REPL stays on the reference engine (incremental
+chunks fit tree-walking naturally).

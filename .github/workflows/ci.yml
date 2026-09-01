@@ -28,15 +28,15 @@ jobs:
         run: cargo test
 
   # The whole integration surface again with the binary forced onto the
-  # bytecode engine — end-to-end parity insurance beyond the in-process
-  # differential tests.
-  test-vm:
+  # reference tree-walker (the VM is the default engine) — end-to-end
+  # parity insurance beyond the in-process differential tests.
+  test-eval:
     runs-on: ubuntu-latest
     env:
-      TING_ENGINE: vm
+      TING_ENGINE: eval
     steps:
       - uses: actions/checkout@v4
       - name: Rust toolchain
         run: rustup update stable && rustup default stable
-      - name: Tests (VM engine)
+      - name: Tests (reference engine)
         run: cargo test

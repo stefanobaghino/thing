@@ -1305,3 +1305,17 @@ Benchmarks: fib -35%, lists -29%, strings -11%, maps +1% (its hot
 loop is top-level, frameless — nothing to win). The VM is now clearly
 faster wherever functions run, with no regressions. Per the milestone
 rule, the default flips next iteration (with an eval escape hatch).
+
+---
+
+## 2026-09-01 — Iteration 62: the VM is now the default engine
+
+The numbers earned the flip: main.rs defaults to Engine::Vm (--eval /
+TING_ENGINE=eval select the reference tree-walker; --vm still
+accepted), lib.rs run_source runs the VM — which also puts the wasm
+playground on it — and CI's extra job flipped from test-vm to
+test-eval so the reference engine keeps full end-to-end coverage. The
+REPL deliberately stays on the tree-walker (incremental chunks fit it
+naturally; documented). Reference, vm.md (verdict section), README,
+CHANGELOG updated; BASELINE regenerated (fib -35%, lists -29%,
+strings -9%, maps +3%). Both engines' full suites green locally.

@@ -2,14 +2,23 @@ use std::process::ExitCode;
 use ting::{Engine, repl, run_source_engine};
 
 fn main() -> ExitCode {
+    // The bytecode VM is the default (see docs/vm.md for the numbers);
+    // the tree-walker remains available as the reference engine.
     let mut engine = match std::env::var("TING_ENGINE").as_deref() {
-        Ok("vm") => Engine::Vm,
-        _ => Engine::Eval,
+        Ok("eval") => Engine::Eval,
+        _ => Engine::Vm,
     };
     let mut args = std::env::args().skip(1).peekable();
-    if args.peek().map(String::as_str) == Some("--vm") {
-        engine = Engine::Vm;
-        args.next();
+    match args.peek().map(String::as_str) {
+        Some("--vm") => {
+            engine = Engine::Vm;
+            args.next();
+        }
+        Some("--eval") => {
+            engine = Engine::Eval;
+            args.next();
+        }
+        _ => {}
     }
     match args.next() {
         None => repl::run(),

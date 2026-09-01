@@ -11,6 +11,11 @@ ting script.ting [args...]   # run a file; extra args go to args()
 ting                         # interactive REPL (ctrl-d exits)
 ```
 
+Scripts run on the bytecode VM by default; `--eval` (or
+`TING_ENGINE=eval`) selects the reference tree-walking interpreter —
+the two are held byte-identical by differential tests. The REPL uses
+the reference engine.
+
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
 cancels), and forgives a missing final `;`.

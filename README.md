@@ -23,12 +23,13 @@ the [tutorial](docs/tutorial.md) — every snippet in it is run by CI —
 then the [language reference](docs/reference.md),
 [examples/](examples/), and the [changelog](CHANGELOG.md).
 
-Two execution engines share one semantics: the tree-walking
-interpreter (default) and a bytecode VM (`--vm`), held byte-identical
-by differential tests — including generated random programs — and a CI
-job that reruns the whole suite on the VM. Editor highlighting lives
-in [editor/](editor/); the performance story in
-[docs/vm.md](docs/vm.md) and [bench/](bench/).
+Two execution engines share one semantics: the bytecode VM (default —
+11-35% faster on function-heavy work) and the reference tree-walking
+interpreter (`--eval`), held byte-identical by differential tests —
+including generated random programs — and a CI job that reruns the
+whole suite on the reference engine. Editor highlighting lives in
+[editor/](editor/); the performance story in [docs/vm.md](docs/vm.md)
+and [bench/](bench/).
 
 ```ting
 fn make_counter() {

@@ -26,14 +26,15 @@ pub enum Engine {
 
 /// Lex, parse, and run a whole program, writing its output to `out`.
 /// On any error, returns the fully rendered caret diagnostic (with
-/// `path` as the file name in the header).
+/// `path` as the file name in the header). Runs on the default engine
+/// (the VM; the wasm playground goes through here too).
 pub fn run_source<W: Write>(
     path: &str,
     src: &str,
     out: W,
     script_args: Vec<String>,
 ) -> Result<(), String> {
-    run_source_engine(Engine::Eval, path, src, out, script_args)
+    run_source_engine(Engine::Vm, path, src, out, script_args)
 }
 
 /// `run_source` with an explicit engine choice.
