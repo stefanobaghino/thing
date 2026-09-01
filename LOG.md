@@ -1694,3 +1694,21 @@ Run-links live-verified on the deployed tutorial (13 on the page).
 Version bumped, CHANGELOG updated, tag pushed. v1.7.0 over v1.6.0:
 docs run-links and --version/--help. One hundred logged iterations.
 Asset verification when the workflow finishes.
+
+**v1.7.0 verified:** release workflow green; three assets; shipped
+binary reports "ting 1.7.0". Seventeenth release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.8.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.8.0 — the second act**:
+(1) refresh docs/retrospective.md — the story page still ends before
+the VM's redemption (it records the honest "not faster" but not the
+-45% victory, nor the formatter, LSP, stdlib, or the 100-iteration
+mark); the experiment's face should tell the whole arc; (2)
+lib/map.ting — get-with-default, merge, items, from_items — closing
+the stdlib's map gap, with selftests and docs; (3) a REPL note in the
+reference recommending rlwrap for line editing (a zero-dependency
+binary can't do raw-mode editing itself; documenting the standard
+tool is the honest fix); (4) release v1.8.0.
