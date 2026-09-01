@@ -1979,3 +1979,14 @@ engines. Tagging v2.2.0; release.yml builds the 3-platform archives.
 Release run passed; three platform archives on the release. Downloaded
 the darwin-arm64 archive cold: `ting 2.2.0`, pretty json_str works,
 --check works, lib/ bundled. 22nd release verified.
+
+---
+
+## 2026-09-01 — Iteration 136: LSP document symbols
+
+Maintenance: all green post-2.2.0. Small stroke: LSP
+textDocument/documentSymbol — outline of top-level lets, with fn
+sugar surfacing as SymbolKind Function (12) and plain bindings as
+Variable (13); parse failures return an empty list. Capability
+advertised; pipe-driven test asserts both kinds and that bare
+expression statements don't leak in. 14/14 suites.

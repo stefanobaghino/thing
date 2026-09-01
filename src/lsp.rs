@@ -75,6 +75,37 @@ fn position(src: &str, offset: usize) -> Value {
     ])
 }
 
+/// Top-level `let` bindings as a flat DocumentSymbol list: functions
+/// get SymbolKind Function (12), everything else Variable (13).
+fn document_symbols(src: &str) -> Value {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::list(vec![]);
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Value::list(vec![]);
+    };
+    let mut symbols = Vec::new();
+    for stmt in &program {
+        if let crate::ast::StmtKind::Let(name, expr) = &stmt.kind {
+            let kind = match expr.kind {
+                crate::ast::ExprKind::Fn(..) => 12,
+                _ => 13,
+            };
+            let range = obj(vec![
+                ("start", position(src, stmt.span.start)),
+                ("end", position(src, stmt.span.end)),
+            ]);
+            symbols.push(obj(vec![
+                ("name", s(name)),
+                ("kind", Value::Int(kind)),
+                ("range", range.clone()),
+                ("selectionRange", range),
+            ]));
+        }
+    }
+    Value::list(symbols)
+}
+
 /// Lex + parse + compile; the first error becomes the diagnostic list.
 fn diagnostics(src: &str) -> Value {
     let err = match lexer::lex(src) {
@@ -220,6 +251,7 @@ pub fn run() -> i32 {
                             ("hoverProvider", Value::Bool(true)),
                             ("completionProvider", obj(vec![])),
                             ("documentFormattingProvider", Value::Bool(true)),
+                            ("documentSymbolProvider", Value::Bool(true)),
                         ]),
                     ),
                     (
@@ -292,6 +324,22 @@ pub fn run() -> i32 {
                     .and_then(|d| get_str(&d, "uri"));
                 let result = uri
                     .and_then(|u| docs.get(&u).map(|src| completion_result(src)))
+                    .unwrap_or(Value::Nil);
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/documentSymbol" => {
+                let uri = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let result = uri
+                    .and_then(|u| docs.get(&u).map(|src| document_symbols(src)))
                     .unwrap_or(Value::Nil);
                 write_message(
                     &mut output,

@@ -162,3 +162,42 @@ fn lsp_session_lifecycle_and_diagnostics() {
     let status = child.wait().unwrap();
     assert_eq!(status.code(), Some(0), "clean exit after shutdown");
 }
+
+#[test]
+fn document_symbols_list_top_level_lets() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"documentSymbolProvider\":true"), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///s.ting","text":"fn twice(x) { return x * 2; }\nlet limit = 10;\nprint(twice(limit));\n"}}}"#,
+    );
+    let _diags = recv(&mut reader);
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///s.ting"}}}"#,
+    );
+    let syms = recv(&mut reader);
+    // fn sugar -> SymbolKind Function (12); plain let -> Variable (13).
+    assert!(syms.contains("\"name\":\"twice\""), "{syms}");
+    assert!(syms.contains("\"kind\":12"), "{syms}");
+    assert!(syms.contains("\"name\":\"limit\""), "{syms}");
+    assert!(syms.contains("\"kind\":13"), "{syms}");
+    // The bare print(...) statement is not a symbol.
+    assert!(!syms.contains("print"), "{syms}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
