@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.6.0 — a formatter (2026-09-01)
+
+- `ting --fmt` / `ting --fmt-check`: a canonical formatter that
+  preserves comments and the author's line breaks, guaranteed
+  idempotent and AST-preserving by tests. Also available as
+  format-on-save through `ting --lsp` (documentFormatting).
+- The repo's own ting sources are formatted with it, enforced by CI.
+
 ## v1.5.0 — the stdlib everywhere (2026-09-01)
 
 - The standard library is embedded in the interpreter: when an

@@ -1647,3 +1647,12 @@ when the source doesn't lex. documentFormattingProvider advertised.
 Pipe test covers both the edit and the already-formatted cases. The
 formatter is now reachable three ways: `ting --fmt`, `--fmt-check` in
 CI, and format-on-save in any LSP editor. Suite green.
+
+---
+
+## 2026-09-01 — Iteration 96: v1.6.0 released
+
+Milestone complete; version bumped, CHANGELOG updated, tag pushed.
+v1.6.0 over v1.5.0: the formatter (CLI, CI check, LSP), with the repo
+self-hosting its own style. Asset verification when the workflow
+finishes.
