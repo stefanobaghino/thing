@@ -22,12 +22,9 @@ Milestone **v1.6.0 — a formatter** (designed in LOG.md replenishment
 entry, 2026-09-01; token-stream based to preserve comments; guarded by
 idempotence + AST-equality checks):
 
-1. Comment-aware lexing mode.
-2. src/fmt.rs: canonical spacing/indentation, comments and single
-   blank lines preserved; unit tests + the two guards.
-3. `ting --fmt` / `--fmt-check`; reformat the repo's .ting files.
-4. LSP documentFormatting.
-5. Release v1.6.0.
+1. `ting --fmt` / `--fmt-check`; reformat the repo's .ting files.
+2. LSP documentFormatting.
+3. Release v1.6.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -206,6 +203,8 @@ green.
 - v1.5.0 RELEASED and verified: 3 assets; embedded stdlib serves with
   lib/ deleted; stdlib page live.
   https://github.com/stefanobaghino/thing/releases/tag/v1.5.0
+- Formatter core (src/fmt.rs, gap-scan comments, brace-kind stack);
+  idempotence+AST guards over all 21 repo .ting files; 14 suites.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
