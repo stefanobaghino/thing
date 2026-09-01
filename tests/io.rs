@@ -47,3 +47,29 @@ fn args_and_stdin_reach_the_script() {
     );
     let _ = std::fs::remove_file(&script);
 }
+
+#[test]
+fn env_exit_and_time_reach_the_process() {
+    let script = std::env::temp_dir().join("ting-proc-integration.ting");
+    std::fs::write(
+        &script,
+        "print(env(\"TING_TEST_VAR\"), env(\"TING_UNSET_VAR\"));\n\
+         let t = time_ms();\n\
+         assert(t > 1500000000000, \"epoch millis\");\n\
+         assert(time_ms() >= t, \"monotonic-ish\");\n\
+         exit(3);\n\
+         print(\"unreachable\");\n",
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .env("TING_TEST_VAR", "hello-env")
+        .env_remove("TING_UNSET_VAR")
+        .output()
+        .expect("failed to run ting");
+
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "hello-env nil\n");
+    assert_eq!(out.status.code(), Some(3), "exit code must be 3");
+    let _ = std::fs::remove_file(&script);
+}

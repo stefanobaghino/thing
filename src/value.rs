@@ -68,10 +68,13 @@ pub enum Builtin {
     Format,
     JsonParse,
     JsonStr,
+    Env,
+    Exit,
+    TimeMs,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 40] = [
+    pub const ALL: [Builtin; 43] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -112,6 +115,9 @@ impl Builtin {
         Builtin::Format,
         Builtin::JsonParse,
         Builtin::JsonStr,
+        Builtin::Env,
+        Builtin::Exit,
+        Builtin::TimeMs,
     ];
 
     pub fn name(self) -> &'static str {
@@ -156,6 +162,9 @@ impl Builtin {
             Builtin::Format => "format",
             Builtin::JsonParse => "json_parse",
             Builtin::JsonStr => "json_str",
+            Builtin::Env => "env",
+            Builtin::Exit => "exit",
+            Builtin::TimeMs => "time_ms",
         }
     }
 }

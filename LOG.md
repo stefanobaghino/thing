@@ -990,3 +990,17 @@ float-ness round-trips (mirrors print), functions and non-finite
 floats refuse to encode. 6 Rust unit tests + selftest/json.ting (9
 assertions incl. a document round trip); grammar builtin list synced
 (the guard test enforced it). Suite at 151.
+
+---
+
+## 2026-09-01 — Iteration 46: env/exit/time_ms
+
+Three process builtins (43 total). `env(name)` returns the variable or
+nil; `exit(code)` flushes output and terminates with the (0-255
+clamped) status — documented as not catchable by try; `time_ms()`
+returns epoch milliseconds. On wasm32, exit and time_ms return clean
+ting errors instead of trapping the instance (SystemTime panics and
+process::exit aborts there — checked, and the wasm build still
+compiles). Integration-tested against the real process in tests/io.rs:
+env set/unset, exit code 3 observed, epoch sanity + monotonicity.
+Grammar synced (guard test). Suite at 152.

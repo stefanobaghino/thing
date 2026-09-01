@@ -935,6 +935,52 @@ impl<W: Write> Interpreter<W> {
                     .map(Value::Str)
                     .map_err(|m| error(m, span))
             }
+            Builtin::Env => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(name) => Ok(match std::env::var(name) {
+                        Ok(v) => Value::Str(v),
+                        Err(_) => Value::Nil,
+                    }),
+                    v => Err(error(
+                        format!("env expects a string name, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Exit => {
+                arity(0, 1)?;
+                let code = match args.first() {
+                    None => 0,
+                    Some(Value::Int(n)) => *n,
+                    Some(v) => {
+                        return Err(error(
+                            format!("exit expects an int code, got {}", v.type_name()),
+                            span,
+                        ));
+                    }
+                };
+                if cfg!(target_arch = "wasm32") {
+                    // process::exit would trap the wasm instance.
+                    return Err(error("exit is not available in this environment", span));
+                }
+                self.out
+                    .flush()
+                    .map_err(|e| error(format!("exit: flush failed: {e}"), span))?;
+                std::process::exit(code.clamp(0, 255) as i32)
+            }
+            Builtin::TimeMs => {
+                arity(0, 0)?;
+                if cfg!(target_arch = "wasm32") {
+                    // SystemTime::now() panics on wasm32-unknown-unknown.
+                    return Err(error("time_ms is not available in this environment", span));
+                }
+                let ms = std::time::SystemTime::now()
+                    .duration_since(std::time::UNIX_EPOCH)
+                    .map_err(|e| error(format!("time_ms: {e}"), span))?
+                    .as_millis();
+                Ok(Value::Int(ms as i64))
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {
