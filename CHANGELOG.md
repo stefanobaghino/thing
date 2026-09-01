@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.4.0 — sharper tools (2026-09-01)
+
+- LSP completions: builtins with docs, keywords, and the document's
+  own identifiers.
+- `lib/test.ting`: a tiny test framework written in ting
+  (`check`/`check_eq`/`summary`), with a golden example.
+- VM: pooled per-call buffers roughly doubled its lead — fib and
+  list-heavy work now run ~45% faster than the reference engine.
+
 ## v1.3.0 — batteries + story (2026-09-01)
 
 - A standard library written in ting itself: `lib/list.ting` and

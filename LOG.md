@@ -1509,3 +1509,11 @@ dropped fib to -45% and lists to -45% vs the tree-walker (from
 All 13 suites green including differential fuzzing; BASELINE
 regenerated. The VM's margin over the reference engine has now
 roughly doubled since the flip.
+
+---
+
+## 2026-09-01 — Iteration 80: v1.4.0 released
+
+Milestone complete; version bumped, CHANGELOG updated, tag pushed.
+v1.4.0 over v1.3.0: LSP completions, lib/test.ting, and the pooled-
+buffer VM speedup. Asset verification when the workflow finishes.
