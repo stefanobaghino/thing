@@ -179,7 +179,10 @@ mod tests {
         let mut i = fresh();
         let chunk = "fn double(x) {\n  return x * 2;\n}";
         assert_eq!(eval_chunk(&mut i, chunk), Outcome::Unit);
-        assert_eq!(eval_chunk(&mut i, "double(21)"), Outcome::Value("42".into()));
+        assert_eq!(
+            eval_chunk(&mut i, "double(21)"),
+            Outcome::Value("42".into())
+        );
     }
 
     #[test]

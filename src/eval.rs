@@ -225,7 +225,11 @@ impl<W: Write> Interpreter<W> {
                     format!("{lo} to {hi}")
                 };
                 Err(error(
-                    format!("{} expects {want} argument(s), got {}", b.name(), args.len()),
+                    format!(
+                        "{} expects {want} argument(s), got {}",
+                        b.name(),
+                        args.len()
+                    ),
                     span,
                 ))
             } else {
@@ -245,7 +249,10 @@ impl<W: Write> Interpreter<W> {
                     Value::List(items) => Ok(Value::Int(items.borrow().len() as i64)),
                     Value::Str(s) => Ok(Value::Int(s.chars().count() as i64)),
                     Value::Map(entries) => Ok(Value::Int(entries.borrow().len() as i64)),
-                    v => Err(error(format!("len does not apply to {}", v.type_name()), span)),
+                    v => Err(error(
+                        format!("len does not apply to {}", v.type_name()),
+                        span,
+                    )),
                 }
             }
             Builtin::Push => {
@@ -255,7 +262,10 @@ impl<W: Write> Interpreter<W> {
                         items.borrow_mut().push(args[1].clone());
                         Ok(Value::Nil)
                     }
-                    v => Err(error(format!("push expects a list, got {}", v.type_name()), span)),
+                    v => Err(error(
+                        format!("push expects a list, got {}", v.type_name()),
+                        span,
+                    )),
                 }
             }
             Builtin::Pop => {
@@ -265,7 +275,10 @@ impl<W: Write> Interpreter<W> {
                         .borrow_mut()
                         .pop()
                         .ok_or_else(|| error("pop from empty list", span)),
-                    v => Err(error(format!("pop expects a list, got {}", v.type_name()), span)),
+                    v => Err(error(
+                        format!("pop expects a list, got {}", v.type_name()),
+                        span,
+                    )),
                 }
             }
             Builtin::Keys => {
@@ -274,7 +287,10 @@ impl<W: Write> Interpreter<W> {
                     Value::Map(entries) => Ok(Value::list(
                         entries.borrow().keys().cloned().map(Value::Str).collect(),
                     )),
-                    v => Err(error(format!("keys expects a map, got {}", v.type_name()), span)),
+                    v => Err(error(
+                        format!("keys expects a map, got {}", v.type_name()),
+                        span,
+                    )),
                 }
             }
             Builtin::Has => {
@@ -302,9 +318,11 @@ impl<W: Write> Interpreter<W> {
                 match &args[0] {
                     Value::Int(n) => Ok(Value::Int(*n)),
                     Value::Float(x) => Ok(Value::Int(*x as i64)),
-                    Value::Str(s) => s.trim().parse::<i64>().map(Value::Int).map_err(|_| {
-                        error(format!("cannot convert {s:?} to int"), span)
-                    }),
+                    Value::Str(s) => s
+                        .trim()
+                        .parse::<i64>()
+                        .map(Value::Int)
+                        .map_err(|_| error(format!("cannot convert {s:?} to int"), span)),
                     v => Err(error(
                         format!("cannot convert {} to int", v.type_name()),
                         span,
@@ -316,9 +334,11 @@ impl<W: Write> Interpreter<W> {
                 match &args[0] {
                     Value::Int(n) => Ok(Value::Float(*n as f64)),
                     Value::Float(x) => Ok(Value::Float(*x)),
-                    Value::Str(s) => s.trim().parse::<f64>().map(Value::Float).map_err(|_| {
-                        error(format!("cannot convert {s:?} to float"), span)
-                    }),
+                    Value::Str(s) => s
+                        .trim()
+                        .parse::<f64>()
+                        .map(Value::Float)
+                        .map_err(|_| error(format!("cannot convert {s:?} to float"), span)),
                     v => Err(error(
                         format!("cannot convert {} to float", v.type_name()),
                         span,
@@ -343,7 +363,12 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
-    fn call(&mut self, func: &Rc<Function>, args: Vec<Value>, span: Span) -> Result<Value, RuntimeError> {
+    fn call(
+        &mut self,
+        func: &Rc<Function>,
+        args: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, RuntimeError> {
         if args.len() != func.params.len() {
             return Err(error(
                 format!(
@@ -574,11 +599,7 @@ fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, Runtim
         (Value::Str(a), Value::Str(b)) => a.partial_cmp(b),
         _ => {
             return Err(error(
-                format!(
-                    "cannot compare {} and {}",
-                    l.type_name(),
-                    r.type_name()
-                ),
+                format!("cannot compare {} and {}", l.type_name(), r.type_name()),
                 span,
             ));
         }
@@ -631,11 +652,7 @@ fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
             }
         }
         (base, idx) => Err(error(
-            format!(
-                "cannot index {} with {}",
-                base.type_name(),
-                idx.type_name()
-            ),
+            format!("cannot index {} with {}", base.type_name(), idx.type_name()),
             span,
         )),
     }
@@ -649,7 +666,9 @@ mod tests {
 
     fn run(src: &str) -> Value {
         let mut interp = Interpreter::new(Vec::new());
-        interp.eval(&parse_expr(&lex(src).unwrap()).unwrap()).unwrap()
+        interp
+            .eval(&parse_expr(&lex(src).unwrap()).unwrap())
+            .unwrap()
     }
 
     fn run_err(src: &str) -> String {
@@ -771,7 +790,10 @@ mod tests {
 
     #[test]
     fn builtin_len() {
-        assert_eq!(output("print(len([1, 2, 3]), len(\"héllo\"), len({\"a\": 1}));"), "3 5 1\n");
+        assert_eq!(
+            output("print(len([1, 2, 3]), len(\"héllo\"), len({\"a\": 1}));"),
+            "3 5 1\n"
+        );
         assert_eq!(program_err("len(1);"), "len does not apply to int");
     }
 
@@ -798,7 +820,10 @@ mod tests {
             output("print(int(\"42\"), int(3.9), float(\"2.5\"), float(1), str(42) + \"!\");"),
             "42 3 2.5 1.0 42!\n"
         );
-        assert_eq!(program_err("int(\"abc\");"), "cannot convert \"abc\" to int");
+        assert_eq!(
+            program_err("int(\"abc\");"),
+            "cannot convert \"abc\" to int"
+        );
         assert_eq!(program_err("int([]);"), "cannot convert list to int");
     }
 
@@ -808,14 +833,20 @@ mod tests {
             output("print(type(1), type(1.0), type(\"s\"), type(nil), type(len));"),
             "int float string nil function\n"
         );
-        assert_eq!(output("print(range(3), range(2, 5), range(5, 2));"), "[0, 1, 2] [2, 3, 4] []\n");
+        assert_eq!(
+            output("print(range(3), range(2, 5), range(5, 2));"),
+            "[0, 1, 2] [2, 3, 4] []\n"
+        );
     }
 
     #[test]
     fn builtins_are_values_and_shadowable() {
         assert_eq!(output("let f = len; print(f(\"abc\"));"), "3\n");
         assert_eq!(output("print(len);"), "<builtin len>\n");
-        assert_eq!(output("{ let len = 5; print(len); } print(len(\"ab\"));"), "5\n2\n");
+        assert_eq!(
+            output("{ let len = 5; print(len); } print(len(\"ab\"));"),
+            "5\n2\n"
+        );
     }
 
     #[test]
@@ -829,17 +860,26 @@ mod tests {
 
     #[test]
     fn map_literals_get_and_set() {
-        assert_eq!(output("let m = {\"a\": 1, \"b\": 2}; print(m[\"a\"] + m[\"b\"]);"), "3\n");
+        assert_eq!(
+            output("let m = {\"a\": 1, \"b\": 2}; print(m[\"a\"] + m[\"b\"]);"),
+            "3\n"
+        );
         assert_eq!(
             output("let m = {}; m[\"x\"] = 10; m[\"x\"] = m[\"x\"] + 1; print(m);"),
             "{\"x\": 11}\n"
         );
-        assert_eq!(output("print({\"b\": 2, \"a\": [1, \"s\"]});"), "{\"a\": [1, \"s\"], \"b\": 2}\n");
+        assert_eq!(
+            output("print({\"b\": 2, \"a\": [1, \"s\"]});"),
+            "{\"a\": [1, \"s\"], \"b\": 2}\n"
+        );
     }
 
     #[test]
     fn missing_map_key_errors() {
-        assert_eq!(program_err("let m = {}; m[\"nope\"];"), "key \"nope\" not found");
+        assert_eq!(
+            program_err("let m = {}; m[\"nope\"];"),
+            "key \"nope\" not found"
+        );
     }
 
     #[test]
@@ -934,17 +974,12 @@ mod tests {
             output("let x = 1; { let x = 2; print(x); } print(x);"),
             "2\n1\n"
         );
-        assert_eq!(
-            output("let x = 1; { x = 2; } print(x);"),
-            "2\n"
-        );
+        assert_eq!(output("let x = 1; { x = 2; } print(x);"), "2\n");
     }
 
     #[test]
     fn block_locals_do_not_leak() {
-        assert!(
-            program_err("{ let y = 1; } print(y);").contains("undefined variable 'y'")
-        );
+        assert!(program_err("{ let y = 1; } print(y);").contains("undefined variable 'y'"));
     }
 
     #[test]
@@ -954,7 +989,9 @@ mod tests {
             "big\n"
         );
         assert_eq!(
-            output("let x = 1; if x > 3 { print(\"big\"); } else if x > 0 { print(\"mid\"); } else { print(\"small\"); }"),
+            output(
+                "let x = 1; if x > 3 { print(\"big\"); } else if x > 0 { print(\"mid\"); } else { print(\"small\"); }"
+            ),
             "mid\n"
         );
         assert_eq!(output("if false { print(\"no\"); }"), "");
@@ -992,7 +1029,10 @@ mod tests {
 
     #[test]
     fn shadowed_print_is_not_callable() {
-        assert_eq!(program_err("let print = 1; print(2);"), "int is not callable");
+        assert_eq!(
+            program_err("let print = 1; print(2);"),
+            "int is not callable"
+        );
     }
 
     #[test]
@@ -1006,7 +1046,9 @@ mod tests {
     #[test]
     fn recursion() {
         assert_eq!(
-            output("fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); } print(fib(15));"),
+            output(
+                "fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); } print(fib(15));"
+            ),
             "610\n"
         );
     }
@@ -1036,7 +1078,9 @@ mod tests {
     #[test]
     fn anonymous_functions_and_higher_order() {
         assert_eq!(
-            output("let twice = fn(f, x) { return f(f(x)); }; print(twice(fn(n) { return n * 3; }, 2));"),
+            output(
+                "let twice = fn(f, x) { return f(f(x)); }; print(twice(fn(n) { return n * 3; }, 2));"
+            ),
             "18\n"
         );
     }
@@ -1050,7 +1094,9 @@ mod tests {
     #[test]
     fn return_stops_a_loop_inside_a_function() {
         assert_eq!(
-            output("fn first() { let i = 0; while true { if i == 3 { return i; } i = i + 1; } } print(first());"),
+            output(
+                "fn first() { let i = 0; while true { if i == 3 { return i; } i = i + 1; } } print(first());"
+            ),
             "3\n"
         );
     }

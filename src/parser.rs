@@ -699,12 +699,18 @@ mod tests {
             program("let f = fn(x) { return x; };"),
             "(let f (fn (x) (return x)))"
         );
-        assert_eq!(sexpr("fn(x) { return x; }(1)"), "(call (fn (x) (return x)) 1)");
+        assert_eq!(
+            sexpr("fn(x) { return x; }(1)"),
+            "(call (fn (x) (return x)) 1)"
+        );
     }
 
     #[test]
     fn return_forms() {
-        assert_eq!(program("fn f() { return; return 1; }"), "(let f (fn () (return) (return 1)))");
+        assert_eq!(
+            program("fn f() { return; return 1; }"),
+            "(let f (fn () (return) (return 1)))"
+        );
     }
 
     #[test]

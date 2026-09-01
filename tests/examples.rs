@@ -34,5 +34,8 @@ fn examples_produce_expected_output() {
         );
         checked += 1;
     }
-    assert!(checked >= 6, "expected at least 6 examples, found {checked}");
+    assert!(
+        checked >= 6,
+        "expected at least 6 examples, found {checked}"
+    );
 }

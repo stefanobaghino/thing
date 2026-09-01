@@ -251,7 +251,8 @@ impl<'a> Lexer<'a> {
         while self.peek().is_some_and(|b| b.is_ascii_digit()) {
             self.pos += 1;
         }
-        let is_float = self.peek() == Some(b'.') && self.peek2().is_some_and(|b| b.is_ascii_digit());
+        let is_float =
+            self.peek() == Some(b'.') && self.peek2().is_some_and(|b| b.is_ascii_digit());
         if is_float {
             self.pos += 1; // '.'
             while self.peek().is_some_and(|b| b.is_ascii_digit()) {

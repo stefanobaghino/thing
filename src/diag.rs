@@ -21,7 +21,10 @@ pub fn render(path: &str, src: &str, message: &str, span: Span) -> String {
     let text = &src[line_start..line_end];
 
     let span_end = span.end.clamp(span.start, line_end);
-    let width = src[span.start.min(line_end)..span_end].chars().count().max(1);
+    let width = src[span.start.min(line_end)..span_end]
+        .chars()
+        .count()
+        .max(1);
     // Tabs in the prefix stay tabs so the caret lines up in terminals.
     let prefix: String = src[line_start..span.start.min(line_end)]
         .chars()
@@ -31,9 +34,7 @@ pub fn render(path: &str, src: &str, message: &str, span: Span) -> String {
     let gutter = line.to_string();
     let pad = " ".repeat(gutter.len());
     let carets = "^".repeat(width);
-    format!(
-        "{path}:{line}:{col}: error: {message}\n {gutter} | {text}\n {pad} | {prefix}{carets}"
-    )
+    format!("{path}:{line}:{col}: error: {message}\n {gutter} | {text}\n {pad} | {prefix}{carets}")
 }
 
 #[cfg(test)]
@@ -44,7 +45,12 @@ mod tests {
     fn caret_under_mid_line_span() {
         let src = "let x = 1;\nprint(y + 1);\n";
         let start = src.find('y').unwrap();
-        let out = render("t.ting", src, "undefined variable 'y'", Span::new(start, start + 1));
+        let out = render(
+            "t.ting",
+            src,
+            "undefined variable 'y'",
+            Span::new(start, start + 1),
+        );
         assert_eq!(
             out,
             "t.ting:2:7: error: undefined variable 'y'\n \
@@ -78,7 +84,12 @@ mod tests {
     fn tabs_keep_caret_aligned() {
         let src = "\tprint(z);";
         let start = src.find('z').unwrap();
-        let out = render("t.ting", src, "undefined variable 'z'", Span::new(start, start + 1));
+        let out = render(
+            "t.ting",
+            src,
+            "undefined variable 'z'",
+            Span::new(start, start + 1),
+        );
         assert!(out.ends_with(" | \t      ^"), "got:\n{out}");
     }
 
@@ -86,7 +97,12 @@ mod tests {
     fn unicode_before_span_counts_chars_not_bytes() {
         let src = "let héllo = wörld;";
         let start = src.find('w').unwrap();
-        let out = render("t.ting", src, "undefined variable 'wörld'", Span::new(start, start + "wörld".len()));
+        let out = render(
+            "t.ting",
+            src,
+            "undefined variable 'wörld'",
+            Span::new(start, start + "wörld".len()),
+        );
         assert!(out.ends_with(" |             ^^^^^"), "got:\n{out}");
     }
 }
