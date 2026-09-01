@@ -856,3 +856,13 @@ diffed by tests/tutorial.rs). The runner now executes snippets from
 the script's own directory, aligning write_file (cwd-relative) with
 import (script-dir-relative), which is also how a user actually runs
 ting in place. 10 verified snippets.
+
+---
+
+## 2026-09-01 — Iteration 39: v0.6.0 released
+
+Milestone complete; version bumped, tag v0.6.0 pushed. v0.6.0 over
+v0.5.0, "performance + polish": ~10% interpreter speedup (measured
+against the new bench/ harness with a recorded baseline), playground
+share-by-URL (live), and the tutorial's modules section. Asset
+verification follows when the release workflow finishes.
