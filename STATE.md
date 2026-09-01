@@ -21,8 +21,7 @@ release binaries on GitHub.
 Milestone **v1.5.0 — the stdlib everywhere** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. docs/stdlib.md documenting the three modules; rendered on the site.
-2. Release v1.5.0.
+1. Release v1.5.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -197,6 +196,7 @@ green.
 - Embedded stdlib fallback in import() (include_str!, fs-first;
   tested); fuzz harness hardened against importing mutants.
 - Playground "stdlib" example (embedded fallback browser-verified).
+- docs/stdlib.md on the site (nav "stdlib"); render verified.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
