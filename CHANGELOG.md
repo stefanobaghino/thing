@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.3.0 — batteries + story (2026-09-01)
+
+- A standard library written in ting itself: `lib/list.ting` and
+  `lib/string.ting`, shipped inside the release archives and covered
+  by the self-hosted suite.
+- LSP hover: signature and summary for every builtin.
+- The experiment's [retrospective](docs/retrospective.md), on the
+  website as "story".
+
 ## v1.2.0 — a language server (2026-09-01)
 
 - `ting --lsp`: the binary doubles as an LSP server — JSON-RPC over

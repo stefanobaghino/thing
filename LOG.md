@@ -1440,3 +1440,12 @@ caught, the scope-discipline episodes, the failed ideas kept on record
 so they aren't retried). Linked from the README banner, added to the
 site nav as "story", rendered by pages.yml. Every claim in it is
 traceable to a LOG.md entry.
+
+---
+
+## 2026-09-01 — Iteration 71: v1.3.0 released
+
+Story page live-verified at /thing/retrospective.html. Version bumped,
+CHANGELOG updated, tag pushed. v1.3.0 over v1.2.0: the ting-authored
+stdlib (shipped in archives), LSP hover, and the retrospective.
+Asset verification when the release workflow finishes.
