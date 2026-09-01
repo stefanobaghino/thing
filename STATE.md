@@ -20,10 +20,9 @@ release binaries on GitHub.
 Milestone **v0.4.0 — ting in the browser + robustness** (designed in
 LOG.md replenishment entry; keeps zero deps by avoiding wasm-bindgen):
 
-1. GitHub Pages workflow deploying playground/ + docs.
-2. Robustness: deterministic pseudo-random program generator test —
+1. Robustness: deterministic pseudo-random program generator test —
    arbitrary token soup must produce clean errors, never panics.
-3. Release v0.4.0.
+2. Release v0.4.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -87,6 +86,9 @@ green.
   136 tests.
 - Browser playground (playground/index.html + build.sh): worker
   isolation with 5s timeout; browser-verified via Playwright.
+- Playground LIVE on GitHub Pages (pages.yml, path-filtered);
+  verified in-browser at http://www.baghino.me/thing/; README links
+  it.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
