@@ -1022,3 +1022,12 @@ mutation test *executes* example mutants in-process, and a todo.ting
 mutant reached exit(2) — killing the whole test binary. Fixed by
 excluding `exit`-mentioning programs from execution (parse-only), same
 as `while`. Suite at 153 (8 examples).
+
+---
+
+## 2026-09-01 — Iteration 48: CHANGELOG.md
+
+Retroactive changelog for v0.1.0 through v0.7.0 (reconstructed from
+this log and the release history), plus an Unreleased section already
+carrying the v0.8.0 items. Kept per release from now on: the release
+step gains "move Unreleased under the new version heading".
