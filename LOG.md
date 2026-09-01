@@ -926,3 +926,16 @@ constants, calls, operators. Playwright-verified: token spans render
 with the right classes, the two layers are pixel-aligned
 (getBoundingClientRect equality), typing re-highlights live, and the
 examples still run. Deploys via the playground/ path filter.
+
+---
+
+## 2026-09-01 — Iteration 43: docs on the Pages site
+
+tools/md2html.py — a stdlib-only converter for exactly the markdown
+this repo writes (headers, fences, tables, lists, inline
+code/bold/links, .md links rewritten to .html) — renders the tutorial
+and reference into the Pages site with a shared dark theme and a nav
+bar; pages.yml assembles _site from playground/ + the two rendered
+docs; the playground header links them. Local render verified in a
+browser (screenshot: nav, tables, code blocks all correct). Live
+verification after this push's deploy.

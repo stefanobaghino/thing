@@ -8,6 +8,8 @@ on:
     paths:
       - "playground/**"
       - "src/**"
+      - "docs/**"
+      - "tools/md2html.py"
       - "Cargo.toml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -32,9 +34,14 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release --lib --target wasm32-unknown-unknown
       - run: cp target/wasm32-unknown-unknown/release/ting.wasm playground/
+      - run: |
+          mkdir -p _site
+          cp -r playground/. _site/
+          python3 tools/md2html.py docs/tutorial.md _site/tutorial.html
+          python3 tools/md2html.py docs/reference.md _site/reference.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: playground
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
