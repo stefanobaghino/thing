@@ -609,3 +609,15 @@ instead a cdylib with a small hand-rolled extern "C" ABI (alloc/run
 returning UTF-8 in wasm memory), which a dozen lines of JS can call.
 Step 1 is extracting a lib.rs so the interpreter is linkable from both
 the binary and the wasm cdylib.
+
+---
+
+## 2026-09-01 — Iteration 25: interpreter extracted into lib.rs
+
+First v0.4.0 task. `src/lib.rs` now owns the modules and a
+`run_source(path, src, out, args)` entry point that does the whole
+lex/parse/run pipeline and returns rendered caret diagnostics as
+strings; `src/main.rs` shrank to argv handling, the big-stack thread,
+and printing. The wasm cdylib (next task) will call `run_source` with a
+Vec<u8> writer. 2 lib tests; suite at 133. Unit tests moved with their
+modules untouched.

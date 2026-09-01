@@ -1,12 +1,5 @@
-mod ast;
-mod diag;
-mod eval;
-mod lexer;
-mod parser;
-mod repl;
-mod value;
-
 use std::process::ExitCode;
+use ting::{repl, run_source};
 
 fn main() -> ExitCode {
     let mut args = std::env::args().skip(1);
@@ -38,23 +31,11 @@ fn run_file_inner(path: &str, script_args: Vec<String>) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    let tokens = match lexer::lex(&src) {
-        Ok(tokens) => tokens,
-        Err(e) => return report(path, &src, &e.message, e.span),
-    };
-    let program = match parser::parse_program(&tokens) {
-        Ok(program) => program,
-        Err(e) => return report(path, &src, &e.message, e.span),
-    };
-    let mut interp = eval::Interpreter::new(std::io::stdout().lock());
-    interp.set_args(script_args);
-    match interp.run(&program) {
+    match run_source(path, &src, std::io::stdout().lock(), script_args) {
         Ok(()) => ExitCode::SUCCESS,
-        Err(e) => report(path, &src, &e.message, e.span),
+        Err(diagnostic) => {
+            eprintln!("{diagnostic}");
+            ExitCode::FAILURE
+        }
     }
-}
-
-fn report(path: &str, src: &str, message: &str, span: lexer::Span) -> ExitCode {
-    eprintln!("{}", diag::render(path, src, message, span));
-    ExitCode::FAILURE
 }
