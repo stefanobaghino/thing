@@ -137,6 +137,9 @@ scope).
 | `float(v)`     | from int/float/numeric string; else error                   |
 | `type(v)`      | the type name as a string, e.g. `"list"`                    |
 | `range(hi)` / `range(lo, hi)` | list of ints, half-open; empty if `hi <= lo` |
+| `split(s, sep)` | list of pieces; `split(s, "")` splits into characters |
+| `join(xs, sep)` | joins a list of strings; non-string elements error     |
+| `trim(s)`      | the string without leading/trailing whitespace              |
 
 ## Errors
 

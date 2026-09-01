@@ -360,6 +360,70 @@ impl<W: Write> Interpreter<W> {
                 };
                 Ok(Value::list((lo..hi).map(Value::Int).collect()))
             }
+            Builtin::Split => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    // Empty separator splits into single-character strings.
+                    (Value::Str(s), Value::Str(sep)) if sep.is_empty() => Ok(Value::list(
+                        s.chars().map(|c| Value::Str(c.to_string())).collect(),
+                    )),
+                    (Value::Str(s), Value::Str(sep)) => Ok(Value::list(
+                        s.split(sep.as_str())
+                            .map(|p| Value::Str(p.to_string()))
+                            .collect(),
+                    )),
+                    (a, b) => Err(error(
+                        format!(
+                            "split expects two strings, got {} and {}",
+                            a.type_name(),
+                            b.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Join => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::List(items), Value::Str(sep)) => {
+                        let items = items.borrow();
+                        let mut parts = Vec::with_capacity(items.len());
+                        for it in items.iter() {
+                            match it {
+                                Value::Str(s) => parts.push(s.clone()),
+                                v => {
+                                    return Err(error(
+                                        format!(
+                                            "join expects a list of strings, found {}",
+                                            v.type_name()
+                                        ),
+                                        span,
+                                    ));
+                                }
+                            }
+                        }
+                        Ok(Value::Str(parts.join(sep)))
+                    }
+                    (a, b) => Err(error(
+                        format!(
+                            "join expects a list and a string, got {} and {}",
+                            a.type_name(),
+                            b.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Trim => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(s) => Ok(Value::Str(s.trim().to_string())),
+                    v => Err(error(
+                        format!("trim expects a string, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
     }
 
@@ -847,6 +911,41 @@ mod tests {
             output("{ let len = 5; print(len); } print(len(\"ab\"));"),
             "5\n2\n"
         );
+    }
+
+    #[test]
+    fn builtin_split_join_trim() {
+        assert_eq!(
+            output("print(split(\"a,b,,c\", \",\"));"),
+            "[\"a\", \"b\", \"\", \"c\"]\n"
+        );
+        assert_eq!(
+            output("print(split(\"héllo\", \"\"));"),
+            "[\"h\", \"é\", \"l\", \"l\", \"o\"]\n"
+        );
+        assert_eq!(
+            output("print(join([\"a\", \"b\", \"c\"], \"-\"));"),
+            "a-b-c\n"
+        );
+        assert_eq!(output("print(join([], \"-\") + \"empty\");"), "empty\n");
+        assert_eq!(output("print(trim(\"  hi \"));"), "hi\n");
+        assert_eq!(
+            output("print(join(split(\"one two three\", \" \"), \"+\"));"),
+            "one+two+three\n"
+        );
+    }
+
+    #[test]
+    fn builtin_split_join_type_errors() {
+        assert_eq!(
+            program_err("split(\"a\", 1);"),
+            "split expects two strings, got string and int"
+        );
+        assert_eq!(
+            program_err("join([1], \",\");"),
+            "join expects a list of strings, found int"
+        );
+        assert_eq!(program_err("trim(1);"), "trim expects a string, got int");
     }
 
     #[test]

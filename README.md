@@ -13,7 +13,7 @@ REPL.
 ## Status
 
 The language core is complete: ints/floats/strings/bools/nil, lists and
-maps, functions and closures, control flow, 11 builtins, an interactive
+maps, functions and closures, control flow, 14 builtins, an interactive
 REPL, and rustc-style caret diagnostics. See the
 [language reference](docs/reference.md) and [examples/](examples/).
 

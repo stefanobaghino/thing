@@ -412,3 +412,19 @@ ran two examples with the released binary — correct output. Every
 original backlog item from iteration 0 is now shipped: a complete,
 documented, tested, CI'd, released language. Remaining work is the
 stretch list (split/join, for-in, break/continue, REPL carets).
+
+---
+
+## 2026-09-01 — Iteration 16: string builtins (stretch)
+
+Added `split`, `join`, `trim` (builtin count 11 → 14). 2 new tests;
+suite is now 110. Docs table and README count updated.
+
+Decisions:
+- `split(s, "")` splits into single-character strings (chars, not
+  bytes) — the useful reading of an empty separator, instead of
+  erroring like Python.
+- `join` requires a list of strings — no implicit stringification,
+  consistent with `+`.
+- `trim` included beyond the original stretch note: trivial and pairs
+  naturally with `split` for input handling.

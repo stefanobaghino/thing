@@ -39,10 +39,13 @@ pub enum Builtin {
     Float,
     Type,
     Range,
+    Split,
+    Join,
+    Trim,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 11] = [
+    pub const ALL: [Builtin; 14] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -54,6 +57,9 @@ impl Builtin {
         Builtin::Float,
         Builtin::Type,
         Builtin::Range,
+        Builtin::Split,
+        Builtin::Join,
+        Builtin::Trim,
     ];
 
     pub fn name(self) -> &'static str {
@@ -69,6 +75,9 @@ impl Builtin {
             Builtin::Float => "float",
             Builtin::Type => "type",
             Builtin::Range => "range",
+            Builtin::Split => "split",
+            Builtin::Join => "join",
+            Builtin::Trim => "trim",
         }
     }
 }

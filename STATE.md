@@ -18,8 +18,8 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-1. Stretch (post-release): string split/join builtins, `for`-in loop,
-   `break`/`continue`, REPL diagnostics with carets.
+1. Stretch (post-release): `for`-in loop, `break`/`continue`, REPL
+   diagnostics with carets.
 
 ## Done
 
@@ -56,6 +56,7 @@ release binaries on GitHub.
 - rustfmt applied tree-wide; CI (fmt+clippy+test, 3-OS matrix) on
   push/PR. Green on all 3 OSes after a Windows CRLF golden-file fix
   (.gitattributes eol=lf).
+- String builtins split/join/trim (14 builtins total); 2 tests.
 - v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
   asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 
