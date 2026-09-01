@@ -1031,3 +1031,13 @@ Retroactive changelog for v0.1.0 through v0.7.0 (reconstructed from
 this log and the release history), plus an Unreleased section already
 carrying the v0.8.0 items. Kept per release from now on: the release
 step gains "move Unreleased under the new version heading".
+
+---
+
+## 2026-09-01 — Iteration 49: v0.8.0 released
+
+Milestone complete; version bumped, CHANGELOG's Unreleased section
+promoted to v0.8.0, tag pushed. v0.8.0 over v0.7.0: JSON both ways,
+env/exit/time_ms, the todo.ting showcase with its scenario test, and
+the changelog itself. 43 builtins, 153 tests. Asset verification when
+the release workflow finishes.

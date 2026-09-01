@@ -4,7 +4,7 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v0.8.0 — a real scripting citizen (2026-09-01)
 
 - `json_parse` / `json_str` builtins: full JSON both ways (objects↔maps,
   surrogate pairs, strict errors with byte offsets).
