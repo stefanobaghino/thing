@@ -17,26 +17,26 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. `cargo init` the crate, add MIT license, README skeleton, `.gitignore`.
-2. Lexer: tokens for numbers, strings, identifiers, keywords, operators,
+1. Lexer: tokens for numbers, strings, identifiers, keywords, operators,
    with source positions. Unit tests.
-3. Parser: Pratt/precedence-climbing expression parser producing an AST.
-4. Evaluator: arithmetic, comparison, boolean logic on literals.
-5. Statements: `let`, assignment, blocks, `print`.
-6. Control flow: `if`/`else`, `while`.
-7. Functions and closures.
-8. Data: strings ops, lists, maps, indexing.
-9. Builtins: `len`, `push`, type conversion, basic I/O.
-10. REPL with line editing (std-only; no deps).
-11. Diagnostics: spans in error messages, source excerpts.
-12. Example programs under `examples/`, run as integration tests.
-13. Language reference in `docs/`.
-14. GitHub Actions CI (build + test on push).
-15. Tagged release with prebuilt binaries.
+2. Parser: Pratt/precedence-climbing expression parser producing an AST.
+3. Evaluator: arithmetic, comparison, boolean logic on literals.
+4. Statements: `let`, assignment, blocks, `print`.
+5. Control flow: `if`/`else`, `while`.
+6. Functions and closures.
+7. Data: strings ops, lists, maps, indexing.
+8. Builtins: `len`, `push`, type conversion, basic I/O.
+9. REPL with line editing (std-only; no deps).
+10. Diagnostics: spans in error messages, source excerpts.
+11. Example programs under `examples/`, run as integration tests.
+12. Language reference in `docs/`.
+13. GitHub Actions CI (build + test on push).
+14. Tagged release with prebuilt binaries.
 
 ## Done
 
 - Loop protocol designed (`LOOP.md`), state/log files created.
+- Crate bootstrapped: `ting` binary crate, MIT license, README, .gitignore.
 
 ## Blockers
 

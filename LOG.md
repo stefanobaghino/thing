@@ -39,3 +39,16 @@ supply chain empty and builds trivial.
 **Decision: quality bar.** Every commit builds and passes tests standalone
 (also enforced by the user's global commit-hygiene rules). Failing trees
 are never committed.
+
+---
+
+## 2026-09-01 — Iteration 1: crate bootstrap
+
+Initialized the `ting` crate (`cargo init --name ting`, edition 2024, no
+dependencies), added the MIT `LICENSE`, a `README.md` stating the project's
+nature and pointing at the experiment files, and `.gitignore` for `/target`.
+Crate name is `ting` while the repo stays `thing` — the binary is the
+language, the repo is the experiment. `cargo build` and `cargo test` pass
+on the default hello-world `main.rs`; real code starts next iteration with
+the lexer. Next wakeup scheduled short since the next task is fully
+specified.

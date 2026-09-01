@@ -1,0 +1,9 @@
+[package]
+name = "ting"
+version = "0.1.0"
+edition = "2024"
+description = "A tiny, zero-dependency scripting language"
+license = "MIT"
+repository = "https://github.com/stefanobaghino/thing"
+
+[dependencies]
