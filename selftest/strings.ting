@@ -25,3 +25,15 @@ assert(type("x") == "string", "type");
 
 let bad = try(fn() { return int("nope"); });
 assert(has(bad, "err"), "unparseable int errors");
+
+# format(): {} placeholders, {{}} escapes, strict counts.
+assert(format("{} + {} = {}", 1, 2, 3) == "1 + 2 = 3", "format basics");
+assert(format("no placeholders") == "no placeholders", "format passthrough");
+assert(format("{{}} literal, {} filled", "x") == "{} literal, x filled", "format escapes");
+assert(format("list: {}", [1, "a"]) == "list: [1, \"a\"]", "format renders like print");
+let few = try(fn() { return format("{} {}", 1); });
+assert(contains(few["err"], "placeholders"), "too few values errors");
+let many = try(fn() { return format("{}", 1, 2); });
+assert(contains(many["err"], "placeholder"), "too many values errors");
+let stray = try(fn() { return format("oops }"); });
+assert(contains(stray["err"], "stray"), "stray brace errors");

@@ -886,3 +886,15 @@ via Playwright); (4) docs on the Pages site: a stdlib-only Python
 md→html converter in tools/, wired into pages.yml, so the tutorial and
 reference get real URLs next to the playground; (5) release v0.7.0.
 Bytecode VM stays parked.
+
+---
+
+## 2026-09-01 — Iteration 40: format() builtin
+
+`format(fmt, ...)`: `{}` placeholders filled left-to-right, `{{`/`}}`
+for literal braces, values rendered exactly as print renders them.
+Strict in ting's style: too few values, unused values, a lone `{`, or
+a stray `}` are all errors rather than silent output. Covered in the
+self-hosted suite (7 assertions in selftest/strings.ting) — the
+selftests are now the natural home for pure-language features.
+38 builtins; reference updated.

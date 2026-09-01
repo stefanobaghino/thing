@@ -858,6 +858,67 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Format => {
+                if args.is_empty() {
+                    return Err(error("format expects at least 1 argument, got 0", span));
+                }
+                let Value::Str(fmt) = &args[0] else {
+                    return Err(error(
+                        format!("format expects a string, got {}", args[0].type_name()),
+                        span,
+                    ));
+                };
+                let mut out = String::with_capacity(fmt.len());
+                let mut next = 1;
+                let mut chars = fmt.chars().peekable();
+                while let Some(c) = chars.next() {
+                    match c {
+                        '{' if chars.peek() == Some(&'{') => {
+                            chars.next();
+                            out.push('{');
+                        }
+                        '}' if chars.peek() == Some(&'}') => {
+                            chars.next();
+                            out.push('}');
+                        }
+                        '{' if chars.peek() == Some(&'}') => {
+                            chars.next();
+                            if next >= args.len() {
+                                return Err(error(
+                                    "format: more {} placeholders than value arguments",
+                                    span,
+                                ));
+                            }
+                            out.push_str(&args[next].to_string());
+                            next += 1;
+                        }
+                        '{' => {
+                            return Err(error(
+                                "format: '{' must be followed by '}' (write '{{' for a literal brace)",
+                                span,
+                            ));
+                        }
+                        '}' => {
+                            return Err(error(
+                                "format: stray '}' (write '}}' for a literal brace)",
+                                span,
+                            ));
+                        }
+                        c => out.push(c),
+                    }
+                }
+                if next != args.len() {
+                    return Err(error(
+                        format!(
+                            "format: {} placeholder(s) but {} value argument(s)",
+                            next - 1,
+                            args.len() - 1
+                        ),
+                        span,
+                    ));
+                }
+                Ok(Value::Str(out))
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {

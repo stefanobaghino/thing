@@ -170,6 +170,7 @@ scope).
 | `abs(n)`       | absolute value of an int or float                            |
 | `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
+| `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors |
 
 ### Modules
 
