@@ -1762,3 +1762,15 @@ examples/calc.ting, a tiny arithmetic-expression interpreter written
 IN ting (its own lexer and recursive-descent parser, ~100 lines) —
 ting interpreting a language, on either of ting's own engines —
 with golden coverage; (3) release v1.9.0.
+
+---
+
+## 2026-09-01 — Iteration 110: differential fuzz generator v2
+
+The generated grammar now covers bounded while loops (fresh strictly
+increasing counters guarantee termination), a second helper function
+(string-returning), try(...) in expression position, format/upper/
+slice/str string operations, and 800 cases per run (up from 600).
+All byte-identical across engines on the first run — which is itself
+the result: after ten VM iterations the engines agree on everything
+the wider grammar can throw at them. Suite green.

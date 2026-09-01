@@ -168,13 +168,16 @@ fn selftest_programs_match_across_engines() {
 
 #[test]
 fn generated_programs_match_across_engines() {
-    // Grammar-directed differential fuzzing (docs/vm.md's last piece):
-    // random *valid* programs — token soup almost never parses, so the
-    // generator builds statements and expressions structurally. All
-    // programs terminate (no while, for only over small literals);
-    // runtime errors are fine as long as both engines agree.
-    let mut g = Gen { rng: Rng(0xF00D) };
-    for case in 0..600 {
+    // Grammar-directed differential fuzzing: random *valid* programs
+    // built structurally (token soup almost never parses). Everything
+    // terminates by construction: while loops use a fresh strictly
+    // increasing counter, for only iterates small literals. Runtime
+    // errors are fine as long as both engines agree byte-for-byte.
+    let mut g = Gen {
+        rng: Rng(0xF00D),
+        fresh: 0,
+    };
+    for case in 0..800 {
         let src = g.program();
         let a = run(Engine::Eval, &src);
         let b = run(Engine::Vm, &src);
@@ -202,13 +205,15 @@ impl Rng {
 
 struct Gen {
     rng: Rng,
+    fresh: usize,
 }
 
 impl Gen {
     fn program(&mut self) -> String {
         let mut out = String::from(
             "let a = 3; let b = -2; let s = \"ab\"; let xs = [1, 2, 3];\n\
-             fn h(v) { return v + 1; }\n",
+             fn h(v) { return v + 1; }\n\
+             fn g(v) { return str(v) + \"!\"; }\n",
         );
         let n = 2 + self.rng.below(5);
         for _ in 0..n {
@@ -222,7 +227,7 @@ impl Gen {
         if depth == 0 {
             return format!("print({});", self.expr(1));
         }
-        match self.rng.below(8) {
+        match self.rng.below(10) {
             0 => format!("let v{} = {};", self.rng.below(3), self.expr(2)),
             1 => format!("a = {};", self.expr(2)),
             2 => format!("print({}, {});", self.expr(2), self.expr(1)),
@@ -240,6 +245,21 @@ impl Gen {
             ),
             5 => format!("{{ let inner = {}; print(inner); }}", self.expr(2)),
             6 => format!("xs[{}] = {};", self.expr(1), self.expr(1)),
+            7 => {
+                // Bounded while: a fresh counter strictly increases.
+                self.fresh += 1;
+                let c = format!("w{}", self.fresh);
+                format!(
+                    "let {c} = 0; while {c} < {} {{ {c} = {c} + 1; {} }}",
+                    2 + self.rng.below(4),
+                    self.stmt(depth - 1)
+                )
+            }
+            8 => format!(
+                "print(format(\"{{}}|{{}}\", {}, upper(str({}))));",
+                self.expr(1),
+                self.expr(1)
+            ),
             _ => format!("print(try(fn() {{ return {}; }}));", self.expr(2)),
         }
     }
@@ -257,7 +277,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(12) {
+        match self.rng.below(15) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -269,6 +289,9 @@ impl Gen {
             8 => format!("h({})", self.expr(depth - 1)),
             9 => format!("len(str({}))", self.expr(depth - 1)),
             10 => format!("xs[{}]", self.expr(depth - 1)),
+            11 => format!("try(fn() {{ return {}; }})", self.expr(depth - 1)),
+            12 => format!("g({})", self.expr(depth - 1)),
+            13 => format!("slice(str({}), 0, 2)", self.expr(depth - 1)),
             _ => format!("-({})", self.expr(depth - 1)),
         }
     }
