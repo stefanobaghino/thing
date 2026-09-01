@@ -1971,3 +1971,11 @@ Three strokes accumulated (json_str pretty, --check, tutorial JSON
 section) — enough value per the release rule. Bumped 2.1.0 → 2.2.0,
 changelog entry, 14/14 suites, spot-checked selftests on both
 engines. Tagging v2.2.0; release.yml builds the 3-platform archives.
+
+---
+
+## 2026-09-01 — Iteration 135b: v2.2.0 verified
+
+Release run passed; three platform archives on the release. Downloaded
+the darwin-arm64 archive cold: `ting 2.2.0`, pretty json_str works,
+--check works, lib/ bundled. 22nd release verified.
