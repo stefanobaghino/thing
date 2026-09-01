@@ -4,6 +4,16 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.0.0 — maturity (2026-09-01)
+
+No new features — a milestone of confidence. A seven-point
+full-system audit (both engines' suites, cross-engine benchmark
+checksums, wasm in Node, formatter round trip, the live site, the
+release assets) came back all green, and on that evidence the
+reference now carries a stability promise: the documented language is
+stable across 2.x; builtins are only ever added; breaking syntax or
+semantics would mean a 3.0.
+
 ## v1.9.0 — depth (2026-09-01)
 
 - Differential fuzzing generates a wider grammar (bounded loops,

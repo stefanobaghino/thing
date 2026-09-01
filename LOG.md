@@ -1850,3 +1850,13 @@ stable across 2.x; builtins only ever added; breaking syntax or
 semantics means a 3.0; both engines are held to the same document by
 the differential suite. The all-green audit two iterations ago is the
 evidence backing the promise. Release v2.0.0 is next.
+
+---
+
+## 2026-09-01 — Iteration 121: v2.0.0 released
+
+The maturity milestone ships: version 2.0.0, the changelog entry that
+says "no new features" and means it, the stability promise in the
+reference, and the audit as its evidence. Twentieth release. Asset
+verification when the workflow finishes; after that, the loop
+continues in smaller strokes as planned.
