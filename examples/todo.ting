@@ -1,0 +1,82 @@
+# A todo CLI backed by a JSON file — args, env, json, file I/O, and
+# error recovery working together.
+#
+#   ting todo.ting                 # list (the default)
+#   ting todo.ting add buy milk    # add an item
+#   ting todo.ting done 2          # mark #2 done
+#   ting todo.ting rm 1            # delete #1
+#
+# The list lives in todo.json (override with the TODO_FILE env var).
+
+let path = env("TODO_FILE");
+if path == nil { path = "todo.json"; }
+
+fn load() {
+  let r = try(fn() { return json_parse(read_file(path)); });
+  if has(r, "ok") { return r["ok"]; }
+  return [];                       # missing or corrupt file: start fresh
+}
+
+fn save(items) { write_file(path, json_str(items)); }
+
+fn item_number(argv, items) {
+  if len(argv) < 2 { fail("expected an item number"); }
+  let n = int(argv[1]);
+  if n < 1 || n > len(items) { fail(format("no item #{}", n)); }
+  return n;
+}
+
+fn show(items) {
+  if len(items) == 0 {
+    print("nothing to do!");
+    return nil;
+  }
+  let i = 0;
+  for item in items {
+    i = i + 1;
+    let mark = " ";
+    if item["done"] { mark = "x"; }
+    print(format("{}. [{}] {}", i, mark, item["text"]));
+  }
+}
+
+let argv = args();
+let cmd = "list";
+if len(argv) > 0 { cmd = argv[0]; }
+let items = load();
+
+if cmd == "list" {
+  show(items);
+} else if cmd == "add" {
+  if len(argv) < 2 {
+    print("add what?");
+    exit(2);
+  }
+  push(items, {"text": join(slice(argv, 1, len(argv)), " "), "done": false});
+  save(items);
+  print(format("added #{}", len(items)));
+} else if cmd == "done" || cmd == "rm" {
+  let r = try(fn() { return item_number(argv, items); });
+  if has(r, "err") {
+    print("error:", r["err"]);
+    exit(2);
+  }
+  let n = r["ok"];
+  if cmd == "done" {
+    items[n - 1]["done"] = true;
+    print(format("done: {}", items[n - 1]["text"]));
+  } else {
+    let kept = [];
+    let i = 0;
+    for item in items {
+      i = i + 1;
+      if i != n { push(kept, item); }
+    }
+    items = kept;
+    print(format("removed #{}", n));
+  }
+  save(items);
+} else {
+  print("usage: ting todo.ting [list | add <text> | done <n> | rm <n>]");
+  exit(2);
+}

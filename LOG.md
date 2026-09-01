@@ -1004,3 +1004,21 @@ process::exit aborts there — checked, and the wasm build still
 compiles). Integration-tested against the real process in tests/io.rs:
 env set/unset, exit code 3 observed, epoch sanity + monotonicity.
 Grammar synced (guard test). Suite at 152.
+
+---
+
+## 2026-09-01 — Iteration 47: todo.ting showcase
+
+examples/todo.ting: a JSON-file-backed todo CLI (list/add/done/rm,
+TODO_FILE override, corrupt-file recovery via try, format for output,
+exit codes for errors) — args, env, json, file I/O, and error handling
+all in one ~80-line real program. No-args defaults to list so the
+golden examples runner stays happy; tests/todo.rs drives the full
+scenario with real argv + a temp TODO_FILE and asserts outputs, exit
+codes, and the exact JSON on disk.
+
+Bug the new example exposed in the test infrastructure: the fuzz
+mutation test *executes* example mutants in-process, and a todo.ting
+mutant reached exit(2) — killing the whole test binary. Fixed by
+excluding `exit`-mentioning programs from execution (parse-only), same
+as `while`. Suite at 153 (8 examples).
