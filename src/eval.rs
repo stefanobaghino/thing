@@ -1429,10 +1429,8 @@ fn numeric_or_type_error(
 
 /// == is structural; ints and floats compare numerically (1 == 1.0).
 fn values_equal(l: &Value, r: &Value) -> bool {
-    match (l, r) {
-        (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => *a as f64 == *b,
-        (l, r) => l == r,
-    }
+    // Value's PartialEq handles numeric promotion at every depth.
+    l == r
 }
 
 fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, RuntimeError> {

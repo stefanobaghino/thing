@@ -310,10 +310,13 @@ impl Value {
 }
 
 /// Structural (deep) equality for data; identity for functions.
+/// Int/Float compare numerically at every depth (1 == 1.0, and so
+/// [1] == [1.0]), matching the documented `==` semantics.
 impl PartialEq for Value {
     fn eq(&self, other: &Self) -> bool {
         match (self, other) {
             (Value::Int(a), Value::Int(b)) => a == b,
+            (Value::Int(a), Value::Float(b)) | (Value::Float(b), Value::Int(a)) => *a as f64 == *b,
             (Value::Float(a), Value::Float(b)) => a == b,
             (Value::Str(a), Value::Str(b)) => a == b,
             (Value::Bool(a), Value::Bool(b)) => a == b,

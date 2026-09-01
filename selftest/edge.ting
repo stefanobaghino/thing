@@ -1,0 +1,63 @@
+# ting testing ting: the sharp edges, pinned on both engines.
+
+# Unicode: chars, not bytes — including astral-plane characters.
+let s = "a🎈é";
+assert(len(s) == 3, "astral chars count as one");
+assert(s[1] == "🎈", "index by char");
+assert(slice(s, 1, 2) == "🎈", "slice by char");
+assert(slice("ab", -99, 99) == "ab", "slice clamps hard");
+
+# Integer division truncates toward zero; remainder keeps the sign
+# of the dividend.
+assert(-7 / 2 == -3, "division truncates toward zero");
+assert(-7 % 2 == -1, "remainder keeps dividend sign");
+assert(7 % -2 == 1, "remainder keeps dividend sign (positive)");
+assert(int(3.99) == 3 && int(-3.99) == -3, "int() truncates toward zero");
+
+# Float rendering: integral floats keep a decimal, IEEE warts intact.
+assert(str(1.0) == "1.0", "integral float renders with .0");
+assert(str(0.1 + 0.2) == "0.30000000000000004", "IEEE 754 is honest");
+
+# Structural equality crosses int/float element-wise.
+assert([1, [2]] == [1.0, [2.0]], "deep numeric equality");
+assert({"b": 1, "a": 2} == {"a": 2, "b": 1}, "map order is irrelevant");
+
+# Three closures deep, capture still shared.
+fn outer() {
+  let x = 1;
+  return fn() {
+    let y = 2;
+    return fn() { return x + y; };
+  };
+}
+assert(outer()()() == 3, "nested closure capture");
+
+# Chained everything.
+assert([[fn() { return 7; }]][0][0]() == 7, "index-index-call chain");
+
+# Negative-index writes.
+let xs = [1, 2, 3];
+xs[-1] = 9;
+assert(xs == [1, 2, 9], "negative index write");
+
+# Empty containers iterate zero times.
+let hits = 0;
+for x in [] { hits = hits + 1; }
+for k in {} { hits = hits + 1; }
+for c in "" { hits = hits + 1; }
+assert(hits == 0, "empty iterations");
+
+# Shadowing a builtin is scoped.
+{
+  let len = 5;
+  assert(len == 5, "builtin shadowed in scope");
+}
+assert(len("abc") == 3, "builtin restored after scope");
+
+# try inside try; errors carry through cleanly.
+let inner = try(fn() { return try(fn() { fail("deep"); }); });
+assert(inner["ok"]["err"] == "deep", "nested try");
+
+# format brace escapes compose.
+assert(format("{{}}") == "{}", "escaped braces only");
+assert(format("{{{}}}", 1) == "{1}", "escape around placeholder");

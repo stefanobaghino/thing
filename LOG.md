@@ -1890,3 +1890,23 @@ The meta showcase reaches the browser: a compact integer calculator
 four expressions evaluate correctly in wasm. Deploys via the
 playground path filter. First post-2.0 small stroke; v2.1.0 will
 collect these.
+
+---
+
+## 2026-09-01 — Iteration 127: edge selftests find (and fix) an equality bug
+
+selftest/edge.ting — 25 assertions pinning the sharp edges: astral-
+plane unicode indexing/slicing, truncating division and sign-of-
+dividend remainder, honest IEEE float rendering, three-deep closures,
+chained index-index-call, negative-index writes, empty iterations,
+scoped builtin shadowing, nested try, and format brace escapes.
+
+Writing it earned its keep immediately: `[1] == [1.0]` was FALSE
+while `1 == 1.0` is true — top-level equality promoted Int/Float
+numerically but Value's PartialEq (used for every nested comparison,
+plus contains/unique) did not, contradicting the reference's
+documented semantics ("1 == 1.0 is true" + deep structural equality).
+Fixed at the root: numeric promotion now lives in Value::PartialEq at
+every depth, and eval's values_equal delegates to it. This is a bug
+fix aligning the implementation with the documented spec, within the
+2.x stability promise. All 14 suites green on both engines.
