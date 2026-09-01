@@ -42,10 +42,17 @@ pub enum Builtin {
     Split,
     Join,
     Trim,
+    Contains,
+    Replace,
+    StartsWith,
+    EndsWith,
+    Upper,
+    Lower,
+    Slice,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 14] = [
+    pub const ALL: [Builtin; 21] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -60,6 +67,13 @@ impl Builtin {
         Builtin::Split,
         Builtin::Join,
         Builtin::Trim,
+        Builtin::Contains,
+        Builtin::Replace,
+        Builtin::StartsWith,
+        Builtin::EndsWith,
+        Builtin::Upper,
+        Builtin::Lower,
+        Builtin::Slice,
     ];
 
     pub fn name(self) -> &'static str {
@@ -78,6 +92,13 @@ impl Builtin {
             Builtin::Split => "split",
             Builtin::Join => "join",
             Builtin::Trim => "trim",
+            Builtin::Contains => "contains",
+            Builtin::Replace => "replace",
+            Builtin::StartsWith => "starts_with",
+            Builtin::EndsWith => "ends_with",
+            Builtin::Upper => "upper",
+            Builtin::Lower => "lower",
+            Builtin::Slice => "slice",
         }
     }
 }

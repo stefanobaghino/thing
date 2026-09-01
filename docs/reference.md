@@ -150,6 +150,11 @@ scope).
 | `split(s, sep)` | list of pieces; `split(s, "")` splits into characters |
 | `join(xs, sep)` | joins a list of strings; non-string elements error     |
 | `trim(s)`      | the string without leading/trailing whitespace              |
+| `contains(s, sub)` / `contains(xs, v)` | substring test / list membership (structural `==`) |
+| `replace(s, from, to)` | all occurrences replaced; empty `from` errors    |
+| `starts_with(s, p)` / `ends_with(s, p)` | prefix / suffix test           |
+| `upper(s)` / `lower(s)` | Unicode-aware case conversion                  |
+| `slice(x, lo, hi)` | sub-string (by chars) or fresh sub-list, half-open; negatives count from the end, out-of-range clamps |
 
 ## Errors
 

@@ -461,6 +461,117 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Contains => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::Str(s), Value::Str(sub)) => Ok(Value::Bool(s.contains(sub.as_str()))),
+                    (Value::Str(_), v) => Err(error(
+                        format!(
+                            "contains on a string expects a string, got {}",
+                            v.type_name()
+                        ),
+                        span,
+                    )),
+                    (Value::List(items), v) => {
+                        Ok(Value::Bool(items.borrow().iter().any(|it| it == v)))
+                    }
+                    (a, _) => Err(error(
+                        format!("contains expects a string or list, got {}", a.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Replace => {
+                arity(3, 3)?;
+                match (&args[0], &args[1], &args[2]) {
+                    (Value::Str(s), Value::Str(from), Value::Str(to)) => {
+                        if from.is_empty() {
+                            Err(error(
+                                "replace does not accept an empty search string",
+                                span,
+                            ))
+                        } else {
+                            Ok(Value::Str(s.replace(from.as_str(), to)))
+                        }
+                    }
+                    (a, b, c) => Err(error(
+                        format!(
+                            "replace expects three strings, got {}, {} and {}",
+                            a.type_name(),
+                            b.type_name(),
+                            c.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::StartsWith | Builtin::EndsWith => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::Str(s), Value::Str(x)) => {
+                        Ok(Value::Bool(if b == Builtin::StartsWith {
+                            s.starts_with(x.as_str())
+                        } else {
+                            s.ends_with(x.as_str())
+                        }))
+                    }
+                    (a, c) => Err(error(
+                        format!(
+                            "{} expects two strings, got {} and {}",
+                            b.name(),
+                            a.type_name(),
+                            c.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Upper | Builtin::Lower => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(s) => Ok(Value::Str(if b == Builtin::Upper {
+                        s.to_uppercase()
+                    } else {
+                        s.to_lowercase()
+                    })),
+                    v => Err(error(
+                        format!("{} expects a string, got {}", b.name(), v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Slice => {
+                arity(3, 3)?;
+                let (lo, hi) = match (&args[1], &args[2]) {
+                    (Value::Int(lo), Value::Int(hi)) => (*lo, *hi),
+                    (a, c) => {
+                        return Err(error(
+                            format!(
+                                "slice expects int bounds, got {} and {}",
+                                a.type_name(),
+                                c.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                };
+                match &args[0] {
+                    Value::Str(s) => {
+                        let chars: Vec<char> = s.chars().collect();
+                        let (lo, hi) = slice_bounds(lo, hi, chars.len());
+                        Ok(Value::Str(chars[lo..hi].iter().collect()))
+                    }
+                    Value::List(items) => {
+                        let items = items.borrow();
+                        let (lo, hi) = slice_bounds(lo, hi, items.len());
+                        Ok(Value::list(items[lo..hi].to_vec()))
+                    }
+                    v => Err(error(
+                        format!("slice expects a string or list, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
     }
 
@@ -759,6 +870,16 @@ fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
             span,
         )),
     }
+}
+
+/// Python-style slice bounds: negatives count from the end, everything
+/// clamps to the valid range, and a backwards range is empty.
+fn slice_bounds(lo: i64, hi: i64, len: usize) -> (usize, usize) {
+    let len = len as i64;
+    let norm = |i: i64| if i < 0 { i + len } else { i }.clamp(0, len);
+    let lo = norm(lo);
+    let hi = norm(hi).max(lo);
+    (lo as usize, hi as usize)
 }
 
 #[cfg(test)]
@@ -1060,6 +1181,81 @@ mod tests {
             "join expects a list of strings, found int"
         );
         assert_eq!(program_err("trim(1);"), "trim expects a string, got int");
+    }
+
+    #[test]
+    fn builtin_string_predicates_and_case() {
+        assert_eq!(run("contains(\"haystack\", \"stack\")"), Value::Bool(true));
+        assert_eq!(run("contains(\"haystack\", \"z\")"), Value::Bool(false));
+        assert_eq!(run("contains([1, \"a\", nil], \"a\")"), Value::Bool(true));
+        assert_eq!(run("contains([1, 2], 3)"), Value::Bool(false));
+        assert_eq!(run("starts_with(\"ting\", \"ti\")"), Value::Bool(true));
+        assert_eq!(run("ends_with(\"ting\", \"ti\")"), Value::Bool(false));
+        assert_eq!(run("upper(\"héllo\")"), Value::Str("HÉLLO".into()));
+        assert_eq!(run("lower(\"HÉLLO\")"), Value::Str("héllo".into()));
+    }
+
+    #[test]
+    fn builtin_replace() {
+        assert_eq!(
+            run("replace(\"a-b-c\", \"-\", \"+\")"),
+            Value::Str("a+b+c".into())
+        );
+        assert_eq!(
+            run("replace(\"abc\", \"x\", \"y\")"),
+            Value::Str("abc".into())
+        );
+        assert_eq!(
+            run_err("replace(\"abc\", \"\", \"y\")"),
+            "replace does not accept an empty search string"
+        );
+    }
+
+    #[test]
+    fn builtin_slice() {
+        assert_eq!(run("slice(\"hello\", 1, 3)"), Value::Str("el".into()));
+        assert_eq!(run("slice(\"héllo\", 0, 2)"), Value::Str("hé".into()));
+        // Negative bounds count from the end; out-of-range clamps.
+        assert_eq!(run("slice(\"hello\", -3, 99)"), Value::Str("llo".into()));
+        assert_eq!(run("slice(\"hello\", 3, 1)"), Value::Str("".into()));
+        assert_eq!(
+            run("slice([1, 2, 3, 4], 1, -1)"),
+            Value::list(vec![Value::Int(2), Value::Int(3)])
+        );
+        // Slicing copies: mutating the slice leaves the source alone.
+        assert_eq!(
+            output("let a = [1, 2, 3]; let b = slice(a, 0, 2); b[0] = 9; print(a, b);"),
+            "[1, 2, 3] [9, 2]\n"
+        );
+        assert_eq!(
+            run_err("slice(1, 0, 1)"),
+            "slice expects a string or list, got int"
+        );
+        assert_eq!(
+            run_err("slice(\"x\", 0.5, 1)"),
+            "slice expects int bounds, got float and int"
+        );
+    }
+
+    #[test]
+    fn builtin_string_batch2_type_errors() {
+        assert_eq!(
+            program_err("contains(1, 2);"),
+            "contains expects a string or list, got int"
+        );
+        assert_eq!(
+            program_err("contains(\"a\", 1);"),
+            "contains on a string expects a string, got int"
+        );
+        assert_eq!(
+            program_err("starts_with(\"a\", 1);"),
+            "starts_with expects two strings, got string and int"
+        );
+        assert_eq!(program_err("upper(1);"), "upper expects a string, got int");
+        assert_eq!(
+            program_err("replace(\"a\", \"b\", 1);"),
+            "replace expects three strings, got string, string and int"
+        );
     }
 
     #[test]

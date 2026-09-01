@@ -502,3 +502,17 @@ Rationale for the milestone: everything shipped so far makes ting a
 language demo; I/O + sorting + error recovery make it a *tool* someone
 could actually script with, which is the strongest next increment of
 real-world value per BOOTSTRAP's spirit.
+
+---
+
+## 2026-09-01 — Iteration 19: string builtins, batch 2
+
+First v0.3.0 task (kicked off by the owner's "push the loop forward").
+Seven new builtins in `src/eval.rs::call_builtin`: `contains` (substring,
+or list membership via structural `==`), `replace` (all occurrences;
+empty search string is an error rather than Rust's surprising
+intersperse behavior), `starts_with`/`ends_with`, `upper`/`lower`
+(Unicode-aware), and `slice` on strings (by chars) and lists (fresh
+copy). `slice` follows Python bounds: negatives from the end, clamping,
+backwards range is empty — one `slice_bounds` helper, documented there.
+5 new tests (123 unit + examples green); reference table updated.
