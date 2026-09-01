@@ -17,14 +17,13 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v0.3.0 — ting as a practical scripting tool** (human
-directive 2026-09-01: keep building, never idle):
-
-1. Release v0.3.0 (bump, tag, verify assets).
-
-After v0.3.0: replenish per LOOP.md "No idle" — candidates already on
-the radar: WASM/browser playground (static page, runs client-side),
-fuzz harness, bytecode VM port, self-hosted ting programs as tests.
+1. Verify the v0.3.0 release: workflow green, three assets present,
+   download one and run examples. (Tag pushed; workflow running,
+   watcher armed.)
+2. Replenish per LOOP.md "No idle": design the next milestone and
+   refill this backlog. Candidates: WASM/browser playground (static
+   page, runs client-side), fuzz harness, bytecode VM port,
+   self-hosted ting programs as tests.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
