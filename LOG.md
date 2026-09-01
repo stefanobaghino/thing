@@ -1562,3 +1562,13 @@ fallback resolves inside wasm where there is no filesystem.
 Playwright-verified locally: reverse/sum/pad_left/title all correct
 ([5,4,3,2,1] / "0015" / "The Ting Standard Library"). Deploys via the
 playground path filter.
+
+---
+
+## 2026-09-01 — Iteration 86: stdlib documentation
+
+docs/stdlib.md: all three modules' functions in tables, the embedded-
+fallback semantics up front, a test-framework walkthrough, and links
+to the sources and the self-hosted coverage. Rendered onto the site
+(nav gains "stdlib"); local render verified. v1.5.0's last task is the
+release.
