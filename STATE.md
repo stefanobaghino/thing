@@ -17,10 +17,16 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v1.1.0 — the VM earns its keep (or proves it can't)**
-(designed in LOG.md replenishment entry, 2026-09-01):
+Milestone **v1.2.0 — a language server** (designed in LOG.md
+replenishment entry, 2026-09-01; zero new dependencies — reuses
+src/json.rs, spans, diagnostics):
 
-1. Release v1.1.0.
+1. `ting --lsp`: stdio JSON-RPC (Content-Length framing), lifecycle
+   (initialize/initialized/shutdown/exit), didOpen/didChange ->
+   publishDiagnostics with lex/parse/compile errors and real ranges.
+2. Integration test driving the server over pipes with LSP traffic.
+3. editor/README: VS Code / Neovim / Zed wiring.
+4. Release v1.2.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -166,6 +172,9 @@ green.
   frames): vm now -35% fib, -29% lists, -11% strings, +1% maps.
 - VM is now the DEFAULT engine (--eval escape hatch; CI test-eval
   row; wasm playground on VM too); docs/README/BASELINE updated.
+- v1.1.0 RELEASED and verified: 3 assets; both engines correct in the
+  shipped binary.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.1.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
