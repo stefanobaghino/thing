@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.3.0 (2026-09-01)
+
+- LSP: `textDocument/documentSymbol` — an outline of top-level
+  bindings, functions and variables distinguished.
+- LSP: `textDocument/definition` — jump from an identifier to its
+  top-level binding.
+- Reference: new "Tooling" section documenting `--fmt`, `--check`,
+  the LSP's capabilities, and the TextMate grammar.
+
 ## v2.2.0 (2026-09-01)
 
 - `json_str(v, indent)`: optional pretty printing — `indent` spaces

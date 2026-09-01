@@ -2012,3 +2012,14 @@ Docs stroke: the reference never described the toolchain. New
 --check, and the six LSP capabilities, plus the TextMate grammar
 (corrected mid-draft: it lives in editor/, not syntax/). 14/14
 suites; Pages will re-render on push.
+
+---
+
+## 2026-09-01 — Iteration 139: v2.3.0
+
+Editor-tooling release: documentSymbol + definition (LSP) and the
+reference Tooling section. 14/14 suites, both engines spot-checked.
+Tagging v2.3.0. Also confirmed 138's "RUN FAILED" was a transient
+watcher network error (connection reset); both runs were green on
+direct inspection — third occurrence of this failure mode, watchers
+stay but verdicts always get verified against the API.
