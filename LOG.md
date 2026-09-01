@@ -1164,3 +1164,21 @@ behind --vm/TING_ENGINE=vm, differential testing (corpus + the whole
 selftest suite byte-identical), dual-engine benchmarks, and the
 honestly-recorded verdict that the tree-walker stays default. 158
 tests. Asset verification when the release workflow finishes.
+
+**v0.9.0 verified:** release workflow green; three assets; darwin
+binary smoke-tested under default, --vm, and TING_ENGINE=vm — same
+output. Ninth release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.0.0 milestone
+
+Per LOOP.md "No idle". The language, tooling, and distribution are
+mature; what stands between here and a credible 1.0 is finishing the
+confidence work the VM design promised but deferred: (1) differential
+fuzzing — the token-soup corpus through BOTH engines, verdicts must
+agree (the last unimplemented line of docs/vm.md's testing plan); (2)
+a CI matrix row running the integration suites with TING_ENGINE=vm;
+(3) a doc-coverage guard test: every builtin in Builtin::ALL must
+appear in docs/reference.md (the grammar already has one); (4) README
+refresh (engines, changelog, current numbers); (5) release v1.0.0.
