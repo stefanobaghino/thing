@@ -57,7 +57,7 @@
     },
     "builtins": {
       "name": "support.function.builtin.ting",
-      "match": "\\b(print|len|push|pop|keys|has|str|int|float|type|range|split|join|trim|contains|replace|starts_with|ends_with|upper|lower|slice|args|input|read_file|write_file|sort|sort_by|try|fail|map|filter|reduce|min|max|abs|assert|import|format)\\b(?=\\s*\\()"
+      "match": "\\b(print|len|push|pop|keys|has|str|int|float|type|range|split|join|trim|contains|replace|starts_with|ends_with|upper|lower|slice|args|input|read_file|write_file|sort|sort_by|try|fail|map|filter|reduce|min|max|abs|assert|import|format|json_parse|json_str)\\b(?=\\s*\\()"
     },
     "function-definitions": {
       "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",

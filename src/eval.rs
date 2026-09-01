@@ -919,6 +919,22 @@ impl<W: Write> Interpreter<W> {
                 }
                 Ok(Value::Str(out))
             }
+            Builtin::JsonParse => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(s) => crate::json::decode(s).map_err(|m| error(m, span)),
+                    v => Err(error(
+                        format!("json_parse expects a string, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::JsonStr => {
+                arity(1, 1)?;
+                crate::json::encode(&args[0])
+                    .map(Value::Str)
+                    .map_err(|m| error(m, span))
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {

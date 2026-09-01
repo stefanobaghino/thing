@@ -66,10 +66,12 @@ pub enum Builtin {
     Assert,
     Import,
     Format,
+    JsonParse,
+    JsonStr,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 38] = [
+    pub const ALL: [Builtin; 40] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -108,6 +110,8 @@ impl Builtin {
         Builtin::Assert,
         Builtin::Import,
         Builtin::Format,
+        Builtin::JsonParse,
+        Builtin::JsonStr,
     ];
 
     pub fn name(self) -> &'static str {
@@ -150,6 +154,8 @@ impl Builtin {
             Builtin::Assert => "assert",
             Builtin::Import => "import",
             Builtin::Format => "format",
+            Builtin::JsonParse => "json_parse",
+            Builtin::JsonStr => "json_str",
         }
     }
 }

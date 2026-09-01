@@ -171,6 +171,8 @@ scope).
 | `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
 | `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors |
+| `json_parse(s)` | JSON text to ting values (object→map, array→list, null→nil); malformed input errors with an offset |
+| `json_str(v)`  | ting value to compact JSON (map keys sorted); functions and non-finite floats error |
 
 ### Modules
 

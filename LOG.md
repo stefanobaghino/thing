@@ -975,3 +975,18 @@ examples/todo.ting, a JSON-file-backed todo CLI exercising
 args/io/json, driven by a new integration test with real argv+temp
 files; (4) CHANGELOG.md, retroactive from the release history and
 maintained per release; (5) release v0.8.0.
+
+---
+
+## 2026-09-01 — Iteration 45: JSON builtins
+
+`src/json.rs`: hand-rolled encoder/decoder behind json_str/json_parse
+(40 builtins). Decoder is full JSON: strings with \uXXXX and surrogate
+pairs, numbers (integer syntax → int, i64 overflow falls back to
+float), nested arrays/objects, strict trailing-garbage and control-
+character errors with byte offsets. Encoder: compact output, sorted
+map keys (BTreeMap gives it for free), integral floats emit "2.0" so
+float-ness round-trips (mirrors print), functions and non-finite
+floats refuse to encode. 6 Rust unit tests + selftest/json.ting (9
+assertions incl. a document round trip); grammar builtin list synced
+(the guard test enforced it). Suite at 151.
