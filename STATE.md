@@ -18,10 +18,13 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v2.0.0 — maturity** (designed in LOG.md replenishment
-entry, 2026-09-01):
+**Post-2.0 small strokes** (designed in LOG.md replenishment entry,
+2026-09-01; release v2.1.0 when value accumulates):
 
-1. Release v2.0.0. Post-2.0: smaller strokes, no idle.
+1. Playground "calc" example.
+2. selftest/edge.ting: nastiest edge cases pinned in the self-hosted
+   suite (unicode, negative modulo, float rendering, nesting).
+3. Ongoing: maintenance (issues/PRs/CI); replenish per LOOP.md.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -226,6 +229,9 @@ green.
 - Grand audit: 7-point full-system sweep, all green (logged).
 - Docs pass (README intro modernized) + 2.x stability promise in
   the reference.
+- v2.0.0 RELEASED and verified: 3 assets; both engines correct on the
+  shipped binary. Twentieth release.
+  https://github.com/stefanobaghino/thing/releases/tag/v2.0.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
