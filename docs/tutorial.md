@@ -171,6 +171,29 @@ for raw in ["42", "-1", "unknown"] {
 unknown -> error: cannot convert "unknown" to int
 ```
 
+## Splitting code into modules
+
+`import(path)` runs another file once and hands you its top-level
+definitions as a map. (This snippet writes its module first so it's
+self-contained — normally the module just sits next to your script.)
+
+```ting
+write_file("greeter.ting",
+  "fn greet(name) { return \"hi, \" + name; }\nlet version = 1;\n");
+
+let g = import("greeter.ting");
+print(g["greet"]("ting"), "- module v" + str(g["version"]));
+```
+
+```text
+hi, ting - module v1
+```
+
+Relative paths resolve against the importing file's directory. A module
+runs once per program: every later `import` of the same file returns
+the very same map, and errors inside a module point at the module's own
+line and column.
+
 ## A real script: word frequency
 
 Everything together: arguments, file I/O with recovery, maps, sorting,

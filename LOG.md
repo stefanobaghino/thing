@@ -844,3 +844,15 @@ server, so sharing stays fully static and private. Unicode survives
 the round trip (TextEncoder → btoa; verified with "héllo wörld").
 Browser-verified via Playwright: link-load auto-run, share hash,
 clipboard status. Deploys via pages.yml's playground/ path filter.
+
+---
+
+## 2026-09-01 — Iteration 38: tutorial covers modules
+
+New "Splitting code into modules" section: a verified snippet that
+writes its own module with write_file and then imports it — fully
+self-contained, so the executable-tutorial contract holds (output
+diffed by tests/tutorial.rs). The runner now executes snippets from
+the script's own directory, aligning write_file (cwd-relative) with
+import (script-dir-relative), which is also how a user actually runs
+ting in place. 10 verified snippets.

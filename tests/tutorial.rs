@@ -65,8 +65,12 @@ fn tutorial_snippets_run_and_match() {
     for (n, s) in snippets.iter().enumerate() {
         let script = std::env::temp_dir().join(format!("ting-tutorial-{n}.ting"));
         std::fs::write(&script, &s.code).unwrap();
+        // Run from the script's own directory so snippets that pair
+        // write_file (cwd-relative) with import (script-dir-relative)
+        // behave as they would for a user running `ting` in place.
         let out = Command::new(env!("CARGO_BIN_EXE_ting"))
             .arg(&script)
+            .current_dir(script.parent().unwrap())
             .output()
             .expect("failed to run ting");
         assert!(
