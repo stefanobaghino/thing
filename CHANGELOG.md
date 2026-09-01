@@ -4,6 +4,17 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.2.0 (2026-09-01)
+
+- `json_str(v, indent)`: optional pretty printing — `indent` spaces
+  per level (0–16), empty containers stay inline, output round-trips
+  through `json_parse`. Single-argument compact form is unchanged.
+- `ting --check <files...>`: static verification — lex, parse, and
+  compile without running; one diagnostic per bad file, exit 1 if any
+  fail. Built for pre-commit hooks and CI.
+- Tutorial: new "Working with JSON" section (parse, mutate, compact
+  vs pretty output, error recovery); every snippet is CI-tested.
+
 ## v2.1.0 (2026-09-01)
 
 - Fix: `==` now compares ints and floats numerically at every depth —

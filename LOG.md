@@ -1962,3 +1962,12 @@ lib.rs (the static half of run_source_engine). CLI test proves the
 program is *not* executed (a clean file containing exit(7) checks as
 0). Help text and reference Running section updated. 14/14 suites.
 Fits the pre-commit-hook use case the formatter already serves.
+
+---
+
+## 2026-09-01 — Iteration 135: v2.2.0
+
+Three strokes accumulated (json_str pretty, --check, tutorial JSON
+section) — enough value per the release rule. Bumped 2.1.0 → 2.2.0,
+changelog entry, 14/14 suites, spot-checked selftests on both
+engines. Tagging v2.2.0; release.yml builds the 3-platform archives.
