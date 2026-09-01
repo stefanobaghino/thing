@@ -1,0 +1,34 @@
+# A tiny test framework, written in ting. Usage:
+#
+#   let t = import("lib/test.ting");
+#   t["check"]("math works", 1 + 1 == 2);
+#   t["check_eq"]("name", got, want);
+#   t["summary"]();   # prints results; exits 1 if anything failed
+#
+# The `state` map is exported too, for tools that want the counters.
+
+let state = {"passed": 0, "failed": 0, "failures": []};
+
+fn check(name, cond) {
+  if cond {
+    state["passed"] = state["passed"] + 1;
+  } else {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], name);
+  }
+}
+
+fn check_eq(name, got, want) {
+  if got == want {
+    state["passed"] = state["passed"] + 1;
+  } else {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], format("{}: got {}, want {}", name, got, want));
+  }
+}
+
+fn summary() {
+  for f in state["failures"] { print("FAIL:", f); }
+  print(format("{} passed, {} failed", state["passed"], state["failed"]));
+  if state["failed"] > 0 { exit(1); }
+}

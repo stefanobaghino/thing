@@ -1479,3 +1479,17 @@ identifier already present in the document (deduped, digits/keywords/
 builtins excluded) as Variable items. completionProvider advertised.
 Test drives it over pipes: builtin with detail, keyword, and a
 document-local name all present. Suite green.
+
+---
+
+## 2026-09-01 — Iteration 75: lib/test.ting
+
+A test framework in ~30 lines of ting: check/check_eq accumulate into
+a module-level state map (closures over the module environment make
+the counters shared — the exports map hands out the same references),
+summary() prints failures + totals and exits 1 on any failure.
+Covered from two angles: selftest/testlib.ting asserts the counters
+and failure records directly (including the deliberate-failure paths,
+without triggering summary's exit), and examples/testing.ting is a
+golden-file example of the happy path ("3 passed, 0 failed"). Both run
+under both engines via the existing harnesses — green first try.

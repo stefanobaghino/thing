@@ -1,0 +1,13 @@
+# ting testing ting's test framework (without summary(), which prints).
+
+let t = import("../lib/test.ting");
+t["check"]("passes", 1 + 1 == 2);
+t["check_eq"]("eq passes", "a" + "b", "ab");
+assert(t["state"]["passed"] == 2, "two passes counted");
+assert(t["state"]["failed"] == 0, "no failures yet");
+
+t["check"]("meant to fail", false);
+t["check_eq"]("also meant to fail", 1, 2);
+assert(t["state"]["failed"] == 2, "failures counted");
+assert(contains(t["state"]["failures"][0], "meant to fail"), "name kept");
+assert(contains(t["state"]["failures"][1], "got 1, want 2"), "diff kept");

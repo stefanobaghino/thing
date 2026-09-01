@@ -1,0 +1,8 @@
+# The bundled test framework (lib/test.ting) in action.
+let t = import("../lib/test.ting");
+
+t["check"]("math still works", 6 * 7 == 42);
+t["check_eq"]("upper", upper("ting"), "TING");
+t["check_eq"]("json round trip", json_parse(json_str([1, 2.5])), [1, 2.5]);
+
+t["summary"]();
