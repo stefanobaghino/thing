@@ -17,18 +17,17 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Evaluator: arithmetic, comparison, boolean logic on literals.
-2. Statements: `let`, assignment, blocks, `print`.
-3. Control flow: `if`/`else`, `while`.
-4. Functions and closures.
-5. Data: strings ops, lists, maps, indexing.
-6. Builtins: `len`, `push`, type conversion, basic I/O.
-7. REPL with line editing (std-only; no deps).
-8. Diagnostics: spans in error messages, source excerpts.
-9. Example programs under `examples/`, run as integration tests.
-10. Language reference in `docs/`.
-11. GitHub Actions CI (build + test on push).
-12. Tagged release with prebuilt binaries.
+1. Statements: `let`, assignment, blocks, `print`.
+2. Control flow: `if`/`else`, `while`.
+3. Functions and closures.
+4. Data: strings ops, lists, maps, indexing.
+5. Builtins: `len`, `push`, type conversion, basic I/O.
+6. REPL with line editing (std-only; no deps).
+7. Diagnostics: spans in error messages, source excerpts.
+8. Example programs under `examples/`, run as integration tests.
+9. Language reference in `docs/`.
+10. GitHub Actions CI (build + test on push).
+11. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -38,6 +37,10 @@ release binaries on GitHub.
 - Parser (`src/parser.rs`) + AST (`src/ast.rs`): Pratt expression parser —
   precedence, unary, calls, indexing, lists; 14 tests. `ting <file>`
   currently parses one expression and prints the s-expression.
+- Evaluator (`src/eval.rs`) + values (`src/value.rs`): arithmetic with
+  int/float promotion and overflow checks, string/list concat, strict
+  short-circuit booleans, structural equality, negative indexing; 14
+  tests. `ting <file>` now evaluates one expression.
 
 ## Blockers
 

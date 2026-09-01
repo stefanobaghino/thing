@@ -1,6 +1,8 @@
 mod ast;
+mod eval;
 mod lexer;
 mod parser;
+mod value;
 
 use std::process::ExitCode;
 
@@ -27,15 +29,19 @@ fn run_file(path: &str) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    // Until the evaluator lands, running a file parses it as a single
-    // expression and dumps the AST as an s-expression.
+    // Until statements land, running a file evaluates it as a single
+    // expression and prints the result.
     let tokens = match lexer::lex(&src) {
         Ok(tokens) => tokens,
         Err(e) => return report(path, &src, &e.message, e.span),
     };
-    match parser::parse_expr(&tokens) {
-        Ok(expr) => {
-            println!("{expr}");
+    let expr = match parser::parse_expr(&tokens) {
+        Ok(expr) => expr,
+        Err(e) => return report(path, &src, &e.message, e.span),
+    };
+    match eval::eval(&expr) {
+        Ok(v) => {
+            println!("{v}");
             ExitCode::SUCCESS
         }
         Err(e) => report(path, &src, &e.message, e.span),

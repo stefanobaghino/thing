@@ -106,3 +106,33 @@ Decisions:
 Session note: the human restarted the session with permission bypass so
 the loop runs without approval pauses; the loop was re-entered via /loop
 and resumed from repo state exactly as designed.
+
+---
+
+## 2026-09-01 — Iteration 4: expression evaluator
+
+Implemented `src/value.rs` (`Value`: int/float/string/bool/nil/list, with
+display formatting) and `src/eval.rs` (tree-walking `eval` over `Expr`).
+14 new tests; suite is now 43. `ting <file>` evaluates one expression and
+prints the result.
+
+Semantics decisions (these define the language, so logged in detail):
+- **Ints and floats stay distinct**; mixed arithmetic promotes to float.
+  Integer overflow is a runtime error (checked ops), not a wrap.
+- **Integer division truncates**; `/ 0` and `% 0` on ints are runtime
+  errors, but float division by zero yields IEEE infinity/NaN.
+- **`+` is overloaded** for string concatenation and list concatenation;
+  no implicit stringification (`1 + "x"` is a type error).
+- **Strict booleans**: `&&`, `||`, `!` require bools — no truthiness.
+  `&&`/`||` short-circuit (verified by a test where the rhs would trap).
+- **Equality is structural**, with numeric cross-type equality
+  (`1 == 1.0` is true); comparisons work on numbers and strings only.
+  NaN comparisons are false per IEEE.
+- **Negative indices** count from the end (Python-style) on lists and
+  strings; string indexing is by character, not byte.
+- `Var`/`Call` evaluate to descriptive errors until `let` and functions
+  land (next tasks).
+
+Session note: the human added the `origin` remote
+(github.com:stefanobaghino/thing); publishing/pushing joins the backlog
+near CI/release time.
