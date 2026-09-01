@@ -18,10 +18,16 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.9.0 — depth** (designed in LOG.md replenishment
+Milestone **v2.0.0 — maturity** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. Release v1.9.0.
+1. Grand audit: scripted full-system verification sweep (engines,
+   wasm/Node, LSP, formatter, live site pages, release assets),
+   results logged.
+2. Docs consistency pass (README/--help/reference/CHANGELOG).
+3. Stability promise in the reference (language spec stable; breaking
+   change = 3.0).
+4. Release v2.0.0. Post-2.0: smaller strokes, no idle.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -220,6 +226,9 @@ green.
 - Fuzz generator v2 (bounded while, try-expr, string ops; 800
   cases) — byte-identical first run.
 - calc.ting: tokenizer+parser+evaluator in ting, golden-tested.
+- v1.9.0 RELEASED and verified: 3 assets; calc showcase ran on the
+  shipped binary.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.9.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
