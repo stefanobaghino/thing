@@ -117,3 +117,17 @@ Parity is the whole game:
 
 Non-goals for v0.9.0: serialized bytecode, register allocation, local
 slot resolution, inline caches, GC changes.
+
+## Measured outcome (v0.9.0)
+
+Full parity achieved (differential corpus + the entire selftest suite
+byte-identical). Performance: **no speedup** — +0-2% vs the
+tree-walker on all four benchmarks (see bench/BASELINE.md). Reasons:
+function bodies and builtins still tree-walk under the hybrid, which
+is where fib/lists/maps spend their time, and the remaining per-op
+costs (Env HashMap lookups, Value clone traffic) dominate over AST
+dispatch. Per the rule above, the default engine remains the
+tree-walker; `--vm` / `TING_ENGINE=vm` stay available and at parity.
+The next levers, if performance becomes a goal again: compile function
+bodies (remove the hybrid) and resolve locals to stack slots — both
+larger than dispatch-only and to be measured on their own.

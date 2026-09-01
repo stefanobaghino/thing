@@ -1136,3 +1136,20 @@ coverage now includes an 11-program function corpus AND the entire
 selftest suite (8 ting programs, 130+ assertions) — all byte-identical
 across engines. The whole language now runs under --vm. Next:
 benchmark, then decide the default. Suite at 158.
+
+---
+
+## 2026-09-01 — Iteration 54: VM benchmarked — honest verdict: not faster
+
+bench/run.py now times both engines per script (checksums must agree —
+they do). Result: vm within +0-2% of eval on all four benches, i.e. no
+win. Diagnosis: the hybrid leaves function bodies and builtins on the
+tree-walker, which is exactly where fib (recursion) and lists/maps
+(map/filter/sort internals) spend their time; and iteration 36 already
+showed per-op costs (Env lookups, clone traffic) rival dispatch. Per
+docs/vm.md's own rule — flip only if clearly faster — the tree-walker
+stays the default; the VM remains selectable and fully at parity.
+Outcome recorded in docs/vm.md with the two next levers named
+(compiled function bodies, local slot resolution) for a future
+milestone to measure. BASELINE.md now carries both engines' numbers;
+CHANGELOG Unreleased updated.

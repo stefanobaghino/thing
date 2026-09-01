@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- A bytecode compiler and VM covering the whole language, selectable
+  with `--vm` or `TING_ENGINE=vm`; differential tests hold both
+  engines byte-identical (including the entire self-hosted suite).
+  Measured honestly: no speedup over the tree-walker yet, so the
+  tree-walker stays the default (see `docs/vm.md`).
+- Benchmarks now compare both engines (`bench/run.py`).
+
 ## v0.8.0 — a real scripting citizen (2026-09-01)
 
 - `json_parse` / `json_str` builtins: full JSON both ways (objects↔maps,
