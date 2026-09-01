@@ -264,6 +264,16 @@ impl Compiler {
     }
 
     fn konst(&mut self, v: Value) -> u32 {
+        // Dedup scalar literals; the pool stays tiny so a scan is fine.
+        let dup = self.chunk.consts.iter().position(|c| match (c, &v) {
+            (Value::Int(a), Value::Int(b)) => a == b,
+            (Value::Str(a), Value::Str(b)) => a == b,
+            (Value::Float(a), Value::Float(b)) => a.to_bits() == b.to_bits(),
+            _ => false,
+        });
+        if let Some(i) = dup {
+            return i as u32;
+        }
         self.chunk.consts.push(v);
         (self.chunk.consts.len() - 1) as u32
     }

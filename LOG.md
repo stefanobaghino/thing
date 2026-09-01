@@ -1493,3 +1493,19 @@ and failure records directly (including the deliberate-failure paths,
 without triggering summary's exit), and examples/testing.ting is a
 golden-file example of the happy path ("3 passed, 0 failed"). Both run
 under both engines via the existing harnesses — green first try.
+
+---
+
+## 2026-09-01 — Iteration 78: VM micro-pass — pooling wins again
+
+Two candidates, both measured. (1) Constant-pool dedup for scalar
+literals: correctness-neutral tidy-up, no measurable time change
+(pools are tiny) — kept for memory hygiene. (2) A thread-local buffer
+pool feeding both the operand stack and the locals frame: every VM
+function call had been paying two heap allocations (a
+with_capacity(64) stack and a vec![Nil; slots]); recycling them
+dropped fib to -45% and lists to -45% vs the tree-walker (from
+-35%/-29%). Strings -11%, maps +1% unchanged (top-level, frameless).
+All 13 suites green including differential fuzzing; BASELINE
+regenerated. The VM's margin over the reference engine has now
+roughly doubled since the flip.

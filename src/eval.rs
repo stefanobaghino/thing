@@ -1155,7 +1155,8 @@ impl<W: Write> Interpreter<W> {
                 )
             }
             FnBody::Chunk(chunk) => {
-                let mut locals = vec![Value::Nil; chunk.slots as usize];
+                let mut locals = crate::vm::take_buf();
+                locals.resize(chunk.slots as usize, Value::Nil);
                 let mut env_params = HashMap::new();
                 for ((p, a), loc) in func.params.iter().zip(args).zip(&chunk.param_locs) {
                     match loc {
@@ -1190,6 +1191,7 @@ impl<W: Write> Interpreter<W> {
         };
         self.depth -= 1;
         self.env = saved;
+        crate::vm::give_buf(locals);
         match result? {
             ControlOrValue::Value(v) => Ok(v.unwrap_or(Value::Nil)),
             ControlOrValue::Control(Control::Return(v, _)) => Ok(v),

@@ -5,8 +5,29 @@
 use crate::compile::{Chunk, Op};
 use crate::eval::{self, Interpreter, RuntimeError};
 use crate::value::Value;
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::io::Write;
+
+// Function calls run a chunk each; pooling the operand-stack and
+// locals buffers avoids two heap allocations per call.
+thread_local! {
+    static BUF_POOL: RefCell<Vec<Vec<Value>>> = const { RefCell::new(Vec::new()) };
+}
+
+pub(crate) fn take_buf() -> Vec<Value> {
+    BUF_POOL.with(|p| p.borrow_mut().pop()).unwrap_or_default()
+}
+
+pub(crate) fn give_buf(mut buf: Vec<Value>) {
+    buf.clear();
+    BUF_POOL.with(|p| {
+        let mut p = p.borrow_mut();
+        if p.len() < 64 {
+            p.push(buf);
+        }
+    });
+}
 
 /// Execute a chunk. `Ok(Some(v))` means an Op::Return fired (function
 /// frames); `Ok(None)` means the code ran off the end (top level, or a
@@ -25,7 +46,18 @@ pub fn run_chunk_with<W: Write>(
     chunk: &Chunk,
     locals: &mut [Value],
 ) -> Result<Option<Value>, RuntimeError> {
-    let mut stack: Vec<Value> = Vec::with_capacity(64);
+    let mut stack = take_buf();
+    let r = exec(interp, chunk, locals, &mut stack);
+    give_buf(stack);
+    r
+}
+
+fn exec<W: Write>(
+    interp: &mut Interpreter<W>,
+    chunk: &Chunk,
+    locals: &mut [Value],
+    stack: &mut Vec<Value>,
+) -> Result<Option<Value>, RuntimeError> {
     let mut ip = 0usize;
     while ip < chunk.code.len() {
         let span = chunk.spans[ip];
