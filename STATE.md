@@ -21,9 +21,7 @@ release binaries on GitHub.
 Milestone **v1.8.0 — the second act** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. lib/map.ting (get/merge/items/from_items) + selftests + docs.
-2. Reference: REPL line-editing note (rlwrap).
-3. Release v1.8.0.
+1. Release v1.8.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -216,6 +214,7 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v1.7.0
 - Retrospective refreshed (full VM arc, tooling act, current
   numbers).
+- lib/map.ting (embedded, selftested, documented) + rlwrap note.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
