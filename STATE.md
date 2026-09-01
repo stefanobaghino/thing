@@ -17,11 +17,10 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Language reference in `docs/`.
-2. GitHub Actions CI (build + test on push).
-3. Tagged release with prebuilt binaries.
+1. GitHub Actions CI (build + test on push).
+2. Tagged release with prebuilt binaries.
 
-5. Stretch (post-release): string split/join builtins, `for`-in loop,
+3. Stretch (post-release): string split/join builtins, `for`-in loop,
    `break`/`continue`, REPL diagnostics with carets.
 
 ## Done
@@ -54,6 +53,8 @@ release binaries on GitHub.
   all script error paths; 6 tests.
 - Six examples/ programs with golden .out files, run by
   tests/examples.rs against the real binary.
+- Language reference (docs/reference.md); README rewritten with a
+  verified sample.
 
 ## Blockers
 

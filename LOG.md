@@ -339,3 +339,20 @@ Decisions:
 - Noticed while writing examples: no string split/join builtins and no
   `for`-style loop; both would improve example ergonomics. Added to the
   backlog as a stretch item rather than blocking docs/CI/release.
+
+---
+
+## 2026-09-01 — Iteration 13: language reference
+
+Wrote `docs/reference.md` — the complete language in one document:
+source form, values/types, reference semantics, operator precedence
+table, statements, functions/closures, all 11 builtins, error model,
+limits. Rewrote the README status section with a real code sample and a
+pointer to docs and examples.
+
+Verification notes:
+- The README closure sample was piped through the binary (prints
+  `1 2 3`) before committing — docs only claim what runs.
+- Checked the cyclic-data claim: building `xs[0] = xs` succeeds quietly;
+  only printing/comparing it diverges. The reference says exactly that.
+- Full suite still green (108 + examples).
