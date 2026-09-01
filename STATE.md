@@ -18,10 +18,16 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.5.0 — the stdlib everywhere** (designed in LOG.md
-replenishment entry, 2026-09-01):
+Milestone **v1.6.0 — a formatter** (designed in LOG.md replenishment
+entry, 2026-09-01; token-stream based to preserve comments; guarded by
+idempotence + AST-equality checks):
 
-1. Release v1.5.0.
+1. Comment-aware lexing mode.
+2. src/fmt.rs: canonical spacing/indentation, comments and single
+   blank lines preserved; unit tests + the two guards.
+3. `ting --fmt` / `--fmt-check`; reformat the repo's .ting files.
+4. LSP documentFormatting.
+5. Release v1.6.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -197,6 +203,9 @@ green.
   tested); fuzz harness hardened against importing mutants.
 - Playground "stdlib" example (embedded fallback browser-verified).
 - docs/stdlib.md on the site (nav "stdlib"); render verified.
+- v1.5.0 RELEASED and verified: 3 assets; embedded stdlib serves with
+  lib/ deleted; stdlib page live.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.5.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
