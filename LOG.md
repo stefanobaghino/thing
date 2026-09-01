@@ -1572,3 +1572,12 @@ fallback semantics up front, a test-framework walkthrough, and links
 to the sources and the self-hosted coverage. Rendered onto the site
 (nav gains "stdlib"); local render verified. v1.5.0's last task is the
 release.
+
+---
+
+## 2026-09-01 — Iteration 87: v1.5.0 released
+
+Milestone complete; version bumped, CHANGELOG updated, tag pushed.
+v1.5.0 over v1.4.0: the embedded stdlib with filesystem-first
+fallback, the playground stdlib example, and the stdlib docs page.
+Asset verification when the workflow finishes.

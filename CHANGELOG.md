@@ -4,6 +4,16 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.5.0 — the stdlib everywhere (2026-09-01)
+
+- The standard library is embedded in the interpreter: when an
+  imported `lib/...` path has no matching file, the built-in copy is
+  used — so it works from any directory, in the REPL, and in the
+  browser playground (which gained a stdlib example). A real file
+  always wins.
+- `docs/stdlib.md` documents all three modules, on the website as
+  "stdlib".
+
 ## v1.4.0 — sharper tools (2026-09-01)
 
 - LSP completions: builtins with docs, keywords, and the document's
