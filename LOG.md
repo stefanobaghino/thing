@@ -356,3 +356,23 @@ Verification notes:
 - Checked the cyclic-data claim: building `xs[0] = xs` succeeds quietly;
   only printing/comparing it diverges. The reference says exactly that.
 - Full suite still green (108 + examples).
+
+---
+
+## 2026-09-01 — Iteration 14: rustfmt + CI
+
+Applied `cargo fmt` to the whole tree (it had drifted — fmt is now part
+of the bar) and added `.github/workflows/ci.yml`: on push/PR to main,
+run `cargo fmt --check`, `clippy --all-targets -D warnings`, and
+`cargo test` on a Linux/macOS/Windows matrix.
+
+Decisions:
+- **Three-OS matrix** because the interpreter touches OS-y things
+  (thread stack sizes via `RUST_MIN_STACK` in `.cargo/config.toml`,
+  TTY detection in the REPL) — Windows is the likeliest to differ.
+- **No caching/pinning actions**: only `actions/checkout` plus the
+  runner's preinstalled rustup; a zero-dependency crate builds in
+  seconds, and fewer third-party actions is a smaller supply chain.
+- All three CI steps were run locally before pushing. The first cloud
+  run (id 33494921787) is being watched in the background; its outcome
+  lands in the next loop iteration.
