@@ -480,15 +480,25 @@ impl<W: Write> Interpreter<W> {
                 Ok(Value::Str(args[0].type_name().to_string()))
             }
             Builtin::Range => {
-                arity(1, 2)?;
-                let (lo, hi) = match args.as_slice() {
-                    [Value::Int(hi)] => (0, *hi),
-                    [Value::Int(lo), Value::Int(hi)] => (*lo, *hi),
+                arity(1, 3)?;
+                let (lo, hi, step) = match args.as_slice() {
+                    [Value::Int(hi)] => (0, *hi, 1),
+                    [Value::Int(lo), Value::Int(hi)] => (*lo, *hi, 1),
+                    [Value::Int(lo), Value::Int(hi), Value::Int(step)] => (*lo, *hi, *step),
                     _ => {
                         return Err(error("range expects int argument(s)", span));
                     }
                 };
-                Ok(Value::list((lo..hi).map(Value::Int).collect()))
+                if step == 0 {
+                    return Err(error("range step must not be 0", span));
+                }
+                let mut out = Vec::new();
+                let mut i = lo;
+                while if step > 0 { i < hi } else { i > hi } {
+                    out.push(Value::Int(i));
+                    i += step;
+                }
+                Ok(Value::list(out))
             }
             Builtin::Split => {
                 arity(2, 2)?;
@@ -2206,8 +2216,8 @@ mod tests {
     fn builtin_arity_errors() {
         assert_eq!(program_err("len();"), "len expects 1 argument(s), got 0");
         assert_eq!(
-            program_err("range(1, 2, 3);"),
-            "range expects 1 to 2 argument(s), got 3"
+            program_err("range(1, 2, 3, 4);"),
+            "range expects 1 to 3 argument(s), got 4"
         );
     }
 

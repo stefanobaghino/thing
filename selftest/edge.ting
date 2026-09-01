@@ -61,3 +61,10 @@ assert(inner["ok"]["err"] == "deep", "nested try");
 # format brace escapes compose.
 assert(format("{{}}") == "{}", "escaped braces only");
 assert(format("{{{}}}", 1) == "{1}", "escape around placeholder");
+
+# range with a step, both directions; zero step is an error.
+assert(range(0, 10, 3) == [0, 3, 6, 9], "range positive step");
+assert(range(5, 0, -1) == [5, 4, 3, 2, 1], "range negative step");
+assert(range(0, 5, -1) == [], "range wrong-way step is empty");
+assert(range(3, 3, 2) == [], "range empty span with step");
+assert(has(try(fn() { return range(0, 5, 0); }), "err"), "range zero step fails");

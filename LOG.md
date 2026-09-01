@@ -2055,3 +2055,14 @@ differential suite; also re-verified that errors inside imported
 modules render the caller's import span plus the module's own
 location, identically on both engines (by design, not a bug).
 14/14 suites.
+
+---
+
+## 2026-09-02 — Iteration 142: range grows a step argument
+
+Additive builtin extension: range(lo, hi, step) — step may be
+negative (counts down through the half-open span), zero is an error.
+One- and two-argument forms unchanged. Five edge selftests (both
+directions, wrong-way empty, zero-step failure); hover doc and
+reference row updated; the old arity unit test updated to the new
+1-to-3 range. 14/14 suites. Second stroke toward v2.4.0.

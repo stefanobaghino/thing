@@ -146,8 +146,8 @@ impl Builtin {
             ),
             Builtin::Type => ("type(v)", "The type name as a string, e.g. \"list\"."),
             Builtin::Range => (
-                "range(hi) / range(lo, hi)",
-                "List of ints, half-open; empty if hi <= lo.",
+                "range(hi) / range(lo, hi) / range(lo, hi, step)",
+                "List of ints, half-open; step may be negative, never 0.",
             ),
             Builtin::Split => (
                 "split(s, sep)",
