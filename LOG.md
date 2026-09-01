@@ -1744,3 +1744,21 @@ is the release.
 Milestone complete; version bumped, CHANGELOG updated, tag pushed.
 v1.8.0 over v1.7.0: lib/map.ting, the refreshed story, the rlwrap
 note. Asset verification when the workflow finishes.
+
+**v1.8.0 verified:** release workflow green; three assets; shipped
+binary served lib/map.ting from its embedded copy (lib/ deleted
+first). Eighteenth release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.9.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.9.0 — depth**: (1) differential
+fuzzing generator v2 — grow the grammar it generates: bounded while
+loops (counter pattern), function definitions and calls, try around
+failing expressions, string operations — more shapes, same
+byte-identical bar across engines; (2) a meta showcase:
+examples/calc.ting, a tiny arithmetic-expression interpreter written
+IN ting (its own lexer and recursive-descent parser, ~100 lines) —
+ting interpreting a language, on either of ting's own engines —
+with golden coverage; (3) release v1.9.0.
