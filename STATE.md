@@ -21,10 +21,7 @@ release binaries on GitHub.
 Milestone **v2.0.0 — maturity** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. Docs consistency pass (README/--help/reference/CHANGELOG).
-2. Stability promise in the reference (language spec stable; breaking
-   change = 3.0).
-3. Release v2.0.0. Post-2.0: smaller strokes, no idle.
+1. Release v2.0.0. Post-2.0: smaller strokes, no idle.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -227,6 +224,8 @@ green.
   shipped binary.
   https://github.com/stefanobaghino/thing/releases/tag/v1.9.0
 - Grand audit: 7-point full-system sweep, all green (logged).
+- Docs pass (README intro modernized) + 2.x stability promise in
+  the reference.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
