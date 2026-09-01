@@ -17,12 +17,17 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v1.2.0 — a language server** (designed in LOG.md
-replenishment entry, 2026-09-01; zero new dependencies — reuses
-src/json.rs, spans, diagnostics):
 
-1. Release v1.2.0 (LSP shipped: server + pipe-driven test + editor
-   wiring all landed in one iteration).
+Milestone **v1.3.0 — batteries + story** (designed in LOG.md
+replenishment entry, 2026-09-01):
+
+1. Stdlib in ting: lib/list.ting (sum/reverse/zip/enumerate/unique/
+   flatten) + lib/string.ting (pad/repeat/lines/title); selftest
+   coverage; shipped inside release archives.
+2. LSP hover: builtin signature/summary on hover.
+3. docs/retrospective.md: the experiment's story, linked from README,
+   rendered onto the site.
+4. Release v1.3.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -174,6 +179,9 @@ green.
 - LSP server (src/lsp.rs, ting --lsp): framing, lifecycle,
   publishDiagnostics; tests/lsp.rs drives real pipes; editor wiring
   docs; 160 tests.
+- v1.2.0 RELEASED and verified: 3 assets; shipped binary's LSP driven
+  over pipes end-to-end.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.2.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
