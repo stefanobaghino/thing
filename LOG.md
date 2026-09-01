@@ -1212,3 +1212,15 @@ binary (examples, selftests, tutorial snippets, io, todo scenario)
 runs end-to-end on the bytecode engine, on every push. Verified
 locally first: all 11 suites green under TING_ENGINE=vm. This
 completes docs/vm.md's testing plan item 3.
+
+---
+
+## 2026-09-01 — Iteration 58: doc guard + README refresh
+
+tests/docs.rs: every Builtin::ALL name must appear in
+docs/reference.md (all 43 do) — the docs counterpart to the grammar
+guard, closing the last way a builtin could ship half-integrated.
+README rewritten to match reality: 43 builtins, modules, JSON, the
+two-engine story with differential testing, changelog/editor/bench
+links, honest test-count description. v1.0.0's last task is the
+release itself.

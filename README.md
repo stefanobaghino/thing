@@ -12,15 +12,23 @@ REPL.
 
 ## Status
 
-The language core is complete: ints/floats/strings/bools/nil, lists and
-maps, functions and closures, control flow, 29 builtins (including
-file/stdin I/O, sorting, and try/fail error recovery), an interactive
-REPL, and rustc-style caret diagnostics. **Try it in your browser at
-the [playground](http://www.baghino.me/thing/)** — the interpreter
+The language is complete: ints/floats/strings/bools/nil, lists and
+maps, functions and closures, control flow, modules via `import()`,
+43 builtins (file/stdin I/O, JSON, sorting, map/filter/reduce,
+try/fail error recovery, string formatting), an interactive REPL, and
+rustc-style caret diagnostics. **Try it in your browser at the
+[playground](http://www.baghino.me/thing/)** — the interpreter
 compiled to WebAssembly, running entirely on your machine. Start with
 the [tutorial](docs/tutorial.md) — every snippet in it is run by CI —
-then the [language reference](docs/reference.md) and
-[examples/](examples/).
+then the [language reference](docs/reference.md),
+[examples/](examples/), and the [changelog](CHANGELOG.md).
+
+Two execution engines share one semantics: the tree-walking
+interpreter (default) and a bytecode VM (`--vm`), held byte-identical
+by differential tests — including generated random programs — and a CI
+job that reruns the whole suite on the VM. Editor highlighting lives
+in [editor/](editor/); the performance story in
+[docs/vm.md](docs/vm.md) and [bench/](bench/).
 
 ```ting
 fn make_counter() {
@@ -45,7 +53,9 @@ cargo build --release
 ```
 
 Requires only a Rust toolchain — zero dependencies. `cargo test` runs
-the full suite (108 unit tests + golden-file example tests).
+the full suite: unit tests, golden-file examples, the self-hosted
+selftest/ programs (ting testing ting), differential engine tests,
+and fuzz tests — 160+ in all.
 
 ## License
 
