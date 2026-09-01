@@ -1066,3 +1066,20 @@ unit suite green under --vm; (5) benchmark, and only if clearly
 faster, flip the default; (6) release v0.9.0. Each step lands green
 on main; the flag keeps the tree-walker as the reference
 implementation throughout.
+
+---
+
+## 2026-09-01 — Iteration 50: VM design doc
+
+docs/vm.md. Key decisions, each with a reason: stack machine over
+registers (simplest correct thing; dispatch is the target, not
+register pressure); Chunk = ops + const pool + parallel span table
+(identical caret diagnostics via spans[ip]); Env chain and Value stay
+untouched (closure semantics for free; storage wasn't the measured
+cost); builtins reused verbatim; &&/|| compile to jumps preserving
+strictness; break/continue/return misuse becomes a compile-time error
+with the same message text (logged as the one accepted divergence:
+earlier surfacing). Differential testing is the centerpiece: all
+selftests/examples/tutorial programs plus the fuzz corpus must be
+byte-identical across engines, and CI gets a TING_ENGINE=vm matrix row
+at parity. Rollout in four always-green steps behind --vm.
