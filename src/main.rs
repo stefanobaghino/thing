@@ -9,31 +9,28 @@ mod value;
 use std::process::ExitCode;
 
 fn main() -> ExitCode {
-    let args: Vec<String> = std::env::args().collect();
-    match args.as_slice() {
-        [_] => repl::run(),
-        [_, path] => run_file(path),
-        _ => {
-            eprintln!("usage: ting [script]");
-            ExitCode::FAILURE
-        }
+    let mut args = std::env::args().skip(1);
+    match args.next() {
+        None => repl::run(),
+        // Everything after the script path is the script's own argv,
+        // exposed via the args() builtin.
+        Some(path) => run_file(path, args.collect()),
     }
 }
 
-fn run_file(path: &str) -> ExitCode {
+fn run_file(path: String, script_args: Vec<String>) -> ExitCode {
     // The AST holds Rc (not Send), so the whole pipeline runs on one
     // dedicated thread, sized generously because deep ting recursion
     // consumes host stack.
-    let path = path.to_string();
     std::thread::Builder::new()
         .stack_size(32 * 1024 * 1024)
-        .spawn(move || run_file_inner(&path))
+        .spawn(move || run_file_inner(&path, script_args))
         .expect("failed to spawn interpreter thread")
         .join()
         .expect("interpreter thread panicked")
 }
 
-fn run_file_inner(path: &str) -> ExitCode {
+fn run_file_inner(path: &str, script_args: Vec<String>) -> ExitCode {
     let src = match std::fs::read_to_string(path) {
         Ok(src) => src,
         Err(e) => {
@@ -50,6 +47,7 @@ fn run_file_inner(path: &str) -> ExitCode {
         Err(e) => return report(path, &src, &e.message, e.span),
     };
     let mut interp = eval::Interpreter::new(std::io::stdout().lock());
+    interp.set_args(script_args);
     match interp.run(&program) {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => report(path, &src, &e.message, e.span),

@@ -49,10 +49,14 @@ pub enum Builtin {
     Upper,
     Lower,
     Slice,
+    Args,
+    Input,
+    ReadFile,
+    WriteFile,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 21] = [
+    pub const ALL: [Builtin; 25] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -74,6 +78,10 @@ impl Builtin {
         Builtin::Upper,
         Builtin::Lower,
         Builtin::Slice,
+        Builtin::Args,
+        Builtin::Input,
+        Builtin::ReadFile,
+        Builtin::WriteFile,
     ];
 
     pub fn name(self) -> &'static str {
@@ -99,6 +107,10 @@ impl Builtin {
             Builtin::Upper => "upper",
             Builtin::Lower => "lower",
             Builtin::Slice => "slice",
+            Builtin::Args => "args",
+            Builtin::Input => "input",
+            Builtin::ReadFile => "read_file",
+            Builtin::WriteFile => "write_file",
         }
     }
 }

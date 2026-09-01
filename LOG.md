@@ -516,3 +516,18 @@ intersperse behavior), `starts_with`/`ends_with`, `upper`/`lower`
 copy). `slice` follows Python bounds: negatives from the end, clamping,
 backwards range is empty — one `slice_bounds` helper, documented there.
 5 new tests (123 unit + examples green); reference table updated.
+
+---
+
+## 2026-09-01 — Iteration 20: script I/O builtins
+
+`args()`, `input()`, `read_file()`, `write_file()` in
+`src/eval.rs::call_builtin`; `ting script.ting [args...]` now forwards
+everything after the script path to `args()` (`src/main.rs`). Decisions:
+`input()` strips the trailing newline (and `\r`) and returns `nil` at
+EOF — the idiomatic read loop is `while line != nil`; `read_file`
+returns the whole file as one string (pair with `split` for lines);
+errors carry the OS message. Deviation from the backlog: no golden
+example, because the example runner provides no stdin/args — instead
+`tests/io.rs` runs the real binary with piped stdin and argv. 25
+builtins, 127 tests, reference updated.

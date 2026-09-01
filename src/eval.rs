@@ -85,6 +85,7 @@ pub struct Interpreter<W: Write> {
     env: Rc<RefCell<Env>>,
     out: W,
     depth: usize,
+    script_args: Vec<String>,
 }
 
 impl<W: Write> Interpreter<W> {
@@ -100,7 +101,13 @@ impl<W: Write> Interpreter<W> {
             })),
             out,
             depth: 0,
+            script_args: Vec::new(),
         }
+    }
+
+    /// Command-line arguments exposed to the script via `args()`.
+    pub fn set_args(&mut self, args: Vec<String>) {
+        self.script_args = args;
     }
 
     /// Consume the interpreter, handing back its output writer (used by
@@ -568,6 +575,58 @@ impl<W: Write> Interpreter<W> {
                     }
                     v => Err(error(
                         format!("slice expects a string or list, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Args => {
+                arity(0, 0)?;
+                Ok(Value::list(
+                    self.script_args.iter().cloned().map(Value::Str).collect(),
+                ))
+            }
+            Builtin::Input => {
+                arity(0, 0)?;
+                use std::io::BufRead;
+                let mut line = String::new();
+                match std::io::stdin().lock().read_line(&mut line) {
+                    Ok(0) => Ok(Value::Nil),
+                    Ok(_) => {
+                        if line.ends_with('\n') {
+                            line.pop();
+                            if line.ends_with('\r') {
+                                line.pop();
+                            }
+                        }
+                        Ok(Value::Str(line))
+                    }
+                    Err(e) => Err(error(format!("input failed: {e}"), span)),
+                }
+            }
+            Builtin::ReadFile => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(path) => std::fs::read_to_string(path)
+                        .map(Value::Str)
+                        .map_err(|e| error(format!("cannot read {path:?}: {e}"), span)),
+                    v => Err(error(
+                        format!("read_file expects a string path, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::WriteFile => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::Str(path), Value::Str(s)) => std::fs::write(path, s)
+                        .map(|_| Value::Nil)
+                        .map_err(|e| error(format!("cannot write {path:?}: {e}"), span)),
+                    (a, b) => Err(error(
+                        format!(
+                            "write_file expects two strings, got {} and {}",
+                            a.type_name(),
+                            b.type_name()
+                        ),
                         span,
                     )),
                 }
@@ -1255,6 +1314,43 @@ mod tests {
         assert_eq!(
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
+        );
+    }
+
+    #[test]
+    fn builtin_args() {
+        use crate::parser::parse_program;
+        let mut interp = Interpreter::new(Vec::new());
+        interp.set_args(vec!["in.txt".into(), "-v".into()]);
+        interp
+            .run(&parse_program(&lex("print(args(), len(args()));").unwrap()).unwrap())
+            .unwrap();
+        assert_eq!(
+            String::from_utf8(interp.into_out()).unwrap(),
+            "[\"in.txt\", \"-v\"] 2\n"
+        );
+        // No args set: empty list.
+        assert_eq!(output("print(args());"), "[]\n");
+    }
+
+    #[test]
+    fn builtin_read_write_file() {
+        let path = std::env::temp_dir().join("ting-eval-io-test.txt");
+        // Forward slashes keep the path valid inside a ting string
+        // literal on Windows too.
+        let p = path.to_str().unwrap().replace('\\', "/");
+        let src = format!("write_file(\"{p}\", \"hi\\nthere\"); print(read_file(\"{p}\"));");
+        assert_eq!(output(&src), "hi\nthere\n");
+        let _ = std::fs::remove_file(&path);
+
+        assert!(program_err("read_file(\"ting-no-such-file-xyz\");").starts_with("cannot read"));
+        assert_eq!(
+            program_err("read_file(1);"),
+            "read_file expects a string path, got int"
+        );
+        assert_eq!(
+            program_err("write_file(\"x\", 1);"),
+            "write_file expects two strings, got string and int"
         );
     }
 

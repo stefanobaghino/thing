@@ -7,8 +7,8 @@ sitting.
 ## Running
 
 ```sh
-ting script.ting   # run a file
-ting               # interactive REPL (ctrl-d exits)
+ting script.ting [args...]   # run a file; extra args go to args()
+ting                         # interactive REPL (ctrl-d exits)
 ```
 
 The REPL echoes the value of bare expressions, keeps state across lines,
@@ -155,6 +155,10 @@ scope).
 | `starts_with(s, p)` / `ends_with(s, p)` | prefix / suffix test           |
 | `upper(s)` / `lower(s)` | Unicode-aware case conversion                  |
 | `slice(x, lo, hi)` | sub-string (by chars) or fresh sub-list, half-open; negatives count from the end, out-of-range clamps |
+| `args()`       | the command-line arguments after the script path, as a list of strings |
+| `input()`      | one line from stdin without the newline; `nil` at end of input |
+| `read_file(path)` | the file's entire contents as a string; unreadable file errors |
+| `write_file(path, s)` | writes (or overwrites) the file; returns nil; failure errors |
 
 ## Errors
 
