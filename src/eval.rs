@@ -14,7 +14,7 @@ pub struct RuntimeError {
     pub span: Span,
 }
 
-fn error(message: impl Into<String>, span: Span) -> RuntimeError {
+pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     RuntimeError {
         message: message.into(),
         span,
@@ -120,6 +120,16 @@ impl<W: Write> Interpreter<W> {
     /// Command-line arguments exposed to the script via `args()`.
     pub fn set_args(&mut self, args: Vec<String>) {
         self.script_args = args;
+    }
+
+    /// Define a name in the current (global, for the VM) scope.
+    pub(crate) fn define(&mut self, name: &str, v: Value) {
+        self.env.borrow_mut().vars.insert(Rc::from(name), v);
+    }
+
+    /// Rebind an existing name; false if it doesn't exist.
+    pub(crate) fn assign(&mut self, name: &str, v: Value) -> bool {
+        Env::assign(&self.env, name, v)
     }
 
     /// Directory that relative import() paths resolve against.
@@ -282,7 +292,7 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
-    fn lookup(&self, name: &str) -> Option<Value> {
+    pub(crate) fn lookup(&self, name: &str) -> Option<Value> {
         Env::get(&self.env, name)
     }
 
@@ -1058,7 +1068,7 @@ impl<W: Write> Interpreter<W> {
     }
 
     /// Call any callable value (used by builtins that take functions).
-    fn call_value(
+    pub(crate) fn call_value(
         &mut self,
         f: &Value,
         args: Vec<Value>,
@@ -1202,7 +1212,7 @@ impl<W: Write> Interpreter<W> {
     }
 }
 
-fn as_bool(v: Value, span: Span) -> Result<bool, RuntimeError> {
+pub(crate) fn as_bool(v: Value, span: Span) -> Result<bool, RuntimeError> {
     match v {
         Value::Bool(b) => Ok(b),
         other => Err(error(
@@ -1212,7 +1222,7 @@ fn as_bool(v: Value, span: Span) -> Result<bool, RuntimeError> {
     }
 }
 
-fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeError> {
+pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeError> {
     match (op, v) {
         (UnaryOp::Neg, Value::Int(n)) => n
             .checked_neg()
@@ -1227,7 +1237,7 @@ fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeError> {
     }
 }
 
-fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, RuntimeError> {
+pub(crate) fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, RuntimeError> {
     use BinaryOp::*;
     use Value::*;
     match op {
@@ -1337,7 +1347,7 @@ fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, Runtim
 
 /// Resolve a possibly negative index against a length; negative indices
 /// count from the end, Python-style.
-fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, RuntimeError> {
+pub(crate) fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, RuntimeError> {
     let len = len as i64;
     let eff = if i < 0 { i + len } else { i };
     if eff < 0 || eff >= len {
@@ -1347,7 +1357,7 @@ fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, RuntimeError
     }
 }
 
-fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
+pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
     match (base, idx) {
         (Value::List(items), Value::Int(i)) => {
             let items = items.borrow();

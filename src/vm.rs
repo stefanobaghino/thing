@@ -1,0 +1,194 @@
+//! Bytecode executor (see docs/vm.md). Runs a Chunk against the same
+//! Interpreter context the tree-walker uses — same Env, builtins,
+//! output writer, and error type — so behavior stays identical.
+
+use crate::compile::{Chunk, Op};
+use crate::eval::{self, Interpreter, RuntimeError};
+use crate::value::Value;
+use std::collections::BTreeMap;
+use std::io::Write;
+
+pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result<(), RuntimeError> {
+    let mut stack: Vec<Value> = Vec::with_capacity(64);
+    let mut ip = 0usize;
+    while ip < chunk.code.len() {
+        let span = chunk.spans[ip];
+        match &chunk.code[ip] {
+            Op::Const(i) => stack.push(chunk.consts[*i as usize].clone()),
+            Op::Nil => stack.push(Value::Nil),
+            Op::True => stack.push(Value::Bool(true)),
+            Op::False => stack.push(Value::Bool(false)),
+            Op::GetVar(i) => {
+                let name = &chunk.names[*i as usize];
+                match interp.lookup(name) {
+                    Some(v) => stack.push(v),
+                    None => {
+                        return Err(eval::error(format!("undefined variable '{name}'"), span));
+                    }
+                }
+            }
+            Op::Define(i) => {
+                let v = stack.pop().expect("stack underflow");
+                interp.define(&chunk.names[*i as usize], v);
+            }
+            Op::SetVar(i) => {
+                let v = stack.pop().expect("stack underflow");
+                let name = &chunk.names[*i as usize];
+                if !interp.assign(name, v) {
+                    return Err(eval::error(
+                        format!("cannot assign to undefined variable '{name}'"),
+                        span,
+                    ));
+                }
+            }
+            Op::Unary(op) => {
+                let v = stack.pop().expect("stack underflow");
+                stack.push(eval::unary(*op, v, span)?);
+            }
+            Op::Binary(op) => {
+                let r = stack.pop().expect("stack underflow");
+                let l = stack.pop().expect("stack underflow");
+                stack.push(eval::binary(*op, l, r, span)?);
+            }
+            Op::MakeList(n) => {
+                let items = stack.split_off(stack.len() - *n as usize);
+                stack.push(Value::list(items));
+            }
+            Op::MakeMap(n) => {
+                let kvs = stack.split_off(stack.len() - 2 * *n as usize);
+                let mut m = BTreeMap::new();
+                for pair in kvs.chunks(2) {
+                    match &pair[0] {
+                        Value::Str(k) => {
+                            m.insert(k.clone(), pair[1].clone());
+                        }
+                        other => {
+                            return Err(eval::error(
+                                format!("map keys must be strings, got {}", other.type_name()),
+                                span,
+                            ));
+                        }
+                    }
+                }
+                stack.push(Value::map(m));
+            }
+            Op::Index => {
+                let idx = stack.pop().expect("stack underflow");
+                let base = stack.pop().expect("stack underflow");
+                stack.push(eval::index(base, idx, span)?);
+            }
+            Op::IndexSet => {
+                let value = stack.pop().expect("stack underflow");
+                let idx = stack.pop().expect("stack underflow");
+                let base = stack.pop().expect("stack underflow");
+                match (base, idx) {
+                    (Value::List(items), Value::Int(n)) => {
+                        let mut items = items.borrow_mut();
+                        let eff = eval::effective_index(n, items.len(), span)?;
+                        items[eff] = value;
+                    }
+                    (Value::Map(entries), Value::Str(k)) => {
+                        entries.borrow_mut().insert(k, value);
+                    }
+                    (b, i) => {
+                        return Err(eval::error(
+                            format!(
+                                "cannot index-assign {} with {}",
+                                b.type_name(),
+                                i.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                }
+            }
+            Op::Call(argc, callee_span) => {
+                let args = stack.split_off(stack.len() - *argc as usize);
+                let callee = stack.pop().expect("stack underflow");
+                match &callee {
+                    Value::Fn(_) | Value::Builtin(_) => {
+                        stack.push(interp.call_value(&callee, args, span)?)
+                    }
+                    other => {
+                        return Err(eval::error(
+                            format!("{} is not callable", other.type_name()),
+                            *callee_span,
+                        ));
+                    }
+                }
+            }
+            Op::Jump(o) => {
+                ip = offset(ip, *o);
+                continue;
+            }
+            Op::JumpIfFalse(o) => {
+                let v = stack.pop().expect("stack underflow");
+                if !eval::as_bool(v, span)? {
+                    ip = offset(ip, *o);
+                    continue;
+                }
+            }
+            Op::OrJump(o) => match stack.last() {
+                Some(Value::Bool(true)) => {
+                    ip = offset(ip, *o);
+                    continue;
+                }
+                Some(Value::Bool(false)) => {
+                    stack.pop();
+                }
+                Some(v) => {
+                    return Err(eval::error(
+                        format!("expected bool, got {}", v.type_name()),
+                        span,
+                    ));
+                }
+                None => unreachable!("stack underflow"),
+            },
+            Op::AndJump(o) => match stack.last() {
+                Some(Value::Bool(false)) => {
+                    ip = offset(ip, *o);
+                    continue;
+                }
+                Some(Value::Bool(true)) => {
+                    stack.pop();
+                }
+                Some(v) => {
+                    return Err(eval::error(
+                        format!("expected bool, got {}", v.type_name()),
+                        span,
+                    ));
+                }
+                None => unreachable!("stack underflow"),
+            },
+            Op::CheckMapKey => match stack.last() {
+                Some(Value::Str(_)) => {}
+                Some(v) => {
+                    return Err(eval::error(
+                        format!("map keys must be strings, got {}", v.type_name()),
+                        span,
+                    ));
+                }
+                None => unreachable!("stack underflow"),
+            },
+            Op::CheckBool => match stack.last() {
+                Some(Value::Bool(_)) => {}
+                Some(v) => {
+                    return Err(eval::error(
+                        format!("expected bool, got {}", v.type_name()),
+                        span,
+                    ));
+                }
+                None => unreachable!("stack underflow"),
+            },
+            Op::Pop => {
+                stack.pop();
+            }
+        }
+        ip += 1;
+    }
+    Ok(())
+}
+
+fn offset(ip: usize, rel: i32) -> usize {
+    (ip as i64 + 1 + rel as i64) as usize
+}

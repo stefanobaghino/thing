@@ -2,6 +2,7 @@
 //! playground both link this same engine.
 
 pub mod ast;
+pub mod compile;
 pub mod diag;
 pub mod eval;
 pub mod json;
@@ -9,14 +10,35 @@ pub mod lexer;
 pub mod parser;
 pub mod repl;
 pub mod value;
+pub mod vm;
 pub mod wasm;
 
 use std::io::Write;
+
+/// Which execution engine runs the program. `Eval` (the tree-walker)
+/// is the reference implementation; `Vm` is the bytecode engine being
+/// brought to parity (see docs/vm.md).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Engine {
+    Eval,
+    Vm,
+}
 
 /// Lex, parse, and run a whole program, writing its output to `out`.
 /// On any error, returns the fully rendered caret diagnostic (with
 /// `path` as the file name in the header).
 pub fn run_source<W: Write>(
+    path: &str,
+    src: &str,
+    out: W,
+    script_args: Vec<String>,
+) -> Result<(), String> {
+    run_source_engine(Engine::Eval, path, src, out, script_args)
+}
+
+/// `run_source` with an explicit engine choice.
+pub fn run_source_engine<W: Write>(
+    engine: Engine,
     path: &str,
     src: &str,
     out: W,
@@ -30,7 +52,14 @@ pub fn run_source<W: Write>(
     if let Some(dir) = std::path::Path::new(path).parent() {
         interp.set_base_dir(dir.to_path_buf());
     }
-    interp.run(&program).map_err(|e| render(&e.message, e.span))
+    match engine {
+        Engine::Eval => interp.run(&program).map_err(|e| render(&e.message, e.span)),
+        Engine::Vm => {
+            let chunk =
+                compile::compile_program(&program).map_err(|e| render(&e.message, e.span))?;
+            vm::run_chunk(&mut interp, &chunk).map_err(|e| render(&e.message, e.span))
+        }
+    }
 }
 
 #[cfg(test)]

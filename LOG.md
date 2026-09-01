@@ -1083,3 +1083,23 @@ earlier surfacing). Differential testing is the centerpiece: all
 selftests/examples/tutorial programs plus the fuzz corpus must be
 byte-identical across engines, and CI gets a TING_ENGINE=vm matrix row
 at parity. Rollout in four always-green steps behind --vm.
+
+---
+
+## 2026-09-01 — Iteration 51: expression VM, differentially verified
+
+Rollout step 1 landed: src/compile.rs (AST→Chunk, ~15 ops, jump
+patching for &&/||) and src/vm.rs (stack loop reusing eval's exposed
+binary/unary/index/as_bool helpers and the Interpreter context, so
+builtins, Env, and diagnostics are literally shared). Coverage: all
+expressions except fn literals, plus let/assign/index-assign/expr
+statements; unsupported constructs report "X is not yet supported by
+--vm" and the tree-walker remains the default (--vm flag or
+TING_ENGINE=vm selects the VM).
+
+tests/differential.rs runs a 30+ program corpus through both engines
+and requires byte-identical stdout and rendered errors. It caught two
+real span divergences immediately: map-key errors (fixed with a
+per-key CheckMapKey op) and not-callable errors (fixed by carrying
+the callee span in the Call op) — exactly the class of drift the
+harness exists for. Suite at 155.
