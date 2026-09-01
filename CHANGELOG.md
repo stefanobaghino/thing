@@ -4,7 +4,7 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v0.9.0 — bytecode VM (2026-09-01)
 
 - A bytecode compiler and VM covering the whole language, selectable
   with `--vm` or `TING_ENGINE=vm`; differential tests hold both

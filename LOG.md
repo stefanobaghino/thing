@@ -1153,3 +1153,14 @@ Outcome recorded in docs/vm.md with the two next levers named
 (compiled function bodies, local slot resolution) for a future
 milestone to measure. BASELINE.md now carries both engines' numbers;
 CHANGELOG Unreleased updated.
+
+---
+
+## 2026-09-01 — Iteration 55: v0.9.0 released
+
+Milestone complete; version bumped, CHANGELOG promoted, tag pushed.
+v0.9.0 over v0.8.0: the bytecode compiler+VM at full language parity
+behind --vm/TING_ENGINE=vm, differential testing (corpus + the whole
+selftest suite byte-identical), dual-engine benchmarks, and the
+honestly-recorded verdict that the tree-walker stays default. 158
+tests. Asset verification when the release workflow finishes.
