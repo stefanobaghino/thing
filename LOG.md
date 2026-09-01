@@ -1816,3 +1816,24 @@ would mean a 3.0 (semver applied to a language spec); (4) release
 v2.0.0. After 2.0 the loop continues with smaller strokes — the
 no-idle rule stands, but maturity is allowed to look like polish,
 hardening, and responsiveness rather than headline features.
+
+---
+
+## 2026-09-01 — Iteration 117: the grand audit — all green
+
+Full-system sweep for v2.0.0, executed and verified in one pass:
+
+1. All 14 test suites on the default engine (VM): PASS.
+2. All 14 suites forced onto the reference engine: PASS.
+3. Benchmarks: checksums agree across engines; vm -45%/-44%/-11%
+   on fib/lists/strings, +1% maps (as recorded): PASS.
+4. wasm build driven in Node, including the embedded stdlib through
+   import(): prints 42: PASS.
+5. --fmt-check across every repo .ting file: all formatted: PASS.
+6. Live site: /, tutorial, reference, stdlib, retrospective, and the
+   wasm asset all HTTP 200: PASS.
+7. v1.9.0 release: all three platform assets present with sane
+   sizes; darwin binary runs and reports its version: PASS.
+
+Nothing to fix. The audit is the evidence for the 2.0 stability
+promise; the docs pass and the promise itself are next.
