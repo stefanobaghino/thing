@@ -20,10 +20,8 @@ release binaries on GitHub.
 Milestone **v0.8.0 — a real scripting citizen** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Showcase: examples/todo.ting (JSON-file-backed todo CLI) + a new
-   integration test driving it with real argv and a temp data file.
-2. CHANGELOG.md: retroactive for v0.1.0..v0.7.0, then per release.
-3. Release v0.8.0.
+1. CHANGELOG.md: retroactive for v0.1.0..v0.7.0, then per release.
+2. Release v0.8.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -132,6 +130,8 @@ green.
   sorted-key encoder); 40 builtins, 151 tests.
 - env/exit/time_ms builtins (43 total; wasm-safe errors); process
   integration tests; 152 tests.
+- todo.ting showcase + scenario test (tests/todo.rs); fuzz exercise
+  now parse-only for exit-mentioning programs; 153 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
