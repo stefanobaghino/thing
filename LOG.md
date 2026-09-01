@@ -1330,3 +1330,24 @@ and the default flip — the VM went from "+2% and honest about it" to
 "-35% on fib, default engine" in three measured steps, with the
 reference tree-walker retained behind --eval and CI running both.
 Asset verification when the release workflow finishes.
+
+**v1.1.0 verified:** release workflow green; three assets; darwin
+binary runs fib(24) correctly on both the default VM and --eval.
+Eleventh release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.2.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.2.0 — a language server**. The
+editor story stops at static highlighting; live diagnostics are the
+single biggest remaining DX gap, and ting has everything needed to
+build an LSP server with zero new dependencies: a JSON codec
+(src/json.rs), precise spans, and rendered diagnostics. Backlog:
+(1) `ting --lsp`: a stdio JSON-RPC server — Content-Length framing,
+initialize/initialized/shutdown/exit, didOpen/didChange →
+publishDiagnostics carrying lex/parse/compile errors with proper
+ranges; (2) an integration test that drives the server over pipes with
+real LSP traffic; (3) editor/README wiring instructions (VS Code
+generic LSP client, Neovim, Zed); (4) release v1.2.0. Runtime errors
+stay out of scope (that's execution, not analysis).
