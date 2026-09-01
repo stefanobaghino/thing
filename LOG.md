@@ -2031,3 +2031,13 @@ stay but verdicts always get verified against the API.
 Three archives on the release; darwin-arm64 downloaded cold runs
 (ting 2.3.0, script prints 21, --check clean, 4 lib files bundled).
 23rd release verified.
+
+---
+
+## 2026-09-02 — Iteration 140: perf health check
+
+Quiet maintenance tick; instead of a new feature, verified the last
+two releases didn't regress the VM. Release-build bench vs
+bench/BASELINE.md: fib 148.6ms (base 150.9), lists 54.5 (55.1),
+maps 103.9 (102.5), strings 44.9 (44.7) — all within ±3% noise,
+checksums identical. No action needed; baseline stands.
