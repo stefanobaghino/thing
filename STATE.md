@@ -21,9 +21,7 @@ release binaries on GitHub.
 Milestone **v1.9.0 — depth** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. examples/calc.ting: an expression interpreter written in ting
-   (lexer + parser), golden-tested.
-2. Release v1.9.0.
+1. Release v1.9.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -221,6 +219,7 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v1.8.0
 - Fuzz generator v2 (bounded while, try-expr, string ops; 800
   cases) — byte-identical first run.
+- calc.ting: tokenizer+parser+evaluator in ting, golden-tested.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
