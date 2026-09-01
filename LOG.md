@@ -1712,3 +1712,14 @@ the stdlib's map gap, with selftests and docs; (3) a REPL note in the
 reference recommending rlwrap for line editing (a zero-dependency
 binary can't do raw-mode editing itself; documenting the standard
 tool is the honest fix); (4) release v1.8.0.
+
+---
+
+## 2026-09-01 — Iteration 103: retrospective, act two
+
+docs/retrospective.md now tells the whole arc: the VM's four measured
+verdicts (three honest "not yet"s before the -45% win), the tooling
+act (formatter, LSP completions/formatting, embedded stdlib,
+run-links), and the current numbers (100 logged iterations, 17
+releases). Render verified locally; deploys with the docs path
+filter.
