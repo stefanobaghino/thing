@@ -20,9 +20,7 @@ release binaries on GitHub.
 Milestone **v0.5.0 — expressiveness** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Modules: import(path) — one design iteration first (return value
-   vs. namespace map, caching, cycles), then implement.
-2. Release v0.5.0.
+1. Release v0.5.0 (bump, tag, verify assets).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -100,6 +98,9 @@ green.
 - assert builtin + self-hosted selftest/ suite (5 ting programs, 100+
   assertions, exit-0-and-silent enforced by tests/selftest.rs); 36
   builtins, 144 tests.
+- import() modules: fresh env, exports map, per-path cache, cycle
+  detection, module-located diagnostics; selftest/modules.ting; 37
+  builtins, 145 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
