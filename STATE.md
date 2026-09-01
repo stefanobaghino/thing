@@ -18,10 +18,14 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.7.0 — finishing touches** (designed in LOG.md
+Milestone **v1.8.0 — the second act** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Release v1.7.0 (verify a live run-link first).
+1. Refresh docs/retrospective.md with the full arc (VM victory,
+   formatter, LSP, stdlib, 100 iterations, 17 releases).
+2. lib/map.ting (get/merge/items/from_items) + selftests + docs.
+3. Reference: REPL line-editing note (rlwrap).
+4. Release v1.8.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -210,6 +214,8 @@ green.
   https://github.com/stefanobaghino/thing/releases/tag/v1.6.0
 - Docs run-links (13 on tutorial; fragment decode verified) +
   --version/--help.
+- v1.7.0 RELEASED and verified: 3 assets; run-links live.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.7.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
