@@ -653,3 +653,18 @@ artifact is gitignored; the Pages workflow will build it). Verified in
 a real browser via Playwright against a local static server: examples
 produce correct output, caret diagnostics render, `while true {}`
 times out and the page recovers and runs again. Next: the Pages deploy.
+
+---
+
+## 2026-09-01 — Iteration 28: playground live on GitHub Pages
+
+Enabled Pages (build_type=workflow) via the API and added
+`.github/workflows/pages.yml`: builds ting.wasm, uploads playground/ as
+the site artifact, deploys with actions/deploy-pages; path-filtered so
+LOG/STATE-only commits don't redeploy. First deploy green. Verified the
+live site in a real browser at http://www.baghino.me/thing/ (the
+account's custom domain fronts the project page): wasm loads, hello and
+word-frequency examples produce correct output. README now leads with
+the playground link. BOOTSTRAP note: this is still not an operated
+service — the site is a static artifact anyone can rebuild and host
+(`playground/build.sh` + any file server); Pages is just distribution.
