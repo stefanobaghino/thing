@@ -1860,3 +1860,22 @@ says "no new features" and means it, the stability promise in the
 reference, and the audit as its evidence. Twentieth release. Asset
 verification when the workflow finishes; after that, the loop
 continues in smaller strokes as planned.
+
+**v2.0.0 verified:** release workflow green; three assets; shipped
+binary correct on both engines with the embedded test framework.
+Twentieth release. The maturity milestone is complete.
+
+---
+
+## 2026-09-01 — Replenishment: post-2.0 small strokes
+
+Per LOOP.md "No idle", but at the promised smaller scale: releases
+now happen when value accumulates, not per tick. Backlog: (1) a
+"calc" example in the playground (the meta showcase belongs in the
+browser too); (2) selftest/edge.ting — a collection of the nastiest
+edge cases currently only covered by Rust unit tests (unicode
+indexing/slicing, negative modulo and division truncation, float
+rendering, deeply nested closures, map-order interactions) so the
+self-hosted suite pins them on both engines; (3) a periodic
+maintenance stance alongside: issues/PRs/CI as always. v2.1.0 ships
+when these plus whatever follows add up to something worth a tag.
