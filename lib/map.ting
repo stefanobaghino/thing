@@ -1,0 +1,26 @@
+# Map helpers, written in ting. Use them via
+#   let m = import("lib/map.ting");
+
+fn get(m, k, default) {
+  if has(m, k) { return m[k]; }
+  return default;
+}
+
+fn merge(a, b) {
+  let out = {};
+  for k in a { out[k] = a[k]; }
+  for k in b { out[k] = b[k]; }
+  return out;
+}
+
+fn items(m) {
+  let out = [];
+  for k in m { push(out, [k, m[k]]); }
+  return out;
+}
+
+fn from_items(pairs) {
+  let out = {};
+  for p in pairs { out[p[0]] = p[1]; }
+  return out;
+}

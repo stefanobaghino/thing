@@ -18,7 +18,10 @@ the reference engine.
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
-cancels), and forgives a missing final `;`.
+cancels), and forgives a missing final `;`. It has no built-in line
+editing or history (zero dependencies); wrap it with
+[rlwrap](https://github.com/hanslub42/rlwrap) — `rlwrap ting` — for
+both.
 
 ## Source form
 

@@ -111,6 +111,7 @@ pub struct Interpreter<W: Write> {
 /// when no matching file exists.
 const EMBEDDED_STDLIB: &[(&str, &str)] = &[
     ("lib/list.ting", include_str!("../lib/list.ting")),
+    ("lib/map.ting", include_str!("../lib/map.ting")),
     ("lib/string.ting", include_str!("../lib/string.ting")),
     ("lib/test.ting", include_str!("../lib/test.ting")),
 ];

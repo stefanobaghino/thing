@@ -34,6 +34,15 @@ Imports return a map, so functions are reached with `["name"]`.
 | `lines(s)` | split on `"\n"` |
 | `title(s)` | first character of each space-separated word uppercased |
 
+## lib/map.ting
+
+| Function | Does |
+|----------|------|
+| `get(m, k, default)` | `m[k]` if present, else `default` |
+| `merge(a, b)` | a fresh map with `a`'s entries then `b`'s (`b` wins ties) |
+| `items(m)` | list of `[key, value]` pairs in sorted key order |
+| `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
+
 ## lib/test.ting
 
 A tiny test framework:

@@ -1723,3 +1723,16 @@ act (formatter, LSP completions/formatting, embedded stdlib,
 run-links), and the current numbers (100 logged iterations, 17
 releases). Render verified locally; deploys with the docs path
 filter.
+
+---
+
+## 2026-09-01 — Iteration 105: lib/map.ting + REPL editing note
+
+lib/map.ting (get-with-default, merge with right-wins ties, items,
+from_items) joins the embedded stdlib table, with six selftest
+assertions (including an items/from_items round trip) and a
+docs/stdlib.md section. The reference's REPL paragraph now
+recommends rlwrap for line editing and history — a zero-dependency
+binary can't do raw-mode editing itself, so pointing at the standard
+wrapper is the honest answer. All 14 suites green. v1.8.0's last task
+is the release.
