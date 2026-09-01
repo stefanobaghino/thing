@@ -18,11 +18,14 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.6.0 — a formatter** (designed in LOG.md replenishment
-entry, 2026-09-01; token-stream based to preserve comments; guarded by
-idempotence + AST-equality checks):
+Milestone **v1.7.0 — finishing touches** (designed in LOG.md
+replenishment entry, 2026-09-01):
 
-1. Release v1.6.0.
+1. Site run-links: ```ting blocks on tutorial/stdlib pages link to
+   the playground with the snippet preloaded (#code= fragment);
+   verify one live.
+2. `ting --version` and `ting --help`.
+3. Release v1.7.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -206,6 +209,9 @@ green.
 - ting --fmt/--fmt-check CLI; repo reformatted; formatted-ness now
   CI-enforced (3 style bugs found by dogfooding, fixed+tested).
 - LSP documentFormatting (whole-doc edit; tested).
+- v1.6.0 RELEASED and verified: 3 assets; shipped formatter
+  round-trip confirmed.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.6.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
