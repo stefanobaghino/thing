@@ -18,10 +18,15 @@ release binaries on GitHub.
 ## Now (next iteration picks from the top)
 
 
-Milestone **v1.3.0 — batteries + story** (designed in LOG.md
+Milestone **v1.4.0 — sharper tools** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Release v1.3.0 (verify the live story page first).
+1. LSP completions: builtins (with docs) + identifiers present in the
+   open document.
+2. lib/test.ting: a tiny test framework in ting; selftest dogfoods it.
+3. Measured VM micro-pass (const dedup, global-lookup caching) — keep
+   only what benchmarks justify.
+4. Release v1.4.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -181,6 +186,9 @@ green.
 - LSP hover (Builtin::doc for all 43; document tracking; tested).
 - Retrospective (docs/retrospective.md) linked from README and the
   site nav; rendered by pages.yml.
+- v1.3.0 RELEASED and verified: 3 assets; lib/ bundled and imported
+  from the shipped binary.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.3.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
