@@ -1449,3 +1449,22 @@ Story page live-verified at /thing/retrospective.html. Version bumped,
 CHANGELOG updated, tag pushed. v1.3.0 over v1.2.0: the ting-authored
 stdlib (shipped in archives), LSP hover, and the retrospective.
 Asset verification when the release workflow finishes.
+
+**v1.3.0 verified:** release workflow green; three assets; the darwin
+archive now contains lib/, and the shipped binary ran a program
+importing both stdlib modules (pad_left(sum) -> "0010"). Thirteenth
+release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.4.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.4.0 — sharper tools**:
+(1) LSP completions — builtins (with docs) plus identifiers already
+present in the document; with hover this makes the editor story
+genuinely useful day-to-day; (2) lib/test.ting — a tiny test framework
+in ting (t["check"](name, cond), t["run"]() with a summary and exit
+code), documented and dogfooded by a selftest; (3) measured VM
+micro-pass: dedup the constant pool and cache global lookups if
+profiling supports it — same rule as ever, keep only what benchmarks
+justify; (4) release v1.4.0.
