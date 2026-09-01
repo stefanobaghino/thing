@@ -20,17 +20,14 @@ release binaries on GitHub.
 Milestone **v0.3.0 — ting as a practical scripting tool** (human
 directive 2026-09-01: keep building, never idle):
 
-1. Script I/O builtins: `args()`, `input()`, `read_file(path)`,
-   `write_file(path, s)` — turns ting into a usable shell-script
-   alternative. Update reference + an example that processes a file.
-2. `sort(xs)` and `sort_by(xs, f)` builtins (stable; error on mixed
+1. `sort(xs)` and `sort_by(xs, f)` builtins (stable; error on mixed
    incomparable types).
-3. Runtime error recovery: design and log the approach (leaning
+2. Runtime error recovery: design and log the approach (leaning
    `try(f)` builtin returning `{"ok": ..}`/`{"err": ..}` over new
    syntax), then implement.
-4. Tutorial (docs/tutorial.md): a guided walk from hello to a real
+3. Tutorial (docs/tutorial.md): a guided walk from hello to a real
    script, kept honest by running every snippet.
-5. Release v0.3.0 (bump, tag, verify assets).
+4. Release v0.3.0 (bump, tag, verify assets).
 
 After v0.3.0: replenish per LOOP.md "No idle" — candidates already on
 the radar: WASM/browser playground (static page, runs client-side),
@@ -80,6 +77,9 @@ green.
 - REPL caret diagnostics; v0.2.0 tagged and released.
 - String builtins batch 2: contains, replace, starts_with/ends_with,
   upper/lower, slice (Python-style bounds; 21 builtins total); 5 tests.
+- Script I/O: args()/input()/read_file()/write_file(), argv forwarding
+  in main.rs, tests/io.rs against the real binary (25 builtins, 127
+  tests).
 - v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
   asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 
