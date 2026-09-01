@@ -800,6 +800,33 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Assert => {
+                arity(1, 2)?;
+                let msg = match args.get(1) {
+                    None => None,
+                    Some(Value::Str(s)) => Some(s.clone()),
+                    Some(v) => {
+                        return Err(error(
+                            format!("assert message must be a string, got {}", v.type_name()),
+                            span,
+                        ));
+                    }
+                };
+                match &args[0] {
+                    Value::Bool(true) => Ok(Value::Nil),
+                    Value::Bool(false) => Err(error(
+                        match msg {
+                            Some(m) => format!("assertion failed: {m}"),
+                            None => "assertion failed".to_string(),
+                        },
+                        span,
+                    )),
+                    v => Err(error(
+                        format!("assert expects a bool, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
     }
 

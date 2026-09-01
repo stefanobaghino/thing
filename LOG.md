@@ -730,3 +730,17 @@ init in the middle so the call reads left-to-right; `min`/`max` reuse
 `ensure_sortable`/`cmp_ordered` (empty list errors); `abs` checks i64
 overflow (abs(i64::MIN)). Playground gains a "map & filter" example
 (deploys via the path filter). 2 tests (18 assertions); suite at 143.
+
+---
+
+## 2026-09-01 — Iteration 32: assert + self-hosted test suite
+
+`assert(cond)` / `assert(cond, msg)` builtin (strict: non-bool
+condition or non-string message errors; failure is an ordinary
+catchable runtime error, so ting can test assert with try — and does).
+The self-hosted suite: five ting programs under selftest/ —
+arithmetic, strings, collections, functions/control-flow, errors —
+100+ assertions about language semantics, written in the language
+itself. `tests/selftest.rs` runs each through the real binary and
+requires exit 0 with empty stdout, so a stray print fails CI too.
+All passed first run. 36 builtins; suite at 144 (+5 ting programs).

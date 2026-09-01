@@ -168,6 +168,7 @@ scope).
 | `reduce(xs, init, f)` | folds left: `f(f(init, x0), x1)…`                     |
 | `min(xs)` / `max(xs)` | smallest / largest element; `sort`'s ordering rules; empty list errors |
 | `abs(n)`       | absolute value of an int or float                            |
+| `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
 
 ## Errors
 

@@ -1,0 +1,61 @@
+# ting testing ting: functions, closures, control flow.
+
+fn add(a, b) { return a + b; }
+assert(add(2, 3) == 5, "function call");
+assert(add == add, "function identity equality");
+
+# Closures share their captured environment.
+fn make_counter() {
+  let n = 0;
+  fn tick() { n = n + 1; return n; }
+  return tick;
+}
+let c1 = make_counter();
+let c2 = make_counter();
+assert(c1() == 1 && c1() == 2 && c2() == 1, "independent closures");
+
+# Recursion and the depth cap.
+fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); }
+assert(fib(15) == 610, "recursion");
+fn forever() { return forever(); }
+let deep = try(forever);
+assert(contains(deep["err"], "stack overflow"), "depth cap trips cleanly");
+
+# Builtins are values; arity is exact.
+let f = len;
+assert(f("abc") == 3, "builtin as value");
+let wrong = try(fn() { return add(1); });
+assert(has(wrong, "err"), "arity checked");
+
+# Falling off the end returns nil; bare functions are truthy nowhere.
+fn nothing() { }
+assert(nothing() == nil, "implicit nil return");
+
+# Per-iteration loop binding: closures capture that iteration's value.
+let fs = [];
+for x in range(3) {
+  push(fs, fn() { return x; });
+}
+assert(fs[0]() == 0 && fs[1]() == 1 && fs[2]() == 2, "loop binding");
+
+# break/continue.
+let total = 0;
+for n in range(10) {
+  if n == 5 { break; }
+  if n % 2 == 1 { continue; }
+  total = total + n;
+}
+assert(total == 6, "break and continue");
+
+# while with mutation.
+let i = 0;
+while i < 5 { i = i + 1; }
+assert(i == 5, "while");
+
+# for over a string and a map.
+let chars = [];
+for ch in "héllo" { push(chars, ch); }
+assert(join(chars, "") == "héllo", "for over chars");
+let seen = [];
+for k in {"b": 1, "a": 2} { push(seen, k); }
+assert(seen == ["a", "b"], "for over sorted keys");

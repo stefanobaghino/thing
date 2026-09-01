@@ -1,0 +1,28 @@
+# ting testing ting: strictness and error recovery.
+
+# No truthiness anywhere.
+let cond = try(fn() { if 1 { } });
+assert(has(cond, "err"), "non-bool condition errors");
+let andint = try(fn() { return 1 && true; });
+assert(has(andint, "err"), "non-bool && errors");
+
+# No implicit conversions.
+let mixed = try(fn() { return 1 + "x"; });
+assert(contains(mixed["err"], "int"), "mixed + names the types");
+
+# try/fail round trip.
+let r = try(fn() { fail("boom"); });
+assert(r["err"] == "boom", "fail message travels");
+let ok = try(fn() { return 42; });
+assert(ok["ok"] == 42, "success shape");
+assert(!has(ok, "err"), "no err key on success");
+
+# try(f) recovers and the program continues — this very line proves it.
+let bounds = try(fn() { return [1][5]; });
+assert(has(bounds, "err"), "out of bounds errors");
+
+# assert itself: failure is a catchable error with the message.
+let a = try(fn() { assert(false, "the message"); });
+assert(contains(a["err"], "the message"), "assert message");
+let strict = try(fn() { assert(1); });
+assert(contains(strict["err"], "bool"), "assert demands a bool");

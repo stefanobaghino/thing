@@ -1,0 +1,27 @@
+# ting testing ting: string builtins.
+
+assert("foo" + "bar" == "foobar", "concat");
+assert(len("héllo") == 5, "len counts chars, not bytes");
+assert("héllo"[1] == "é", "indexing by char");
+assert("abc"[-1] == "c", "negative index");
+
+assert(join(split("a,b,,c", ","), "|") == "a|b||c", "split keeps empties");
+assert(len(split("hé", "")) == 2, "empty separator splits chars");
+assert(trim("  hi \t") == "hi", "trim");
+assert(contains("haystack", "stack"), "substring");
+assert(!contains("haystack", "z"), "no substring");
+assert(replace("a-b-c", "-", "+") == "a+b+c", "replace all");
+assert(starts_with("ting", "ti") && ends_with("ting", "ng"), "affixes");
+assert(upper("héllo") == "HÉLLO" && lower("HÉLLO") == "héllo", "case");
+
+assert(slice("hello", 1, 3) == "el", "slice");
+assert(slice("hello", -3, 99) == "llo", "slice clamps and negatives");
+assert(slice("hello", 3, 1) == "", "backwards slice is empty");
+
+assert(str(42) == "42", "str of int");
+assert(int("  42 ") == 42, "int parses with spaces");
+assert(float("1.5") == 1.5, "float parses");
+assert(type("x") == "string", "type");
+
+let bad = try(fn() { return int("nope"); });
+assert(has(bad, "err"), "unparseable int errors");

@@ -1,0 +1,26 @@
+# ting testing ting: numbers, comparisons, equality.
+
+assert(1 + 2 * 3 == 7, "precedence");
+assert((1 + 2) * 3 == 9, "grouping");
+assert(7 / 2 == 3, "int division truncates");
+assert(7 % 2 == 1, "remainder");
+assert(7.0 / 2 == 3.5, "mixed division promotes");
+assert(1 + 0.5 == 1.5, "mixed addition promotes");
+assert(-5 + 3 == -2, "unary minus");
+assert(abs(-42) == 42, "abs int");
+assert(abs(-1.5) == 1.5, "abs float");
+
+assert(1 == 1.0, "numeric equality crosses int/float");
+assert(1 != 2, "inequality");
+assert(!(1 == "1"), "no string/number equality");
+assert(1 < 1.5 && 1.5 < 2, "mixed comparison");
+assert("a" < "b", "string ordering");
+assert(2 <= 2 && 2 >= 2, "non-strict bounds");
+
+let overflow = try(fn() { return 9223372036854775807 + 1; });
+assert(has(overflow, "err"), "overflow is an error");
+assert(contains(overflow["err"], "overflow"), "overflow message");
+
+let div0 = try(fn() { return 1 / 0; });
+assert(div0["err"] == "division by zero", "int division by zero");
+assert(1.0 / 0.0 > 9999999.0, "float division gives infinity");

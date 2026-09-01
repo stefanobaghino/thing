@@ -63,10 +63,11 @@ pub enum Builtin {
     Min,
     Max,
     Abs,
+    Assert,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 35] = [
+    pub const ALL: [Builtin; 36] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -102,6 +103,7 @@ impl Builtin {
         Builtin::Min,
         Builtin::Max,
         Builtin::Abs,
+        Builtin::Assert,
     ];
 
     pub fn name(self) -> &'static str {
@@ -141,6 +143,7 @@ impl Builtin {
             Builtin::Min => "min",
             Builtin::Max => "max",
             Builtin::Abs => "abs",
+            Builtin::Assert => "assert",
         }
     }
 }
