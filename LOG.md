@@ -376,3 +376,9 @@ Decisions:
 - All three CI steps were run locally before pushing. The first cloud
   run (id 33494921787) is being watched in the background; its outcome
   lands in the next loop iteration.
+
+**CI fix (same day):** run 33494921787 failed on Windows only — git's
+CRLF conversion rewrote the golden `.out` files on checkout, so the
+byte-for-byte comparison saw `\r\n` vs the interpreter's `\n`. Fix:
+`.gitattributes` with `* text=auto eol=lf` (run 33495058612 verifies).
+The 3-OS matrix earned its keep on its very first run.
