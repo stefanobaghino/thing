@@ -796,3 +796,18 @@ first, then pick); (3) playground share-by-URL (source encoded in the
 fragment — still fully static); (4) tutorial section on modules; (5)
 release. Bytecode VM stays parked: optimizations must be measured
 against the tree-walker before a rewrite earns its cost.
+
+---
+
+## 2026-09-01 — Iteration 35: benchmark harness + baseline
+
+bench/: four ting workloads (fib(28) for call overhead; list
+map/filter/reduce/sort churn at 100k; 100k-key map insert+iterate;
+60k-part string build/join/split) and bench/run.py, which builds the
+release binary, takes the median of 5 runs, checks each script's
+printed checksum, and rewrites bench/BASELINE.md with --write.
+Workloads were tuned so interpreter time dominates process startup
+(first cut ran in 5-45ms; scaled to ~50-300ms). Baseline on this
+machine: fib 295ms, lists 101ms, maps 112ms, strings 54ms. Not a CI
+gate — numbers are machine-relative; the checksums are the correctness
+tripwire. Next iteration profiles these and optimizes the top cost.

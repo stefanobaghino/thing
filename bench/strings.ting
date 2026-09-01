@@ -1,0 +1,7 @@
+# String building, splitting, joining.
+let parts = [];
+for i in range(60000) { push(parts, "chunk" + str(i)); }
+let s = join(parts, ",");
+let back = split(s, ",");
+let total = reduce(map(back, len), 0, fn(a, x) { return a + x; });
+print(len(back), total);

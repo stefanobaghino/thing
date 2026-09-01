@@ -1,0 +1,6 @@
+# map/filter/reduce/sort churn.
+let ns = range(200000);
+let sq = map(ns, fn(x) { return x * x % 1000; });
+let evens = filter(sq, fn(x) { return x % 2 == 0; });
+let sorted = sort(evens);
+print(len(sorted), reduce(sorted, 0, fn(a, x) { return a + x; }) % 100000);

@@ -1,0 +1,6 @@
+# Map insert/lookup churn.
+let m = {};
+for i in range(100000) { m["key" + str(i)] = i; }
+let total = 0;
+for k in keys(m) { total = total + m[k]; }
+print(len(m), total);
