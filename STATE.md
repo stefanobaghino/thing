@@ -21,9 +21,7 @@ release binaries on GitHub.
 Milestone **v1.3.0 — batteries + story** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. docs/retrospective.md: the experiment's story, linked from README,
-   rendered onto the site.
-2. Release v1.3.0.
+1. Release v1.3.0 (verify the live story page first).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -181,6 +179,8 @@ green.
 - Stdlib in ting (lib/list.ting, lib/string.ting; 13 selftest
   assertions; shipped in release archives).
 - LSP hover (Builtin::doc for all 43; document tracking; tested).
+- Retrospective (docs/retrospective.md) linked from README and the
+  site nav; rendered by pages.yml.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
