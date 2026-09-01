@@ -32,11 +32,28 @@
     margin: 0; padding: .8rem 1rem; border: 0; min-width: 0;
     font: 13px/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   }
-  textarea {
-    background: #14161a; color: #e6e6e6; resize: none; outline: none;
-    border-right: 1px solid #2a2f38; white-space: pre; overflow: auto;
+  /* The editor is a transparent textarea over a highlighted <pre>,
+     kept in lockstep on input and scroll. */
+  #edwrap {
+    position: relative; min-width: 0; min-height: 0;
+    border-right: 1px solid #2a2f38; background: #14161a;
   }
-  pre {
+  #edwrap textarea, #edwrap pre.hl {
+    position: absolute; inset: 0; white-space: pre; overflow: auto;
+  }
+  #edwrap textarea {
+    background: transparent; color: transparent; caret-color: #e6e6e6;
+    resize: none; outline: none; z-index: 1;
+  }
+  #edwrap pre.hl { color: #e6e6e6; pointer-events: none; }
+  .tok-com { color: #6a7480; font-style: italic; }
+  .tok-str { color: #c9a26d; }
+  .tok-num { color: #b5cea8; }
+  .tok-kw  { color: #c586c0; }
+  .tok-const { color: #569cd6; }
+  .tok-fn  { color: #dcdcaa; }
+  .tok-op  { color: #9cb4d0; }
+  pre#output {
     background: #101216; color: #cfd6df; overflow: auto; white-space: pre-wrap;
   }
   pre.err { color: #e07a7a; }
@@ -46,7 +63,7 @@
   }
   @media (max-width: 720px) {
     main { grid-template-columns: 1fr; grid-template-rows: 1fr 1fr; }
-    textarea { border-right: 0; border-bottom: 1px solid #2a2f38; }
+    #edwrap { border-right: 0; border-bottom: 1px solid #2a2f38; }
   }
 </style>
 </head>
@@ -61,7 +78,10 @@
   <a href="https://github.com/stefanobaghino/thing">source</a>
 </header>
 <main>
-  <textarea id="editor" spellcheck="false" aria-label="editor"></textarea>
+  <div id="edwrap">
+    <pre class="hl" id="highlight" aria-hidden="true"></pre>
+    <textarea id="editor" spellcheck="false" aria-label="editor"></textarea>
+  </div>
   <pre id="output" aria-label="output"></pre>
 </main>
 <footer>
@@ -153,8 +173,52 @@ function sourceFromHash() {
   try { return decodeSource(m[1]); } catch { return null; }
 }
 
-editor.value = sourceFromHash() ?? EXAMPLES["hello"];
-examples.onchange = () => { editor.value = EXAMPLES[examples.value]; run(); };
+// Syntax highlighting: tokenize like the interpreter's lexer and
+// render into the <pre> behind the transparent textarea.
+const highlight = document.getElementById("highlight");
+const TOKEN_RE = new RegExp(
+  [
+    "(#[^\\n]*)",                                        // 1 comment
+    "(\"(?:\\\\.|[^\"\\\\\\n])*\"?)",                    // 2 string
+    "\\b(\\d+(?:\\.\\d+)?)\\b",                          // 3 number
+    "\\b(let|fn|if|else|while|for|in|break|continue|return)\\b", // 4 keyword
+    "\\b(true|false|nil)\\b",                            // 5 constant
+    "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\s*\\()",            // 6 call
+    "(==|!=|<=|>=|&&|\\|\\||[+\\-*/%<>=!])",             // 7 operator
+  ].join("|"),
+  "g",
+);
+const TOK_CLASS = ["", "tok-com", "tok-str", "tok-num", "tok-kw", "tok-const", "tok-fn", "tok-op"];
+const escapeHtml = (s) =>
+  s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+function renderHighlight() {
+  const src = editor.value;
+  let html = "";
+  let last = 0;
+  for (const m of src.matchAll(TOKEN_RE)) {
+    html += escapeHtml(src.slice(last, m.index));
+    const group = m.slice(1).findIndex(g => g !== undefined) + 1;
+    html += `<span class="${TOK_CLASS[group]}">${escapeHtml(m[0])}</span>`;
+    last = m.index + m[0].length;
+  }
+  html += escapeHtml(src.slice(last));
+  // Trailing sentinel keeps the pre's scroll height in step with the
+  // textarea when the source ends in a newline.
+  highlight.innerHTML = html + "\n";
+  syncScroll();
+}
+function syncScroll() {
+  highlight.scrollTop = editor.scrollTop;
+  highlight.scrollLeft = editor.scrollLeft;
+}
+editor.addEventListener("input", renderHighlight);
+editor.addEventListener("scroll", syncScroll);
+
+const setSource = (src) => { editor.value = src; renderHighlight(); };
+
+setSource(sourceFromHash() ?? EXAMPLES["hello"]);
+examples.onchange = () => { setSource(EXAMPLES[examples.value]); run(); };
 
 document.getElementById("share").onclick = async () => {
   location.hash = "code=" + encodeSource(editor.value);
@@ -236,6 +300,7 @@ editor.addEventListener("keydown", (ev) => {
     ev.preventDefault();
     const { selectionStart: s, selectionEnd: e } = editor;
     editor.setRangeText("  ", s, e, "end");
+    renderHighlight();
   }
 });
 

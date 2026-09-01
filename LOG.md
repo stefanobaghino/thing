@@ -913,3 +913,16 @@ parses and every regex compiles (checked via Python), and a new
 tests/grammar.rs asserts the grammar's builtin alternation matches
 Builtin::ALL exactly, so a future builtin can't ship without editor
 support. Suite at 146.
+
+---
+
+## 2026-09-01 — Iteration 42: playground syntax highlighting
+
+The editor textarea is now transparent over a highlighted <pre>, kept
+in lockstep on input and scroll (the classic overlay technique — no
+editor library, still one static file). A single-regex tokenizer
+mirrors the lexer's classes: comments, strings, numbers, keywords,
+constants, calls, operators. Playwright-verified: token spans render
+with the right classes, the two layers are pixel-aligned
+(getBoundingClientRect equality), typing re-highlights live, and the
+examples still run. Deploys via the playground/ path filter.
