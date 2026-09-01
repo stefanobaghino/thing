@@ -547,3 +547,17 @@ before sorting via `ensure_sortable`. Rust's stable `sort_by` gives
 stability for free (tested with equal keys). New `call_value` helper
 lets builtins invoke user functions — the piece `try(f)` will need
 next. 2 tests; suite at 129. Reference updated.
+
+---
+
+## 2026-09-01 — Iteration 22: try/fail error recovery
+
+Error recovery landed as two builtins, no new syntax: `try(f)` calls
+`f()` and returns `{"ok": result}` or `{"err": message}`; `fail(msg)`
+raises. Rationale for builtins over try/catch syntax: zero
+lexer/parser/AST changes, first-class like every other builtin, and the
+map-result shape composes with `has`. Verified the risky invariant:
+`call` restores depth and env before an error propagates, so `try`
+catches even a stack overflow and the interpreter stays usable after
+(tested). Reference's "no exception handling (yet)" note replaced with
+a recovery example. 1 test (8 assertions); suite at 130.

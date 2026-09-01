@@ -161,11 +161,13 @@ scope).
 | `write_file(path, s)` | writes (or overwrites) the file; returns nil; failure errors |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
+| `try(f)`       | calls `f()`; `{"ok": result}` on success, `{"err": message}` on a runtime error |
+| `fail(msg)`    | raises a runtime error with the given string message         |
 
 ## Errors
 
-There is no exception handling (yet): any runtime error stops the
-program with a diagnostic pointing at the offending source:
+An unhandled runtime error stops the program with a diagnostic pointing
+at the offending source:
 
 ```text
 script.ting:2:7: error: undefined variable 'totl'
@@ -176,6 +178,14 @@ script.ting:2:7: error: undefined variable 'totl'
 The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
 out-of-bounds indices error immediately.
+
+To recover from an expected failure, wrap the risky code in a function
+and hand it to `try`; raise your own errors with `fail`:
+
+```ting
+let r = try(fn() { return int(input()); });
+if has(r, "err") { print("not a number:", r["err"]); }
+```
 
 ## Limits
 

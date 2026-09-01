@@ -55,10 +55,12 @@ pub enum Builtin {
     WriteFile,
     Sort,
     SortBy,
+    Try,
+    Fail,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 27] = [
+    pub const ALL: [Builtin; 29] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -86,6 +88,8 @@ impl Builtin {
         Builtin::WriteFile,
         Builtin::Sort,
         Builtin::SortBy,
+        Builtin::Try,
+        Builtin::Fail,
     ];
 
     pub fn name(self) -> &'static str {
@@ -117,6 +121,8 @@ impl Builtin {
             Builtin::WriteFile => "write_file",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
+            Builtin::Try => "try",
+            Builtin::Fail => "fail",
         }
     }
 }

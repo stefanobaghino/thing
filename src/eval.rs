@@ -671,6 +671,34 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Try => {
+                arity(1, 1)?;
+                match &args[0] {
+                    f @ (Value::Fn(_) | Value::Builtin(_)) => {
+                        let f = f.clone();
+                        let mut m = std::collections::BTreeMap::new();
+                        match self.call_value(&f, Vec::new(), span) {
+                            Ok(v) => m.insert("ok".to_string(), v),
+                            Err(e) => m.insert("err".to_string(), Value::Str(e.message)),
+                        };
+                        Ok(Value::map(m))
+                    }
+                    v => Err(error(
+                        format!("try expects a function, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Fail => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(msg) => Err(error(msg.clone(), span)),
+                    v => Err(error(
+                        format!("fail expects a string message, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
     }
 
@@ -1414,6 +1442,40 @@ mod tests {
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
         );
+    }
+
+    #[test]
+    fn builtin_try_and_fail() {
+        assert_eq!(
+            output("print(try(fn() { return 41 + 1; }));"),
+            "{\"ok\": 42}\n"
+        );
+        assert_eq!(
+            output("print(try(fn() { return 1 / 0; }));"),
+            "{\"err\": \"division by zero\"}\n"
+        );
+        // fail raises; try catches; the message travels.
+        assert_eq!(
+            output(
+                "let r = try(fn() { fail(\"boom\"); });\n\
+                 if has(r, \"err\") { print(\"caught:\", r[\"err\"]); }"
+            ),
+            "caught: boom\n"
+        );
+        // A function that returns nil still signals success.
+        assert_eq!(output("print(try(fn() { }));"), "{\"ok\": nil}\n");
+        // Stack overflow is caught, and the interpreter stays usable.
+        assert_eq!(
+            output(
+                "fn f() { return f(); }\n\
+                 let r = try(f);\n\
+                 print(has(r, \"err\"), try(fn() { return 7; }));"
+            ),
+            "true {\"ok\": 7}\n"
+        );
+        assert_eq!(program_err("fail(\"boom\");"), "boom");
+        assert_eq!(run_err("try(1)"), "try expects a function, got int");
+        assert_eq!(run_err("fail(1)"), "fail expects a string message, got int");
     }
 
     #[test]
