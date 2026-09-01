@@ -194,6 +194,46 @@ runs once per program: every later `import` of the same file returns
 the very same map, and errors inside a module point at the module's own
 line and column.
 
+## Working with JSON
+
+`json_parse` turns a JSON string into ting values (objects become maps,
+arrays become lists) and `json_str` goes the other way. Map keys stay
+sorted, so output is deterministic. Pass an indent to pretty-print.
+
+```ting
+let cfg = json_parse("{\"name\": \"ting\", \"tags\": [\"small\", \"strict\"]}");
+print(cfg["name"], "has", len(cfg["tags"]), "tags");
+
+push(cfg["tags"], "scripting");
+print(json_str(cfg));
+print(json_str(cfg, 2));
+```
+
+```text
+ting has 2 tags
+{"name":"ting","tags":["small","strict","scripting"]}
+{
+  "name": "ting",
+  "tags": [
+    "small",
+    "strict",
+    "scripting"
+  ]
+}
+```
+
+Malformed input fails like any other error, so `try` gives you a
+recovery path:
+
+```ting
+let bad = try(fn() { return json_parse("{oops"); });
+if has(bad, "err") { print("rejected:", bad["err"]); } else { print("parsed"); }
+```
+
+```text
+rejected: json_parse: expected a string key at offset 1
+```
+
 ## A real script: word frequency
 
 Everything together: arguments, file I/O with recovery, maps, sorting,

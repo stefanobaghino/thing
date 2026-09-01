@@ -1936,3 +1936,17 @@ compact single-arg behavior unchanged, so this is additive within the
 four selftest assertions including the indent type error; hover doc
 and reference row updated. All 14 suites green. Accumulating toward
 v2.2.0.
+
+---
+
+## 2026-09-01 — Iteration 133: tutorial gains a JSON section
+
+Maintenance: no issues/PRs, CI green. The tutorial never mentioned
+JSON despite json_parse/json_str being headline builtins (and pretty
+printing landing in 132). Added "Working with JSON" between modules
+and the word-frequency finale: parse, mutate, compact vs pretty
+output, and error recovery via try + has(). The snippet harness
+earned its keep — drafts wrongly assumed push() returns the list
+(it mutates, returns nil), spaces in compact output, and a made-up
+parse-error message; all three caught by tests/tutorial.rs before
+shipping. Full suite 14/14.
