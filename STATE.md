@@ -21,11 +21,9 @@ release binaries on GitHub.
 Milestone **v1.9.0 — depth** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. Differential fuzz generator v2: bounded while, fn defs+calls, try,
-   string ops.
-2. examples/calc.ting: an expression interpreter written in ting
+1. examples/calc.ting: an expression interpreter written in ting
    (lexer + parser), golden-tested.
-3. Release v1.9.0.
+2. Release v1.9.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -221,6 +219,8 @@ green.
 - lib/map.ting (embedded, selftested, documented) + rlwrap note.
 - v1.8.0 RELEASED and verified: 3 assets; embedded map module served.
   https://github.com/stefanobaghino/thing/releases/tag/v1.8.0
+- Fuzz generator v2 (bounded while, try-expr, string ops; 800
+  cases) — byte-identical first run.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
