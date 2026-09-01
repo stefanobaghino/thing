@@ -17,10 +17,17 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v1.0.0 — confidence** (designed in LOG.md replenishment
-entry, 2026-09-01):
+Milestone **v1.1.0 — the VM earns its keep (or proves it can't)**
+(designed in LOG.md replenishment entry, 2026-09-01):
 
-1. Release v1.0.0.
+1. Compile function bodies: real VM call frames (arity + depth cap
+   preserved), closures keep Env capture; every differential guard
+   must stay green at each step.
+2. Re-benchmark both engines; record.
+3. If not clearly faster: resolve locals to stack slots; re-benchmark.
+4. Decision per the numbers: flip default, keep flag, or retire the
+   VM — verdict in docs/vm.md either way.
+5. Release v1.1.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -157,6 +164,9 @@ green.
   first).
 - Doc-coverage guard (tests/docs.rs) + README refreshed (engines,
   43 builtins, links); 159 tests.
+- v1.0.0 RELEASED and verified: 3 assets; full selftest suite passes
+  on the shipped binary under both engines.
+  https://github.com/stefanobaghino/thing/releases/tag/v1.0.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
