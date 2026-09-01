@@ -1,0 +1,18 @@
+# ting testing ting's own standard library.
+
+let l = import("../lib/list.ting");
+assert(l["sum"]([1, 2, 3, 4]) == 10, "sum");
+assert(l["sum"]([]) == 0, "sum of empty");
+assert(l["reverse"]([1, 2, 3]) == [3, 2, 1], "reverse");
+assert(l["zip"]([1, 2, 3], ["a", "b"]) == [[1, "a"], [2, "b"]], "zip trims");
+assert(l["enumerate"](["x", "y"]) == [[0, "x"], [1, "y"]], "enumerate");
+assert(l["unique"]([1, 2, 1, 3, 2]) == [1, 2, 3], "unique");
+assert(l["flatten"]([[1, 2], 3, [4]]) == [1, 2, 3, 4], "flatten");
+
+let s = import("../lib/string.ting");
+assert(s["repeat"]("ab", 3) == "ababab", "repeat");
+assert(s["repeat"]("x", 0) == "", "repeat zero");
+assert(s["pad_left"]("7", 3, "0") == "007", "pad_left");
+assert(s["pad_right"]("7", 3, " ") == "7  ", "pad_right");
+assert(s["lines"]("a\nb\nc") == ["a", "b", "c"], "lines");
+assert(s["title"]("héllo wide  world") == "Héllo Wide  World", "title");

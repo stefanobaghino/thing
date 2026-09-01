@@ -40,10 +40,18 @@ jobs:
         run: cargo build --release
       - name: Package (unix)
         if: runner.os != 'Windows'
-        run: tar -czf "ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C target/release ting
+        run: |
+          mkdir -p dist
+          cp target/release/ting dist/
+          cp -r lib dist/lib
+          tar -czf "ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C dist ting lib
       - name: Package (windows)
         if: runner.os == 'Windows'
-        run: Compress-Archive -Path target/release/ting.exe -DestinationPath "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Copy-Item target/release/ting.exe dist/
+          Copy-Item -Recurse lib dist/lib
+          Compress-Archive -Path dist/ting.exe, dist/lib -DestinationPath "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
       - name: Upload
         shell: bash
         run: gh release upload "$GITHUB_REF_NAME" ting-*

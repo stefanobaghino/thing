@@ -1398,3 +1398,18 @@ docs/retrospective.md — the experiment's own story (the loop, the
 pivots, the honest verdicts, the numbers), linked from README and
 rendered onto the site: BOOTSTRAP's purpose is a human's curiosity,
 and the story is part of the artifact; (4) release v1.3.0.
+
+---
+
+## 2026-09-01 — Iteration 66: a stdlib written in ting
+
+lib/list.ting (sum, reverse, zip, enumerate, unique, flatten) and
+lib/string.ting (repeat, pad_left, pad_right, lines, title) — the
+first library code shipped *in the language itself*, exercising
+import(), closures, and the builtins as a user would.
+selftest/stdlib.ting covers all eleven functions (13 assertions,
+including unicode title-casing) and runs under both engines via the
+differential suite — green first try. Release archives now bundle
+lib/ next to the binary (tar and zip packaging updated), so
+`import("lib/list.ting")` works out of the box from a release
+download.

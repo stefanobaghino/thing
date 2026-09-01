@@ -1,0 +1,32 @@
+# String helpers, written in ting. Use them via
+#   let s = import("lib/string.ting");
+
+fn repeat(s, n) {
+  let out = "";
+  for i in range(n) { out = out + s; }
+  return out;
+}
+
+fn pad_left(s, width, fill) {
+  while len(s) < width { s = fill + s; }
+  return s;
+}
+
+fn pad_right(s, width, fill) {
+  while len(s) < width { s = s + fill; }
+  return s;
+}
+
+fn lines(s) { return split(s, "\n"); }
+
+fn title(s) {
+  let out = [];
+  for w in split(s, " ") {
+    if w == "" {
+      push(out, w);
+    } else {
+      push(out, upper(slice(w, 0, 1)) + slice(w, 1, len(w)));
+    }
+  }
+  return join(out, " ");
+}
