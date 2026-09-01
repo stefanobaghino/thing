@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.2.0 — a language server (2026-09-01)
+
+- `ting --lsp`: the binary doubles as an LSP server — JSON-RPC over
+  stdio, full-text sync, live lex/parse/compile diagnostics with real
+  ranges — implemented with zero new dependencies on top of ting's own
+  JSON codec. Wiring instructions for Neovim/VS Code/Zed in `editor/`.
+
 ## v1.1.0 — the VM earns its keep (2026-09-01)
 
 - The bytecode VM is now the default engine: with compiled function

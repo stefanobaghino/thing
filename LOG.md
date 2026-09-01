@@ -1368,3 +1368,11 @@ drives the real binary over pipes: init handshake, broken-file
 diagnostic, fixing didChange clears it, MethodNotFound for hover,
 clean shutdown/exit — passed first run. editor/README gains Neovim/
 VS Code/Zed wiring. Suite at 160 (13 suites).
+
+---
+
+## 2026-09-01 — Iteration 65: v1.2.0 released
+
+Milestone complete in two iterations (server+test+docs, then release):
+version bumped, CHANGELOG updated, tag pushed. v1.2.0 over v1.1.0:
+`ting --lsp`. Asset verification when the release workflow finishes.
