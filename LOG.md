@@ -1103,3 +1103,20 @@ real span divergences immediately: map-key errors (fixed with a
 per-key CheckMapKey op) and not-callable errors (fixed by carrying
 the callee span in the Call op) — exactly the class of drift the
 harness exists for. Suite at 155.
+
+---
+
+## 2026-09-01 — Iteration 52: control flow in the VM
+
+Rollout step 2: if/else, while, for, break/continue, and scoped blocks
+compile and execute under --vm. Mechanics: back-patched relative jumps;
+for-loops keep [snapshot, index] on the stack with an IterNext op
+(snapshot semantics and per-iteration scopes preserved exactly);
+break/continue lower to PopScope×n + Jump using per-loop compiler
+bookkeeping, and both break and loop exhaustion share one end label
+where the loop's two stack slots are popped. Stray break/continue is a
+compile-time error with the tree-walker's message (the documented
+earlier-surfacing divergence, pinned by its own test). 19 new
+control-flow programs in the differential corpus — all byte-identical
+across engines, including error spans inside loops. Only fn/return
+remain. Suite at 156.

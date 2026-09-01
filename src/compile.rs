@@ -1,4 +1,3 @@
-//! AST → bytecode compiler (see docs/vm.md). Rollout step 1: full
 //! expressions plus let/assign/index-assign/expression statements and
 //! bare blocks. Everything else reports "not yet supported by --vm".
 
@@ -45,6 +44,15 @@ pub enum Op {
     /// Error unless the top of stack is a string (a map key).
     CheckMapKey,
     Pop,
+    /// Enter a fresh lexical scope.
+    PushScope,
+    /// Leave the current scope.
+    PopScope,
+    /// Pop the iterable, push its snapshot list (for-loop semantics).
+    IterNew,
+    /// stack: [snap, idx]. If idx == len(snap): jump. Else: bump idx
+    /// and push snap[idx].
+    IterNext(i32),
 }
 
 pub struct Chunk {
@@ -75,6 +83,8 @@ pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
             names: Vec::new(),
             spans: Vec::new(),
         },
+        loops: Vec::new(),
+        scope_depth: 0,
     };
     for s in stmts {
         c.stmt(s)?;
@@ -82,8 +92,23 @@ pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
     Ok(c.chunk)
 }
 
+/// Per-loop bookkeeping for break/continue lowering.
+struct LoopCtx {
+    /// Where continue jumps (cond for while, IterNext for for).
+    continue_target: usize,
+    /// Jump ops to patch to the loop's end.
+    break_patches: Vec<usize>,
+    /// Compiler scope depth just outside the loop body; break/continue
+    /// emit PopScope down to it before jumping. Break needs no extra
+    /// stack cleanup: a for-loop's [snapshot, index] slots are popped
+    /// at the shared end label both break and exhaustion jump to.
+    scope_depth: usize,
+}
+
 struct Compiler {
     chunk: Chunk,
+    loops: Vec<LoopCtx>,
+    scope_depth: usize,
 }
 
 impl Compiler {
@@ -127,21 +152,129 @@ impl Compiler {
                 self.expr(e)?;
                 self.emit(Op::Pop, s.span);
             }
-            // A top-level block without declarations is transparent for
-            // the tree-walker too; scoped blocks come with control flow.
+            // Same rule as the tree-walker: only a block with direct
+            // declarations needs its own scope.
             StmtKind::Block(stmts) => {
-                if stmts.iter().any(|st| matches!(st.kind, StmtKind::Let(..))) {
-                    return Err(unsupported("a block with declarations", s.span));
+                let scoped = stmts.iter().any(|st| matches!(st.kind, StmtKind::Let(..)));
+                if scoped {
+                    self.emit(Op::PushScope, s.span);
+                    self.scope_depth += 1;
                 }
                 for st in stmts {
                     self.stmt(st)?;
                 }
+                if scoped {
+                    self.scope_depth -= 1;
+                    self.emit(Op::PopScope, s.span);
+                }
             }
-            StmtKind::If(..) => return Err(unsupported("if", s.span)),
-            StmtKind::While(..) => return Err(unsupported("while", s.span)),
-            StmtKind::For(..) => return Err(unsupported("for", s.span)),
-            StmtKind::Break => return Err(unsupported("break", s.span)),
-            StmtKind::Continue => return Err(unsupported("continue", s.span)),
+            StmtKind::If(cond, then, els) => {
+                self.expr(cond)?;
+                let to_else = self.chunk.code.len();
+                self.emit(Op::JumpIfFalse(0), cond.span);
+                self.stmt(then)?;
+                match els {
+                    Some(els) => {
+                        let to_end = self.chunk.code.len();
+                        self.emit(Op::Jump(0), s.span);
+                        let here = self.chunk.code.len() as i32;
+                        self.patch(to_else, here);
+                        self.stmt(els)?;
+                        let here = self.chunk.code.len() as i32;
+                        self.patch(to_end, here);
+                    }
+                    None => {
+                        let here = self.chunk.code.len() as i32;
+                        self.patch(to_else, here);
+                    }
+                }
+            }
+            StmtKind::While(cond, body) => {
+                let loop_start = self.chunk.code.len();
+                self.expr(cond)?;
+                let to_end = self.chunk.code.len();
+                self.emit(Op::JumpIfFalse(0), cond.span);
+                self.loops.push(LoopCtx {
+                    continue_target: loop_start,
+                    break_patches: vec![to_end],
+                    scope_depth: self.scope_depth,
+                });
+                self.stmt(body)?;
+                let back = self.chunk.code.len();
+                self.emit(Op::Jump(0), s.span);
+                self.patch(back, loop_start as i32);
+                let ctx = self.loops.pop().expect("loop ctx");
+                let end = self.chunk.code.len() as i32;
+                for at in ctx.break_patches {
+                    self.patch(at, end);
+                }
+            }
+            StmtKind::For(var, iterable, body) => {
+                self.expr(iterable)?;
+                self.emit(Op::IterNew, iterable.span);
+                let zero = self.konst(Value::Int(0));
+                self.emit(Op::Const(zero), s.span);
+                let next_ip = self.chunk.code.len();
+                self.emit(Op::IterNext(0), s.span);
+                self.loops.push(LoopCtx {
+                    continue_target: next_ip,
+                    break_patches: vec![next_ip],
+                    scope_depth: self.scope_depth,
+                });
+                // Fresh scope per iteration, like the tree-walker.
+                self.emit(Op::PushScope, s.span);
+                self.scope_depth += 1;
+                let vi = self.name(var);
+                self.emit(Op::Define(vi), s.span);
+                self.stmt(body)?;
+                self.scope_depth -= 1;
+                self.emit(Op::PopScope, s.span);
+                let back = self.chunk.code.len();
+                self.emit(Op::Jump(0), s.span);
+                self.patch(back, next_ip as i32);
+                let ctx = self.loops.pop().expect("loop ctx");
+                let end = self.chunk.code.len() as i32;
+                for at in ctx.break_patches {
+                    self.patch(at, end);
+                }
+                // The loop owned [snapshot, index] on the stack; both
+                // jump-to-end paths (done and break) land here.
+                self.emit(Op::Pop, s.span);
+                self.emit(Op::Pop, s.span);
+            }
+            StmtKind::Break => {
+                let Some(ctx_depth) = self.loops.last().map(|c| c.scope_depth) else {
+                    return Err(CompileError {
+                        message: "break outside loop".to_string(),
+                        span: s.span,
+                    });
+                };
+                for _ in ctx_depth..self.scope_depth {
+                    self.emit(Op::PopScope, s.span);
+                }
+                let at = self.chunk.code.len();
+                self.emit(Op::Jump(0), s.span);
+                self.loops
+                    .last_mut()
+                    .expect("loop ctx")
+                    .break_patches
+                    .push(at);
+            }
+            StmtKind::Continue => {
+                let Some(ctx_depth) = self.loops.last().map(|c| c.scope_depth) else {
+                    return Err(CompileError {
+                        message: "continue outside loop".to_string(),
+                        span: s.span,
+                    });
+                };
+                for _ in ctx_depth..self.scope_depth {
+                    self.emit(Op::PopScope, s.span);
+                }
+                let target = self.loops.last().expect("loop ctx").continue_target;
+                let at = self.chunk.code.len();
+                self.emit(Op::Jump(0), s.span);
+                self.patch(at, target as i32);
+            }
             StmtKind::Return(..) => return Err(unsupported("return", s.span)),
         }
         Ok(())
@@ -232,7 +365,9 @@ impl Compiler {
     fn patch(&mut self, at: usize, target: i32) {
         let rel = target - at as i32 - 1;
         match &mut self.chunk.code[at] {
-            Op::Jump(o) | Op::JumpIfFalse(o) | Op::OrJump(o) | Op::AndJump(o) => *o = rel,
+            Op::Jump(o) | Op::JumpIfFalse(o) | Op::OrJump(o) | Op::AndJump(o) | Op::IterNext(o) => {
+                *o = rel
+            }
             _ => unreachable!("patched op is not a jump"),
         }
     }

@@ -183,6 +183,40 @@ pub fn run_chunk<W: Write>(interp: &mut Interpreter<W>, chunk: &Chunk) -> Result
             Op::Pop => {
                 stack.pop();
             }
+            Op::PushScope => interp.push_scope(),
+            Op::PopScope => interp.pop_scope(),
+            Op::IterNew => {
+                let v = stack.pop().expect("stack underflow");
+                stack.push(Value::list(eval::iter_snapshot(v, span)?));
+            }
+            Op::IterNext(o) => {
+                let len = stack.len();
+                let idx = match &stack[len - 1] {
+                    Value::Int(i) => *i as usize,
+                    _ => unreachable!("iter index is always an int"),
+                };
+                let item = {
+                    let Value::List(snap) = &stack[len - 2] else {
+                        unreachable!("iter snapshot is always a list");
+                    };
+                    let snap = snap.borrow();
+                    if idx >= snap.len() {
+                        None
+                    } else {
+                        Some(snap[idx].clone())
+                    }
+                };
+                match item {
+                    Some(item) => {
+                        stack[len - 1] = Value::Int(idx as i64 + 1);
+                        stack.push(item);
+                    }
+                    None => {
+                        ip = offset(ip, *o);
+                        continue;
+                    }
+                }
+            }
         }
         ip += 1;
     }

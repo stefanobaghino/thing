@@ -127,6 +127,22 @@ impl<W: Write> Interpreter<W> {
         self.env.borrow_mut().vars.insert(Rc::from(name), v);
     }
 
+    /// Enter a fresh lexical scope (VM block/loop-iteration support).
+    pub(crate) fn push_scope(&mut self) {
+        self.env = Env::child(&self.env);
+    }
+
+    /// Leave the current scope, restoring its parent.
+    pub(crate) fn pop_scope(&mut self) {
+        let parent = self
+            .env
+            .borrow()
+            .parent
+            .clone()
+            .expect("pop_scope at global scope");
+        self.env = parent;
+    }
+
     /// Rebind an existing name; false if it doesn't exist.
     pub(crate) fn assign(&mut self, name: &str, v: Value) -> bool {
         Env::assign(&self.env, name, v)
@@ -1209,6 +1225,19 @@ impl<W: Write> Interpreter<W> {
                 index(b, i, expr.span)
             }
         }
+    }
+}
+
+/// The for-loop snapshot conversion (mirrors StmtKind::For exactly).
+pub(crate) fn iter_snapshot(v: Value, span: Span) -> Result<Vec<Value>, RuntimeError> {
+    match v {
+        Value::List(l) => Ok(l.borrow().clone()),
+        Value::Str(s) => Ok(s.chars().map(|c| Value::Str(c.to_string())).collect()),
+        Value::Map(m) => Ok(m.borrow().keys().cloned().map(Value::Str).collect()),
+        v => Err(error(
+            format!("cannot iterate over {}", v.type_name()),
+            span,
+        )),
     }
 }
 

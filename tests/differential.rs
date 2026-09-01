@@ -73,9 +73,54 @@ fn expressions_match_across_engines() {
 }
 
 #[test]
+fn control_flow_matches_across_engines() {
+    let corpus: &[&str] = &[
+        // if/else chains, strict conditions
+        "if 1 < 2 { print(\"yes\"); } else { print(\"no\"); }",
+        "let n = 7; if n % 15 == 0 { print(\"fb\"); } else if n % 3 == 0 { print(\"f\"); } else if n % 5 == 0 { print(\"b\"); } else { print(n); }",
+        "if 1 { print(1); }",
+        "if false { print(1); } else if \"x\" { print(2); }",
+        // while, mutation, nested conditions
+        "let i = 0; let total = 0; while i < 10 { i = i + 1; if i % 2 == 1 { continue; } total = total + i; } print(i, total);",
+        "let i = 0; while true { i = i + 1; if i == 5 { break; } } print(i);",
+        "while nil { }",
+        // for over list/string/map; snapshot semantics; loop var scope
+        "for x in [10, 20, 30] { print(x); }",
+        "let out = []; for ch in \"héllo\" { push(out, ch); } print(join(out, \"-\"));",
+        "for k in {\"b\": 2, \"a\": 1} { print(k); }",
+        "let xs = [1, 2]; for x in xs { push(xs, x + 10); } print(xs);",
+        "for x in 42 { print(x); }",
+        "let x = \"outer\"; for x in [1] { } print(x);",
+        // break/continue in nested loops
+        "for i in range(3) { for j in range(3) { if j == 1 { break; } print(i, j); } }",
+        "for i in range(5) { if i % 2 == 0 { continue; } print(i); }",
+        // scoped blocks and shadowing
+        "let y = 1; { let y = 2; print(y); } print(y);",
+        "{ let z = 9; print(z); } print(z);",
+        // break inside a scoped block inside a loop
+        "let i = 0; while i < 5 { i = i + 1; { let t = i * 10; if t > 20 { break; } print(t); } } print(\"end\", i);",
+        // runtime errors inside loops keep their spans
+        "for i in range(3) { print(1 / (1 - i)); }",
+    ];
+    for src in corpus {
+        same(src);
+    }
+}
+
+#[test]
 fn vm_reports_unsupported_constructs() {
-    let err = run(Engine::Vm, "if true { print(1); }").unwrap_err();
+    let err = run(Engine::Vm, "fn f() { return 1; } print(f());").unwrap_err();
     assert!(err.contains("not yet supported by --vm"), "{err}");
     // The reference engine still runs them.
-    assert_eq!(run(Engine::Eval, "if true { print(1); }").unwrap(), "1\n");
+    assert_eq!(
+        run(Engine::Eval, "fn f() { return 1; } print(f());").unwrap(),
+        "1\n"
+    );
+}
+
+#[test]
+fn vm_rejects_stray_break_at_compile_time() {
+    // Accepted divergence (docs/vm.md): same message, surfaces earlier.
+    let err = run(Engine::Vm, "if false { break; }").unwrap_err();
+    assert!(err.contains("break outside loop"), "{err}");
 }
