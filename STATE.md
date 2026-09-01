@@ -20,15 +20,13 @@ release binaries on GitHub.
 Milestone **v0.4.0 — ting in the browser + robustness** (designed in
 LOG.md replenishment entry; keeps zero deps by avoiding wasm-bindgen):
 
-1. wasm32-unknown-unknown cdylib with a hand-rolled extern "C" ABI:
-   alloc/dealloc + run(source) -> UTF-8 result in wasm memory.
-2. playground/index.html: static page (editor, run button, output
+1. playground/index.html: static page (editor, run button, output
    pane) loading the wasm; must work from any static host with no
    build step beyond cargo.
-3. GitHub Pages workflow deploying playground/ + docs.
-4. Robustness: deterministic pseudo-random program generator test —
+2. GitHub Pages workflow deploying playground/ + docs.
+3. Robustness: deterministic pseudo-random program generator test —
    arbitrary token soup must produce clean errors, never panics.
-5. Release v0.4.0.
+4. Release v0.4.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -86,6 +84,10 @@ green.
   output-diffed by tests/tutorial.rs; README updated; 131 tests.
 - Interpreter extracted to lib.rs with run_source() entry point;
   main.rs is a thin consumer; 133 tests.
+- wasm ABI (src/wasm.rs, 5 extern fns, no wasm-bindgen); 294KB
+  ting.wasm verified end-to-end in Node; build with
+  `cargo build --release --lib --target wasm32-unknown-unknown`;
+  136 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
