@@ -20,17 +20,15 @@ release binaries on GitHub.
 Milestone **v0.4.0 — ting in the browser + robustness** (designed in
 LOG.md replenishment entry; keeps zero deps by avoiding wasm-bindgen):
 
-1. Extract src/lib.rs (interpreter as a library; main.rs becomes a
-   thin consumer) so a wasm cdylib can link the same engine.
-2. wasm32-unknown-unknown cdylib with a hand-rolled extern "C" ABI:
+1. wasm32-unknown-unknown cdylib with a hand-rolled extern "C" ABI:
    alloc/dealloc + run(source) -> UTF-8 result in wasm memory.
-3. playground/index.html: static page (editor, run button, output
+2. playground/index.html: static page (editor, run button, output
    pane) loading the wasm; must work from any static host with no
    build step beyond cargo.
-4. GitHub Pages workflow deploying playground/ + docs.
-5. Robustness: deterministic pseudo-random program generator test —
+3. GitHub Pages workflow deploying playground/ + docs.
+4. Robustness: deterministic pseudo-random program generator test —
    arbitrary token soup must produce clean errors, never panics.
-6. Release v0.4.0.
+5. Release v0.4.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -86,6 +84,8 @@ green.
   stack overflow; interpreter stays usable); 29 builtins, 130 tests.
 - Executable tutorial (docs/tutorial.md, 9 standalone snippets) run and
   output-diffed by tests/tutorial.rs; README updated; 131 tests.
+- Interpreter extracted to lib.rs with run_source() entry point;
+  main.rs is a thin consumer; 133 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
