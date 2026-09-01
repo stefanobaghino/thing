@@ -21,11 +21,7 @@ release binaries on GitHub.
 Milestone **v1.7.0 — finishing touches** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Site run-links: ```ting blocks on tutorial/stdlib pages link to
-   the playground with the snippet preloaded (#code= fragment);
-   verify one live.
-2. `ting --version` and `ting --help`.
-3. Release v1.7.0.
+1. Release v1.7.0 (verify a live run-link first).
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -212,6 +208,8 @@ green.
 - v1.6.0 RELEASED and verified: 3 assets; shipped formatter
   round-trip confirmed.
   https://github.com/stefanobaghino/thing/releases/tag/v1.6.0
+- Docs run-links (13 on tutorial; fragment decode verified) +
+  --version/--help.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
