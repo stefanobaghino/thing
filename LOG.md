@@ -698,3 +698,22 @@ wasm-bindgen, still zero dependencies), the browser playground live on
 GitHub Pages, fuzz tests (which found and fixed a real parser panic on
 stray ':'), and the describe() hardening. 141 tests. Asset verification
 follows when the release workflow finishes.
+
+**v0.4.0 verified:** release workflow green; three assets present;
+darwin binary smoke-tested — the stray-colon program that panicked
+v0.3.0 now prints a clean caret diagnostic (exit 1), sort_by works.
+
+---
+
+## 2026-09-01 — Replenishment: v0.5.0 milestone
+
+Per LOOP.md "No idle". Parked candidates reviewed: bytecode VM still
+poor value-per-iteration; self-hosted tests promoted. Chosen: **v0.5.0
+— expressiveness**: (1) functional builtins map/filter/reduce plus
+min/max/abs — the biggest everyday gap now that sort_by exists; (2) an
+assert(cond, msg) builtin and a self-hosted test suite — ting programs
+that test ting, run by CI through the real binary, which both proves
+the language is usable and grows coverage in the language itself; (3)
+modules: import(path) — needs a design iteration first (return value
+vs. namespace map, caching, cycle detection); (4) release. Playground
+examples get map/filter once they land.
