@@ -5,6 +5,7 @@ pub mod ast;
 pub mod compile;
 pub mod diag;
 pub mod eval;
+pub mod fmt;
 pub mod json;
 pub mod lexer;
 pub mod lsp;

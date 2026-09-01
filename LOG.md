@@ -1603,3 +1603,22 @@ formatter: brace-depth indentation, canonical spacing, comment and
 blank-line preservation (capped at one); (3) `ting --fmt` (write) and
 `--fmt-check` (CI-friendly) + format the repo's own .ting files with
 it; (4) LSP documentFormatting; (5) release v1.6.0.
+
+---
+
+## 2026-09-01 — Iteration 89: the formatter core
+
+src/fmt.rs. The design that made comments easy: reuse the ordinary
+lexer, then scan only the gaps between token spans for '#' — a gap
+can't be inside a string by construction, so no comment-aware lexer
+mode was needed after all (simpler than the plan). Formatting rules:
+literal text copied verbatim via spans; the author's line breaks kept
+(blank runs collapse to one); two-space indentation from brace depth;
+canonical spacing driven by a token-pair table with three interesting
+cases — unary vs binary minus (decided by the token before the
+minus), call/index parens vs grouping parens, and map-literal braces
+vs block braces (a brace-kind stack, decided by expression position).
+Guards: five unit tests plus tests/fmt.rs, which formats every .ting
+file in the repo (21) and asserts idempotence AND that the formatted
+output parses to the byte-identical AST s-expression rendering. All
+green. Next: the --fmt CLI + reformat the repo.
