@@ -2023,3 +2023,11 @@ Tagging v2.3.0. Also confirmed 138's "RUN FAILED" was a transient
 watcher network error (connection reset); both runs were green on
 direct inspection — third occurrence of this failure mode, watchers
 stay but verdicts always get verified against the API.
+
+---
+
+## 2026-09-01 — Iteration 139b: v2.3.0 verified
+
+Three archives on the release; darwin-arm64 downloaded cold runs
+(ting 2.3.0, script prints 21, --check clean, 4 lib files bundled).
+23rd release verified.

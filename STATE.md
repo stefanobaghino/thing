@@ -245,8 +245,8 @@ green.
 - LSP documentSymbol (outline view) — accumulating toward v2.3.0.
 - LSP go-to-definition for top-level bindings.
 - Reference "Tooling" section (fmt/check/LSP capabilities).
-- v2.3.0 tagged (LSP symbols + definition + Tooling docs);
-  release run in flight — verify assets next wake.
+- v2.3.0 RELEASED and verified (LSP symbols + definition +
+  Tooling docs); darwin-arm64 asset smoke-tested cold.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
