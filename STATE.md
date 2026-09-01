@@ -20,14 +20,11 @@ release binaries on GitHub.
 Milestone **v1.1.0 — the VM earns its keep (or proves it can't)**
 (designed in LOG.md replenishment entry, 2026-09-01):
 
-1. Compile function bodies: real VM call frames (arity + depth cap
-   preserved), closures keep Env capture; every differential guard
-   must stay green at each step.
-2. Re-benchmark both engines; record.
-3. If not clearly faster: resolve locals to stack slots; re-benchmark.
-4. Decision per the numbers: flip default, keep flag, or retire the
+1. Resolve locals to stack slots (capture analysis; params and
+   un-captured locals become frame slots); re-benchmark.
+2. Decision per the numbers: flip default, keep flag, or retire the
    VM — verdict in docs/vm.md either way.
-5. Release v1.1.0.
+3. Release v1.1.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -167,6 +164,8 @@ green.
 - v1.0.0 RELEASED and verified: 3 assets; full selftest suite passes
   on the shipped binary under both engines.
   https://github.com/stefanobaghino/thing/releases/tag/v1.0.0
+- Compiled function bodies (FnBody::Chunk, Op::Return): parity holds;
+  re-benchmarked: vm +2-7% (worse) — dispatch was never the cost.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
