@@ -1182,3 +1182,22 @@ a CI matrix row running the integration suites with TING_ENGINE=vm;
 (3) a doc-coverage guard test: every builtin in Builtin::ALL must
 appear in docs/reference.md (the grammar already has one); (4) README
 refresh (engines, changelog, current numbers); (5) release v1.0.0.
+
+---
+
+## 2026-09-01 — Iteration 56: differential fuzzing (grammar-directed)
+
+First attempt was the promised token-soup-through-both-engines — and
+the instrumentation showed 0 of 3000 soup programs even parse, so that
+plan tested nothing. Pivoted to a grammar-directed generator inside
+tests/differential.rs: it builds random *valid* programs structurally
+(a seeded prelude of vars + a helper fn; statements: let/assign/print/
+if-else/for-over-literals/scoped blocks/index-assign/try; expressions:
+arithmetic, comparisons, &&, lists, maps, calls, indexing, negation —
+depth-bounded, no while, so every program terminates). 600 generated
+programs run through both engines per test run; verdicts must be
+byte-identical (runtime errors included — division by zero, bad
+indexing, and type errors are generated naturally and must match).
+All green. docs/vm.md's testing plan is now fully implemented, with
+the soup-doesn't-parse finding logged as the reason for the pivot.
+Suite at 158.

@@ -167,6 +167,114 @@ fn selftest_programs_match_across_engines() {
 }
 
 #[test]
+fn generated_programs_match_across_engines() {
+    // Grammar-directed differential fuzzing (docs/vm.md's last piece):
+    // random *valid* programs — token soup almost never parses, so the
+    // generator builds statements and expressions structurally. All
+    // programs terminate (no while, for only over small literals);
+    // runtime errors are fine as long as both engines agree.
+    let mut g = Gen { rng: Rng(0xF00D) };
+    for case in 0..600 {
+        let src = g.program();
+        let a = run(Engine::Eval, &src);
+        let b = run(Engine::Vm, &src);
+        assert_eq!(a, b, "engines diverge on case {case}:\n{src}");
+    }
+}
+
+/// xorshift64* — same generator as tests/fuzz.rs.
+struct Rng(u64);
+
+impl Rng {
+    fn next(&mut self) -> u64 {
+        let mut x = self.0;
+        x ^= x >> 12;
+        x ^= x << 25;
+        x ^= x >> 27;
+        self.0 = x;
+        x.wrapping_mul(0x2545F4914F6CDD1D)
+    }
+
+    fn below(&mut self, n: usize) -> usize {
+        (self.next() % n as u64) as usize
+    }
+}
+
+struct Gen {
+    rng: Rng,
+}
+
+impl Gen {
+    fn program(&mut self) -> String {
+        let mut out = String::from(
+            "let a = 3; let b = -2; let s = \"ab\"; let xs = [1, 2, 3];\n\
+             fn h(v) { return v + 1; }\n",
+        );
+        let n = 2 + self.rng.below(5);
+        for _ in 0..n {
+            out.push_str(&self.stmt(2));
+            out.push('\n');
+        }
+        out
+    }
+
+    fn stmt(&mut self, depth: usize) -> String {
+        if depth == 0 {
+            return format!("print({});", self.expr(1));
+        }
+        match self.rng.below(8) {
+            0 => format!("let v{} = {};", self.rng.below(3), self.expr(2)),
+            1 => format!("a = {};", self.expr(2)),
+            2 => format!("print({}, {});", self.expr(2), self.expr(1)),
+            3 => format!(
+                "if {} {{ {} }} else {{ {} }}",
+                self.expr(1),
+                self.stmt(depth - 1),
+                self.stmt(depth - 1)
+            ),
+            4 => format!(
+                "for i in [{}, {}] {{ {} }}",
+                self.expr(1),
+                self.expr(1),
+                self.stmt(depth - 1)
+            ),
+            5 => format!("{{ let inner = {}; print(inner); }}", self.expr(2)),
+            6 => format!("xs[{}] = {};", self.expr(1), self.expr(1)),
+            _ => format!("print(try(fn() {{ return {}; }}));", self.expr(2)),
+        }
+    }
+
+    fn expr(&mut self, depth: usize) -> String {
+        if depth == 0 {
+            return match self.rng.below(8) {
+                0 => "1".into(),
+                1 => "42".into(),
+                2 => "1.5".into(),
+                3 => "\"x\"".into(),
+                4 => "true".into(),
+                5 => "nil".into(),
+                6 => "a".into(),
+                _ => "b".into(),
+            };
+        }
+        match self.rng.below(12) {
+            0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
+            1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
+            2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
+            3 => format!("({} == {})", self.expr(depth - 1), self.expr(depth - 1)),
+            4 => format!("({} < {})", self.expr(depth - 1), self.expr(depth - 1)),
+            5 => format!("({} && {})", self.expr(depth - 1), self.expr(depth - 1)),
+            6 => format!("[{}, {}]", self.expr(depth - 1), self.expr(depth - 1)),
+            7 => format!("{{\"k\": {}}}", self.expr(depth - 1)),
+            8 => format!("h({})", self.expr(depth - 1)),
+            9 => format!("len(str({}))", self.expr(depth - 1)),
+            10 => format!("xs[{}]", self.expr(depth - 1)),
+            _ => format!("-({})", self.expr(depth - 1)),
+        }
+    }
+}
+
+#[test]
 fn vm_rejects_stray_return_at_compile_time() {
     // Accepted divergence (docs/vm.md): same message, surfaces earlier.
     let err = run(Engine::Vm, "return 1;").unwrap_err();
