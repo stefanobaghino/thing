@@ -17,10 +17,12 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Example programs under `examples/`, run as integration tests.
-2. Language reference in `docs/`.
-3. GitHub Actions CI (build + test on push).
-4. Tagged release with prebuilt binaries.
+1. Language reference in `docs/`.
+2. GitHub Actions CI (build + test on push).
+3. Tagged release with prebuilt binaries.
+
+5. Stretch (post-release): string split/join builtins, `for`-in loop,
+   `break`/`continue`, REPL diagnostics with carets.
 
 ## Done
 
@@ -50,6 +52,8 @@ release binaries on GitHub.
   auto-semicolon, pipe-friendly, persistent session; 8 tests.
 - Diagnostics (`src/diag.rs`): caret underlines with source excerpt on
   all script error paths; 6 tests.
+- Six examples/ programs with golden .out files, run by
+  tests/examples.rs against the real binary.
 
 ## Blockers
 

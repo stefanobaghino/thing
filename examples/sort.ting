@@ -1,0 +1,21 @@
+# Insertion sort: index assignment and nested while loops.
+fn sorted(xs) {
+  let out = xs + [];  # copy, so the input list is untouched
+  let i = 1;
+  while i < len(out) {
+    let key = out[i];
+    let j = i - 1;
+    while j >= 0 && out[j] > key {
+      out[j + 1] = out[j];
+      j = j - 1;
+    }
+    out[j + 1] = key;
+    i = i + 1;
+  }
+  return out;
+}
+
+let nums = [5, 3, 8, 1, 9, 2, 7];
+print("input: ", nums);
+print("sorted:", sorted(nums));
+print("input again:", nums);

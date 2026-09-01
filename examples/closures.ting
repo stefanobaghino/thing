@@ -1,0 +1,21 @@
+# Closures capture their environment by reference.
+fn make_counter() {
+  let n = 0;
+  fn tick() {
+    n = n + 1;
+    return n;
+  }
+  return tick;
+}
+
+let c1 = make_counter();
+let c2 = make_counter();
+print(c1(), c1(), c1());  # each call advances the same n
+print(c2());              # a fresh counter starts over
+
+fn compose(f, g) {
+  return fn(x) { return f(g(x)); };
+}
+let inc = fn(x) { return x + 1; };
+let double = fn(x) { return x * 2; };
+print(compose(inc, double)(20));  # double, then inc

@@ -1,0 +1,19 @@
+# Fibonacci two ways: naive recursion and an iterative list build.
+fn fib(n) {
+  if n < 2 {
+    return n;
+  }
+  return fib(n - 1) + fib(n - 2);
+}
+print("fib(20) =", fib(20));
+
+let seq = [];
+let a = 0;
+let b = 1;
+while len(seq) < 10 {
+  push(seq, a);
+  let t = a + b;
+  a = b;
+  b = t;
+}
+print("first ten:", seq);
