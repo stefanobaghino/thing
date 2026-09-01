@@ -1656,3 +1656,20 @@ Milestone complete; version bumped, CHANGELOG updated, tag pushed.
 v1.6.0 over v1.5.0: the formatter (CLI, CI check, LSP), with the repo
 self-hosting its own style. Asset verification when the workflow
 finishes.
+
+**v1.6.0 verified:** release workflow green; three assets; the shipped
+binary reformatted a messy file, passed --fmt-check, and the file
+still ran. Sixteenth release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.7.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.7.0 — finishing touches**:
+(1) run-links on the site — every ```ting block on the tutorial and
+stdlib pages gets a "run it" link that opens the playground with the
+snippet preloaded (the share-by-URL fragment already does the work;
+md2html just needs to emit the links); verify one live; (2) CLI
+basics that are embarrassingly missing: `ting --version` and
+`ting --help` (usage covering script/REPL/--eval/--vm/--fmt/--lsp);
+(3) release v1.7.0.
