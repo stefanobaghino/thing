@@ -717,3 +717,16 @@ the language is usable and grows coverage in the language itself; (3)
 modules: import(path) — needs a design iteration first (return value
 vs. namespace map, caching, cycle detection); (4) release. Playground
 examples get map/filter once they land.
+
+---
+
+## 2026-09-01 — Iteration 31: map/filter/reduce/min/max/abs
+
+Six functional builtins. Decisions: all three higher-order forms
+iterate a snapshot and build fresh lists (consistent with sort/slice);
+`filter` demands an actual bool from the predicate — returning anything
+else errors, in keeping with no-truthiness; `reduce(xs, init, f)` puts
+init in the middle so the call reads left-to-right; `min`/`max` reuse
+`ensure_sortable`/`cmp_ordered` (empty list errors); `abs` checks i64
+overflow (abs(i64::MIN)). Playground gains a "map & filter" example
+(deploys via the path filter). 2 tests (18 assertions); suite at 143.

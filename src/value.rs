@@ -57,10 +57,16 @@ pub enum Builtin {
     SortBy,
     Try,
     Fail,
+    Map,
+    Filter,
+    Reduce,
+    Min,
+    Max,
+    Abs,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 29] = [
+    pub const ALL: [Builtin; 35] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -90,6 +96,12 @@ impl Builtin {
         Builtin::SortBy,
         Builtin::Try,
         Builtin::Fail,
+        Builtin::Map,
+        Builtin::Filter,
+        Builtin::Reduce,
+        Builtin::Min,
+        Builtin::Max,
+        Builtin::Abs,
     ];
 
     pub fn name(self) -> &'static str {
@@ -123,6 +135,12 @@ impl Builtin {
             Builtin::SortBy => "sort_by",
             Builtin::Try => "try",
             Builtin::Fail => "fail",
+            Builtin::Map => "map",
+            Builtin::Filter => "filter",
+            Builtin::Reduce => "reduce",
+            Builtin::Min => "min",
+            Builtin::Max => "max",
+            Builtin::Abs => "abs",
         }
     }
 }

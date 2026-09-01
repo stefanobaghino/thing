@@ -98,6 +98,13 @@ for w in sort_by(keys(counts), fn(w) { return 0 - counts[w]; }) {
   print(counts[w], w);
 }
 `,
+  "map & filter": `let ns = range(1, 11);
+let evens = filter(ns, fn(n) { return n % 2 == 0; });
+let squares = map(evens, fn(n) { return n * n; });
+print(squares);
+print("sum:", reduce(squares, 0, fn(a, n) { return a + n; }));
+print("min/max:", min(squares), max(squares));
+`,
   "error recovery": `fn risky(s) {
   let n = int(s);          # errors on non-numeric input
   if n < 0 { fail("no negatives, please"); }

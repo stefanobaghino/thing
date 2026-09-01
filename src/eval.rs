@@ -699,6 +699,107 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Map | Builtin::Filter => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::List(items), f @ (Value::Fn(_) | Value::Builtin(_))) => {
+                        let f = f.clone();
+                        let snapshot = items.borrow().clone();
+                        let mut out = Vec::with_capacity(snapshot.len());
+                        for v in snapshot {
+                            let r = self.call_value(&f, vec![v.clone()], span)?;
+                            if b == Builtin::Map {
+                                out.push(r);
+                            } else {
+                                match r {
+                                    Value::Bool(true) => out.push(v),
+                                    Value::Bool(false) => {}
+                                    other => {
+                                        return Err(error(
+                                            format!(
+                                                "filter predicate must return bool, got {}",
+                                                other.type_name()
+                                            ),
+                                            span,
+                                        ));
+                                    }
+                                }
+                            }
+                        }
+                        Ok(Value::list(out))
+                    }
+                    (a, f) => Err(error(
+                        format!(
+                            "{} expects a list and a function, got {} and {}",
+                            b.name(),
+                            a.type_name(),
+                            f.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Reduce => {
+                arity(3, 3)?;
+                match (&args[0], &args[2]) {
+                    (Value::List(items), f @ (Value::Fn(_) | Value::Builtin(_))) => {
+                        let f = f.clone();
+                        let snapshot = items.borrow().clone();
+                        let mut acc = args[1].clone();
+                        for v in snapshot {
+                            acc = self.call_value(&f, vec![acc, v], span)?;
+                        }
+                        Ok(acc)
+                    }
+                    (a, f) => Err(error(
+                        format!(
+                            "reduce expects a list, an initial value, and a function, got {}, {} and {}",
+                            a.type_name(),
+                            args[1].type_name(),
+                            f.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Min | Builtin::Max => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::List(items) => {
+                        let items = items.borrow();
+                        if items.is_empty() {
+                            return Err(error(format!("{} of an empty list", b.name()), span));
+                        }
+                        ensure_sortable(items.iter(), b.name(), span)?;
+                        let mut best = items[0].clone();
+                        for v in items.iter().skip(1) {
+                            let ord = cmp_ordered(v, &best);
+                            if (b == Builtin::Min) == ord.is_lt() && !ord.is_eq() {
+                                best = v.clone();
+                            }
+                        }
+                        Ok(best)
+                    }
+                    v => Err(error(
+                        format!("{} expects a list, got {}", b.name(), v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Abs => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Int(n) => n
+                        .checked_abs()
+                        .map(Value::Int)
+                        .ok_or_else(|| error("integer overflow", span)),
+                    Value::Float(x) => Ok(Value::Float(x.abs())),
+                    v => Err(error(
+                        format!("abs expects a number, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
         }
     }
 
@@ -1442,6 +1543,57 @@ mod tests {
             program_err("replace(\"a\", \"b\", 1);"),
             "replace expects three strings, got string, string and int"
         );
+    }
+
+    #[test]
+    fn builtin_map_filter_reduce() {
+        assert_eq!(
+            output("print(map([1, 2, 3], fn(x) { return x * x; }));"),
+            "[1, 4, 9]\n"
+        );
+        assert_eq!(output("print(map([\"a\", \"bb\"], len));"), "[1, 2]\n");
+        assert_eq!(
+            output("print(filter(range(1, 10), fn(x) { return x % 3 == 0; }));"),
+            "[3, 6, 9]\n"
+        );
+        assert_eq!(
+            output("print(reduce([1, 2, 3, 4], 0, fn(a, x) { return a + x; }));"),
+            "10\n"
+        );
+        assert_eq!(
+            output("print(reduce([], \"seed\", fn(a, x) { return x; }));"),
+            "seed\n"
+        );
+        // map copies: source list untouched.
+        assert_eq!(
+            output("let a = [1]; let m = map(a, fn(x) { return x + 1; }); print(a, m);"),
+            "[1] [2]\n"
+        );
+        assert_eq!(
+            run_err("filter([1], fn(x) { return 1; })"),
+            "filter predicate must return bool, got int"
+        );
+        assert_eq!(
+            run_err("map(1, len)"),
+            "map expects a list and a function, got int and function"
+        );
+    }
+
+    #[test]
+    fn builtin_min_max_abs() {
+        assert_eq!(run("min([3, 1.5, 2])"), Value::Float(1.5));
+        assert_eq!(run("max([3, 1.5, 2])"), Value::Int(3));
+        assert_eq!(run("min([\"pear\", \"fig\"])"), Value::Str("fig".into()));
+        assert_eq!(run_err("min([])"), "min of an empty list");
+        assert_eq!(
+            run_err("max([1, \"a\"])"),
+            "max cannot order numbers and strings together"
+        );
+        assert_eq!(run("abs(-42)"), Value::Int(42));
+        assert_eq!(run("abs(1.5)"), Value::Float(1.5));
+        assert_eq!(run("abs(-1.5)"), Value::Float(1.5));
+        assert_eq!(run_err("abs(-9223372036854775807 - 1)"), "integer overflow");
+        assert_eq!(run_err("abs(\"x\")"), "abs expects a number, got string");
     }
 
     #[test]

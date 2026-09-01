@@ -163,6 +163,11 @@ scope).
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `try(f)`       | calls `f()`; `{"ok": result}` on success, `{"err": message}` on a runtime error |
 | `fail(msg)`    | raises a runtime error with the given string message         |
+| `map(xs, f)`   | a fresh list of `f(x)` for each element                      |
+| `filter(xs, f)` | a fresh list of the elements where `f(x)` is `true` (bool required) |
+| `reduce(xs, init, f)` | folds left: `f(f(init, x0), x1)…`                     |
+| `min(xs)` / `max(xs)` | smallest / largest element; `sort`'s ordering rules; empty list errors |
+| `abs(n)`       | absolute value of an int or float                            |
 
 ## Errors
 
