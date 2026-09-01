@@ -24,3 +24,22 @@ assert(m["merge"]({"a": 1, "b": 2}, {"b": 9, "c": 3}) == {"a": 1, "b": 9, "c": 3
 assert(m["items"]({"b": 2, "a": 1}) == [["a", 1], ["b", 2]], "items sorted");
 assert(m["from_items"]([["x", 1], ["y", 2]]) == {"x": 1, "y": 2}, "from_items");
 assert(m["from_items"](m["items"]({"k": nil})) == {"k": nil}, "round trip");
+
+let ma = import("../lib/math.ting");
+assert(ma["clamp"](5, 0, 3) == 3, "clamp high");
+assert(ma["clamp"](-1, 0, 3) == 0, "clamp low");
+assert(ma["clamp"](2, 0, 3) == 2, "clamp inside");
+assert(ma["sign"](-9) == -1 && ma["sign"](0) == 0 && ma["sign"](4) == 1, "sign");
+assert(ma["pow"](2, 10) == 1024, "pow");
+assert(ma["pow"](7, 0) == 1, "pow zero exponent");
+assert(has(try(fn() { return ma["pow"](2, -1); }), "err"), "pow rejects negative");
+assert(ma["gcd"](54, 24) == 6, "gcd");
+assert(ma["gcd"](-4, 6) == 2, "gcd abs");
+assert(ma["gcd"](0, 5) == 5, "gcd zero");
+assert(ma["round"](2.5) == 3, "round half up");
+assert(ma["round"](-2.5) == -3, "round half away from zero");
+assert(ma["round"](2.4) == 2, "round down");
+assert(abs(ma["sqrt"](2) - 1.4142135623730951) < 0.0000000001, "sqrt 2");
+assert(ma["sqrt"](0) == 0.0, "sqrt zero");
+assert(ma["sqrt"](144) == 12.0, "sqrt exact");
+assert(has(try(fn() { return ma["sqrt"](-1); }), "err"), "sqrt rejects negative");

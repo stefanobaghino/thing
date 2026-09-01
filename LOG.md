@@ -2041,3 +2041,17 @@ two releases didn't regress the VM. Release-build bench vs
 bench/BASELINE.md: fib 148.6ms (base 150.9), lists 54.5 (55.1),
 maps 103.9 (102.5), strings 44.9 (44.7) — all within ±3% noise,
 checksums identical. No action needed; baseline stands.
+
+---
+
+## 2026-09-02 — Iteration 141: lib/math.ting
+
+Fifth stdlib module: clamp, sign, pow (squaring, rejects negative
+exponents), gcd, round (halves away from zero), sqrt (Newton, 40
+iterations). Embedded in the binary alongside the others; 17 new
+selftest assertions incl. both fail paths; doc table added. First
+draft used max(x, lo) — min/max take a single list — caught by the
+differential suite; also re-verified that errors inside imported
+modules render the caller's import span plus the module's own
+location, identically on both engines (by design, not a bug).
+14/14 suites.

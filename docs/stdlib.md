@@ -43,6 +43,17 @@ Imports return a map, so functions are reached with `["name"]`.
 | `items(m)` | list of `[key, value]` pairs in sorted key order |
 | `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
 
+## lib/math.ting
+
+| Function | Does |
+|----------|------|
+| `clamp(x, lo, hi)` | `x` limited to the range `[lo, hi]` |
+| `sign(x)` | `-1`, `0`, or `1` |
+| `pow(base, n)` | integer exponentiation by squaring; `n >= 0` |
+| `gcd(a, b)` | greatest common divisor (absolute values) |
+| `round(x)` | nearest integer, halves away from zero |
+| `sqrt(x)` | Newton's method square root, returns a float |
+
 ## lib/test.ting
 
 A tiny test framework:

@@ -1,0 +1,52 @@
+# Math helpers, written in ting. Use them via
+#   let ma = import("lib/math.ting");
+
+fn clamp(x, lo, hi) { return min([max([x, lo]), hi]); }
+
+fn sign(x) {
+  if x > 0 { return 1; }
+  if x < 0 { return -1; }
+  return 0;
+}
+
+# Integer exponentiation by squaring; n must be >= 0.
+fn pow(base, n) {
+  if n < 0 { fail("pow: negative exponent"); }
+  let result = 1;
+  let b = base;
+  let e = n;
+  while e > 0 {
+    if e % 2 == 1 { result = result * b; }
+    e = e / 2;
+    if e > 0 { b = b * b; }
+  }
+  return result;
+}
+
+fn gcd(a, b) {
+  let x = abs(a);
+  let y = abs(b);
+  while y != 0 {
+    let t = y;
+    y = x % y;
+    x = t;
+  }
+  return x;
+}
+
+# Nearest integer, halves away from zero: round(2.5) == 3, round(-2.5) == -3.
+fn round(x) {
+  if x >= 0 { return int(x + 0.5); }
+  return -int(-x + 0.5);
+}
+
+# Newton's method square root; returns a float. x must be >= 0.
+fn sqrt(x) {
+  if x < 0 { fail("sqrt: negative input"); }
+  if x == 0 { return 0.0; }
+  let guess = float(x);
+  for i in range(40) {
+    guess = (guess + float(x) / guess) / 2.0;
+  }
+  return guess;
+}
