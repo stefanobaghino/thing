@@ -17,11 +17,20 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v0.8.0 — a real scripting citizen** (designed in LOG.md
-replenishment entry, 2026-09-01):
+Milestone **v0.9.0 — bytecode VM** (designed in LOG.md replenishment
+entry, 2026-09-01; incremental, always shippable, --vm flag with the
+tree-walker as reference):
 
-1. CHANGELOG.md: retroactive for v0.1.0..v0.7.0, then per release.
-2. Release v0.8.0.
+1. docs/vm.md design doc: stack machine, chunk/opcode format, Env
+   chain kept for closures initially, differential-testing plan.
+2. Compiler + VM for expressions behind --vm; differential tests
+   (same programs through both engines, identical results).
+3. Statements + control flow under --vm.
+4. Functions/closures/builtins under --vm; full parity: entire unit +
+   selftest suites green on both engines.
+5. Benchmark VM vs tree-walker; flip the default only if clearly
+   faster; keep both selectable.
+6. Release v0.9.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -132,6 +141,10 @@ green.
   integration tests; 152 tests.
 - todo.ting showcase + scenario test (tests/todo.rs); fuzz exercise
   now parse-only for exit-mentioning programs; 153 tests.
+- CHANGELOG.md (retroactive v0.1.0..v0.7.0, then per release).
+- v0.8.0 RELEASED and verified: 3 assets; todo showcase ran on the
+  shipped darwin binary.
+  https://github.com/stefanobaghino/thing/releases/tag/v0.8.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
