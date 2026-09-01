@@ -120,6 +120,136 @@ impl Builtin {
         Builtin::TimeMs,
     ];
 
+    /// Signature and one-line summary, shown by the LSP on hover.
+    pub fn doc(self) -> (&'static str, &'static str) {
+        match self {
+            Builtin::Print => (
+                "print(...)",
+                "Prints the arguments separated by spaces, then a newline; returns nil.",
+            ),
+            Builtin::Len => ("len(x)", "Length of a list, string (in chars), or map."),
+            Builtin::Push => ("push(xs, v)", "Appends to a list in place; returns nil."),
+            Builtin::Pop => (
+                "pop(xs)",
+                "Removes and returns the last element; empty list errors.",
+            ),
+            Builtin::Keys => ("keys(m)", "The map's keys as a sorted list."),
+            Builtin::Has => ("has(m, k)", "Whether string key k is present in the map."),
+            Builtin::Str => ("str(v)", "The value rendered as a string."),
+            Builtin::Int => (
+                "int(v)",
+                "Converts int/float (truncates)/numeric string to int; else errors.",
+            ),
+            Builtin::Float => (
+                "float(v)",
+                "Converts int/float/numeric string to float; else errors.",
+            ),
+            Builtin::Type => ("type(v)", "The type name as a string, e.g. \"list\"."),
+            Builtin::Range => (
+                "range(hi) / range(lo, hi)",
+                "List of ints, half-open; empty if hi <= lo.",
+            ),
+            Builtin::Split => (
+                "split(s, sep)",
+                "List of pieces; empty separator splits into characters.",
+            ),
+            Builtin::Join => (
+                "join(xs, sep)",
+                "Joins a list of strings; non-string elements error.",
+            ),
+            Builtin::Trim => ("trim(s)", "The string without leading/trailing whitespace."),
+            Builtin::Contains => (
+                "contains(s, sub) / contains(xs, v)",
+                "Substring test, or list membership by structural equality.",
+            ),
+            Builtin::Replace => (
+                "replace(s, from, to)",
+                "All occurrences replaced; empty search string errors.",
+            ),
+            Builtin::StartsWith => ("starts_with(s, p)", "Whether s starts with prefix p."),
+            Builtin::EndsWith => ("ends_with(s, p)", "Whether s ends with suffix p."),
+            Builtin::Upper => ("upper(s)", "Unicode-aware uppercase."),
+            Builtin::Lower => ("lower(s)", "Unicode-aware lowercase."),
+            Builtin::Slice => (
+                "slice(x, lo, hi)",
+                "Sub-string (by chars) or fresh sub-list, half-open; negatives count from the end.",
+            ),
+            Builtin::Args => (
+                "args()",
+                "The command-line arguments after the script path.",
+            ),
+            Builtin::Input => (
+                "input()",
+                "One line from stdin without the newline; nil at end of input.",
+            ),
+            Builtin::ReadFile => (
+                "read_file(path)",
+                "The file's entire contents as a string; unreadable file errors.",
+            ),
+            Builtin::WriteFile => (
+                "write_file(path, s)",
+                "Writes (or overwrites) the file; returns nil.",
+            ),
+            Builtin::Sort => (
+                "sort(xs)",
+                "A fresh sorted list; all numbers or all strings, else error.",
+            ),
+            Builtin::SortBy => ("sort_by(xs, f)", "A fresh list sorted by key f(x), stable."),
+            Builtin::Try => (
+                "try(f)",
+                "Calls f(); {\"ok\": result} on success, {\"err\": message} on a runtime error.",
+            ),
+            Builtin::Fail => (
+                "fail(msg)",
+                "Raises a runtime error with the given string message.",
+            ),
+            Builtin::Map => ("map(xs, f)", "A fresh list of f(x) for each element."),
+            Builtin::Filter => (
+                "filter(xs, f)",
+                "A fresh list of the elements where f(x) is true (bool required).",
+            ),
+            Builtin::Reduce => ("reduce(xs, init, f)", "Folds left: f(f(init, x0), x1)..."),
+            Builtin::Min => (
+                "min(xs)",
+                "Smallest element; sort's ordering rules; empty list errors.",
+            ),
+            Builtin::Max => (
+                "max(xs)",
+                "Largest element; sort's ordering rules; empty list errors.",
+            ),
+            Builtin::Abs => ("abs(n)", "Absolute value of an int or float."),
+            Builtin::Assert => (
+                "assert(cond) / assert(cond, msg)",
+                "Errors unless cond is true (bool required).",
+            ),
+            Builtin::Import => (
+                "import(path)",
+                "Runs the file once and returns its top-level bindings as a map.",
+            ),
+            Builtin::Format => (
+                "format(fmt, ...)",
+                "Fills {} placeholders left-to-right; {{ and }} escape braces.",
+            ),
+            Builtin::JsonParse => (
+                "json_parse(s)",
+                "JSON text to ting values; malformed input errors with an offset.",
+            ),
+            Builtin::JsonStr => (
+                "json_str(v)",
+                "Ting value to compact JSON (map keys sorted).",
+            ),
+            Builtin::Env => (
+                "env(name)",
+                "The environment variable's value, or nil if unset.",
+            ),
+            Builtin::Exit => (
+                "exit() / exit(code)",
+                "Ends the program with that status (default 0); not catchable.",
+            ),
+            Builtin::TimeMs => ("time_ms()", "Milliseconds since the Unix epoch, as an int."),
+        }
+    }
+
     pub fn name(self) -> &'static str {
         match self {
             Builtin::Print => "print",

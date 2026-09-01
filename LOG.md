@@ -1413,3 +1413,17 @@ differential suite — green first try. Release archives now bundle
 lib/ next to the binary (tar and zip packaging updated), so
 `import("lib/list.ting")` works out of the box from a release
 download.
+
+---
+
+## 2026-09-01 — Iteration 68: LSP hover
+
+Builtin gains doc() — signature + one-line summary for all 43
+builtins — and the LSP serves textDocument/hover from it: the server
+now tracks open documents (didOpen/didChange update, didClose
+removes), finds the identifier under the cursor (scalar positions),
+and answers with markdown contents for builtin names, null otherwise.
+hoverProvider capability advertised. Test additions: hover over a
+keyword → null; hover over print → signature + markdown; the old
+MethodNotFound probe moved to textDocument/definition since hover is
+now real. Suite green.

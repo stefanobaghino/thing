@@ -75,10 +75,35 @@ fn lsp_session_lifecycle_and_diagnostics() {
     let cleared = recv(&mut reader);
     assert!(cleared.contains("\"diagnostics\":[]"), "{cleared}");
 
+    // Hover over "print" (line 0, inside the word) shows builtin docs.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":5,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///t.ting"},"position":{"line":0,"character":2}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(!hov.contains("let x = 1;"), "{hov}");
+    // The document is "let x = 1;": position 2 is inside "let" (a
+    // keyword, not a builtin) -> null result.
+    assert!(hov.contains("\"result\":null"), "{hov}");
+
+    // Replace with a builtin call and hover over it.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///t.ting","version":3},"contentChanges":[{"text":"print(1);"}]}}"#,
+    );
+    let _diag = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":6,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///t.ting"},"position":{"line":0,"character":2}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(hov.contains("print(...)"), "{hov}");
+    assert!(hov.contains("markdown"), "{hov}");
+
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":9,"method":"textDocument/hover","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":9,"method":"textDocument/definition","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");

@@ -7,7 +7,7 @@
 //! implement UTF-16 position encoding; for error underlines this is a
 //! benign approximation outside the astral planes).
 
-use crate::value::Value;
+use crate::value::{Builtin, Value};
 use crate::{compile, json, lexer, parser};
 use std::collections::BTreeMap;
 use std::io::{BufRead, Write};
@@ -119,12 +119,49 @@ fn publish(output: &mut impl Write, uri: &str, src: &str) {
     );
 }
 
+/// The identifier under a 0-based (line, character) position, if any.
+fn ident_at(src: &str, line: usize, character: usize) -> Option<String> {
+    let text = src.lines().nth(line)?;
+    let chars: Vec<char> = text.chars().collect();
+    let is_ident = |c: char| c.is_ascii_alphanumeric() || c == '_';
+    let mut start = character.min(chars.len());
+    while start > 0 && is_ident(chars[start - 1]) {
+        start -= 1;
+    }
+    let mut end = start;
+    while end < chars.len() && is_ident(chars[end]) {
+        end += 1;
+    }
+    if start == end {
+        return None;
+    }
+    Some(chars[start..end].iter().collect())
+}
+
+fn hover_result(src: &str, line: usize, character: usize) -> Value {
+    let Some(word) = ident_at(src, line, character) else {
+        return Value::Nil;
+    };
+    let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) else {
+        return Value::Nil;
+    };
+    let (sig, summary) = b.doc();
+    obj(vec![(
+        "contents",
+        obj(vec![
+            ("kind", s("markdown")),
+            ("value", s(&format!("```ting\n{sig}\n```\n\n{summary}"))),
+        ]),
+    )])
+}
+
 pub fn run() -> i32 {
     let stdin = std::io::stdin();
     let mut input = stdin.lock();
     let stdout = std::io::stdout();
     let mut output = stdout.lock();
     let mut shutdown_seen = false;
+    let mut docs: BTreeMap<String, String> = BTreeMap::new();
 
     while let Some(msg) = read_message(&mut input) {
         let method = get_str(&msg, "method").unwrap_or_default();
@@ -135,7 +172,10 @@ pub fn run() -> i32 {
                     (
                         "capabilities",
                         // 1 = full-text document sync on every change.
-                        obj(vec![("textDocumentSync", Value::Int(1))]),
+                        obj(vec![
+                            ("textDocumentSync", Value::Int(1)),
+                            ("hoverProvider", Value::Bool(true)),
+                        ]),
                     ),
                     (
                         "serverInfo",
@@ -171,6 +211,7 @@ pub fn run() -> i32 {
                     && let (Some(uri), Some(text)) = (get_str(&doc, "uri"), get_str(&doc, "text"))
                 {
                     publish(&mut output, &uri, &text);
+                    docs.insert(uri, text);
                 }
             }
             "textDocument/didChange" => {
@@ -189,7 +230,41 @@ pub fn run() -> i32 {
                     .and_then(|change| get_str(&change, "text"));
                 if let (Some(uri), Some(text)) = (uri, text) {
                     publish(&mut output, &uri, &text);
+                    docs.insert(uri, text);
                 }
+            }
+            "textDocument/didClose" => {
+                if let Some(uri) = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"))
+                {
+                    docs.remove(&uri);
+                }
+            }
+            "textDocument/hover" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let result = match (uri, line, character) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
+                        .get(&uri)
+                        .map(|src| hover_result(src, l.max(0) as usize, c.max(0) as usize))
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
             }
             // Requests we don't implement get a MethodNotFound error;
             // unknown notifications are ignored, per the spec.
