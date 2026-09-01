@@ -1581,3 +1581,25 @@ Milestone complete; version bumped, CHANGELOG updated, tag pushed.
 v1.5.0 over v1.4.0: the embedded stdlib with filesystem-first
 fallback, the playground stdlib example, and the stdlib docs page.
 Asset verification when the workflow finishes.
+
+**v1.5.0 verified:** release workflow green; three assets; deleted
+lib/ from the extracted archive and the shipped binary still imported
+the stdlib from its embedded copy; docs/stdlib.html live. Fifteenth
+release.
+
+---
+
+## 2026-09-01 — Replenishment: v1.6.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v1.6.0 — a formatter**. The one
+classic tool ting still lacks. Design constraints up front: it must
+preserve comments — an AST pretty-printer would eat them, so the
+formatter works on the token stream (the lexer grows a comment-keeping
+mode); and it must be provably safe — two guards: idempotence
+(fmt(fmt(x)) == fmt(x)) and semantic preservation
+(parse(before) and parse(after) render identical ASTs via the existing
+s-expression Display). Backlog: (1) comment-aware lexing; (2) the
+formatter: brace-depth indentation, canonical spacing, comment and
+blank-line preservation (capped at one); (3) `ting --fmt` (write) and
+`--fmt-check` (CI-friendly) + format the repo's own .ting files with
+it; (4) LSP documentFormatting; (5) release v1.6.0.
