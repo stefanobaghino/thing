@@ -20,10 +20,7 @@ release binaries on GitHub.
 Milestone **v1.0.0 — confidence** (designed in LOG.md replenishment
 entry, 2026-09-01):
 
-1. Doc-coverage guard: every Builtin::ALL name present in
-   docs/reference.md (like the grammar guard).
-2. README refresh (engines, changelog link, current numbers).
-3. Release v1.0.0.
+1. Release v1.0.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -158,6 +155,8 @@ green.
   unparseable and was dropped).
 - CI test-vm job: full suite with TING_ENGINE=vm (verified locally
   first).
+- Doc-coverage guard (tests/docs.rs) + README refreshed (engines,
+  43 builtins, links); 159 tests.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
