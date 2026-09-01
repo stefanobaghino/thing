@@ -775,3 +775,24 @@ v0.4.0, "expressiveness": map/filter/reduce/min/max/abs, assert + the
 self-hosted selftest/ suite (7 ting programs now), and import()
 modules. 37 builtins, 145 host tests. Asset verification follows when
 the release workflow finishes.
+
+**v0.5.0 verified:** release workflow green; three assets; darwin
+binary smoke-tested with a two-file program exercising import, map,
+reduce, assert — correct output.
+
+---
+
+## 2026-09-01 — Replenishment: v0.6.0 milestone
+
+Per LOOP.md "No idle". Chosen: **v0.6.0 — performance + polish**.
+Rationale: the language surface is now rich (37 builtins, modules,
+error recovery); the next real value is making it measurably fast and
+smoothing the edges people actually touch. Backlog: (1) a benchmark
+harness — ting benchmark scripts timed against the release binary, a
+baseline recorded in the repo so regressions are visible; (2) 1-2
+interpreter optimizations guided by those numbers (candidates:
+env-lookup cost, per-call Vec allocs, Value clone traffic — measure
+first, then pick); (3) playground share-by-URL (source encoded in the
+fragment — still fully static); (4) tutorial section on modules; (5)
+release. Bytecode VM stays parked: optimizations must be measured
+against the tree-walker before a rewrite earns its cost.
