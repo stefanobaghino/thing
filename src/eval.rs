@@ -25,7 +25,7 @@ fn error(message: impl Into<String>, span: Span) -> RuntimeError {
 /// and RefCell lets assignments through a closure be seen everywhere.
 #[derive(Debug)]
 pub struct Env {
-    vars: HashMap<String, Value>,
+    vars: HashMap<Rc<str>, Value>,
     parent: Option<Rc<RefCell<Env>>>,
 }
 
@@ -63,7 +63,7 @@ impl Env {
 /// A user-defined function: parameters, body, and the captured environment.
 #[derive(Debug)]
 pub struct Function {
-    pub params: Vec<String>,
+    pub params: Vec<Rc<str>>,
     pub body: Rc<Vec<Stmt>>,
     pub env: Rc<RefCell<Env>>,
 }
@@ -96,7 +96,7 @@ pub struct Interpreter<W: Write> {
 fn global_env() -> Rc<RefCell<Env>> {
     let mut globals = HashMap::new();
     for b in Builtin::ALL {
-        globals.insert(b.name().to_string(), Value::Builtin(b));
+        globals.insert(Rc::from(b.name()), Value::Builtin(b));
     }
     Rc::new(RefCell::new(Env {
         vars: globals,
@@ -157,7 +157,10 @@ impl<W: Write> Interpreter<W> {
         match &stmt.kind {
             StmtKind::Let(name, init) => {
                 let v = self.eval(init)?;
-                self.env.borrow_mut().vars.insert(name.clone(), v);
+                self.env
+                    .borrow_mut()
+                    .vars
+                    .insert(Rc::from(name.as_str()), v);
                 Ok(Control::Normal)
             }
             StmtKind::Assign(name, value) => {
@@ -201,11 +204,19 @@ impl<W: Write> Interpreter<W> {
                 Ok(Control::Normal)
             }
             StmtKind::Block(stmts) => {
-                let saved = Rc::clone(&self.env);
-                self.env = Env::child(&saved);
-                let result = self.run_block(stmts);
-                self.env = saved;
-                result
+                // Only a direct `let` (fn decls desugar to let) can bind
+                // into this block's scope; without one, a child env is
+                // pure allocation overhead — if/while bodies hit this on
+                // every entry (see bench/).
+                if stmts.iter().any(|s| matches!(s.kind, StmtKind::Let(..))) {
+                    let saved = Rc::clone(&self.env);
+                    self.env = Env::child(&saved);
+                    let result = self.run_block(stmts);
+                    self.env = saved;
+                    result
+                } else {
+                    self.run_block(stmts)
+                }
             }
             StmtKind::If(cond, then, els) => {
                 if as_bool(self.eval(cond)?, cond.span)? {
@@ -245,7 +256,10 @@ impl<W: Write> Interpreter<W> {
                     // body capture that iteration's binding.
                     let saved = Rc::clone(&self.env);
                     self.env = Env::child(&saved);
-                    self.env.borrow_mut().vars.insert(var.clone(), item);
+                    self.env
+                        .borrow_mut()
+                        .vars
+                        .insert(Rc::from(var.as_str()), item);
                     let result = self.exec(body);
                     self.env = saved;
                     match result? {
@@ -909,11 +923,11 @@ impl<W: Write> Interpreter<W> {
             // Builtins still bound to their own name are ambient, not
             // something the module defined.
             if let Value::Builtin(b) = v
-                && b.name() == name
+                && b.name() == name.as_ref()
             {
                 continue;
             }
-            exports.insert(name.clone(), v.clone());
+            exports.insert(name.to_string(), v.clone());
         }
         let map = Value::map(exports);
         self.import_cache.insert(resolved, map.clone());
@@ -959,10 +973,14 @@ impl<W: Write> Interpreter<W> {
                 span,
             ));
         }
-        let frame = Env::child(&func.env);
+        let mut vars = HashMap::with_capacity(func.params.len());
         for (p, a) in func.params.iter().zip(args) {
-            frame.borrow_mut().vars.insert(p.clone(), a);
+            vars.insert(Rc::clone(p), a);
         }
+        let frame = Rc::new(RefCell::new(Env {
+            vars,
+            parent: Some(Rc::clone(&func.env)),
+        }));
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
         let result = self.run_block(&func.body);
@@ -1026,7 +1044,7 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             ExprKind::Fn(params, body) => Ok(Value::Fn(Rc::new(Function {
-                params: params.clone(),
+                params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
                 body: Rc::clone(body),
                 env: Rc::clone(&self.env),
             }))),

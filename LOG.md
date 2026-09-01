@@ -811,3 +811,24 @@ Workloads were tuned so interpreter time dominates process startup
 machine: fib 295ms, lists 101ms, maps 112ms, strings 54ms. Not a CI
 gate — numbers are machine-relative; the checksums are the correctness
 tripwire. Next iteration profiles these and optimizes the top cost.
+
+---
+
+## 2026-09-01 — Iteration 36: measured optimization pass (~10%)
+
+Three changes, each kept only after measuring against bench/:
+
+1. Blocks with no direct `let` no longer allocate a child scope —
+   if/while bodies hit that on every entry (fib 295→279ms, maps
+   112→100ms).
+2. Call frames build their HashMap up front with capacity (no
+   measurable change alone — logged so it isn't retried).
+3. Env keys and Function params are `Rc<str>` instead of `String`:
+   binding a parameter is now an Rc clone, not a heap-allocating
+   String clone per call (fib →265ms, lists →92ms).
+
+Cumulative vs the recorded baseline: fib -10%, lists -9%, maps -10%,
+strings -8%; all checksums unchanged, 145 tests green. A `sample`
+profile guided change 3 (allocator frames visible; cost otherwise
+diffuse across eval/exec/call — noted as the honest argument for the
+parked bytecode VM, which stays parked). BASELINE.md regenerated.
