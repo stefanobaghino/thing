@@ -20,9 +20,7 @@ release binaries on GitHub.
 Milestone **v0.3.0 — ting as a practical scripting tool** (human
 directive 2026-09-01: keep building, never idle):
 
-1. Tutorial (docs/tutorial.md): a guided walk from hello to a real
-   script, kept honest by running every snippet.
-2. Release v0.3.0 (bump, tag, verify assets).
+1. Release v0.3.0 (bump, tag, verify assets).
 
 After v0.3.0: replenish per LOOP.md "No idle" — candidates already on
 the radar: WASM/browser playground (static page, runs client-side),
@@ -80,6 +78,8 @@ green.
   tests.
 - try(f)/fail(msg) error recovery as builtins (catches everything incl.
   stack overflow; interpreter stays usable); 29 builtins, 130 tests.
+- Executable tutorial (docs/tutorial.md, 9 standalone snippets) run and
+  output-diffed by tests/tutorial.rs; README updated; 131 tests.
 - v0.1.0 RELEASED: 3-platform binaries verified (downloaded darwin
   asset, ran examples). https://github.com/stefanobaghino/thing/releases/tag/v0.1.0
 
