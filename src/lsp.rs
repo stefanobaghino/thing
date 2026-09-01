@@ -219,6 +219,7 @@ pub fn run() -> i32 {
                             ("textDocumentSync", Value::Int(1)),
                             ("hoverProvider", Value::Bool(true)),
                             ("completionProvider", obj(vec![])),
+                            ("documentFormattingProvider", Value::Bool(true)),
                         ]),
                     ),
                     (
@@ -292,6 +293,52 @@ pub fn run() -> i32 {
                 let result = uri
                     .and_then(|u| docs.get(&u).map(|src| completion_result(src)))
                     .unwrap_or(Value::Nil);
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/formatting" => {
+                let uri = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let result = match uri.and_then(|u| docs.get(&u).cloned()) {
+                    Some(src) => match crate::fmt::format(&src) {
+                        Ok(formatted) if formatted != src => {
+                            // One edit replacing the whole document.
+                            let end_line = src.split('\n').count() as i64;
+                            Value::list(vec![obj(vec![
+                                (
+                                    "range",
+                                    obj(vec![
+                                        (
+                                            "start",
+                                            obj(vec![
+                                                ("line", Value::Int(0)),
+                                                ("character", Value::Int(0)),
+                                            ]),
+                                        ),
+                                        (
+                                            "end",
+                                            obj(vec![
+                                                ("line", Value::Int(end_line)),
+                                                ("character", Value::Int(0)),
+                                            ]),
+                                        ),
+                                    ]),
+                                ),
+                                ("newText", s(&formatted)),
+                            ])])
+                        }
+                        Ok(_) => Value::list(vec![]),
+                        Err(_) => Value::Nil,
+                    },
+                    None => Value::Nil,
+                };
                 write_message(
                     &mut output,
                     &obj(vec![

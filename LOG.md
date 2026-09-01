@@ -1636,3 +1636,14 @@ before re-running. Final reformat touched only comment alignment
 (aligned trailing comments become the canonical two spaces). The
 repo-wide guard now also asserts every .ting file IS formatted, so
 CI enforces the style from here on. 14 suites green.
+
+---
+
+## 2026-09-01 — Iteration 94: LSP documentFormatting
+
+textDocument/formatting wired to src/fmt.rs: one whole-document edit
+when the source isn't canonical, an empty edit list when it is, null
+when the source doesn't lex. documentFormattingProvider advertised.
+Pipe test covers both the edit and the already-formatted cases. The
+formatter is now reachable three ways: `ting --fmt`, `--fmt-check` in
+CI, and format-on-save in any LSP editor. Suite green.

@@ -109,9 +109,9 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
         Comma | Semi | Colon | RParen | RBracket | Dot => false,
         // `fn(`, `!(`, and unary `-(` stay tight.
         LParen | LBracket => {
-            !matches!(prev, LParen | LBracket | Fn | Bang)
-                && !(matches!(prev, Minus) && !prev2.map(value_like).unwrap_or(false))
-                && !value_like(prev)
+            !(matches!(prev, LParen | LBracket | Fn | Bang)
+                || (matches!(prev, Minus) && !prev2.map(value_like).unwrap_or(false))
+                || value_like(prev))
         }
         _ => match prev {
             LParen | LBracket | Dot => false,

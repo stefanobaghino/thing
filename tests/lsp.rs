@@ -118,10 +118,35 @@ fn lsp_session_lifecycle_and_diagnostics() {
     assert!(comp.contains("\"label\":\"while\""), "{comp}");
     assert!(comp.contains("\"label\":\"counter_total\""), "{comp}");
 
+    // Formatting: unformatted source yields one whole-document edit;
+    // canonical source yields no edits.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///t.ting","version":5},"contentChanges":[{"text":"let x=1+2;"}]}}"#,
+    );
+    let _diag = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":8,"method":"textDocument/formatting","params":{"textDocument":{"uri":"file:///t.ting"},"options":{}}}"#,
+    );
+    let fmt = recv(&mut reader);
+    assert!(fmt.contains("let x = 1 + 2;"), "{fmt}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///t.ting","version":6},"contentChanges":[{"text":"let x = 1 + 2;\n"}]}}"#,
+    );
+    let _diag = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":9,"method":"textDocument/formatting","params":{"textDocument":{"uri":"file:///t.ting"},"options":{}}}"#,
+    );
+    let fmt = recv(&mut reader);
+    assert!(fmt.contains("\"result\":[]"), "{fmt}");
+
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":9,"method":"textDocument/definition","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/definition","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");
