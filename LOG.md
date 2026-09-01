@@ -249,3 +249,26 @@ Design decisions (the big one first):
   (bigger `Value` enum → bigger frames). Fix: `.cargo/config.toml` sets
   `RUST_MIN_STACK=32MB` so test threads match main's interpreter thread,
   keeping MAX_DEPTH at 200.
+
+---
+
+## 2026-09-01 — Iteration 9: builtins
+
+Added 11 builtins: `print`, `len`, `push`, `pop`, `keys`, `has`, `str`,
+`int`, `float`, `type`, `range`. 7 new tests; suite is now 94.
+
+Decisions:
+- **Builtins are first-class values** (`Value::Builtin` enum variant)
+  pre-bound in the global scope — not parser keywords or call-site
+  special cases. The `print` hack from iteration 5 is gone. Consequences,
+  all tested: `let f = len;` works, shadowing works lexically and
+  un-shadows when the block ends, `type(len)` is `"function"`.
+- `push`/`pop` mutate in place (paying off iteration 8's reference
+  semantics); `pop` on an empty list is an error, matching the
+  language's strictness.
+- `int("abc")` is an error, not nil; `int(3.9)` truncates toward zero.
+- `range(n)`/`range(lo, hi)` materializes a list — no lazy iterators in
+  a tree-walker this size; half-open, empty when hi <= lo.
+- `keys` returns sorted keys for free via the BTreeMap decision.
+- Skipped `input()`/file I/O for now: the Interpreter would need a
+  reader handle; deferred until after the REPL exists.

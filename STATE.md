@@ -17,13 +17,12 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Builtins: `len`, `push`, type conversion, basic I/O.
-2. REPL with line editing (std-only; no deps).
-3. Diagnostics: spans in error messages, source excerpts.
-4. Example programs under `examples/`, run as integration tests.
-5. Language reference in `docs/`.
-6. GitHub Actions CI (build + test on push).
-7. Tagged release with prebuilt binaries.
+1. REPL with line editing (std-only; no deps).
+2. Diagnostics: spans in error messages, source excerpts.
+3. Example programs under `examples/`, run as integration tests.
+4. Language reference in `docs/`.
+5. GitHub Actions CI (build + test on push).
+6. Tagged release with prebuilt binaries.
 
 ## Done
 
@@ -47,6 +46,8 @@ release binaries on GitHub.
   cap 200, 32MB interpreter thread; 16 tests.
 - Maps (`{"k": v}`, string keys, BTreeMap) + index assignment incl.
   nested; lists/maps now reference types (Rc<RefCell>); 10 tests.
+- Builtins as first-class values: print, len, push, pop, keys, has,
+  str, int, float, type, range; 7 tests.
 
 ## Blockers
 

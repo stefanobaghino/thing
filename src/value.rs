@@ -21,6 +21,56 @@ pub enum Value {
     List(ListRef),
     Map(MapRef),
     Fn(Rc<Function>),
+    Builtin(Builtin),
+}
+
+/// Native functions, pre-bound in the global scope under their names
+/// (shadowable like any variable).
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Builtin {
+    Print,
+    Len,
+    Push,
+    Pop,
+    Keys,
+    Has,
+    Str,
+    Int,
+    Float,
+    Type,
+    Range,
+}
+
+impl Builtin {
+    pub const ALL: [Builtin; 11] = [
+        Builtin::Print,
+        Builtin::Len,
+        Builtin::Push,
+        Builtin::Pop,
+        Builtin::Keys,
+        Builtin::Has,
+        Builtin::Str,
+        Builtin::Int,
+        Builtin::Float,
+        Builtin::Type,
+        Builtin::Range,
+    ];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Builtin::Print => "print",
+            Builtin::Len => "len",
+            Builtin::Push => "push",
+            Builtin::Pop => "pop",
+            Builtin::Keys => "keys",
+            Builtin::Has => "has",
+            Builtin::Str => "str",
+            Builtin::Int => "int",
+            Builtin::Float => "float",
+            Builtin::Type => "type",
+            Builtin::Range => "range",
+        }
+    }
 }
 
 impl Value {
@@ -47,6 +97,7 @@ impl PartialEq for Value {
             }
             (Value::Map(a), Value::Map(b)) => Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow(),
             (Value::Fn(a), Value::Fn(b)) => Rc::ptr_eq(a, b),
+            (Value::Builtin(a), Value::Builtin(b)) => a == b,
             _ => false,
         }
     }
@@ -63,7 +114,7 @@ impl Value {
             Value::Nil => "nil",
             Value::List(_) => "list",
             Value::Map(_) => "map",
-            Value::Fn(_) => "function",
+            Value::Fn(_) | Value::Builtin(_) => "function",
         }
     }
 }
@@ -113,6 +164,7 @@ impl fmt::Display for Value {
                 f.write_str("}")
             }
             Value::Fn(func) => write!(f, "<fn({})>", func.params.join(", ")),
+            Value::Builtin(b) => write!(f, "<builtin {}>", b.name()),
         }
     }
 }

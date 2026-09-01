@@ -2,7 +2,7 @@
 
 use crate::ast::{BinaryOp, Expr, ExprKind, Stmt, StmtKind, UnaryOp};
 use crate::lexer::Span;
-use crate::value::Value;
+use crate::value::{Builtin, Value};
 use std::cell::RefCell;
 use std::collections::HashMap;
 use std::io::Write;
@@ -87,9 +87,13 @@ pub struct Interpreter<W: Write> {
 
 impl<W: Write> Interpreter<W> {
     pub fn new(out: W) -> Self {
+        let mut globals = HashMap::new();
+        for b in Builtin::ALL {
+            globals.insert(b.name().to_string(), Value::Builtin(b));
+        }
         Interpreter {
             env: Rc::new(RefCell::new(Env {
-                vars: HashMap::new(),
+                vars: globals,
                 parent: None,
             })),
             out,
@@ -200,6 +204,138 @@ impl<W: Write> Interpreter<W> {
         Env::get(&self.env, name)
     }
 
+    fn call_builtin(
+        &mut self,
+        b: Builtin,
+        args: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, RuntimeError> {
+        let arity = |lo: usize, hi: usize| -> Result<(), RuntimeError> {
+            if args.len() < lo || args.len() > hi {
+                let want = if lo == hi {
+                    format!("{lo}")
+                } else {
+                    format!("{lo} to {hi}")
+                };
+                Err(error(
+                    format!("{} expects {want} argument(s), got {}", b.name(), args.len()),
+                    span,
+                ))
+            } else {
+                Ok(())
+            }
+        };
+        match b {
+            Builtin::Print => {
+                let parts: Vec<String> = args.iter().map(|v| v.to_string()).collect();
+                writeln!(self.out, "{}", parts.join(" "))
+                    .map_err(|e| error(format!("print failed: {e}"), span))?;
+                Ok(Value::Nil)
+            }
+            Builtin::Len => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::List(items) => Ok(Value::Int(items.borrow().len() as i64)),
+                    Value::Str(s) => Ok(Value::Int(s.chars().count() as i64)),
+                    Value::Map(entries) => Ok(Value::Int(entries.borrow().len() as i64)),
+                    v => Err(error(format!("len does not apply to {}", v.type_name()), span)),
+                }
+            }
+            Builtin::Push => {
+                arity(2, 2)?;
+                match &args[0] {
+                    Value::List(items) => {
+                        items.borrow_mut().push(args[1].clone());
+                        Ok(Value::Nil)
+                    }
+                    v => Err(error(format!("push expects a list, got {}", v.type_name()), span)),
+                }
+            }
+            Builtin::Pop => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::List(items) => items
+                        .borrow_mut()
+                        .pop()
+                        .ok_or_else(|| error("pop from empty list", span)),
+                    v => Err(error(format!("pop expects a list, got {}", v.type_name()), span)),
+                }
+            }
+            Builtin::Keys => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Map(entries) => Ok(Value::list(
+                        entries.borrow().keys().cloned().map(Value::Str).collect(),
+                    )),
+                    v => Err(error(format!("keys expects a map, got {}", v.type_name()), span)),
+                }
+            }
+            Builtin::Has => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    (Value::Map(entries), Value::Str(k)) => {
+                        Ok(Value::Bool(entries.borrow().contains_key(k)))
+                    }
+                    (v, k) => Err(error(
+                        format!(
+                            "has expects a map and a string key, got {} and {}",
+                            v.type_name(),
+                            k.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Str => {
+                arity(1, 1)?;
+                Ok(Value::Str(args[0].to_string()))
+            }
+            Builtin::Int => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Int(n) => Ok(Value::Int(*n)),
+                    Value::Float(x) => Ok(Value::Int(*x as i64)),
+                    Value::Str(s) => s.trim().parse::<i64>().map(Value::Int).map_err(|_| {
+                        error(format!("cannot convert {s:?} to int"), span)
+                    }),
+                    v => Err(error(
+                        format!("cannot convert {} to int", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Float => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Int(n) => Ok(Value::Float(*n as f64)),
+                    Value::Float(x) => Ok(Value::Float(*x)),
+                    Value::Str(s) => s.trim().parse::<f64>().map(Value::Float).map_err(|_| {
+                        error(format!("cannot convert {s:?} to float"), span)
+                    }),
+                    v => Err(error(
+                        format!("cannot convert {} to float", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Type => {
+                arity(1, 1)?;
+                Ok(Value::Str(args[0].type_name().to_string()))
+            }
+            Builtin::Range => {
+                arity(1, 2)?;
+                let (lo, hi) = match args.as_slice() {
+                    [Value::Int(hi)] => (0, *hi),
+                    [Value::Int(lo), Value::Int(hi)] => (*lo, *hi),
+                    _ => {
+                        return Err(error("range expects int argument(s)", span));
+                    }
+                };
+                Ok(Value::list((lo..hi).map(Value::Int).collect()))
+            }
+        }
+    }
+
     fn call(&mut self, func: &Rc<Function>, args: Vec<Value>, span: Span) -> Result<Value, RuntimeError> {
         if args.len() != func.params.len() {
             return Err(error(
@@ -267,19 +403,6 @@ impl<W: Write> Interpreter<W> {
                 None => Err(error(format!("undefined variable '{name}'"), expr.span)),
             },
             ExprKind::Call(callee, args) => {
-                // `print` is a builtin unless shadowed by a variable.
-                if let ExprKind::Var(name) = &callee.kind
-                    && name == "print"
-                    && self.lookup("print").is_none()
-                {
-                    let mut parts = Vec::with_capacity(args.len());
-                    for a in args {
-                        parts.push(self.eval(a)?.to_string());
-                    }
-                    writeln!(self.out, "{}", parts.join(" "))
-                        .map_err(|e| error(format!("print failed: {e}"), expr.span))?;
-                    return Ok(Value::Nil);
-                }
                 let callee_v = self.eval(callee)?;
                 let mut arg_vals = Vec::with_capacity(args.len());
                 for a in args {
@@ -287,6 +410,7 @@ impl<W: Write> Interpreter<W> {
                 }
                 match callee_v {
                     Value::Fn(func) => self.call(&func, arg_vals, expr.span),
+                    Value::Builtin(b) => self.call_builtin(b, arg_vals, expr.span),
                     other => Err(error(
                         format!("{} is not callable", other.type_name()),
                         callee.span,
@@ -636,6 +760,64 @@ mod tests {
         assert_eq!(run("\"héllo\"[1]"), Value::Str("é".into()));
         assert_eq!(run_err("[1][5]"), "index 5 out of bounds (len 1)");
         assert_eq!(run_err("[1][-2]"), "index -2 out of bounds (len 1)");
+    }
+
+    #[test]
+    fn builtin_len() {
+        assert_eq!(output("print(len([1, 2, 3]), len(\"héllo\"), len({\"a\": 1}));"), "3 5 1\n");
+        assert_eq!(program_err("len(1);"), "len does not apply to int");
+    }
+
+    #[test]
+    fn builtin_push_and_pop() {
+        assert_eq!(
+            output("let xs = []; push(xs, 1); push(xs, 2); print(pop(xs), xs);"),
+            "2 [1]\n"
+        );
+        assert_eq!(program_err("pop([]);"), "pop from empty list");
+    }
+
+    #[test]
+    fn builtin_keys_and_has() {
+        assert_eq!(
+            output("let m = {\"b\": 1, \"a\": 2}; print(keys(m), has(m, \"a\"), has(m, \"z\"));"),
+            "[\"a\", \"b\"] true false\n"
+        );
+    }
+
+    #[test]
+    fn builtin_conversions() {
+        assert_eq!(
+            output("print(int(\"42\"), int(3.9), float(\"2.5\"), float(1), str(42) + \"!\");"),
+            "42 3 2.5 1.0 42!\n"
+        );
+        assert_eq!(program_err("int(\"abc\");"), "cannot convert \"abc\" to int");
+        assert_eq!(program_err("int([]);"), "cannot convert list to int");
+    }
+
+    #[test]
+    fn builtin_type_and_range() {
+        assert_eq!(
+            output("print(type(1), type(1.0), type(\"s\"), type(nil), type(len));"),
+            "int float string nil function\n"
+        );
+        assert_eq!(output("print(range(3), range(2, 5), range(5, 2));"), "[0, 1, 2] [2, 3, 4] []\n");
+    }
+
+    #[test]
+    fn builtins_are_values_and_shadowable() {
+        assert_eq!(output("let f = len; print(f(\"abc\"));"), "3\n");
+        assert_eq!(output("print(len);"), "<builtin len>\n");
+        assert_eq!(output("{ let len = 5; print(len); } print(len(\"ab\"));"), "5\n2\n");
+    }
+
+    #[test]
+    fn builtin_arity_errors() {
+        assert_eq!(program_err("len();"), "len expects 1 argument(s), got 0");
+        assert_eq!(
+            program_err("range(1, 2, 3);"),
+            "range expects 1 to 2 argument(s), got 3"
+        );
     }
 
     #[test]
