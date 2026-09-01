@@ -1,0 +1,51 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions:
+  contents: write
+
+jobs:
+  create:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Create release
+        run: >
+          gh release create "$GITHUB_REF_NAME" --title "ting $GITHUB_REF_NAME"
+          --notes "Prebuilt binaries below; or \`cargo build --release\` from source (zero dependencies). See docs/reference.md for the language and LOG.md for how this was built."
+        env:
+          GH_TOKEN: ${{ github.token }}
+
+  build:
+    needs: create
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: macos-latest
+            target: aarch64-apple-darwin
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Rust toolchain
+        run: rustup update stable && rustup default stable
+      - name: Build
+        run: cargo build --release
+      - name: Package (unix)
+        if: runner.os != 'Windows'
+        run: tar -czf "ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C target/release ting
+      - name: Package (windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path target/release/ting.exe -DestinationPath "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
+      - name: Upload
+        shell: bash
+        run: gh release upload "$GITHUB_REF_NAME" ting-*
+        env:
+          GH_TOKEN: ${{ github.token }}

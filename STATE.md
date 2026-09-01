@@ -55,7 +55,8 @@ release binaries on GitHub.
 - Language reference (docs/reference.md); README rewritten with a
   verified sample.
 - rustfmt applied tree-wide; CI (fmt+clippy+test, 3-OS matrix) on
-  push/PR. First run pending — confirm green before release.
+  push/PR. Green on all 3 OSes after a Windows CRLF golden-file fix
+  (.gitattributes eol=lf).
 
 ## Blockers
 
