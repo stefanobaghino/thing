@@ -939,3 +939,9 @@ bar; pages.yml assembles _site from playground/ + the two rendered
 docs; the playground header links them. Local render verified in a
 browser (screenshot: nav, tables, code blocks all correct). Live
 verification after this push's deploy.
+
+**Docs live-verified:** tutorial.html and reference.html serve on the
+Pages site with correct nav, tables, and code blocks; playground links
+them. Found and fixed one converter bug live: escaped pipes (`\|`) in
+table cells split the operators row — cells now split on unescaped
+pipes only.

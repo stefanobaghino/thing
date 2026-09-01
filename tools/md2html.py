@@ -89,7 +89,9 @@ def convert(md: str) -> str:
             flush_para()
             rows = []
             while i < len(lines) and lines[i].startswith("|"):
-                cells = [c.strip() for c in lines[i].strip("|").split("|")]
+                # Split on unescaped pipes only; \| is a literal pipe.
+                raw = re.split(r"(?<!\\)\|", lines[i].strip().strip("|"))
+                cells = [c.strip().replace("\\|", "|") for c in raw]
                 rows.append(cells)
                 i += 1
             i -= 1
