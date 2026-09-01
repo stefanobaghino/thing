@@ -1736,3 +1736,11 @@ recommends rlwrap for line editing and history — a zero-dependency
 binary can't do raw-mode editing itself, so pointing at the standard
 wrapper is the honest answer. All 14 suites green. v1.8.0's last task
 is the release.
+
+---
+
+## 2026-09-01 — Iteration 107: v1.8.0 released
+
+Milestone complete; version bumped, CHANGELOG updated, tag pushed.
+v1.8.0 over v1.7.0: lib/map.ting, the refreshed story, the rlwrap
+note. Asset verification when the workflow finishes.

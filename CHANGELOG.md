@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.8.0 — the second act (2026-09-01)
+
+- `lib/map.ting`: get-with-default, merge, items, from_items — the
+  stdlib's map gap, closed (embedded like the rest).
+- The website's story page now tells the full arc, VM redemption
+  included.
+- The reference recommends `rlwrap ting` for REPL line editing.
+
 ## v1.7.0 — finishing touches (2026-09-01)
 
 - Every ting snippet on the docs site now carries a "run it in the
