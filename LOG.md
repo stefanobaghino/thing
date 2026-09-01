@@ -1788,3 +1788,11 @@ mutual fn references through the module env, fail/format, int/float
 promotion — and runs identically on both engines via the golden
 runner + differential harness. Correct output first run; passes
 --fmt-check as written. 9 golden examples now.
+
+---
+
+## 2026-09-01 — Iteration 114: v1.9.0 released
+
+Milestone complete; version bumped, CHANGELOG updated, tag pushed.
+v1.9.0 over v1.8.0: fuzz grammar v2 and the calc.ting meta showcase.
+Asset verification when the workflow finishes.

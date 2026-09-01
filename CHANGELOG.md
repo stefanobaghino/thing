@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v1.9.0 — depth (2026-09-01)
+
+- Differential fuzzing generates a wider grammar (bounded loops,
+  try-expressions, string operations; 800 cases per run) — both
+  engines stay byte-identical.
+- `examples/calc.ting`: a small arithmetic language interpreted by
+  ting itself — tokenizer, parser, and evaluator in ting.
+
 ## v1.8.0 — the second act (2026-09-01)
 
 - `lib/map.ting`: get-with-default, merge, items, from_items — the
