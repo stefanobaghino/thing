@@ -17,26 +17,27 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-1. Parser: Pratt/precedence-climbing expression parser producing an AST.
-2. Evaluator: arithmetic, comparison, boolean logic on literals.
-3. Statements: `let`, assignment, blocks, `print`.
-4. Control flow: `if`/`else`, `while`.
-5. Functions and closures.
-6. Data: strings ops, lists, maps, indexing.
-7. Builtins: `len`, `push`, type conversion, basic I/O.
-8. REPL with line editing (std-only; no deps).
-9. Diagnostics: spans in error messages, source excerpts.
-10. Example programs under `examples/`, run as integration tests.
-11. Language reference in `docs/`.
-12. GitHub Actions CI (build + test on push).
-13. Tagged release with prebuilt binaries.
+1. Evaluator: arithmetic, comparison, boolean logic on literals.
+2. Statements: `let`, assignment, blocks, `print`.
+3. Control flow: `if`/`else`, `while`.
+4. Functions and closures.
+5. Data: strings ops, lists, maps, indexing.
+6. Builtins: `len`, `push`, type conversion, basic I/O.
+7. REPL with line editing (std-only; no deps).
+8. Diagnostics: spans in error messages, source excerpts.
+9. Example programs under `examples/`, run as integration tests.
+10. Language reference in `docs/`.
+11. GitHub Actions CI (build + test on push).
+12. Tagged release with prebuilt binaries.
 
 ## Done
 
 - Loop protocol designed (`LOOP.md`), state/log files created.
 - Crate bootstrapped: `ting` binary crate, MIT license, README, .gitignore.
 - Lexer (`src/lexer.rs`): full token set, spans, comments; 15 unit tests.
-  `ting <file>` currently dumps the token stream.
+- Parser (`src/parser.rs`) + AST (`src/ast.rs`): Pratt expression parser —
+  precedence, unary, calls, indexing, lists; 14 tests. `ting <file>`
+  currently parses one expression and prints the s-expression.
 
 ## Blockers
 

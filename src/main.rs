@@ -1,4 +1,6 @@
+mod ast;
 mod lexer;
+mod parser;
 
 use std::process::ExitCode;
 
@@ -25,18 +27,23 @@ fn run_file(path: &str) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
-    // Until the parser lands, running a file dumps its token stream.
-    match lexer::lex(&src) {
-        Ok(tokens) => {
-            for t in &tokens {
-                println!("{:?}", t.kind);
-            }
+    // Until the evaluator lands, running a file parses it as a single
+    // expression and dumps the AST as an s-expression.
+    let tokens = match lexer::lex(&src) {
+        Ok(tokens) => tokens,
+        Err(e) => return report(path, &src, &e.message, e.span),
+    };
+    match parser::parse_expr(&tokens) {
+        Ok(expr) => {
+            println!("{expr}");
             ExitCode::SUCCESS
         }
-        Err(e) => {
-            let (line, col) = e.span.line_col(&src);
-            eprintln!("{path}:{line}:{col}: error: {}", e.message);
-            ExitCode::FAILURE
-        }
+        Err(e) => report(path, &src, &e.message, e.span),
     }
+}
+
+fn report(path: &str, src: &str, message: &str, span: lexer::Span) -> ExitCode {
+    let (line, col) = span.line_col(src);
+    eprintln!("{path}:{line}:{col}: error: {message}");
+    ExitCode::FAILURE
 }

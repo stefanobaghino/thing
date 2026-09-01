@@ -77,3 +77,32 @@ Decisions:
 
 `main.rs` now runs a script file by dumping its token stream (placeholder
 until the parser lands). Smoke-tested on a sample script.
+
+---
+
+## 2026-09-01 — Iteration 3: expression parser
+
+Implemented `src/ast.rs` (spanned `Expr` tree, `Display` renders
+s-expressions for tests/debugging) and `src/parser.rs` (Pratt parser).
+Covers literals, variables, unary `-`/`!`, all binary operators with
+correct precedence (`||` < `&&` < equality < comparison < additive <
+multiplicative < unary < postfix), grouping, calls, indexing, and list
+literals with optional trailing comma. 14 parser tests; suite is now 29.
+
+Decisions:
+- **Binding-power Pratt loop** over recursive-descent per level: one
+  `expr_bp` function plus a `binop` table keeps precedence in one place.
+- **Postfix (call/index) parsed in a loop above `primary`**, so chains
+  like `f(1)(2)` and `m[k][0]` fall out naturally; call binds tighter
+  than unary minus (`-f(1)` = `(- (call f 1))`).
+- **`parse_expr` demands Eof** — trailing tokens are an error now;
+  statement parsing (next task, with `let`/blocks) will own the
+  program-level loop.
+- **Human-readable token names in errors** via `describe()`:
+  "expected ')', found end of input" instead of enum debug dumps.
+- `main.rs` temporarily parses a file as one expression and prints the
+  s-expression (replaces the token dump).
+
+Session note: the human restarted the session with permission bypass so
+the loop runs without approval pauses; the loop was re-entered via /loop
+and resumed from repo state exactly as designed.
