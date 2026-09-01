@@ -17,10 +17,19 @@ release binaries on GitHub.
 
 ## Now (next iteration picks from the top)
 
-Milestone **v0.6.0 — performance + polish** (designed in LOG.md
+Milestone **v0.7.0 — developer experience** (designed in LOG.md
 replenishment entry, 2026-09-01):
 
-1. Release v0.6.0 (bump, tag, verify assets).
+1. format(fmt, ...) builtin: {} placeholders filled left-to-right
+   ({{ and }} escape braces; count mismatch errors). Reference +
+   selftest coverage.
+2. TextMate grammar (editor/ting.tmLanguage.json) + editor/README.md
+   install steps for VS Code/Sublime/Zed. No marketplace.
+3. Playground syntax highlighting: small JS tokenizer + overlay;
+   verify via Playwright.
+4. Docs on Pages: tools/md2html.py (stdlib only) renders docs/ +
+   README into the site; pages.yml wires it in; playground links docs.
+5. Release v0.7.0.
 
 Maintenance runs alongside (never instead): watch issues/PRs, keep CI
 green.
@@ -112,6 +121,8 @@ green.
   open); browser-verified.
 - Tutorial modules section (self-contained write_file+import snippet;
   10 verified snippets).
+- v0.6.0 RELEASED and verified: 3 assets; darwin binary smoke-tested.
+  https://github.com/stefanobaghino/thing/releases/tag/v0.6.0
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
