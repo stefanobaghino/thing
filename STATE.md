@@ -263,7 +263,7 @@ green.
   tokens backticked) + docs guard test added (guard already caught
   one regression in CI).
 - find() builtin (44th).
-- v2.6.0 tagged; release run in flight — verify assets next wake.
+- v2.6.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0

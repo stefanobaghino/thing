@@ -2210,3 +2210,11 @@ v2.6.0.
 Usability release: find() builtin, REPL :help, markdown guard (which
 already caught one CI regression the day it landed). 14/14 suites,
 edge selftests green on both engines. Tagging v2.6.0 (26th release).
+
+---
+
+## 2026-09-02 — Iteration 153b: v2.6.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.6.0,
+find() returns 2 / nil as documented, :help lists the new builtin.
+26th release verified.
