@@ -89,7 +89,7 @@ fn print_help() {
     for (sig, text) in docs {
         println!("{sig:width$}  {text}");
     }
-    println!("(empty line cancels multi-line input, ctrl-d exits)");
+    println!("(:load <file> runs a file in this session; empty line cancels; ctrl-d exits)");
 }
 
 fn run_inner() -> ExitCode {
@@ -97,7 +97,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         println!(
-            "ting {} — :help lists builtins, empty line cancels, ctrl-d exits",
+            "ting {} — :help builtins, :load <file> runs a file here, ctrl-d exits",
             env!("CARGO_PKG_VERSION")
         );
     }
@@ -129,6 +129,20 @@ fn run_inner() -> ExitCode {
         // Meta-commands: only at the start of a fresh chunk.
         if buffer.is_empty() && line.trim() == ":help" {
             print_help();
+            continue;
+        }
+        if buffer.is_empty()
+            && let Some(path) = line.trim().strip_prefix(":load ")
+        {
+            match std::fs::read_to_string(path.trim()) {
+                Ok(src) => match eval_chunk(&mut interp, &src) {
+                    Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
+                    Outcome::Unit => {}
+                    Outcome::Value(v) => println!("{v}"),
+                    Outcome::Error(msg) => eprintln!("{msg}"),
+                },
+                Err(e) => eprintln!("ting: cannot read {path}: {e}"),
+            }
             continue;
         }
         buffer.push_str(&line);

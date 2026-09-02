@@ -123,3 +123,39 @@ fn repl_help_lists_builtins() {
     assert!(stdout.contains("\n2\n"), "{stdout}");
     assert_eq!(out.status.code(), Some(0));
 }
+
+#[test]
+fn repl_load_runs_a_file_into_the_session() {
+    use std::io::Write as _;
+    let dir = std::env::temp_dir();
+    let script = dir.join(format!("ting-load-{}.ting", std::process::id()));
+    std::fs::write(&script, "let base = 40;\n").unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(
+            format!(
+                ":load {}\nprint(base + 2);\n:load /missing.ting\n",
+                script.display()
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    // The loaded binding is visible to later lines.
+    assert!(stdout.contains("42"), "{stdout}");
+    // A bad path reports and the session survives (exit 0 on ctrl-d).
+    assert!(stderr.contains("cannot read /missing.ting"), "{stderr}");
+    assert_eq!(out.status.code(), Some(0));
+    let _ = std::fs::remove_file(&script);
+}

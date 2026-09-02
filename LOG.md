@@ -2218,3 +2218,15 @@ edge selftests green on both engines. Tagging v2.6.0 (26th release).
 Three archives published; darwin-arm64 cold test: ting 2.6.0,
 find() returns 2 / nil as documented, :help lists the new builtin.
 26th release verified.
+
+---
+
+## 2026-09-02 — Iteration 154: REPL :load
+
+Second REPL meta-command: :load path reads a file and evaluates it
+in the live session, so its bindings stay available for further
+lines — the iterate-against-a-script workflow. Read failures and
+incomplete programs report without killing the session; banner and
+:help mention it. Pipe test covers the happy path, the visible
+binding, and the bad-path survival. 14/14 suites. First stroke
+toward v2.7.0.
