@@ -250,6 +250,8 @@ green.
 - Perf health check: no regression vs BASELINE.md.
 - lib/math.ting (clamp/sign/pow/gcd/round/sqrt) — toward v2.4.0.
 - range(lo, hi, step) with negative steps (additive).
+- examples/stats.ting golden pair (dogfoods both). Release
+  v2.4.0 next tick if quiet.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
