@@ -274,7 +274,8 @@ green.
 - fmt button verified live via Playwright; ting_fmt doc corrected
   (token-stream formatter fails only on lex errors).
 - lib/map values/map_values.
-- lib/string split_once. Release v2.8.0 next tick if quiet.
+- lib/string split_once.
+- v2.8.0 tagged; release run in flight — verify assets next wake.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
