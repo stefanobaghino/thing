@@ -280,6 +280,7 @@ green.
 - LSP signatureHelp (9th capability).
 - read_file("-") reads stdin.
 - v2.9.0 RELEASED and verified; stdin pipe smoke-tested cold.
+- lib/test check_err — toward v2.10.0.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
