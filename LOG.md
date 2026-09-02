@@ -2428,3 +2428,12 @@ lib/math.ting gains floor/ceil with correct negative behavior
 (int() truncates toward zero; floor(-2.3) must be -3). Four
 selftest assertions covering fractional, exact-float, and plain-int
 inputs; stdlib.md rows. 14/14 suites. Second stroke toward v2.10.0.
+
+---
+
+## 2026-09-02 — Iteration 171: chunk
+
+lib/list.ting gains chunk(xs, n) — sublists of n, last may be
+shorter, zero/negative size fails. Four selftest assertions;
+stdlib.md row. 14/14 suites. Third stroke banked — v2.10.0 next
+tick if quiet.

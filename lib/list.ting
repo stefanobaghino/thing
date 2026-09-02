@@ -95,3 +95,19 @@ fn max_by(xs, key) {
   }
   return best;
 }
+
+# Split into sublists of n (the last may be shorter); n must be > 0.
+fn chunk(xs, n) {
+  if n <= 0 { fail("chunk: size must be positive"); }
+  let out = [];
+  let cur = [];
+  for x in xs {
+    push(cur, x);
+    if len(cur) == n {
+      push(out, cur);
+      cur = [];
+    }
+  }
+  if len(cur) > 0 { push(out, cur); }
+  return out;
+}

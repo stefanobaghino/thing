@@ -68,3 +68,8 @@ assert(ma["floor"](2.7) == 2 && ma["floor"](-2.3) == -3, "floor");
 assert(ma["floor"](5.0) == 5 && ma["floor"](-4.0) == -4, "floor exact");
 assert(ma["ceil"](2.3) == 3 && ma["ceil"](-2.7) == -2, "ceil");
 assert(ma["ceil"](5.0) == 5 && ma["ceil"](7) == 7, "ceil exact and int");
+
+assert(l["chunk"]([1, 2, 3, 4, 5], 2) == [[1, 2], [3, 4], [5]], "chunk with remainder");
+assert(l["chunk"]([1, 2], 5) == [[1, 2]], "chunk larger than list");
+assert(l["chunk"]([], 3) == [], "chunk empty");
+assert(has(try(fn() { return l["chunk"]([1], 0); }), "err"), "chunk zero size fails");

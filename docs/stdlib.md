@@ -26,6 +26,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
 | `max_by(xs, key)` | element with the largest `key(x)`; `nil` on empty |
+| `chunk(xs, n)` | sublists of `n` elements, last may be shorter |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 
 ## lib/string.ting
