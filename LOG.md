@@ -2252,3 +2252,11 @@ Eight selftest assertions; stdlib.md rows added. The module is
 embedded, so the new functions ride into the binary and wasm
 automatically. 14/14 suites. Third stroke banked — v2.7.0 next
 tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 157: v2.7.0
+
+REPL-and-stdlib release: :load, list any/all/min_by/max_by, docs
+tour of the toolchain. 14/14 suites, stdlib selftests green on both
+engines. Tagging v2.7.0 (27th release).

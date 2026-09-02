@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.7.0 (2026-09-02)
+
+- REPL: `:load <file>` evaluates a file in the live session, keeping
+  its bindings around to poke at.
+- `lib/list.ting`: `any`, `all`, `min_by`, `max_by`.
+- Docs: the reference documents both REPL meta-commands; the
+  tutorial closes with a "Beyond scripts" tour of the toolchain.
+
 ## v2.6.0 (2026-09-02)
 
 - `find(s, sub)` / `find(xs, v)`: 44th builtin — index of the first
