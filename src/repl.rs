@@ -81,12 +81,23 @@ pub fn run() -> ExitCode {
         .expect("REPL thread panicked")
 }
 
+/// `:help` — every builtin's signature and one-liner, in name order.
+fn print_help() {
+    let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
+    docs.sort();
+    let width = docs.iter().map(|(sig, _)| sig.len()).max().unwrap_or(0);
+    for (sig, text) in docs {
+        println!("{sig:width$}  {text}");
+    }
+    println!("(empty line cancels multi-line input, ctrl-d exits)");
+}
+
 fn run_inner() -> ExitCode {
     let stdin = std::io::stdin();
     let tty = stdin.is_terminal();
     if tty {
         println!(
-            "ting {} — empty line cancels multi-line input, ctrl-d exits",
+            "ting {} — :help lists builtins, empty line cancels, ctrl-d exits",
             env!("CARGO_PKG_VERSION")
         );
     }
@@ -113,6 +124,11 @@ fn run_inner() -> ExitCode {
         }
         if !buffer.is_empty() && line.trim().is_empty() {
             buffer.clear();
+            continue;
+        }
+        // Meta-commands: only at the start of a fresh chunk.
+        if buffer.is_empty() && line.trim() == ":help" {
+            print_help();
             continue;
         }
         buffer.push_str(&line);

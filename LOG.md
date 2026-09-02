@@ -2152,3 +2152,15 @@ strokes" — the post-2.0 rhythm (additive-only changes, docs move
 with features, the toolchain as product, re-verify everything) and
 the closing count updated 17 → 25 releases. 14/14 suites; Pages
 re-renders on push.
+
+---
+
+## 2026-09-02 — Iteration 150: REPL :help
+
+The REPL's first meta-command: :help prints all 43 builtins
+(signature + one-liner from Builtin::doc(), sorted, aligned) plus
+the session hints; banner mentions it. Only recognized at the start
+of a fresh chunk so a multi-line construct can't be hijacked. Pipe
+test proves the list appears and the session keeps evaluating
+afterwards. 14/14 suites. Reference Running section already says
+ctrl-d/multi-line; :help is discoverable from the banner.

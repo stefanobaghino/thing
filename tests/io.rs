@@ -100,3 +100,26 @@ fn check_flag_reports_without_running() {
     let _ = std::fs::remove_file(&good);
     let _ = std::fs::remove_file(&bad);
 }
+
+#[test]
+fn repl_help_lists_builtins() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":help\nprint(1 + 1);\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("abs(n)"), "{stdout}");
+    assert!(stdout.contains("json_str(v)"), "{stdout}");
+    // The session keeps working after :help.
+    assert!(stdout.contains("\n2\n"), "{stdout}");
+    assert_eq!(out.status.code(), Some(0));
+}
