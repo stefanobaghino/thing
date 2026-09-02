@@ -2437,3 +2437,11 @@ lib/list.ting gains chunk(xs, n) — sublists of n, last may be
 shorter, zero/negative size fails. Four selftest assertions;
 stdlib.md row. 14/14 suites. Third stroke banked — v2.10.0 next
 tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 172: v2.10.0
+
+Stdlib-depth release: check_err, floor/ceil, chunk. 14/14 suites,
+stdlib + testlib selftests green on the reference engine. Tagging
+v2.10.0 (30th release).

@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.10.0 (2026-09-02)
+
+- `lib/test.ting`: `check_err(name, f, want)` — error-path testing
+  with distinct failure messages for wrong-error vs no-error.
+- `lib/math.ting`: `floor`, `ceil` (correct on negatives, where
+  `int()` truncation differs).
+- `lib/list.ting`: `chunk(xs, n)`.
+
 ## v2.9.0 (2026-09-02)
 
 - `read_file("-")` reads stdin to EOF, so ting scripts compose in
