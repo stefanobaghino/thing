@@ -2314,3 +2314,13 @@ lib/map.ting grows values(m) (sorted key order, matching keys and
 items) and map_values(m, f) (fresh map, original untouched — pinned
 by a selftest since maps are reference types). Four assertions;
 stdlib.md rows. 14/14 suites. Second stroke toward v2.8.0.
+
+---
+
+## 2026-09-02 — Iteration 162: split_once
+
+lib/string.ting gains split_once(s, sep) — [before, after] around
+the first separator, nil when absent — built on the find builtin
+from v2.6 (char indices, so the multibyte selftest passes without
+special handling). Three assertions; stdlib.md row. 14/14 suites.
+Third stroke banked — v2.8.0 next tick if quiet.

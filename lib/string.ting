@@ -30,3 +30,10 @@ fn title(s) {
   }
   return join(out, " ");
 }
+
+# [before, after] around the first separator, or nil if absent.
+fn split_once(s, sep) {
+  let i = find(s, sep);
+  if i == nil { return nil; }
+  return [slice(s, 0, i), slice(s, i + len(sep), len(s))];
+}

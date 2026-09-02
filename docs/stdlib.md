@@ -37,6 +37,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `pad_right(s, width, fill)` | appends `fill` until at least `width` chars |
 | `lines(s)` | split on `"\n"` |
 | `title(s)` | first character of each space-separated word uppercased |
+| `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 
 ## lib/map.ting
 

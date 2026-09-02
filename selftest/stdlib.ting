@@ -59,3 +59,7 @@ assert(m["map_values"]({"a": 1, "b": 2}, fn(v) { return v * 10; }) == {"a": 10, 
 let orig = {"a": 1};
 let mapped = m["map_values"](orig, fn(v) { return v + 1; });
 assert(orig == {"a": 1} && mapped == {"a": 2}, "map_values leaves original alone");
+
+assert(s["split_once"]("key=value=more", "=") == ["key", "value=more"], "split_once first only");
+assert(s["split_once"]("no separator", "=") == nil, "split_once miss is nil");
+assert(s["split_once"]("héllo::wörld", "::") == ["héllo", "wörld"], "split_once multibyte");
