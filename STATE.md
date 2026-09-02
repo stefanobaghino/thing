@@ -277,6 +277,8 @@ green.
 - lib/string split_once.
 - v2.8.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - Changelog page live on the site (verified); toward v2.9.0.
+- LSP signatureHelp (9th capability). Release tick: refresh the
+  reference Tooling capability list again.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
