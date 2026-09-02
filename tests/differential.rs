@@ -313,7 +313,7 @@ impl Gen {
                 self.expr(depth - 1),
                 // Step in [-2, 2] \ {0}: negative steps and empty spans
                 // both get exercised.
-                ["-2", "-1", "1", "2"][self.rng.below(4) as usize]
+                ["-2", "-1", "1", "2"][self.rng.below(4)]
             ),
             _ => format!("-({})", self.expr(depth - 1)),
         }

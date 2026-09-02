@@ -2573,3 +2573,14 @@ included), so post-2.5 builtins get differential coverage instead
 of riding on hand-written tests alone. CI's fixed-seed corpus
 regenerates cleanly; three fresh 10k sweeps over the wider grammar
 found zero divergences. 14/14 suites.
+
+---
+
+## 2026-09-03 — Iteration 182b: clippy fix
+
+CI red on 182: rng.below already returns usize, so the `as usize`
+in the new step table tripped clippy's unnecessary_cast under
+-D warnings on the three platform jobs (test-eval passed — it runs
+tests, not clippy). The local pre-push chain ran fmt + tests but
+skipped clippy this once; cast removed, clippy clean again. Rule
+restated: fmt, clippy, AND test before every push, no exceptions.
