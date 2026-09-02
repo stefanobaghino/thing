@@ -59,7 +59,9 @@ pub unsafe extern "C" fn ting_run(ptr: *const u8, len: usize) -> i32 {
 }
 
 /// Format the source instead of running it: 1 and the formatted text
-/// on success, 0 and a rendered diagnostic when it doesn't parse.
+/// on success, 0 and a rendered diagnostic when it doesn't lex. The
+/// formatter is token-stream based (like `--fmt`), so input that
+/// lexes but doesn't parse still formats.
 ///
 /// # Safety
 /// Same contract as `ting_run`.

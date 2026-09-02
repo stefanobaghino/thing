@@ -2293,3 +2293,15 @@ test corrected mid-flight: the formatter preserves same-line
 statement grouping, expectation fixed to match its real contract.
 Verified through the actual wasm build in Node. 14/14 suites.
 First stroke toward v2.8.0.
+
+---
+
+## 2026-09-02 — Iteration 160: fmt button verified live
+
+Playwright against the deployed playground: messy source + fmt
+click → editor rewritten to canonical form, status "formatted".
+Probing the error path surfaced a doc inaccuracy, not a bug: the
+token-stream formatter (by design, same as --fmt on the CLI —
+verified side by side) formats input that lexes but doesn't parse;
+only lex errors produce a diagnostic. ting_fmt's comment corrected
+to say so. Suite untouched elsewhere.
