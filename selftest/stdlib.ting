@@ -43,3 +43,12 @@ assert(abs(ma["sqrt"](2) - 1.4142135623730951) < 0.0000000001, "sqrt 2");
 assert(ma["sqrt"](0) == 0.0, "sqrt zero");
 assert(ma["sqrt"](144) == 12.0, "sqrt exact");
 assert(has(try(fn() { return ma["sqrt"](-1); }), "err"), "sqrt rejects negative");
+
+assert(l["any"]([1, 2, 3], fn(x) { return x > 2; }), "any hit");
+assert(!l["any"]([], fn(x) { return true; }), "any empty is false");
+assert(l["all"]([2, 4], fn(x) { return x % 2 == 0; }), "all hit");
+assert(!l["all"]([2, 3], fn(x) { return x % 2 == 0; }), "all miss");
+assert(l["all"]([], fn(x) { return false; }), "all empty is true");
+assert(l["min_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "b", "min_by");
+assert(l["max_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "aaa", "max_by");
+assert(l["min_by"]([], fn(x) { return x; }) == nil, "min_by empty is nil");

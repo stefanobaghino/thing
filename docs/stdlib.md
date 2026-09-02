@@ -22,6 +22,10 @@ Imports return a map, so functions are reached with `["name"]`.
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
+| `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
+| `all(xs, pred)` | true if `pred` holds for every element (true on empty) |
+| `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
+| `max_by(xs, key)` | element with the largest `key(x)`; `nil` on empty |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 
 ## lib/string.ting

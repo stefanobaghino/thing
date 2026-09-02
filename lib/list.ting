@@ -51,3 +51,47 @@ fn flatten(xs) {
   }
   return out;
 }
+
+fn any(xs, pred) {
+  for x in xs {
+    if pred(x) { return true; }
+  }
+  return false;
+}
+
+fn all(xs, pred) {
+  for x in xs {
+    if !pred(x) { return false; }
+  }
+  return true;
+}
+
+# Element with the smallest key(x); nil for an empty list.
+fn min_by(xs, key) {
+  if len(xs) == 0 { return nil; }
+  let best = xs[0];
+  let best_k = key(best);
+  for x in xs {
+    let k = key(x);
+    if k < best_k {
+      best = x;
+      best_k = k;
+    }
+  }
+  return best;
+}
+
+# Element with the largest key(x); nil for an empty list.
+fn max_by(xs, key) {
+  if len(xs) == 0 { return nil; }
+  let best = xs[0];
+  let best_k = key(best);
+  for x in xs {
+    let k = key(x);
+    if k > best_k {
+      best = x;
+      best_k = k;
+    }
+  }
+  return best;
+}

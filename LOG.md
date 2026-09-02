@@ -2241,3 +2241,14 @@ REPL meta-commands, --check, --fmt, and the LSP, with links to the
 reference and stdlib pages. 14/14 suites (tutorial harness ignores
 prose-only sections; docs guards green). Second stroke toward
 v2.7.0.
+
+---
+
+## 2026-09-02 — Iteration 156: list predicates
+
+lib/list.ting grows any/all (with the conventional empty-list
+identities) and min_by/max_by (nil on empty, first-wins on ties).
+Eight selftest assertions; stdlib.md rows added. The module is
+embedded, so the new functions ride into the binary and wasm
+automatically. 14/14 suites. Third stroke banked — v2.7.0 next
+tick if quiet.
