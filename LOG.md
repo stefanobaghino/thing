@@ -2124,3 +2124,14 @@ test pins 3 edits and the invalid-name rejection. 14/14 suites.
 Second stroke toward v2.5.0. Note: reference.md's Tooling section
 now undersells the LSP (6 listed, 8 real) — update it with the
 release tick.
+
+---
+
+## 2026-09-02 — Iteration 148: v2.5.0
+
+Editor-tooling release two: find-references + rename + the Tooling
+section refreshed to the full 8-capability list. 14/14 suites, both
+engines spot-checked. Tagging v2.5.0 (25th release). Watcher
+pattern changed from this tick: verdicts come from gh run view
+after the watch, never from gh run watch's exit code (five
+transient connection-reset false alarms to date).

@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.5.0 (2026-09-02)
+
+- LSP: `textDocument/references` — every occurrence of the
+  identifier under the cursor (token-level).
+- LSP: `textDocument/rename` — a WorkspaceEdit over those same
+  occurrences; invalid new names are rejected.
+- Reference: Tooling section updated with the full LSP capability
+  list.
+
 ## v2.4.0 (2026-09-02)
 
 - `lib/math.ting`: fifth stdlib module — `clamp`, `sign`, `pow`,
