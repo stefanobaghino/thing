@@ -251,8 +251,8 @@ green.
 - lib/math.ting (clamp/sign/pow/gcd/round/sqrt) — toward v2.4.0.
 - range(lo, hi, step) with negative steps (additive).
 - examples/stats.ting golden pair (dogfoods both).
-- v2.4.0 tagged (math + stepped range + stats); release run in
-  flight — verify assets next wake.
+- v2.4.0 RELEASED and verified (math + stepped range + stats);
+  darwin-arm64 asset smoke-tested cold incl. bundled math module.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0

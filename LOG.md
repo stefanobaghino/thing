@@ -2083,3 +2083,11 @@ suites. Third stroke banked; v2.4.0 next tick if quiet.
 
 Numbers release: lib/math.ting, range(lo, hi, step), stats example.
 14/14 suites, eval spot-checks green. Tagging v2.4.0 (24th release).
+
+---
+
+## 2026-09-02 — Iteration 144b: v2.4.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.4.0,
+pow(2,16)=65536 via bundled lib/math.ting, range(9,0,-3)=[9,6,3],
+five lib files in the archive. 24th release verified.
