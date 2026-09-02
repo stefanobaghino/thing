@@ -27,7 +27,7 @@
       "patterns": [
         {
           "name": "constant.character.escape.ting",
-          "match": "\\\\[nt\\\\\"]"
+          "match": "\\\\[ntr\\\\\"]"
         },
         {
           "name": "invalid.illegal.escape.ting",

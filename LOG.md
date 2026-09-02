@@ -2476,3 +2476,13 @@ lib/string.ting gains trim_start/trim_end over the
 space/tab/newline/CR set, with four selftest assertions and
 stdlib.md rows. 14/14 suites incl. formatter idempotence over the
 new escape. Second stroke toward v2.11.0.
+
+---
+
+## 2026-09-02 — Iteration 175: grammar escape sync
+
+Follow-through on 174: the TextMate grammar still marked \r as
+invalid.illegal. Fixed the escape char class and added a guard to
+tests/grammar.rs pinning grammar and lexer escape sets together
+(every escape in the class must lex). 14/14 suites. Third stroke
+banked — v2.11.0 next tick if quiet.
