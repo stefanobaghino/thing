@@ -2164,3 +2164,17 @@ of a fresh chunk so a multi-line construct can't be hijacked. Pipe
 test proves the list appears and the session keeps evaluating
 afterwards. 14/14 suites. Reference Running section already says
 ctrl-d/multi-line; :help is discoverable from the banner.
+
+---
+
+## 2026-09-02 — Iteration 151: markdown bare-tag guard
+
+A human reported the log page rendered broken: iteration 42's entry
+contained a bare <code>pre</code> tag-shaped token that GitHub's
+renderer treated as an opened HTML block, swallowing the rest of
+LOG.md; five more tag-shaped generics were being silently stripped
+elsewhere. Fixed by backticking (previous commit), and this tick
+turns the bug into a guard: tests/docs.rs now scans all repo
+markdown (README/LOG/STATE/LOOP/CHANGELOG/docs) for tag-shaped
+tokens outside code fences and inline backticks. Guard is green on
+the fixed tree and fails on the pre-fix tree. 14/14 suites.
