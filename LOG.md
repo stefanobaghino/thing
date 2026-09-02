@@ -2495,3 +2495,11 @@ Strings-and-sync release: \r escape, trim_start/trim_end, grammar
 escape guard, README refresh. 14/14 suites, string + stdlib
 selftests green on the reference engine. Tagging v2.11.0 (31st
 release).
+
+---
+
+## 2026-09-02 — Iteration 176b: v2.11.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.11.0, the
+\r escape lexes (len 1) and trim_end strips it. 31 releases, all
+verified.
