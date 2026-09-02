@@ -52,3 +52,10 @@ assert(l["all"]([], fn(x) { return false; }), "all empty is true");
 assert(l["min_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "b", "min_by");
 assert(l["max_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "aaa", "max_by");
 assert(l["min_by"]([], fn(x) { return x; }) == nil, "min_by empty is nil");
+
+assert(m["values"]({"b": 2, "a": 1}) == [1, 2], "values sorted by key");
+assert(m["values"]({}) == [], "values empty");
+assert(m["map_values"]({"a": 1, "b": 2}, fn(v) { return v * 10; }) == {"a": 10, "b": 20}, "map_values");
+let orig = {"a": 1};
+let mapped = m["map_values"](orig, fn(v) { return v + 1; });
+assert(orig == {"a": 1} && mapped == {"a": 2}, "map_values leaves original alone");

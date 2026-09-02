@@ -2305,3 +2305,12 @@ token-stream formatter (by design, same as --fmt on the CLI —
 verified side by side) formats input that lexes but doesn't parse;
 only lex errors produce a diagnostic. ting_fmt's comment corrected
 to say so. Suite untouched elsewhere.
+
+---
+
+## 2026-09-02 — Iteration 161: map values helpers
+
+lib/map.ting grows values(m) (sorted key order, matching keys and
+items) and map_values(m, f) (fresh map, original untouched — pinned
+by a selftest since maps are reference types). Four assertions;
+stdlib.md rows. 14/14 suites. Second stroke toward v2.8.0.

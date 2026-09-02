@@ -24,3 +24,17 @@ fn from_items(pairs) {
   for p in pairs { out[p[0]] = p[1]; }
   return out;
 }
+
+# Values in sorted key order (matching keys() and items()).
+fn values(m) {
+  let out = [];
+  for k in m { push(out, m[k]); }
+  return out;
+}
+
+# A fresh map with f applied to every value.
+fn map_values(m, f) {
+  let out = {};
+  for k in m { out[k] = f(m[k]); }
+  return out;
+}

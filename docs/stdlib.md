@@ -46,6 +46,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `merge(a, b)` | a fresh map with `a`'s entries then `b`'s (`b` wins ties) |
 | `items(m)` | list of `[key, value]` pairs in sorted key order |
 | `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
+| `values(m)` | values in sorted key order |
+| `map_values(m, f)` | a fresh map with `f` applied to every value |
 
 ## lib/math.ting
 
