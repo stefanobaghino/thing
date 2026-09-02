@@ -38,3 +38,21 @@ fn map_values(m, f) {
   for k in m { out[k] = f(m[k]); }
   return out;
 }
+
+# A fresh map with only the listed keys (missing keys are skipped).
+fn pick(m, ks) {
+  let out = {};
+  for k in ks {
+    if has(m, k) { out[k] = m[k]; }
+  }
+  return out;
+}
+
+# A fresh map without the listed keys.
+fn omit(m, ks) {
+  let out = {};
+  for k in m {
+    if !contains(ks, k) { out[k] = m[k]; }
+  }
+  return out;
+}

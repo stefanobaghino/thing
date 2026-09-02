@@ -2596,3 +2596,12 @@ the working rhythm (with the hard-won rules: fmt+clippy+test before
 every push, API-verified CI verdicts, cold-download release
 verification), and the current position. Orientation is now one
 screen. Docs guards green.
+
+---
+
+## 2026-09-03 — Iteration 184: pick and omit
+
+lib/map.ting gains pick(m, ks) (missing keys skipped) and
+omit(m, ks), both fresh maps. Four selftest assertions; stdlib.md
+rows. Full gate (fmt + clippy + 14/14 suites) before push, per the
+freshly written rule. Second stroke toward v2.13.0.
