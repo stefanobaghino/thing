@@ -2357,3 +2357,16 @@ after the Pages deploy.
 
 curl against the deployed site: changelog.html serves v2.8.0
 through v0.1.0, and the nav on other pages links to it. Verified.
+
+---
+
+## 2026-09-02 — Iteration 165: LSP signature help
+
+Ninth LSP capability: textDocument/signatureHelp — scans left for
+the innermost unclosed paren on the line, resolves the identifier
+before it, and serves the builtin's signature + doc line (trigger
+characters "(" and ","). Nested calls resolve to the inner callee
+(pinned by test); outside a call, null. Probe moved to
+typeDefinition. Reference Tooling line already says "and rename" —
+update the list at the release tick. 14/14 suites. Second stroke
+toward v2.9.0.

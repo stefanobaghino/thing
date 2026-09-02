@@ -287,6 +287,53 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
     )])
 }
 
+/// Signature help inside a call: scan left from the cursor for the
+/// innermost unclosed '(' , take the identifier before it, and if
+/// it's a builtin return its signature and doc line.
+fn signature_help_result(src: &str, line: usize, character: usize) -> Value {
+    let Some(text) = src.lines().nth(line) else {
+        return Value::Nil;
+    };
+    let chars: Vec<char> = text.chars().collect();
+    let upto = character.min(chars.len());
+    let mut depth = 0i32;
+    let mut open = None;
+    for i in (0..upto).rev() {
+        match chars[i] {
+            ')' => depth += 1,
+            '(' if depth > 0 => depth -= 1,
+            '(' => {
+                open = Some(i);
+                break;
+            }
+            _ => {}
+        }
+    }
+    let Some(open) = open else {
+        return Value::Nil;
+    };
+    // Identifier ending right before the '('.
+    let mut start = open;
+    while start > 0 && (chars[start - 1].is_ascii_alphanumeric() || chars[start - 1] == '_') {
+        start -= 1;
+    }
+    let word: String = chars[start..open].iter().collect();
+    let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) else {
+        return Value::Nil;
+    };
+    let (sig, summary) = b.doc();
+    obj(vec![
+        (
+            "signatures",
+            Value::list(vec![obj(vec![
+                ("label", s(sig)),
+                ("documentation", s(summary)),
+            ])]),
+        ),
+        ("activeSignature", Value::Int(0)),
+    ])
+}
+
 const KEYWORDS: &[&str] = &[
     "let", "fn", "if", "else", "while", "for", "in", "break", "continue", "return", "true",
     "false", "nil",
@@ -356,6 +403,13 @@ pub fn run() -> i32 {
                             ("definitionProvider", Value::Bool(true)),
                             ("referencesProvider", Value::Bool(true)),
                             ("renameProvider", Value::Bool(true)),
+                            (
+                                "signatureHelpProvider",
+                                obj(vec![(
+                                    "triggerCharacters",
+                                    Value::list(vec![s("("), s(",")]),
+                                )]),
+                            ),
                         ]),
                     ),
                     (
@@ -514,6 +568,31 @@ pub fn run() -> i32 {
                                 &new_name,
                             )
                         })
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/signatureHelp" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let result = match (uri, line, character) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
+                        .get(&uri)
+                        .map(|src| signature_help_result(src, l.max(0) as usize, c.max(0) as usize))
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,
                 };

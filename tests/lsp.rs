@@ -146,7 +146,7 @@ fn lsp_session_lifecycle_and_diagnostics() {
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/signatureHelp","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/typeDefinition","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");
@@ -316,6 +316,49 @@ fn rename_produces_a_workspace_edit() {
     );
     let bad = recv(&mut reader);
     assert!(bad.contains("\"result\":null"), "{bad}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
+fn signature_help_inside_a_builtin_call() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"signatureHelpProvider\""), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///g.ting","text":"print(slice(\"abc\", 1, 2));\n"}}}"#,
+    );
+    let _diags = recv(&mut reader);
+
+    // Cursor just after "slice(" — nested call resolves to slice, not print.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///g.ting"},"position":{"line":0,"character":12}}}"#,
+    );
+    let sig = recv(&mut reader);
+    assert!(sig.contains("slice("), "{sig}");
+    assert!(sig.contains("\"activeSignature\":0"), "{sig}");
+
+    // Outside any call: null.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///g.ting"},"position":{"line":0,"character":0}}}"#,
+    );
+    let none = recv(&mut reader);
+    assert!(none.contains("\"result\":null"), "{none}");
 
     send(
         &mut stdin,
