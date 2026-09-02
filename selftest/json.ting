@@ -24,3 +24,8 @@ assert(json_parse(json_str(doc2, 4)) == doc2, "pretty round trip");
 assert(json_str(doc2, 0) != json_str(doc2), "indent 0 still multiline");
 let badindent = try(fn() { return json_str(doc2, "x"); });
 assert(contains(badindent["err"], "indent"), "indent type checked");
+
+# Control characters round-trip (\r expressible in source since 2.11).
+assert(json_str("a\r\n\tb") == "\"a\\r\\n\\tb\"", "control chars escaped");
+assert(json_parse(json_str("a\r\n\tb")) == "a\r\n\tb", "control chars round trip");
+assert(json_parse("\"\\u000d\"") == "\r", "unicode escape for CR");

@@ -2503,3 +2503,14 @@ release).
 Three archives published; darwin-arm64 cold test: ting 2.11.0, the
 \r escape lexes (len 1) and trim_end strips it. 31 releases, all
 verified.
+
+---
+
+## 2026-09-02 — Iteration 177: JSON control-char pins
+
+Small coverage stroke enabled by 174: with the CR escape now
+expressible in source, selftest/json.ting pins that json_str
+escapes control characters, that they round-trip through
+json_parse, and that the JSON unicode escape u000d decodes to a
+carriage return. All held on both engines already — pure
+regression insurance. 14/14 suites. First stroke toward v2.12.0.
