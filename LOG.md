@@ -2350,3 +2350,10 @@ changelog.html (and triggers on changes to it), md2html's nav gains
 the link. Rendered locally to confirm markdown converts cleanly.
 14/14 suites. First stroke toward v2.9.0; verify the live page
 after the Pages deploy.
+
+---
+
+## 2026-09-02 — Iteration 164b: changelog live
+
+curl against the deployed site: changelog.html serves v2.8.0
+through v0.1.0, and the nav on other pages links to it. Verified.
