@@ -2486,3 +2486,12 @@ invalid.illegal. Fixed the escape char class and added a guard to
 tests/grammar.rs pinning grammar and lexer escape sets together
 (every escape in the class must lex). 14/14 suites. Third stroke
 banked — v2.11.0 next tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 176: v2.11.0
+
+Strings-and-sync release: \r escape, trim_start/trim_end, grammar
+escape guard, README refresh. 14/14 suites, string + stdlib
+selftests green on the reference engine. Tagging v2.11.0 (31st
+release).

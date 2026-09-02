@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.11.0 (2026-09-02)
+
+- Strings accept the `\r` escape (previously a carriage return was
+  inexpressible in source); the TextMate grammar and a new sync
+  guard follow.
+- `lib/string.ting`: `trim_start`, `trim_end`.
+- README brought up to date with the current feature set.
+
 ## v2.10.0 (2026-09-02)
 
 - `lib/test.ting`: `check_err(name, f, want)` — error-path testing
