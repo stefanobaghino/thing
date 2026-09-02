@@ -2536,3 +2536,11 @@ both returning fresh lists with range checks that fail loudly.
 Eight selftest assertions incl. the originals-untouched pin (lists
 are reference types) and both range errors; stdlib.md rows. 14/14
 suites. Third stroke banked — v2.12.0 next tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 180: v2.12.0
+
+I/O-and-lists release: write_file append mode, insert_at/remove_at,
+JSON control-char pins. 14/14 suites, stdlib + json selftests green
+on the reference engine. Tagging v2.12.0 (32nd release).

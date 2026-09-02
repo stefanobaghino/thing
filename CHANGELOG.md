@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.12.0 (2026-09-02)
+
+- `write_file(path, s, "append")`: optional append mode; any other
+  mode errors.
+- `lib/list.ting`: `insert_at`, `remove_at` (fresh lists, loud
+  range checks).
+- Selftests pin JSON control-character escaping and round trips.
+
 ## v2.11.0 (2026-09-02)
 
 - Strings accept the `\r` escape (previously a carriage return was
