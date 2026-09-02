@@ -2268,3 +2268,15 @@ engines. Tagging v2.7.0 (27th release).
 Three archives published; darwin-arm64 cold test: ting 2.7.0,
 max_by from the bundled list module, :load pulls a script's binding
 into the session. 27th release verified.
+
+---
+
+## 2026-09-02 — Iteration 158: 50k-case differential sweep
+
+Health tick: made the grammar fuzzer's seed and case count
+overridable (TING_DIFF_SEED / TING_DIFF_CASES in
+tests/differential.rs; CI keeps the fixed defaults), then swept
+50,000 generated programs across five fresh seeds — zero
+divergences between the engines. The equality/span bugs this suite
+caught historically stay caught; nothing new hiding at 60x CI's
+sample size. 14/14 suites.

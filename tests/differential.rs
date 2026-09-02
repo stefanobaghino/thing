@@ -173,11 +173,21 @@ fn generated_programs_match_across_engines() {
     // terminates by construction: while loops use a fresh strictly
     // increasing counter, for only iterates small literals. Runtime
     // errors are fine as long as both engines agree byte-for-byte.
+    // TING_DIFF_SEED / TING_DIFF_CASES let a sweep run bigger or on a
+    // fresh seed without editing this file; CI uses the defaults.
+    let seed = std::env::var("TING_DIFF_SEED")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(0xF00D);
+    let cases = std::env::var("TING_DIFF_CASES")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(800);
     let mut g = Gen {
-        rng: Rng(0xF00D),
+        rng: Rng(seed),
         fresh: 0,
     };
-    for case in 0..800 {
+    for case in 0..cases {
         let src = g.program();
         let a = run(Engine::Eval, &src);
         let b = run(Engine::Vm, &src);
