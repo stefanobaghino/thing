@@ -260,7 +260,10 @@ green.
 - Retrospective third act (post-2.0 small-strokes era).
 - REPL :help meta-command — toward v2.6.0.
 - Human-reported markdown rendering bug fixed (bare tag-shaped
-  tokens backticked) + docs guard test added.
+  tokens backticked) + docs guard test added (guard already caught
+  one regression in CI).
+- find() builtin (44th). Three strokes banked: release v2.6.0
+  next tick if quiet.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
