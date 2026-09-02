@@ -584,6 +584,30 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Find => {
+                arity(2, 2)?;
+                match (&args[0], &args[1]) {
+                    // Char index, consistent with slice()'s char addressing.
+                    (Value::Str(hay), Value::Str(needle)) => Ok(hay
+                        .find(needle.as_str())
+                        .map(|byte| Value::Int(hay[..byte].chars().count() as i64))
+                        .unwrap_or(Value::Nil)),
+                    (Value::Str(_), v) => Err(error(
+                        format!("find on a string expects a string, got {}", v.type_name()),
+                        span,
+                    )),
+                    (Value::List(items), v) => Ok(items
+                        .borrow()
+                        .iter()
+                        .position(|it| it == v)
+                        .map(|i| Value::Int(i as i64))
+                        .unwrap_or(Value::Nil)),
+                    (a, _) => Err(error(
+                        format!("find expects a string or list, got {}", a.type_name()),
+                        span,
+                    )),
+                }
+            }
             Builtin::Replace => {
                 arity(3, 3)?;
                 match (&args[0], &args[1], &args[2]) {

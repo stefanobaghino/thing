@@ -2190,3 +2190,15 @@ ran. The new guard caught it on every CI job — first proof it works
 in anger. Reworded the entry; suite green again. Lesson reaffirmed:
 run the suite after the log entry, not before, when the entry can
 trip a docs guard.
+
+---
+
+## 2026-09-02 — Iteration 152: find builtin
+
+44th builtin: find(s, sub) / find(xs, v) — index of the first match
+or nil (nil-not--1, so misses must be handled explicitly; strings
+use char indexing to match slice()). Structural equality for lists,
+mirroring contains. Wired through Builtin::ALL, hover doc, TextMate
+grammar, reference row; six edge selftests incl. the multibyte
+case. All guards green first run, 14/14 suites. Third stroke toward
+v2.6.0.

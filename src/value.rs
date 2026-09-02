@@ -43,6 +43,7 @@ pub enum Builtin {
     Join,
     Trim,
     Contains,
+    Find,
     Replace,
     StartsWith,
     EndsWith,
@@ -74,7 +75,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 43] = [
+    pub const ALL: [Builtin; 44] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -90,6 +91,7 @@ impl Builtin {
         Builtin::Join,
         Builtin::Trim,
         Builtin::Contains,
+        Builtin::Find,
         Builtin::Replace,
         Builtin::StartsWith,
         Builtin::EndsWith,
@@ -158,6 +160,10 @@ impl Builtin {
                 "Joins a list of strings; non-string elements error.",
             ),
             Builtin::Trim => ("trim(s)", "The string without leading/trailing whitespace."),
+            Builtin::Find => (
+                "find(s, sub) / find(xs, v)",
+                "Index of the first match (chars for strings), or nil.",
+            ),
             Builtin::Contains => (
                 "contains(s, sub) / contains(xs, v)",
                 "Substring test, or list membership by structural equality.",
@@ -267,6 +273,7 @@ impl Builtin {
             Builtin::Join => "join",
             Builtin::Trim => "trim",
             Builtin::Contains => "contains",
+            Builtin::Find => "find",
             Builtin::Replace => "replace",
             Builtin::StartsWith => "starts_with",
             Builtin::EndsWith => "ends_with",

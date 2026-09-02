@@ -68,3 +68,11 @@ assert(range(5, 0, -1) == [5, 4, 3, 2, 1], "range negative step");
 assert(range(0, 5, -1) == [], "range wrong-way step is empty");
 assert(range(3, 3, 2) == [], "range empty span with step");
 assert(has(try(fn() { return range(0, 5, 0); }), "err"), "range zero step fails");
+
+# find: first index or nil; char (not byte) indexing on strings.
+assert(find("hello", "llo") == 2, "find substring");
+assert(find("hello", "zz") == nil, "find miss is nil");
+assert(find("héllo", "llo") == 2, "find counts chars not bytes");
+assert(find([10, 20, 30], 20) == 1, "find in list");
+assert(find([1, 2], 9) == nil, "find list miss");
+assert(find([1, [2]], [2]) == 1, "find structural equality");

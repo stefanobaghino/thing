@@ -160,6 +160,7 @@ scope).
 | `split(s, sep)` | list of pieces; `split(s, "")` splits into characters |
 | `join(xs, sep)` | joins a list of strings; non-string elements error     |
 | `trim(s)`      | the string without leading/trailing whitespace              |
+| `find(s, sub)` / `find(xs, v)` | index of the first match (character index for strings), or `nil` |
 | `contains(s, sub)` / `contains(xs, v)` | substring test / list membership (structural `==`) |
 | `replace(s, from, to)` | all occurrences replaced; empty `from` errors    |
 | `starts_with(s, p)` / `ends_with(s, p)` | prefix / suffix test           |
