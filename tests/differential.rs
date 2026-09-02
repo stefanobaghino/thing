@@ -287,7 +287,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(15) {
+        match self.rng.below(18) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -302,6 +302,19 @@ impl Gen {
             11 => format!("try(fn() {{ return {}; }})", self.expr(depth - 1)),
             12 => format!("g({})", self.expr(depth - 1)),
             13 => format!("slice(str({}), 0, 2)", self.expr(depth - 1)),
+            14 => format!("find(str({}), \"1\")", self.expr(depth - 1)),
+            15 => format!(
+                "find([1, {}], {})",
+                self.expr(depth - 1),
+                self.expr(depth - 1)
+            ),
+            16 => format!(
+                "range(0, len(str({})), {})",
+                self.expr(depth - 1),
+                // Step in [-2, 2] \ {0}: negative steps and empty spans
+                // both get exercised.
+                ["-2", "-1", "1", "2"][self.rng.below(4) as usize]
+            ),
             _ => format!("-({})", self.expr(depth - 1)),
         }
     }

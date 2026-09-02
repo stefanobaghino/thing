@@ -2562,3 +2562,14 @@ cases). Ten fresh seeds x 10,000 generated programs — zero engine
 divergences across everything shipped since, including find, the
 stepped range, the CR escape, and the stdlib growth. Cumulative
 sweep total now 150k cases beyond CI's fixed 800.
+
+---
+
+## 2026-09-03 — Iteration 182: fuzzer learns the new builtins
+
+The grammar generator now emits find (string and list forms) and
+range with steps drawn from -2..2 (negatives and empty spans
+included), so post-2.5 builtins get differential coverage instead
+of riding on hand-written tests alone. CI's fixed-seed corpus
+regenerates cleanly; three fresh 10k sweeps over the wider grammar
+found zero divergences. 14/14 suites.
