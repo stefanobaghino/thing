@@ -2332,3 +2332,11 @@ Third stroke banked — v2.8.0 next tick if quiet.
 Formatter-and-stdlib release: playground fmt button (ting_fmt),
 map values/map_values, string split_once. 14/14 suites, stdlib
 selftests green on both engines. Tagging v2.8.0 (28th release).
+
+---
+
+## 2026-09-02 — Iteration 163b: v2.8.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.8.0,
+split_once and values from the bundled modules. 28th release
+verified.
