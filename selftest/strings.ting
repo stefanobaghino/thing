@@ -37,3 +37,7 @@ let many = try(fn() { return format("{}", 1, 2); });
 assert(contains(many["err"], "placeholder"), "too many values errors");
 let stray = try(fn() { return format("oops }"); });
 assert(contains(stray["err"], "stray"), "stray brace errors");
+
+# \r escape (added in 2.11): a real carriage return, one char.
+assert(len("\r") == 1, "cr is one char");
+assert("a\rb" != "a\nb", "cr is not lf");

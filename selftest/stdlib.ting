@@ -73,3 +73,8 @@ assert(l["chunk"]([1, 2, 3, 4, 5], 2) == [[1, 2], [3, 4], [5]], "chunk with rema
 assert(l["chunk"]([1, 2], 5) == [[1, 2]], "chunk larger than list");
 assert(l["chunk"]([], 3) == [], "chunk empty");
 assert(has(try(fn() { return l["chunk"]([1], 0); }), "err"), "chunk zero size fails");
+
+assert(s["trim_start"]("  \thi ") == "hi ", "trim_start");
+assert(s["trim_end"](" hi\n\r ") == " hi", "trim_end");
+assert(s["trim_start"]("") == "" && s["trim_end"]("") == "", "trim empty");
+assert(s["trim_start"]("\t\n") == "" && s["trim_end"](" ") == "", "trim all-space");

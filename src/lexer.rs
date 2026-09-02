@@ -234,6 +234,7 @@ impl<'a> Lexer<'a> {
                 Some(b'\\') => match self.bump() {
                     Some(b'n') => out.push('\n'),
                     Some(b't') => out.push('\t'),
+                    Some(b'r') => out.push('\r'),
                     Some(b'\\') => out.push('\\'),
                     Some(b'"') => out.push('"'),
                     _ => return Err(self.error("invalid escape sequence", self.pos - 1)),

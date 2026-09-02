@@ -2463,3 +2463,16 @@ mention of --check, the LSP's nine capabilities, the five stdlib
 modules, the REPL meta-commands, or the prebuilt release binaries;
 the test count was 160+ (now 182). All corrected. Docs guard green.
 First stroke toward v2.11.0.
+
+---
+
+## 2026-09-02 — Iteration 174: \r escape + trim_start/trim_end
+
+The trim helpers surfaced a real gap: a carriage return was
+inexpressible in ting source (escapes were only \n \t \\ \").
+Added \r to the lexer (additive; both engines share it), documented
+in the reference's string row, selftested. On top of it,
+lib/string.ting gains trim_start/trim_end over the
+space/tab/newline/CR set, with four selftest assertions and
+stdlib.md rows. 14/14 suites incl. formatter idempotence over the
+new escape. Second stroke toward v2.11.0.

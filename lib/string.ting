@@ -37,3 +37,17 @@ fn split_once(s, sep) {
   if i == nil { return nil; }
   return [slice(s, 0, i), slice(s, i + len(sep), len(s))];
 }
+
+# Leading whitespace (space, tab, newline, carriage return) removed.
+fn trim_start(s) {
+  let i = 0;
+  while i < len(s) && contains(" \t\n\r", s[i]) { i = i + 1; }
+  return slice(s, i, len(s));
+}
+
+# Trailing whitespace removed.
+fn trim_end(s) {
+  let i = len(s);
+  while i > 0 && contains(" \t\n\r", s[i - 1]) { i = i - 1; }
+  return slice(s, 0, i);
+}

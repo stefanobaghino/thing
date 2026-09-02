@@ -39,6 +39,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `lines(s)` | split on `"\n"` |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
+| `trim_start(s)` | leading whitespace removed |
+| `trim_end(s)` | trailing whitespace removed |
 
 ## lib/map.ting
 

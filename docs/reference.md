@@ -40,7 +40,7 @@ both.
 |------------|------------------------------|----------------------------------------|
 | `int`      | `42`, `-7`                   | 64-bit signed; overflow is an error    |
 | `float`    | `2.5`, `0.125`               | IEEE 754 double                        |
-| `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\\` `\"` |
+| `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\r` `\\` `\"` |
 | `bool`     | `true`, `false`              | no truthiness — conditions demand bool |
 | `nil`      | `nil`                        | the absence of a value                 |
 | `list`     | `[1, "two", [3]]`            | mutable, reference semantics           |
