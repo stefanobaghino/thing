@@ -2408,3 +2408,14 @@ passes when f() fails with a message containing want, and records
 distinct failure shapes for wrong-message vs no-error. Seven new
 selftest assertions covering all three paths; stdlib.md row and
 module header updated. 14/14 suites. First stroke toward v2.10.0.
+
+---
+
+## 2026-09-02 — Iteration 169: perf health check (post-2.9)
+
+Quiet tick; re-benched after eight releases of additive changes
+(find, range step, stdin, LSP growth). vs BASELINE.md: fib 149.1ms
+(base 150.9), lists 55.0 (55.1), maps 103.7 (102.5), strings 45.2
+(44.7) — all within noise, checksums identical. The additive
+builtins cost nothing on the hot paths, as expected (dispatch is
+per-op, not per-builtin-count). Baseline stands.
