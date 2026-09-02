@@ -291,7 +291,7 @@ green.
 - JSON control-char round-trip pins — toward v2.12.0.
 - write_file append mode.
 - lib/list insert_at/remove_at.
-- v2.12.0 tagged; release run in flight — verify assets next wake.
+- v2.12.0 RELEASED and verified (32nd); darwin-arm64 cold-tested.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0

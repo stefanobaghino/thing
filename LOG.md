@@ -2544,3 +2544,11 @@ suites. Third stroke banked — v2.12.0 next tick if quiet.
 I/O-and-lists release: write_file append mode, insert_at/remove_at,
 JSON control-char pins. 14/14 suites, stdlib + json selftests green
 on the reference engine. Tagging v2.12.0 (32nd release).
+
+---
+
+## 2026-09-02 — Iteration 180b: v2.12.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.12.0,
+append mode produces "ab", remove_at works from the bundled list
+module. 32 releases, all verified.
