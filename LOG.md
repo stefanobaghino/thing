@@ -2170,7 +2170,7 @@ ctrl-d/multi-line; :help is discoverable from the banner.
 ## 2026-09-02 — Iteration 151: markdown bare-tag guard
 
 A human reported the log page rendered broken: iteration 42's entry
-contained a bare <code>pre</code> tag-shaped token that GitHub's
+contained a bare tag-shaped `pre` token in angle brackets that GitHub's
 renderer treated as an opened HTML block, swallowing the rest of
 LOG.md; five more tag-shaped generics were being silently stripped
 elsewhere. Fixed by backticking (previous commit), and this tick
@@ -2178,3 +2178,15 @@ turns the bug into a guard: tests/docs.rs now scans all repo
 markdown (README/LOG/STATE/LOOP/CHANGELOG/docs) for tag-shaped
 tokens outside code fences and inline backticks. Guard is green on
 the fixed tree and fails on the pre-fix tree. 14/14 suites.
+
+---
+
+## 2026-09-02 — Iteration 151b: the guard bites its author
+
+CI red, and legitimately so: the LOG entry describing the bare-tag
+fix itself contained a bare tag-shaped token (an angle-bracketed
+"code" element used for emphasis), appended after the local suite
+ran. The new guard caught it on every CI job — first proof it works
+in anger. Reworded the entry; suite green again. Lesson reaffirmed:
+run the suite after the log entry, not before, when the entry can
+trip a docs guard.
