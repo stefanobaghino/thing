@@ -283,7 +283,7 @@ green.
 - lib/test check_err — toward v2.10.0.
 - lib/math floor/ceil.
 - lib/list chunk.
-- v2.10.0 tagged; release run in flight — verify assets next wake.
+- v2.10.0 RELEASED and verified (30th); darwin-arm64 cold-tested.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0

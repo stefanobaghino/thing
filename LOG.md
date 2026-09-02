@@ -2445,3 +2445,11 @@ tick if quiet.
 Stdlib-depth release: check_err, floor/ceil, chunk. 14/14 suites,
 stdlib + testlib selftests green on the reference engine. Tagging
 v2.10.0 (30th release).
+
+---
+
+## 2026-09-02 — Iteration 172b: v2.10.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.10.0,
+chunk/floor/ceil all correct from the bundled modules
+([[0,1,2],[3,4,5],[6]] -3 -2). 30 releases, all verified.
