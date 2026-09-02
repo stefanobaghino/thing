@@ -2066,3 +2066,13 @@ One- and two-argument forms unchanged. Five edge selftests (both
 directions, wrong-way empty, zero-step failure); hover doc and
 reference row updated; the old arity unit test updated to the new
 1-to-3 range. 14/14 suites. Second stroke toward v2.4.0.
+
+---
+
+## 2026-09-02 — Iteration 143: stats example
+
+Tenth golden pair: examples/stats.ting — descriptive statistics
+(mean, variance, stddev, gcd of extremes) over range(2, 60, 3),
+dogfooding both of this cycle's features (lib/math.ting and stepped
+range) plus lib/list.ting. Output identical on both engines; 14/14
+suites. Third stroke banked; v2.4.0 next tick if quiet.

@@ -1,0 +1,25 @@
+# Descriptive statistics over a fixed sample, using lib/math.ting
+# and range with a step.
+
+let ma = import("../lib/math.ting");
+let li = import("../lib/list.ting");
+
+# Every third value in [2, 60): 2, 5, 8, ...
+let sample = range(2, 60, 3);
+
+let n = len(sample);
+let mean = float(li["sum"](sample)) / n;
+
+let variance = 0.0;
+for x in sample {
+  let d = x - mean;
+  variance = variance + d * d;
+}
+variance = variance / n;
+let stddev = ma["sqrt"](variance);
+
+print("n      =", n);
+print("min    =", min(sample), " max =", max(sample));
+print("mean   =", mean);
+print("stddev =", ma["round"](stddev * 100) / 100.0);
+print("gcd of extremes =", ma["gcd"](min(sample), max(sample)));
