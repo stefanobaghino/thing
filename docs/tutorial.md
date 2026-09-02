@@ -277,3 +277,21 @@ for w in slice(words, 0, 3) {
 That's the whole tour. From here: the [reference](reference.md) for
 every operator and builtin, or `ting` with no arguments for a REPL to
 poke at.
+
+## Beyond scripts
+
+Everything else ships in the same binary:
+
+- The REPL (`ting` with no arguments) keeps state across lines;
+  `:help` lists the builtins and `:load somefile.ting` pulls a
+  script's definitions into your session to poke at them.
+- `ting --check *.ting` reports syntax errors without running
+  anything — wire it into a pre-commit hook.
+- `ting --fmt *.ting` reformats in place; CI can enforce it with
+  `--fmt-check`.
+- `ting --lsp` gives any LSP-capable editor diagnostics, hover docs,
+  completion, formatting, outline, definition, references, and
+  rename.
+
+The [reference](reference.html) has the full language; the
+[stdlib page](stdlib.html) documents the importable modules.

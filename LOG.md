@@ -2230,3 +2230,14 @@ incomplete programs report without killing the session; banner and
 :help mention it. Pipe test covers the happy path, the visible
 binding, and the bad-path survival. 14/14 suites. First stroke
 toward v2.7.0.
+
+---
+
+## 2026-09-02 — Iteration 155: REPL and toolchain docs
+
+Docs stroke: reference Running section now documents :help/:load;
+tutorial gains a closing "Beyond scripts" section pointing at the
+REPL meta-commands, --check, --fmt, and the LSP, with links to the
+reference and stdlib pages. 14/14 suites (tutorial harness ignores
+prose-only sections; docs guards green). Second stroke toward
+v2.7.0.
