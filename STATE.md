@@ -268,6 +268,8 @@ green.
 - Docs: REPL meta-commands + "Beyond scripts" tutorial section.
 - lib/list any/all/min_by/max_by.
 - v2.7.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
+- 50k-case differential sweep, 5 fresh seeds, zero divergences
+  (fuzzer now env-parameterized).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
