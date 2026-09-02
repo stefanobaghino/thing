@@ -289,7 +289,9 @@ green.
 - Grammar escape class synced + guarded.
 - v2.11.0 RELEASED and verified (31st); darwin-arm64 cold-tested.
 - JSON control-char round-trip pins — toward v2.12.0.
-- write_file append mode. One more stroke, then v2.12.0.
+- write_file append mode.
+- lib/list insert_at/remove_at. Release v2.12.0 next tick if
+  quiet.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
