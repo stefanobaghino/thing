@@ -259,6 +259,8 @@ green.
 - v2.5.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - Retrospective third act (post-2.0 small-strokes era).
 - REPL :help meta-command — toward v2.6.0.
+- Human-reported markdown rendering bug fixed (bare tag-shaped
+  tokens backticked) + docs guard test added.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
