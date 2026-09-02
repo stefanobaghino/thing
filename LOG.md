@@ -2102,3 +2102,13 @@ a stray \` left the template literal unclosed (caught by eval-ing
 EXAMPLES in Node), and my ad-hoc wasm harness guessed wrong ABI
 names (ting_out_len — it's ting_result_ptr/len). Verified the
 snippet through the real ABI: prints "610 65536 6". 14/14 suites.
+
+---
+
+## 2026-09-02 — Iteration 146: LSP find-references
+
+textDocument/references: every token-level occurrence of the
+identifier under the cursor (shadowing not resolved — documented in
+the code). Capability advertised; MethodNotFound probe moved to
+textDocument/rename. Pipe test pins 4 occurrences across let/assign/
+use/call. 14/14 suites. First stroke toward v2.5.0.

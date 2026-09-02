@@ -146,7 +146,7 @@ fn lsp_session_lifecycle_and_diagnostics() {
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/references","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/rename","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");
@@ -239,6 +239,45 @@ fn definition_jumps_to_top_level_binding() {
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
+fn references_list_every_occurrence() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"referencesProvider\":true"), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///r.ting","text":"let count = 1;\ncount = count + 1;\nprint(count);\n"}}}"#,
+    );
+    let _diags = recv(&mut reader);
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/references","params":{"textDocument":{"uri":"file:///r.ting"},"position":{"line":0,"character":5}}}"#,
+    );
+    let refs = recv(&mut reader);
+    // Four occurrences of `count`: let, assign target, rhs use, print arg.
+    assert_eq!(
+        refs.matches("\"uri\":\"file:///r.ting\"").count(),
+        4,
+        "{refs}"
+    );
+    assert!(refs.contains("\"line\":2"), "{refs}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
     );
     let _ = recv(&mut reader);
     send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
