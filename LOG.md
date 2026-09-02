@@ -2381,3 +2381,12 @@ without loops over input(). Hover doc and reference row updated;
 CLI test pipes bytes in and checks length + content. wasm falls to
 the error path naturally (no stdin there). 14/14 suites. Third
 stroke banked — v2.9.0 next tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 167: v2.9.0
+
+Pipes-and-polish release: read_file("-"), LSP signature help, the
+changelog page, Tooling list refreshed to nine capabilities. 14/14
+suites, selftests green on the reference engine. Tagging v2.9.0
+(29th release).

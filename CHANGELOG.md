@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.9.0 (2026-09-02)
+
+- `read_file("-")` reads stdin to EOF, so ting scripts compose in
+  Unix pipelines.
+- LSP: `textDocument/signatureHelp` — builtin signatures and docs
+  inside call parentheses (ninth capability).
+- The changelog is now published on the site, linked from every
+  page's nav.
+
 ## v2.8.0 (2026-09-02)
 
 - Playground: a "fmt" button reformats the editor in place, backed

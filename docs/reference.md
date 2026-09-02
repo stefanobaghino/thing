@@ -252,8 +252,9 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type, hover docs for every builtin, completion,
   whole-document formatting, an outline of top-level bindings
-  (document symbols), go-to-definition for them, and token-level
-  find-references and rename.
+  (document symbols), go-to-definition for them, token-level
+  find-references and rename, and signature help inside builtin
+  calls.
 
 Point your editor's generic LSP client at `ting --lsp`; a TextMate
 grammar for syntax highlighting ships in the repo under `editor/`.
