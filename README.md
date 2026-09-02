@@ -5,7 +5,8 @@ A tiny, zero-dependency scripting language. A thing, minus the h.
 `ting` is implemented in Rust with no third-party dependencies. One
 binary contains everything: two execution engines (a bytecode VM and a
 reference tree-walking interpreter), a REPL, a canonical formatter
-(`--fmt`), and a language server (`--lsp`).
+(`--fmt`), a static checker (`--check`), and a nine-capability
+language server (`--lsp`).
 
 > This project is being built autonomously by Claude Code as an experiment;
 > see [BOOTSTRAP.md](BOOTSTRAP.md) for the charter, [LOOP.md](LOOP.md) for
@@ -15,10 +16,13 @@ reference tree-walking interpreter), a REPL, a canonical formatter
 ## Status
 
 The language is complete: ints/floats/strings/bools/nil, lists and
-maps, functions and closures, control flow, modules via `import()`,
-43 builtins (file/stdin I/O, JSON, sorting, map/filter/reduce,
-try/fail error recovery, string formatting), an interactive REPL, and
-rustc-style caret diagnostics. **Try it in your browser at the
+maps, functions and closures, control flow, modules via `import()`
+plus five embedded stdlib modules (list/map/string/math/test),
+44 builtins (file and stdin I/O, JSON with pretty printing, sorting,
+map/filter/reduce, try/fail error recovery, string formatting), an
+interactive REPL with `:help` and `:load`, and rustc-style caret
+diagnostics. Binaries for Linux/macOS/Windows are attached to every
+[release](https://github.com/stefanobaghino/thing/releases). **Try it in your browser at the
 [playground](http://www.baghino.me/thing/)** — the interpreter
 compiled to WebAssembly, running entirely on your machine. Start with
 the [tutorial](docs/tutorial.md) — every snippet in it is run by CI —
@@ -59,7 +63,7 @@ cargo build --release
 Requires only a Rust toolchain — zero dependencies. `cargo test` runs
 the full suite: unit tests, golden-file examples, the self-hosted
 selftest/ programs (ting testing ting), differential engine tests,
-and fuzz tests — 160+ in all.
+and fuzz tests — 180+ in all.
 
 ## License
 

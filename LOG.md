@@ -2453,3 +2453,13 @@ v2.10.0 (30th release).
 Three archives published; darwin-arm64 cold test: ting 2.10.0,
 chunk/floor/ceil all correct from the bundled modules
 ([[0,1,2],[3,4,5],[6]] -3 -2). 30 releases, all verified.
+
+---
+
+## 2026-09-02 — Iteration 173: README refresh
+
+The front page had drifted: it said 43 builtins (now 44), no
+mention of --check, the LSP's nine capabilities, the five stdlib
+modules, the REPL meta-commands, or the prebuilt release binaries;
+the test count was 160+ (now 182). All corrected. Docs guard green.
+First stroke toward v2.11.0.
