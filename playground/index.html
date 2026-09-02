@@ -74,6 +74,7 @@
   <span class="spacer"></span>
   <select id="examples" aria-label="examples"></select>
   <button class="run" id="run" title="ctrl+enter">run &#9654;</button>
+  <button class="run" id="fmt" title="reformat the code">fmt</button>
   <button class="run" id="share" title="copy a link to this code">share</button>
   <a href="tutorial.html">tutorial</a>
   <a href="reference.html">reference</a>
@@ -332,20 +333,21 @@ async function load(url) {
   return instance.exports;
 }
 onmessage = async (ev) => {
-  const { url, src } = ev.data;
+  const { url, src, mode } = ev.data;
   try {
     if (!exportsPromise) exportsPromise = load(url);
     const e = await exportsPromise;
     const buf = new TextEncoder().encode(src);
     const ptr = e.ting_alloc(buf.length);
     new Uint8Array(e.memory.buffer, ptr, buf.length).set(buf);
-    const ok = e.ting_run(ptr, buf.length) === 1;
+    const entry = mode === "fmt" ? e.ting_fmt : e.ting_run;
+    const ok = entry(ptr, buf.length) === 1;
     e.ting_dealloc(ptr, buf.length);
     const out = new TextDecoder().decode(
       new Uint8Array(e.memory.buffer, e.ting_result_ptr(), e.ting_result_len()));
-    postMessage({ ok, out });
+    postMessage({ ok, out, mode });
   } catch (err) {
-    postMessage({ ok: false, out: "playground error: " + err.message });
+    postMessage({ ok: false, out: "playground error: " + err.message, mode });
   }
 };
 `;
@@ -358,10 +360,20 @@ function freshWorker() {
   worker = new Worker(workerUrl);
   worker.onmessage = (ev) => {
     clearTimeout(timer);
-    const { ok, out } = ev.data;
+    const { ok, out, mode } = ev.data;
+    if (mode === "fmt" && ok) {
+      // Formatted source replaces the editor; output pane untouched.
+      if (editor.value !== out) {
+        editor.value = out;
+        renderHighlight();
+      }
+      status.textContent = "formatted";
+      runBtn.disabled = false;
+      return;
+    }
     output.textContent = out === "" ? "(no output)" : out;
     output.className = ok ? "" : "err";
-    status.textContent = ok ? "ok" : "error";
+    status.textContent = mode === "fmt" ? "fmt error" : (ok ? "ok" : "error");
     runBtn.disabled = false;
   };
 }
@@ -372,7 +384,7 @@ function run() {
   status.textContent = "running…";
   output.className = "";
   output.textContent = "";
-  worker.postMessage({ url: WASM_URL, src: editor.value });
+  worker.postMessage({ url: WASM_URL, src: editor.value, mode: "run" });
   timer = setTimeout(() => {
     freshWorker();
     output.textContent = "timed out after " + TIMEOUT_MS / 1000 + "s (infinite loop?)";
@@ -383,6 +395,9 @@ function run() {
 }
 
 runBtn.onclick = run;
+document.getElementById("fmt").onclick = () => {
+  worker.postMessage({ url: WASM_URL, src: editor.value, mode: "fmt" });
+};
 editor.addEventListener("keydown", (ev) => {
   if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); run(); }
   if (ev.key === "Tab") {

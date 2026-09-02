@@ -2280,3 +2280,16 @@ tests/differential.rs; CI keeps the fixed defaults), then swept
 divergences between the engines. The equality/span bugs this suite
 caught historically stay caught; nothing new hiding at 60x CI's
 sample size. 14/14 suites.
+
+---
+
+## 2026-09-02 — Iteration 159: playground fmt button
+
+The formatter reaches the browser: new ting_fmt wasm export (1 +
+formatted text, or 0 + caret diagnostic when unparseable), the
+worker gains a mode field, and a "fmt" button rewrites the editor
+in place (output pane untouched; parse errors land there). ABI unit
+test corrected mid-flight: the formatter preserves same-line
+statement grouping, expectation fixed to match its real contract.
+Verified through the actual wasm build in Node. 14/14 suites.
+First stroke toward v2.8.0.

@@ -58,6 +58,26 @@ pub unsafe extern "C" fn ting_run(ptr: *const u8, len: usize) -> i32 {
     if ok { 1 } else { 0 }
 }
 
+/// Format the source instead of running it: 1 and the formatted text
+/// on success, 0 and a rendered diagnostic when it doesn't parse.
+///
+/// # Safety
+/// Same contract as `ting_run`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ting_fmt(ptr: *const u8, len: usize) -> i32 {
+    let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+    let src = String::from_utf8_lossy(bytes);
+    let (ok, out) = match crate::fmt::format(&src) {
+        Ok(formatted) => (1, formatted.into_bytes()),
+        Err(e) => (
+            0,
+            crate::diag::render("playground", &src, &e.message, e.span).into_bytes(),
+        ),
+    };
+    RESULT.with(|r| *r.borrow_mut() = out);
+    ok
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn ting_result_ptr() -> *const u8 {
     RESULT.with(|r| r.borrow().as_ptr())
@@ -97,6 +117,21 @@ mod tests {
         assert_eq!(ok, 0);
         assert!(out.starts_with("before\n"));
         assert!(out.contains("error: undefined variable 'x'"));
+    }
+
+    #[test]
+    fn formats_through_the_abi() {
+        let src = "let  x=1;print( x );";
+        let bytes = src.as_bytes();
+        let ptr = ting_alloc(bytes.len());
+        let (ok, out) = unsafe {
+            std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr, bytes.len());
+            let ok = ting_fmt(ptr, bytes.len());
+            ting_dealloc(ptr, bytes.len());
+            let result = std::slice::from_raw_parts(ting_result_ptr(), ting_result_len()).to_vec();
+            (ok, String::from_utf8(result).unwrap())
+        };
+        assert_eq!((ok, out.as_str()), (1, "let x = 1; print(x);\n"));
     }
 
     #[test]
