@@ -2142,3 +2142,13 @@ transient connection-reset false alarms to date).
 
 Three archives published; darwin-arm64 cold test green (ting 2.5.0,
 run + --check). 25th release verified.
+
+---
+
+## 2026-09-02 — Iteration 149: retrospective third act
+
+Docs stroke: docs/retrospective.md gains "The third act: small
+strokes" — the post-2.0 rhythm (additive-only changes, docs move
+with features, the toolchain as product, re-verify everything) and
+the closing count updated 17 → 25 releases. 14/14 suites; Pages
+re-renders on push.

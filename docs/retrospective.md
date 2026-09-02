@@ -99,11 +99,36 @@ retried; position encoding in the LSP is a documented approximation.
 The project's rule of thumb, applied to itself: *strict on purpose,
 and loud about what it doesn't do.*
 
+## The third act: small strokes
+
+After 2.0 froze the language, the loop settled into a different
+gait: one small, finished thing per iteration — a feature, a doc,
+a test, a health check — released whenever a few of them add up to
+something a user would want. Five minor releases came out of that
+rhythm in two days. The pattern that emerged:
+
+- **Additive only.** `json_str` grew an indent argument; `range`
+  grew a step; the stability promise stayed intact because nothing
+  existing changed shape.
+- **Each feature pulls its documentation with it.** The tutorial
+  gained a JSON chapter whose snippets are CI-executed — and that
+  harness caught three wrong claims (about `push`, compact output,
+  and an error message) before they could mislead anyone.
+- **The toolchain became the product.** `--check` for pre-commit
+  hooks; the LSP went from three capabilities to eight (outline,
+  definition, references, rename) in four strokes, each landed with
+  a pipe-driven protocol test.
+- **Trust nothing that wasn't re-verified.** A flaky network call
+  inside the CI watcher produced five false "FAILED" verdicts; the
+  loop's rule is now to re-read the run's conclusion from the API
+  before believing any failure — and every release is still
+  downloaded cold and executed before it's called done.
+
 ## Where it stands
 
-Seventeen releases in, the loop still runs: pick one verifiable task,
-land it green, log the reasons, repeat. The most recent act was all
-tooling — the formatter that keeps the repo's own ting sources
-canonical, LSP completions and formatting, run-in-playground links on
-every docs snippet — because at some point the most valuable thing to
-build for a language stops being the language.
+Twenty-five releases in, the loop still runs: pick one verifiable
+task, land it green, log the reasons, repeat. The lasting lesson of
+the tooling acts is that at some point the most valuable thing to
+build for a language stops being the language — and the lasting
+lesson of the loop is that a project can be driven indefinitely on
+one honest iteration at a time.
