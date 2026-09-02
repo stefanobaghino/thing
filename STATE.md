@@ -255,6 +255,8 @@ green.
   darwin-arm64 asset smoke-tested cold incl. bundled math module.
 - Playground "stats" example (wasm-verified via real ABI).
 - LSP find-references (token-level) — toward v2.5.0.
+- LSP rename (WorkspaceEdit). Release tick: also refresh the
+  reference Tooling section's LSP capability list.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
