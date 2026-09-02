@@ -276,6 +276,8 @@ green.
 - lib/map values/map_values.
 - lib/string split_once.
 - v2.8.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
+- Changelog page on the site — verify live after Pages deploy;
+  toward v2.9.0.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
