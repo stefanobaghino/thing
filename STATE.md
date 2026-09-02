@@ -270,6 +270,7 @@ green.
 - v2.7.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - 50k-case differential sweep, 5 fresh seeds, zero divergences
   (fuzzer now env-parameterized).
+- Playground fmt button (ting_fmt wasm export) — toward v2.8.0.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
