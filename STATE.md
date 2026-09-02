@@ -253,6 +253,7 @@ green.
 - examples/stats.ting golden pair (dogfoods both).
 - v2.4.0 RELEASED and verified (math + stepped range + stats);
   darwin-arm64 asset smoke-tested cold incl. bundled math module.
+- Playground "stats" example (wasm-verified via real ABI).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
