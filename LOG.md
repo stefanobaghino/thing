@@ -2202,3 +2202,11 @@ mirroring contains. Wired through Builtin::ALL, hover doc, TextMate
 grammar, reference row; six edge selftests incl. the multibyte
 case. All guards green first run, 14/14 suites. Third stroke toward
 v2.6.0.
+
+---
+
+## 2026-09-02 — Iteration 153: v2.6.0
+
+Usability release: find() builtin, REPL :help, markdown guard (which
+already caught one CI regression the day it landed). 14/14 suites,
+edge selftests green on both engines. Tagging v2.6.0 (26th release).

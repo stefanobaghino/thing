@@ -4,6 +4,16 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.6.0 (2026-09-02)
+
+- `find(s, sub)` / `find(xs, v)`: 44th builtin — index of the first
+  match or `nil`; strings use character indexing (matching `slice`),
+  lists use structural equality (matching `contains`).
+- REPL: `:help` lists every builtin's signature and doc line.
+- A guard test now keeps repo markdown free of bare HTML-shaped
+  tokens (a bare angle-bracketed token had broken LOG.md's rendering
+  on GitHub; found by a reader).
+
 ## v2.5.0 (2026-09-02)
 
 - LSP: `textDocument/references` — every occurrence of the
