@@ -726,6 +726,13 @@ impl<W: Write> Interpreter<W> {
             Builtin::ReadFile => {
                 arity(1, 1)?;
                 match &args[0] {
+                    // "-" is the conventional name for stdin, read to EOF.
+                    Value::Str(path) if path == "-" => {
+                        let mut buf = String::new();
+                        std::io::Read::read_to_string(&mut std::io::stdin().lock(), &mut buf)
+                            .map(|_| Value::Str(buf))
+                            .map_err(|e| error(format!("cannot read stdin: {e}"), span))
+                    }
                     Value::Str(path) => std::fs::read_to_string(path)
                         .map(Value::Str)
                         .map_err(|e| error(format!("cannot read {path:?}: {e}"), span)),

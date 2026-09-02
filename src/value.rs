@@ -190,7 +190,7 @@ impl Builtin {
             ),
             Builtin::ReadFile => (
                 "read_file(path)",
-                "The file's entire contents as a string; unreadable file errors.",
+                "The file's entire contents as a string (\"-\" reads stdin); unreadable file errors.",
             ),
             Builtin::WriteFile => (
                 "write_file(path, s)",

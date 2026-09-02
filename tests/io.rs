@@ -159,3 +159,32 @@ fn repl_load_runs_a_file_into_the_session() {
     assert_eq!(out.status.code(), Some(0));
     let _ = std::fs::remove_file(&script);
 }
+
+#[test]
+fn read_file_dash_reads_stdin() {
+    use std::io::Write as _;
+    let dir = std::env::temp_dir();
+    let script = dir.join(format!("ting-stdin-{}.ting", std::process::id()));
+    std::fs::write(
+        &script,
+        "let text = read_file(\"-\");\nprint(len(text), trim(text));\n",
+    )
+    .unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"hello pipe\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "11 hello pipe\n");
+    assert_eq!(out.status.code(), Some(0));
+    let _ = std::fs::remove_file(&script);
+}

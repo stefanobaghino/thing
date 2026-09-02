@@ -2370,3 +2370,14 @@ characters "(" and ","). Nested calls resolve to the inner callee
 typeDefinition. Reference Tooling line already says "and rename" —
 update the list at the release tick. 14/14 suites. Second stroke
 toward v2.9.0.
+
+---
+
+## 2026-09-02 — Iteration 166: read_file("-") reads stdin
+
+Pipelines unlocked: read_file("-") slurps stdin to EOF (the
+conventional dash name), so `cat data | ting script.ting` works
+without loops over input(). Hover doc and reference row updated;
+CLI test pipes bytes in and checks length + content. wasm falls to
+the error path naturally (no stdin there). 14/14 suites. Third
+stroke banked — v2.9.0 next tick if quiet.
