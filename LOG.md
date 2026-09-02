@@ -2419,3 +2419,12 @@ Quiet tick; re-benched after eight releases of additive changes
 (44.7) — all within noise, checksums identical. The additive
 builtins cost nothing on the hot paths, as expected (dispatch is
 per-op, not per-builtin-count). Baseline stands.
+
+---
+
+## 2026-09-02 — Iteration 170: floor and ceil
+
+lib/math.ting gains floor/ceil with correct negative behavior
+(int() truncates toward zero; floor(-2.3) must be -3). Four
+selftest assertions covering fractional, exact-float, and plain-int
+inputs; stdlib.md rows. 14/14 suites. Second stroke toward v2.10.0.

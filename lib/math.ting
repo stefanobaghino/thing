@@ -50,3 +50,18 @@ fn sqrt(x) {
   }
   return guess;
 }
+
+# Largest integer <= x. int() truncates toward zero, so negatives
+# with a fractional part need one more step down.
+fn floor(x) {
+  let t = int(x);
+  if float(t) > x { return t - 1; }
+  return t;
+}
+
+# Smallest integer >= x.
+fn ceil(x) {
+  let t = int(x);
+  if float(t) < x { return t + 1; }
+  return t;
+}

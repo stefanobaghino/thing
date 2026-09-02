@@ -59,6 +59,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `pow(base, n)` | integer exponentiation by squaring; `n >= 0` |
 | `gcd(a, b)` | greatest common divisor (absolute values) |
 | `round(x)` | nearest integer, halves away from zero |
+| `floor(x)` | largest integer `<= x` |
+| `ceil(x)` | smallest integer `>= x` |
 | `sqrt(x)` | Newton's method square root, returns a float |
 
 ## lib/test.ting

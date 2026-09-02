@@ -63,3 +63,8 @@ assert(orig == {"a": 1} && mapped == {"a": 2}, "map_values leaves original alone
 assert(s["split_once"]("key=value=more", "=") == ["key", "value=more"], "split_once first only");
 assert(s["split_once"]("no separator", "=") == nil, "split_once miss is nil");
 assert(s["split_once"]("héllo::wörld", "::") == ["héllo", "wörld"], "split_once multibyte");
+
+assert(ma["floor"](2.7) == 2 && ma["floor"](-2.3) == -3, "floor");
+assert(ma["floor"](5.0) == 5 && ma["floor"](-4.0) == -4, "floor exact");
+assert(ma["ceil"](2.3) == 3 && ma["ceil"](-2.7) == -2, "ceil");
+assert(ma["ceil"](5.0) == 5 && ma["ceil"](7) == 7, "ceil exact and int");
