@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.8.0 (2026-09-02)
+
+- Playground: a "fmt" button reformats the editor in place, backed
+  by a new `ting_fmt` wasm export (verified against the live site).
+- `lib/map.ting`: `values`, `map_values`.
+- `lib/string.ting`: `split_once` (built on `find`, so indices are
+  character-based).
+
 ## v2.7.0 (2026-09-02)
 
 - REPL: `:load <file>` evaluates a file in the live session, keeping

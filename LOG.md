@@ -2324,3 +2324,11 @@ the first separator, nil when absent — built on the find builtin
 from v2.6 (char indices, so the multibyte selftest passes without
 special handling). Three assertions; stdlib.md row. 14/14 suites.
 Third stroke banked — v2.8.0 next tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 163: v2.8.0
+
+Formatter-and-stdlib release: playground fmt button (ting_fmt),
+map values/map_values, string split_once. 14/14 suites, stdlib
+selftests green on both engines. Tagging v2.8.0 (28th release).
