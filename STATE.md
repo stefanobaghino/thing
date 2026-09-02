@@ -286,8 +286,8 @@ green.
 - v2.10.0 RELEASED and verified (30th); darwin-arm64 cold-tested.
 - README refreshed (44 builtins, 5 modules, 9 LSP caps, 182 tests).
 - \r escape (lexer) + lib/string trim_start/trim_end.
-- Grammar escape class synced + guarded. Release v2.11.0 next
-  tick if quiet.
+- Grammar escape class synced + guarded.
+- v2.11.0 tagged; release run in flight — verify assets next wake.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
