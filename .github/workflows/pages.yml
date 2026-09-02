@@ -10,6 +10,7 @@ on:
       - "src/**"
       - "docs/**"
       - "tools/md2html.py"
+      - "CHANGELOG.md"
       - "Cargo.toml"
       - ".github/workflows/pages.yml"
   workflow_dispatch:
@@ -41,6 +42,7 @@ jobs:
           python3 tools/md2html.py docs/reference.md _site/reference.html
           python3 tools/md2html.py docs/stdlib.md _site/stdlib.html
           python3 tools/md2html.py docs/retrospective.md _site/retrospective.html
+          python3 tools/md2html.py CHANGELOG.md _site/changelog.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

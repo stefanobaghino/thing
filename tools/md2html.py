@@ -46,6 +46,7 @@ NAV = (
     '<a href="reference.html">reference</a>'
     '<a href="stdlib.html">stdlib</a>'
     '<a href="retrospective.html">story</a>'
+    '<a href="changelog.html">changelog</a>'
     '<a href="https://github.com/stefanobaghino/thing">github</a></nav>'
 )
 

@@ -2340,3 +2340,13 @@ selftests green on both engines. Tagging v2.8.0 (28th release).
 Three archives published; darwin-arm64 cold test: ting 2.8.0,
 split_once and values from the bundled modules. 28th release
 verified.
+
+---
+
+## 2026-09-02 — Iteration 164: changelog on the site
+
+The changelog reaches the site: pages.yml renders CHANGELOG.md to
+changelog.html (and triggers on changes to it), md2html's nav gains
+the link. Rendered locally to confirm markdown converts cleanly.
+14/14 suites. First stroke toward v2.9.0; verify the live page
+after the Pages deploy.
