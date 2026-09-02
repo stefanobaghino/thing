@@ -166,6 +166,47 @@ fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Val
     Value::list(locations)
 }
 
+/// Rename every occurrence of the identifier at (line, character):
+/// a WorkspaceEdit with one TextEdit per token, same scan as
+/// references (token-level, shadowing not resolved).
+fn rename_result(src: &str, uri: &str, line: usize, character: usize, new_name: &str) -> Value {
+    let valid = !new_name.is_empty()
+        && !new_name.chars().next().unwrap().is_ascii_digit()
+        && new_name
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_');
+    if !valid {
+        return Value::Nil;
+    }
+    let Some(name) = ident_at(src, line, character) else {
+        return Value::Nil;
+    };
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::Nil;
+    };
+    let mut edits = Vec::new();
+    for tok in &tokens {
+        if let lexer::TokenKind::Ident(n) = &tok.kind
+            && n == &name
+        {
+            edits.push(obj(vec![
+                (
+                    "range",
+                    obj(vec![
+                        ("start", position(src, tok.span.start)),
+                        ("end", position(src, tok.span.end)),
+                    ]),
+                ),
+                ("newText", s(new_name)),
+            ]));
+        }
+    }
+    if edits.is_empty() {
+        return Value::Nil;
+    }
+    obj(vec![("changes", obj(vec![(uri, Value::list(edits))]))])
+}
+
 /// Lex + parse + compile; the first error becomes the diagnostic list.
 fn diagnostics(src: &str) -> Value {
     let err = match lexer::lex(src) {
@@ -314,6 +355,7 @@ pub fn run() -> i32 {
                             ("documentSymbolProvider", Value::Bool(true)),
                             ("definitionProvider", Value::Bool(true)),
                             ("referencesProvider", Value::Bool(true)),
+                            ("renameProvider", Value::Bool(true)),
                         ]),
                     ),
                     (
@@ -437,6 +479,40 @@ pub fn run() -> i32 {
                         .get(&uri)
                         .map(|src| {
                             references_result(src, &uri, l.max(0) as usize, c.max(0) as usize)
+                        })
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/rename" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let new_name = params.as_ref().and_then(|p| get_str(p, "newName"));
+                let result = match (uri, line, character, new_name) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c)), Some(new_name)) => docs
+                        .get(&uri)
+                        .map(|src| {
+                            rename_result(
+                                src,
+                                &uri,
+                                l.max(0) as usize,
+                                c.max(0) as usize,
+                                &new_name,
+                            )
                         })
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,

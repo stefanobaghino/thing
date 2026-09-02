@@ -146,7 +146,7 @@ fn lsp_session_lifecycle_and_diagnostics() {
     // Unknown request gets a MethodNotFound error.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/rename","params":{}}"#,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/signatureHelp","params":{}}"#,
     );
     let err = recv(&mut reader);
     assert!(err.contains("-32601"), "{err}");
@@ -278,6 +278,48 @@ fn references_list_every_occurrence() {
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
+fn rename_produces_a_workspace_edit() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"renameProvider\":true"), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///n.ting","text":"let n = 1;\nprint(n + n);\n"}}}"#,
+    );
+    let _diags = recv(&mut reader);
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///n.ting"},"position":{"line":0,"character":4},"newName":"total"}}"#,
+    );
+    let edit = recv(&mut reader);
+    assert_eq!(edit.matches("\"newText\":\"total\"").count(), 3, "{edit}");
+    assert!(edit.contains("\"changes\""), "{edit}");
+
+    // An invalid identifier is rejected with a null result.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///n.ting"},"position":{"line":0,"character":4},"newName":"9bad"}}"#,
+    );
+    let bad = recv(&mut reader);
+    assert!(bad.contains("\"result\":null"), "{bad}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
     );
     let _ = recv(&mut reader);
     send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);

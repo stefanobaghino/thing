@@ -2112,3 +2112,15 @@ identifier under the cursor (shadowing not resolved — documented in
 the code). Capability advertised; MethodNotFound probe moved to
 textDocument/rename. Pipe test pins 4 occurrences across let/assign/
 use/call. 14/14 suites. First stroke toward v2.5.0.
+
+---
+
+## 2026-09-02 — Iteration 147: LSP rename
+
+textDocument/rename: WorkspaceEdit renaming every token-level
+occurrence (same scan as references); invalid identifiers and
+unknown positions return null. Probe moved to signatureHelp. Pipe
+test pins 3 edits and the invalid-name rejection. 14/14 suites.
+Second stroke toward v2.5.0. Note: reference.md's Tooling section
+now undersells the LSP (6 listed, 8 real) — update it with the
+release tick.
