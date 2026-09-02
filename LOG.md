@@ -2390,3 +2390,11 @@ Pipes-and-polish release: read_file("-"), LSP signature help, the
 changelog page, Tooling list refreshed to nine capabilities. 14/14
 suites, selftests green on the reference engine. Tagging v2.9.0
 (29th release).
+
+---
+
+## 2026-09-02 — Iteration 167b: v2.9.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.9.0, and
+`printf | ting t.ting` with read_file("-") prints PIPED IN — the
+headline feature works from a real pipe. 29th release verified.

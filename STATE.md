@@ -279,8 +279,7 @@ green.
 - Changelog page live on the site (verified); toward v2.9.0.
 - LSP signatureHelp (9th capability).
 - read_file("-") reads stdin.
-- v2.9.0 tagged (Tooling list refreshed); release run in flight —
-  verify assets next wake.
+- v2.9.0 RELEASED and verified; stdin pipe smoke-tested cold.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
