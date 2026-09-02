@@ -2135,3 +2135,10 @@ engines spot-checked. Tagging v2.5.0 (25th release). Watcher
 pattern changed from this tick: verdicts come from gh run view
 after the watch, never from gh run watch's exit code (five
 transient connection-reset false alarms to date).
+
+---
+
+## 2026-09-02 — Iteration 148b: v2.5.0 verified
+
+Three archives published; darwin-arm64 cold test green (ting 2.5.0,
+run + --check). 25th release verified.
