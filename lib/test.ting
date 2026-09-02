@@ -3,6 +3,7 @@
 #   let t = import("lib/test.ting");
 #   t["check"]("math works", 1 + 1 == 2);
 #   t["check_eq"]("name", got, want);
+#   t["check_err"]("name", fn() { fail("boom"); }, "boom");
 #   t["summary"]();   # prints results; exits 1 if anything failed
 #
 # The `state` map is exported too, for tools that want the counters.
@@ -24,6 +25,20 @@ fn check_eq(name, got, want) {
   } else {
     state["failed"] = state["failed"] + 1;
     push(state["failures"], format("{}: got {}, want {}", name, got, want));
+  }
+}
+
+# f must fail with a message containing want; passing is a failure.
+fn check_err(name, f, want) {
+  let r = try(f);
+  if has(r, "err") && contains(r["err"], want) {
+    state["passed"] = state["passed"] + 1;
+  } else if has(r, "err") {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], format("{}: error {} lacks {}", name, r["err"], want));
+  } else {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], format("{}: expected an error, got {}", name, r["ok"]));
   }
 }
 

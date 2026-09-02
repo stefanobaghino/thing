@@ -2398,3 +2398,13 @@ suites, selftests green on the reference engine. Tagging v2.9.0
 Three archives published; darwin-arm64 cold test: ting 2.9.0, and
 `printf | ting t.ting` with read_file("-") prints PIPED IN — the
 headline feature works from a real pipe. 29th release verified.
+
+---
+
+## 2026-09-02 — Iteration 168: check_err in lib/test
+
+The test module learns error testing: check_err(name, f, want)
+passes when f() fails with a message containing want, and records
+distinct failure shapes for wrong-message vs no-error. Seven new
+selftest assertions covering all three paths; stdlib.md row and
+module header updated. 14/14 suites. First stroke toward v2.10.0.

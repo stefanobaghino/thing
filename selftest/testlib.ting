@@ -11,3 +11,11 @@ t["check_eq"]("also meant to fail", 1, 2);
 assert(t["state"]["failed"] == 2, "failures counted");
 assert(contains(t["state"]["failures"][0], "meant to fail"), "name kept");
 assert(contains(t["state"]["failures"][1], "got 1, want 2"), "diff kept");
+
+t["check_err"]("err passes", fn() { fail("kaboom now"); }, "kaboom");
+assert(t["state"]["passed"] == 3, "err pass counted");
+t["check_err"]("wrong message", fn() { fail("other"); }, "kaboom");
+t["check_err"]("no error at all", fn() { return 5; }, "kaboom");
+assert(t["state"]["failed"] == 4, "err failures counted");
+assert(contains(t["state"]["failures"][2], "lacks"), "wrong-message shape");
+assert(contains(t["state"]["failures"][3], "expected an error, got 5"), "no-error shape");
