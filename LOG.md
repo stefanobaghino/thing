@@ -2526,3 +2526,13 @@ bad-mode error (first draft asserted only the end state and never
 actually saw the append — caught on review, strengthened). Hover
 doc and reference row updated. 14/14 suites. Second stroke toward
 v2.12.0.
+
+---
+
+## 2026-09-02 — Iteration 179: insert_at / remove_at
+
+lib/list.ting gains insert_at (i == len appends) and remove_at,
+both returning fresh lists with range checks that fail loudly.
+Eight selftest assertions incl. the originals-untouched pin (lists
+are reference types) and both range errors; stdlib.md rows. 14/14
+suites. Third stroke banked — v2.12.0 next tick if quiet.

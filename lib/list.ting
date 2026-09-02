@@ -111,3 +111,30 @@ fn chunk(xs, n) {
   if len(cur) > 0 { push(out, cur); }
   return out;
 }
+
+# A fresh list with v inserted before index i (i == len appends);
+# out-of-range fails.
+fn insert_at(xs, i, v) {
+  if i < 0 || i > len(xs) { fail("insert_at: index out of range"); }
+  let out = [];
+  let k = 0;
+  for x in xs {
+    if k == i { push(out, v); }
+    push(out, x);
+    k = k + 1;
+  }
+  if i == len(xs) { push(out, v); }
+  return out;
+}
+
+# A fresh list without the element at index i; out-of-range fails.
+fn remove_at(xs, i) {
+  if i < 0 || i >= len(xs) { fail("remove_at: index out of range"); }
+  let out = [];
+  let k = 0;
+  for x in xs {
+    if k != i { push(out, x); }
+    k = k + 1;
+  }
+  return out;
+}

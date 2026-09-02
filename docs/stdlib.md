@@ -27,6 +27,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
 | `max_by(xs, key)` | element with the largest `key(x)`; `nil` on empty |
 | `chunk(xs, n)` | sublists of `n` elements, last may be shorter |
+| `insert_at(xs, i, v)` | fresh list with `v` inserted before index `i` |
+| `remove_at(xs, i)` | fresh list without the element at index `i` |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 
 ## lib/string.ting
