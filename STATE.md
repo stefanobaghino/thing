@@ -266,6 +266,8 @@ green.
 - v2.6.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - REPL :load — toward v2.7.0.
 - Docs: REPL meta-commands + "Beyond scripts" tutorial section.
+- lib/list any/all/min_by/max_by. Release v2.7.0 next tick if
+  quiet.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
