@@ -273,6 +273,7 @@ green.
 - Playground fmt button (ting_fmt wasm export) — toward v2.8.0.
 - fmt button verified live via Playwright; ting_fmt doc corrected
   (token-stream formatter fails only on lex errors).
+- lib/map values/map_values. One more stroke, then v2.8.0.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
