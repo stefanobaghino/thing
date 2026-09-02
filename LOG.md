@@ -2076,3 +2076,10 @@ Tenth golden pair: examples/stats.ting — descriptive statistics
 dogfooding both of this cycle's features (lib/math.ting and stepped
 range) plus lib/list.ting. Output identical on both engines; 14/14
 suites. Third stroke banked; v2.4.0 next tick if quiet.
+
+---
+
+## 2026-09-02 — Iteration 144: v2.4.0
+
+Numbers release: lib/math.ting, range(lo, hi, step), stats example.
+14/14 suites, eval spot-checks green. Tagging v2.4.0 (24th release).

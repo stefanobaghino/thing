@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.4.0 (2026-09-02)
+
+- `lib/math.ting`: fifth stdlib module — `clamp`, `sign`, `pow`,
+  `gcd`, `round`, `sqrt` (embedded in the binary like the rest).
+- `range(lo, hi, step)`: optional third argument; negative steps
+  count down, zero is an error. Existing forms unchanged.
+- `examples/stats.ting`: descriptive statistics golden pair using
+  both of the above.
+
 ## v2.3.0 (2026-09-01)
 
 - LSP: `textDocument/documentSymbol` — an outline of top-level
