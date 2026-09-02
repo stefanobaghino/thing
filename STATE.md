@@ -292,6 +292,8 @@ green.
 - write_file append mode.
 - lib/list insert_at/remove_at.
 - v2.12.0 RELEASED and verified (32nd); darwin-arm64 cold-tested.
+- Fuzz generator emits find + stepped range (30k fresh cases
+  clean).
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0
