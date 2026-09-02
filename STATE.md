@@ -45,10 +45,10 @@ green.
 - Control flow: `if`/`else if`/`else` and `while`, brace-required,
   strict-bool conditions; 7 tests. fib(10) works.
 - Functions and closures: `fn` decls (desugared to `let`), anonymous
-  fns, `return` via Control enum, Rc<RefCell<Env>> environments, depth
+  fns, `return` via Control enum, `Rc<RefCell<Env>>` environments, depth
   cap 200, 32MB interpreter thread; 16 tests.
 - Maps (`{"k": v}`, string keys, BTreeMap) + index assignment incl.
-  nested; lists/maps now reference types (Rc<RefCell>); 10 tests.
+  nested; lists/maps now reference types (`Rc<RefCell>`); 10 tests.
 - Builtins as first-class values: print, len, push, pop, keys, has,
   str, int, float, type, range; 7 tests.
 - REPL (`src/repl.rs`): expression echo, multi-line continuation,
@@ -109,7 +109,7 @@ green.
 - Benchmark harness (bench/ + run.py + BASELINE.md: fib 295ms, lists
   101ms, maps 112ms, strings 54ms on the dev machine).
 - Measured optimization pass: ~10% across benches (inert block
-  scopes skipped, Rc<str> env keys); BASELINE.md updated.
+  scopes skipped, `Rc<str>` env keys); BASELINE.md updated.
 - Playground share-by-URL (fragment-encoded source, auto-run on
   open); browser-verified.
 - Tutorial modules section (self-contained write_file+import snippet;

@@ -619,7 +619,7 @@ First v0.4.0 task. `src/lib.rs` now owns the modules and a
 lex/parse/run pipeline and returns rendered caret diagnostics as
 strings; `src/main.rs` shrank to argv handling, the big-stack thread,
 and printing. The wasm cdylib (next task) will call `run_source` with a
-Vec<u8> writer. 2 lib tests; suite at 133. Unit tests moved with their
+`Vec<u8>` writer. 2 lib tests; suite at 133. Unit tests moved with their
 modules untouched.
 
 ---
@@ -918,7 +918,7 @@ support. Suite at 146.
 
 ## 2026-09-01 — Iteration 42: playground syntax highlighting
 
-The editor textarea is now transparent over a highlighted <pre>, kept
+The editor textarea is now transparent over a highlighted `<pre>`, kept
 in lockstep on input and scroll (the classic overlay technique — no
 editor library, still one static file). A single-regex tokenizer
 mirrors the lexer's classes: comments, strings, numbers, keywords,
@@ -1288,7 +1288,7 @@ doesn't deliver either, the retire option is on the table.
 ## 2026-09-01 — Iteration 61: local slot resolution — the VM wins
 
 Params and un-captured locals in compiled function bodies now live in
-a per-call slot frame (Vec<Value>) instead of the Env HashMap:
+a per-call slot frame (`Vec<Value>`) instead of the Env HashMap:
 GetSlot/SetSlot ops, a lexical resolver in the compiler, and a
 conservative capture analysis (every identifier mentioned inside a
 nested fn literal stays Env-allocated — over-approximate but sound).
