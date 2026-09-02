@@ -2584,3 +2584,15 @@ in the new step table tripped clippy's unnecessary_cast under
 tests, not clippy). The local pre-push chain ran fmt + tests but
 skipped clippy this once; cast removed, clippy clean again. Rule
 restated: fmt, clippy, AND test before every push, no exceptions.
+
+---
+
+## 2026-09-03 — Iteration 183: STATE.md compaction
+
+Housekeeping stroke: STATE.md had grown to 305 lines of
+accumulated done-items — history that LOG.md already keeps better.
+Rewritten to ~40 lines: objective, the stable shape of the project,
+the working rhythm (with the hard-won rules: fmt+clippy+test before
+every push, API-verified CI verdicts, cold-download release
+verification), and the current position. Orientation is now one
+screen. Docs guards green.
