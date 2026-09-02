@@ -743,11 +743,38 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             Builtin::WriteFile => {
-                arity(2, 2)?;
+                arity(2, 3)?;
+                let append = match args.get(2) {
+                    None => false,
+                    Some(Value::Str(mode)) if mode == "append" => true,
+                    Some(v) => {
+                        return Err(error(
+                            format!(
+                                "write_file mode must be the string \"append\", got {}",
+                                match v {
+                                    Value::Str(m) => format!("{m:?}"),
+                                    other => other.type_name().to_string(),
+                                }
+                            ),
+                            span,
+                        ));
+                    }
+                };
                 match (&args[0], &args[1]) {
-                    (Value::Str(path), Value::Str(s)) => std::fs::write(path, s)
-                        .map(|_| Value::Nil)
-                        .map_err(|e| error(format!("cannot write {path:?}: {e}"), span)),
+                    (Value::Str(path), Value::Str(s)) => {
+                        let result = if append {
+                            std::fs::OpenOptions::new()
+                                .create(true)
+                                .append(true)
+                                .open(path)
+                                .and_then(|mut f| std::io::Write::write_all(&mut f, s.as_bytes()))
+                        } else {
+                            std::fs::write(path, s)
+                        };
+                        result
+                            .map(|_| Value::Nil)
+                            .map_err(|e| error(format!("cannot write {path:?}: {e}"), span))
+                    }
                     (a, b) => Err(error(
                         format!(
                             "write_file expects two strings, got {} and {}",

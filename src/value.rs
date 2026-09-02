@@ -193,8 +193,8 @@ impl Builtin {
                 "The file's entire contents as a string (\"-\" reads stdin); unreadable file errors.",
             ),
             Builtin::WriteFile => (
-                "write_file(path, s)",
-                "Writes (or overwrites) the file; returns nil.",
+                "write_file(path, s) / write_file(path, s, \"append\")",
+                "Writes (or overwrites) the file; \"append\" adds to the end. Returns nil.",
             ),
             Builtin::Sort => (
                 "sort(xs)",

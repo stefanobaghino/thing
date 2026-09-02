@@ -172,7 +172,7 @@ scope).
 | `args()`       | the command-line arguments after the script path, as a list of strings |
 | `input()`      | one line from stdin without the newline; `nil` at end of input |
 | `read_file(path)` | the file's entire contents as a string; `"-"` reads stdin to EOF |
-| `write_file(path, s)` | writes (or overwrites) the file; returns nil; failure errors |
+| `write_file(path, s)` / `write_file(path, s, "append")` | writes (or overwrites) the file; `"append"` adds to the end |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `try(f)`       | calls `f()`; `{"ok": result}` on success, `{"err": message}` on a runtime error |

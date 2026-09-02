@@ -188,3 +188,35 @@ fn read_file_dash_reads_stdin() {
     assert_eq!(out.status.code(), Some(0));
     let _ = std::fs::remove_file(&script);
 }
+
+#[test]
+fn write_file_append_mode() {
+    let dir = std::env::temp_dir();
+    let script = dir.join(format!("ting-append-{}.ting", std::process::id()));
+    let data = dir.join(format!("ting-append-{}.txt", std::process::id()));
+    std::fs::write(
+        &script,
+        format!(
+            "write_file({p:?}, \"one\\n\");\n\
+             write_file({p:?}, \"two\\n\", \"append\");\n\
+             print(read_file({p:?}));\n\
+             write_file({p:?}, \"three\\n\");\n\
+             print(read_file({p:?}));\n\
+             let bad = try(fn() {{ return write_file({p:?}, \"x\", \"nope\"); }});\n\
+             print(has(bad, \"err\"));\n",
+            p = data.to_str().unwrap()
+        ),
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    // Append grew the file; the later plain write truncated it.
+    assert_eq!(stdout, "one\ntwo\n\nthree\n\ntrue\n", "{stdout}");
+    assert_eq!(out.status.code(), Some(0));
+    let _ = std::fs::remove_file(&script);
+    let _ = std::fs::remove_file(&data);
+}

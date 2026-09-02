@@ -2514,3 +2514,15 @@ escapes control characters, that they round-trip through
 json_parse, and that the JSON unicode escape u000d decodes to a
 carriage return. All held on both engines already — pure
 regression insurance. 14/14 suites. First stroke toward v2.12.0.
+
+---
+
+## 2026-09-02 — Iteration 178: write_file append mode
+
+write_file(path, s, "append") — additive third argument; any other
+mode string or type errors. CLI test observes the append growing
+the file, the plain write truncating it afterwards, and the
+bad-mode error (first draft asserted only the end state and never
+actually saw the append — caught on review, strengthened). Hover
+doc and reference row updated. 14/14 suites. Second stroke toward
+v2.12.0.
