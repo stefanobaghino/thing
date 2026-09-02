@@ -2552,3 +2552,13 @@ on the reference engine. Tagging v2.12.0 (32nd release).
 Three archives published; darwin-arm64 cold test: ting 2.12.0,
 append mode produces "ab", remove_at works from the bundled list
 module. 32 releases, all verified.
+
+---
+
+## 2026-09-02 — Iteration 181: 100k-case differential sweep
+
+Periodic deep health check (previous sweep: iteration 158, 50k
+cases). Ten fresh seeds x 10,000 generated programs — zero engine
+divergences across everything shipped since, including find, the
+stepped range, the CR escape, and the stdlib growth. Cumulative
+sweep total now 150k cases beyond CI's fixed 800.
