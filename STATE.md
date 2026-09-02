@@ -267,7 +267,7 @@ green.
 - REPL :load — toward v2.7.0.
 - Docs: REPL meta-commands + "Beyond scripts" tutorial section.
 - lib/list any/all/min_by/max_by.
-- v2.7.0 tagged; release run in flight — verify assets next wake.
+- v2.7.0 RELEASED and verified; darwin-arm64 smoke-tested cold.
 - v0.3.0 RELEASED and verified: 3 assets, darwin binary smoke-tested
   (fizzbuzz + try/slice/upper).
   https://github.com/stefanobaghino/thing/releases/tag/v0.3.0

@@ -2260,3 +2260,11 @@ tick if quiet.
 REPL-and-stdlib release: :load, list any/all/min_by/max_by, docs
 tour of the toolchain. 14/14 suites, stdlib selftests green on both
 engines. Tagging v2.7.0 (27th release).
+
+---
+
+## 2026-09-02 — Iteration 157b: v2.7.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.7.0,
+max_by from the bundled list module, :load pulls a script's binding
+into the session. 27th release verified.
