@@ -137,6 +137,25 @@ print(ns);
 print("sum, padded:", s["pad_left"](str(l["sum"](ns)), 4, "0"));
 print(s["title"]("the ting standard library"));
 `,
+  "stats": `# Descriptive statistics with lib/math.ting.
+let ma = import("lib/math.ting");
+let li = import("lib/list.ting");
+
+let sample = range(2, 60, 3);
+let n = len(sample);
+let mean = float(li["sum"](sample)) / n;
+
+let variance = 0.0;
+for x in sample {
+  let d = x - mean;
+  variance = variance + d * d;
+}
+let stddev = ma["sqrt"](variance / n);
+
+print("n:", n, " mean:", mean);
+print("stddev:", ma["round"](stddev * 100) / 100.0);
+print("pow(2, 16):", ma["pow"](2, 16), " gcd(54, 24):", ma["gcd"](54, 24));
+`,
   "calc: a language in ting": `# A tiny calculator language, interpreted by ting.
 fn tokenize(src) {
   let toks = [];

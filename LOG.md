@@ -2091,3 +2091,14 @@ Numbers release: lib/math.ting, range(lo, hi, step), stats example.
 Three archives published; darwin-arm64 cold test: ting 2.4.0,
 pow(2,16)=65536 via bundled lib/math.ting, range(9,0,-3)=[9,6,3],
 five lib files in the archive. 24th release verified.
+
+---
+
+## 2026-09-02 — Iteration 145: stats in the playground
+
+Added a "stats" example to the playground (mean/stddev/pow/gcd via
+the embedded lib/math.ting). Two mistakes caught before shipping:
+a stray \` left the template literal unclosed (caught by eval-ing
+EXAMPLES in Node), and my ad-hoc wasm harness guessed wrong ABI
+names (ting_out_len — it's ting_result_ptr/len). Verified the
+snippet through the real ABI: prints "610 65536 6". 14/14 suites.
