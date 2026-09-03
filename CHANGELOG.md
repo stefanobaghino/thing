@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.83.0 (2026-09-04)
+
+- A runtime error shows the whole way back: one `note: in NAME,
+  called from FILE:LINE:COL` per call it unwound through, innermost
+  first. A trace longer than ten frames keeps four at each end and
+  says how many it left out.
+- Arity errors count in words and name the function called: "len
+  expects 1 argument, got 0", "two expects 2 arguments, got 1".
+
 ## v2.82.0 (2026-09-03)
 
 - Every `lib/test.ting` helper counts as a check, so files built on
