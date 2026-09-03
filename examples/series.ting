@@ -1,0 +1,29 @@
+# A numeric series: two weeks of daily temperatures summarised with
+# extent, mean, median, mode and a percentile, smoothed with a
+# three-day moving average, and split into warm and cool runs.
+
+let li = import("../lib/list.ting");
+let ma = import("../lib/math.ting");
+
+let temps = [18, 19, 21, 24, 24, 23, 20, 17, 16, 16, 19, 22, 25, 24];
+
+let range = li["extent"](temps);
+print("days:", len(temps), "range:", range[0], "to", range[1]);
+print("mean:", ma["round"](li["mean"](temps)), "median:", li["median"](temps),
+"mode:", li["mode"](temps));
+print("90th percentile:", ma["percentile"](temps, 90));
+
+# Three-day moving average, one decimal.
+let smooth = map(li["window"](temps, 3), fn(w) {
+  return ma["round"](li["mean"](w) * 10) / 10.0;
+});
+print("moving average:", smooth);
+
+# Runs of days at or above the mean ("warm") and below it ("cool").
+let avg = li["mean"](temps);
+let runs = li["chunk_by"](temps, fn(t) { return t >= avg; });
+for run in runs {
+  let label = "cool";
+  if run[0] >= avg { label = "warm"; }
+  print(label, "run of", str(len(run)) + ":", run);
+}
