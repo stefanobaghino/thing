@@ -3487,3 +3487,16 @@ verdicts). Four archives published. Cold test on this aarch64 Linux
 host: `ting 2.26.0`, frequencies prints identically on both
 engines. Site: all resources 200, changelog shows 2.26.0, stdlib
 page lists frequencies. 46 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 246: tutorial "Beyond scripts" refresh
+
+CI green on 245b (API verdict). The tutorial's closing chapter had
+frozen at the 2.9-era toolchain; it now names the five REPL
+meta-commands, the stdin filter form of --fmt, signature help and
+the editor's stdlib awareness (completion and hover through a
+module map), and the shell-citizen behaviours (quiet exit on a
+closed pipe, read_file("-")). No executed snippet changed. Markdown
+guard, tutorial test and full gate green. First stroke toward
+v2.27.0.
