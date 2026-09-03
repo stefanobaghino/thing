@@ -3606,3 +3606,48 @@ host: `ting 2.28.0`; product, mean_by, compact and is_blank print
 identically on both engines. Site: all resources 200, changelog
 shows 2.28.0, stdlib page lists the new rows. 48 releases, all
 verified. Next tick is the replenishment tick LOOP.md calls for.
+
+---
+
+## 2026-09-03 — Iteration 255: replenishment — the next milestone
+
+CI green on 254b (API verdict). Per LOOP.md's no-idle rule, this
+tick designs rather than builds. Since the restart the loop has
+shipped thirteen releases of mostly stdlib one-liners plus editor
+support for them; that seam is close to mined out (the list module
+alone has ~40 functions), and the remaining candidates were getting
+thinner each tick. Options weighed:
+
+- Language changes (comparator sort as a builtin, format
+  extensions): rejected — the 2.x freeze is the project's most
+  valuable promise, and every candidate is expressible in ting.
+- LSP go-to-definition into stdlib sources: rejected for now — the
+  embedded copies have no file to jump to, and pointing at a disk
+  lib/ that may not exist would be a lie half the time.
+- Playground stdlib imports: already work (embedded fallback);
+  retired without work.
+
+Chosen milestone, "programs, not one-liners" (v2.29–v2.31), five
+strokes each independently verifiable:
+
+1. lib/list.ting sort_with(xs, cmp): stable merge sort in ting over
+   a three-way comparator — the last ordering the builtins cannot
+   express (sort_by needs a single key).
+2. `ting --test <files...>`: a test runner in the binary. Runs each
+   file in a fresh interpreter, prints OK/FAIL per file from its
+   outcome, a summary line, exit 1 if any failed. Dogfooded on
+   selftest/ in CI (replacing the Rust loop that shells out per
+   file only if it is a strict superset — otherwise alongside).
+3. Cookbook page: tools/cookbook.py renders examples/*.ting with
+   their .out into docs/cookbook.md; a docs test asserts the file
+   is in sync; the site's nav links it; pages.yml paths gain
+   examples/**. Makes the eleven examples visible without cloning.
+4. Crash-fuzzer audit (tests/fuzz.rs) mirroring 237: which builtins
+   it never reaches; add the cheap ones.
+5. bench/stdlib.ting: an import-heavy benchmark so module loading
+   and ting-level helpers get a number; recorded in BASELINE.md
+   with an explicit host note, since the existing rows are from a
+   different machine.
+
+Release rhythm unchanged: tag when ~3 land, cold-execute every
+release here, log everything.

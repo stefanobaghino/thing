@@ -88,11 +88,15 @@ current orientation.
   executed cold on this host, both engines.
 - v2.28.0 RELEASED and verified (48th); aarch64-linux asset
   executed cold on this host, both engines.
-- NEXT: REPLENISHMENT tick per LOOP.md — design the
-  next milestone beyond stdlib one-liners (candidates to weigh:
-  string interpolation-free `format` extensions, a `sort` with
-  comparator, LSP go-to-definition into stdlib sources, a second
-  example-driven doc page, wasm playground stdlib import support).
+- 255: replenishment tick — milestone "programs, not one-liners"
+  (v2.29–v2.31), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) lib/list.ting sort_with(xs,
+  cmp) stable merge sort; (2) `ting --test <files...>` runner with
+  per-file OK/FAIL, summary, exit 1 on failure, io test, dogfood on
+  selftest/; (3) cookbook: tools/cookbook.py → docs/cookbook.md from
+  examples/*.ting + .out, sync test, site nav, pages.yml path; (4)
+  crash-fuzzer (tests/fuzz.rs) builtin-coverage audit; (5)
+  bench/stdlib.ting + BASELINE row with host note. Release after ~3.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
