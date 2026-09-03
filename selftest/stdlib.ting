@@ -126,3 +126,7 @@ assert(l["drop"]([1, 2], 5) == [], "drop past end");
 assert(l["drop"]([], 0) == [], "drop empty");
 assert(has(try(fn() { return l["take"]([1], -1); }), "err"), "take negative fails");
 assert(has(try(fn() { return l["drop"]([1], -1); }), "err"), "drop negative fails");
+
+assert(l["partition"]([1, 2, 3, 4], fn(x) { return x % 2 == 0; }) == [[2, 4], [1, 3]], "partition");
+assert(l["partition"]([], fn(x) { return true; }) == [[], []], "partition empty");
+assert(has(try(fn() { return l["partition"]([1], fn(x) { return 1; }); }), "err"), "partition non-bool pred fails");

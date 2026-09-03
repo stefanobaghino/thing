@@ -191,3 +191,14 @@ fn drop(xs, n) {
   if n > len(xs) { n = len(xs); }
   return slice(xs, n, len(xs));
 }
+
+# [matching, rest]: the elements for which pred holds, then the others,
+# each in input order.
+fn partition(xs, pred) {
+  let yes = [];
+  let no = [];
+  for x in xs {
+    if pred(x) { push(yes, x); } else { push(no, x); }
+  }
+  return [yes, no];
+}
