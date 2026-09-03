@@ -5575,3 +5575,16 @@ with a caret, extent runs identically on both engines, and
 `--test selftest` passes 11/11 on each binary. CI and Pages green
 on the release commit. Seventy-two tags, seventy-one verified.
 Next: retrospective act seven.
+
+---
+
+## 2026-09-03 — Iteration 357: retrospective act seven
+
+CI green on 356b (API verdict). Milestone stroke 3: "The seventh
+act: second opinions" in docs/retrospective.md, covering tags 62
+to 72 — the stop and restart, the front door and the generated
+playground examples, the shared warnings function and what
+calibrated it (79 false positives fixed by the module-shape rule,
+12 true positives fixed by underscores), the smaller strokes, and
+the site-audit slip. "Where it stands" now says seventy-two tags.
+Docs guard green. One stroke banked toward v2.52.0. Next: mode(xs).

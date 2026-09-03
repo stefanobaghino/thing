@@ -171,9 +171,9 @@ current orientation.
   (351 extent) banked toward v2.51.0.
 - v2.51.0 VERIFIED (72nd tag, 71 verified; both aarch64 archives
   executed here).
-- Backlog after the release (in order): (3) retrospective act
-  seven; (4) lib/list.ting mode(xs) (median already exists there),
-  selftests; (5) health tick + audit; then replenish.
+- 357: retrospective act seven — one stroke banked toward v2.52.0.
+- Backlog (in order): (4) lib/list.ting mode(xs) (median already
+  exists there), selftests; (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
