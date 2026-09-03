@@ -86,12 +86,13 @@ current orientation.
   executed cold on this host, both engines.
 - v2.27.0 RELEASED and verified (47th); aarch64-linux asset
   executed cold on this host, both engines.
-- 251: tutorial tally via frequencies/top; 252: product/mean_by —
-  two strokes toward v2.28.0.
-- Backlog (one per tick): one more feature stroke (candidates:
-  lib/string.ting is_blank(s), lib/list.ting compact(xs) = drop
-  nils); release after ~3 strokes; then backlog replenishment tick
-  (design the next milestone beyond stdlib one-liners).
+- 251: tutorial tally; 252: product/mean_by; 253: compact/is_blank
+  — three strokes banked; RELEASE v2.28.0 next tick if quiet.
+- After verification: REPLENISHMENT tick per LOOP.md — design the
+  next milestone beyond stdlib one-liners (candidates to weigh:
+  string interpolation-free `format` extensions, a `sort` with
+  comparator, LSP go-to-definition into stdlib sources, a second
+  example-driven doc page, wasm playground stdlib import support).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

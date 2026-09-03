@@ -3575,3 +3575,15 @@ and mean_by(xs, f) (mean over map, inheriting mean's float result
 and empty-list failure). Two one-liners, one stroke: aggregations.
 Five assertions, two stdlib.md rows. Full gate green on both
 engines. Second stroke toward v2.28.0.
+
+---
+
+## 2026-09-03 — Iteration 253: compact and is_blank
+
+CI green on 252 (API verdict). lib/list.ting gains compact(xs) — a
+filter dropping top-level nils only, which the selftest pins with a
+nested [nil] surviving — and lib/string.ting gains is_blank(s),
+trim_start's emptiness test. Four assertions, two stdlib.md rows.
+Full gate green on both engines. Third stroke banked — v2.28.0 next
+tick if quiet, then a replenishment tick to design the next
+milestone.
