@@ -7176,3 +7176,21 @@ idempotent. io test: a clean CRLF file passes --fmt-check, a messy
 one is reformatted with its endings intact. Full gate green (231
 tests). One stroke banked toward v2.66.0. Next: unused local
 bindings.
+
+---
+
+## 2026-09-03 — Iteration 436: unused local bindings
+
+CI green on 435 (API verdict). Milestone stroke 2: the fourth
+semantic warning shared by --check and the LSP — a `let` inside a
+block (a function body, a loop, an if arm) whose name appears
+nowhere else in that block. Token-based like the parameter check:
+the enclosing block is the innermost brace pair around the `let`,
+a use in a nested block counts (false negative, never a false
+positive), `_`-prefixed names are exempt, and the top level stays
+the older warning's job. The corpus (lib, selftest, examples,
+bench) was clean on the first scan, so no source changed. io test
+(stale, underscore, used-in-nested-block, parameter untouched)
+and protocol test (severity 2, range on the name). Full gate green
+(233 tests). Two strokes banked toward v2.66.0 (435, 436). Next:
+the docs sentences, then the release.

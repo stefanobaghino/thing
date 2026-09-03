@@ -90,11 +90,12 @@ holds only the current milestone and the standing rules.
   bodies are not warned about.
 - 434: replenishment — milestone "the small print" (v2.66–v2.67),
   reasoning in LOG.md.
-- 435: formatter keeps CRLF — one stroke banked toward v2.66.0.
-- Backlog (one per tick, in order): (2) unused local bindings
-  warning, io + protocol tests; (3) reference/tutorial/editor README
-  sentences — then RELEASE v2.66.0; (4) lib/math.ting trunc,
-  selftests; (5) health tick + audit.
+- 435: formatter keeps CRLF; 436: unused local bindings — two
+  strokes banked toward v2.66.0.
+- Backlog (one per tick, in order): (3) reference/tutorial/editor
+  README sentences (CRLF rule, four warnings) — then RELEASE
+  v2.66.0; (4) lib/math.ting trunc, selftests; (5) health tick +
+  audit.
 - Tags: 86 (v2.65.0), 85 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
