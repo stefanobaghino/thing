@@ -4986,3 +4986,12 @@ letters (`file:///C:/x` in, forward slashes and the leading slash
 out). The test builds a proper URI on every platform. Full gate
 green locally (206 tests); the Windows job is the real verdict.
 v2.44.0 waits for it.
+
+---
+
+## 2026-09-03 — Iteration 326: v2.44.0
+
+README refresh, variance/stddev, LSP document links plus the
+malformed-message and Windows URI fixes. CI green on 325b across
+all five jobs (API verdict). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.44.0 (65th tag).

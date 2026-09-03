@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.44.0 (2026-09-03)
+
+- LSP: document links on `import(...)` paths; a malformed message
+  no longer ends the session; Windows drive-letter file URIs are
+  handled.
+- `lib/math.ting`: `variance`, `stddev` (the stats example uses
+  them).
+- README: status and tooling paragraphs brought up to date.
+
 ## v2.43.0 (2026-09-03)
 
 - LSP: workspace symbols across open documents.

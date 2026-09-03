@@ -145,10 +145,9 @@ current orientation.
   executed cold here. The 314 milestone is complete.
 - 322: replenishment — milestone "front door" (v2.44–v2.46),
   reasoning in LOG.md.
-- 323: README refresh; 324: variance/stddev; 325: LSP document
-  links (325b: Windows CI red → malformed-message skipping and
-  drive-letter URIs fixed) — three strokes banked; RELEASE v2.44.0
-  next tick if the Windows job is green.
+- v2.44.0 TAGGED (65th tag; milestone strokes 1–3 plus the 325b
+  fixes): verify next tick — six assets, glibc guard, cold-execute
+  the aarch64 musl archive here (stddev, --lsp survives garbage).
 - Backlog after the release (in order): (4) tutorial modules
   chapter mentions :doc/--doc; (5) health tick + audit; then
   replenish.
