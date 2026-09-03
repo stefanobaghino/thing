@@ -2832,3 +2832,14 @@ left untouched, as its header requires like-for-like machines.
 Fuzz sweep: 20000 differential cases on seed 20260903, engines agree
 on every one. Nothing to fix. One feature stroke left before
 v2.17.0.
+
+---
+
+## 2026-09-03 — Iteration 203: map filter_map/has_all
+
+CI green on 202 (API verdict). lib/map.ting gains filter_map(m,
+pred) — pred sees (key, value), keeping the map's sorted-key
+iteration — and has_all(m, ks), the multi-key companion to the has
+builtin (vacuously true on an empty list). Six assertions, two
+stdlib.md rows. Full gate green on both engines. Third stroke banked
+— v2.17.0 next tick if quiet, with the first four-platform release.

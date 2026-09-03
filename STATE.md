@@ -47,10 +47,11 @@ current orientation.
   201: string chars/reverse — two strokes toward v2.17.0.
 - 202: health tick green (checksums match, ratios hold, 20k fuzz
   cases agree).
-- Backlog (one per tick): one more feature stroke (candidates:
-  lib/map.ting has_all/filter_map, lib/math.ting min_max/abs_diff);
-  then release v2.17.0 and execute its aarch64-linux asset cold on
-  this host.
+- 203: map filter_map/has_all — three strokes banked; RELEASE
+  v2.17.0 next tick if quiet (first four-platform release), then
+  execute its aarch64-linux asset cold on this host.
+- Backlog after the release: lib/math.ting abs_diff/lcm; tutorial
+  mention of group_by/partition; distribution audit incl. arm64.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
