@@ -6899,3 +6899,11 @@ rename before opening its prompt; renameProvider now advertises
 prepareProvider. Protocol test: the binding gets its range and
 name, `len` and `let` get null. Full gate green (228 tests). Three
 strokes banked (417, 420, 421) — v2.63.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 422: v2.63.0
+
+merge_with, documentHighlight, prepareRename. CI green on 421
+(API verdict). Full gate green, stdlib selftests pass on both
+engines. Tagging v2.63.0 (84th tag).

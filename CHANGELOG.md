@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.63.0 (2026-09-03)
+
+- LSP: documentHighlight (occurrences of the symbol under the
+  cursor, binding sites as writes) and prepareRename (the editor
+  declines a rename on a keyword or builtin before prompting).
+- lib/map.ting: `merge_with(a, b, f)`.
+
 ## v2.62.0 (2026-09-03)
 
 - REPL: a session transcript — `:history` lists every chunk that
