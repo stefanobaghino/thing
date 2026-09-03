@@ -6171,3 +6171,20 @@ musl. Both aarch64 archives downloaded and executed here: version
 the runs on both, and `--test selftest` passes 11/11 on each. CI
 and Pages green on the release commit. Seventy-seven tags,
 seventy-six verified. Next: examples/series.ting.
+
+---
+
+## 2026-09-03 — Iteration 385: examples/series.ting
+
+CI green on 384b (API verdict). Milestone stroke 2: a numeric
+series example — two weeks of temperatures summarised with extent,
+mean, median, mode and the 90th percentile, a three-day moving
+average from window, and warm/cool runs from chunk_by keyed on a
+boolean. The first run failed on `len(run) + ":"` (no implicit
+int-to-string conversion — the language is strict on purpose, and
+the example now shows the str() idiom); fixed before anything was
+committed. Formatted with --fmt before its .out was generated; the
+reference engine's output is byte-identical (diffed before
+commit); --check clean. Cookbook and playground list regenerated,
+guards green. Full gate green (219 tests). One stroke banked
+toward v2.57.0. Next: the editor README's LSP section.
