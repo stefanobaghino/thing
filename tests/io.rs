@@ -168,6 +168,37 @@ fn check_flag_prints_stdlib_member_warnings() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check` warns about a top-level binding that is never used;
+/// underscore-prefixed names are exempt and used ones are silent.
+#[test]
+fn check_flag_warns_about_unused_top_level_lets() {
+    let path = std::env::temp_dir().join(format!("ting-check-unused-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let used = 1;\nlet unused = 2;\nlet _scratch = 3;\nfn helper() { return 0; }\nprint(used);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: `unused` is never used"),
+        "{stderr}"
+    );
+    assert!(
+        stderr.contains("warning: `helper` is never used"),
+        "{stderr}"
+    );
+    assert!(
+        !stderr.contains("`used`") && !stderr.contains("_scratch"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

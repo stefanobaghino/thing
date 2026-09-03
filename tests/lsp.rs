@@ -502,6 +502,44 @@ fn malformed_message_does_not_end_the_session() {
 }
 
 #[test]
+fn unused_top_level_let_is_a_warning() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///u.ting","text":"let a = 1;\nlet b = 2;\nprint(a);\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(
+        diag.contains("`b` is never used") && diag.contains("\"severity\":2"),
+        "{diag}"
+    );
+    assert!(!diag.contains("`a`"), "{diag}");
+    // The range is the binding's name: line 1, character 4.
+    assert!(
+        diag.contains("\"start\":{\"character\":4,\"line\":1}"),
+        "{diag}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///u.ting","version":2},"contentChanges":[{"text":"let a = 1;\nlet b = 2;\nprint(a + b);\n"}]}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(diag.contains("\"diagnostics\":[]"), "{diag}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 

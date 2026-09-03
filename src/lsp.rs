@@ -415,7 +415,7 @@ fn diagnostics(src: &str) -> Value {
             ("message", s(&message)),
         ])],
     };
-    for (start, end, message) in unknown_stdlib_members(src) {
+    for (start, end, message) in warnings(src) {
         list.push(obj(vec![
             (
                 "range",
@@ -436,6 +436,65 @@ fn diagnostics(src: &str) -> Value {
 /// to an embedded stdlib module that exports no `name` (functions and
 /// top-level lets both count). Text-based like the rest of this file:
 /// (byte start, byte end, message) per offending key.
+/// Warnings for top-level `let` (or fn) bindings whose name is never
+/// referenced anywhere else in the file — the binding's own identifier
+/// token is the only occurrence. Names starting with `_` are exempt by
+/// convention, and a file consisting only of bindings is a module
+/// whose names are exports. (byte start, byte end, message) per
+/// binding.
+pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    // A file made only of bindings is a module: its top-level names
+    // are exports for importers, not unused.
+    if program
+        .iter()
+        .all(|stmt| matches!(stmt.kind, crate::ast::StmtKind::Let(..)))
+    {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    for stmt in &program {
+        let crate::ast::StmtKind::Let(name, _) = &stmt.kind else {
+            continue;
+        };
+        if name.starts_with('_') {
+            continue;
+        }
+        let uses = tokens
+            .iter()
+            .filter(|t| matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name))
+            .count();
+        if uses > 1 {
+            continue;
+        }
+        let Some(tok) = tokens.iter().find(|t| {
+            t.span.start >= stmt.span.start
+                && matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name)
+        }) else {
+            continue;
+        };
+        out.push((
+            tok.span.start,
+            tok.span.end,
+            format!("`{name}` is never used"),
+        ));
+    }
+    out
+}
+
+/// Every semantic warning for a source: unknown stdlib members, then
+/// unused top-level bindings. Shared by --check and the LSP.
+pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
+    let mut all = unknown_stdlib_members(src);
+    all.extend(unused_top_level_lets(src));
+    all
+}
+
 pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
     stdlib_member_findings(src)
         .into_iter()
