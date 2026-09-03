@@ -6869,3 +6869,20 @@ Rejected: semantic tokens (a colour table per client, and the
 TextMate grammar already colours everything the lexer knows),
 inlay hints (nothing to infer in a dynamically typed language
 without a type checker).
+
+---
+
+## 2026-09-03 — Iteration 420: documentHighlight
+
+CI green on 419 (API verdict). Milestone stroke 1: the thirteenth
+editor capability — textDocument/documentHighlight returns every
+occurrence of the identifier under the cursor in the document, a
+binding site (the token after `let` or `fn`) as Write and any
+other as Read, from the same token scan references use; nothing
+under the cursor that names anything is null (the first cut
+returned an empty list for a number, because the word scanner
+hands back digits too — caught by the gate). Protocol test on a
+document with a let, an assignment, a use, a print argument and a
+same-named fn: two writes, three reads, the let's range first, and
+null on a number. Full gate green (227 tests). Two strokes banked
+toward v2.63.0 (417, 420). Next: prepareRename.

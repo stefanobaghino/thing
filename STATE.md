@@ -72,11 +72,12 @@ holds only the current milestone and the standing rules.
   tick + audit green — milestone "the session" complete.
 - 419: replenishment — milestone "the editor, again" (v2.63–v2.64),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) LSP documentHighlight,
-  protocol test; (2) LSP prepareRename, protocol test — then RELEASE
-  v2.63.0 (417, +2); (3) the thirteen-capability count in README,
-  reference, editor/README, STATE; (4) lib/string.ting squeeze,
-  selftests; (5) health tick + audit.
+- 420: documentHighlight — two strokes banked toward v2.63.0 (417,
+  420).
+- Backlog (one per tick, in order): (2) LSP prepareRename, protocol
+  test — then RELEASE v2.63.0; (3) the thirteen-capability count in
+  README, reference, editor/README, STATE; (4) lib/string.ting
+  squeeze, selftests; (5) health tick + audit.
 - Tags: 83 (v2.62.0), 82 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
