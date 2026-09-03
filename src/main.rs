@@ -466,9 +466,11 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     };
     let mut failed = 0usize;
     let mut skipped = 0usize;
+    let mut total_checks = 0usize;
+    let mut unchecked = 0usize;
     let mut timings: Vec<(u128, &str)> = Vec::new();
     for (i, (f, result)) in files.iter().zip(results).enumerate() {
-        let Some((ok, diag, ms)) = result else {
+        let Some((ok, diag, ms, checks)) = result else {
             skipped += 1;
             if tap {
                 println!("ok {} - {f} # SKIP fail-fast", i + 1);
@@ -479,14 +481,28 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         if !ok {
             failed += 1;
         }
+        total_checks += checks;
+        // Only a file that passed while checking nothing is worth
+        // naming: a failure has already said what went wrong.
+        if ok && checks == 0 {
+            unchecked += 1;
+        }
+        // "(12 checks)", or "(no checks)" for a file that verified
+        // nothing — which passes, but proves nothing.
+        let count = match checks {
+            0 => "no checks".to_string(),
+            1 => "1 check".to_string(),
+            n => format!("{n} checks"),
+        };
         if tap {
             println!("{} {} - {f}", if ok { "ok" } else { "not ok" }, i + 1);
             for line in &diag {
                 println!("# {line}");
             }
+            println!("# {count}");
             println!("# time: {ms}ms");
         } else if ok {
-            println!("ok   {f}");
+            println!("ok   {f} ({count})");
         } else {
             println!("FAIL {f}");
             for line in &diag {
@@ -496,10 +512,19 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     }
     let passed = files.len() - failed - skipped;
     let prefix = if tap { "# " } else { "" };
+    let checks = match total_checks {
+        1 => ", 1 check".to_string(),
+        n => format!(", {n} checks"),
+    };
+    let none = match unchecked {
+        0 => String::new(),
+        1 => " (1 file checked nothing)".to_string(),
+        n => format!(" ({n} files checked nothing)"),
+    };
     if skipped > 0 {
-        println!("{prefix}{passed} passed, {failed} failed, {skipped} skipped");
+        println!("{prefix}{passed} passed, {failed} failed, {skipped} skipped{checks}{none}");
     } else {
-        println!("{prefix}{passed} passed, {failed} failed");
+        println!("{prefix}{passed} passed, {failed} failed{checks}{none}");
     }
     // `--slow N`: the N slowest files after the summary, opt-in so the
     // default output is unchanged (as a TAP comment in --tap mode).
@@ -518,30 +543,42 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     }
 }
 
-/// (passed, stderr lines, elapsed ms) for one test file.
-type TestOutcome = (bool, Vec<String>, u128);
+/// (passed, stderr lines, elapsed ms, checks run) for one test file.
+type TestOutcome = (bool, Vec<String>, u128, usize);
 
-/// One test file in a child process.
+/// One test file in a child process. The child is asked to report how
+/// many checks it ran; that line is taken out of its diagnostics.
 fn run_one(me: &std::path::Path, f: &str) -> TestOutcome {
     let started = std::time::Instant::now();
     let out = std::process::Command::new(me)
         .arg(f)
         .env("TING_ENGINE", engine_name())
+        .env("TING_TEST_REPORT", "1")
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::null())
         .output();
     let ms = started.elapsed().as_millis();
     match out {
-        Ok(out) if out.status.success() => (true, Vec::new(), ms),
-        Ok(out) => (
-            false,
-            String::from_utf8_lossy(&out.stderr)
+        Ok(out) => {
+            let mut checks = 0usize;
+            let diag: Vec<String> = String::from_utf8_lossy(&out.stderr)
                 .lines()
+                .filter(|line| match line.strip_prefix("ting-checks: ") {
+                    Some(n) => {
+                        checks = n.trim().parse().unwrap_or(0);
+                        false
+                    }
+                    None => true,
+                })
                 .map(str::to_string)
-                .collect(),
-            ms,
-        ),
-        Err(e) => (false, vec![format!("cannot run: {e}")], ms),
+                .collect();
+            if out.status.success() {
+                (true, Vec::new(), ms, checks)
+            } else {
+                (false, diag, ms, checks)
+            }
+        }
+        Err(e) => (false, vec![format!("cannot run: {e}")], ms, 0),
     }
 }
 

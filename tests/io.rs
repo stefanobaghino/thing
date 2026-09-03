@@ -1925,6 +1925,43 @@ fn test_flag_runs_files_and_summarises() {
     let _ = std::fs::remove_file(&bad);
 }
 
+/// `--test` says how much each file verified: a count per file, a
+/// total in the summary, and a passing file that checked nothing
+/// named as such.
+#[test]
+fn test_flag_counts_checks() {
+    let dir = std::env::temp_dir().join(format!("ting-test-counts-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("two.ting"), "assert(true);\nassert(1 == 1);\n").unwrap();
+    std::fs::write(dir.join("one.ting"), "assert(true);\n").unwrap();
+    std::fs::write(dir.join("none.ting"), "# nothing to see\n").unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", dir.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.contains("none.ting (no checks)"), "{stdout}");
+    assert!(stdout.contains("one.ting (1 check)"), "{stdout}");
+    assert!(stdout.contains("two.ting (2 checks)"), "{stdout}");
+    assert!(
+        stdout.contains("3 passed, 0 failed, 3 checks (1 file checked nothing)"),
+        "{stdout}"
+    );
+
+    // The count is a TAP comment in --tap mode.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--tap", dir.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\n# no checks\n"), "{stdout}");
+    assert!(stdout.contains("\n# 2 checks\n"), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// A directory argument expands to every .ting file beneath it, in
 /// sorted order, recursively; other files are ignored.
 /// `--tap` emits a TAP stream: plan, ok/not ok lines numbered from 1,
@@ -1957,7 +1994,7 @@ fn test_flag_tap_output() {
     );
     assert!(stdout.contains("# time: "), "{stdout}");
     assert!(
-        stdout.trim_end().ends_with("# 1 passed, 1 failed"),
+        stdout.trim_end().ends_with("# 1 passed, 1 failed, 1 check"),
         "{stdout}"
     );
     // Every non-comment line is a plan or a test line: TAP-clean.
@@ -2036,7 +2073,7 @@ fn test_flag_expands_directories() {
         .expect("failed to run ting");
     let stdout = String::from_utf8_lossy(&out.stdout);
     let after = stdout
-        .split("2 passed, 1 failed\n")
+        .split("2 passed, 1 failed, 3 checks\n")
         .nth(1)
         .expect("summary first");
     assert!(after.starts_with("slowest:\n"), "{stdout}");

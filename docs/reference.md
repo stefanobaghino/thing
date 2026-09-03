@@ -317,7 +317,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   process and
   prints `ok` or `FAIL` per file (with the diagnostic under a
   failure) and a summary; exit 1 if anything failed. Pair it with
-  `lib/test.ting` or plain `assert` calls.
+  `lib/test.ting` or plain `assert` calls. Each line says how much
+  the file verified — `ok tests/list.ting (12 checks)`, one check
+  per `assert` — the summary totals them, and a file that passed
+  while checking nothing is named there, since it proves nothing.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
