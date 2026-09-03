@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.13.0 (2026-09-03)
+
+- `lib/map.ting`: `pick`, `omit`.
+- `lib/string.ting` and `lib/list.ting`: `count`.
+- The differential fuzz generator now emits `find` and stepped
+  `range` expressions, extending engine-equivalence coverage to the
+  newer builtins.
+
 ## v2.12.0 (2026-09-02)
 
 - `write_file(path, s, "append")`: optional append mode; any other

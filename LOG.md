@@ -2614,3 +2614,12 @@ count(s, sub) — non-overlapping, empty substring fails — and
 count(xs, v) with structural equality. Seven selftest assertions;
 stdlib.md rows. Full gate green. Third stroke banked — v2.13.0
 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 186: v2.13.0
+
+Stdlib-and-fuzz release: pick/omit, count in string+list, fuzzer
+grammar covering find and stepped range. Full gate green, stdlib
+selftests pass on the reference engine. Tagging v2.13.0 (33rd
+release).
