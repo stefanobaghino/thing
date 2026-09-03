@@ -26,6 +26,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sort_with(xs, cmp)` | stable sort by a three-way comparator (`cmp(a, b)` negative, zero, positive) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `interleave(a, b)` | elements alternated starting with `a`; the longer tail follows |
+| `zip_with(a, b, f)` | `f(a[i], b[i])` for each index, trimmed to the shorter input |
+| `cartesian(a, b)` | every `[x, y]` pair, `a`-major order |
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
 | `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |

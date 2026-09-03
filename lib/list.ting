@@ -327,3 +327,15 @@ fn sort_with(xs, cmp) {
   }
   return out + slice(a, i, len(a)) + slice(b, j, len(b));
 }
+
+# f(a[i], b[i]) for each index, trimmed to the shorter input.
+fn zip_with(a, b, f) { return map(zip(a, b), fn(p) { return f(p[0], p[1]); }); }
+
+# Every [x, y] pair with x from a and y from b, a-major order.
+fn cartesian(a, b) {
+  let out = [];
+  for x in a {
+    for y in b { push(out, [x, y]); }
+  }
+  return out;
+}

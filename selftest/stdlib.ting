@@ -303,3 +303,8 @@ assert(base["srv"]["port"] == 1 && !has(base, "extra"), "merge_in leaves inputs 
 assert(j["merge_in"]({"a": 1}, {"a": {"b": 2}}) == {"a": {"b": 2}}, "merge_in map replaces scalar");
 assert(j["merge_in"](5, {"a": 1}) == {"a": 1}, "merge_in non-map left is replaced");
 assert(j["merge_in"]({}, {}) == {}, "merge_in empty");
+
+assert(l["zip_with"]([1, 2, 3], [10, 20], fn(p, q) { return p + q; }) == [11, 22], "zip_with trims");
+assert(l["zip_with"]([], [1], fn(p, q) { return p; }) == [], "zip_with empty");
+assert(l["cartesian"]([1, 2], ["a", "b"]) == [[1, "a"], [1, "b"], [2, "a"], [2, "b"]], "cartesian");
+assert(l["cartesian"]([1], []) == [], "cartesian empty side");
