@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.61.0 (2026-09-03)
+
+- LSP completion offers the file's own functions with their
+  signature and the comment above them.
+- lib/list.ting: `flatten_deep(xs)`; `flatten` documented.
+- Tutorial: the closing chapter matches the toolchain (warnings,
+  import walk, `--doc`, `--fmt --diff`, the playground's check).
+
 ## v2.60.0 (2026-09-03)
 
 - LSP hover on a function defined in the file shows the `#` comment

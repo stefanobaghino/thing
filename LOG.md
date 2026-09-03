@@ -6662,3 +6662,12 @@ one-level flatten, which gains the `#` comment it lacked so
 depths, already flat, nested empties, empty), stdlib.md row.
 Selftests pass on both engines; full gate green (223 tests).
 Three strokes banked (407, 408, 409) — v2.61.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 410: v2.61.0
+
+The tutorial's closing chapter, completion of the file's own
+functions, flatten_deep. CI and Pages green on 409 (API
+verdicts). Full gate green, stdlib selftests pass on both engines.
+Tagging v2.61.0 (82nd tag).
