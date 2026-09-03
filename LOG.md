@@ -6381,3 +6381,24 @@ completed by strokes 1–3, so this stroke is the tutorial alone.
 Tutorial and docs guards green. One stroke banked toward v2.59.0.
 Next: health tick + audit, with a cycle taught to the crash
 fuzzer.
+
+---
+
+## 2026-09-03 — Iteration 396: health tick + audit
+
+CI and Pages green on 395 (API verdicts). First the crash fuzzer
+learned a cycle: five programs (print and str, equality, json_str,
+a self-containing map with the pretty encoder, contains and find
+on a cycle) run on both engines under catch_unwind — all clean.
+Bench at load ~6: all six checksums match; timings are weather.
+Fuzz: 50000 differential cases (seed 20260903396), the crash
+fuzzer (now four tests), and 20000 formatter cases (seed 396) all
+pass in release. Distribution: 79 releases with the expected asset
+counts (36 × 3, 14 × 4, 29 × 6), all six v2.58.0 download URLs
+resolve, all nine site resources answer 200, and the site serves
+the cycle line and the tutorial's runner flags. A probe of the
+neighbouring class — 100000 levels of non-cyclic nesting through
+drop, print, equality and json_str — ran clean on the release
+binary, so it is not a crash class here. Nothing to fix. The
+"cycles" milestone is complete; one stroke (395) is banked toward
+v2.59.0. Backlog empty: next tick is replenishment.

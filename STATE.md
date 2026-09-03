@@ -208,8 +208,12 @@ current orientation.
 - v2.58.0 VERIFIED (79th tag, 78 verified; both aarch64 archives
   executed here on the three cyclic programs).
 - 395: tutorial runner flags — one stroke banked toward v2.59.0.
-- Backlog (in order): (5) health tick + audit, with a cycle taught to
-  the crash fuzzer; then replenish.
+  396: health tick + audit green, crash fuzzer taught a cycle —
+  milestone "cycles" complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md. The eighth
+  retrospective act falls due around the next milestone (acts every
+  six; the seventh was at the 13th).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
