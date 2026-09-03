@@ -7847,3 +7847,15 @@ if quiet.
 The formatter's contract in the docs, plural, unknown options
 with -h and -V. CI green on 471 (API verdict). Full gate green,
 stdlib selftests pass on both engines. Tagging v2.72.0 (93rd tag).
+
+---
+
+## 2026-09-03 — Iteration 472b: v2.72.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.72.0 from `-V` on both, `-h` printing the usage banner, an
+unknown option answered with the pointer at --help and exit 2,
+and `--test selftest` passing 11/11 on each. CI and Pages green on
+the release commit. Ninety-three tags, ninety-two verified. Next:
+exit codes 0/1/2.
