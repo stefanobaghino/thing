@@ -308,3 +308,9 @@ assert(l["zip_with"]([1, 2, 3], [10, 20], fn(p, q) { return p + q; }) == [11, 22
 assert(l["zip_with"]([], [1], fn(p, q) { return p; }) == [], "zip_with empty");
 assert(l["cartesian"]([1, 2], ["a", "b"]) == [[1, "a"], [1, "b"], [2, "a"], [2, "b"]], "cartesian");
 assert(l["cartesian"]([1], []) == [], "cartesian empty side");
+
+assert(s["wrap"]("the quick brown fox jumps", 10) == "the quick\nbrown fox\njumps", "wrap");
+assert(s["wrap"]("a verylongword b", 4) == "a\nverylongword\nb", "wrap long word alone");
+assert(s["wrap"]("  spaced   out  ", 20) == "spaced out", "wrap normalises whitespace");
+assert(s["wrap"]("", 5) == "", "wrap empty");
+assert(has(try(fn() { return s["wrap"]("x", 0); }), "err"), "wrap zero width fails");

@@ -186,3 +186,24 @@ fn table(rows) {
   }
   return join(lines, "\n");
 }
+
+# Greedy word wrap: words (any whitespace-separated) packed into lines
+# of at most width characters, joined by newlines. A word longer than
+# width stands alone on its line; width must be positive.
+fn wrap(s, width) {
+  if width <= 0 { fail("wrap: width must be positive"); }
+  let lines = [];
+  let cur = "";
+  for w in words(s) {
+    if cur == "" {
+      cur = w;
+    } else if len(cur) + 1 + len(w) <= width {
+      cur = cur + " " + w;
+    } else {
+      push(lines, cur);
+      cur = w;
+    }
+  }
+  if cur != "" { push(lines, cur); }
+  return join(lines, "\n");
+}

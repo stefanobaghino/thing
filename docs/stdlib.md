@@ -65,6 +65,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `truncate(s, width, suffix)` | at most `width` chars, ending in `suffix` when cut |
 | `indent(s, prefix)` | `prefix` before every non-empty line |
 | `table(rows)` | rows of strings padded into aligned columns, two spaces apart |
+| `wrap(s, width)` | greedy word wrap into lines of at most `width` characters |
 | `lines(s)` | split on `"\n"` |
 | `words(s)` | whitespace-separated words, no empties |
 | `title(s)` | first character of each space-separated word uppercased |
