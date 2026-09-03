@@ -100,9 +100,9 @@ current orientation.
   Linux archives executed cold here, musl fully static).
 - 264: replenishment — milestone "the runner and the operator"
   (v2.31–v2.33), reasoning in LOG.md.
-- v2.31.0 TAGGED (53rd tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 glibc
-  archive here (musl spot-check every other release).
+- v2.31.0 RELEASED and verified (53rd tag); aarch64 glibc archive
+  executed cold here. 268b: --test lists files before descending
+  (correction, unreleased).
 - Backlog after the release (in order): (4) LSP warning for an unknown stdlib member in
   m["..."] when m is bound to an import, protocol test; (5)
   retrospective act five (glibc episode). Release after ~3.

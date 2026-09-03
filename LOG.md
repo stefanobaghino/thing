@@ -3919,3 +3919,24 @@ stroke banked — v2.31.0 next tick if quiet.
 --test directories, CI dogfooding, table. CI and Pages green on
 267 (API verdicts). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.31.0 (53rd tag).
+
+---
+
+## 2026-09-03 — Iteration 268b: v2.31.0 verified; ordering corrected
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.31.0`, `--test tests` over a nested
+temp tree (2 passed), table() prints aligned columns on the
+reference engine. Site: all resources 200, changelog shows 2.31.0,
+cookbook shows the logs example's table. 53 tags, 52 verified.
+
+Correction found by that cold test: 265's log said directories are
+listed "files before descending", but the code recursed in place
+among sorted entries, so a subdirectory named earlier than a file
+ran first — the io test had passed only because its directory was
+named "nested". Now the runner lists a directory's files first and
+descends afterwards, and the test's nested directory is named to
+sort before the files so it would fail on the old order. Ships in
+the next release; v2.31.0's order is merely different, not wrong.
+Full gate green.
