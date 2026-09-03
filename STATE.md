@@ -135,9 +135,15 @@ current orientation.
   reasoning in LOG.md.
 - v2.40.0 RELEASED and verified (61st tag); aarch64 musl archive
   executed cold here.
-- v2.41.0 TAGGED (62nd tag; completes the 305 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.41.0 RELEASED and verified (62nd tag); aarch64 glibc archive
+  executed cold here. The 305 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  `--test --tap` consumed by CI (a step piping into a TAP summary);
+  (b) lib/list.ting sliding `pairwise(xs)` (= window 2) — too thin;
+  (c) REPL `:time expr`; (d) `--bench` flag running bench/*.ting?
+  (bench/run.py already); (e) tutorial: JSON chapter mention of
+  lib/json.ting; (f) LSP: workspace symbols across open docs; (g)
+  examples: a JSON config merge example dogfooding merge_in/diff.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

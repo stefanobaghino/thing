@@ -4740,3 +4740,15 @@ v2.41.0 next tick, then replenish.
 levenshtein and the sixth act — the tail of the 305 milestone. CI
 green on 312 (API verdict). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.41.0 (62nd tag).
+
+---
+
+## 2026-09-03 — Iteration 313b: v2.41.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.41.0`, levenshtein("kitten",
+"sitting") is 3 on both engines, `--doc levenshtein` answers. Site:
+all resources 200, changelog shows 2.41.0, stdlib page lists
+levenshtein. 62 tags, 61 verified. The 305 milestone is complete;
+next tick replenishes.
