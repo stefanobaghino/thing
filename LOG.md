@@ -6947,3 +6947,26 @@ so it inherits words' definition of whitespace. Four selftests
 empty), stdlib.md row. Selftests pass on both engines; full gate
 green (228 tests). Two strokes banked toward v2.64.0 (423, 424).
 Next: health tick + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 425: health tick + audit
+
+CI and Pages green on 424 (API verdicts). Bench at load ~3: all
+six checksums match; ratios in the band. Fuzz: 50000 differential
+cases (seed 20260903425), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 425) all pass in release.
+Distribution: 84 releases with the expected asset counts (36 × 3,
+14 × 4, 34 × 6), all six v2.63.0 download URLs resolve, all nine
+site resources answer 200, and the site serves the prepare-step
+sentence and squeeze. Nothing to fix in what was audited.
+
+Found by a probe while surveying: the REPL's `:load FILE`
+evaluates the file against the REPL's own working directory, so a
+relative `import("./m.ting")` inside the loaded file fails with
+"No such file or directory", and the diagnostic names "repl"
+instead of the file. A script run with `ting FILE` resolves the
+same import correctly; :load should behave like the script runner.
+First candidate for the next milestone. The "editor, again"
+milestone is complete; two strokes (423, 424) are banked toward
+v2.64.0. Backlog empty: next tick is replenishment.

@@ -75,9 +75,13 @@ holds only the current milestone and the standing rules.
 - v2.63.0 VERIFIED (84th tag; strokes 417, 420, 421; both aarch64
   archives executed here).
 - 423: thirteen capabilities counted everywhere; 424: squeeze — two
-  strokes banked toward v2.64.0.
-- Backlog (in order): (5) health tick + audit; then replenish (the
-  release follows the next stroke).
+  strokes banked toward v2.64.0. 425: health tick + audit green —
+  milestone "the editor, again" complete. Found: `:load` resolves
+  relative imports against the cwd, not the file, and names "repl"
+  in the diagnostic.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md; the release
+  follows the next stroke.
 - Tags: 84 (v2.63.0), 83 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
