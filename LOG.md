@@ -6751,3 +6751,19 @@ the session. The banner and `:help` mention it. io test drives a
 session with a binding, a two-line function, a failing name, a
 call, then `:history`, `:clear` and `:history` again. Full gate
 green (224 tests). One stroke banked toward v2.62.0. Next: :save.
+
+---
+
+## 2026-09-03 — Iteration 414: :save
+
+CI green on 413 (API verdict). Milestone stroke 2: `:save FILE`
+writes the transcript as a script — the chunks in order with a
+blank line between them and a final newline — and reports how many
+it wrote; with nothing evaluated it says so and writes no file; a
+write failure is an ordinary "cannot write" line. The banner and
+`:help` mention it. io test saves a session (a binding, a two-line
+function, a failed name that stays out, a print) and runs the file
+back through the binary, which prints the same 4. Full gate green
+(225 tests). Two strokes banked toward v2.62.0. Next: :doc alone
+in the REPL, the reference paragraph and the changelog head, then
+the release.
