@@ -26,3 +26,14 @@ let a = try(fn() { assert(false, "the message"); });
 assert(contains(a["err"], "the message"), "assert message");
 let strict = try(fn() { assert(1); });
 assert(contains(strict["err"], "bool"), "assert demands a bool");
+
+# Errors name the nearest thing they know about.
+let total = 1;
+assert(total == 1, "total is bound");
+let typo = try(fn() { return totl; });
+assert(contains(typo["err"], "did you mean 'total'"), "undefined variable suggests");
+let m = {"alpha": 1};
+let key = try(fn() { return m["alpah"]; });
+assert(contains(key["err"], "did you mean \"alpha\""), "unknown key suggests");
+let far = try(fn() { return m["zqxjw"]; });
+assert(!contains(far["err"], "did you mean"), "nothing near, nothing said");

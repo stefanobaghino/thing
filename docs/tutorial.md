@@ -247,6 +247,12 @@ greeter.ting:1:34: error: undefined variable 'nam' (did you mean 'name'?)
 note: called from main.ting:4:7
 ```
 
+The parenthesis after the name is ting guessing at a typo: when the
+name you wrote is close to one in scope — a binding, a parameter, a
+builtin — the error names it. Keys work the same way (`key "medain"
+not found (did you mean "median"?)`), and so do `ting --doc` and the
+command line itself, where `--fmr` is told about `--fmt`.
+
 Errors the checker can find without running — a syntax error in a
 module, say — surface earlier: `ting --check main.ting` follows every
 `import` of a local file and reports each one under its own path.
