@@ -795,6 +795,12 @@ fn signature_help_result(src: &str, line: usize, character: usize) -> Value {
     {
         // A stdlib call through its module map: m["name"](...).
         (sig, format!("{comment} (from {path})"))
+    } else if let Some(params) = user_fn_params(src, &word) {
+        // One of the file's own top-level functions.
+        (
+            format!("{word}({})", params.join(", ")),
+            "defined in this file".to_string(),
+        )
     } else {
         return Value::Nil;
     };

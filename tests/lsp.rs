@@ -217,6 +217,14 @@ fn completion_offers_imported_stdlib_functions() {
         hov.contains("fn area(w, h)") && hov.contains("defined in this file"),
         "{hov}"
     );
+    // Signature help inside area(...) comes from the same binding.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":32,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":11}}}"#,
+    );
+    let sig = recv(&mut reader);
+    assert!(sig.contains("\"label\":\"area(w, h)\""), "{sig}");
+    assert!(sig.contains("defined in this file"), "{sig}");
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":31,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":12}}}"#,
