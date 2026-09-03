@@ -6031,3 +6031,18 @@ comment because the module has none above it — not a regression.
 --test --fail-fast, the vm.md status section, --doc FILE.ting. CI
 and Pages green on 377b (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.55.0 (76th tag).
+
+---
+
+## 2026-09-03 — Iteration 378b: v2.55.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.55.0, `--test --fail-fast` on a three-file directory reports 1
+passed, 1 failed, 1 skipped and the TAP form has its SKIP line,
+`--doc` on a user file lists the commented function on both
+binaries, and `--test selftest` passes 11/11 on each (the first
+attempt ran from the download directory and failed to find the
+suite — a path slip, rerun from the repo). CI and Pages green on
+the release commit. Seventy-six tags, seventy-five verified. Next:
+the playground Check button.

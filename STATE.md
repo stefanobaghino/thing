@@ -189,9 +189,8 @@ current orientation.
   complete.
 - 375: replenishment — milestone "the story straight"
   (v2.55–v2.56), reasoning in LOG.md.
-- v2.55.0 TAGGED (76th tag; strokes 373, 376, 377): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (--fail-fast, --doc on a file, selftests).
+- v2.55.0 VERIFIED (76th tag, 75 verified; both aarch64 archives
+  executed here).
 - Backlog after the release (in order): (3) playground Check button
   (wasm export + unit test); (4) lib/list.ting chunk_by, selftests;
   (5) health tick + audit.
