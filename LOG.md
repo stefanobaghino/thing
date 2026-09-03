@@ -7936,3 +7936,34 @@ site resources answer 200, and the site serves the exit-status
 paragraph and take_while. Nothing to fix. The "front door's
 handle" milestone is complete. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-03 — Iteration 478: replenishment — milestone "reading width"
+
+CI green on 477 (API verdict). Twenty-nine milestones since the
+restart, ninety-four tags. The survey measured what `--doc` prints:
+81 of its 177 lines run past 80 columns, and a single entry's
+comment line reaches 120 — the table of contents that was built to
+be read in a terminal wraps wherever the terminal happens to, in
+the middle of words. And the five newest stdlib helpers have no
+example showing them at work. Five strokes:
+
+1. `--doc` (the index, a module, a file, one name) and the REPL's
+   `:doc` wrap comment text at 78 columns, continuation lines
+   indented under the text, so nothing runs past an 80-column
+   terminal; the signature stays on its own line when the comment
+   would not fit beside it. io test.
+2. examples/inventory.ting: a stock list worked with key_of,
+   flatten, take_while and plural, with its .out; cookbook and
+   playground regenerated.
+3. `ting --doc` takes several names at once (`ting --doc len median
+   slug`), printing each entry separated by a blank line and
+   exiting 1 if any is unknown. io test. Then release v2.74.0.
+4. lib/string.ting ordinal(n): "1st", "2nd", "3rd", "4th", "11th",
+   "22nd". Selftests.
+5. Health tick + distribution audit.
+
+Rejected: reading the terminal width from the environment (COLUMNS
+is unreliable and a pipe has none; 78 is the honest constant),
+markdown in --doc output (it is a terminal, not a page).

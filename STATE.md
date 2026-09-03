@@ -131,8 +131,12 @@ holds only the current milestone and the standing rules.
 - v2.73.0 VERIFIED (94th tag; strokes 473, 474, 475; both aarch64
   archives executed here). 477: health tick + audit green —
   milestone "the front door's handle" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 478: replenishment — milestone "reading width" (v2.74–v2.75),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) --doc and :doc wrap at 78
+  columns, io test; (2) examples/inventory.ting + regen; (3) --doc
+  with several names, io test — then RELEASE v2.74.0; (4)
+  lib/string.ting ordinal, selftests; (5) health tick + audit.
 - Tags: 94 (v2.73.0), 93 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
