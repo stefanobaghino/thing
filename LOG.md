@@ -7473,3 +7473,16 @@ regenerated. io test (let, fn, parameter; ordinary names silent)
 and protocol test. Reference, tutorial, README and editor README
 list the fifth warning. Full gate green (236 tests). One stroke
 banked toward v2.69.0. Next: is_number.
+
+---
+
+## 2026-09-03 — Iteration 452: is_number
+
+CI and Pages green on 451 (API verdicts). Milestone stroke 3:
+`is_number(s)` in lib/string.ting — true when float(s) would
+accept s, which the probe showed covers signed ints, decimals,
+exponents and surrounding whitespace; a non-failing predicate for
+input validation where int() and float() fail. Two selftests over
+seven inputs, stdlib.md row. Selftests pass on both engines; full
+gate green (236 tests). Two strokes banked toward v2.69.0 (451,
+452). Next: argmax and argmin.
