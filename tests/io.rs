@@ -269,3 +269,55 @@ fn repl_clear_resets_the_session() {
     assert!(stderr.contains("undefined variable 'gone'"), "{stderr}");
     assert_eq!(out.status.code(), Some(0));
 }
+
+/// A reader that goes away (`ting x.ting | head -1`) must end the run
+/// quietly: exit 0, nothing on stderr — both for print() in scripts
+/// and for the REPL's own output.
+#[test]
+fn broken_pipe_exits_quietly() {
+    use std::io::Read;
+    let script = std::env::temp_dir().join("ting-io-broken-pipe.ting");
+    std::fs::write(&script, "for i in range(200000) { print(i); }\n").unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    let mut first = [0u8; 2];
+    child.stdout.take().unwrap().read_exact(&mut first).unwrap();
+    // Dropping stdout above closed the read end; the script's next
+    // print hits EPIPE.
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(&first, b"0\n");
+    assert!(out.status.success(), "status: {:?}", out.status);
+    assert!(
+        out.stderr.is_empty(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(":help\n".repeat(200).as_bytes())
+        .unwrap();
+    let mut first = [0u8; 3];
+    child.stdout.take().unwrap().read_exact(&mut first).unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(&first, b"abs");
+    assert!(out.status.success(), "status: {:?}", out.status);
+    assert!(
+        out.stderr.is_empty(),
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+}

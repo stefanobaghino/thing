@@ -81,38 +81,58 @@ pub fn run() -> ExitCode {
         .expect("REPL thread panicked")
 }
 
+/// All REPL output goes through here so a reader that went away
+/// (`echo ':help' | ting | head`) ends the session quietly instead of
+/// panicking inside the standard print macros, matching what print()
+/// does in scripts.
+fn emit(text: &str) {
+    let mut out = std::io::stdout().lock();
+    if let Err(e) = out.write_all(text.as_bytes()) {
+        if e.kind() == std::io::ErrorKind::BrokenPipe {
+            std::process::exit(0);
+        }
+        eprintln!("ting: {e}");
+        std::process::exit(1);
+    }
+}
+
+fn say(text: &str) {
+    emit(text);
+    emit("\n");
+}
+
 /// `:help` — every builtin's signature and one-liner, in name order.
 fn print_help() {
     let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
     docs.sort();
     let width = docs.iter().map(|(sig, _)| sig.len()).max().unwrap_or(0);
     for (sig, text) in docs {
-        println!("{sig:width$}  {text}");
+        say(&format!("{sig:width$}  {text}"));
     }
-    println!("(:vars bindings; :load <file> runs a file here; :clear resets; ctrl-d exits)");
+    say("(:vars bindings; :load <file> runs a file here; :clear resets; ctrl-d exits)");
 }
 
 fn run_inner() -> ExitCode {
     let stdin = std::io::stdin();
     let tty = stdin.is_terminal();
     if tty {
-        println!(
+        say(&format!(
             "ting {} — :help builtins, :vars bindings, :load <file>, :clear resets",
             env!("CARGO_PKG_VERSION")
-        );
+        ));
     }
     let mut interp = Interpreter::new(std::io::stdout());
     let mut buffer = String::new();
     loop {
         if tty {
-            print!("{}", if buffer.is_empty() { "> " } else { ".. " });
+            emit(if buffer.is_empty() { "> " } else { ".. " });
             std::io::stdout().flush().ok();
         }
         let mut line = String::new();
         match stdin.lock().read_line(&mut line) {
             Ok(0) => {
                 if tty {
-                    println!();
+                    say("");
                 }
                 return ExitCode::SUCCESS;
             }
@@ -133,16 +153,16 @@ fn run_inner() -> ExitCode {
         }
         if buffer.is_empty() && line.trim() == ":clear" {
             interp = Interpreter::new(std::io::stdout());
-            println!("(session cleared)");
+            say("(session cleared)");
             continue;
         }
         if buffer.is_empty() && line.trim() == ":vars" {
             let bindings = interp.user_bindings();
             if bindings.is_empty() {
-                println!("(no bindings yet)");
+                say("(no bindings yet)");
             }
             for (name, ty) in bindings {
-                println!("{name}: {ty}");
+                say(&format!("{name}: {ty}"));
             }
             continue;
         }
@@ -153,7 +173,7 @@ fn run_inner() -> ExitCode {
                 Ok(src) => match eval_chunk(&mut interp, &src) {
                     Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
                     Outcome::Unit => {}
-                    Outcome::Value(v) => println!("{v}"),
+                    Outcome::Value(v) => say(&v.to_string()),
                     Outcome::Error(msg) => eprintln!("{msg}"),
                 },
                 Err(e) => eprintln!("ting: cannot read {path}: {e}"),
@@ -168,7 +188,7 @@ fn run_inner() -> ExitCode {
         match eval_chunk(&mut interp, &buffer) {
             Outcome::Incomplete => continue,
             Outcome::Unit => {}
-            Outcome::Value(s) => println!("{s}"),
+            Outcome::Value(s) => say(&s),
             Outcome::Error(msg) => eprintln!("{msg}"),
         }
         buffer.clear();

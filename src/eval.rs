@@ -383,8 +383,16 @@ impl<W: Write> Interpreter<W> {
         match b {
             Builtin::Print => {
                 let parts: Vec<String> = args.iter().map(|v| v.to_string()).collect();
-                writeln!(self.out, "{}", parts.join(" "))
-                    .map_err(|e| error(format!("print failed: {e}"), span))?;
+                if let Err(e) = writeln!(self.out, "{}", parts.join(" ")) {
+                    // A reader that went away (`ting x.ting | head`) is
+                    // not the script's fault: leave quietly, as CLI
+                    // filters conventionally do, instead of reporting
+                    // "print failed: Broken pipe" on every such run.
+                    if e.kind() == std::io::ErrorKind::BrokenPipe && !cfg!(target_arch = "wasm32") {
+                        std::process::exit(0);
+                    }
+                    return Err(error(format!("print failed: {e}"), span));
+                }
                 Ok(Value::Nil)
             }
             Builtin::Len => {

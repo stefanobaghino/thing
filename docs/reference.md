@@ -260,6 +260,10 @@ The `ting` binary is the whole toolchain — no separate installs:
 Point your editor's generic LSP client at `ting --lsp`; a TextMate
 grammar for syntax highlighting ships in the repo under `editor/`.
 
+Scripts behave as shell citizens: `ting x.ting | head` ends quietly
+with exit 0 when the reader goes away, and a runtime error prints a
+diagnostic and exits 1.
+
 ## Stability
 
 As of 2.0, the language described on this page is stable: programs
