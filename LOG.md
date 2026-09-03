@@ -5942,3 +5942,34 @@ and the site serves the --fail-fast bullet and the corrected
 tutorial block. Nothing to fix. The "front door, again" milestone
 is complete; one stroke (373) is banked toward v2.55.0. Backlog
 empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 375: replenishment — milestone "the story straight"
+
+CI green on 374 (API verdict). Fifteen milestones since the
+restart, seventy-five tags. docs/vm.md still opens with "Status:
+design for the v0.9.0 milestone" although the VM has been the
+default engine for sixty releases; `--doc` can describe every
+shipped function but nothing the user wrote; the playground can
+run and format but not check, so the site never shows the
+warnings the binary gives; and the list module has no way to
+group consecutive runs. Five strokes:
+
+1. docs/vm.md: a current status section at the top (default
+   engine, the differential guarantee, the bench numbers' home),
+   the design body kept as the record it is.
+2. `ting --doc FILE.ting`: the file's top-level functions with
+   their signatures and leading comments, from the scanner hover
+   already uses — a table of contents for the user's own module.
+   io test. Then release v2.55.0 (373 + two).
+3. Playground "Check" button: a wasm export running the checker
+   and the warnings, output shown in the same pane; unit test on
+   the export's text.
+4. lib/list.ting chunk_by(xs, key): consecutive elements with the
+   same key(x) grouped into runs, order kept. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a REPL `:doc` with no name (the CLI form exists and the
+REPL's `:help` already lists builtins), an editor extension beyond
+the TextMate grammar (nothing to test it with here).

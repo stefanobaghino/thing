@@ -187,8 +187,12 @@ current orientation.
 - 373: --test --fail-fast — one stroke banked toward v2.55.0. 374:
   health tick + audit green — milestone "front door, again"
   complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 375: replenishment — milestone "the story straight"
+  (v2.55–v2.56), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) docs/vm.md status section;
+  (2) `--doc FILE.ting`, io test — then RELEASE v2.55.0 (373, +2);
+  (3) playground Check button (wasm export + unit test); (4)
+  lib/list.ting chunk_by, selftests; (5) health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
