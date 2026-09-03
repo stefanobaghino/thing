@@ -5125,3 +5125,11 @@ lines is removed from every line, blank lines come out empty, and
 tabs count as characters so mixed indentation loses only its shared
 prefix. Five assertions, stdlib.md row. Full gate green on both
 engines. Third stroke banked — v2.46.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 334: v2.46.0
+
+Shell-scripting chapter, --test -j, dedent. CI green on 333 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.46.0 (67th tag).

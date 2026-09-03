@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.46.0 (2026-09-03)
+
+- `ting --test -j N` runs up to N files at once, output kept in
+  order.
+- `lib/string.ting`: `dedent`.
+- Tutorial: a "Shell scripting" chapter.
+
 ## v2.45.0 (2026-09-03)
 
 - Tutorial: the modules chapter points at `--doc`, `:doc` and editor
