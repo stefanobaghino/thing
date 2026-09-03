@@ -4967,3 +4967,22 @@ malformed message (the test's send then hit a closed pipe) —
 escaping fixed the test, not the server. Reference line updated.
 Full gate green (205 tests). Third stroke banked — v2.44.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 325b: red on Windows, and what it exposed
+
+CI on 311d4ba failed in the Windows job only: the document-links
+test builds its URI from the temp directory, whose backslashes made
+the didOpen JSON invalid — and the server treated an undecodable
+body as end of input and exited, so the test's next write hit a
+closed pipe (the same symptom as the local escaping slip in 325,
+which should have been read as a server defect then). Two fixes:
+read_message now distinguishes end of input from a malformed frame,
+and the loop skips the latter — a protocol test sends garbage then
+a valid initialize and gets its answer; and file: URIs are parsed
+and produced through two helpers that tolerate Windows drive
+letters (`file:///C:/x` in, forward slashes and the leading slash
+out). The test builds a proper URI on every platform. Full gate
+green locally (206 tests); the Windows job is the real verdict.
+v2.44.0 waits for it.

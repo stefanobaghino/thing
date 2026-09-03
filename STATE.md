@@ -146,7 +146,9 @@ current orientation.
 - 322: replenishment — milestone "front door" (v2.44–v2.46),
   reasoning in LOG.md.
 - 323: README refresh; 324: variance/stddev; 325: LSP document
-  links — three strokes banked; RELEASE v2.44.0 next tick if quiet.
+  links (325b: Windows CI red → malformed-message skipping and
+  drive-letter URIs fixed) — three strokes banked; RELEASE v2.44.0
+  next tick if the Windows job is green.
 - Backlog after the release (in order): (4) tutorial modules
   chapter mentions :doc/--doc; (5) health tick + audit; then
   replenish.
