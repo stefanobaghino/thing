@@ -57,6 +57,8 @@ fn paths(v) {
   return out;
 }
 
+# The worker behind paths: appends every leaf path under v, each
+# starting with prefix, to out.
 fn paths_into(v, prefix, out) {
   if type(v) == "map" {
     for k in v { paths_into(v[k], prefix + [k], out); }
@@ -65,6 +67,19 @@ fn paths_into(v, prefix, out) {
   } else {
     push(out, prefix);
   }
+}
+
+# A flat map from each leaf's dotted path to its value: map keys and
+# list indices joined with ".", so {"a": {"b": [1, 2]}} gives
+# {"a.b.0": 1, "a.b.1": 2}. A bare leaf maps from "" to itself; empty
+# containers contribute nothing.
+fn flatten(v) {
+  let out = {};
+  for path in paths(v) {
+    let key = join(map(path, fn(step) { return str(step); }), ".");
+    out[key] = get_in(v, path);
+  }
+  return out;
 }
 
 # Deep merge: where both a and b hold maps the merge recurses; any

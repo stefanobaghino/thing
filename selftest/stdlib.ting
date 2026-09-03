@@ -339,6 +339,10 @@ assert(has(try(fn() { return j["set_in"]([1], [3], 0); }), "err"), "set_in out-o
 assert(j["paths"]({"a": [1, {"b": 2}], "c": 3}) == [["a", 0], ["a", 1, "b"], ["c"]], "paths");
 assert(j["paths"](7) == [[]], "paths of a leaf is the empty path");
 assert(j["paths"]({}) == [], "paths of an empty map");
+assert(j["flatten"]({"a": {"b": [1, 2]}, "c": true}) == {"a.b.0": 1, "a.b.1": 2, "c": true}, "flatten");
+assert(j["flatten"](7) == {"": 7}, "flatten of a leaf");
+assert(j["flatten"]({}) == {}, "flatten of an empty map");
+assert(j["flatten"]({"x": []}) == {}, "flatten skips empty containers");
 
 let base = {"srv": {"host": "a", "port": 1}, "tags": [1], "n": 1};
 let over = {"srv": {"port": 2}, "tags": [2, 3], "extra": true};
