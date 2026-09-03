@@ -61,11 +61,10 @@ holds only the current milestone and the standing rules.
   LOG.md. 405: STATE.md refreshed and compacted. v2.60.0 VERIFIED
   (81st tag; strokes 401, 402, 405; both aarch64 archives executed
   here).
-- 407: tutorial's closing chapter; 408: completion offers user fns —
-  two strokes banked toward v2.61.0.
-- Backlog (in order): (4) lib/list.ting flatten_deep + a comment on
-  flatten, selftests — then RELEASE v2.61.0; (5) health tick +
-  audit; then replenish.
+- 407: tutorial's closing chapter; 408: completion offers user fns;
+  409: flatten_deep — three strokes banked; RELEASE v2.61.0 next
+  tick if quiet.
+- Backlog after the release: (5) health tick + audit; then replenish.
 - Tags: 81 (v2.60.0), 80 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

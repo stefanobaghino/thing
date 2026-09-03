@@ -6649,3 +6649,16 @@ have — instead of as a bare identifier gathered by the word scan,
 which now skips those names. Protocol test on the commented
 `area` document. Full gate green (223 tests). Two strokes banked
 toward v2.61.0 (407, 408). Next: flatten_deep.
+
+---
+
+## 2026-09-03 — Iteration 409: flatten_deep
+
+CI green on 408 (API verdict). Milestone stroke 4:
+`flatten_deep(xs)` in lib/list.ting — every level of nesting
+removed, the non-list leaves in order, recursive — beside the
+one-level flatten, which gains the `#` comment it lacked so
+`--doc list` no longer shows it bare. Four selftests (mixed
+depths, already flat, nested empties, empty), stdlib.md row.
+Selftests pass on both engines; full gate green (223 tests).
+Three strokes banked (407, 408, 409) — v2.61.0 next tick if quiet.
