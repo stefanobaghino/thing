@@ -134,12 +134,11 @@ holds only the current milestone and the standing rules.
   milestone "the front door's handle" complete.
 - 478: replenishment — milestone "reading width" (v2.74–v2.75),
   reasoning in LOG.md.
-- 479: --doc within 78 columns; 480: examples/inventory.ting; 481:
-  --doc with several names — three strokes banked toward v2.74.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.74.0 (strokes 479,
-  480, 481); (2) lib/string.ting ordinal, selftests; (3) health tick
-  + audit.
-- Tags: 94 (v2.73.0), 93 verified; v2.29.0 is publicly marked broken
+- v2.74.0 VERIFIED (95th tag; strokes 479, 480, 481; both aarch64
+  archives executed here).
+- Backlog (one per tick, in order): (1) lib/string.ting ordinal,
+  selftests; (2) health tick + audit — then replenishment.
+- Tags: 95 (v2.74.0), 94 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

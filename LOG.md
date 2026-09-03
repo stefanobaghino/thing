@@ -8015,3 +8015,18 @@ covers the order, the single blank line between entries, and the
 mixed known/unknown run; the reference page and the usage line say
 NAMES now. Full gate green (243 tests). Three strokes banked
 (479, 480, 481). Next: release v2.74.0.
+
+---
+
+## 2026-09-03 — Iteration 482: release v2.74.0
+
+CI green on 481 (API verdict). Cut v2.74.0 with the three strokes of
+"reading width": --doc and :doc wrapped at 78 columns (479), the
+inventory example (480), and --doc over several names (481). The
+release workflow is green with all six archives; CI and Pages green
+on the release commit (API verdicts). Cold-verified here: both
+aarch64 Linux archives downloaded fresh, unpacked and run —
+`-V` reports 2.74.0, `--doc len median slug` prints the three
+entries, a small program gives the same answer on both engines, and
+an unknown name still exits 1. 95th tag. Next: ordinal in
+lib/string.ting.
