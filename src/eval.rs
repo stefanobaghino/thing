@@ -1722,10 +1722,23 @@ pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, Runtim
             let eff = effective_index(i, items.len(), span)?;
             Ok(items[eff].clone())
         }
-        (Value::Map(entries), Value::Str(k)) => match entries.borrow().get(&k) {
-            Some(v) => Ok(v.clone()),
-            None => Err(error(format!("key {k:?} not found"), span)),
-        },
+        (Value::Map(entries), Value::Str(k)) => {
+            let entries = entries.borrow();
+            match entries.get(&k) {
+                Some(v) => Ok(v.clone()),
+                None => {
+                    // The map's own keys are the candidates: a misspelled
+                    // member of an imported module lands here too.
+                    let near = crate::diag::nearest(&k, entries.keys().map(|k| k.as_ref()));
+                    Err(match near {
+                        Some(n) => {
+                            error(format!("key {k:?} not found (did you mean {n:?}?)"), span)
+                        }
+                        None => error(format!("key {k:?} not found"), span),
+                    })
+                }
+            }
+        }
         (Value::Str(s), Value::Int(i)) => {
             let chars: Vec<char> = s.chars().collect();
             let len = chars.len() as i64;

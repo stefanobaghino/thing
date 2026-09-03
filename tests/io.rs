@@ -200,7 +200,9 @@ fn check_flag_prints_stdlib_member_warnings() {
         "{stderr}"
     );
     assert!(stderr.contains(":2:10:"), "points at the key: {stderr}");
-    assert!(!stderr.contains("`median`"), "{stderr}");
+    // The correct call on the same line is not warned about: one warning,
+    // and `median` appears only as the suggestion for the misspelling.
+    assert_eq!(stderr.matches("warning:").count(), 1, "{stderr}");
     let _ = std::fs::remove_file(&path);
 }
 
@@ -1277,6 +1279,64 @@ fn doc_flag_lists_everything_or_a_module() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
         stderr.contains("no builtin, stdlib function, module or file named nosuch"),
+        "{stderr}"
+    );
+}
+
+#[test]
+fn unknown_members_suggest_the_nearest_one() {
+    let dir = std::env::temp_dir().join("ting-suggest-member");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("m.ting");
+    std::fs::write(
+        &script,
+        "let l = import(\"lib/list.ting\");\nprint(l[\"medain\"]([1, 2, 3]));\n",
+    )
+    .expect("write");
+
+    // The checker's warning names the member it meant.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("lib/list.ting has no `medain` (did you mean `median`?)"),
+        "{stderr}"
+    );
+
+    // So does the runtime error, on both engines.
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1));
+        seen.push(String::from_utf8_lossy(&out.stderr).to_string());
+    }
+    assert_eq!(seen[0], seen[1], "{seen:?}");
+    assert!(
+        seen[0].contains("key \"medain\" not found (did you mean \"median\"?)"),
+        "{}",
+        seen[0]
+    );
+
+    // A plain map with nothing close keeps the bare message.
+    std::fs::write(
+        &script,
+        "let m = {\"alpha\": 1, \"beta\": 2};\nprint(m[\"gamma\"]);\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("key \"gamma\" not found") && !stderr.contains("did you mean"),
         "{stderr}"
     );
 }

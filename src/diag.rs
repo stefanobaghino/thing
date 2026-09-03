@@ -49,11 +49,12 @@ pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Spa
 /// (and always at least one edit, so short names still get help), or
 /// a name of three characters or more that one of the two starts with
 /// — `lenght` is three edits from `len`, but nobody doubts the intent.
-/// Ties go to the alphabetically first candidate, so the answer never
-/// depends on the order the candidates arrive in.
+/// Equal distances are settled by the longer shared start (`medain`
+/// means `median`, not `mean`) and then alphabetically, so the answer
+/// never depends on the order the candidates arrive in.
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
     let limit = (name.chars().count() / 3).max(1);
-    let mut best: Option<(usize, &str)> = None;
+    let mut best: Option<(usize, usize, &str)> = None;
     for c in candidates {
         if c == name {
             continue;
@@ -65,12 +66,19 @@ pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) ->
         if d > limit && !shares_start {
             continue;
         }
+        let shared = name
+            .chars()
+            .zip(c.chars())
+            .take_while(|(a, b)| a == b)
+            .count();
         match best {
-            Some((bd, bc)) if bd < d || (bd == d && bc <= c) => {}
-            _ => best = Some((d, c)),
+            // Nearer wins; then the longer shared start; then the name.
+            Some((bd, bs, bc))
+                if (bd, std::cmp::Reverse(bs), bc) <= (d, std::cmp::Reverse(shared), c) => {}
+            _ => best = Some((d, shared, c)),
         }
     }
-    best.map(|(_, c)| c.to_string())
+    best.map(|(_, _, c)| c.to_string())
 }
 
 /// Levenshtein distance in characters (insert, delete and substitute
@@ -180,7 +188,15 @@ mod tests {
         assert_eq!(nearest("elephant", ["print", "len"]), None);
         // The name itself is never its own suggestion.
         assert_eq!(nearest("len", ["len"]), None);
-        // Ties go to the alphabetically first candidate, either order.
+        // Ties go to the longer shared start, then to the first name.
+        assert_eq!(
+            nearest("medain", ["mean", "median"]),
+            Some("median".to_string())
+        );
+        assert_eq!(
+            nearest("medain", ["median", "mean"]),
+            Some("median".to_string())
+        );
         assert_eq!(nearest("ab", ["ac", "bb"]), Some("ac".to_string()));
         assert_eq!(nearest("ab", ["bb", "ac"]), Some("ac".to_string()));
     }

@@ -310,8 +310,13 @@ fn unknown_stdlib_member_is_a_warning() {
     );
     let diag = recv(&mut reader);
     assert!(diag.contains("\"severity\":2"), "{diag}");
-    assert!(diag.contains("lib/list.ting has no `medain`"), "{diag}");
-    assert!(!diag.contains("`median`"), "{diag}");
+    assert!(
+        diag.contains("lib/list.ting has no `medain` (did you mean `median`?)"),
+        "{diag}"
+    );
+    // Only the misspelling is diagnosed: one message, and `median`
+    // appears in it only as the suggestion.
+    assert_eq!(diag.matches("\"severity\"").count(), 1, "{diag}");
     assert!(!diag.contains("`state`"), "{diag}");
     // The key itself is the range: line 2, character after `l["`.
     assert!(

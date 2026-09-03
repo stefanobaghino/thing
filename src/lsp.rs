@@ -835,7 +835,14 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
 pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
     stdlib_member_findings(src)
         .into_iter()
-        .map(|f| (f.start, f.end, format!("{} has no `{}`", f.module, f.key)))
+        .map(|f| {
+            let near = crate::diag::nearest(&f.key, f.exports.iter().map(String::as_str));
+            let message = match near {
+                Some(n) => format!("{} has no `{}` (did you mean `{}`?)", f.module, f.key, n),
+                None => format!("{} has no `{}`", f.module, f.key),
+            };
+            (f.start, f.end, message)
+        })
         .collect()
 }
 
