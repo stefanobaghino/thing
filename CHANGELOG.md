@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.20.0 (2026-09-03)
+
+- REPL: `:fmt` reprints the last evaluated chunk as the formatter
+  would write it.
+- `lib/list.ting`: `count_by`, `first`, `last`.
+- `lib/map.ting`: `invert`.
+
 ## v2.19.0 (2026-09-03)
 
 - `lib/list.ting`: `window`.

@@ -3049,3 +3049,11 @@ the loud index error of xs[0], since "maybe empty" is exactly when
 these are reached for. Five assertions, two stdlib.md rows. Full
 gate green on both engines. Third stroke banked — v2.20.0 next tick
 if quiet.
+
+---
+
+## 2026-09-03 — Iteration 218: v2.20.0
+
+REPL :fmt, count_by/invert, first/last. CI green on 217 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.20.0 (40th release).

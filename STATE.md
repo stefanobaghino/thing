@@ -61,9 +61,9 @@ current orientation.
 - 216: health tick — checksums match, 30k fuzz cases agree; bench
   times contended by other workloads (load 5.5), re-measure when
   quiet.
-- 217: first/last — three strokes banked (with :fmt and
-  count_by/invert); RELEASE v2.20.0 next tick if quiet.
-- Backlog after the release: lib/string.ting is_digit/is_alpha;
+- v2.20.0 TAGGED (40th release): verify next tick by executing the
+  aarch64-linux asset cold here.
+- Backlog after verification: lib/string.ting is_digit/is_alpha;
   quiet-machine bench re-measure; examples/ dogfood of window or
   count_by.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
