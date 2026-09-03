@@ -27,7 +27,11 @@ current orientation.
 1. Maintenance check every tick: issues, PRs, CI, tree.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); fmt + clippy + full suite before every push — no exceptions
-   (clippy skipped once, iteration 182, cost a red CI).
+   (clippy skipped once, iteration 182, cost a red CI). After writing
+   LOG/STATE, rerun the docs guard and gate the push on the literal
+   `test result: ok` (a grep for "test result" passed a FAILED line
+   in 238 and shipped a red commit). No angle-bracket placeholders
+   anywhere in markdown, quoted or not.
 3. Release when ~3 strokes accumulate; verify every release by cold
    asset download and execution; verdicts always from the API, never
    from gh run watch's exit code. A failed Pages deploy is retried

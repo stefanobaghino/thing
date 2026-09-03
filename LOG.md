@@ -3370,3 +3370,16 @@ cannot drift). Modules that are not imported stay out of the list,
 pinned by the new protocol test alongside the positive case. eval.rs
 exposes the embedded table through one accessor. Reference Tooling
 line updated. Full gate green. Second stroke toward v2.25.0.
+
+---
+
+## 2026-09-03 — Iteration 238b: the guard bit the pipeline, not the code
+
+The LOG entry for 238 contained an angle-bracketed placeholder
+inside a quoted path, exactly the 151b mistake; the markdown guard
+caught it locally — and the push went through anyway, because the
+pre-push chain matched the "test result" line with a grep that
+succeeds on FAILED as well as ok. So 6fb11a9 is red on CI and
+e2f915b (the reworded entry) is the fix. Two lessons, both now in
+STATE.md: post-LOG test runs must assert `test result: ok`, and
+the angle-bracket rule applies to prose about file patterns too.
