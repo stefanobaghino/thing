@@ -3698,3 +3698,13 @@ CI with a message naming the fix. Site: nav link in md2html.py and
 the playground, pages.yml renders it and now also triggers on
 examples/**. Full gate green. Third stroke banked — v2.29.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 259: v2.29.0
+
+First release of the "programs, not one-liners" milestone: the
+--test runner, sort_with, the cookbook page. CI and Pages green on
+258, cookbook.html live with eleven sections (API verdicts + HTTP).
+Full gate green, stdlib selftests pass on the reference engine.
+Tagging v2.29.0 (49th release).

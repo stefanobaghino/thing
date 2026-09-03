@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.29.0 (2026-09-03)
+
+- `ting --test <files...>`: a test runner — each file in its own
+  process, `ok`/`FAIL` per file, a summary, exit 1 on any failure.
+- `lib/list.ting`: `sort_with`, a stable sort by a three-way
+  comparator.
+- Site: a cookbook page rendering every example with its output.
+
 ## v2.28.0 (2026-09-03)
 
 - `lib/list.ting`: `product`, `mean_by`, `compact`.

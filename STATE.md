@@ -90,9 +90,9 @@ current orientation.
   executed cold on this host, both engines.
 - 255: replenishment tick — milestone "programs, not one-liners"
   (v2.29–v2.31), reasoning in LOG.md.
-- 256: sort_with; 257: --test runner; 258: cookbook — milestone
-  strokes 1–3 done; RELEASE v2.29.0 next tick if quiet (verify the
-  cookbook page renders on the site).
+- v2.29.0 TAGGED (49th release; milestone strokes 1–3): verify next
+  tick by executing the aarch64-linux asset cold here, including
+  `--test` on the bundled lib; confirm the Pages run succeeded.
 - Backlog after the release (in order): (4) crash-fuzzer
   (tests/fuzz.rs) builtin-coverage audit; (5) bench/stdlib.ting +
   BASELINE row with host note; then replenish.
