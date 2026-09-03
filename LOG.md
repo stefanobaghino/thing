@@ -3202,3 +3202,14 @@ banked — v2.22.0 next tick if quiet.
 sum_by, words, map with/update, tutorial tally. CI green on 226
 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.22.0 (42nd release).
+
+---
+
+## 2026-09-03 — Iteration 227b: v2.22.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts) — the Pages deploy went through first time this release.
+Four archives published. Cold test on this aarch64 Linux host:
+`ting 2.22.0`, sum_by/words/with/update print identically on both
+engines. Site: all resources 200, changelog shows 2.22.0, tutorial
+page carries the count_by tally. 42 releases, all verified.
