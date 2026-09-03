@@ -3542,3 +3542,14 @@ host: `ting 2.27.0`, indent and top print identically on both
 engines. Site: all resources 200, changelog shows 2.27.0, tutorial
 page carries the refreshed closing chapter. 47 releases, all
 verified.
+
+---
+
+## 2026-09-03 — Iteration 250: distribution audit
+
+CI green on 249b (API verdict). All 47 release tags carry the
+expected asset count (36 × 3 up to v2.16.0, 11 × 4 since), the four
+v2.27.0 download URLs resolve, and all seven live site resources
+answer 200 (the playground still loads ting.wasm from the same
+origin). Nothing to fix. Two hundred and fifty iterations; building
+resumes next tick.
