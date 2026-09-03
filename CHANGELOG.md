@@ -5,6 +5,16 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.75.0 (2026-09-03)
+
+- "Did you mean?": an undefined variable (or an assignment to one)
+  names the nearest binding, parameter or builtin in scope.
+- A key a map does not hold names the nearest key it does, and the
+  `--check`/LSP warning for an unknown stdlib member names the
+  nearest member.
+- `ting --doc` and the REPL's `:doc` suggest the nearest documented
+  name for a name they do not know.
+
 ## v2.74.0 (2026-09-03)
 
 - `--doc` and `:doc` wrap at 78 columns: a comment under its
