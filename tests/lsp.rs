@@ -244,6 +244,48 @@ fn completion_offers_imported_stdlib_functions() {
 }
 
 #[test]
+fn unknown_stdlib_member_is_a_warning() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+
+    // A misspelt stdlib function is a warning at the key; a correct
+    // one and a non-function export (test.ting's `state`) are silent.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///w.ting","text":"let l = import(\"lib/list.ting\");\nlet t = import(\"../lib/test.ting\");\nprint(l[\"medain\"]([1]), l[\"median\"]([2]), t[\"state\"]);\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(diag.contains("\"severity\":2"), "{diag}");
+    assert!(diag.contains("lib/list.ting has no `medain`"), "{diag}");
+    assert!(!diag.contains("`median`"), "{diag}");
+    assert!(!diag.contains("`state`"), "{diag}");
+    // The key itself is the range: line 2, character after `l["`.
+    assert!(
+        diag.contains("\"start\":{\"character\":9,\"line\":2}"),
+        "{diag}"
+    );
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///w.ting","version":2},"contentChanges":[{"text":"let l = import(\"lib/list.ting\");\nprint(l[\"median\"]([1]));\n"}]}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(diag.contains("\"diagnostics\":[]"), "{diag}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 

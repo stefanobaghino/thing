@@ -219,7 +219,7 @@ fn diagnostics(src: &str) -> Value {
             },
         },
     };
-    let list = match err {
+    let mut list = match err {
         None => Vec::new(),
         Some((message, span)) => vec![obj(vec![
             (
@@ -234,7 +234,86 @@ fn diagnostics(src: &str) -> Value {
             ("message", s(&message)),
         ])],
     };
+    for (start, end, message) in unknown_stdlib_members(src) {
+        list.push(obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, start)),
+                    ("end", position(src, end)),
+                ]),
+            ),
+            ("severity", Value::Int(2)), // Warning
+            ("source", s("ting")),
+            ("message", s(&message)),
+        ]));
+    }
     Value::list(list)
+}
+
+/// Warnings for `m["name"]` where `m` is bound by `let m = import(...)`
+/// to an embedded stdlib module that exports no `name` (functions and
+/// top-level lets both count). Text-based like the rest of this file:
+/// (byte start, byte end, message) per offending key.
+fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
+    let mut out = Vec::new();
+    // Bindings: `let <ident> = import("<...lib/x.ting>")`.
+    let mut bindings: Vec<(String, &'static str, Vec<String>)> = Vec::new();
+    for line in src.lines() {
+        let Some(rest) = line.trim_start().strip_prefix("let ") else {
+            continue;
+        };
+        let Some((name, value)) = rest.split_once('=') else {
+            continue;
+        };
+        let value = value.trim();
+        let Some(arg) = value.strip_prefix("import(\"") else {
+            continue;
+        };
+        let Some(path_end) = arg.find('"') else {
+            continue;
+        };
+        let path = &arg[..path_end];
+        for (module, source) in crate::eval::embedded_stdlib() {
+            if path.ends_with(module) {
+                let exports = source
+                    .lines()
+                    .filter_map(|l| {
+                        l.strip_prefix("fn ")
+                            .and_then(|r| r.split('(').next())
+                            .or_else(|| l.strip_prefix("let ").and_then(|r| r.split('=').next()))
+                    })
+                    .map(|n| n.trim().to_string())
+                    .collect();
+                bindings.push((name.trim().to_string(), module, exports));
+            }
+        }
+    }
+    for (name, module, exports) in &bindings {
+        let needle = format!("{name}[\"");
+        let mut from = 0;
+        while let Some(i) = src[from..].find(&needle) {
+            let key_start = from + i + needle.len();
+            // Must be a whole identifier: not preceded by an ident char.
+            let bounded = src[..from + i]
+                .chars()
+                .next_back()
+                .is_none_or(|c| !(c.is_ascii_alphanumeric() || c == '_'));
+            let Some(key_len) = src[key_start..].find('"') else {
+                break;
+            };
+            let key = &src[key_start..key_start + key_len];
+            if bounded && !exports.iter().any(|e| e == key) {
+                out.push((
+                    key_start,
+                    key_start + key_len,
+                    format!("{module} has no `{key}`"),
+                ));
+            }
+            from = key_start + key_len;
+        }
+    }
+    out
 }
 
 fn publish(output: &mut impl Write, uri: &str, src: &str) {

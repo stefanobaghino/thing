@@ -259,8 +259,10 @@ The `ting` binary is the whole toolchain — no separate installs:
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
-  diagnostics as you type, hover docs for every builtin (and for
-  imported stdlib functions), completion
+  diagnostics as you type (syntax errors, and a warning when an
+  imported stdlib module is indexed with a name it does not export),
+  hover docs for every builtin (and for imported stdlib functions),
+  completion
   (builtins, keywords, the document's own names, and the functions of
   any stdlib module it imports),
   whole-document formatting, an outline of top-level bindings
