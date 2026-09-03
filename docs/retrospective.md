@@ -315,9 +315,56 @@ quietly ignores — checked directly, and written down. The log
 carries both corrections next to the entries they correct, which is
 the only form of honesty a permanent record can offer.
 
+## The ninth act: the loop's own house
+
+Nine more tags, and for once the survey turned on the surveyor.
+STATE.md — the file every tick reads first, the one that is
+supposed to hold nothing but the current orientation — had drifted
+exactly the way the README had two acts earlier: four-platform
+archives when there were six, a test count from a hundred
+iterations ago, and a "Now" section that had quietly become a
+hundred and ninety lines of history the log already held. One
+stroke brought the shape section current and cut the file to a
+third, keeping only the milestone in progress and the standing
+rules, each rule now tagged with the log entry that earned it. The
+README, the tutorial's closing chapter, the editor README and the
+stdlib page all got the same treatment in their turn, and the
+capability count went from twelve to thirteen in four files at
+once because a milestone had made it so.
+
+The REPL, untouched since the restart, got a session: a transcript
+of every chunk that ran without error, `:history` to read it back,
+`:save` to write it out as a script that replays the session, and
+`:doc` with no name to print the same table of contents the shell
+gets. Then `:load`, probed with a file that imports a sibling,
+turned out to resolve the import against the wrong directory and
+to blame "repl" for the file's errors — a bug a script runner would
+never have, sitting in the one tool that runs files a different
+way. Fixed, and taught to say how many bindings it added, while a
+failed import learned to name the path it actually tried.
+
+The editor got the two things a client asks for on every cursor
+move and every rename: highlights of the symbol under the cursor,
+and a prepare step that declines a rename on a keyword or a builtin
+before the prompt opens. The formatter learned to keep a file's
+line endings, because on a Windows checkout it had been calling
+every file unformatted and rewriting them all to LF; the checker
+learned to see an unused `let` inside a function, which is where
+most unused lets live. The two smallest stdlib modules, test and
+json, were the two whose own functions showed up bare in `--doc`;
+they got their comments, a type assertion, and a flat dotted-path
+view of a document.
+
+The process kept its shape. A probe found each of these gaps
+before a user could; a tick's chain stayed one `&&` list; a smoke
+output was read before the prose that quoted it was written; and
+twice a stroke named in a replenishment turned out to already exist
+— flatten, and trunc, which is `int()` — and was corrected in the
+same log that had promised it, with the reason.
+
 ## Where it stands
 
-Seventy-nine tags in, the loop still runs: pick one verifiable
+Eighty-eight tags in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
