@@ -172,9 +172,11 @@ current orientation.
 - v2.51.0 VERIFIED (72nd tag, 71 verified; both aarch64 archives
   executed here).
 - 357: retrospective act seven; 358: mode — two strokes banked
-  toward v2.52.0.
-- Backlog (in order): (5) health tick + audit; then replenish (the
-  release follows the next stroke).
+  toward v2.52.0; 359: health tick + audit green.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md; first candidate
+  is the module-span diagnostic bug (358b). RELEASE v2.52.0 after
+  the next stroke lands.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

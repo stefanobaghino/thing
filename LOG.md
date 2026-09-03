@@ -5611,3 +5611,20 @@ inside the imported module was reported at selftest/stdlib.ting
 line 127, an unrelated line of the importing file — a runtime error
 inside a module renders the module's span against the importer's
 source. Candidate for the next replenishment.
+
+---
+
+## 2026-09-03 — Iteration 359: health tick + audit
+
+CI and Pages green on 358b (API verdicts). Bench at load ~3.6: all
+six checksums match; VM ratios in the usual band. Fuzz: 50000
+differential cases (seed 20260903359), the crash fuzzer, and 20000
+formatter cases (seed 359) all pass in release. Distribution: 72
+releases with the expected asset counts (36 × 3, 14 × 4, 22 × 6),
+all six v2.51.0 download URLs resolve, all nine site resources
+answer 200 at the recorded paths, and the site already serves the
+seventh act and the mode row. Nothing to fix. The "table of
+contents" milestone's strokes are done; two are banked toward
+v2.52.0, so the release follows the next stroke. Backlog empty:
+next tick is replenishment, with the module-span diagnostic bug
+(358b) as the first candidate.
