@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.15.0 (2026-09-03)
+
+- `lib/list.ting`: `median`.
+- REPL: `:clear` resets the session.
+- `examples/stats.ting` now uses `mean`/`median` from the stdlib.
+
 ## v2.14.0 (2026-09-03)
 
 - REPL: `:vars` lists the session's own bindings (name and type).

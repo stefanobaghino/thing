@@ -2716,3 +2716,11 @@ Fourth REPL meta-command: :clear swaps in a fresh interpreter
 updated; pipe test proves the old binding is really gone and the
 session survives the resulting error. Full gate green. Third
 stroke banked — v2.15.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 195: v2.15.0
+
+Stats-and-REPL release: median, :clear, stats example dogfooding.
+Full gate green, stdlib selftests pass on the reference engine.
+Tagging v2.15.0 (35th release).
