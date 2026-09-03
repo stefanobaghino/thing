@@ -11,6 +11,11 @@ use crate::lexer::Span;
 ///    |       ^
 /// ```
 pub fn render(path: &str, src: &str, message: &str, span: Span) -> String {
+    render_level(path, src, "error", message, span)
+}
+
+/// `render` with an explicit level word ("error", "warning").
+pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Span) -> String {
     let (line, col) = span.line_col(src);
     let line_start = src[..span.start.min(src.len())]
         .rfind('\n')
@@ -34,7 +39,9 @@ pub fn render(path: &str, src: &str, message: &str, span: Span) -> String {
     let gutter = line.to_string();
     let pad = " ".repeat(gutter.len());
     let carets = "^".repeat(width);
-    format!("{path}:{line}:{col}: error: {message}\n {gutter} | {text}\n {pad} | {prefix}{carets}")
+    format!(
+        "{path}:{line}:{col}: {level}: {message}\n {gutter} | {text}\n {pad} | {prefix}{carets}"
+    )
 }
 
 #[cfg(test)]

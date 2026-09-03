@@ -101,6 +101,32 @@ fn check_flag_reports_without_running() {
     let _ = std::fs::remove_file(&bad);
 }
 
+/// `--check` also prints the semantic warning the LSP knows — an
+/// imported stdlib module indexed with a name it lacks — without
+/// changing the exit status.
+#[test]
+fn check_flag_prints_stdlib_member_warnings() {
+    let path = std::env::temp_dir().join(format!("ting-check-warn-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let l = import(\"lib/list.ting\");\nprint(l[\"medain\"]([1]), l[\"median\"]([1]));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "warnings do not fail the check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: lib/list.ting has no `medain`"),
+        "{stderr}"
+    );
+    assert!(stderr.contains(":2:10:"), "points at the key: {stderr}");
+    assert!(!stderr.contains("`median`"), "{stderr}");
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

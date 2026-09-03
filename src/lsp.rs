@@ -255,7 +255,7 @@ fn diagnostics(src: &str) -> Value {
 /// to an embedded stdlib module that exports no `name` (functions and
 /// top-level lets both count). Text-based like the rest of this file:
 /// (byte start, byte end, message) per offending key.
-fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
+pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
     let mut out = Vec::new();
     // Bindings: `let <ident> = import("<...lib/x.ting>")`.
     let mut bindings: Vec<(String, &'static str, Vec<String>)> = Vec::new();

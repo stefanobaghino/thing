@@ -131,9 +131,17 @@ fn run_check(files: Vec<String>) -> ExitCode {
             Ok(src) => src,
             Err(code) => return code,
         };
-        if let Err(diagnostic) = ting::check_source(f, &src) {
-            eprintln!("{diagnostic}");
-            failed = true;
+        match ting::check_source(f, &src) {
+            Err(diagnostic) => {
+                eprintln!("{diagnostic}");
+                failed = true;
+            }
+            // Warnings never change the exit status; they are advice.
+            Ok(()) => {
+                for w in ting::check_warnings(f, &src) {
+                    eprintln!("{w}");
+                }
+            }
         }
     }
     if failed {

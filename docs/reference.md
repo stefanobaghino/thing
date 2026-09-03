@@ -251,6 +251,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   idempotent and never alters program meaning.
 - `ting --check <files...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
+  Clean files may still get warnings (an imported stdlib module
+  indexed with a name it does not export); warnings never change
+  the exit status.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted) in its own process and
   prints `ok` or `FAIL` per file (with the diagnostic under a

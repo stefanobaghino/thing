@@ -49,6 +49,19 @@ pub fn check_source(path: &str, src: &str) -> Result<(), String> {
     Ok(())
 }
 
+/// Semantic warnings for a source that already checks clean: rendered
+/// diagnostics (level "warning") for stdlib member names that the
+/// imported module does not export. Shared with the LSP, which
+/// publishes the same findings as warnings.
+pub fn check_warnings(path: &str, src: &str) -> Vec<String> {
+    lsp::unknown_stdlib_members(src)
+        .into_iter()
+        .map(|(start, end, message)| {
+            diag::render_level(path, src, "warning", &message, lexer::Span { start, end })
+        })
+        .collect()
+}
+
 /// `run_source` with an explicit engine choice.
 pub fn run_source_engine<W: Write>(
     engine: Engine,
