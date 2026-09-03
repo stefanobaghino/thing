@@ -6934,3 +6934,16 @@ of the symbol under the cursor, and a rename prepare step that
 declines keywords and builtins. No "twelve" is left in those four
 files (the retrospective's are history and stay). Docs guard
 green. One stroke banked toward v2.64.0. Next: squeeze.
+
+---
+
+## 2026-09-03 — Iteration 424: squeeze
+
+CI and Pages green on 423 (API verdicts). Milestone stroke 4:
+`squeeze(s)` in lib/string.ting — runs of whitespace collapsed to
+one space and the ends trimmed, written as `join(words(s), " ")`
+so it inherits words' definition of whitespace. Four selftests
+(mixed runs with tabs and a newline, plain text, only whitespace,
+empty), stdlib.md row. Selftests pass on both engines; full gate
+green (228 tests). Two strokes banked toward v2.64.0 (423, 424).
+Next: health tick + audit, then replenish.

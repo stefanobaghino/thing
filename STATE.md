@@ -74,10 +74,10 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.63.0 VERIFIED (84th tag; strokes 417, 420, 421; both aarch64
   archives executed here).
-- 423: thirteen capabilities counted everywhere — one stroke banked
-  toward v2.64.0.
-- Backlog (in order): (4) lib/string.ting squeeze, selftests; (5)
-  health tick + audit; then replenish.
+- 423: thirteen capabilities counted everywhere; 424: squeeze — two
+  strokes banked toward v2.64.0.
+- Backlog (in order): (5) health tick + audit; then replenish (the
+  release follows the next stroke).
 - Tags: 84 (v2.63.0), 83 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
