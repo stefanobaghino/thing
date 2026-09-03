@@ -5450,3 +5450,15 @@ leaving the file untouched, the script runs identically on both
 engines, and `--test selftest` passes 11/11 on each binary. CI and
 Pages green on the release commit. Seventy-one tags, seventy
 verified. Next: extent(xs) in lib/list.ting.
+
+---
+
+## 2026-09-03 — Iteration 351: extent
+
+CI green on the STATE fix (API verdict). Backlog item (4):
+`extent(xs)` in lib/list.ting returns `[smallest, largest]` in one
+pass, nil on an empty list, and works on anything the comparison
+operators accept (numbers, strings). Four selftests (numbers,
+strings, singleton, empty), stdlib.md row. Selftests pass on both
+engines; full gate green (210 tests). One stroke banked toward
+v2.51.0. Next: health tick + distribution audit, then replenish.

@@ -165,8 +165,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.50.0 VERIFIED (71st tag, 70 verified; both aarch64 archives
   executed here). Milestone "second opinions" shipped.
-- Backlog after the release (in order): (4) lib/list.ting extent,
-  selftests; (5) health tick + audit; then replenish.
+- 351: extent in lib/list.ting — one stroke banked toward v2.51.0.
+- Backlog (in order): (5) health tick + distribution audit; then
+  replenish (design the next milestone; "No idle" rule).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
