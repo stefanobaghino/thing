@@ -96,10 +96,9 @@ current orientation.
   test failed; release notes warn). v2.29.1 (50th) RELEASED and
   verified: Linux builds on ubuntu-22.04(-arm), GLIBC_2.34, guard
   step green, aarch64 asset executed cold here.
-- 260: crash fuzzer audit; 261: stdlib bench; 262: musl static
-  builds in release.yml (workflow half unproven until the tag) —
-  three strokes banked; RELEASE v2.30.0 next tick if quiet, then
-  verify SIX assets and cold-execute the aarch64 musl one here too.
+- v2.30.0 TAGGED (51st release; first six-asset release): verify
+  next tick — six assets, glibc guard on all four Linux jobs,
+  cold-execute BOTH aarch64 Linux archives (glibc and musl) here.
 - After verification: replenishment tick.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.

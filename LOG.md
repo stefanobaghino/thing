@@ -3802,3 +3802,12 @@ ELF of 1.5 MB, prints its version, runs selftest/stdlib.ting, and
 objdump finds zero GLIBC references. The workflow half is verified
 at the next tag. README platform sentence updated. Full gate green.
 Third stroke banked — v2.30.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 263: v2.30.0
+
+Static musl assets, fuzzer coverage, stdlib benchmark. CI green on
+262 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.30.0 (51st release; first with six
+assets — the musl jobs run for the first time on this tag).

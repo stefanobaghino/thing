@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.30.0 (2026-09-03)
+
+- Releases now also ship fully static Linux archives
+  (`x86_64-unknown-linux-musl`, `aarch64-unknown-linux-musl`): no C
+  library dependency at all.
+- The crash fuzzer covers every pure builtin and the bytecode VM.
+- `bench/stdlib.ting`: an import-heavy benchmark; the baseline is
+  regenerated on one machine for all rows.
+
 ## v2.29.1 (2026-09-03)
 
 - Linux binaries are built against glibc 2.35 again (v2.29.0's
