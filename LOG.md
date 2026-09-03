@@ -4270,3 +4270,11 @@ Distribution: 55 releases with the expected asset counts (36 × 3,
 site resources answer 200 and the reference page carries :doc.
 Nothing to fix. The 279 milestone's five strokes are done; v2.35.0
 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 286: v2.35.0
+
+REPL :doc and check_approx — the tail of the 279 milestone. CI
+green on 285 (API verdict). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.35.0 (56th tag).

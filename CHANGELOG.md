@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.35.0 (2026-09-03)
+
+- REPL: `:doc NAME` explains a builtin or any stdlib function
+  (module, signature, comment).
+- `lib/test.ting`: `check_approx` for floats.
+
 ## v2.34.0 (2026-09-03)
 
 - LSP: a quickfix code action replaces a misspelt stdlib member with
