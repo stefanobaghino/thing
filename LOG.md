@@ -7900,3 +7900,11 @@ selftests (a split, empty input, an empty prefix), a shared
 stdlib.md row, the count to 120. Selftests pass on both engines;
 full gate green (241 tests). Three strokes banked (473, 474, 475)
 — v2.73.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 476: v2.73.0
+
+Exit codes 0/1/2, the Running section, take_while and drop_while.
+CI and Pages green on 475 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.73.0 (94th tag).

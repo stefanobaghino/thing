@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.73.0 (2026-09-03)
+
+- Exit codes: 0 success, 1 a reported failure, 2 a usage error
+  (missing operand, bad option value, unknown option); `--help`
+  and the reference's Running section say so.
+- lib/list.ting: `take_while(xs, pred)` and `drop_while(xs, pred)`.
+
 ## v2.72.0 (2026-09-03)
 
 - An unknown option is a usage error (exit 2) that names it and
