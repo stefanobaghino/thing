@@ -212,11 +212,12 @@ current orientation.
   milestone "cycles" complete.
 - 397: replenishment — milestone "the eighth act" (v2.59–v2.60),
   reasoning in LOG.md.
-- 398: retrospective act eight — two strokes banked (395, 398).
-- Backlog (one per tick, in order): (2) docs/stdlib.md opening (six
-  modules, count, --doc) — then RELEASE v2.59.0; (3) LSP hover shows
-  a user fn's comment, protocol test; (4) lib/map.ting map_keys,
-  selftests; (5) health tick + audit.
+- 398: retrospective act eight; 399: stdlib page opening — three
+  strokes banked (395, 398, 399); RELEASE v2.59.0 next tick if
+  quiet.
+- Backlog after the release (in order): (3) LSP hover shows a user
+  fn's comment, protocol test; (4) lib/map.ting map_keys, selftests;
+  (5) health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

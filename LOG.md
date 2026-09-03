@@ -6451,3 +6451,15 @@ cycle crashes and their fixes, and the two chain slips with the
 rule each produced. "Where it stands" now says seventy-nine tags.
 Docs guard green. Two strokes banked toward v2.59.0 (395, 398).
 Next: the stdlib page's opening, then the release.
+
+---
+
+## 2026-09-03 — Iteration 399: the stdlib page's opening
+
+CI and Pages green on 398 (API verdicts). Milestone stroke 2: the
+stdlib page opened with "Three modules" — true for a long time,
+false for longer. It now names the six, gives the count (105
+functions, which is also the page's row count), and says that the
+same text is in the binary through --doc and :doc. Docs guard
+green. Three strokes banked (395, 398, 399) — v2.59.0 next tick if
+quiet.
