@@ -30,8 +30,10 @@ current orientation.
    (clippy skipped once, iteration 182, cost a red CI).
 3. Release when ~3 strokes accumulate; verify every release by cold
    asset download and execution; verdicts always from the API, never
-   from gh run watch's exit code. Never rerun the Pages workflow with
-   `--failed` (single job → duplicate artifact); push or dispatch.
+   from gh run watch's exit code. A failed Pages deploy is retried
+   ONLY with `gh workflow run pages.yml --ref main`: `--failed`
+   reruns leave a duplicate artifact, and LOG/STATE-only pushes miss
+   the workflow's path filter.
 
 ## Now
 
@@ -66,9 +68,8 @@ current orientation.
   executed cold on this host, both engines.
 - v2.21.0 RELEASED and verified (41st); aarch64-linux asset
   executed cold on this host, both engines.
-- Pages deploy for 757f764 failed (transient OIDC timeout); a
-  `--failed` rerun cannot fix Pages (duplicate artifact) — retry is
-  a fresh push. Confirm the site shows 2.21.0 next tick.
+- 223: Pages deploy for v2.21.0 recovered via workflow_dispatch;
+  site current.
 - Backlog toward v2.22.0 (one per tick): quiet-machine bench
   re-measure; candidates: lib/list.ting sum_by, lib/string.ting
   words(s).

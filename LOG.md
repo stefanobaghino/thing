@@ -3144,3 +3144,18 @@ the Pages workflow; a fresh push (or workflow_dispatch) is the only
 clean retry. This commit is that fresh run. Until it lands the site
 still serves the 2.20.0 pages (all 200), so nothing is broken for
 visitors, only stale. 41 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 223: Pages deploy resolved
+
+CI green on 3c19367 (API verdict), but that push produced no Pages
+run at all: pages.yml filters on paths (playground, src, docs,
+tools/md2html.py, CHANGELOG.md, Cargo.toml, itself), and a
+LOG/STATE-only commit misses every one of them — so "a fresh push"
+is only a retry when it touches the site's inputs. The right retry
+is `gh workflow run pages.yml --ref main`, which the workflow has
+allowed all along. Dispatched: run 33725422231 succeeded, and the
+live changelog now shows v2.21.0 with all seven resources 200.
+Rule refined in STATE.md. Maintenance took this tick; building
+resumes next.
