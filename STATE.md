@@ -38,8 +38,7 @@ current orientation.
   green on CI.
 - v2.13.0 RELEASED and verified (33rd); darwin-arm64 cold-tested.
 - v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
-- Toward v2.15.0: median, stats dogfooding, REPL :clear banked.
-  Release next tick if quiet. (193 was a distribution audit — all
-  34 releases and the whole site verified healthy.)
+- v2.15.0 tagged; release run in flight — verify assets next wake.
+  (193's distribution audit: all releases + site healthy.)
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
