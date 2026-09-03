@@ -40,6 +40,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 | `group_by(xs, key)` | map from `key(x)` (a string) to the elements with that key, in input order |
 | `count_by(xs, key)` | map from `key(x)` (a string) to how many elements share it |
+| `frequencies(xs)` | map from each string element to its number of occurrences |
 | `take(xs, n)` | the first `n` elements (fewer if the list is shorter) |
 | `drop(xs, n)` | everything after the first `n` elements |
 | `partition(xs, pred)` | `[matching, rest]` split by `pred`, both in input order |

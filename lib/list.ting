@@ -291,3 +291,7 @@ fn interleave(a, b) {
   }
   return out;
 }
+
+# Map from each string element to how often it occurs (count_by with
+# the identity; elements must be strings).
+fn frequencies(xs) { return count_by(xs, fn(x) { return x; }); }
