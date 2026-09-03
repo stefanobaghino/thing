@@ -7577,3 +7577,18 @@ it pass took two edits: the count to 116, and a row for
 paths_into, the one exported helper that had none. Full gate green
 (237 tests). One stroke banked toward v2.70.0. Next: --check
 --strict.
+
+---
+
+## 2026-09-03 — Iteration 458: --check --strict
+
+CI and Pages green on 457 (API verdicts). Milestone stroke 2:
+`ting --check --strict` makes the five warnings fail the check —
+they still print as warnings, but any one of them sets exit 1 —
+for pre-commit hooks and CI that want them enforced; without the
+flag, and in the LSP, warnings stay advice. The flag sits anywhere
+among the arguments like --test's. io test: a file with an unused
+binding passes plain and fails strict, a clean file passes strict.
+Help line added. Full gate green (238 tests). Two strokes banked
+toward v2.70.0 (457, 458). Next: the docs mentions, then the
+release.
