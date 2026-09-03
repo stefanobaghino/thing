@@ -6078,3 +6078,25 @@ map). Four selftests (identity, by length, structural keys, empty),
 stdlib.md row. Selftests pass on both engines; full gate green (219
 tests). Two strokes banked toward v2.56.0 (379, 380). Next: health
 tick + audit, then replenish; the release follows the next stroke.
+
+---
+
+## 2026-09-03 — Iteration 381: health tick + audit
+
+CI and Pages green on 380 (API verdicts). Bench at load ~5 (the
+highest of the day): every timing roughly doubled and the maps
+ratio read +61% against +3% two ticks ago with no engine change —
+the clearest demonstration yet that timings here are weather; all
+six checksums match, and checksums decide. Fuzz: 50000
+differential cases (seed 20260903381), the crash fuzzer, and 20000
+formatter cases (seed 381) all pass in release. Distribution: 76
+releases with the expected asset counts (36 × 3, 14 × 4, 26 × 6),
+all six v2.55.0 download URLs resolve, all nine site resources
+answer 200, the live page has the check button and the live wasm
+exports ting_check, stdlib.html lists chunk_by. A probe of
+/vm.html read 404: vm.md is not among the pages the workflow
+converts and never was (the README links the repo file), so that
+is a probe error, not an outage — the nine-resource list stands.
+Nothing to fix. The "the story straight" milestone is complete;
+two strokes (379, 380) are banked toward v2.56.0. Backlog empty:
+next tick is replenishment.
