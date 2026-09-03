@@ -3067,3 +3067,16 @@ published. Cold test on this aarch64 Linux host: `ting 2.20.0`,
 count_by/invert/first/last print identically on both engines, and
 :fmt reprints a piped chunk formatted. Site: all resources 200,
 changelog shows 2.20.0. 40 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 219: is_digit/is_alpha
+
+CI green on 218b (API verdict). lib/string.ting gains is_digit
+(ASCII digits only, so "-1" is false) and is_alpha, defined as
+"every character is a cased letter": upper(c) != lower(c), which
+covers accented Latin, Greek and Cyrillic without a Unicode table
+but honestly excludes caseless scripts — the doc row says so rather
+than hiding it. Both false on the empty string. Nine assertions,
+two stdlib.md rows. Full gate green on both engines. First stroke
+toward v2.21.0.
