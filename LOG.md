@@ -8430,3 +8430,21 @@ node at a time will not need its own walk. Nested literals are
 covered by the same visitor and by the test. The corpus still shows
 its three expected warnings, guarded. Full gate green (253 tests).
 One stroke banked toward v2.79.0. Next: code that can never run.
+
+---
+
+## 2026-09-03 — Iteration 504: what can never run
+
+CI green on 503 (API verdict). Milestone stroke 2: `--check` and
+the LSP warn about a statement that follows a `return`, a `break`
+or a `continue` in the same block — "this can never run: the return
+above always leaves" — pointed at the orphan itself. Only the first
+one in a block is reported; the rest are the same mistake seen
+twice. A `return` inside an `if` that the block continues past is
+not one, and neither is a `return` at the end of its block: both
+are in the test. The walk needed a companion to yesterday's
+expression visitor — one over every block, including the bodies of
+function literals wherever they sit — and the two together are what
+these small passes will keep using. The corpus still shows its
+three expected warnings. Full gate green (254 tests). Two strokes
+banked (503, 504). Next: release v2.79.0.
