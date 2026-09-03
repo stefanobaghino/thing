@@ -2998,3 +2998,16 @@ published. Cold test on this aarch64 Linux host: `ting 2.19.0`,
 window([1,2,3], 2) and center("ab", 5, "*") print identically on
 both engines. Site: all resources 200, changelog shows 2.19.0. 39
 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 214: REPL :fmt
+
+CI green on 213b (API verdict). Fifth REPL meta-command: :fmt
+reprints the last evaluated chunk as the formatter would write it —
+a cheap way to learn the house style interactively. The REPL keeps
+the last complete chunk (moved out of the input buffer rather than
+copied); :fmt never consumes it, so repeated calls agree, which the
+pipe test asserts along with the "(nothing to format yet)" case.
+Banner, :help footer and the reference REPL paragraph updated. Full
+gate green. First stroke toward v2.20.0.

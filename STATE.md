@@ -56,9 +56,9 @@ current orientation.
   assets included, site all 200).
 - v2.19.0 RELEASED and verified (39th); aarch64-linux asset
   executed cold on this host, both engines.
-- Backlog toward v2.20.0 (one per tick): REPL :fmt of the last
-  chunk; lib/map.ting count_by/invert; health tick; release after
-  ~3 strokes.
+- 214: REPL :fmt — first stroke toward v2.20.0.
+- Backlog (one per tick): lib/map.ting count_by/invert; health
+  tick; one more feature stroke; release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
