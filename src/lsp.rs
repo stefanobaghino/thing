@@ -256,6 +256,24 @@ fn diagnostics(src: &str) -> Value {
 /// top-level lets both count). Text-based like the rest of this file:
 /// (byte start, byte end, message) per offending key.
 pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
+    stdlib_member_findings(src)
+        .into_iter()
+        .map(|f| (f.start, f.end, format!("{} has no `{}`", f.module, f.key)))
+        .collect()
+}
+
+/// One unknown-member occurrence: the key's byte span, the module it
+/// was looked up in, the key itself, and what the module does export
+/// (for suggestions).
+struct MemberFinding {
+    start: usize,
+    end: usize,
+    module: &'static str,
+    key: String,
+    exports: Vec<String>,
+}
+
+fn stdlib_member_findings(src: &str) -> Vec<MemberFinding> {
     let mut out = Vec::new();
     // Bindings: `let <ident> = import("<...lib/x.ting>")`.
     let mut bindings: Vec<(String, &'static str, Vec<String>)> = Vec::new();
@@ -304,16 +322,89 @@ pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
             };
             let key = &src[key_start..key_start + key_len];
             if bounded && !exports.iter().any(|e| e == key) {
-                out.push((
-                    key_start,
-                    key_start + key_len,
-                    format!("{module} has no `{key}`"),
-                ));
+                out.push(MemberFinding {
+                    start: key_start,
+                    end: key_start + key_len,
+                    module,
+                    key: key.to_string(),
+                    exports: exports.clone(),
+                });
             }
             from = key_start + key_len;
         }
     }
     out
+}
+
+/// Edit distance with adjacent transpositions counting one (optimal
+/// string alignment), so "medain" is one step from "median" rather
+/// than tying with "mean".
+fn levenshtein(a: &str, b: &str) -> usize {
+    let a: Vec<char> = a.chars().collect();
+    let b: Vec<char> = b.chars().collect();
+    let mut d = vec![vec![0usize; b.len() + 1]; a.len() + 1];
+    for (i, row) in d.iter_mut().enumerate() {
+        row[0] = i;
+    }
+    for (j, cell) in d[0].iter_mut().enumerate() {
+        *cell = j;
+    }
+    for i in 1..=a.len() {
+        for j in 1..=b.len() {
+            let cost = usize::from(a[i - 1] != b[j - 1]);
+            d[i][j] = (d[i - 1][j] + 1)
+                .min(d[i][j - 1] + 1)
+                .min(d[i - 1][j - 1] + cost);
+            if i > 1 && j > 1 && a[i - 1] == b[j - 2] && a[i - 2] == b[j - 1] {
+                d[i][j] = d[i][j].min(d[i - 2][j - 2] + 1);
+            }
+        }
+    }
+    d[a.len()][b.len()]
+}
+
+/// Quickfix code actions for unknown-member warnings whose key lies on
+/// one of the requested lines: replace the key with the nearest export
+/// when it is close enough to be a plausible typo.
+fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize) -> Value {
+    let mut actions = Vec::new();
+    for f in stdlib_member_findings(src) {
+        let line = src[..f.start].matches('\n').count();
+        if line < first_line || line > last_line {
+            continue;
+        }
+        let Some((best, dist)) = f
+            .exports
+            .iter()
+            .map(|e| (e, levenshtein(&f.key, e)))
+            .min_by_key(|(e, d)| (*d, (*e).clone()))
+        else {
+            continue;
+        };
+        // Allow one edit per four characters, at least two.
+        if dist > (f.key.chars().count() / 4).max(2) {
+            continue;
+        }
+        let edit = obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, f.start)),
+                    ("end", position(src, f.end)),
+                ]),
+            ),
+            ("newText", s(best)),
+        ]);
+        actions.push(obj(vec![
+            ("title", s(&format!("Replace with `{best}`"))),
+            ("kind", s("quickfix")),
+            (
+                "edit",
+                obj(vec![("changes", obj(vec![(uri, Value::list(vec![edit]))]))]),
+            ),
+        ]));
+    }
+    Value::list(actions)
 }
 
 fn publish(output: &mut impl Write, uri: &str, src: &str) {
@@ -553,6 +644,7 @@ pub fn run() -> i32 {
                             ("definitionProvider", Value::Bool(true)),
                             ("referencesProvider", Value::Bool(true)),
                             ("renameProvider", Value::Bool(true)),
+                            ("codeActionProvider", Value::Bool(true)),
                             (
                                 "signatureHelpProvider",
                                 obj(vec![(
@@ -720,6 +812,39 @@ pub fn run() -> i32 {
                         })
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/codeAction" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let range = params.as_ref().and_then(|p| get(p, "range"));
+                let first = range
+                    .as_ref()
+                    .and_then(|r| get(r, "start"))
+                    .and_then(|p| get(&p, "line"));
+                let last = range
+                    .as_ref()
+                    .and_then(|r| get(r, "end"))
+                    .and_then(|p| get(&p, "line"));
+                let result = match (uri, first, last) {
+                    (Some(uri), Some(Value::Int(a)), Some(Value::Int(b))) => docs
+                        .get(&uri)
+                        .map(|src| {
+                            code_action_result(src, &uri, a.max(0) as usize, b.max(0) as usize)
+                        })
+                        .unwrap_or_else(|| Value::list(vec![])),
+                    _ => Value::list(vec![]),
                 };
                 write_message(
                     &mut output,

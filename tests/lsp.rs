@@ -269,12 +269,36 @@ fn unknown_stdlib_member_is_a_warning() {
         "{diag}"
     );
 
+    // A quickfix replaces the misspelt key with the nearest export.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///w.ting","version":2},"contentChanges":[{"text":"let l = import(\"lib/list.ting\");\nprint(l[\"median\"]([1]));\n"}]}}"#,
+        r#"{"jsonrpc":"2.0","id":10,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///w.ting"},"range":{"start":{"line":2,"character":0},"end":{"line":2,"character":40}}}}"#,
+    );
+    let act = recv(&mut reader);
+    assert!(act.contains("\"kind\":\"quickfix\""), "{act}");
+    assert!(act.contains("Replace with `median`"), "{act}");
+    assert!(act.contains("\"newText\":\"median\""), "{act}");
+    // Other lines: nothing to offer.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///w.ting"},"range":{"start":{"line":0,"character":0},"end":{"line":1,"character":0}}}}"#,
+    );
+    let act = recv(&mut reader);
+    assert!(act.contains("\"result\":[]"), "{act}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///w.ting","version":2},"contentChanges":[{"text":"let l = import(\"lib/list.ting\");\nprint(l[\"median\"]([1]), l[\"zzqqxx\"]);\n"}]}}"#,
     );
     let diag = recv(&mut reader);
-    assert!(diag.contains("\"diagnostics\":[]"), "{diag}");
+    assert!(diag.contains("has no `zzqqxx`"), "{diag}");
+    // A name unlike any export gets the warning but no quickfix.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":12,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///w.ting"},"range":{"start":{"line":1,"character":0},"end":{"line":1,"character":60}}}}"#,
+    );
+    let act = recv(&mut reader);
+    assert!(act.contains("\"result\":[]"), "{act}");
 
     send(
         &mut stdin,
@@ -295,6 +319,7 @@ fn document_symbols_list_top_level_lets() {
     );
     let init = recv(&mut reader);
     assert!(init.contains("\"documentSymbolProvider\":true"), "{init}");
+    assert!(init.contains("\"codeActionProvider\":true"), "{init}");
 
     send(
         &mut stdin,
