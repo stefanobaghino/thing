@@ -8662,3 +8662,19 @@ archives downloaded fresh, unpacked and run — `-V` reports 2.82.0,
 and a file built on lib/test.ting with three helper calls reports
 "(3 checks)", which is what the framework's counting was for. 103rd
 tag. Next: health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 517: health tick + audit
+
+CI green on the v2.82.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline, with fib and lists
+at their usual margins and strings and stdlib ahead of eval this
+round. Fuzz: 50000 differential cases (seed 20260903517), 20000
+formatter cases (seed 517, LF and CRLF) and the crash fuzzer with
+its cyclic case all pass in release. Distribution: 103 releases
+with the expected asset counts (36 x 3, 14 x 4, 53 x 6) and all six
+v2.82.0 download URLs resolve. Site: all nine resources answer 200,
+the changelog leads with v2.82.0 and the tutorial serves the check
+counts. Nothing to fix. The "how much it checked" milestone is
+complete. Backlog empty: next tick is replenishment.

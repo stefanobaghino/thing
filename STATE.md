@@ -178,7 +178,9 @@ holds only the current milestone and the standing rules.
 - v2.82.0 VERIFIED (103rd tag; strokes 514, 515; both aarch64
   archives executed here).
 - Backlog (one per tick, in order):
-  (1) health tick + audit — then replenishment.
+  empty — next tick is replenishment.
+- 517: health tick + audit green — milestone "how much it checked"
+  complete.
 - Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
