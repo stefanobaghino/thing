@@ -166,8 +166,13 @@ current orientation.
 - v2.50.0 VERIFIED (71st tag, 70 verified; both aarch64 archives
   executed here). Milestone "second opinions" shipped.
 - 351: extent in lib/list.ting — one stroke banked toward v2.51.0.
-- Backlog (in order): (5) health tick + distribution audit; then
-  replenish (design the next milestone; "No idle" rule).
+- 352: health tick + audit green. Backlog EMPTY: next tick is
+  replenishment — design the next milestone ("No idle" rule),
+  reasoning in LOG.md. One stroke (351 extent) banked toward v2.51.0.
+- Site audit paths: https://www.baghino.me/thing/ (github.io
+  redirects there); playground at the root — /, /examples.js,
+  /ting.wasm — plus reference, tutorial, cookbook, stdlib,
+  retrospective, changelog .html.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

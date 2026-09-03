@@ -5462,3 +5462,20 @@ operators accept (numbers, strings). Four selftests (numbers,
 strings, singleton, empty), stdlib.md row. Selftests pass on both
 engines; full gate green (210 tests). One stroke banked toward
 v2.51.0. Next: health tick + distribution audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 352: health tick + audit
+
+CI and Pages green on 351 (API verdicts). Bench at load ~3–4: all
+six checksums match; VM ratios within the usual noise band of the
+last ticks. Fuzz: 50000 differential cases (seed 20260903352), the
+crash fuzzer, and 20000 formatter cases (seed 352) all pass in
+release. Distribution: 71 releases with the expected asset counts
+(36 × 3, 14 × 4, 21 × 6), all six v2.50.0 download URLs resolve.
+Site: the github.io address now redirects to www.baghino.me/thing,
+and the playground is served at the site root (index, examples.js,
+ting.wasm), not under /playground — the first probe used the old
+paths and read 404s that were probe errors, not outages; all nine
+resources answer 200 at the real paths. Rule recorded in STATE.md.
+Nothing to fix. Backlog empty: next tick is replenishment.
