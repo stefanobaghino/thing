@@ -104,13 +104,14 @@ holds only the current milestone and the standing rules.
   25th) complete.
 - 448: replenishment — milestone "the ninth act" (v2.68–v2.69),
   reasoning in LOG.md.
-- 449: retrospective act nine — three strokes banked (445, 446,
-  449); RELEASE v2.68.0 next tick if quiet.
+- v2.68.0 TAGGED (89th tag; strokes 445, 446, 449): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (formatting range over raw JSON-RPC, selftests).
 - Backlog after the release (in order): (2) builtin-shadowing
   warning, io + protocol tests; (3) lib/string.ting is_number,
   selftests; (4) lib/list.ting argmax/argmin, selftests; (5) health
   tick + audit.
-- Tags: 88 (v2.67.0), 87 verified; v2.29.0 is publicly marked broken
+- Tags: 89 (v2.68.0), 87 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.68.0 (2026-09-03)
+
+- LSP: the whole-document formatting edit ends at the document's
+  real last position.
+- Tutorial: diff and flatten in the JSON chapter; retrospective:
+  ninth act.
+
 ## v2.67.0 (2026-09-03)
 
 - lib/test.ting: `check_type(name, v, type_name)`; check, check_eq
