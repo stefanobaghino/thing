@@ -391,3 +391,40 @@ fn repl_fmt_reprints_the_last_chunk_formatted() {
     );
     assert_eq!(out.status.code(), Some(0));
 }
+
+/// `--test` runs every file in its own process: ok/FAIL per file with
+/// the diagnostic under a failure, a summary, exit 1 if any failed.
+#[test]
+fn test_flag_runs_files_and_summarises() {
+    let dir = std::env::temp_dir();
+    let good = dir.join(format!("ting-test-good-{}.ting", std::process::id()));
+    let bad = dir.join(format!("ting-test-bad-{}.ting", std::process::id()));
+    // A passing test may print; the runner discards stdout. A failing
+    // one may exit(1) itself (lib/test.ting's summary does) without
+    // taking the runner down.
+    std::fs::write(&good, "assert(1 + 1 == 2); print(\"noise\");\n").unwrap();
+    std::fs::write(&bad, "assert(1 == 2, \"arithmetic is broken\"); exit(1);\n").unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", good.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.starts_with("ok   "), "{stdout}");
+    assert!(stdout.contains("1 passed, 0 failed"), "{stdout}");
+    assert!(!stdout.contains("noise"), "{stdout}");
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", good.to_str().unwrap(), bad.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(stdout.contains("FAIL "), "{stdout}");
+    assert!(stdout.contains("arithmetic is broken"), "{stdout}");
+    assert!(stdout.contains("1 passed, 1 failed"), "{stdout}");
+
+    let _ = std::fs::remove_file(&good);
+    let _ = std::fs::remove_file(&bad);
+}

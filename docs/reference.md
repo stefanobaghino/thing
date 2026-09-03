@@ -251,6 +251,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   idempotent and never alters program meaning.
 - `ting --check <files...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
+- `ting --test <files...>` runs each file in its own process and
+  prints `ok` or `FAIL` per file (with the diagnostic under a
+  failure) and a summary; exit 1 if anything failed. Pair it with
+  `lib/test.ting` or plain `assert` calls.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
 - `ting --lsp` speaks the Language Server Protocol on stdio:

@@ -26,6 +26,7 @@ fn main() -> ExitCode {
                  \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <files...>     report syntax errors without running\n\
                  \x20                             (tool flags accept - for stdin)\n\
+                 \x20 ting --test <files...>      run each file; ok/FAIL per file, exit 1 if any fail\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -46,6 +47,10 @@ fn main() -> ExitCode {
     if args.peek().map(String::as_str) == Some("--check") {
         args.next();
         return run_check(args.collect());
+    }
+    if args.peek().map(String::as_str) == Some("--test") {
+        args.next();
+        return run_tests(args.collect());
     }
     if args.peek().map(String::as_str) == Some("--lsp") {
         return match ting::lsp::run() {
@@ -135,6 +140,64 @@ fn run_check(files: Vec<String>) -> ExitCode {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
+    }
+}
+
+/// Test runner: every file runs in its own process (so a script's
+/// exit() or a failed assert cannot take the runner down), and the
+/// verdict is its exit status. stdout is discarded; stderr is shown
+/// under a FAIL line so the diagnostic stays next to its file.
+fn run_tests(files: Vec<String>) -> ExitCode {
+    if files.is_empty() {
+        eprintln!("usage: ting --test <files...>");
+        return ExitCode::FAILURE;
+    }
+    let me = match std::env::current_exe() {
+        Ok(p) => p,
+        Err(e) => {
+            eprintln!("ting: cannot locate own binary: {e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let mut failed = 0usize;
+    for f in &files {
+        let out = std::process::Command::new(&me)
+            .arg(f)
+            .env("TING_ENGINE", engine_name())
+            .stdin(std::process::Stdio::null())
+            .stdout(std::process::Stdio::null())
+            .output();
+        match out {
+            Ok(out) if out.status.success() => println!("ok   {f}"),
+            Ok(out) => {
+                failed += 1;
+                println!("FAIL {f}");
+                for line in String::from_utf8_lossy(&out.stderr).lines() {
+                    println!("     {line}");
+                }
+            }
+            Err(e) => {
+                failed += 1;
+                println!("FAIL {f}");
+                println!("     cannot run: {e}");
+            }
+        }
+    }
+    println!("{} passed, {} failed", files.len() - failed, failed);
+    if failed > 0 {
+        ExitCode::FAILURE
+    } else {
+        ExitCode::SUCCESS
+    }
+}
+
+/// The engine the runner's children should use: the same one this
+/// process was told to use, so `TING_ENGINE=eval ting --test` tests
+/// the reference engine.
+fn engine_name() -> &'static str {
+    match std::env::var("TING_ENGINE").as_deref() {
+        Ok("eval") => "eval",
+        _ => "vm",
     }
 }
 

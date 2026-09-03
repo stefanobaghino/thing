@@ -328,6 +328,8 @@ Everything else ships in the same binary:
   formatter would write it, and `:clear` starts over.
 - `ting --check *.ting` reports syntax errors without running
   anything — wire it into a pre-commit hook.
+- `ting --test tests/*.ting` runs each file and prints `ok` or
+  `FAIL` per file plus a summary — a test runner with no setup.
 - `ting --fmt *.ting` reformats in place; CI can enforce it with
   `--fmt-check`, and `ting --fmt -` filters stdin to stdout for
   editor integrations.
