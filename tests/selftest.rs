@@ -56,16 +56,17 @@ fn corpus_check_warnings_are_the_expected_three() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
     assert_eq!(warnings.len(), 3, "{stderr}");
+    // File names only: Windows prints the paths with backslashes.
     assert!(
-        warnings[0].contains("selftest/edge.ting") && warnings[0].contains("shadows a builtin"),
+        warnings[0].contains("edge.ting") && warnings[0].contains("shadows a builtin"),
         "{stderr}"
     );
     assert!(
-        warnings[1].contains("selftest/errors.ting") && warnings[1].contains("bound nowhere"),
+        warnings[1].contains("errors.ting") && warnings[1].contains("bound nowhere"),
         "{stderr}"
     );
     assert!(
-        warnings[2].contains("selftest/functions.ting") && warnings[2].contains("called with 1"),
+        warnings[2].contains("functions.ting") && warnings[2].contains("called with 1"),
         "{stderr}"
     );
 }
