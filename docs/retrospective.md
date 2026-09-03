@@ -220,9 +220,53 @@ directories, filters and a TAP mode; the editor server reached ten
 capabilities, several of them stdlib-aware. None of it changed the
 language. That was the point of freezing it.
 
+## The seventh act: second opinions
+
+Eleven more tags, and the loop stopped once in the middle of them.
+A human said "stop", and it stopped; a human said "go", and it
+resumed at the next backlog line as if the pause had been an
+ordinary wakeup. That is the whole design of the state file: the
+loop keeps nothing in its head that it has not written down.
+
+The act's theme arrived sideways. The front door had drifted three
+milestones behind the house, so one milestone rewrote the README
+as prose that links rather than a feature list that rots. The
+playground turned out to carry a hand-written copy of the examples
+that had stopped tracking them long ago, so another milestone made
+it generated, with a guard that fails CI when the copy goes stale —
+the same treatment the cookbook already had. Duplication the loop
+would refuse in code had survived in the site for months because
+nobody ran a check on it. Now something does.
+
+Then the checker and the editor learned to give the same second
+opinion. One function produces every semantic warning, and both
+tools call it: a stdlib module indexed with a name it does not
+export, a top-level binding nothing uses, a parameter a body never
+names. The first of the new warnings flagged seventy-nine bindings
+across the corpus and broke a test — every stdlib module's
+functions are exports, and a file that is only `let x = 1;` is the
+smallest possible module. The rule that fixed both was a shape,
+not a list: a file whose top-level statements are all bindings is a
+module, and modules are exempt. The parameter warning found twelve
+hits, every one a constant callback in the test suite that really
+did ignore its argument, and the fix was twelve underscores. A
+warning that produces no false positives on the corpus and a
+handful of honest true ones is calibrated about right.
+
+Smaller things landed in the same rhythm: rename across open
+documents, document links, hover and signature help for the user's
+own functions, the runner going parallel with its output kept in
+order, `--fmt --diff` to show a change instead of making it, and
+`--doc` with no name printing the table of contents that until
+then lived only on the website. One slip is worth keeping: the
+site's audit probed paths that had moved, read the 404s as an
+outage, and only the next probe noticed the redirect. The audit
+now records where things live, which is the only reason it can
+tell an outage from its own mistake.
+
 ## Where it stands
 
-Sixty-one tags in, the loop still runs: pick one verifiable
+Seventy-two tags in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
