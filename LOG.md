@@ -5744,3 +5744,17 @@ modules, one reaching the broken one through `../`; the error is
 reported under the broken file exactly once and fails the check.
 Reference bullet extended. Corpus clean. Full gate green (215
 tests). Two strokes banked toward v2.53.0. Next: slug.
+
+---
+
+## 2026-09-03 — Iteration 365: slug
+
+CI green on 364 (API verdict). Milestone stroke 4: `slug(s)` in
+lib/string.ting — lowercased, every run of characters that is
+neither a digit nor a cased letter collapsed to one dash, dashes
+trimmed from both ends; accented letters survive because the
+module's is_alpha is case-pair based, not ASCII. Five selftests
+(plain, collapse and trim, accented, nothing left, empty),
+stdlib.md row. Selftests pass on both engines; full gate green
+(215 tests). Three strokes banked (363, 364, 365) — v2.53.0 next
+tick if quiet.
