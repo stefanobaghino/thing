@@ -84,9 +84,9 @@ holds only the current milestone and the standing rules.
 - v2.64.0 VERIFIED (85th tag; strokes 423, 424, 427; both aarch64
   archives executed here).
 - 429: :load reports new bindings; 430: failed import says where
-  it looked — two strokes banked toward v2.65.0.
-- Backlog (in order): (4) lib/list.ting transpose, selftests — then
-  RELEASE v2.65.0; (5) health tick + audit; then replenish.
+  it looked; 431: transpose — three strokes banked; RELEASE v2.65.0
+  next tick if quiet.
+- Backlog after the release: (5) health tick + audit; then replenish.
 - Tags: 85 (v2.64.0), 84 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

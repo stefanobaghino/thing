@@ -7069,3 +7069,16 @@ clause says the stdlib fallback was tried too. Both engines share
 import_module. io test from a subdirectory with a `../` path on
 both engines. Full gate green (230 tests). Two strokes banked
 toward v2.65.0 (429, 430). Next: transpose.
+
+---
+
+## 2026-09-03 — Iteration 431: transpose
+
+CI green on 430 (API verdict). Milestone stroke 4:
+`transpose(xss)` in lib/list.ting — rows to columns for a
+rectangular list of lists, a ragged input a clean failure, an
+empty list of rows (or rows with no columns) an empty result; zip
+next to it gains the `#` comment it lacked. Five selftests
+(rectangle, involution, empty, empty rows, ragged), stdlib.md row.
+Selftests pass on both engines; full gate green (230 tests). Three
+strokes banked (429, 430, 431) — v2.65.0 next tick if quiet.
