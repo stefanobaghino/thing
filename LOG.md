@@ -5097,3 +5097,19 @@ harness (no arguments; an environment variable that is never set,
 so env() answers nil and the exit(2) branch is not taken). Prose
 points at the pipeline example. The tutorial test runs the snippet.
 Markdown guard and full gate green. First stroke toward v2.46.0.
+
+---
+
+## 2026-09-03 — Iteration 332: --test -j N
+
+CI and Pages green on 331 (API verdicts). Milestone stroke 2: `-j
+N` runs up to N test files at once on scoped threads pulling from a
+shared counter, each child's outcome landing in its own slot, and
+the report is printed afterwards in the original order — so TAP
+numbering and the human output are byte-identical to the
+sequential run (the io test compares the two streams with the
+timing comments stripped) and `-j 0` is a usage error. The
+per-file child spawn moved into run_one. Clippy asked for a type
+alias for the outcome tuple. Help and reference updated. Full gate
+green; `--test -j 4 selftest` passes 11. Second stroke toward
+v2.46.0.
