@@ -23,10 +23,91 @@ impl Rng {
 }
 
 const TOKENS: &[&str] = &[
-    "let", "fn", "if", "else", "while", "for", "in", "break", "continue", "return", "true",
-    "false", "nil", "x", "y", "f", "g", "(", ")", "{", "}", "[", "]", ",", ";", ":", "+", "-", "*",
-    "/", "%", "==", "!=", "<", "<=", ">", ">=", "&&", "||", "!", "=", "0", "1", "2", "42", "1.5",
-    "\"s\"", "\"\"", "print", "len", "range", "push", "sort", "try", "fail",
+    "let",
+    "fn",
+    "if",
+    "else",
+    "while",
+    "for",
+    "in",
+    "break",
+    "continue",
+    "return",
+    "true",
+    "false",
+    "nil",
+    "x",
+    "y",
+    "f",
+    "g",
+    "(",
+    ")",
+    "{",
+    "}",
+    "[",
+    "]",
+    ",",
+    ";",
+    ":",
+    "+",
+    "-",
+    "*",
+    "/",
+    "%",
+    "==",
+    "!=",
+    "<",
+    "<=",
+    ">",
+    ">=",
+    "&&",
+    "||",
+    "!",
+    "=",
+    "0",
+    "1",
+    "2",
+    "42",
+    "1.5",
+    "\"s\"",
+    "\"\"",
+    "print",
+    "len",
+    "range",
+    "push",
+    "sort",
+    "try",
+    "fail",
+    // Every pure builtin (iteration 260 audit); I/O, blocking and
+    // clock builtins stay out on purpose. The closure token feeds the
+    // higher-order ones.
+    "abs",
+    "assert",
+    "ends_with",
+    "filter",
+    "find",
+    "float",
+    "format",
+    "has",
+    "int",
+    "json_parse",
+    "json_str",
+    "keys",
+    "lower",
+    "map",
+    "max",
+    "min",
+    "pop",
+    "reduce",
+    "replace",
+    "slice",
+    "sort_by",
+    "split",
+    "starts_with",
+    "trim",
+    "type",
+    "upper",
+    "fn(a) { return a; }",
 ];
 
 fn token_soup(rng: &mut Rng) -> String {
@@ -56,6 +137,12 @@ fn exercise(src: &str) {
     if !src.contains("while") && !src.contains("exit") && !src.contains("import") {
         let mut interp = ting::eval::Interpreter::new(std::io::sink());
         let _ = interp.run(&program);
+        // The bytecode path must be just as panic-free: compile errors
+        // and runtime errors are fine, unwinding is not.
+        if let Ok(chunk) = ting::compile::compile_program(&program) {
+            let mut interp = ting::eval::Interpreter::new(std::io::sink());
+            let _ = ting::vm::run_chunk(&mut interp, &chunk);
+        }
     }
 }
 
