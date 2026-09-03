@@ -6355,3 +6355,16 @@ v2.58.0 next tick if quiet.
 Cyclic print, cyclic equality, json_str refusing cycles. CI and
 Pages green on 393 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.58.0 (79th tag).
+
+---
+
+## 2026-09-03 — Iteration 394b: v2.58.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.58.0; the three one-line programs that aborted the process at
+389 and 390 now print `[1, [...]]`, `true`, and the json_str
+cyclic-value error on the musl VM and the gnu reference engine;
+`--test selftest` passes 11/11 on each. CI and Pages green on the
+release commit. Seventy-nine tags, seventy-eight verified. Next:
+the tutorial's Testing chapter flags.

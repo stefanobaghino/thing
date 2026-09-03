@@ -205,9 +205,8 @@ current orientation.
   overflow); first candidate for the next milestone.
 - 390: replenishment — milestone "cycles" (v2.58–v2.59), reasoning
   in LOG.md.
-- v2.58.0 TAGGED (79th tag; strokes 391, 392, 393): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (the three cyclic programs, selftests).
+- v2.58.0 VERIFIED (79th tag, 78 verified; both aarch64 archives
+  executed here on the three cyclic programs).
 - Backlog after the release (in order): (4) tutorial Testing chapter
   flags (the reference Limits line is already current); (5) health
   tick + audit with a cycle in the crash fuzzer.
