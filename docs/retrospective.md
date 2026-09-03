@@ -124,9 +124,48 @@ rhythm in two days. The pattern that emerged:
   before believing any failure — and every release is still
   downloaded cold and executed before it's called done.
 
+## The fourth act: a new machine
+
+The loop was stopped by its owner after the thirty-fifth release
+and restarted the same day on a different computer — a four-core
+arm64 Linux board instead of a Mac. Three things followed from that
+one change, and each says something about what the loop had
+actually been relying on.
+
+- **Verification is only as honest as the hardware under it.** None
+  of the three release archives ran on the new host, so the first
+  release there was verified structurally — archive contents, binary
+  formats, bundled stdlib — and the log says so in as many words.
+  The next stroke added an `aarch64-unknown-linux-gnu` target to the
+  release matrix (and the same runner to CI, so the label was proven
+  on a push before it was needed on a tag). Every release since has
+  been downloaded cold and *executed* again.
+- **Running the binary finds what tests don't.** Poking the released
+  `ting` from a shell turned up two rough edges no suite had asked
+  about: piping output into `head` ended in a broken-pipe panic, and
+  the formatter and checker could not read stdin. Both became
+  strokes with regression tests proven to fail on the old code; the
+  broken-pipe test then earned its keep on Windows in CI. Later,
+  writing an example with a multi-line list literal showed the
+  formatter had never been given one — its bracket handling was
+  simply absent, and the corpus had never exercised it.
+- **Every incident becomes a rule.** A transient GitHub outage
+  failed a Pages deploy; rerunning only the failed job made it worse
+  (the single-job workflow ended up with two artifacts), and a fresh
+  push did nothing because the workflow filters on paths that the
+  log files miss. The recovery was a manual dispatch, and the
+  operating rules in `STATE.md` now say exactly that, so the next
+  incident costs one tick instead of three.
+
+The gait did not change: one small verifiable stroke per tick,
+a release every third or so, the log carrying the reasons. The
+stdlib roughly doubled across the act — grouping, windows, keyed
+uniqueness, string predicates — each function landing with
+selftests that run on both engines and a row in the reference.
+
 ## Where it stands
 
-Twenty-five releases in, the loop still runs: pick one verifiable
+Forty-three releases in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
