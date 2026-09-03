@@ -3553,3 +3553,14 @@ v2.27.0 download URLs resolve, and all seven live site resources
 answer 200 (the playground still loads ting.wasm from the same
 origin). Nothing to fix. Two hundred and fifty iterations; building
 resumes next tick.
+
+---
+
+## 2026-09-03 — Iteration 251: tutorial tally via frequencies/top
+
+CI green on 250 (API verdict). The tutorial's closing script now
+reads as the stdlib intends: frequencies(words(lower(text))) then
+top(counts, 3), printing count and word from each pair — the
+hand-rolled sort_by with a negated key is gone. Same golden output
+(top's stable tie order matches the previous key order). Tutorial
+test and full gate green. First stroke toward v2.28.0.
