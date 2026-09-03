@@ -7859,3 +7859,19 @@ unknown option answered with the pointer at --help and exit 2,
 and `--test selftest` passing 11/11 on each. CI and Pages green on
 the release commit. Ninety-three tags, ninety-two verified. Next:
 exit codes 0/1/2.
+
+---
+
+## 2026-09-03 — Iteration 473: exit codes 0, 1, 2
+
+CI green on 472b (API verdict). Milestone stroke 2: the exit
+codes now mean one thing each — 0 for success, 1 for a failure the
+tool reports (a script that raises, a red test file, a file that
+would change under --fmt-check, a warning under --strict), 2 for a
+usage error (a mode with no operand, no .ting files under the
+operands, a bad -j, --slow or --filter value, an unknown option).
+Nine sites moved from 1 to 2; "cannot locate own binary" stays 1
+as an environment failure. Two existing tests that asserted 1 on
+usage errors now assert 2, and a new io test walks the three
+classes. Full gate green (241 tests). One stroke banked toward
+v2.73.0. Next: the reference's Running section.
