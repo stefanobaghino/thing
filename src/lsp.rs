@@ -106,6 +106,50 @@ fn document_symbols(src: &str) -> Value {
     Value::list(symbols)
 }
 
+/// workspace/symbol: every top-level binding of every open document
+/// whose name contains the query (case-insensitive; empty matches
+/// all), as SymbolInformation with a Location, documents in uri order.
+fn workspace_symbols(docs: &BTreeMap<String, String>, query: &str) -> Value {
+    let q = query.to_lowercase();
+    let mut out = Vec::new();
+    for (uri, src) in docs {
+        let Ok(tokens) = lexer::lex(src) else {
+            continue;
+        };
+        let Ok(program) = crate::parser::parse_program(&tokens) else {
+            continue;
+        };
+        for stmt in &program {
+            if let crate::ast::StmtKind::Let(name, expr) = &stmt.kind
+                && name.to_lowercase().contains(&q)
+            {
+                let kind = match expr.kind {
+                    crate::ast::ExprKind::Fn(..) => 12,
+                    _ => 13,
+                };
+                out.push(obj(vec![
+                    ("name", s(name)),
+                    ("kind", Value::Int(kind)),
+                    (
+                        "location",
+                        obj(vec![
+                            ("uri", s(uri)),
+                            (
+                                "range",
+                                obj(vec![
+                                    ("start", position(src, stmt.span.start)),
+                                    ("end", position(src, stmt.span.end)),
+                                ]),
+                            ),
+                        ]),
+                    ),
+                ]));
+            }
+        }
+    }
+    Value::list(out)
+}
+
 /// Definition of the identifier at (line, character): the top-level
 /// `let` (or fn sugar) binding that name, as a Location in `uri`.
 fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Value {
@@ -685,6 +729,7 @@ pub fn run() -> i32 {
                             ("renameProvider", Value::Bool(true)),
                             ("codeActionProvider", Value::Bool(true)),
                             ("foldingRangeProvider", Value::Bool(true)),
+                            ("workspaceSymbolProvider", Value::Bool(true)),
                             (
                                 "signatureHelpProvider",
                                 obj(vec![(
@@ -917,6 +962,19 @@ pub fn run() -> i32 {
                         ("jsonrpc", s("2.0")),
                         ("id", id.unwrap_or(Value::Nil)),
                         ("result", result),
+                    ]),
+                );
+            }
+            "workspace/symbol" => {
+                let query = get(&msg, "params")
+                    .and_then(|p| get_str(&p, "query"))
+                    .unwrap_or_default();
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", workspace_symbols(&docs, &query)),
                     ]),
                 );
             }

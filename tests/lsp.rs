@@ -351,6 +351,59 @@ fn folding_ranges_cover_multiline_braces() {
 }
 
 #[test]
+fn workspace_symbols_span_open_documents() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"workspaceSymbolProvider\":true"), "{init}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///a.ting","text":"fn total(xs) { return 1; }\nlet limit = 3;\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///b.ting","text":"let subtotal = 2;\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+
+    // "total" matches total (a.ting) and subtotal (b.ting), not limit.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"workspace/symbol","params":{"query":"total"}}"#,
+    );
+    let syms = recv(&mut reader);
+    assert!(
+        syms.contains("\"name\":\"total\"") && syms.contains("file:///a.ting"),
+        "{syms}"
+    );
+    assert!(
+        syms.contains("\"name\":\"subtotal\"") && syms.contains("file:///b.ting"),
+        "{syms}"
+    );
+    assert!(!syms.contains("limit"), "{syms}");
+    // Empty query lists everything.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"workspace/symbol","params":{"query":""}}"#,
+    );
+    let all = recv(&mut reader);
+    assert_eq!(all.matches("\"name\":").count(), 3, "{all}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 
