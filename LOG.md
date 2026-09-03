@@ -6214,3 +6214,11 @@ selftests (match in the middle, first match, no match, empty),
 stdlib.md row. Selftests pass on both engines; full gate green
 (219 tests). Three strokes banked (385, 386, 387) — v2.57.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 388: v2.57.0
+
+The series example, the editor README's LSP section, find_index.
+CI and Pages green on 387 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.57.0 (78th tag).

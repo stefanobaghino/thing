@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.57.0 (2026-09-03)
+
+- lib/list.ting: `find_index(xs, pred)`.
+- examples/series.ting: extent, mean, median, mode, percentile,
+  window and chunk_by on a numeric series; cookbook and playground
+  regenerated.
+- editor/README.md describes the language server's twelve
+  capabilities and its warnings.
+
 ## v2.56.0 (2026-09-03)
 
 - Playground: a check button (the checker and its warnings, via a
