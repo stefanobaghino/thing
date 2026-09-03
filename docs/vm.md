@@ -1,9 +1,25 @@
 # Bytecode VM design
 
-Status: design for the v0.9.0 milestone. The tree-walking interpreter
-in `eval.rs` stays as the reference implementation; the VM must be
-behaviorally identical and is only worth keeping if the benchmarks say
-so.
+## Status
+
+The VM has been the default engine since v1.1.0: `ting script.ting`
+compiles to a `Chunk` and runs it in `vm.rs`; `ting --eval` (or
+`TING_ENGINE=eval`) runs the same program on the tree-walking
+reference interpreter in `eval.rs`. The two are held byte-identical
+by the differential suite — hand-written cases plus generated random
+programs (`tests/differential.rs`, seeded through `TING_DIFF_SEED`
+and `TING_DIFF_CASES`) — and by a CI job that reruns the whole test
+suite on the reference engine. Closures, module imports, error
+origins and the call-site note are shared code paths: a function
+body is either an AST or a chunk, and one `Interpreter::call` runs
+both. The numbers live in `bench/BASELINE.md`, regenerated with
+`python3 bench/run.py --write` on the machine named there; on the
+shared host the loop runs on, checksums decide and timings are
+weather.
+
+What follows is the design as written before the VM existed, kept as
+the record of why it is shaped the way it is; the two "Measured
+outcome" sections at the end are what happened.
 
 ## Why
 
