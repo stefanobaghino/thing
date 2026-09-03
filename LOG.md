@@ -8479,3 +8479,21 @@ and its own Windows slip recorded. "Where it stands" now says a
 hundred tags, not eighty-eight. Full gate green (254 tests). One
 stroke banked toward v2.80.0. Next: docs and selftests for the two
 new checks.
+
+---
+
+## 2026-09-03 — Iteration 507: ting tests what the checker sees
+
+CI green on 506 (API verdict). Milestone stroke 2 toward v2.80.0:
+selftest/edge.ting now exercises both new checks from the runtime's
+side — a literal with the same key twice holds one entry and the
+last value, and a function with a statement after its `return`
+returns at once; were the orphan to run, its print would break a
+suite that demands silence. Both draw their warning on purpose, so
+the corpus guard now pins five, named and in order. Writing it
+showed the warnings of one file arriving in pass order rather than
+line order — the shadowed builtin on line 52 after the duplicate
+key on line 82 — so warnings() sorts by position now, which is how
+a reader goes through a file. The tutorial's --check bullet lists
+both. Full gate green (254 tests). Two strokes banked (506, 507).
+Next: release v2.80.0.
