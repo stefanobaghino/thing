@@ -286,9 +286,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   module's members, one line each; no name at all lists every
   builtin and every stdlib function. Exit 1 for an unknown name.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
-  diagnostics as you type (syntax errors, and warnings for an
-  imported stdlib module indexed with a name it does not export and
-  for unused top-level bindings and parameters),
+  diagnostics as you type (syntax errors; an error on an `import` of
+  a local file that has one, with the module's position; and warnings
+  for an imported stdlib module indexed with a name it does not
+  export and for unused top-level bindings and parameters),
   hover docs for every builtin (and for imported stdlib functions,
   and the signature of the file's own functions),
   completion

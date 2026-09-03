@@ -440,6 +440,53 @@ fn workspace_symbols_span_open_documents() {
 }
 
 #[test]
+fn broken_local_import_is_an_error_on_the_import_string() {
+    let dir = std::env::temp_dir().join(format!("ting-lsp-import-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    std::fs::write(dir.join("sub").join("b.ting"), "fn broken( {\n").unwrap();
+    std::fs::write(dir.join("sub").join("ok.ting"), "fn f() { return 1; }\n").unwrap();
+    let dir_text = dir.display().to_string().replace('\\', "/");
+    let uri = if dir_text.starts_with('/') {
+        format!("file://{dir_text}/a.ting")
+    } else {
+        format!("file:///{dir_text}/a.ting")
+    };
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    let text =
+        "let ok = import(\"./sub/ok.ting\");\nlet b = import(\"./sub/b.ting\");\nprint(ok, b);\n";
+    let open = format!(
+        r#"{{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{{"textDocument":{{"uri":"{uri}","text":"{}"}}}}}}"#,
+        text.replace('"', "\\\"").replace('\n', "\\n")
+    );
+    send(&mut stdin, &open);
+    let diag = recv(&mut reader);
+    assert!(
+        diag.contains("b.ting:1:12: expected parameter name") && diag.contains("\"severity\":1"),
+        "{diag}"
+    );
+    // On the import string of the broken file (line 1), and only there.
+    assert!(
+        diag.contains(r#""start":{"character":15,"line":1}"#),
+        "{diag}"
+    );
+    assert_eq!(diag.matches("\"severity\":1").count(), 1, "{diag}");
+    assert!(!diag.contains("ok.ting"), "{diag}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn document_links_point_at_importable_files() {
     let dir = std::env::temp_dir().join(format!("ting-lsp-links-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("sub")).unwrap();

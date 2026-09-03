@@ -403,7 +403,57 @@ fn folding_ranges(src: &str) -> Value {
 }
 
 /// Lex + parse + compile; the first error becomes the diagnostic list.
-fn diagnostics(src: &str) -> Value {
+/// Errors in local files this document imports: one error diagnostic
+/// on each `import("...")` string whose file fails to lex, parse or
+/// compile, carrying the module's file name, position and message —
+/// so a broken import shows in the importer without opening it.
+fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Some(dir) = uri_to_path(uri).and_then(|p| p.parent().map(|d| d.to_path_buf())) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    for (span, target) in import_targets(&tokens, &dir) {
+        let Ok(text) = std::fs::read_to_string(&target) else {
+            continue;
+        };
+        let err = match lexer::lex(&text) {
+            Err(e) => Some((e.message, e.span)),
+            Ok(t) => match parser::parse_program(&t) {
+                Err(e) => Some((e.message, e.span)),
+                Ok(program) => match compile::compile_program(&program) {
+                    Err(e) => Some((e.message, e.span)),
+                    Ok(_) => None,
+                },
+            },
+        };
+        let Some((message, espan)) = err else {
+            continue;
+        };
+        let (line, col) = espan.line_col(&text);
+        let name = target
+            .file_name()
+            .map(|n| n.to_string_lossy().into_owned())
+            .unwrap_or_default();
+        out.push(obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, span.start)),
+                    ("end", position(src, span.end)),
+                ]),
+            ),
+            ("severity", Value::Int(1)),
+            ("source", s("ting")),
+            ("message", s(&format!("{name}:{line}:{col}: {message}"))),
+        ]));
+    }
+    out
+}
+
+fn diagnostics(src: &str, uri: &str) -> Value {
     let err = match lexer::lex(src) {
         Err(e) => Some((e.message, e.span)),
         Ok(tokens) => match parser::parse_program(&tokens) {
@@ -429,6 +479,7 @@ fn diagnostics(src: &str) -> Value {
             ("message", s(&message)),
         ])],
     };
+    list.extend(import_diagnostics(src, uri));
     for (start, end, message) in warnings(src) {
         list.push(obj(vec![
             (
@@ -752,7 +803,10 @@ fn publish(output: &mut impl Write, uri: &str, src: &str) {
             ("method", s("textDocument/publishDiagnostics")),
             (
                 "params",
-                obj(vec![("uri", s(uri)), ("diagnostics", diagnostics(src))]),
+                obj(vec![
+                    ("uri", s(uri)),
+                    ("diagnostics", diagnostics(src, uri)),
+                ]),
             ),
         ]),
     );
