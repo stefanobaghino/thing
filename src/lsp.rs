@@ -618,6 +618,97 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
         .collect()
 }
 
+/// Map literals that give the same string key twice: the last wins
+/// silently, so `{"a": 1, "a": 2}` is `{"a": 2}` and the first entry
+/// was written for nothing. Only literal string keys are judged; a
+/// computed key is decided at run time.
+pub fn duplicate_map_keys(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    visit_exprs(&program, &mut |e| {
+        let crate::ast::ExprKind::Map(entries) = &e.kind else {
+            return;
+        };
+        let mut seen: std::collections::HashSet<&str> = std::collections::HashSet::new();
+        for (k, _) in entries {
+            if let crate::ast::ExprKind::Str(key) = &k.kind
+                && !seen.insert(key.as_str())
+            {
+                out.push((
+                    k.span.start,
+                    k.span.end,
+                    format!("duplicate key `{key}`: the last one wins"),
+                ));
+            }
+        }
+    });
+    out.sort_by_key(|(start, _, _)| *start);
+    out
+}
+
+/// Every expression in the program, outermost first, for the passes
+/// that judge one node at a time.
+fn visit_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)) {
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    fn expr(e: &crate::ast::Expr, f: &mut impl FnMut(&crate::ast::Expr)) {
+        f(e);
+        match &e.kind {
+            E::List(items) => items.iter().for_each(|i| expr(i, f)),
+            E::Map(entries) => entries.iter().for_each(|(k, v)| {
+                expr(k, f);
+                expr(v, f);
+            }),
+            E::Unary(_, a) => expr(a, f),
+            E::Binary(_, a, b) => {
+                expr(a, f);
+                expr(b, f);
+            }
+            E::Call(callee, args) => {
+                expr(callee, f);
+                args.iter().for_each(|a| expr(a, f));
+            }
+            E::Index(base, idx) => {
+                expr(base, f);
+                expr(idx, f);
+            }
+            E::Fn(_, body) => visit_exprs(body, f),
+            _ => {}
+        }
+    }
+    for stmt in stmts {
+        match &stmt.kind {
+            S::Let(_, e) | S::Assign(_, e) | S::Expr(e) | S::Return(Some(e)) => expr(e, f),
+            S::IndexAssign(base, idx, value) => {
+                expr(base, f);
+                expr(idx, f);
+                expr(value, f);
+            }
+            S::Block(inner) => visit_exprs(inner, f),
+            S::If(cond, then, els) => {
+                expr(cond, f);
+                visit_exprs(std::slice::from_ref(then), f);
+                if let Some(e) = els {
+                    visit_exprs(std::slice::from_ref(e), f);
+                }
+            }
+            S::While(cond, body) => {
+                expr(cond, f);
+                visit_exprs(std::slice::from_ref(body), f);
+            }
+            S::For(_, iterable, body) => {
+                expr(iterable, f);
+                visit_exprs(std::slice::from_ref(body), f);
+            }
+            S::Break | S::Continue | S::Return(None) => {}
+        }
+    }
+}
+
 /// Calls whose argument count cannot match the function called, for
 /// the plainest case there is: a function bound once at the top level,
 /// never reassigned, never shadowed by a parameter or an inner `let`
@@ -1204,6 +1295,7 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     let mut all = unknown_stdlib_members(src);
     all.extend(unbound_names(src));
     all.extend(arity_mismatches(src));
+    all.extend(duplicate_map_keys(src));
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));

@@ -1284,6 +1284,51 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn check_flag_warns_about_a_duplicate_map_key() {
+    let dir = std::env::temp_dir().join("ting-dupkey");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("d.ting");
+    std::fs::write(&script, "let m = {\"a\": 1, \"a\": 2};\nprint(m);\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "warnings do not fail the check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("duplicate key `a`: the last one wins"),
+        "{stderr}"
+    );
+    // The second key is the one underlined.
+    assert!(stderr.contains(":1:18:"), "{stderr}");
+
+    // Nested literals are judged too.
+    std::fs::write(&script, "print({\"x\": [{\"y\": 1, \"y\": 2}]});\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("duplicate key `y`"), "{stderr}");
+
+    // A computed key is decided at run time: nothing is claimed.
+    std::fs::write(
+        &script,
+        "let k = \"a\";\nlet m = {k: 1, \"a\": 2};\nprint(m);\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("duplicate key"), "{stderr}");
+}
+
+#[test]
 fn check_flag_warns_about_a_call_that_cannot_match() {
     let dir = std::env::temp_dir().join("ting-arity");
     std::fs::create_dir_all(&dir).expect("mkdir");
