@@ -137,3 +137,17 @@ fn truncate(s, width, suffix) {
   if len(suffix) >= width { return slice(suffix, 0, width); }
   return slice(s, 0, width - len(suffix)) + suffix;
 }
+
+# s without a leading prefix, or s unchanged when it does not start
+# with it.
+fn strip_prefix(s, prefix) {
+  if !starts_with(s, prefix) { return s; }
+  return slice(s, len(prefix), len(s));
+}
+
+# s without a trailing suffix, or s unchanged when it does not end
+# with it.
+fn strip_suffix(s, suffix) {
+  if !ends_with(s, suffix) { return s; }
+  return slice(s, 0, len(s) - len(suffix));
+}

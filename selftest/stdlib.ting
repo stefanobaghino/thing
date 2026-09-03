@@ -224,3 +224,10 @@ assert(filter(range(20), ma["is_prime"]) == [2, 3, 5, 7, 11, 13, 17, 19], "is_pr
 assert(l["scan"]([1, 2, 3], 0, fn(a, x) { return a + x; }) == [0, 1, 3, 6], "scan running sum");
 assert(l["scan"]([], 7, fn(a, x) { return a; }) == [7], "scan empty keeps init");
 assert(l["scan"](["a", "b"], "", fn(a, x) { return a + x; }) == ["", "a", "ab"], "scan strings");
+
+assert(s["strip_prefix"]("v2.24.0", "v") == "2.24.0", "strip_prefix");
+assert(s["strip_prefix"]("2.24.0", "v") == "2.24.0", "strip_prefix absent");
+assert(s["strip_prefix"]("abc", "") == "abc", "strip_prefix empty");
+assert(s["strip_suffix"]("notes.ting", ".ting") == "notes", "strip_suffix");
+assert(s["strip_suffix"]("notes.md", ".ting") == "notes.md", "strip_suffix absent");
+assert(s["strip_suffix"]("héllo!", "!") == "héllo", "strip_suffix multibyte");

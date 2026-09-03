@@ -61,6 +61,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |
 | `trim_end(s)` | trailing whitespace removed |
+| `strip_prefix(s, prefix)` | `s` without a leading `prefix` (unchanged if absent) |
+| `strip_suffix(s, suffix)` | `s` without a trailing `suffix` (unchanged if absent) |
 | `count(s, sub)` | non-overlapping occurrences of `sub` |
 | `chars(s)` | the characters as a list of one-character strings |
 | `reverse(s)` | the characters in reverse order |
