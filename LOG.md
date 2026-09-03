@@ -5428,3 +5428,12 @@ re-read and re-applied. io test covers the diff shape, the
 untouched file and the clean case; help and reference updated.
 Full gate green (210 tests). Third stroke banked — v2.50.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 350: v2.50.0
+
+Unused-binding warning, user-fn signature help, --fmt --diff. CI
+and Pages green on 349 (API verdicts). Full gate green, stdlib
+selftests pass on the reference engine. Tagging v2.50.0 (71st tag).
+Three hundred and fifty iterations.

@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.50.0 (2026-09-03)
+
+- `--check` and the LSP warn about unused top-level bindings
+  (underscore-prefixed names and binding-only module files are
+  exempt).
+- LSP: signature help for the file's own functions.
+- `ting --fmt --diff` prints the changed lines instead of writing.
+
 ## v2.49.0 (2026-09-03)
 
 - `ting --test --slow N` lists the N slowest files after the summary.
