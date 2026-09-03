@@ -8111,3 +8111,25 @@ nothing near it. The two error examples in the reference and the
 tutorial were rerun and now quote what the binary prints. Full gate
 green (245 tests). One stroke banked toward v2.75.0. Next: the
 unknown-member warning and its runtime error suggest a member.
+
+---
+
+## 2026-09-03 — Iteration 487: the member you meant
+
+CI green on 486 (API verdict). Milestone stroke 2: a key a map does
+not hold now names the nearest one it does — `key "medain" not
+found (did you mean "median"?)` — and the checker's and the LSP's
+"lib/list.ting has no `medain`" carries the same suggestion, drawn
+from the module's exports, which stdlib_member_findings was already
+collecting. The runtime case works on any map, so a misspelled
+member of an imported module is only the common instance of it.
+The first draft suggested `mean` for `medain`: both are two edits
+away, and the alphabetical tie-break picked the wrong one, so ties
+now go to the longer shared start first — `med` beats `me`. Three
+older assertions said the correct call on the same line must not
+appear in the output at all; they now count the warnings instead,
+since the suggestion legitimately quotes the right name. Both
+engines print the same sentence (asserted). Full gate green (246
+tests); the corpus scan still shows its one expected warning. Two
+strokes banked toward v2.75.0. Next: --doc suggests the nearest
+name.
