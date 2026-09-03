@@ -96,9 +96,10 @@ holds only the current milestone and the standing rules.
   audit green — milestone "the small print" complete.
 - 441: replenishment — milestone "tests and json" (v2.67–v2.68),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) lib/test.ting comments +
-  check_type, selftests; (2) lib/json.ting flatten + paths_into
-  comment, selftests — then RELEASE v2.67.0 (439, +2); (3) LSP
+- 442: test module comments + check_type — two strokes banked
+  toward v2.67.0 (439, 442).
+- Backlog (one per tick, in order): (2) lib/json.ting flatten +
+  paths_into comment, selftests — then RELEASE v2.67.0; (3) LSP
   formatting end position, protocol test; (4) tutorial JSON
   chapter: diff and flatten; (5) health tick + audit.
 - Tags: 87 (v2.66.0), 86 verified; v2.29.0 is publicly marked broken

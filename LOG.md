@@ -7292,3 +7292,18 @@ line past the document. Five strokes:
 Rejected: json schema validation (a language of its own), a test
 module reporter format beyond the summary line (the runner's TAP
 mode is the machine-readable path).
+
+---
+
+## 2026-09-03 — Iteration 442: the test module, documented
+
+CI green on 441 (API verdict, fetched after a classifier outage
+blocked the watch for one short wakeup). Milestone stroke 1:
+check, check_eq and summary in lib/test.ting have the `#` comments
+that --doc, hover and completion read, and check_type(name, v,
+type_name) joins them — passes when type(v) is the name, the
+failure says which type it got. The module's usage header lists
+it; stdlib.md row; selftest/testlib.ting exercises a pass and a
+failure and the failure's wording. Selftests pass on both engines;
+full gate green (233 tests). Two strokes banked toward v2.67.0
+(439, 442). Next: json flatten.
