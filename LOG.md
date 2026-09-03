@@ -4752,3 +4752,32 @@ this aarch64 Linux host: `ting 2.41.0`, levenshtein("kitten",
 all resources 200, changelog shows 2.41.0, stdlib page lists
 levenshtein. 62 tags, 61 verified. The 305 milestone is complete;
 next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 314: replenishment — milestone "configuration"
+
+CI green on 313b (API verdict). Seven milestones since the restart.
+The json module now has six functions and the tutorial's JSON
+chapter predates all of them; no example layers configuration,
+which is the everyday job those functions exist for; the REPL can
+explain and format but not time; and the editor server knows one
+document at a time. Five strokes:
+
+1. examples/config.ting: layered configuration — built-in defaults,
+   a "file" overlay and "environment" overrides folded in with
+   merge_in, the effective settings printed as a table, and diff()
+   reporting what the overrides changed. Cookbook regenerates.
+2. Tutorial JSON chapter grows an executed snippet with get_in,
+   set_in and merge_in on a parsed document, pointing at the new
+   example.
+3. REPL `:time EXPR`: evaluates the chunk and prints the value plus
+   the elapsed milliseconds — the REPL's answer to "is this slow".
+   Pipe test.
+4. LSP workspace/symbol: top-level bindings across every open
+   document, filtered by the query substring — the eleventh
+   capability; protocol test with two documents.
+5. Health tick + distribution audit.
+
+Rejected: a --bench flag (bench/run.py exists and measures the
+release binary properly), pairwise() (window(xs, 2) already).

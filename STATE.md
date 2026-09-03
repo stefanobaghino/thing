@@ -137,13 +137,13 @@ current orientation.
   executed cold here.
 - v2.41.0 RELEASED and verified (62nd tag); aarch64 glibc archive
   executed cold here. The 305 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  `--test --tap` consumed by CI (a step piping into a TAP summary);
-  (b) lib/list.ting sliding `pairwise(xs)` (= window 2) — too thin;
-  (c) REPL `:time expr`; (d) `--bench` flag running bench/*.ting?
-  (bench/run.py already); (e) tutorial: JSON chapter mention of
-  lib/json.ting; (f) LSP: workspace symbols across open docs; (g)
-  examples: a JSON config merge example dogfooding merge_in/diff.
+- 314: replenishment — milestone "configuration" (v2.42–v2.44),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) examples/config.ting
+  (merge_in/diff/table), cookbook regen; (2) tutorial JSON chapter
+  snippet with get_in/set_in/merge_in; (3) REPL `:time EXPR`, pipe
+  test; (4) LSP workspace/symbol across open documents, protocol
+  test; (5) health tick + audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
