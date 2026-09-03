@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.77.0 (2026-09-03)
+
+- `ting --check` and the LSP warn about a name that is bound nowhere
+  — not a parameter, not a `let` in an enclosing block, not a
+  builtin — and name the nearest one in scope.
+- The LSP offers a quickfix that replaces such a name with the
+  nearest one, beside the one for stdlib members.
+
 ## v2.76.0 (2026-09-03)
 
 - An unknown option names the one you probably meant (`--fmr` finds
