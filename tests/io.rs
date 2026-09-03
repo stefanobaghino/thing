@@ -643,6 +643,9 @@ fn repl_load_uses_the_files_directory_and_name() {
     let stdout = String::from_utf8_lossy(&out.stdout);
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stdout.contains("\"hi\"\n"), "{stdout}\n{stderr}");
+    // A successful load says what it added; a failed one does not.
+    assert!(stdout.contains("main.ting: 2 new binding(s))"), "{stdout}");
+    assert_eq!(stdout.matches("new binding(s)").count(), 1, "{stdout}");
     assert!(
         stderr.contains("bad.ting:1:9: error: undefined variable 'nosuch'"),
         "{stderr}"

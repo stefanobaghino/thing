@@ -387,13 +387,21 @@ fn run_inner() -> ExitCode {
                     if let Some(dir) = std::path::Path::new(path).parent() {
                         interp.set_base_dir(dir.to_path_buf());
                     }
+                    let before = interp.user_bindings().len();
                     let outcome = eval_chunk_at(&mut interp, path, &src);
                     interp.set_base_dir(saved);
+                    let loaded = !matches!(outcome, Outcome::Error(_) | Outcome::Incomplete);
                     match outcome {
                         Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
                         Outcome::Unit => {}
                         Outcome::Value(v) => say(&v.to_string()),
                         Outcome::Error(msg) => eprintln!("{msg}"),
+                    }
+                    // What the load added to the session, so a file of
+                    // definitions is not loaded in silence.
+                    if loaded {
+                        let added = interp.user_bindings().len().saturating_sub(before);
+                        say(&format!("(loaded {path}: {added} new binding(s))"));
                     }
                 }
                 Err(e) => eprintln!("ting: cannot read {path}: {e}"),
