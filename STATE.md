@@ -63,10 +63,12 @@ current orientation.
   quiet.
 - v2.20.0 RELEASED and verified (40th); aarch64-linux asset
   executed cold on this host, both engines.
-- 219: is_digit/is_alpha — first stroke toward v2.21.0.
-- Backlog (one per tick): examples/ dogfood of window or count_by;
-  quiet-machine bench re-measure; one more feature stroke; release
-  after ~3 strokes.
+- 219: is_digit/is_alpha; 220: logs example — two strokes toward
+  v2.21.0.
+- Backlog (one per tick): FORMATTER: indent continuation lines
+  inside multi-line `[`/`{`/`(` literals (found 220; corpus has no
+  such file, add one to tests/fmt.rs); quiet-machine bench
+  re-measure; release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

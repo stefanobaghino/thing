@@ -3080,3 +3080,19 @@ but honestly excludes caseless scripts — the doc row says so rather
 than hiding it. Both false on the empty string. Nine assertions,
 two stdlib.md rows. Full gate green on both engines. First stroke
 toward v2.21.0.
+
+---
+
+## 2026-09-03 — Iteration 220: logs example
+
+CI green on 219 (API verdict). examples/logs.ting: a small log
+summary dogfooding count_by (tally by level), window + mean
+(3-point moving average), is_digit (skip a malformed line) and
+filter/map; golden output byte-identical on both engines; eleventh
+example. Surprise worth its own stroke: the first draft used a
+multi-line list literal, and `--fmt` stripped the indentation of
+its continuation lines — no corpus file had ever written a
+bracketed literal across lines, so the formatter's bracket
+handling was never exercised. The example now builds the list with
+push() (canonical under the formatter); the formatter gap is queued
+as the next stroke. Full gate green. Second stroke toward v2.21.0.
