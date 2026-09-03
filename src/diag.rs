@@ -25,11 +25,11 @@ pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Spa
         .map_or(src.len(), |i| line_start + i);
     let text = &src[line_start..line_end];
 
-    let span_end = span.end.clamp(span.start, line_end);
-    let width = src[span.start.min(line_end)..span_end]
-        .chars()
-        .count()
-        .max(1);
+    // A span past the line (a foreign offset) degrades to a one-wide
+    // caret at the line's end rather than a panic.
+    let span_start = span.start.min(line_end);
+    let span_end = span.end.clamp(span_start, line_end);
+    let width = src[span_start..span_end].chars().count().max(1);
     // Tabs in the prefix stay tabs so the caret lines up in terminals.
     let prefix: String = src[line_start..span.start.min(line_end)]
         .chars()

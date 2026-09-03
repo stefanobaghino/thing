@@ -237,6 +237,7 @@ fn exec<W: Write>(
                     params: proto.params.iter().map(|p| p.as_str().into()).collect(),
                     body: eval::FnBody::Chunk(std::rc::Rc::clone(&proto.chunk)),
                     env: interp.env_handle(),
+                    origin: interp.current_origin(),
                 })));
             }
             Op::Return => {

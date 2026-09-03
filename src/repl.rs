@@ -35,7 +35,7 @@ pub fn eval_chunk<W: Write>(interp: &mut Interpreter<W>, src: &str) -> Outcome {
         return match interp.eval(&expr) {
             Ok(Value::Nil) => Outcome::Unit,
             Ok(v) => Outcome::Value(render(&v)),
-            Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
+            Err(e) => Outcome::Error(e.render("repl", src)),
         };
     }
     match parser::parse_program(&tokens) {
@@ -59,7 +59,7 @@ fn run_program<W: Write>(
 ) -> Outcome {
     match interp.run(prog) {
         Ok(()) => Outcome::Unit,
-        Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
+        Err(e) => Outcome::Error(e.render("repl", src)),
     }
 }
 

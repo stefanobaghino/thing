@@ -234,6 +234,10 @@ script.ting:2:7: error: undefined variable 'totl'
    |       ^^^^
 ```
 
+An error raised inside a function that an imported module defines is
+reported against that module's file and line (for an embedded stdlib
+module, its `lib/...` path).
+
 The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
 out-of-bounds indices error immediately.

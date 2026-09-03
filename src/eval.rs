@@ -12,12 +12,37 @@ use std::rc::Rc;
 pub struct RuntimeError {
     pub message: String,
     pub span: Span,
+    /// The module the span belongs to, when the error escaped a
+    /// function defined in an imported file; None means the span is
+    /// in the source being run.
+    pub origin: Option<Rc<Origin>>,
+}
+
+/// A file a function was defined in: what an error raised inside it
+/// renders against.
+#[derive(Debug, PartialEq)]
+pub struct Origin {
+    pub path: String,
+    pub src: Rc<str>,
+}
+
+impl RuntimeError {
+    /// The diagnostic, rendered against the origin's file when the
+    /// error came out of an imported module and against `path`/`src`
+    /// otherwise.
+    pub fn render(&self, path: &str, src: &str) -> String {
+        match &self.origin {
+            Some(o) => crate::diag::render(&o.path, &o.src, &self.message, self.span),
+            None => crate::diag::render(path, src, &self.message, self.span),
+        }
+    }
 }
 
 pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     RuntimeError {
         message: message.into(),
         span,
+        origin: None,
     }
 }
 
@@ -68,6 +93,8 @@ pub struct Function {
     pub params: Vec<Rc<str>>,
     pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
+    /// The imported file this function was defined in, if any.
+    pub origin: Option<Rc<Origin>>,
 }
 
 #[derive(Debug)]
@@ -104,6 +131,8 @@ pub struct Interpreter<W: Write> {
     dir_stack: Vec<std::path::PathBuf>,
     import_cache: HashMap<std::path::PathBuf, Value>,
     importing: Vec<std::path::PathBuf>,
+    /// The module whose top level is currently running, if any.
+    origin_stack: Vec<Rc<Origin>>,
 }
 
 /// The standard library, baked into the binary at build time (always
@@ -145,6 +174,7 @@ impl<W: Write> Interpreter<W> {
             dir_stack: vec![std::path::PathBuf::new()],
             import_cache: HashMap::new(),
             importing: Vec::new(),
+            origin_stack: Vec::new(),
         }
     }
 
@@ -1165,6 +1195,12 @@ impl<W: Write> Interpreter<W> {
     /// Load, run, and cache a module. The module executes in a fresh
     /// global environment; its top-level bindings (minus untouched
     /// builtins) come back as a map, the same map on every import.
+    /// The module currently being imported, for functions defined
+    /// during its top-level run.
+    pub(crate) fn current_origin(&self) -> Option<Rc<Origin>> {
+        self.origin_stack.last().cloned()
+    }
+
     fn import_module(&mut self, path: &str, span: Span) -> Result<Value, RuntimeError> {
         let base = self.dir_stack.last().cloned().unwrap_or_default();
         let raw = if std::path::Path::new(path).is_absolute() {
@@ -1211,6 +1247,14 @@ impl<W: Write> Interpreter<W> {
         let program = crate::parser::parse_program(&tokens)
             .map_err(|e| in_module(&e.message, e.span, &src))?;
 
+        let origin_path = match resolved.to_str() {
+            Some(p) if p.starts_with("<embedded>/") => p["<embedded>/".len()..].to_string(),
+            _ => resolved.display().to_string(),
+        };
+        self.origin_stack.push(Rc::new(Origin {
+            path: origin_path,
+            src: Rc::from(src.as_str()),
+        }));
         let saved_env = std::mem::replace(&mut self.env, global_env());
         self.importing.push(resolved.clone());
         self.dir_stack.push(
@@ -1222,6 +1266,7 @@ impl<W: Write> Interpreter<W> {
         let result = self.run(&program);
         self.dir_stack.pop();
         self.importing.pop();
+        self.origin_stack.pop();
         let module_env = std::mem::replace(&mut self.env, saved_env);
         result.map_err(|e| in_module(&e.message, e.span, &src))?;
 
@@ -1332,6 +1377,14 @@ impl<W: Write> Interpreter<W> {
         self.depth -= 1;
         self.env = saved;
         crate::vm::give_buf(locals);
+        // An error leaving a module's function is located in that
+        // module's file; the first such crossing wins.
+        let result = result.map_err(|mut e| {
+            if e.origin.is_none() {
+                e.origin = func.origin.clone();
+            }
+            e
+        });
         match result? {
             ControlOrValue::Value(v) => Ok(v.unwrap_or(Value::Nil)),
             ControlOrValue::Control(Control::Return(v, _)) => Ok(v),
@@ -1396,6 +1449,7 @@ impl<W: Write> Interpreter<W> {
                 params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
                 body: FnBody::Ast(Rc::clone(body)),
                 env: Rc::clone(&self.env),
+                origin: self.current_origin(),
             }))),
             ExprKind::Unary(op, operand) => {
                 let v = self.eval(operand)?;

@@ -80,13 +80,13 @@ pub fn run_source_engine<W: Write>(
         interp.set_base_dir(dir.to_path_buf());
     }
     match engine {
-        Engine::Eval => interp.run(&program).map_err(|e| render(&e.message, e.span)),
+        Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
         Engine::Vm => {
             let chunk =
                 compile::compile_program(&program).map_err(|e| render(&e.message, e.span))?;
             vm::run_chunk(&mut interp, &chunk)
                 .map(|_| ())
-                .map_err(|e| render(&e.message, e.span))
+                .map_err(|e| e.render(path, src))
         }
     }
 }

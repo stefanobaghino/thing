@@ -262,6 +262,59 @@ fn check_flag_warns_about_unused_params() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// A runtime error raised inside an imported module's function is
+/// reported against the module's file and line, not the importer's.
+#[test]
+fn module_runtime_errors_point_into_the_module() {
+    let dir = std::env::temp_dir().join(format!("ting-origin-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("m.ting"),
+        "# a module\nfn boom() {\n  return nosuch + 1;\n}\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("main.ting"),
+        "let m = import(\"./m.ting\");\nprint(\"before\");\nm[\"boom\"]();\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(dir.join("main.ting"))
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1), "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains("m.ting:3:10: error: undefined variable 'nosuch'"),
+            "{engine}: {stderr}"
+        );
+        assert!(stderr.contains("return nosuch + 1;"), "{engine}: {stderr}");
+        assert!(!stderr.contains("main.ting:"), "{engine}: {stderr}");
+    }
+    // The same for a function from an embedded stdlib module: the
+    // path is the module's, and the foreign offset never panics the
+    // renderer.
+    std::fs::write(
+        dir.join("emb.ting"),
+        "let l = import(\"lib/list.ting\");\nprint(l[\"mean\"]([]));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(dir.join("emb.ting"))
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("lib/list.ting:") && stderr.contains("error: mean:"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("panicked"), "{stderr}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
