@@ -319,6 +319,33 @@ if has(bad, "err") { print("rejected:", bad["err"]); } else { print("parsed"); }
 rejected: json_parse: expected a string key at offset 1
 ```
 
+For nested documents, `lib/json.ting` navigates by path — a list of
+keys and indices — instead of chained indexing that errors on the
+first missing step:
+
+```ting
+let j = import("lib/json.ting");
+let doc = json_parse("{\"users\": [{\"name\": \"ann\"}, {\"name\": \"bob\", \"admin\": true}]}");
+
+print(j["get_in"](doc, ["users", 1, "name"]), j["get_in"](doc, ["users", 0, "admin"]));
+let doc2 = j["set_in"](doc, ["users", 0, "admin"], false);
+print(j["get_in"](doc2, ["users", 0, "admin"]));
+let merged = j["merge_in"]({"a": {"x": 1}}, {"a": {"y": 2}});
+print(merged);
+```
+
+```text
+bob nil
+false
+{"a": {"x": 1, "y": 2}}
+```
+
+`get_in` answers `nil` for anything missing, `set_in` returns a fresh
+document (the original is untouched), and `merge_in` folds maps
+together recursively. The cookbook's `config` example layers
+defaults, a file and environment overrides that way and reports the
+differences with `diff`.
+
 ## A real script: word frequency
 
 Everything together: arguments, file I/O with recovery, and the
