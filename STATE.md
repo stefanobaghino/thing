@@ -177,9 +177,8 @@ current orientation.
   reasoning in LOG.md.
 - v2.52.0 VERIFIED (73rd tag, 72 verified; both aarch64 archives
   executed here).
-- v2.53.0 TAGGED (74th tag; strokes 363, 364, 365): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (call-site note, --check import walk, slug).
+- v2.53.0 VERIFIED (74th tag, 73 verified; both aarch64 archives
+  executed here). Pages verdict for 054c9fc pending at 366b.
 - Backlog after the release: (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,

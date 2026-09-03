@@ -5766,3 +5766,18 @@ tick if quiet.
 The call-site note, --check following imports, slug. CI and Pages
 green on 365 (API verdicts). Full gate green, stdlib selftests pass
 on both engines. Tagging v2.53.0 (74th tag).
+
+---
+
+## 2026-09-03 — Iteration 366b: v2.53.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.53.0, a module error at m.ting:3:10 followed by `note: called
+from main.ting:2:1` on both engines, `--check` on an importer
+reports the broken module under sub/b.ting and exits 1, slug
+prints hello-world on both engines, and `--test selftest` passes
+11/11 on each binary. CI green on the release commit; Pages still
+deploying at the time of writing (verdict on the next tick).
+Seventy-four tags, seventy-three verified. Next: health tick +
+audit, then replenish.
