@@ -6258,3 +6258,41 @@ no diagnostic, on the default engine. That is a crash class the
 fuzzers cannot reach (the generator never builds a cycle) and the
 first candidate for the next milestone. The "worked examples"
 milestone is complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 390: replenishment — milestone "cycles"
+
+CI green on 389 (API verdict). Seventeen milestones since the
+restart, seventy-eight tags. Probes on the cyclic-data limit: print,
+str, `==` and json_str on a list that contains itself all overflow
+the stack and abort the process — no diagnostic, no exit code the
+runner can read, on both engines, because Display, PartialEq and
+the JSON encoder recurse with no memory of where they have been.
+The reference documents it as "don't". A language that promises
+to be strict and to never crash without a caret should not have a
+one-line program that takes the process down. Five strokes:
+
+1. Printing a cyclic container terminates: a thread-local stack of
+   the containers being printed, and a container already on it
+   prints as `[...]` or `{...}`. str() and the REPL echo share
+   Display, so they come for free. Test with a self-containing
+   list and a map.
+2. Equality on cyclic values terminates: a thread-local set of the
+   (left, right) container pairs being compared; a pair met again
+   is taken as equal (the coinductive reading — two structures
+   that agree everywhere they are finite are equal). Both engines
+   share PartialEq. Test.
+3. json_str on a cycle is an error, "json_str: cyclic value", not
+   a crash: the encoder keeps the path of containers it is inside.
+   Test. Then release v2.58.0.
+4. Reference Limits rewritten (what cycles do now), and the
+   tutorial's Testing chapter mentions -j, --tap, --slow and
+   --fail-fast alongside --filter.
+5. Health tick + distribution audit, with the crash fuzzer taught
+   to build a cycle.
+
+Rejected: forbidding cycles at push/assignment time (a cheap check
+that would cost every push a walk), a depth limit instead of a
+visited set (it would still print thousands of nested brackets
+before stopping).
