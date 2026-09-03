@@ -287,7 +287,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(18) {
+        match self.rng.below(28) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -314,6 +314,26 @@ impl Gen {
                 // Step in [-2, 2] \ {0}: negative steps and empty spans
                 // both get exercised.
                 ["-2", "-1", "1", "2"][self.rng.below(4)]
+            ),
+            // String and list builtins (iteration 237 audit): str() and
+            // literal wrappers keep every call well-typed for *some*
+            // inputs while still letting type errors through, which
+            // both engines must report identically.
+            17 => format!("starts_with(str({}), \"1\")", self.expr(depth - 1)),
+            18 => format!("ends_with(str({}), \"x\")", self.expr(depth - 1)),
+            19 => format!("replace(str({}), \"1\", \"one\")", self.expr(depth - 1)),
+            20 => format!("split(str({}), \"1\")", self.expr(depth - 1)),
+            21 => format!("trim(format(\"  {{}} \", {}))", self.expr(depth - 1)),
+            22 => format!("lower(upper(str({})))", self.expr(depth - 1)),
+            23 => format!("max([1, {}])", self.expr(depth - 1)),
+            24 => format!("type({})", self.expr(depth - 1)),
+            25 => format!(
+                "filter([1, {}], fn(e) {{ return e == 1; }})",
+                self.expr(depth - 1)
+            ),
+            26 => format!(
+                "reduce([1, {}], 0, fn(p, q) {{ return p + 1; }})",
+                self.expr(depth - 1)
             ),
             _ => format!("-({})", self.expr(depth - 1)),
         }
