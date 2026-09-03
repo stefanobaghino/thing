@@ -7611,3 +7611,14 @@ Three strokes banked (457, 458, 459) — v2.70.0 next tick if quiet.
 The stdlib page's guard, --check --strict, and their docs. CI and
 Pages green on 459 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.70.0 (91st tag).
+
+---
+
+## 2026-09-03 — Iteration 460b: v2.70.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.70.0; on a file with one warning the musl binary's --check exits
+0 and the gnu binary's --check --strict exits 1; `--test selftest`
+passes 11/11 on each. CI and Pages green on the release commit.
+Ninety-one tags, ninety verified. Next: key_of.
