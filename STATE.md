@@ -180,8 +180,12 @@ current orientation.
 - v2.53.0 VERIFIED (74th tag, 73 verified; both aarch64 archives
   executed here; Pages green). 367: health tick + audit green —
   milestone "where it happened" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 368: replenishment — milestone "front door, again" (v2.54–v2.55),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) README refresh; (2)
+  tutorial modules chapter: errors inside modules; (3) LSP
+  diagnostic on a broken local import, protocol test; (4) `--test
+  --fail-fast`, io test; (5) health tick + audit. Release after ~3.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

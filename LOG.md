@@ -5798,3 +5798,36 @@ all six v2.53.0 download URLs resolve, all nine site resources
 answer 200 and the site serves slug and the call-site note.
 Nothing to fix. The "where it happened" milestone is complete.
 Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 368: replenishment — milestone "front door, again"
+
+CI green on 367 (API verdict). Fourteen milestones since the
+restart, seventy-four tags. The README still advertises a
+"nine-capability" language server (it has twelve) and a checker
+that warns about one thing (it warns about three, and now follows
+imports); the tutorial's modules chapter predates module error
+locations; the editor is silent about a broken import until the
+user opens the broken file; and the runner has no way to stop at
+the first red file. Five strokes:
+
+1. README refresh: the tooling paragraphs rewritten to what ships
+   (twelve LSP capabilities, three warnings, `--doc` with no name,
+   `--fmt --diff`, `--check` following imports, module error
+   locations), still prose with links rather than a list.
+2. Tutorial modules chapter: a section on errors inside modules —
+   the module's own file and line, the `note: called from` line,
+   and `--check` reaching imported files.
+3. LSP: an `import("...")` of a local file that fails to lex or
+   parse gets an error diagnostic on the import string with the
+   module's message and position, so a broken import shows in the
+   importer. Protocol test.
+4. `--test --fail-fast`: stop after the first failing file (with
+   -j, no new files start); the summary still prints. io test.
+5. Health tick + distribution audit.
+
+Rejected: lib/test.ting check_contains (check with a contains()
+argument is the same line), a JSON diagnostics format (the LSP is
+the machine interface), an eighth retrospective act (the seventh
+is two milestones old).
