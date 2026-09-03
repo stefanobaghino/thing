@@ -4424,3 +4424,11 @@ release. Distribution: 57 releases with the expected asset counts
 (36 × 3, 14 × 4, 7 × 6), all six v2.36.0 download URLs resolve, all
 eight site resources answer 200 and the reference mentions folding.
 Nothing to fix. v2.37.0 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 295: v2.37.0
+
+LSP folding ranges and the JSON benchmark — the tail of the 287
+milestone. CI green on 294 (API verdict). Full gate green, stdlib
+selftests pass on the reference engine. Tagging v2.37.0 (58th tag).

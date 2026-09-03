@@ -123,9 +123,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.36.0 RELEASED and verified (57th tag); aarch64 musl archive
   executed cold here.
-- 292: bench/json.ting; 293: LSP folding ranges; 294: health tick
-  green — RELEASE v2.37.0 next tick if quiet (completes the 287
-  milestone), then replenish.
+- v2.37.0 TAGGED (58th tag; completes the 287 milestone): verify
+  next tick — six assets, glibc guard, cold-execute the aarch64
+  glibc archive here. Then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

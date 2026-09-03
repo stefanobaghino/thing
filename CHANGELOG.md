@@ -4,6 +4,11 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.37.0 (2026-09-03)
+
+- LSP: folding ranges for multi-line braces.
+- `bench/json.ting`: a JSON benchmark; the baseline gains its row.
+
 ## v2.36.0 (2026-09-03)
 
 - `lib/list.ting`: `zip_with`, `cartesian`.
