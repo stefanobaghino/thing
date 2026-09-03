@@ -5309,3 +5309,20 @@ modes; help and reference updated. Clippy asked for sort_by_key
 with Reverse; a sed with pipe delimiters tripped over the closure
 and Python did the edit. Full gate green. First stroke toward
 v2.49.0; the 338 milestone's building strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 344: health tick + audit
+
+CI and Pages green on 343 (API verdicts). Milestone stroke 5.
+Bench at load ~3–5: all six checksums match; the VM ratio on
+stdlib.ting read +40% this time against -3% and -5% on the last
+two ticks, with no engine change — the shared host's noise is not
+smaller when its load is, so the rule holds: checksums decide.
+Fuzz: 50000 differential cases (seed 20260903344), the crash
+fuzzer, and 20000 formatter cases (seed 344) all pass in release.
+Distribution: 69 releases with the expected asset counts (36 × 3,
+14 × 4, 19 × 6), all six v2.48.0 download URLs resolve, all nine
+site resources answer 200 (examples.js now among them) and the
+reference mentions --slow. Nothing to fix. The 338 milestone's
+strokes are done; v2.49.0 next tick, then replenish.
