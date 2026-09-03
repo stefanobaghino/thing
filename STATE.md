@@ -92,14 +92,13 @@ current orientation.
   executed cold on this host, both engines.
 - 255: replenishment tick — milestone "programs, not one-liners"
   (v2.29–v2.31), reasoning in LOG.md.
-- v2.29.0 (49th) published but its Linux binaries need glibc 2.39
-  (pidfd_spawnp via std::process::Command in --test) — cold test
-  FAILED here. v2.29.1 TAGGED with Linux builds on ubuntu-22.04(-arm)
-  and a glibc-floor guard step: verify next tick by executing the
-  aarch64-linux asset cold here (must print `ting 2.29.1`).
-- Backlog after the release (in order): (4) crash-fuzzer
-  (tests/fuzz.rs) builtin-coverage audit; (5) bench/stdlib.ting +
-  BASELINE row with host note; then replenish.
+- v2.29.0 (49th) shipped Linux binaries needing glibc 2.39 (cold
+  test failed; release notes warn). v2.29.1 (50th) RELEASED and
+  verified: Linux builds on ubuntu-22.04(-arm), GLIBC_2.34, guard
+  step green, aarch64 asset executed cold here.
+- Backlog (one per tick, in order): (4) crash-fuzzer (tests/fuzz.rs)
+  builtin-coverage audit; (5) bench/stdlib.ting + BASELINE row with
+  host note; then replenish.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

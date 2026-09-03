@@ -3735,3 +3735,17 @@ with that workflow; verification of the fix is the cold test on
 this very host. The lesson for the ledger: "zero dependencies"
 never covered the C library, and the cold test is the only thing
 that would have caught it — the CI matrix runs where it builds.
+
+---
+
+## 2026-09-03 — Iteration 259c: v2.29.1 verified
+
+Release, CI and Pages runs all green on the tag (API verdicts); the
+new glibc-floor step reported GLIBC_2.34 on both Linux builds. Four
+archives published. Cold test on this aarch64 Linux host: `ting
+2.29.1` starts; `--test` reports ok/FAIL/summary with exit 1 on the
+failing file and exit 0 on the reference engine; the x86-64 archive,
+inspected here without execution, also needs only GLIBC_2.34. The
+v2.29.0 release notes now warn Linux users off it and point at
+v2.29.1. 50 releases (49 verified plus one publicly marked broken).
+Building resumes: milestone strokes 4 and 5 remain.
