@@ -81,14 +81,13 @@ holds only the current milestone and the standing rules.
   in the diagnostic.
 - 426: replenishment — milestone "load and import" (v2.64–v2.65),
   reasoning in LOG.md.
-- v2.64.0 TAGGED (85th tag; strokes 423, 424, 427): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (:load with a sibling import over stdin, squeeze, selftests).
+- v2.64.0 VERIFIED (85th tag; strokes 423, 424, 427; both aarch64
+  archives executed here).
 - Backlog after the release (in order): (2) :load reports new
   bindings, io test; (3) failed import says where it looked, io
   test; (4) lib/list.ting transpose, selftests; (5) health tick +
   audit.
-- Tags: 85 (v2.64.0), 83 verified; v2.29.0 is publicly marked broken
+- Tags: 85 (v2.64.0), 84 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

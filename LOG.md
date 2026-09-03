@@ -7025,3 +7025,16 @@ Full gate green (229 tests). Three strokes banked (423, 424, 427)
 The thirteen-capability count, squeeze, and :load fixed. CI green
 on 427 (API verdict). Full gate green, stdlib selftests pass on
 both engines. Tagging v2.64.0 (85th tag).
+
+---
+
+## 2026-09-03 — Iteration 428b: v2.64.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.64.0; the `:load` probe that failed at 425 — a loaded file
+importing a sibling — prints "hi" on both release REPLs; squeeze
+collapses runs on the musl VM and the gnu reference engine;
+`--test selftest` passes 11/11 on each. CI and Pages green on the
+release commit. Eighty-five tags, eighty-four verified. Next:
+:load reports new bindings.
