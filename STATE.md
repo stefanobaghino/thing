@@ -151,7 +151,8 @@ holds only the current milestone and the standing rules.
 - v2.77.0 VERIFIED (98th tag; strokes 495, 496; both aarch64 archives
   executed here).
 - 498: a call that cannot match; 499: the corpus warning set guarded
-  by a test — two strokes banked toward v2.78.0.
+  by a test (499b fixed its Windows path assumption) — two strokes
+  banked toward v2.78.0.
 - Backlog (one per tick, in order): (1) RELEASE v2.78.0 (strokes 498,
   499); (2) health tick + audit.
 - Tags: 98 (v2.77.0), 97 verified; v2.29.0 is publicly marked broken
@@ -160,7 +161,9 @@ holds only the current milestone and the standing rules.
 Standing rules (each from a slip; the LOG entry named has the story):
 
 - Verdicts from the API (`gh run view --json conclusion`), never from
-  a watcher's exit code. Every release cold-verified by downloading
+  a watcher's exit code. Tests that read paths out of tool output
+  match file names, not separators: Windows prints backslashes
+  (499b). Every release cold-verified by downloading
   and executing an aarch64 archive on this host (musl and gnu).
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
   line); `set -e` is NOT honoured by the harness (377b); never a bare

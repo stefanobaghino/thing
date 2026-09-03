@@ -8348,3 +8348,15 @@ shadowing `len`, errors.ting reading `totl`, functions.ting calling
 build instead of being noticed by a reader. The tutorial's --check
 bullet lists both new warnings. Full gate green (252 tests). Two
 strokes banked (498, 499). Next: release v2.78.0.
+
+---
+
+## 2026-09-03 — Iteration 499b: the guard was Windows-blind
+
+CI on 499 came back red (API verdict): the new corpus guard matched
+the warning lines against "selftest/edge.ting", and the Windows
+runner prints "selftest\edge.ting". The three warnings themselves
+were exactly as expected on every platform — only the test's
+spelling of a path was wrong. It now matches the file name alone.
+Local gate green again; pushed as its own commit before the
+release, since the release must be cut from a green CI.
