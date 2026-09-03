@@ -3403,3 +3403,13 @@ tick if quiet.
 LSP stdlib completion, interleave, wider fuzz grammar. CI green on
 239 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.25.0 (45th release).
+
+---
+
+## 2026-09-03 — Iteration 240b: v2.25.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.25.0`, interleave prints identically on both engines.
+Site: all resources 200, changelog shows 2.25.0, stdlib page lists
+interleave. 45 releases, all verified.

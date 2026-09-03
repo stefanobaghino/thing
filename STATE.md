@@ -80,10 +80,12 @@ current orientation.
   executed cold on this host, both engines.
 - v2.24.0 RELEASED and verified (44th); aarch64-linux asset
   executed cold on this host, both engines.
-- v2.25.0 TAGGED (45th release): verify next tick by executing the
-  aarch64-linux asset cold here; confirm the Pages run succeeded.
-- Backlog after verification: health tick; LSP hover on m["name"]
-  for stdlib functions; lib/test.ting check_err(name, thunk).
+- v2.25.0 RELEASED and verified (45th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.26.0 (one per tick): health tick (big fuzz
+  sweep on the widened grammar); LSP hover on m["name"] for stdlib
+  functions; lib/test.ting check_err(name, thunk); release after ~3
+  strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
