@@ -7825,3 +7825,17 @@ option". Five strokes:
 Rejected: a full option parser (nine flags and one operand shape
 do not need one), `--` to end options (no operand of ting's
 starts with a dash except `-` itself).
+
+---
+
+## 2026-09-03 — Iteration 471: unknown options, and -h and -V
+
+CI green on 470 (API verdict). Milestone stroke 1: an argument
+that starts with a dash (other than `-`, which names stdin) and
+that no mode recognises is "ting: unknown option X (see --help)"
+with exit 2 — at the top level, in the runner's argument loop, and
+in --check and --fmt after their own flags are taken out; `-h` and
+`-V` alias --help and --version. io test covers both aliases and
+the four places an unknown option can land. Full gate green (240
+tests). Three strokes banked (467, 468, 471) — v2.72.0 next tick
+if quiet.
