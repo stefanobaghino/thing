@@ -3273,3 +3273,13 @@ Third stroke banked — v2.23.0 next tick if quiet.
 rotate, unique_by, truncate, is_prime. CI green on 231 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.23.0 (43rd release).
+
+---
+
+## 2026-09-03 — Iteration 232b: v2.23.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.23.0`; rotate, unique_by, truncate and a filter over
+is_prime print identically on both engines. Site: all resources
+200, changelog shows 2.23.0. 43 releases, all verified.
