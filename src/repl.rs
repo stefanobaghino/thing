@@ -109,7 +109,9 @@ fn print_help() {
     for (sig, text) in docs {
         say(&format!("{sig:width$}  {text}"));
     }
-    say("(:vars bindings; :load <file> runs a file here; :clear resets; ctrl-d exits)");
+    say(
+        "(:vars bindings; :load <file> runs a file here; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
+    );
 }
 
 fn run_inner() -> ExitCode {
@@ -117,12 +119,14 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         say(&format!(
-            "ting {} — :help builtins, :vars bindings, :load <file>, :clear resets",
+            "ting {} — :help builtins, :vars bindings, :load <file>, :fmt, :clear",
             env!("CARGO_PKG_VERSION")
         ));
     }
     let mut interp = Interpreter::new(std::io::stdout());
     let mut buffer = String::new();
+    // The last complete chunk that was evaluated, for :fmt.
+    let mut last = String::new();
     loop {
         if tty {
             emit(if buffer.is_empty() { "> " } else { ".. " });
@@ -154,6 +158,17 @@ fn run_inner() -> ExitCode {
         if buffer.is_empty() && line.trim() == ":clear" {
             interp = Interpreter::new(std::io::stdout());
             say("(session cleared)");
+            continue;
+        }
+        if buffer.is_empty() && line.trim() == ":fmt" {
+            if last.is_empty() {
+                say("(nothing to format yet)");
+            } else {
+                match crate::fmt::format(&last) {
+                    Ok(formatted) => emit(&formatted),
+                    Err(e) => eprintln!("{}", diag::render("repl", &last, &e.message, e.span)),
+                }
+            }
             continue;
         }
         if buffer.is_empty() && line.trim() == ":vars" {
@@ -191,7 +206,7 @@ fn run_inner() -> ExitCode {
             Outcome::Value(s) => say(&s),
             Outcome::Error(msg) => eprintln!("{msg}"),
         }
-        buffer.clear();
+        last = std::mem::take(&mut buffer);
     }
 }
 

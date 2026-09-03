@@ -364,3 +364,30 @@ fn tool_flags_accept_dash_for_stdin() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stderr.contains("expected variable name"), "got: {stderr}");
 }
+
+#[test]
+fn repl_fmt_reprints_the_last_chunk_formatted() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":fmt\nlet   x=[1,2 ,3];\n:fmt\n:fmt\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("(nothing to format yet)"), "{stdout}");
+    // Printed twice: :fmt does not consume the chunk.
+    assert_eq!(
+        stdout.matches("let x = [1, 2, 3];\n").count(),
+        2,
+        "{stdout}"
+    );
+    assert_eq!(out.status.code(), Some(0));
+}
