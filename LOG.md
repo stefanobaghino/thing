@@ -4936,3 +4936,16 @@ link to the reference's Tooling section rather than a list that
 drifts again; the docs links gain the stdlib page and the cookbook,
 and the test count reads 200+. Markdown guard and full gate green.
 First stroke toward v2.44.0.
+
+---
+
+## 2026-09-03 — Iteration 324: variance and stddev
+
+CI green on 323 (API verdict). Milestone stroke 2: lib/math.ting
+gains variance(xs) (population, mean computed inline so the module
+stays self-contained) and stddev(xs) over its own sqrt; the stats
+example drops its seven-line hand-rolled variance for one call and
+its golden output is byte-identical, which is the point of a
+dogfood stroke. Four assertions on the textbook sample, two
+stdlib.md rows, cookbook regenerated. Full gate green on both
+engines. Second stroke toward v2.44.0.

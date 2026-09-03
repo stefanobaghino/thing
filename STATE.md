@@ -145,9 +145,9 @@ current orientation.
   executed cold here. The 314 milestone is complete.
 - 322: replenishment — milestone "front door" (v2.44–v2.46),
   reasoning in LOG.md.
-- 323: README refresh — milestone stroke 1; first toward v2.44.0.
-- Backlog (one per tick, in order): (2) lib/math.ting variance/stddev + stats example
-  dogfood, cookbook regen; (3) LSP document links for import()
+- 323: README refresh; 324: variance/stddev — milestone strokes
+  1–2; two toward v2.44.0.
+- Backlog (one per tick, in order): (3) LSP document links for import()
   paths, protocol test; (4) tutorial modules chapter mentions
   :doc/--doc; (5) health tick + audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
