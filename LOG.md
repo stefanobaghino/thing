@@ -3011,3 +3011,16 @@ copied); :fmt never consumes it, so repeated calls agree, which the
 pipe test asserts along with the "(nothing to format yet)" case.
 Banner, :help footer and the reference REPL paragraph updated. Full
 gate green. First stroke toward v2.20.0.
+
+---
+
+## 2026-09-03 — Iteration 215: count_by and invert
+
+CI green on 214 (API verdict). lib/list.ting gains count_by(xs,
+key), the tallying sibling of group_by (same string-key rule, same
+loud failure), and lib/map.ting gains invert(m), which swaps keys
+and values; values must be strings and, because iteration is in key
+order, the last key wins among duplicate values — pinned by a
+selftest so the rule is a promise rather than an accident. Seven
+assertions, two stdlib.md rows. Full gate green on both engines.
+Second stroke toward v2.20.0.
