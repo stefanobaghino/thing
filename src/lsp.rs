@@ -725,6 +725,68 @@ pub fn unused_params(src: &str) -> Vec<(usize, usize, String)> {
     out
 }
 
+/// `let` bindings inside a block (a function body, a loop, an `if`
+/// arm) whose name appears nowhere else in that block, from the token
+/// stream: the enclosing block is the innermost `{`..`}` around the
+/// `let`. Underscore-prefixed names are exempt. A nested block that
+/// reuses the name counts as a use (a false negative, never a false
+/// positive); the top level is the other warning's job.
+pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    // For every token index, the index of the innermost enclosing `{`
+    // (None at the top level), and for every `{` its matching `}`.
+    let mut enclosing: Vec<Option<usize>> = Vec::with_capacity(tokens.len());
+    let mut closing: std::collections::HashMap<usize, usize> = std::collections::HashMap::new();
+    let mut stack: Vec<usize> = Vec::new();
+    for (i, t) in tokens.iter().enumerate() {
+        match t.kind {
+            lexer::TokenKind::LBrace => {
+                enclosing.push(stack.last().copied());
+                stack.push(i);
+            }
+            lexer::TokenKind::RBrace => {
+                if let Some(open) = stack.pop() {
+                    closing.insert(open, i);
+                }
+                enclosing.push(stack.last().copied());
+            }
+            _ => enclosing.push(stack.last().copied()),
+        }
+    }
+    let mut out = Vec::new();
+    for (i, t) in tokens.iter().enumerate() {
+        if !matches!(t.kind, lexer::TokenKind::Let) {
+            continue;
+        }
+        let Some(open) = enclosing[i] else {
+            continue;
+        };
+        let Some(name_tok) = tokens.get(i + 1) else {
+            continue;
+        };
+        let lexer::TokenKind::Ident(name) = &name_tok.kind else {
+            continue;
+        };
+        if name.starts_with('_') {
+            continue;
+        }
+        let close = closing.get(&open).copied().unwrap_or(tokens.len() - 1);
+        let used = tokens[open..=close].iter().enumerate().any(|(k, tok)| {
+            open + k != i + 1 && matches!(&tok.kind, lexer::TokenKind::Ident(n) if n == name)
+        });
+        if !used {
+            out.push((
+                name_tok.span.start,
+                name_tok.span.end,
+                format!("`{name}` is never used"),
+            ));
+        }
+    }
+    out
+}
+
 /// Every semantic warning for a source: unknown stdlib members, then
 /// unused top-level bindings, then unused parameters. Shared by
 /// --check and the LSP.
@@ -732,6 +794,7 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     let mut all = unknown_stdlib_members(src);
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
+    all.extend(unused_local_lets(src));
     all
 }
 

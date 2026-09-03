@@ -603,6 +603,36 @@ fn unused_parameter_is_a_warning() {
 }
 
 #[test]
+fn unused_local_let_is_a_warning() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///l.ting","text":"fn f() {\n  let stale = 1;\n  return 2;\n}\nprint(f());\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(
+        diag.contains("`stale` is never used") && diag.contains("\"severity\":2"),
+        "{diag}"
+    );
+    assert!(
+        diag.contains(r#""start":{"character":6,"line":1}"#),
+        "{diag}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn unused_top_level_let_is_a_warning() {
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(

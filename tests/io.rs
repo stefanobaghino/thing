@@ -719,6 +719,35 @@ fn fmt_keeps_crlf_line_endings() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `--check` warns about a `let` inside a function body (or any block)
+/// that nothing in that block uses; `_`-prefixed and used ones are
+/// silent, and a use in a nested block counts.
+#[test]
+fn check_flag_warns_about_unused_local_lets() {
+    let path = std::env::temp_dir().join(format!("ting-check-locals-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "fn f(a) {\n  let stale = 2;\n  let _scratch = 3;\n  let kept = 4;\n  if a > 0 { return kept; }\n  return a;\n}\nprint(f(1));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: `stale` is never used"),
+        "{stderr}"
+    );
+    assert!(stderr.contains(":2:7:"), "{stderr}");
+    assert!(
+        !stderr.contains("`kept`") && !stderr.contains("_scratch") && !stderr.contains("`a`"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
