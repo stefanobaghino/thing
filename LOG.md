@@ -3096,3 +3096,21 @@ bracketed literal across lines, so the formatter's bracket
 handling was never exercised. The example now builds the list with
 push() (canonical under the formatter); the formatter gap is queued
 as the next stroke. Full gate green. Second stroke toward v2.21.0.
+
+---
+
+## 2026-09-03 — Iteration 221: formatter hanging openers
+
+CI green on 220 (API verdict). The formatter now treats a `[` or
+`(` that ends its line as a hanging opener: one extra indentation
+level until its closer, which dedents like a closing brace. Openers
+followed by more tokens on the same line stay inline, so the
+closure-as-argument idiom (`sort_by(xs, fn(a) {` ... `});`) formats
+exactly as before — verified by running --fmt-check over every
+lib/selftest/examples/bench file: byte-identical corpus. Unit test
+pins both shapes; examples/logs.ting returns to its natural
+multi-line list literal so the corpus now exercises the rule on
+every run (idempotence + AST-preservation tests included). Clippy
+asked for a collapsed match; done with arithmetic rather than a
+side-effecting guard. Full gate green. Third stroke banked —
+v2.21.0 next tick if quiet.
