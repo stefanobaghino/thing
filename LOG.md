@@ -2902,3 +2902,13 @@ always goes to stdout, even when unchanged, which is what an editor
 integration needs. Help text and the reference Tooling list updated;
 one io test covers all five combinations. Full gate green. Second
 stroke toward v2.18.0.
+
+---
+
+## 2026-09-03 — Iteration 207: math lcm/abs_diff
+
+CI green on 206 across all five jobs (API verdict). lib/math.ting
+gains lcm(a, b) — divides before multiplying to keep the checked
+i64 arithmetic in range, 0 when either input is 0 — and abs_diff.
+Six assertions, two stdlib.md rows. Full gate green on both engines.
+Third stroke banked — v2.18.0 next tick if quiet.
