@@ -117,9 +117,14 @@ current orientation.
   (v2.34–v2.36), reasoning in LOG.md.
 - v2.34.0 RELEASED and verified (55th tag); aarch64 musl archive
   executed cold here.
-- v2.35.0 TAGGED (56th tag; completes the 279 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here (:doc through a pipe). Then replenish.
+- v2.35.0 RELEASED and verified (56th tag); aarch64 glibc archive
+  executed cold here. The 279 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  docs: a "testing" chapter in the tutorial (lib/test.ting +
+  --test); (b) LSP: document highlights / folding ranges; (c)
+  lib/list.ting zip_with / cartesian; (d) `--fmt` idempotence sweep
+  over fuzz-generated programs as a test; (e) bench: a JSON-heavy
+  script; (f) REPL: `:load` relative-path base dir sanity.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

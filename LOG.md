@@ -4278,3 +4278,15 @@ next tick, then replenish.
 REPL :doc and check_approx — the tail of the 279 milestone. CI
 green on 285 (API verdict). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.35.0 (56th tag).
+
+---
+
+## 2026-09-03 — Iteration 286b: v2.35.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.35.0`, `:doc median` answers
+through a pipe, check_approx passes on both engines. Site: all
+resources 200, changelog shows 2.35.0, stdlib page lists
+check_approx. 56 tags, 55 verified. The 279 milestone is complete;
+next tick replenishes.
