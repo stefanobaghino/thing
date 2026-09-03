@@ -8678,3 +8678,34 @@ v2.82.0 download URLs resolve. Site: all nine resources answer 200,
 the changelog leads with v2.82.0 and the tutorial serves the check
 counts. Nothing to fix. The "how much it checked" milestone is
 complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 518: replenishment — milestone "the way back"
+
+CI green on 517 (API verdict). Thirty-four milestones since the
+restart, a hundred and three tags. This survey read what ting says
+when a program goes wrong. The diagnostic itself is good: file,
+line, column, the source line, a caret under the span, and an error
+escaping an imported module earns a "note: called from" line at the
+crossing. Inside a single file there is no trace at all — `outer`
+calls `inner`, `inner` adds an int to a string, and the message
+points into `inner` with nothing saying who reached it. For a
+language whose stdlib is written in itself, and whose test
+framework is a ting module, that missing chain is the difference
+between a message and an explanation. The mechanism is already half
+built: every call in both engines goes through `Interpreter::call`,
+which today attaches one `called_from` at the first module
+crossing. Widening that field into a list of frames pushed as the
+error unwinds gives the whole way back, byte-identical across
+engines for free, and the frames can be named once `Function`
+carries the name it was defined under (anonymous closures say so).
+Deep recursion needs a cap: a stack overflow at depth 200 must not
+print two hundred notes, so the trace elides the middle and says
+how many frames it dropped. Two smaller things fell out of the same
+survey — arity messages still read "expects 1 argument(s), got 0",
+and a user function's arity error does not name the function at
+all. Milestone "the way back" (v2.83-v2.84): errors carry every
+frame they passed through, capped and named; arity messages
+pluralise and name the callee; try() hands the trace back to ting
+programs and lib/test.ting uses it; docs follow.

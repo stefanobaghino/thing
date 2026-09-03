@@ -177,10 +177,18 @@ holds only the current milestone and the standing rules.
   515: the docs say what the counts mean.
 - v2.82.0 VERIFIED (103rd tag; strokes 514, 515; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  empty — next tick is replenishment.
 - 517: health tick + audit green — milestone "how much it checked"
   complete.
+- 518: replenishment — milestone "the way back" (v2.83-v2.84),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) the whole way back: an error carries every frame it passed
+  through — name, call site, file — capped for deep recursion, one
+  path (Interpreter::call) so both engines agree; (2) one argument,
+  not argument(s): arity messages pluralise and name the function
+  called; (3) RELEASE v2.83.0; (4) try() hands the trace back, and
+  lib/test.ting says where the error was raised; (5) the docs read
+  the trace; (6) RELEASE v2.84.0; (7) health tick + audit.
 - Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
