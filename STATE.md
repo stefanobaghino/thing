@@ -129,10 +129,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.38.0 RELEASED and verified (59th tag); aarch64 musl archive
   executed cold here.
-- 301: json diff; 302: machine example — milestone strokes 4–5
-  done; two toward v2.39.0.
-- Backlog (one per tick, in order): health tick + distribution
-  audit; release v2.39.0; replenish.
+- 301: json diff; 302: machine example; 303: health tick green —
+  RELEASE v2.39.0 next tick if quiet (completes the 296 milestone),
+  then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

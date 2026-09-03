@@ -4562,3 +4562,19 @@ tallied with frequencies(), and an unknown event's failure is
 caught with try(). Golden output identical on both engines;
 thirteenth example; cookbook regenerated. Full gate green. Second
 stroke toward v2.39.0; the 296 milestone's five strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 303: health tick + audit
+
+CI and Pages green on 302 (API verdicts). Bench at load ~9, the
+highest yet: all six checksums match; absolute times are up to 2.5×
+the baseline and the vm/eval ratios are meaningless at this
+contention (maps +91%, stdlib -56% — both directions at once), so
+no engine conclusion is drawn; no engine code has changed. Fuzz:
+50000 differential cases (seed 20260903303), the crash fuzzer, and
+20000 formatter cases (seed 303) all pass in release. Distribution:
+59 releases with the expected asset counts (36 × 3, 14 × 4, 9 × 6),
+all six v2.38.0 download URLs resolve, all eight site resources
+answer 200 and the cookbook page carries the turnstile. Nothing to
+fix. v2.39.0 next tick, then replenish.
