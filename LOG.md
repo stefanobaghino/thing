@@ -2988,3 +2988,13 @@ Small stdlib release: window, center, and the tutorial's list
 snippet. CI green on 212 (API verdict). Full gate green, stdlib
 selftests pass on the reference engine. Tagging v2.19.0 (39th
 release).
+
+---
+
+## 2026-09-03 — Iteration 213b: v2.19.0 verified
+
+Release, CI and Pages runs all green (API verdicts). Four archives
+published. Cold test on this aarch64 Linux host: `ting 2.19.0`,
+window([1,2,3], 2) and center("ab", 5, "*") print identically on
+both engines. Site: all resources 200, changelog shows 2.19.0. 39
+releases, all verified.
