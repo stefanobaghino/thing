@@ -8448,3 +8448,15 @@ function literals wherever they sit — and the two together are what
 these small passes will keep using. The corpus still shows its
 three expected warnings. Full gate green (254 tests). Two strokes
 banked (503, 504). Next: release v2.79.0.
+
+---
+
+## 2026-09-03 — Iteration 505: release v2.79.0
+
+CI green on 504 (API verdict). Cut v2.79.0 with the duplicate key
+(503) and the unreachable statement (504). The release workflow is
+green with all six archives; CI and Pages green on the release
+commit (API verdicts). Cold-verified here: both aarch64 Linux
+archives downloaded fresh, unpacked and run — `-V` reports 2.79.0,
+and one line holding both mistakes draws both warnings and then
+prints the map the last key won. 100th tag. Next: the tenth act.

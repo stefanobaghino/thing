@@ -158,13 +158,13 @@ holds only the current milestone and the standing rules.
   complete.
 - 502: replenishment — milestone "the tenth act" (v2.79-v2.80),
   reasoning in LOG.md.
-- 503: the key written twice; 504: what can never run — two strokes
-  banked toward v2.79.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.79.0 (strokes 503,
-  504); (2) the tenth act in
-  docs/retrospective.md, "Where it stands" current; (3) docs +
-  selftests, then RELEASE v2.80.0; (4) health tick + audit.
-- Tags: 99 (v2.78.0), 98 verified; v2.29.0 is publicly marked broken
+- 503: the key written twice; 504: what can never run.
+- v2.79.0 VERIFIED (100th tag; strokes 503, 504; both aarch64
+  archives executed here).
+- Backlog (one per tick, in order): (1) the tenth act in
+  docs/retrospective.md, "Where it stands" current; (2) docs +
+  selftests, then RELEASE v2.80.0; (3) health tick + audit.
+- Tags: 100 (v2.79.0), 99 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
