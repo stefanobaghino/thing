@@ -5,6 +5,12 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.70.0 (2026-09-03)
+
+- `ting --check --strict`: warnings fail the check.
+- The stdlib page is guarded against missing rows and a stale
+  function count (116 functions).
+
 ## v2.69.0 (2026-09-03)
 
 - `--check` and the LSP warn when a `let`, `fn` or parameter shadows

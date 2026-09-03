@@ -7603,3 +7603,11 @@ closing chapter suggests it for a pre-commit hook and its Testing
 chapter names check_type beside check_err, and the README's
 checker sentence carries the flag. Tutorial and docs guards green.
 Three strokes banked (457, 458, 459) — v2.70.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 460: v2.70.0
+
+The stdlib page's guard, --check --strict, and their docs. CI and
+Pages green on 459 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.70.0 (91st tag).
