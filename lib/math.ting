@@ -65,3 +65,12 @@ fn ceil(x) {
   if float(t) < x { return t + 1; }
   return t;
 }
+
+# Least common multiple (non-negative); 0 if either argument is 0.
+fn lcm(a, b) {
+  if a == 0 || b == 0 { return 0; }
+  return abs(a / gcd(a, b) * b);
+}
+
+# |a - b|, for ints or floats.
+fn abs_diff(a, b) { return abs(a - b); }

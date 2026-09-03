@@ -142,3 +142,10 @@ assert(m["filter_map"]({}, fn(k, v) { return true; }) == {}, "filter_map empty")
 assert(m["has_all"]({"a": 1, "b": 2}, ["a", "b"]), "has_all");
 assert(!m["has_all"]({"a": 1}, ["a", "z"]), "has_all missing");
 assert(m["has_all"]({}, []), "has_all empty keys");
+
+assert(ma["lcm"](4, 6) == 12, "lcm");
+assert(ma["lcm"](-4, 6) == 12, "lcm abs");
+assert(ma["lcm"](0, 5) == 0, "lcm zero");
+assert(ma["lcm"](7, 7) == 7, "lcm equal");
+assert(ma["abs_diff"](3, 10) == 7, "abs_diff");
+assert(ma["abs_diff"](2.5, 1) == 1.5, "abs_diff float");

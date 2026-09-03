@@ -77,6 +77,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sign(x)` | `-1`, `0`, or `1` |
 | `pow(base, n)` | integer exponentiation by squaring; `n >= 0` |
 | `gcd(a, b)` | greatest common divisor (absolute values) |
+| `lcm(a, b)` | least common multiple (non-negative; 0 if either is 0) |
+| `abs_diff(a, b)` | absolute difference |
 | `round(x)` | nearest integer, halves away from zero |
 | `floor(x)` | largest integer `<= x` |
 | `ceil(x)` | smallest integer `>= x` |
