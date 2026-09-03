@@ -75,6 +75,7 @@
   <select id="examples" aria-label="examples"></select>
   <button class="run" id="run" title="ctrl+enter">run &#9654;</button>
   <button class="run" id="fmt" title="reformat the code">fmt</button>
+  <button class="run" id="check" title="report errors and warnings without running">check</button>
   <button class="run" id="share" title="copy a link to this code">share</button>
   <a href="tutorial.html">tutorial</a>
   <a href="reference.html">reference</a>
@@ -213,7 +214,7 @@ onmessage = async (ev) => {
     const buf = new TextEncoder().encode(src);
     const ptr = e.ting_alloc(buf.length);
     new Uint8Array(e.memory.buffer, ptr, buf.length).set(buf);
-    const entry = mode === "fmt" ? e.ting_fmt : e.ting_run;
+    const entry = mode === "fmt" ? e.ting_fmt : mode === "check" ? e.ting_check : e.ting_run;
     const ok = entry(ptr, buf.length) === 1;
     e.ting_dealloc(ptr, buf.length);
     const out = new TextDecoder().decode(
@@ -246,7 +247,11 @@ function freshWorker() {
     }
     output.textContent = out === "" ? "(no output)" : out;
     output.className = ok ? "" : "err";
-    status.textContent = mode === "fmt" ? "fmt error" : (ok ? "ok" : "error");
+    if (mode === "check") {
+      status.textContent = !ok ? "error" : out.includes("warning:") ? "warnings" : "clean";
+    } else {
+      status.textContent = mode === "fmt" ? "fmt error" : (ok ? "ok" : "error");
+    }
     runBtn.disabled = false;
   };
 }
@@ -270,6 +275,10 @@ function run() {
 runBtn.onclick = run;
 document.getElementById("fmt").onclick = () => {
   worker.postMessage({ url: WASM_URL, src: editor.value, mode: "fmt" });
+};
+document.getElementById("check").onclick = () => {
+  status.textContent = "checking…";
+  worker.postMessage({ url: WASM_URL, src: editor.value, mode: "check" });
 };
 editor.addEventListener("keydown", (ev) => {
   if ((ev.ctrlKey || ev.metaKey) && ev.key === "Enter") { ev.preventDefault(); run(); }

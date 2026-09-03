@@ -80,6 +80,32 @@ pub unsafe extern "C" fn ting_fmt(ptr: *const u8, len: usize) -> i32 {
     ok
 }
 
+/// Check the source instead of running it: what `ting --check` prints.
+/// 1 and either "no problems found" or the rendered warnings when the
+/// source lexes, parses and compiles; 0 and the rendered error when it
+/// does not.
+///
+/// # Safety
+/// Same contract as `ting_run`.
+#[unsafe(no_mangle)]
+pub unsafe extern "C" fn ting_check(ptr: *const u8, len: usize) -> i32 {
+    let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
+    let src = String::from_utf8_lossy(bytes);
+    let (ok, out) = match crate::check_source("playground", &src) {
+        Err(diagnostic) => (0, diagnostic),
+        Ok(()) => {
+            let warnings = crate::check_warnings("playground", &src);
+            if warnings.is_empty() {
+                (1, "no problems found".to_string())
+            } else {
+                (1, warnings.join("\n"))
+            }
+        }
+    };
+    RESULT.with(|r| *r.borrow_mut() = out.into_bytes());
+    ok
+}
+
 #[unsafe(no_mangle)]
 pub extern "C" fn ting_result_ptr() -> *const u8 {
     RESULT.with(|r| r.borrow().as_ptr())
@@ -105,6 +131,29 @@ mod tests {
             let result = std::slice::from_raw_parts(ting_result_ptr(), ting_result_len()).to_vec();
             (ok, String::from_utf8(result).unwrap())
         }
+    }
+
+    fn check_abi(src: &str) -> (i32, String) {
+        let bytes = src.as_bytes();
+        let ptr = ting_alloc(bytes.len());
+        unsafe {
+            std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr, bytes.len());
+            let ok = ting_check(ptr, bytes.len());
+            ting_dealloc(ptr, bytes.len());
+            let result = std::slice::from_raw_parts(ting_result_ptr(), ting_result_len()).to_vec();
+            (ok, String::from_utf8(result).unwrap())
+        }
+    }
+
+    #[test]
+    fn check_reports_clean_warnings_and_errors() {
+        assert_eq!(check_abi("print(1);"), (1, "no problems found".to_string()));
+        let (ok, out) = check_abi("let unused = 1;\nprint(2);\n");
+        assert_eq!(ok, 1);
+        assert!(out.contains("warning: `unused` is never used"), "{out}");
+        let (ok, out) = check_abi("fn broken( {");
+        assert_eq!(ok, 0);
+        assert!(out.contains("error:"), "{out}");
     }
 
     #[test]
