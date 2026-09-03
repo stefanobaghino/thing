@@ -8232,3 +8232,28 @@ all nine resources answer 200, the changelog leads with v2.76.0 and
 the tutorial serves the suggestions paragraph. Nothing to fix. The
 "the nearest name" milestone is complete. Backlog empty: next tick
 is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 494: replenishment — milestone "before it runs"
+
+CI green on 493 (API verdict). Thirty-one milestones since the
+restart, ninety-seven tags. The survey pointed the last milestone's
+tools at the checker and found it quiet where it should speak.
+`fn g(a) { return a + b; }` passes `ting --check` without a word,
+though `b` is bound nowhere in the file and nowhere among the
+builtins; the program dies on that line the moment it runs, and now
+even names the near miss — but only at runtime. `f(1, 2)` for a
+one-parameter `f` defined three lines up is the same story: the
+error is exact ("expected 1 argument(s), got 2") and arrives only
+when the call does. The checker already carries the machinery for
+both. It walks the AST for unused top-level bindings, tracks brace
+scopes for unused locals, and knows every builtin's name for the
+shadowing warning; what it has never done is ask whether a name it
+reads was ever bound, or whether a call matches the function it can
+see. Milestone "before it runs" (v2.77-v2.78): --check learns to
+warn about a name bound nowhere (with the suggestion the runtime
+already gives) and about a call whose argument count cannot match a
+function defined in the same file; the LSP publishes both; the
+corpus scan stays at its one expected warning, which is the test
+that the scope walk has no false positives.

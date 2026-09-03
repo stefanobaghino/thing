@@ -146,7 +146,14 @@ holds only the current milestone and the standing rules.
   executed here).
 - 493: health tick + audit green — milestone "the nearest name"
   complete.
-- Backlog: empty — next tick is replenishment.
+- 494: replenishment — milestone "before it runs" (v2.77-v2.78),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) --check warns about a name
+  bound nowhere, with the suggestion; (2) the same in the LSP, plus
+  tests over the corpus — then RELEASE v2.77.0; (3) --check warns
+  about a call whose argument count cannot match a function in the
+  same file; (4) docs + selftests, then RELEASE v2.78.0; (5) health
+  tick + audit.
 - Tags: 97 (v2.76.0), 96 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
