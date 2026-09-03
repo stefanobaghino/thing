@@ -17,11 +17,11 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 250 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 251 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, six warnings, --strict), --doc (names, module, file, or
+  imports, seven warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
@@ -150,10 +150,9 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.77.0 VERIFIED (98th tag; strokes 495, 496; both aarch64 archives
   executed here).
-- Backlog (one per tick, in order): (1) --check warns about a call
-  whose argument count cannot match a function in the same file;
-  (2) docs + selftests, then RELEASE v2.78.0; (3) health tick +
-  audit.
+- 498: a call that cannot match — one stroke banked toward v2.78.0.
+- Backlog (one per tick, in order): (1) docs + selftests for both
+  static checks, then RELEASE v2.78.0; (2) health tick + audit.
 - Tags: 98 (v2.77.0), 97 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
@@ -175,8 +174,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  two warnings, both on purpose: selftest/edge.ting shadows `len`
-  (451) and selftest/errors.ting reads the unbound `totl` (495).
+  three warnings, all on purpose: selftest/edge.ting shadows `len`
+  (451), selftest/errors.ting reads the unbound `totl` (495) and
+  selftest/functions.ting calls `add(1)` to prove arity (498).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

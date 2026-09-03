@@ -8314,3 +8314,23 @@ run — `-V` reports 2.77.0, and the same file now draws a warning
 from --check and an error from the run, at the same line and column
 and with the same suggestion. 98th tag. Next: a call whose argument
 count cannot match.
+
+---
+
+## 2026-09-03 — Iteration 498: a call that cannot match
+
+CI green on the v2.77.0 verification commit (API verdict).
+Milestone stroke 1 toward v2.78.0: `--check` and the LSP warn when
+a call's argument count cannot match the function it names —
+"`f` takes 2 arguments, called with 1", singular for one parameter,
+pointed at the callee. The pass claims only what it can be sure of:
+a function bound once at the top level and never rebound, never
+shadowed by an inner `let`, a `for` variable or a parameter
+anywhere in the file. A rebound name, a function passed as an
+argument and called through a parameter, and every call through a
+map or an expression are left to the run — tested, all four. The
+corpus scan now reports three warnings, the third also deliberate:
+selftest/functions.ting calls `add(1)` inside a `try` to prove the
+runtime checks arity. STATE.md's rule says so. Full gate green (251
+tests). One stroke banked toward v2.78.0. Next: docs and selftests
+for both checks.
