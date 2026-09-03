@@ -2748,3 +2748,14 @@ the local toolchain had moved to rustc 1.98 without rustfmt/clippy
 the global config (set repo-locally to match every prior commit).
 Full gate green on both engines. First stroke toward v2.16.0.
 Backlog replenished: take/drop, partition, string chars/reverse.
+
+---
+
+## 2026-09-03 — Iteration 197: take/drop
+
+CI green on 196 (verdict from the API). lib/list.ting gains
+take(xs, n) and drop(xs, n): thin wrappers over slice that clamp
+n to the length instead of erroring past the end (the common
+pagination/prefix use), and fail loudly on negative counts. Eight
+selftest assertions, two stdlib.md rows. Full gate green on both
+engines. Second stroke toward v2.16.0.
