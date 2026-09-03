@@ -107,8 +107,10 @@ holds only the current milestone and the standing rules.
 - v2.68.0 VERIFIED (89th tag; strokes 445, 446, 449; both aarch64
   archives executed here).
 - v2.69.0 VERIFIED (90th tag; strokes 451, 452, 453; both aarch64
-  archives executed here).
-- Backlog after the release: (5) health tick + audit; then replenish.
+  archives executed here). 455: health tick + audit green —
+  milestone "the ninth act" complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Tags: 90 (v2.69.0), 89 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
