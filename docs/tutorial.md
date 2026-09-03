@@ -321,15 +321,22 @@ poke at.
 Everything else ships in the same binary:
 
 - The REPL (`ting` with no arguments) keeps state across lines;
-  `:help` lists the builtins and `:load somefile.ting` pulls a
-  script's definitions into your session to poke at them.
+  `:help` lists the builtins, `:load somefile.ting` pulls a script's
+  definitions into your session to poke at them, `:vars` shows what
+  you have bound, `:fmt` reprints your last line the way the
+  formatter would write it, and `:clear` starts over.
 - `ting --check *.ting` reports syntax errors without running
   anything — wire it into a pre-commit hook.
 - `ting --fmt *.ting` reformats in place; CI can enforce it with
-  `--fmt-check`.
+  `--fmt-check`, and `ting --fmt -` filters stdin to stdout for
+  editor integrations.
 - `ting --lsp` gives any LSP-capable editor diagnostics, hover docs,
-  completion, formatting, outline, definition, references, and
-  rename.
+  completion, signature help, formatting, outline, definition,
+  references, and rename. Import a stdlib module and the editor
+  knows its functions too: completion lists them, and hovering
+  `l["median"]` shows the signature and its comment.
+- Scripts are shell citizens: `ting x.ting | head` exits quietly
+  when the reader goes away, and `read_file("-")` reads stdin.
 
 The [reference](reference.html) has the full language; the
 [stdlib page](stdlib.html) documents the importable modules.
