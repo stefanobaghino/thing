@@ -25,6 +25,53 @@ fn reference_documents_every_builtin() {
 /// unknown ones (`<RefCell>`) are silently stripped. Outside code
 /// fences and inline backticks, tag-shaped tokens must be escaped.
 /// (Found the hard way: LOG.md once shipped a bare `<pre>`.)
+/// docs/stdlib.md must carry a row for every function in lib/*.ting
+/// and state the real function count in its opening: a helper added
+/// without a row, or a count left behind, fails here.
+#[test]
+fn stdlib_page_lists_every_function_and_the_right_count() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page =
+        std::fs::read_to_string(root.join("docs/stdlib.md")).expect("docs/stdlib.md missing");
+    let mut total = 0usize;
+    let mut missing = Vec::new();
+    for entry in std::fs::read_dir(root.join("lib")).expect("lib/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) != Some("ting") {
+            continue;
+        }
+        let src = std::fs::read_to_string(&path).unwrap();
+        for line in src.lines() {
+            let Some(rest) = line.strip_prefix("fn ") else {
+                continue;
+            };
+            let name = &rest[..rest.find('(').unwrap_or(rest.len())];
+            total += 1;
+            if !page.contains(&format!("`{name}(")) {
+                missing.push(format!(
+                    "{}: {name}",
+                    path.file_name().unwrap().to_string_lossy()
+                ));
+            }
+        }
+    }
+    assert!(
+        missing.is_empty(),
+        "stdlib functions without a row on docs/stdlib.md: {missing:?}"
+    );
+    let stated = page
+        .lines()
+        .find_map(|l| {
+            let i = l.find(" functions between them")?;
+            l[..i].split_whitespace().last()?.parse::<usize>().ok()
+        })
+        .expect("docs/stdlib.md should state \"N functions between them\"");
+    assert_eq!(
+        stated, total,
+        "docs/stdlib.md states {stated} functions; lib/ has {total}"
+    );
+}
+
 #[test]
 fn markdown_has_no_bare_html_tags() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));

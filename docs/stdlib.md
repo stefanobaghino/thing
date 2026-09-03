@@ -1,7 +1,7 @@
 # The ting standard library
 
 Six modules written in ting itself — list, map, string, math, json
-and test, 105 functions between them — living in `lib/` and also
+and test, 116 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -150,6 +150,7 @@ index lists.
 | `get_in(v, path)` | the value at `path`, or `nil` when any step misses |
 | `set_in(v, path, x)` | a fresh value with `x` at `path` (copies along the path; missing map keys created) |
 | `paths(v)` | every path to a leaf, depth first, keys sorted |
+| `paths_into(v, prefix, out)` | the worker behind `paths`: appends every leaf path under `v`, prefixed, to `out` |
 | `flatten(v)` | map from each leaf's dotted path (`"a.b.0"`) to its value |
 | `merge_in(a, b)` | deep merge: maps recurse, anything else in `b` replaces `a`'s value |
 | `diff(a, b)` | `[path, left, right]` for every leaf path where the two differ (absent reads as `nil`) |
