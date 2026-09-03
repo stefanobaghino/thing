@@ -113,3 +113,7 @@ assert(l["median"]([4, 1, 3, 2]) == 2.5, "median even");
 assert(l["median"]([7]) == 7, "median single");
 assert(l["median"]([2.5, 1.5]) == 2.0, "median floats");
 assert(has(try(fn() { return l["median"]([]); }), "err"), "median empty fails");
+
+assert(l["group_by"](["ab", "c", "de"], fn(w) { return str(len(w)); }) == {"1": ["c"], "2": ["ab", "de"]}, "group_by");
+assert(l["group_by"]([], fn(x) { return x; }) == {}, "group_by empty");
+assert(has(try(fn() { return l["group_by"]([1], fn(x) { return x; }); }), "err"), "group_by non-string key fails");

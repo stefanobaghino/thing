@@ -163,3 +163,16 @@ fn median(xs) {
   if n % 2 == 1 { return sorted[n / 2]; }
   return float(sorted[n / 2 - 1] + sorted[n / 2]) / 2;
 }
+
+# Map from key(x) (which must return a string) to the list of elements
+# with that key, in input order.
+fn group_by(xs, key) {
+  let out = {};
+  for x in xs {
+    let k = key(x);
+    if type(k) != "string" { fail("group_by: key must return a string, got " + type(k)); }
+    if !has(out, k) { out[k] = []; }
+    push(out[k], x);
+  }
+  return out;
+}
