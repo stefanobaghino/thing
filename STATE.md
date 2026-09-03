@@ -16,7 +16,8 @@ current orientation.
   (env-tunable seed/cases) and a CI job rerunning everything on eval.
 - 44 builtins; five embedded stdlib modules (list/map/string/math/test);
   25 selftest+example ting programs; 182 Rust tests in 14 suites.
-- Distribution: 3-platform GitHub release archives per tag, Pages site
+- Distribution: 4-platform GitHub release archives per tag (from
+  v2.17.0; 3 before), Pages site
   (playground with run+fmt, tutorial/reference/stdlib/changelog/story),
   wasm via hand-rolled ABI.
 - 2.x stability promise (docs/reference.md#stability): additive only.
@@ -42,10 +43,11 @@ current orientation.
 - Loop stopped by the human after 195b, restarted at 196 (2026-09-03).
 - v2.16.0 RELEASED and verified (36th); structural cold check only,
   since this host is aarch64 Linux (no matching asset yet).
-- Backlog toward v2.17.0 (one per tick): aarch64-unknown-linux-gnu
-  release target (free arm64 runner) so cold tests can execute here;
-  chars/reverse in lib/string.ting; health tick (bench vs
-  BASELINE.md, big fuzz sweep).
+- 200: aarch64 Linux added to CI + release matrices — first stroke
+  toward v2.17.0 (release half proven only at the next tag).
+- Backlog (one per tick): chars/reverse in lib/string.ting; health
+  tick (bench vs BASELINE.md, big fuzz sweep); then release v2.17.0
+  and execute its aarch64-linux asset cold on this host.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

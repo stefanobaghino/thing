@@ -2794,3 +2794,15 @@ pages show 2.16.0 content. 36 releases. Consequence for the backlog:
 add an aarch64-unknown-linux-gnu release target (GitHub's free
 arm64 Linux runners) so future releases can be executed cold on this
 host as well — first stroke toward v2.17.0.
+
+---
+
+## 2026-09-03 — Iteration 200: aarch64 Linux target
+
+CI green on 199b (verdict from the API). release.yml gains an
+aarch64-unknown-linux-gnu build on GitHub's free ubuntu-24.04-arm
+runner, and ci.yml gains the same runner in its test matrix so the
+label and build are proven on every push rather than first at tag
+time. README platform sentence updated. Only the CI half is
+verifiable now; the release half is verified by the v2.17.0 tag,
+which this host will then execute cold. First stroke toward v2.17.0.
