@@ -20,6 +20,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sum(xs)` | adds the elements (0 for an empty list) |
 | `sum_by(xs, f)` | adds `f(x)` over the elements (0 for an empty list) |
 | `scan(xs, init, f)` | running reduce: `[init, f(init, x0), f(that, x1), ...]` |
+| `product(xs)` | multiplies the elements (1 for an empty list) |
 | `reverse(xs)` | a fresh list in reverse order |
 | `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
@@ -37,6 +38,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `count(xs, v)` | elements structurally equal to `v` |
 | `mean(xs)` | arithmetic mean as a float; empty list fails |
 | `median(xs)` | middle of the sorted values (mean of two middles when even) |
+| `mean_by(xs, f)` | mean of `f(x)` as a float; empty list fails |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 | `group_by(xs, key)` | map from `key(x)` (a string) to the elements with that key, in input order |
 | `count_by(xs, key)` | map from `key(x)` (a string) to how many elements share it |

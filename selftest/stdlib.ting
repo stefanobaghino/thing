@@ -251,3 +251,9 @@ assert(m["top"]({"a": 2, "b": 2}, 1) == [["a", 2]], "top ties keep key order");
 assert(m["top"]({"a": 1}, 5) == [["a", 1]], "top past size");
 assert(m["top"]({}, 3) == [], "top empty");
 assert(has(try(fn() { return m["top"]({"a": 1}, -1); }), "err"), "top negative fails");
+
+assert(l["product"]([2, 3, 4]) == 24, "product");
+assert(l["product"]([]) == 1, "product empty");
+assert(l["product"]([2, 0.5]) == 1.0, "product float");
+assert(l["mean_by"](["a", "bbb"], fn(w) { return len(w); }) == 2.0, "mean_by");
+assert(has(try(fn() { return l["mean_by"]([], fn(x) { return x; }); }), "err"), "mean_by empty fails");

@@ -295,3 +295,9 @@ fn interleave(a, b) {
 # Map from each string element to how often it occurs (count_by with
 # the identity; elements must be strings).
 fn frequencies(xs) { return count_by(xs, fn(x) { return x; }); }
+
+# Product of the elements (1 for an empty list).
+fn product(xs) { return reduce(xs, 1, fn(a, x) { return a * x; }); }
+
+# Mean of f(x) over the elements as a float; empty list fails.
+fn mean_by(xs, f) { return mean(map(xs, f)); }
