@@ -265,6 +265,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   `lib/test.ting` or plain `assert` calls.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
+- `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
+  signature and doc line, or a stdlib function's signature, module
+  and comment. Exit 1 for an unknown name.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors, and a warning when an
   imported stdlib module is indexed with a name it does not export),

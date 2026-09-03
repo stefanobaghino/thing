@@ -28,6 +28,7 @@ fn main() -> ExitCode {
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
+                 \x20 ting --doc NAME             explain a builtin or stdlib function\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -48,6 +49,25 @@ fn main() -> ExitCode {
     if args.peek().map(String::as_str) == Some("--check") {
         args.next();
         return run_check(args.collect());
+    }
+    if args.peek().map(String::as_str) == Some("--doc") {
+        args.next();
+        return match args.next() {
+            Some(name) => match repl::doc_text(&name) {
+                Some(text) => {
+                    println!("{text}");
+                    ExitCode::SUCCESS
+                }
+                None => {
+                    eprintln!("ting: no builtin or stdlib function named {name}");
+                    ExitCode::FAILURE
+                }
+            },
+            None => {
+                eprintln!("usage: ting --doc NAME");
+                ExitCode::FAILURE
+            }
+        };
     }
     if args.peek().map(String::as_str) == Some("--test") {
         args.next();

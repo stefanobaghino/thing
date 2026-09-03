@@ -433,6 +433,39 @@ fn tool_flags_accept_dash_for_stdin() {
 }
 
 #[test]
+fn doc_flag_explains_a_name_from_the_shell() {
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "median"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(
+        stdout.contains("median(xs)  [lib/list.ting]") && stdout.contains("sorted values"),
+        "{stdout}"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "len"])
+        .output()
+        .expect("failed to run ting");
+    assert!(
+        String::from_utf8_lossy(&out.stdout).starts_with("len("),
+        "builtin"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "nosuchthing"])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    assert!(
+        String::from_utf8_lossy(&out.stderr)
+            .contains("no builtin or stdlib function named nosuchthing")
+    );
+}
+
+#[test]
 fn repl_doc_explains_builtins_and_stdlib_functions() {
     use std::io::Write as _;
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))

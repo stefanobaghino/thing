@@ -105,10 +105,20 @@ fn say(text: &str) {
 /// function's module, signature and leading comment (every embedded
 /// module is searched, imported or not).
 fn print_doc(name: &str) {
+    match doc_text(name) {
+        Some(text) => say(&text),
+        None => say(&format!("(no builtin or stdlib function named {name})")),
+    }
+}
+
+/// The documentation for a builtin (signature, doc line) or a stdlib
+/// function (signature, module, leading comment — every embedded
+/// module searched; a name in several modules lists all), or None.
+/// Shared by the REPL's :doc and the CLI's --doc.
+pub fn doc_text(name: &str) -> Option<String> {
     if let Some(b) = crate::value::Builtin::ALL.iter().find(|b| b.name() == name) {
         let (sig, text) = b.doc();
-        say(&format!("{sig}\n  {text}"));
-        return;
+        return Some(format!("{sig}\n  {text}"));
     }
     // A source that imports every module makes the LSP's scanner
     // return all stdlib functions.
@@ -121,14 +131,16 @@ fn print_doc(name: &str) {
         .filter(|(_, n, _, _)| n == name)
         .collect();
     if hits.is_empty() {
-        say(&format!("(no builtin or stdlib function named {name})"));
+        return None;
     }
+    let mut out = Vec::new();
     for (path, _, sig, comment) in hits {
-        say(&format!("{sig}  [{path}]"));
+        out.push(format!("{sig}  [{path}]"));
         if !comment.is_empty() {
-            say(&format!("  {comment}"));
+            out.push(format!("  {comment}"));
         }
     }
+    Some(out.join("\n"))
 }
 
 /// `:help` — every builtin's signature and one-liner, in name order.
