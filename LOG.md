@@ -3896,3 +3896,18 @@ step proves the runner itself, continuously, the way a user would
 invoke it. Verified locally on both engines (11 passed). Full gate
 green. Second stroke toward v2.31.0; the step's first CI run is
 this push.
+
+---
+
+## 2026-09-03 — Iteration 267: table
+
+CI green on 266 across all jobs, with the runner step reporting 11
+passed on every platform (API verdict + log grep). Milestone
+stroke 3: lib/string.ting gains table(rows) — column widths from
+the longest cell, pad_right on every cell but the last, two spaces
+between columns, ragged rows tolerated, character-counted so
+accented text aligns. Dogfooded: examples/logs.ting prints its slow
+requests as a table under indent(), golden output and the cookbook
+regenerated (the sync guard would have caught a stale page). Four
+assertions, stdlib.md row. Full gate green on both engines. Third
+stroke banked — v2.31.0 next tick if quiet.

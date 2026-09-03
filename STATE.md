@@ -100,11 +100,9 @@ current orientation.
   Linux archives executed cold here, musl fully static).
 - 264: replenishment — milestone "the runner and the operator"
   (v2.31–v2.33), reasoning in LOG.md.
-- 265: --test expands directories; 266: CI dogfoods the runner —
-  milestone strokes 1–2; two toward v2.31.0.
-- Backlog (one per tick, in order): (3)
-  lib/string.ting table(rows) column alignment, dogfooded in an
-  example; (4) LSP warning for an unknown stdlib member in
+- 265: --test dirs; 266: CI dogfoods the runner; 267: table —
+  milestone strokes 1–3; RELEASE v2.31.0 next tick if quiet.
+- Backlog after the release (in order): (4) LSP warning for an unknown stdlib member in
   m["..."] when m is bound to an import, protocol test; (5)
   retrospective act five (glibc episode). Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
