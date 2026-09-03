@@ -317,6 +317,39 @@ That's the whole tour. From here: the [reference](reference.md) for
 every operator and builtin, or `ting` with no arguments for a REPL to
 poke at.
 
+## Testing
+
+`lib/test.ting` is a test framework in forty lines of ting: record
+checks, print a summary, exit 1 if anything failed. A test file is
+just a script that imports it:
+
+```ting
+let t = import("lib/test.ting");
+let li = import("lib/list.ting");
+
+t["check"]("sum adds up", li["sum"]([1, 2, 3]) == 6);
+t["check_eq"]("median of four", li["median"]([4, 1, 3, 2]), 2.5);
+t["check_approx"]("floats are close enough", 0.1 + 0.2, 0.3, 0.000001);
+t["summary"]();
+```
+
+```text
+3 passed, 0 failed
+```
+
+`check_err(name, f, want)` asserts that calling `f` fails with a
+message containing `want`. A failed check keeps its name, and
+`check_eq` and `check_approx` say what they got and what they
+wanted, so the summary reads like a report rather than a stack
+trace. Plain `assert(cond, msg)` works too when a framework is more
+than a script needs.
+
+Put test files under a directory and run them all with
+`ting --test tests/` — one process per file, `ok` or `FAIL` per file,
+exit 1 if any failed — and `--filter NAME` to run only the files
+whose path contains `NAME` while iterating on one of them. The
+project's own suite under `selftest/` runs exactly that way in CI.
+
 ## Beyond scripts
 
 Everything else ships in the same binary:
