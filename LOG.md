@@ -5084,3 +5084,16 @@ and rename stops at the document edge. Five strokes:
 
 Rejected: json pretty(v) (json_str(v, 2) is one argument away),
 a JSON --version (nothing consumes it).
+
+---
+
+## 2026-09-03 — Iteration 331: tutorial "Shell scripting"
+
+CI green on 330 (API verdict). Milestone stroke 1: a chapter before
+"Testing" on args(), env(), read_file("-"), exit codes, the caret
+diagnostic on stderr with exit 1, and the quiet exit into a closed
+pipe — with an executed snippet that is deterministic under the
+harness (no arguments; an environment variable that is never set,
+so env() answers nil and the exit(2) branch is not taken). Prose
+points at the pipeline example. The tutorial test runs the snippet.
+Markdown guard and full gate green. First stroke toward v2.46.0.

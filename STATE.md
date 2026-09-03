@@ -151,8 +151,9 @@ current orientation.
   executed cold here. The 322 milestone is complete.
 - 330: replenishment — milestone "shell citizen, part two"
   (v2.46–v2.48), reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) tutorial "Shell scripting"
-  chapter with a deterministic executed snippet; (2) `--test -j N`
+- 331: tutorial shell-scripting chapter — milestone stroke 1; first
+  toward v2.46.0.
+- Backlog (one per tick, in order): (2) `--test -j N`
   parallel children with ordered output, io test; (3)
   lib/string.ting dedent, selftests; (4) LSP rename across open
   documents, protocol test; (5) health tick + audit. Release after
