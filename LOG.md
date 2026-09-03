@@ -5862,3 +5862,9 @@ was produced by running exactly that greeter with the typo — the
 column, caret and note line are the binary's. Tutorial and docs
 guards green. Two strokes banked toward v2.54.0. Next: LSP
 diagnostic on a broken local import.
+
+Correction, same tick: the pushed block said column 28; the binary
+says 34 (the run above was checked after the commit, not before).
+Fixed in a follow-up commit. The rule from 358b covers the chain;
+this one is about reading the smoke output before, not after,
+writing the prose that quotes it.
