@@ -5273,3 +5273,12 @@ functions and the user's own code; plain variables still get
 nothing, which the protocol test pins alongside the positive case.
 Reference line updated. Full gate green (207 tests). Third stroke
 banked — v2.48.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 342: v2.48.0
+
+Generated playground examples, percentile, hover on user
+functions. CI and Pages green on 341 (API verdicts). Full gate
+green, stdlib selftests pass on the reference engine. Tagging
+v2.48.0 (69th tag).

@@ -157,8 +157,9 @@ current orientation.
   executed cold here. The 330 milestone is complete.
 - 338: replenishment — milestone "the same thing everywhere"
   (v2.48–v2.50), reasoning in LOG.md.
-- 339: playground examples; 340: percentile; 341: hover on user
-  fns — three strokes banked; RELEASE v2.48.0 next tick if quiet.
+- v2.48.0 TAGGED (69th tag; milestone strokes 1–3): verify next
+  tick — six assets, glibc guard, cold-execute the aarch64 musl
+  archive here.
 - Backlog after the release (in order): (4) `--test --slow N`, io
   test; (5) health tick + audit; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
