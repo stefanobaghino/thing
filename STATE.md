@@ -90,8 +90,8 @@ current orientation.
   executed cold on this host, both engines.
 - 255: replenishment tick — milestone "programs, not one-liners"
   (v2.29–v2.31), reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) lib/list.ting sort_with(xs,
-  cmp) stable merge sort; (2) `ting --test <files...>` runner with
+- 256: sort_with — milestone stroke 1 done; first toward v2.29.0.
+- Backlog (one per tick, in order): (2) `ting --test <files...>` runner with
   per-file OK/FAIL, summary, exit 1 on failure, io test, dogfood on
   selftest/; (3) cookbook: tools/cookbook.py → docs/cookbook.md from
   examples/*.ting + .out, sync test, site nav, pages.yml path; (4)

@@ -3651,3 +3651,17 @@ strokes each independently verifiable:
 
 Release rhythm unchanged: tag when ~3 land, cold-execute every
 release here, log everything.
+
+---
+
+## 2026-09-03 — Iteration 256: sort_with
+
+CI green on 255 (API verdict). Milestone stroke 1: lib/list.ting
+gains sort_with(xs, cmp), a stable merge sort written in ting —
+recursion only on halves (depth log2 n, far under MAX_DEPTH), an
+iterative merge, and "take from the left unless the right is
+strictly less" for stability. A comparator that returns a non-int
+fails through the strict `<`, pinned. Selftests cover ordering,
+stability, empty, single, a 300-element reversed range, and the
+error. stdlib.md row. Full gate green on both engines. First stroke
+toward v2.29.0.
