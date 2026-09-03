@@ -2944,3 +2944,16 @@ from lib/list.ting, plus the sentence explaining why group_by's key
 must be a string (maps are string-keyed; str() is the idiom). The
 tutorial test runs it and matches the expected output block. Full
 gate green. First stroke toward v2.19.0.
+
+---
+
+## 2026-09-03 — Iteration 210: distribution audit
+
+CI green on 209 (API verdict). Quiet-tick integrity audit of
+everything user-facing, the first since arm64 joined: all 38 release
+tags carry the expected asset count (36 with three archives up to
+v2.16.0, two with four from v2.17.0; no anomalies), the four v2.18.0
+download URLs resolve, all seven live site resources answer 200, and
+the rendered stdlib and tutorial pages already carry the 2.18-era
+functions and the new list snippet. Nothing to fix. Feature strokes
+resume next tick.
