@@ -164,3 +164,25 @@ fn indent(s, prefix) {
 
 # True if s is empty or only whitespace.
 fn is_blank(s) { return trim_start(s) == ""; }
+
+# Rows (lists of strings) padded into aligned columns, two spaces
+# apart, one line per row; the last cell of a row is never padded.
+# Ragged rows are fine — widths come from the longest cell per column.
+fn table(rows) {
+  let widths = [];
+  for row in rows {
+    for i in range(len(row)) {
+      if i == len(widths) { push(widths, 0); }
+      if len(row[i]) > widths[i] { widths[i] = len(row[i]); }
+    }
+  }
+  let lines = [];
+  for row in rows {
+    let cells = [];
+    for i in range(len(row)) {
+      if i == len(row) - 1 { push(cells, row[i]); } else { push(cells, pad_right(row[i], widths[i], " ")); }
+    }
+    push(lines, join(cells, "  "));
+  }
+  return join(lines, "\n");
+}

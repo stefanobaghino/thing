@@ -275,11 +275,12 @@ hello, world
 
 ## logs
 
-Summarising a log: tally lines by level with count_by, smooth the latencies with a sliding window, validate fields with is_digit.
+Summarising a log: tally lines by level with count_by, smooth the latencies with a sliding window, validate fields with is_digit, print the slow ones as an aligned table.
 
 ```ting
 # Summarising a log: tally lines by level with count_by, smooth the
-# latencies with a sliding window, validate fields with is_digit.
+# latencies with a sliding window, validate fields with is_digit,
+# print the slow ones as an aligned table.
 
 let li = import("../lib/list.ting");
 let st = import("../lib/string.ting");
@@ -311,14 +312,20 @@ let smoothed = map(li["window"](latencies, 3), fn(w) { return li["mean"](w); });
 print("3-point moving average:", map(smoothed, fn(x) { return int(x); }));
 
 let slow = filter(parsed, fn(e) { return e["ms"] >= 90; });
-print("slow:", map(slow, fn(e) { return e["path"]; }));
+print("slow requests:");
+let rows = [["level", "ms", "path"]];
+for e in slow { push(rows, [e["level"], str(e["ms"]), e["path"]]); }
+print(st["indent"](st["table"](rows), "  "));
 ```
 
 ```text
 skipping malformed line: INFO  x GET /broken
 by level: {"ERROR": 1, "INFO": 4, "WARN": 1}
 3-point moving average: [41, 42, 106, 82]
-slow: ["/search", "/login"]
+slow requests:
+  level  ms   path
+  WARN   95   /search
+  ERROR  210  /login
 ```
 
 ## sort

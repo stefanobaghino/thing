@@ -271,3 +271,8 @@ assert(l["sort_with"]([5], fn(p, q) { return p - q; }) == [5], "sort_with single
 let big = l["reverse"](range(300));
 assert(l["sort_with"](big, fn(p, q) { return p - q; }) == range(300), "sort_with 300 elements");
 assert(has(try(fn() { return l["sort_with"]([1, 2], fn(p, q) { return true; }); }), "err"), "sort_with non-int comparator fails");
+
+assert(s["table"]([["a", "bb"], ["ccc", "d"]]) == "a    bb\nccc  d", "table aligns columns");
+assert(s["table"]([["x"], ["yy", "z"]]) == "x\nyy  z", "table ragged rows");
+assert(s["table"]([]) == "", "table empty");
+assert(s["table"]([["héllo", "1"], ["a", "2"]]) == "héllo  1\na      2", "table counts characters");
