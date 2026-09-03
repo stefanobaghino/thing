@@ -5377,3 +5377,21 @@ not show. Five strokes:
 Rejected: a seventh retrospective act (acts have come every six
 milestones; the seventh is due after the next), an LSP benchmark
 (no user has asked, and the server is stateless per request).
+
+---
+
+## 2026-09-03 — Iteration 347: unused top-level bindings
+
+CI green on 346 (API verdict). Milestone stroke 1: a second
+semantic warning shared by --check and the LSP through one
+warnings() function — a top-level let or fn whose name appears
+nowhere else in the file, ranged on the binding's name. The first
+cut flagged 79 corpus bindings and broke the LSP lifecycle test:
+every stdlib module's functions are exports, and a document that
+is just `let x = 1;` is the smallest module. The rule that fixed
+both: a file whose top-level statements are all bindings is a
+module and exempt; names starting with `_` are exempt by
+convention. Corpus warnings after the rule: zero, with no source
+edits. io test (used, unused, underscore, unused fn) and protocol
+test (warning range, cleared by a use); reference updated in two
+places. Full gate green. First stroke toward v2.50.0.

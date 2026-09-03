@@ -163,8 +163,9 @@ current orientation.
   executed cold here. The 338 milestone is complete.
 - 346: replenishment — milestone "second opinions" (v2.50–v2.52),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) unused top-level let
-  warning shared by --check and the LSP, io + protocol tests; (2)
+- 347: unused-binding warning — milestone stroke 1; first toward
+  v2.50.0.
+- Backlog (one per tick, in order): (2)
   LSP signature help for user-defined fns, protocol test; (3)
   `--fmt --diff`, io test; (4) lib/list.ting extent, selftests; (5)
   health tick + audit. Release after ~3.
