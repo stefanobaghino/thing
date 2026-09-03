@@ -7329,3 +7329,15 @@ tick if quiet.
 hypot, the test module's comments and check_type, json flatten. CI
 and Pages green on 443 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.67.0 (88th tag).
+
+---
+
+## 2026-09-03 — Iteration 444b: v2.67.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.67.0; one program exercising check_type, flatten and hypot
+prints the same three lines on the musl VM and the gnu reference
+engine; `--test selftest` passes 11/11 on each. CI and Pages green
+on the release commit. Eighty-eight tags, eighty-seven verified.
+Next: the LSP formatting edit's end position.
