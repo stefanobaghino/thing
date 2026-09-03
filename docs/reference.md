@@ -328,4 +328,5 @@ tests.
 - Call depth: 200.
 - Integers: i64 range; overflow raises an error rather than wrapping.
 - Map keys: strings only.
-- Cyclic data (`xs[0] = xs;`) prints and compares infinitely — don't.
+- Cyclic data (`xs[0] = xs;`) prints with `[...]` / `{...}` at the point
+  of recursion; comparing it does not terminate — don't.

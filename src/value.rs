@@ -353,6 +353,36 @@ impl Value {
     }
 }
 
+thread_local! {
+    /// The containers currently being printed, innermost last, so a
+    /// container that contains itself (directly or through others)
+    /// prints as `[...]` / `{...}` at the point of recursion instead of
+    /// overflowing the stack. Pointers only; never dereferenced.
+    static PRINTING: RefCell<Vec<*const ()>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Run `body` with `ptr` marked as being printed; None (and no call)
+/// when it already is — the caller prints the cycle marker instead.
+fn with_printing<T>(ptr: *const (), body: impl FnOnce() -> T) -> Option<T> {
+    let entered = PRINTING.with(|p| {
+        let mut p = p.borrow_mut();
+        if p.contains(&ptr) {
+            false
+        } else {
+            p.push(ptr);
+            true
+        }
+    });
+    if !entered {
+        return None;
+    }
+    let out = body();
+    PRINTING.with(|p| {
+        p.borrow_mut().pop();
+    });
+    Some(out)
+}
+
 /// Elements inside containers print with strings quoted, so nested
 /// output stays unambiguous.
 fn write_element(f: &mut fmt::Formatter<'_>, v: &Value) -> fmt::Result {
@@ -377,25 +407,37 @@ impl fmt::Display for Value {
             Value::Bool(b) => write!(f, "{b}"),
             Value::Nil => f.write_str("nil"),
             Value::List(items) => {
-                f.write_str("[")?;
-                for (i, it) in items.borrow().iter().enumerate() {
-                    if i > 0 {
-                        f.write_str(", ")?;
+                let ptr = Rc::as_ptr(items) as *const ();
+                match with_printing(ptr, || {
+                    f.write_str("[")?;
+                    for (i, it) in items.borrow().iter().enumerate() {
+                        if i > 0 {
+                            f.write_str(", ")?;
+                        }
+                        write_element(f, it)?;
                     }
-                    write_element(f, it)?;
+                    f.write_str("]")
+                }) {
+                    Some(r) => r,
+                    None => f.write_str("[...]"),
                 }
-                f.write_str("]")
             }
             Value::Map(entries) => {
-                f.write_str("{")?;
-                for (i, (k, v)) in entries.borrow().iter().enumerate() {
-                    if i > 0 {
-                        f.write_str(", ")?;
+                let ptr = Rc::as_ptr(entries) as *const ();
+                match with_printing(ptr, || {
+                    f.write_str("{")?;
+                    for (i, (k, v)) in entries.borrow().iter().enumerate() {
+                        if i > 0 {
+                            f.write_str(", ")?;
+                        }
+                        write!(f, "{k:?}: ")?;
+                        write_element(f, v)?;
                     }
-                    write!(f, "{k:?}: ")?;
-                    write_element(f, v)?;
+                    f.write_str("}")
+                }) {
+                    Some(r) => r,
+                    None => f.write_str("{...}"),
                 }
-                f.write_str("}")
             }
             Value::Fn(func) => write!(f, "<fn({})>", func.params.join(", ")),
             Value::Builtin(b) => write!(f, "<builtin {}>", b.name()),

@@ -430,6 +430,33 @@ fn doc_flag_lists_a_user_file() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// A container that contains itself prints with a cycle marker where
+/// the recursion would start, on both engines, instead of overflowing
+/// the stack; str() goes through the same path.
+#[test]
+fn cyclic_values_print_with_a_marker() {
+    let path = std::env::temp_dir().join(format!("ting-cyclic-print-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let xs = [1];\npush(xs, xs);\nprint(xs);\nlet m = {\"k\": 1};\nm[\"me\"] = m;\nprint(m);\nlet ys = [[xs]];\nprint(str(ys));\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(out.status.code(), Some(0), "{engine}: {stdout}");
+        assert_eq!(
+            stdout, "[1, [...]]\n{\"k\": 1, \"me\": {...}}\n[[[1, [...]]]]\n",
+            "{engine}"
+        );
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
