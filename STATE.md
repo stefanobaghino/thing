@@ -21,7 +21,7 @@ current orientation.
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, four warnings), --doc (name, module, file, or everything), --test (dirs,
+  imports, five warnings), --doc (name, module, file, or everything), --test (dirs,
   --filter, --tap, -j, --slow, --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.
@@ -106,10 +106,11 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.68.0 VERIFIED (89th tag; strokes 445, 446, 449; both aarch64
   archives executed here).
-- Backlog after the release (in order): (2) builtin-shadowing
-  warning, io + protocol tests; (3) lib/string.ting is_number,
-  selftests; (4) lib/list.ting argmax/argmin, selftests; (5) health
-  tick + audit.
+- 451: builtin-shadowing warning — one stroke banked toward
+  v2.69.0.
+- Backlog (in order): (3) lib/string.ting is_number, selftests; (4)
+  lib/list.ting argmax/argmin, selftests; (5) health tick + audit;
+  then replenish.
 - Tags: 89 (v2.68.0), 88 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
@@ -130,6 +131,8 @@ Standing rules (each from a slip; the LOG entry named has the story):
   the guard (v2.29.1). A failed Pages deploy is retried only with
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
+- Corpus scan (`--check lib selftest examples bench`) expects exactly
+  one warning: selftest/edge.ting shadows `len` on purpose (451).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

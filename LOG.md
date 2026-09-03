@@ -7452,3 +7452,24 @@ musl. Both aarch64 archives downloaded and executed here: version
 formatted text; `--test selftest` passes 11/11 on each. CI and
 Pages green on the release commit. Eighty-nine tags, eighty-eight
 verified. Next: the builtin-shadowing warning.
+
+---
+
+## 2026-09-03 — Iteration 451: shadowed builtins
+
+CI green on 450b (API verdict). Milestone stroke 2: the fifth
+semantic warning shared by --check and the LSP — a `let`, a `fn`
+or a parameter named after a builtin ("`len` shadows a builtin"),
+which the language allows and which usually ends in a later "not
+callable". Token-based like its siblings. The corpus scan found
+four: three examples binding input, env and range by accident
+(renamed to text, overrides and span — a word-boundary rename that
+also caught the word inside a printed label, which the .out diff
+flagged before anything was committed; the label is back) and
+selftest/edge.ting shadowing len on purpose to prove scoping,
+which stays and is the one warning the health tick's corpus scan
+now expects. Outputs unchanged, cookbook and playground
+regenerated. io test (let, fn, parameter; ordinary names silent)
+and protocol test. Reference, tutorial, README and editor README
+list the fifth warning. Full gate green (236 tests). One stroke
+banked toward v2.69.0. Next: is_number.
