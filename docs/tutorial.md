@@ -279,8 +279,8 @@ rejected: json_parse: expected a string key at offset 1
 
 ## A real script: word frequency
 
-Everything together: arguments, file I/O with recovery, the stdlib's
-`words` and `count_by`, sorting, and string builtins. Run it as
+Everything together: arguments, file I/O with recovery, and the
+stdlib's `words`, `frequencies` and `top`. Run it as
 `ting wordfreq.ting somefile.txt` — with no argument it demonstrates
 itself on a built-in sample:
 
@@ -297,12 +297,13 @@ if len(args()) > 0 {
 
 let li = import("lib/list.ting");
 let st = import("lib/string.ting");
-let counts = li["count_by"](st["words"](lower(text)), fn(w) { return w; });
+let ma = import("lib/map.ting");
+let counts = li["frequencies"](st["words"](lower(text)));
 
-# Sort words by falling count (negate the count for the key).
-let words = sort_by(keys(counts), fn(w) { return 0 - counts[w]; });
-for w in slice(words, 0, 3) {
-  print(counts[w], w);
+# The three most frequent words as [word, count] pairs, ties in
+# alphabetical order.
+for pair in ma["top"](counts, 3) {
+  print(pair[1], pair[0]);
 }
 ```
 
