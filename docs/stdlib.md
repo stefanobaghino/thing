@@ -95,6 +95,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `is_digit(s)` | non-empty and all ASCII digits |
 | `is_alpha(s)` | non-empty and all cased letters (upper and lower forms differ) |
 | `is_blank(s)` | empty or only whitespace |
+| `is_number(s)` | true if `float(s)` would accept `s` (int or float literal, signed, whitespace around) |
 
 ## lib/map.ting
 

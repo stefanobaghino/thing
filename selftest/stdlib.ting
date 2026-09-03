@@ -307,6 +307,8 @@ assert(l["compact"]([1, nil, "a", nil, [nil]]) == [1, "a", [nil]], "compact drop
 assert(l["compact"]([]) == [], "compact empty");
 assert(s["is_blank"]("") && s["is_blank"](" \t\n"), "is_blank");
 assert(!s["is_blank"](" x "), "is_blank non-blank");
+assert(s["is_number"]("42") && s["is_number"]("-1.5") && s["is_number"](" 7 ") && s["is_number"]("1e3"), "is_number accepts");
+assert(!s["is_number"]("abc") && !s["is_number"]("") && !s["is_number"]("4x"), "is_number rejects");
 
 let by_len_desc = fn(p, q) { return len(q) - len(p); };
 assert(l["sort_with"](["bb", "a", "ccc"], by_len_desc) == ["ccc", "bb", "a"], "sort_with");

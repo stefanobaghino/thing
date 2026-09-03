@@ -187,6 +187,13 @@ fn indent(s, prefix) {
   return join(out, "\n");
 }
 
+# True if float(s) would accept s: an int or float literal, optionally
+# signed, with surrounding whitespace allowed ("42", "-1.5", " 7 ",
+# "1e3"); false for anything else, including "".
+fn is_number(s) {
+  return has(try(fn() { return float(s); }), "ok");
+}
+
 # True if s is empty or only whitespace.
 fn is_blank(s) { return trim_start(s) == ""; }
 
