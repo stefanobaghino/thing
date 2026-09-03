@@ -3024,3 +3024,17 @@ order, the last key wins among duplicate values — pinned by a
 selftest so the rule is a promise rather than an accident. Seven
 assertions, two stdlib.md rows. Full gate green on both engines.
 Second stroke toward v2.20.0.
+
+---
+
+## 2026-09-03 — Iteration 216: health tick
+
+CI green on 215 (API verdict). Bench: all four checksums match
+BASELINE.md; absolute times are ~25% above iteration 202's run on
+this host, and the vm/eval ratios drifted (strings vm +5% vs -7%),
+but the machine was carrying unrelated workloads at load average
+5.5 on four cores with no thermal throttling — contention, not a
+regression; no action, re-measure on a quiet tick before drawing
+conclusions. Fuzz sweep: 30000 differential cases on seed
+20260903215, engines agree on every one. Nothing to fix. One
+feature stroke left before v2.20.0.

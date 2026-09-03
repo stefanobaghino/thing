@@ -58,9 +58,12 @@ current orientation.
   executed cold on this host, both engines.
 - 214: REPL :fmt; 215: count_by/invert — two strokes toward
   v2.20.0.
-- Backlog (one per tick): health tick; one more feature stroke
-  (candidates: lib/string.ting is_digit/is_alpha, lib/list.ting
-  last(xs)/first(xs)); release after ~3 strokes.
+- 216: health tick — checksums match, 30k fuzz cases agree; bench
+  times contended by other workloads (load 5.5), re-measure when
+  quiet.
+- Backlog (one per tick): one more feature stroke (candidates:
+  lib/string.ting is_digit/is_alpha, lib/list.ting first/last);
+  then release v2.20.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
