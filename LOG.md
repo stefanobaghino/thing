@@ -5036,3 +5036,11 @@ all six v2.44.0 download URLs resolve, all eight site resources
 answer 200 and the tutorial page carries the --doc sentence.
 Nothing to fix. The 322 milestone's strokes are done; v2.45.0 next
 tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 329: v2.45.0
+
+The tutorial's --doc sentence — the tail of the 322 milestone. CI
+green on 328 (API verdict). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.45.0 (66th tag).

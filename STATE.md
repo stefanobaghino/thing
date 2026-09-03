@@ -147,9 +147,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.44.0 RELEASED and verified (65th tag); aarch64 musl archive
   executed cold here, LSP survives a garbage frame.
-- 327: tutorial mentions --doc; 328: health tick green — the 322
-  milestone's strokes are done; RELEASE v2.45.0 next tick if quiet,
-  then replenish.
+- v2.45.0 TAGGED (66th tag; completes the 322 milestone): verify
+  next tick — six assets, glibc guard, cold-execute the aarch64
+  glibc archive here. Then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
