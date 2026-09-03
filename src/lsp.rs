@@ -207,6 +207,45 @@ fn rename_result(src: &str, uri: &str, line: usize, character: usize, new_name: 
     obj(vec![("changes", obj(vec![(uri, Value::list(edits))]))])
 }
 
+/// Folding ranges: every `{ ... }` pair that spans more than one line,
+/// from the token stream (blocks and map literals alike), outermost
+/// first in source order.
+fn folding_ranges(src: &str) -> Value {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::list(vec![]);
+    };
+    let line_of = |offset: usize| lexer::Span::new(offset, offset).line_col(src).0 as i64 - 1;
+    let mut open: Vec<usize> = Vec::new();
+    let mut ranges: Vec<(i64, i64)> = Vec::new();
+    for tok in &tokens {
+        match tok.kind {
+            lexer::TokenKind::LBrace => open.push(tok.span.start),
+            lexer::TokenKind::RBrace => {
+                if let Some(start) = open.pop() {
+                    let (a, b) = (line_of(start), line_of(tok.span.start));
+                    if b > a {
+                        ranges.push((a, b));
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    ranges.sort();
+    Value::list(
+        ranges
+            .into_iter()
+            .map(|(a, b)| {
+                obj(vec![
+                    ("startLine", Value::Int(a)),
+                    ("endLine", Value::Int(b)),
+                    ("kind", s("region")),
+                ])
+            })
+            .collect(),
+    )
+}
+
 /// Lex + parse + compile; the first error becomes the diagnostic list.
 fn diagnostics(src: &str) -> Value {
     let err = match lexer::lex(src) {
@@ -645,6 +684,7 @@ pub fn run() -> i32 {
                             ("referencesProvider", Value::Bool(true)),
                             ("renameProvider", Value::Bool(true)),
                             ("codeActionProvider", Value::Bool(true)),
+                            ("foldingRangeProvider", Value::Bool(true)),
                             (
                                 "signatureHelpProvider",
                                 obj(vec![(
@@ -871,6 +911,22 @@ pub fn run() -> i32 {
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,
                 };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/foldingRange" => {
+                let uri = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let result = uri
+                    .and_then(|u| docs.get(&u).map(|src| folding_ranges(src)))
+                    .unwrap_or_else(|| Value::list(vec![]));
                 write_message(
                     &mut output,
                     &obj(vec![

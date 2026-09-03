@@ -310,6 +310,47 @@ fn unknown_stdlib_member_is_a_warning() {
 }
 
 #[test]
+fn folding_ranges_cover_multiline_braces() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"foldingRangeProvider\":true"), "{init}");
+
+    // fn body lines 0-4 with a nested if on lines 1-3; a one-line
+    // block and a one-line map fold nothing.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///f.ting","text":"fn f(n) {\n  if n > 1 {\n    return n;\n  }\n}\nfn g() { return 1; }\nlet m = {\"a\": 1};\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/foldingRange","params":{"textDocument":{"uri":"file:///f.ting"}}}"#,
+    );
+    let fold = recv(&mut reader);
+    assert!(
+        fold.contains("\"endLine\":4,\"kind\":\"region\",\"startLine\":0"),
+        "{fold}"
+    );
+    assert!(
+        fold.contains("\"endLine\":3,\"kind\":\"region\",\"startLine\":1"),
+        "{fold}"
+    );
+    assert_eq!(fold.matches("startLine").count(), 2, "{fold}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 
