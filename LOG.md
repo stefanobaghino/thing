@@ -4476,3 +4476,17 @@ is the language's most interesting feature. Five strokes:
 
 Rejected: LSP semantic tokens (a large surface for little gain
 over a TextMate grammar the repo already ships).
+
+---
+
+## 2026-09-03 — Iteration 297: directories for --check and --fmt
+
+CI green on 296 (API verdict). Milestone stroke 1: the recursive
+collector that --test grew in 265 now serves --check, --fmt and
+--fmt-check through one expand_paths helper, so `ting --check src/`
+and `ting --fmt-check .`-style invocations work; an argument that
+yields no .ting files is an error, as for --test. Checked on the
+repo itself: `--fmt-check lib selftest examples bench` and `--check`
+over the same four directories both pass. io test covers a nested
+tree for both flags and the empty case; help and reference
+updated. Full gate green (200 tests). First stroke toward v2.38.0.
