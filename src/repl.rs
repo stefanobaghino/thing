@@ -227,7 +227,7 @@ fn print_help() {
         say(&format!("{sig:width$}  {text}"));
     }
     say(
-        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
+        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :clear resets; ctrl-d exits)",
     );
 }
 
@@ -236,7 +236,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         say(&format!(
-            "ting {} — :help, :doc NAME, :vars, :load <file>, :time EXPR, :fmt, :clear",
+            "ting {} — :help, :doc NAME, :vars, :load <file>, :time EXPR, :fmt, :history, :clear",
             env!("CARGO_PKG_VERSION")
         ));
     }
@@ -244,6 +244,9 @@ fn run_inner() -> ExitCode {
     let mut buffer = String::new();
     // The last complete chunk that was evaluated, for :fmt.
     let mut last = String::new();
+    // Every chunk that evaluated without error, in order: the session
+    // transcript behind :history (and :save).
+    let mut history: Vec<String> = Vec::new();
     loop {
         if tty {
             emit(if buffer.is_empty() { "> " } else { ".. " });
@@ -274,7 +277,23 @@ fn run_inner() -> ExitCode {
         }
         if buffer.is_empty() && line.trim() == ":clear" {
             interp = Interpreter::new(std::io::stdout());
+            history.clear();
             say("(session cleared)");
+            continue;
+        }
+        if buffer.is_empty() && line.trim() == ":history" {
+            if history.is_empty() {
+                say("(nothing evaluated yet)");
+            }
+            for (i, chunk) in history.iter().enumerate() {
+                let mut lines = chunk.trim_end().lines();
+                if let Some(first) = lines.next() {
+                    say(&format!("{:>3}  {first}", i + 1));
+                }
+                for rest in lines {
+                    say(&format!("     {rest}"));
+                }
+            }
             continue;
         }
         if buffer.is_empty()
@@ -340,13 +359,22 @@ fn run_inner() -> ExitCode {
             buffer.clear();
             continue;
         }
-        match eval_chunk(&mut interp, &buffer) {
+        let ok = match eval_chunk(&mut interp, &buffer) {
             Outcome::Incomplete => continue,
-            Outcome::Unit => {}
-            Outcome::Value(s) => say(&s),
-            Outcome::Error(msg) => eprintln!("{msg}"),
-        }
+            Outcome::Unit => true,
+            Outcome::Value(s) => {
+                say(&s);
+                true
+            }
+            Outcome::Error(msg) => {
+                eprintln!("{msg}");
+                false
+            }
+        };
         last = std::mem::take(&mut buffer);
+        if ok {
+            history.push(last.clone());
+        }
     }
 }
 

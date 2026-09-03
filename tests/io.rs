@@ -509,6 +509,37 @@ fn json_str_reports_cycles_as_errors() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `:history` lists every chunk that evaluated without error, numbered,
+/// multi-line chunks indented under their number; a chunk that failed
+/// is left out, and `:clear` empties the transcript.
+#[test]
+fn repl_history_lists_successful_chunks() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"let x = 1;\nfn inc(n) {\n  return n + 1;\n}\nnosuch\ninc(x)\n:history\n:clear\n:history\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains(
+            "  1  let x = 1;\n  2  fn inc(n) {\n       return n + 1;\n     }\n  3  inc(x)\n"
+        ),
+        "{stdout}"
+    );
+    assert!(!stdout.contains("nosuch"), "{stdout}");
+    assert!(stdout.contains("(nothing evaluated yet)"), "{stdout}");
+    assert_eq!(out.status.code(), Some(0));
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
