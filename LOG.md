@@ -2695,3 +2695,14 @@ computing the mean by hand; golden output gains the median column
 (30.5 — equal to the mean for this arithmetic-progression sample,
 which is itself a nice property check). Both engines byte-identical;
 full gate green. Second stroke toward v2.15.0.
+
+---
+
+## 2026-09-03 — Iteration 193: distribution audit
+
+Quiet-tick integrity audit of everything user-facing: all 34
+release tags carry exactly three platform assets (v0.1.0 through
+v2.14.0, none missing), and all seven live site resources (index,
+five doc pages, ting.wasm) respond 200. Nothing to fix. Third
+stroke slot spent on verification — v2.15.0 waits for one more
+feature stroke instead.
