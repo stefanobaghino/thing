@@ -93,147 +93,18 @@
   <span id="status">loading wasm&hellip;</span>
   <span>everything runs locally; nothing leaves this page</span>
 </footer>
+<script src="examples.js"></script>
 <script>
 "use strict";
 
-const EXAMPLES = {
-  "hello": `print("hello from ting!");
-`,
-  "fizzbuzz": `for n in range(1, 21) {
-  if n % 15 == 0 { print("FizzBuzz"); }
-  else if n % 3 == 0 { print("Fizz"); }
-  else if n % 5 == 0 { print("Buzz"); }
-  else { print(n); }
-}
-`,
-  "closures": `fn make_counter() {
-  let n = 0;
-  fn tick() { n = n + 1; return n; }
-  return tick;
-}
-let c = make_counter();
-print(c(), c(), c());
-`,
-  "word frequency": `let text = "the cat sat on the mat and the cat slept";
-let counts = {};
-for w in split(text, " ") {
-  if has(counts, w) { counts[w] = counts[w] + 1; }
-  else { counts[w] = 1; }
-}
-for w in sort_by(keys(counts), fn(w) { return 0 - counts[w]; }) {
-  print(counts[w], w);
-}
-`,
-  "map & filter": `let ns = range(1, 11);
-let evens = filter(ns, fn(n) { return n % 2 == 0; });
-let squares = map(evens, fn(n) { return n * n; });
-print(squares);
-print("sum:", reduce(squares, 0, fn(a, n) { return a + n; }));
-print("min/max:", min(squares), max(squares));
-`,
-  "stdlib": `# The standard library is embedded in the interpreter.
-let l = import("lib/list.ting");
-let s = import("lib/string.ting");
-
-let ns = l["reverse"](range(1, 6));
-print(ns);
-print("sum, padded:", s["pad_left"](str(l["sum"](ns)), 4, "0"));
-print(s["title"]("the ting standard library"));
-`,
-  "stats": `# Descriptive statistics with lib/math.ting.
-let ma = import("lib/math.ting");
-let li = import("lib/list.ting");
-
-let sample = range(2, 60, 3);
-let n = len(sample);
-let mean = float(li["sum"](sample)) / n;
-
-let variance = 0.0;
-for x in sample {
-  let d = x - mean;
-  variance = variance + d * d;
-}
-let stddev = ma["sqrt"](variance / n);
-
-print("n:", n, " mean:", mean);
-print("stddev:", ma["round"](stddev * 100) / 100.0);
-print("pow(2, 16):", ma["pow"](2, 16), " gcd(54, 24):", ma["gcd"](54, 24));
-`,
-  "calc: a language in ting": `# A tiny calculator language, interpreted by ting.
-fn tokenize(src) {
-  let toks = [];
-  let i = 0;
-  while i < len(src) {
-    let c = src[i];
-    if c == " " { i = i + 1; continue; }
-    if contains("0123456789", c) {
-      let num = "";
-      while i < len(src) && contains("0123456789", src[i]) {
-        num = num + src[i];
-        i = i + 1;
-      }
-      push(toks, num);
-      continue;
-    }
-    push(toks, c);
-    i = i + 1;
-  }
-  push(toks, "<end>");
-  return toks;
-}
-
-fn factor(st) {
-  let t = st["toks"][st["pos"]];
-  st["pos"] = st["pos"] + 1;
-  if t == "(" {
-    let v = expr(st);
-    st["pos"] = st["pos"] + 1;  # the ")"
-    return v;
-  }
-  if t == "-" { return -factor(st); }
-  return int(t);
-}
-
-fn term(st) {
-  let v = factor(st);
-  while st["toks"][st["pos"]] == "*" || st["toks"][st["pos"]] == "/" {
-    let op = st["toks"][st["pos"]];
-    st["pos"] = st["pos"] + 1;
-    if op == "*" { v = v * factor(st); } else { v = v / factor(st); }
-  }
-  return v;
-}
-
-fn expr(st) {
-  let v = term(st);
-  while st["toks"][st["pos"]] == "+" || st["toks"][st["pos"]] == "-" {
-    let op = st["toks"][st["pos"]];
-    st["pos"] = st["pos"] + 1;
-    if op == "+" { v = v + term(st); } else { v = v - term(st); }
-  }
-  return v;
-}
-
-for src in ["1 + 2 * 3", "(1 + 2) * 3", "-(3 - 5) * 4", "100 / (2 + 3)"] {
-  print(src, "=", expr({"toks": tokenize(src), "pos": 0}));
-}
-`,
-  "error recovery": `fn risky(s) {
-  let n = int(s);          # errors on non-numeric input
-  if n < 0 { fail("no negatives, please"); }
-  return n * 2;
-}
-for raw in ["21", "-4", "many"] {
-  let r = try(fn() { return risky(raw); });
-  if has(r, "ok") { print(raw, "->", r["ok"]); }
-  else { print(raw, "-> error:", r["err"]); }
-}
-`,
+// Every example under examples/ (generated into examples.js), plus a
+// hand-written one that shows what an error looks like.
+const EXAMPLES = Object.assign({}, TING_EXAMPLES, {
   "diagnostics": `# Errors point at the offending code:
 let total = 40 + 2;
 print(totl);
-`,
-};
+`
+});
 
 const editor = document.getElementById("editor");
 const output = document.getElementById("output");
