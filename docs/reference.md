@@ -27,7 +27,8 @@ Exit status is 0 on success; 1 when the tool reports a failure — a
 script that raises, a red test file, a file `--fmt-check` would
 change, a warning under `--check --strict`; and 2 on a usage error —
 an unknown option, a mode with no operand, a bad option value —
-which also prints a pointer to `--help`.
+which also prints a pointer to `--help`, and names the option you
+probably meant when one is close (`--fmr` finds `--fmt`).
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
@@ -249,8 +250,9 @@ script.ting:2:7: error: undefined variable 'totl' (did you mean 'total'?)
 
 When the name you typed is close to one that is in scope — a binding,
 a parameter or a builtin — the error names it, as above. A suggestion
-is offered only when at most a third of the name is wrong, or when one
-of the two names starts the other (`lenght` finds `len`). A key that a
+is offered only when at most a third of the name is wrong (swapping two
+neighbours counts as one slip), or when one of the two names starts the
+other (`lenght` finds `len`); names under three characters get none. A key that a
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.
 

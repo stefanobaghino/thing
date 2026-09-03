@@ -1284,6 +1284,38 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn unknown_options_suggest_the_nearest_option() {
+    for (typo, meant) in [("--fmr", "--fmt"), ("--tst", "--test"), ("--lps", "--lsp")] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args([typo, "x"])
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(2));
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains(&format!(
+                "unknown option {typo} (did you mean {meant}?) (see --help)"
+            )),
+            "{stderr}"
+        );
+    }
+
+    // Nothing near it (and never for a one-letter option).
+    for typo in ["--nosuch", "-x"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args([typo, "x"])
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(2));
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains(&format!("unknown option {typo} (see --help)")),
+            "{stderr}"
+        );
+    }
+}
+
+#[test]
 fn doc_flag_suggests_the_nearest_documented_name() {
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "medain"])

@@ -53,6 +53,11 @@ pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Spa
 /// means `median`, not `mean`) and then alphabetically, so the answer
 /// never depends on the order the candidates arrive in.
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
+    // Under three characters every name is one edit from every other,
+    // so a suggestion would be noise rather than help.
+    if name.chars().count() < 3 {
+        return None;
+    }
     let limit = (name.chars().count() / 3).max(1);
     let mut best: Option<(usize, usize, &str)> = None;
     for c in candidates {
@@ -81,19 +86,27 @@ pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) ->
     best.map(|(_, _, c)| c.to_string())
 }
 
-/// Levenshtein distance in characters (insert, delete and substitute
-/// each cost one), over one row of state.
+/// Edit distance in characters: insert, delete and substitute each
+/// cost one, and so does swapping two neighbours — `lsp` typed `lps`
+/// is one slip, not two. Two rows of state, since a transposition
+/// looks back a row further than Levenshtein does.
 fn distance(a: &str, b: &str) -> usize {
     let a: Vec<char> = a.chars().collect();
     let b: Vec<char> = b.chars().collect();
+    let mut prev2: Vec<usize> = vec![0; b.len() + 1];
     let mut prev: Vec<usize> = (0..=b.len()).collect();
     let mut cur = vec![0usize; b.len() + 1];
     for (i, ca) in a.iter().enumerate() {
         cur[0] = i + 1;
         for (j, cb) in b.iter().enumerate() {
             let cost = usize::from(ca != cb);
-            cur[j + 1] = (prev[j] + cost).min(prev[j + 1] + 1).min(cur[j] + 1);
+            let mut d = (prev[j] + cost).min(prev[j + 1] + 1).min(cur[j] + 1);
+            if i > 0 && j > 0 && *ca == b[j - 1] && a[i - 1] == *cb {
+                d = d.min(prev2[j - 1] + 1);
+            }
+            cur[j + 1] = d;
         }
+        std::mem::swap(&mut prev2, &mut prev);
         std::mem::swap(&mut prev, &mut cur);
     }
     prev[b.len()]
@@ -197,7 +210,9 @@ mod tests {
             nearest("medain", ["median", "mean"]),
             Some("median".to_string())
         );
-        assert_eq!(nearest("ab", ["ac", "bb"]), Some("ac".to_string()));
-        assert_eq!(nearest("ab", ["bb", "ac"]), Some("ac".to_string()));
+        // A swap of neighbours is one slip.
+        assert_eq!(nearest("lps", ["lsp", "map"]), Some("lsp".to_string()));
+        // Under three characters, no suggestion at all.
+        assert_eq!(nearest("ab", ["ac", "bb"]), None);
     }
 }

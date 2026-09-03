@@ -146,10 +146,38 @@ fn is_option(a: &str) -> bool {
     a.starts_with('-') && a != "-"
 }
 
-/// An option no mode recognises: say so, point at --help, exit 2 (a
-/// usage error, distinct from the 1 a failed run or check exits with).
+/// Every option any mode accepts, for suggesting the one that was
+/// meant. Keep in step with the dispatch above and the usage text.
+const OPTIONS: [&str; 19] = [
+    "--check",
+    "--diff",
+    "--doc",
+    "--eval",
+    "--fail-fast",
+    "--filter",
+    "--fmt",
+    "--fmt-check",
+    "--help",
+    "--lsp",
+    "--slow",
+    "--strict",
+    "--tap",
+    "--test",
+    "--version",
+    "--vm",
+    "-V",
+    "-h",
+    "-j",
+];
+
+/// An option no mode recognises: say so, name the nearest real option
+/// when there is one, point at --help, exit 2 (a usage error, distinct
+/// from the 1 a failed run or check exits with).
 fn unknown_option(a: &str) -> ExitCode {
-    eprintln!("ting: unknown option {a} (see --help)");
+    match ting::diag::nearest(a, OPTIONS) {
+        Some(near) => eprintln!("ting: unknown option {a} (did you mean {near}?) (see --help)"),
+        None => eprintln!("ting: unknown option {a} (see --help)"),
+    }
     ExitCode::from(2)
 }
 
