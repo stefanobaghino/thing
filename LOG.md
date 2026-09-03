@@ -6704,3 +6704,36 @@ NAME` explains "one builtin or stdlib function" (it lists a module
 too), and the changelog's head names Linux, macOS and Windows
 binaries without the static musl ones. The "loop's own house"
 milestone is complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 412: replenishment — milestone "the session"
+
+CI green on 411 (API verdict). Twenty milestones since the
+restart, eighty-two tags. The REPL is the one tool that has not
+had a milestone since 195: it remembers exactly one chunk (for
+:fmt), so a session cannot be reviewed or kept; `:doc` needs a
+name although the CLI's --doc no longer does; and the reference's
+REPL paragraph describes `:doc` as it was before modules and files
+could be listed. Five strokes:
+
+1. A session transcript: every chunk that evaluates without error
+   is kept, and `:history` prints them numbered. io test driving
+   the REPL over stdin.
+2. `:save FILE` writes the transcript as a runnable script (chunks
+   in order, a blank line between them) and says how many it
+   wrote; nothing to save is a message, not an empty file. io test
+   that saves and re-runs the file.
+3. `:doc` alone prints the table of contents and `:doc list` a
+   module, as --doc does; the reference's REPL paragraph rewritten
+   for nine meta-commands; the changelog head names the static
+   musl binaries. Then release v2.62.0.
+4. lib/map.ting merge_with(a, b, f): merge where a key in both
+   sides gets f(left, right) instead of the right side winning.
+   Selftests.
+5. Health tick + distribution audit.
+
+Rejected: line editing or up-arrow history (needs the terminal in
+raw mode; not zero-dependency — rlwrap stays the answer),
+persisting the transcript between sessions (a file the user did
+not ask for; :save is the explicit form).

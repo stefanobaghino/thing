@@ -64,8 +64,12 @@ holds only the current milestone and the standing rules.
 - v2.61.0 VERIFIED (82nd tag; strokes 407, 408, 409; both aarch64
   archives executed here). 411: health tick + audit green —
   milestone "the loop's own house" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 412: replenishment — milestone "the session" (v2.62–v2.63),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) REPL transcript + :history,
+  io test; (2) :save FILE, io test; (3) :doc alone / :doc MODULE +
+  reference REPL paragraph + changelog head — then RELEASE v2.62.0;
+  (4) lib/map.ting merge_with, selftests; (5) health tick + audit.
 - Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
