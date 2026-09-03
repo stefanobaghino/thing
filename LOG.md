@@ -7090,3 +7090,17 @@ strokes banked (429, 430, 431) — v2.65.0 next tick if quiet.
 :load's report, the failed-import message, transpose. CI and Pages
 green on 431 (API verdicts). Full gate green, stdlib selftests pass
 on both engines. Tagging v2.65.0 (86th tag).
+
+---
+
+## 2026-09-03 — Iteration 432b: v2.65.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.65.0; the musl REPL reports two new bindings after loading the
+sibling-import file, the gnu binary's failed import names the
+resolved path and the embedded fallback, transpose turns a 2×2
+on the musl VM and the gnu reference engine, and `--test selftest`
+passes 11/11 on each. CI and Pages green on the release commit.
+Eighty-six tags, eighty-five verified. Next: health tick + audit,
+then replenish.

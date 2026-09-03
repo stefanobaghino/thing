@@ -83,11 +83,10 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.64.0 VERIFIED (85th tag; strokes 423, 424, 427; both aarch64
   archives executed here).
-- v2.65.0 TAGGED (86th tag; strokes 429, 430, 431): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (:load report, the import message, transpose, selftests).
+- v2.65.0 VERIFIED (86th tag; strokes 429, 430, 431; both aarch64
+  archives executed here).
 - Backlog after the release: (5) health tick + audit; then replenish.
-- Tags: 86 (v2.65.0), 84 verified; v2.29.0 is publicly marked broken
+- Tags: 86 (v2.65.0), 85 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
