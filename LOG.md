@@ -4350,3 +4350,14 @@ default, TING_FMT_SEED/TING_FMT_CASES for sweeps. A 20000-case
 sweep on seed 288 found nothing: the formatter that the corpus
 alone had vouched for holds up on programs no human wrote. Full
 gate green (198 tests). Second stroke toward v2.36.0.
+
+---
+
+## 2026-09-03 — Iteration 290: zip_with and cartesian
+
+CI green on 289 across all jobs (API verdict), so the shared test
+module compiles everywhere. Milestone stroke 3: lib/list.ting gains
+zip_with(a, b, f) (one line over zip and map, trimming like zip)
+and cartesian(a, b) (a-major pairs, empty if either side is). Four
+assertions, two stdlib.md rows. Full gate green on both engines.
+Third stroke banked — v2.36.0 next tick if quiet.

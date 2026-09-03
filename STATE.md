@@ -121,11 +121,12 @@ current orientation.
   executed cold here. The 279 milestone is complete.
 - 287: replenishment — milestone "trust and teach" (v2.36–v2.38),
   reasoning in LOG.md.
-- 288: tutorial Testing chapter; 289: formatter fuzz — milestone
-  strokes 1–2; two toward v2.36.0.
-- Backlog (one per tick, in order): (3) lib/list.ting zip_with/cartesian; (4)
-  bench/json.ting + baseline row; (5) LSP folding ranges, protocol
-  test. Release after ~3.
+- 288: tutorial Testing chapter; 289: formatter fuzz; 290:
+  zip_with/cartesian — three strokes banked; RELEASE v2.36.0 next
+  tick if quiet.
+- Backlog after the release (in order): (4) bench/json.ting +
+  baseline row; (5) LSP folding ranges, protocol test; then health
+  tick and replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
