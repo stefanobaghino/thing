@@ -8649,3 +8649,16 @@ bullet mentions the counts; the stdlib page notes that every
 lib/test.ting helper counts as one. The reference already carried
 the runner's paragraph from 512. Full gate green (256 tests). Two
 strokes banked (514, 515). Next: release v2.82.0.
+
+---
+
+## 2026-09-03 — Iteration 516: release v2.82.0
+
+CI green on 515 (API verdict). Cut v2.82.0 with the framework's own
+counting (514) and the docs for it (515). The release workflow is
+green with all six archives; CI and Pages green on the release
+commit (API verdicts). Cold-verified here: both aarch64 Linux
+archives downloaded fresh, unpacked and run — `-V` reports 2.82.0,
+and a file built on lib/test.ting with three helper calls reports
+"(3 checks)", which is what the framework's counting was for. 103rd
+tag. Next: health tick + audit.

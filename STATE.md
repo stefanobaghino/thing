@@ -174,11 +174,12 @@ holds only the current milestone and the standing rules.
   verified.
 - v2.81.0 VERIFIED (102nd tag; strokes 511, 512; both aarch64
   archives executed here). 514: lib/test.ting's helpers count too;
-  515: the docs say what the counts mean — two strokes banked toward
-  v2.82.0.
+  515: the docs say what the counts mean.
+- v2.82.0 VERIFIED (103rd tag; strokes 514, 515; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.82.0 (strokes 514, 515); (2) health tick + audit.
-- Tags: 102 (v2.81.0), 101 verified; v2.29.0 is publicly marked broken
+  (1) health tick + audit — then replenishment.
+- Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
