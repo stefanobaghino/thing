@@ -6296,3 +6296,21 @@ Rejected: forbidding cycles at push/assignment time (a cheap check
 that would cost every push a walk), a depth limit instead of a
 visited set (it would still print thousands of nested brackets
 before stopping).
+
+---
+
+## 2026-09-03 — Iteration 391: cyclic print terminates
+
+CI green on 390 (API verdict). Milestone stroke 1: Display keeps a
+thread-local stack of the containers being printed (pointers,
+never dereferenced); a list or map already on the stack prints as
+`[...]` or `{...}` where the recursion would start, and pops on the
+way out so the same container printed twice side by side is not
+mistaken for a cycle. str() and the REPL echo share Display, so
+the one-line program that aborted the process at 389 now prints
+`[1, [...]]` and exits 0 on both engines. io test with a
+self-containing list, a self-containing map, and a cycle two
+levels down through str(); the reference's Limits line now says
+what printing does and still warns about comparison, which stroke
+2 takes. Full gate green (220 tests). One stroke banked toward
+v2.58.0. Next: cyclic equality.
