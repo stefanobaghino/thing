@@ -20,8 +20,8 @@ current orientation.
   (11 selftest files, 16 examples with .out); 223 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
-  stdin, --diff), --check (dirs, stdin, follows local imports, three
-  warnings), --doc (name, module, file, or everything), --test (dirs,
+  stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
+  imports, four warnings), --doc (name, module, file, or everything), --test (dirs,
   --filter, --tap, -j, --slow, --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.

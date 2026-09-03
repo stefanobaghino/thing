@@ -38,9 +38,9 @@ The whole toolchain is the one binary. A REPL with meta-commands
 in parallel with `-j`, with `--filter`, `--slow` and Test Anything
 Protocol output (`--tap`); `--check` and `--fmt` over files or
 directories (stdin with `-`), the formatter showing its changes with
-`--diff`, the checker following local imports and warning about
-misspelt stdlib members, unused top-level bindings and unused
-parameters; `--doc NAME` for any builtin or stdlib function, `--doc
+`--diff` and keeping a file's line endings, the checker following
+local imports and warning about misspelt stdlib members, unused
+bindings (top-level or local) and unused parameters; `--doc NAME` for any builtin or stdlib function, `--doc
 MODULE` for a module's members and `--doc` alone for the whole table
 of contents; and `--lsp`, a language server with diagnostics (the
 same warnings), hover, completion, signature help, formatting,

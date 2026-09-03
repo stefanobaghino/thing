@@ -260,7 +260,8 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --fmt <paths...>` reformats in place; `--fmt-check` exits 1
   if anything would change (use it in CI); `--fmt --diff` prints the
   changed lines instead of writing. Directories recurse. The formatter is
-  idempotent and never alters program meaning.
+  idempotent, never alters program meaning, and keeps the file's line
+  endings (a CRLF file stays CRLF).
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a
@@ -268,8 +269,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   Clean files may still get warnings (an imported stdlib module
   indexed with a name it does not export; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
-  only of bindings is a module and exempt; a function parameter its
-  body never names, same opt-out); warnings never change the exit
+  only of bindings is a module and exempt; a `let` inside a block
+  that nothing in the block uses, same opt-out; a function parameter
+  its body never names, same opt-out); warnings never change the exit
   status.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
@@ -294,7 +296,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings
   for an imported stdlib module indexed with a name it does not
-  export and for unused top-level bindings and parameters),
+  export and for unused bindings, top-level or local, and unused
+  parameters),
   hover docs for every builtin (and for imported stdlib functions,
   and the file's own functions with the `#` comment above them),
   completion
