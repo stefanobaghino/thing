@@ -90,11 +90,12 @@ holds only the current milestone and the standing rules.
   bodies are not warned about.
 - 434: replenishment — milestone "the small print" (v2.66–v2.67),
   reasoning in LOG.md.
-- 435: formatter keeps CRLF; 436: unused local bindings; 437: the
-  docs — three strokes banked; RELEASE v2.66.0 next tick if quiet.
+- v2.66.0 TAGGED (87th tag; strokes 435, 436, 437): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (CRLF --fmt-check, local warning, selftests).
 - Backlog after the release (in order): (4) lib/math.ting trunc,
   selftests; (5) health tick + audit; then replenish.
-- Tags: 86 (v2.65.0), 85 verified; v2.29.0 is publicly marked broken
+- Tags: 87 (v2.66.0), 85 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

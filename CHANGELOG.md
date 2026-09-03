@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.66.0 (2026-09-03)
+
+- The formatter keeps the file's line endings: a CRLF file stays
+  CRLF, and `--fmt-check` no longer flags a Windows checkout.
+- `--check` and the LSP warn about a `let` inside a block that
+  nothing in the block uses (underscore-prefixed names exempt).
+
 ## v2.65.0 (2026-09-03)
 
 - REPL: `:load` reports how many bindings it added.

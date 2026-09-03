@@ -7207,3 +7207,12 @@ README, the tutorial's closing chapter and the editor README say
 counts four warnings and notes CRLF. Tutorial and docs guards
 green. Three strokes banked (435, 436, 437) — v2.66.0 next tick if
 quiet.
+
+---
+
+## 2026-09-03 — Iteration 438: v2.66.0
+
+CRLF kept by the formatter, the unused-local warning, and the docs
+for both. CI and Pages green on 437 (API verdicts). Full gate
+green, stdlib selftests pass on both engines. Tagging v2.66.0
+(87th tag).
