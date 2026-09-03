@@ -5113,3 +5113,15 @@ per-file child spawn moved into run_one. Clippy asked for a type
 alias for the outcome tuple. Help and reference updated. Full gate
 green; `--test -j 4 selftest` passes 11. Second stroke toward
 v2.46.0.
+
+---
+
+## 2026-09-03 — Iteration 333: dedent
+
+CI green on 332 across all jobs (API verdict), so the threaded
+runner holds on every platform. Milestone stroke 3: lib/string.ting
+gains dedent(s) — the shortest leading whitespace among non-blank
+lines is removed from every line, blank lines come out empty, and
+tabs count as characters so mixed indentation loses only its shared
+prefix. Five assertions, stdlib.md row. Full gate green on both
+engines. Third stroke banked — v2.46.0 next tick if quiet.

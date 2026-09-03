@@ -151,12 +151,10 @@ current orientation.
   executed cold here. The 322 milestone is complete.
 - 330: replenishment — milestone "shell citizen, part two"
   (v2.46–v2.48), reasoning in LOG.md.
-- 331: shell-scripting chapter; 332: --test -j N — milestone
-  strokes 1–2; two toward v2.46.0.
-- Backlog (one per tick, in order): (3)
-  lib/string.ting dedent, selftests; (4) LSP rename across open
-  documents, protocol test; (5) health tick + audit. Release after
-  ~3.
+- 331: shell-scripting chapter; 332: --test -j N; 333: dedent —
+  three strokes banked; RELEASE v2.46.0 next tick if quiet.
+- Backlog after the release (in order): (4) LSP rename across open
+  documents, protocol test; (5) health tick + audit; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
