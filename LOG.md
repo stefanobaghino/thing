@@ -5512,3 +5512,25 @@ mode, which std cannot do without a libc binding — not
 zero-dependency), `--check --json` (no consumer asked; the LSP is
 the machine interface), a `lib/time.ting` (one builtin, time_ms,
 is not enough to build on honestly).
+
+---
+
+## 2026-09-03 — Iteration 354: --doc lists everything
+
+CI green on 353 (API verdict). Milestone stroke 1: `ting --doc`
+with no name prints a table of contents — every builtin in name
+order, then every stdlib function grouped under its module path,
+one line each (signature, then the comment) — and `ting --doc
+MODULE` (`math` or `lib/math.ting`) prints one module's members.
+The REPL's `:doc` falls back to the same index, so `:doc list`
+works there too; the unknown-name message now says "module" as
+well. Output goes through the REPL's quiet writer, so `ting --doc |
+head` exits 0 instead of panicking on the closed pipe — the first
+cut used println and did. io test covers the full list, a module,
+and the exit-1 unknown name; help and reference updated. Full gate
+green (211 tests). Second stroke banked toward v2.51.0.
+
+Correction to 353: `median` already lives in lib/list.ting (the
+--doc test has used it for weeks). Stroke 4 becomes lib/list.ting
+mode(xs) — the most frequent element, first seen wins ties, nil on
+empty — which the module lacks.

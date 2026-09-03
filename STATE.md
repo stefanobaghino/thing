@@ -169,11 +169,11 @@ current orientation.
 - 352: health tick + audit green. 353: replenishment — milestone
   "table of contents" (v2.51–v2.52), reasoning in LOG.md. One stroke
   (351 extent) banked toward v2.51.0.
-- Backlog (one per tick, in order): (1) `--doc` with no name lists
-  everything, `--doc MODULE` lists a module, io test; (2) unused
-  parameter warning, io + protocol tests; (3) retrospective act
-  seven; (4) lib/math.ting median, selftests; (5) health tick +
-  audit. Release after ~3 (351 counts).
+- 354: --doc lists everything — two strokes banked (351, 354).
+- Backlog (one per tick, in order): (2) unused parameter warning,
+  io + protocol tests; (3) retrospective act seven; (4)
+  lib/list.ting mode(xs) (median already exists there), selftests;
+  (5) health tick + audit. RELEASE v2.51.0 after (2).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
