@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/test, 105+ functions); 27 ting programs
   (11 selftest files, 16 examples with .out); 223 Rust tests in 11
   suites.
-- One binary is the toolchain: REPL (7 meta-commands), --fmt (dirs,
+- One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff), --check (dirs, stdin, follows local imports, three
   warnings), --doc (name, module, file, or everything), --test (dirs,
   --filter, --tap, -j, --slow, --fail-fast), --lsp (twelve
@@ -66,11 +66,11 @@ holds only the current milestone and the standing rules.
   milestone "the loop's own house" complete.
 - 412: replenishment — milestone "the session" (v2.62–v2.63),
   reasoning in LOG.md.
-- 413: REPL transcript + :history; 414: :save — two strokes banked
-  toward v2.62.0.
-- Backlog (one per tick, in order): (3) :doc alone / :doc MODULE +
-  reference REPL paragraph + changelog head — then RELEASE v2.62.0;
-  (4) lib/map.ting merge_with, selftests; (5) health tick + audit.
+- 413: REPL transcript + :history; 414: :save; 415: :doc alone and
+  the docs — three strokes banked; RELEASE v2.62.0 next tick if
+  quiet.
+- Backlog after the release (in order): (4) lib/map.ting merge_with,
+  selftests; (5) health tick + audit; then replenish.
 - Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -6767,3 +6767,19 @@ back through the binary, which prints the same 4. Full gate green
 (225 tests). Two strokes banked toward v2.62.0. Next: :doc alone
 in the REPL, the reference paragraph and the changelog head, then
 the release.
+
+---
+
+## 2026-09-03 — Iteration 415: :doc alone, and the REPL described
+
+CI green on 414 (API verdict). Milestone stroke 3: `:doc` with no
+name prints the table of contents in the REPL as `--doc` does in
+the shell (`:doc MODULE` already worked through the same
+fallback); `:help` says so. The reference's REPL paragraph now
+describes nine meta-commands including :history and :save and no
+longer claims the REPL has "no history" — it has no up-arrow
+recall, which is what rlwrap adds; the README's list and the
+tutorial's REPL bullet gained the two commands; the changelog head
+names the static musl binaries. io test for :doc alone and :doc
+math. Full gate green (226 tests). Three strokes banked (413,
+414, 415) — v2.62.0 next tick if quiet.
