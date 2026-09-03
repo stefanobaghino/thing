@@ -3458,3 +3458,13 @@ A small helper reads the quoted key back from the closing bracket.
 Protocol test extended. Full gate green. Second stroke toward
 v2.26.0 (the three LSP strokes 238/242/243 make stdlib modules
 first-class in the editor).
+
+---
+
+## 2026-09-03 — Iteration 244: frequencies
+
+CI green on 243 (API verdict). lib/list.ting gains frequencies(xs),
+count_by with the identity key: the word-count idiom in one call,
+inheriting count_by's string-key rule (non-string elements fail
+loudly, pinned). Three assertions, stdlib.md row. Full gate green
+on both engines. Third stroke banked — v2.26.0 next tick if quiet.
