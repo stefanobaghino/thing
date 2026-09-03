@@ -6314,3 +6314,19 @@ levels down through str(); the reference's Limits line now says
 what printing does and still warns about comparison, which stroke
 2 takes. Full gate green (220 tests). One stroke banked toward
 v2.58.0. Next: cyclic equality.
+
+---
+
+## 2026-09-03 — Iteration 392: cyclic equality terminates
+
+CI and Pages green on 391 (API verdicts). Milestone stroke 2:
+PartialEq keeps a thread-local stack of the (left, right)
+container pairs it is inside; a pair met again while still in
+progress is equal at once — the coinductive reading, under which
+two cycles that agree everywhere they can be inspected are equal
+and a cycle with a different element is not. Both engines share
+the impl. The program that aborted at 390 now prints `true false
+true false` and `true` for the map case, on both engines, in the
+io test; the reference's Limits line says what comparison does.
+Full gate green (221 tests). Two strokes banked toward v2.58.0.
+Next: json_str on a cycle.
