@@ -90,10 +90,9 @@ current orientation.
   executed cold on this host, both engines.
 - 255: replenishment tick — milestone "programs, not one-liners"
   (v2.29–v2.31), reasoning in LOG.md.
-- 256: sort_with — milestone stroke 1 done; first toward v2.29.0.
-- Backlog (one per tick, in order): (2) `ting --test <files...>` runner with
-  per-file OK/FAIL, summary, exit 1 on failure, io test, dogfood on
-  selftest/; (3) cookbook: tools/cookbook.py → docs/cookbook.md from
+- 256: sort_with; 257: --test runner — milestone strokes 1–2 done;
+  two toward v2.29.0.
+- Backlog (one per tick, in order): (3) cookbook: tools/cookbook.py → docs/cookbook.md from
   examples/*.ting + .out, sync test, site nav, pages.yml path; (4)
   crash-fuzzer (tests/fuzz.rs) builtin-coverage audit; (5)
   bench/stdlib.ting + BASELINE row with host note. Release after ~3.

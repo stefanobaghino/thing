@@ -3665,3 +3665,19 @@ fails through the strict `<`, pinned. Selftests cover ordering,
 stability, empty, single, a 300-element reversed range, and the
 error. stdlib.md row. Full gate green on both engines. First stroke
 toward v2.29.0.
+
+---
+
+## 2026-09-03 — Iteration 257: --test runner
+
+CI green on 256 (API verdict). Milestone stroke 2: `ting --test
+<files...>` runs every file in its own child process (the binary
+re-invokes itself, forwarding TING_ENGINE so the reference engine
+can be tested the same way), discards the child's stdout, prints
+`ok` or `FAIL` per file with the child's stderr indented under a
+failure, then a summary line, and exits 1 if anything failed.
+Process-per-file is the deliberate choice: a script's exit() — which
+lib/test.ting's summary calls on failure — would otherwise end the
+runner mid-run. Dogfooded on selftest/ (11 ok). io test covers the
+passing/failing/summary/exit-code contract; reference and tutorial
+gained a bullet each. Full gate green. Second stroke toward v2.29.0.
