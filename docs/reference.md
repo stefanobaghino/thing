@@ -12,7 +12,7 @@ ting                         # interactive REPL (ctrl-d exits)
 ting --check files...        # report errors and warnings without running
 ting --fmt files...          # reformat in place (--fmt-check to verify)
 ting --test dirs...          # run every .ting file as a test
-ting --doc [NAME]            # explain a function, list a module, or list all
+ting --doc [NAMES...]        # explain functions, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
 ting --help | -h             # every option
@@ -308,7 +308,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   module's members, one line each, and so does the path of one of
   your own `.ting` files (its top-level functions with the `#`
   comments above them); no name at all lists every builtin and every
-  stdlib function. Exit 1 for an unknown name.
+  stdlib function. Several names are allowed (`ting --doc len median
+  slug`): the entries are printed in the order asked, separated by a
+  blank line. Exit 1 for an unknown name — the others are still
+  printed.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings

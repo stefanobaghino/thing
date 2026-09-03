@@ -1282,6 +1282,40 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn doc_flag_explains_several_names_at_once() {
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "len", "median", "slug"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    let len_at = stdout.find("len(x)").expect("len missing");
+    let median_at = stdout.find("median(xs)").expect("median missing");
+    let slug_at = stdout.find("slug(s)").expect("slug missing");
+    assert!(len_at < median_at && median_at < slug_at, "{stdout}");
+    // One blank line between entries, none at the end.
+    assert_eq!(stdout.matches("\n\n").count(), 2, "{stdout}");
+    assert!(!stdout.ends_with("\n\n"), "{stdout}");
+
+    // An unknown name fails the run, but the known ones are still printed.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "len", "nosuch", "slug"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(1), "{stdout}{stderr}");
+    assert!(
+        stdout.contains("len(x)") && stdout.contains("slug(s)"),
+        "{stdout}"
+    );
+    assert!(
+        stderr.contains("no builtin, stdlib function, module or file named nosuch"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn doc_flag_explains_a_name_from_the_shell() {
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "median"])

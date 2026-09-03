@@ -34,7 +34,7 @@ fn main() -> ExitCode {
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
                  \x20   [--slow N]                list the N slowest files after the summary\n\
                  \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
-                 \x20 ting --doc [NAME]           explain a builtin or stdlib function;\n\
+                 \x20 ting --doc [NAMES...]       explain builtins or stdlib functions;\n\
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
                  \x20 ting --lsp                  language server on stdio\n\
@@ -68,28 +68,33 @@ fn main() -> ExitCode {
     }
     if args.peek().map(String::as_str) == Some("--doc") {
         args.next();
-        return match args.next() {
-            Some(name) => match repl::doc_text(&name)
-                .or_else(|| repl::doc_index(Some(&name)))
-                .or_else(|| {
-                    // A .ting file of the user's own: its functions.
-                    (name.ends_with(".ting") && std::path::Path::new(&name).is_file())
-                        .then(|| repl::doc_file(&name))
-                        .flatten()
-                }) {
+        let names: Vec<String> = args.collect();
+        if names.is_empty() {
+            repl::say(&repl::doc_index(None).unwrap_or_default());
+            return ExitCode::SUCCESS;
+        }
+        let mut printed = 0;
+        let mut missing = false;
+        for name in &names {
+            match doc_lookup(name) {
                 Some(text) => {
+                    // Entries are separated by a blank line.
+                    if printed > 0 {
+                        repl::say("");
+                    }
                     repl::say(&text);
-                    ExitCode::SUCCESS
+                    printed += 1;
                 }
                 None => {
                     eprintln!("ting: no builtin, stdlib function, module or file named {name}");
-                    ExitCode::FAILURE
+                    missing = true;
                 }
-            },
-            None => {
-                repl::say(&repl::doc_index(None).unwrap_or_default());
-                ExitCode::SUCCESS
             }
+        }
+        return if missing {
+            ExitCode::FAILURE
+        } else {
+            ExitCode::SUCCESS
         };
     }
     if args.peek().map(String::as_str) == Some("--test") {
@@ -194,6 +199,19 @@ fn expand_paths(args: &[String]) -> Vec<String> {
         }
     }
     files
+}
+
+/// What `--doc NAME` explains: a builtin, a stdlib function, a module,
+/// or one of the user's own `.ting` files.
+fn doc_lookup(name: &str) -> Option<String> {
+    repl::doc_text(name)
+        .or_else(|| repl::doc_index(Some(name)))
+        .or_else(|| {
+            // A .ting file of the user's own: its functions.
+            (name.ends_with(".ting") && std::path::Path::new(name).is_file())
+                .then(|| repl::doc_file(name))
+                .flatten()
+        })
 }
 
 fn run_check(mut args: Vec<String>) -> ExitCode {
