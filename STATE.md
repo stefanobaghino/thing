@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 243 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 245 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -140,12 +140,13 @@ holds only the current milestone and the standing rules.
   + audit green — milestone "reading width" complete.
 - 485: replenishment — milestone "the nearest name" (v2.75-v2.76),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) edit-distance helper +
-  "did you mean" on undefined variables; (2) the unknown-member
+- 486: did you mean, on undefined variables (diag::nearest) — one
+  stroke banked toward v2.75.0.
+- Backlog (one per tick, in order): (1) the unknown-member
   warning and its runtime error suggest a member — then RELEASE
-  v2.75.0; (3) --doc suggests the nearest name; (4) unknown options
-  suggest an option; (5) docs + selftests, then RELEASE v2.76.0;
-  (6) health tick + audit.
+  v2.75.0; (2) --doc suggests the nearest name; (3) unknown options
+  suggest an option; (4) docs + selftests, then RELEASE v2.76.0;
+  (5) health tick + audit.
 - Tags: 95 (v2.74.0), 94 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

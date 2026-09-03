@@ -8087,3 +8087,27 @@ undefined variables suggest an in-scope binding or builtin; the
 unknown-member warning and its runtime error suggest a member;
 --doc and the option parser suggest theirs; docs and selftests
 follow.
+
+---
+
+## 2026-09-03 — Iteration 486: did you mean
+
+CI green on 485 (API verdict). Milestone stroke 1: an undefined
+variable now names the nearest thing in scope — `undefined variable
+'cont' (did you mean 'count'?)`. diag::nearest picks it: plain
+Levenshtein over one row of state, a threshold of a third of the
+name (at least one edit), plus a rule for names of three characters
+or more where one starts the other, since `lenght` is three edits
+from `len` and nobody doubts the intent. That last rule corrects
+iteration 485's prose, which called `len` one edit away. Ties go to
+the alphabetically first candidate, so the answer never depends on
+the order a HashMap hands the names over. Env::names walks the
+scope chain, so parameters, locals, top-level bindings and builtins
+are all candidates; assignments to an unbound name get the same
+sentence. Both engines share the helper on Interpreter, so the text
+is byte-identical — the io test asserts that as well as the
+suggestion, the builtin case, the assignment case and a name with
+nothing near it. The two error examples in the reference and the
+tutorial were rerun and now quote what the binary prints. Full gate
+green (245 tests). One stroke banked toward v2.75.0. Next: the
+unknown-member warning and its runtime error suggest a member.
