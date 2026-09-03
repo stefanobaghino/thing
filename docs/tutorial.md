@@ -481,18 +481,28 @@ Everything else ships in the same binary:
   reprints your last line the way the
   formatter would write it, and `:clear` starts over.
 - `ting --check *.ting` reports syntax errors without running
-  anything — wire it into a pre-commit hook.
+  anything, follows `import` to your local modules, and warns about
+  a misspelt stdlib member, an unused top-level binding or an unused
+  parameter — wire it into a pre-commit hook. The playground's
+  check button does the same in the browser.
 - `ting --test tests/` runs every `.ting` file under a directory
   and prints `ok` or `FAIL` per file plus a summary — a test runner
-  with no setup.
+  with no setup (the [Testing](#testing) chapter has its flags).
 - `ting --fmt *.ting` reformats in place; CI can enforce it with
-  `--fmt-check`, and `ting --fmt -` filters stdin to stdout for
-  editor integrations.
-- `ting --lsp` gives any LSP-capable editor diagnostics, hover docs,
+  `--fmt-check`, `--fmt --diff` shows what would change, and
+  `ting --fmt -` filters stdin to stdout for editor integrations.
+- `ting --doc` prints the table of contents — every builtin and
+  stdlib function — and `ting --doc list`, `ting --doc median` or
+  `ting --doc myfile.ting` narrow it to a module, a function, or the
+  functions in your own file with the comments above them.
+- `ting --lsp` gives any LSP-capable editor diagnostics (the same
+  warnings, plus an error on a broken import), hover docs,
   completion, signature help, formatting, outline, definition,
-  references, and rename. Import a stdlib module and the editor
-  knows its functions too: completion lists them, and hovering
-  `l["median"]` shows the signature and its comment.
+  references, rename across open files, folding and links on
+  imports. Import a stdlib module and the editor knows its
+  functions too: completion lists them, and hovering `l["median"]`
+  shows the signature and its comment — as does hovering a
+  function of your own that has a `#` comment above it.
 - Scripts are shell citizens: `ting x.ting | head` exits quietly
   when the reader goes away, and `read_file("-")` reads stdin.
 
