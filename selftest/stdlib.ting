@@ -45,10 +45,10 @@ assert(ma["sqrt"](144) == 12.0, "sqrt exact");
 assert(has(try(fn() { return ma["sqrt"](-1); }), "err"), "sqrt rejects negative");
 
 assert(l["any"]([1, 2, 3], fn(x) { return x > 2; }), "any hit");
-assert(!l["any"]([], fn(x) { return true; }), "any empty is false");
+assert(!l["any"]([], fn(_x) { return true; }), "any empty is false");
 assert(l["all"]([2, 4], fn(x) { return x % 2 == 0; }), "all hit");
 assert(!l["all"]([2, 3], fn(x) { return x % 2 == 0; }), "all miss");
-assert(l["all"]([], fn(x) { return false; }), "all empty is true");
+assert(l["all"]([], fn(_x) { return false; }), "all empty is true");
 assert(l["min_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "b", "min_by");
 assert(l["max_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "aaa", "max_by");
 assert(l["min_by"]([], fn(x) { return x; }) == nil, "min_by empty is nil");
@@ -132,17 +132,17 @@ assert(has(try(fn() { return l["take"]([1], -1); }), "err"), "take negative fail
 assert(has(try(fn() { return l["drop"]([1], -1); }), "err"), "drop negative fails");
 
 assert(l["partition"]([1, 2, 3, 4], fn(x) { return x % 2 == 0; }) == [[2, 4], [1, 3]], "partition");
-assert(l["partition"]([], fn(x) { return true; }) == [[], []], "partition empty");
-assert(has(try(fn() { return l["partition"]([1], fn(x) { return 1; }); }), "err"), "partition non-bool pred fails");
+assert(l["partition"]([], fn(_x) { return true; }) == [[], []], "partition empty");
+assert(has(try(fn() { return l["partition"]([1], fn(_x) { return 1; }); }), "err"), "partition non-bool pred fails");
 
 assert(s["chars"]("héy") == ["h", "é", "y"], "chars");
 assert(s["chars"]("") == [], "chars empty");
 assert(s["reverse"]("héllo") == "olléh", "string reverse");
 assert(s["reverse"]("") == "", "string reverse empty");
 
-assert(m["filter_map"]({"a": 1, "b": 2, "c": 3}, fn(k, v) { return v % 2 == 1; }) == {"a": 1, "c": 3}, "filter_map by value");
-assert(m["filter_map"]({"a": 1, "b": 2}, fn(k, v) { return k == "b"; }) == {"b": 2}, "filter_map by key");
-assert(m["filter_map"]({}, fn(k, v) { return true; }) == {}, "filter_map empty");
+assert(m["filter_map"]({"a": 1, "b": 2, "c": 3}, fn(_k, v) { return v % 2 == 1; }) == {"a": 1, "c": 3}, "filter_map by value");
+assert(m["filter_map"]({"a": 1, "b": 2}, fn(k, _v) { return k == "b"; }) == {"b": 2}, "filter_map by key");
+assert(m["filter_map"]({}, fn(_k, _v) { return true; }) == {}, "filter_map empty");
 assert(m["has_all"]({"a": 1, "b": 2}, ["a", "b"]), "has_all");
 assert(!m["has_all"]({"a": 1}, ["a", "z"]), "has_all missing");
 assert(m["has_all"]({}, []), "has_all empty keys");
@@ -226,7 +226,7 @@ assert(!ma["is_prime"](91) && !ma["is_prime"](100), "is_prime composites");
 assert(filter(range(20), ma["is_prime"]) == [2, 3, 5, 7, 11, 13, 17, 19], "is_prime sieve");
 
 assert(l["scan"]([1, 2, 3], 0, fn(a, x) { return a + x; }) == [0, 1, 3, 6], "scan running sum");
-assert(l["scan"]([], 7, fn(a, x) { return a; }) == [7], "scan empty keeps init");
+assert(l["scan"]([], 7, fn(a, _x) { return a; }) == [7], "scan empty keeps init");
 assert(l["scan"](["a", "b"], "", fn(a, x) { return a + x; }) == ["", "a", "ab"], "scan strings");
 
 assert(s["strip_prefix"]("v2.24.0", "v") == "2.24.0", "strip_prefix");
@@ -274,7 +274,7 @@ assert(l["sort_with"]([], by_len_desc) == [], "sort_with empty");
 assert(l["sort_with"]([5], fn(p, q) { return p - q; }) == [5], "sort_with single");
 let big = l["reverse"](range(300));
 assert(l["sort_with"](big, fn(p, q) { return p - q; }) == range(300), "sort_with 300 elements");
-assert(has(try(fn() { return l["sort_with"]([1, 2], fn(p, q) { return true; }); }), "err"), "sort_with non-int comparator fails");
+assert(has(try(fn() { return l["sort_with"]([1, 2], fn(_p, _q) { return true; }); }), "err"), "sort_with non-int comparator fails");
 
 assert(s["table"]([["a", "bb"], ["ccc", "d"]]) == "a    bb\nccc  d", "table aligns columns");
 assert(s["table"]([["x"], ["yy", "z"]]) == "x\nyy  z", "table ragged rows");
@@ -309,7 +309,7 @@ assert(j["merge_in"](5, {"a": 1}) == {"a": 1}, "merge_in non-map left is replace
 assert(j["merge_in"]({}, {}) == {}, "merge_in empty");
 
 assert(l["zip_with"]([1, 2, 3], [10, 20], fn(p, q) { return p + q; }) == [11, 22], "zip_with trims");
-assert(l["zip_with"]([], [1], fn(p, q) { return p; }) == [], "zip_with empty");
+assert(l["zip_with"]([], [1], fn(p, _q) { return p; }) == [], "zip_with empty");
 assert(l["cartesian"]([1, 2], ["a", "b"]) == [[1, "a"], [1, "b"], [2, "a"], [2, "b"]], "cartesian");
 assert(l["cartesian"]([1], []) == [], "cartesian empty side");
 

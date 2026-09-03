@@ -235,6 +235,33 @@ fn check_flag_warns_about_unused_top_level_lets() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check` warns about a parameter the function body never names;
+/// `_`-prefixed parameters and used ones are silent.
+#[test]
+fn check_flag_warns_about_unused_params() {
+    let path = std::env::temp_dir().join(format!("ting-check-params-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "fn add(a, b) { return a; }\nlet f = fn(x, _ignored) { return x + 1; };\nprint(add(1, 2), f(3));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: parameter `b` is never used"),
+        "{stderr}"
+    );
+    assert!(
+        !stderr.contains("`a`") && !stderr.contains("`x`") && !stderr.contains("_ignored"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

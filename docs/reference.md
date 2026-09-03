@@ -260,8 +260,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   Clean files may still get warnings (an imported stdlib module
   indexed with a name it does not export; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
-  only of bindings is a module and exempt); warnings never change
-  the exit status.
+  only of bindings is a module and exempt; a function parameter its
+  body never names, same opt-out); warnings never change the exit
+  status.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
   emits Test Anything Protocol output for CI consumers; `-j N` runs
@@ -281,7 +282,7 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors, and warnings for an
   imported stdlib module indexed with a name it does not export and
-  for unused top-level bindings),
+  for unused top-level bindings and parameters),
   hover docs for every builtin (and for imported stdlib functions,
   and the signature of the file's own functions),
   completion

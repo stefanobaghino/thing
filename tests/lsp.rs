@@ -510,6 +510,38 @@ fn malformed_message_does_not_end_the_session() {
 }
 
 #[test]
+fn unused_parameter_is_a_warning() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///p.ting","text":"fn f(a, b) { return a; }\nprint(f(1, 2));\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(
+        diag.contains("parameter `b` is never used") && diag.contains("\"severity\":2"),
+        "{diag}"
+    );
+    assert!(!diag.contains("`a`"), "{diag}");
+    // The range is the parameter: line 0, character 8.
+    assert!(
+        diag.contains(r#""start":{"character":8,"line":0}"#),
+        "{diag}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn unused_top_level_let_is_a_warning() {
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(

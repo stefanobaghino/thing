@@ -487,11 +487,94 @@ pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
     out
 }
 
+/// Parameters no identifier in the function's body ever names, from
+/// the token stream alone: `fn` `(` params `)` then a brace-balanced
+/// body. Underscore-prefixed names are exempt. A nested function that
+/// reuses the name counts as a use (a rare false negative, never a
+/// false positive).
+pub fn unused_params(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    let mut i = 0;
+    while i < tokens.len() {
+        if !matches!(tokens[i].kind, lexer::TokenKind::Fn) {
+            i += 1;
+            continue;
+        }
+        // Skip an optional name, expect `(`.
+        let mut j = i + 1;
+        if matches!(
+            tokens.get(j).map(|t| &t.kind),
+            Some(lexer::TokenKind::Ident(_))
+        ) {
+            j += 1;
+        }
+        if !matches!(
+            tokens.get(j).map(|t| &t.kind),
+            Some(lexer::TokenKind::LParen)
+        ) {
+            i += 1;
+            continue;
+        }
+        let mut params: Vec<(usize, usize, &str)> = Vec::new();
+        j += 1;
+        while let Some(t) = tokens.get(j) {
+            match &t.kind {
+                lexer::TokenKind::Ident(n) => params.push((t.span.start, t.span.end, n)),
+                lexer::TokenKind::RParen => break,
+                _ => {}
+            }
+            j += 1;
+        }
+        // Body: the next `{` through its matching `}`.
+        let Some(open) = tokens[j..]
+            .iter()
+            .position(|t| matches!(t.kind, lexer::TokenKind::LBrace))
+            .map(|k| j + k)
+        else {
+            break;
+        };
+        let mut depth = 0usize;
+        let mut close = open;
+        for (k, t) in tokens.iter().enumerate().skip(open) {
+            match t.kind {
+                lexer::TokenKind::LBrace => depth += 1,
+                lexer::TokenKind::RBrace => {
+                    depth -= 1;
+                    if depth == 0 {
+                        close = k;
+                        break;
+                    }
+                }
+                _ => {}
+            }
+        }
+        let body = &tokens[open..=close];
+        for (start, end, name) in params {
+            if name.starts_with('_') {
+                continue;
+            }
+            let used = body
+                .iter()
+                .any(|t| matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name));
+            if !used {
+                out.push((start, end, format!("parameter `{name}` is never used")));
+            }
+        }
+        i += 1;
+    }
+    out
+}
+
 /// Every semantic warning for a source: unknown stdlib members, then
-/// unused top-level bindings. Shared by --check and the LSP.
+/// unused top-level bindings, then unused parameters. Shared by
+/// --check and the LSP.
 pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     let mut all = unknown_stdlib_members(src);
     all.extend(unused_top_level_lets(src));
+    all.extend(unused_params(src));
     all
 }
 
