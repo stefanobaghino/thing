@@ -22,7 +22,7 @@ current orientation.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff), --check (dirs, stdin, follows local imports, three
   warnings), --doc (name, module, file, or everything), --test (dirs,
-  --filter, --tap, -j, --slow, --fail-fast), --lsp (twelve
+  --filter, --tap, -j, --slow, --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.
 - Distribution: six release archives per tag since v2.30.0 (x86_64

@@ -5,7 +5,7 @@ A tiny, zero-dependency scripting language. A thing, minus the h.
 `ting` is implemented in Rust with no third-party dependencies. One
 binary contains everything: two execution engines (a bytecode VM and a
 reference tree-walking interpreter), a REPL, a canonical formatter
-(`--fmt`), a static checker (`--check`), and a twelve-capability
+(`--fmt`), a static checker (`--check`), and a thirteen-capability
 language server (`--lsp`).
 
 > This project is being built autonomously by Claude Code as an experiment;
@@ -44,9 +44,10 @@ parameters; `--doc NAME` for any builtin or stdlib function, `--doc
 MODULE` for a module's members and `--doc` alone for the whole table
 of contents; and `--lsp`, a language server with diagnostics (the
 same warnings), hover, completion, signature help, formatting,
-symbols and workspace symbols, definition, references, rename across
-open files, folding, document links, and a quickfix for those
-misspellings. A runtime error inside an imported module points at the
+symbols and workspace symbols, definition, references, highlights of
+the symbol under the cursor, rename across open files (declined
+early on keywords and builtins), folding, document links, and a
+quickfix for those misspellings. A runtime error inside an imported module points at the
 module's own line, with a note naming the call site. The
 [reference](docs/reference.md#tooling) has the details.
 

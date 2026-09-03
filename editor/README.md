@@ -64,10 +64,11 @@ module indexed with a name it does not export, an unused top-level
 binding, an unused parameter). Beyond diagnostics it provides hover
 (builtins, stdlib functions and the file's own), completion,
 signature help, formatting, document and workspace symbols,
-go-to-definition, references, rename across open files, folding,
-document links on imports, and a quickfix for misspelt stdlib
-members — twelve capabilities, all from the one binary with no
-configuration. Point any LSP client at it:
+go-to-definition, references, highlights of the symbol under the
+cursor, rename across open files (with a prepare step that declines
+keywords and builtins), folding, document links on imports, and a
+quickfix for misspelt stdlib members — thirteen capabilities, all
+from the one binary with no configuration. Point any LSP client at it:
 
 **Neovim** (built-in LSP):
 
