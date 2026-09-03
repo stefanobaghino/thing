@@ -599,6 +599,165 @@ fn diagnostics(src: &str, uri: &str) -> Value {
 /// convention, and a file consisting only of bindings is a module
 /// whose names are exports. (byte start, byte end, message) per
 /// binding.
+/// Names read but bound nowhere the checker can see: not a parameter,
+/// not a `let` in an enclosing block, not a builtin. The walk mirrors
+/// the interpreter's scoping, with one deliberate slackening — every
+/// `let` of a block is in scope for the whole block, since a function
+/// defined late may be called from one defined early — so a name it
+/// reports is one no run could resolve.
+pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    let mut scopes: Vec<std::collections::HashSet<String>> = vec![
+        Builtin::ALL
+            .iter()
+            .map(|b| b.name().to_string())
+            .collect::<std::collections::HashSet<String>>(),
+    ];
+    let mut out = Vec::new();
+    walk_block(&program, &tokens, &mut scopes, &mut out);
+    out.sort_by_key(|(start, _, _)| *start);
+    out
+}
+
+type Scopes = Vec<std::collections::HashSet<String>>;
+type Findings = Vec<(usize, usize, String)>;
+
+fn walk_block(
+    stmts: &[crate::ast::Stmt],
+    tokens: &[lexer::Token],
+    scopes: &mut Scopes,
+    out: &mut Findings,
+) {
+    let mut names = std::collections::HashSet::new();
+    for s in stmts {
+        if let crate::ast::StmtKind::Let(name, _) = &s.kind {
+            names.insert(name.clone());
+        }
+    }
+    scopes.push(names);
+    for s in stmts {
+        walk_stmt(s, tokens, scopes, out);
+    }
+    scopes.pop();
+}
+
+fn walk_stmt(
+    stmt: &crate::ast::Stmt,
+    tokens: &[lexer::Token],
+    scopes: &mut Scopes,
+    out: &mut Findings,
+) {
+    use crate::ast::StmtKind as S;
+    match &stmt.kind {
+        S::Let(_, e) => walk_expr(e, tokens, scopes, out),
+        S::Assign(name, e) => {
+            if !bound(scopes, name) {
+                report(name, stmt.span.start, tokens, scopes, out);
+            }
+            walk_expr(e, tokens, scopes, out);
+        }
+        S::IndexAssign(base, idx, value) => {
+            walk_expr(base, tokens, scopes, out);
+            walk_expr(idx, tokens, scopes, out);
+            walk_expr(value, tokens, scopes, out);
+        }
+        S::Expr(e) => walk_expr(e, tokens, scopes, out),
+        S::Block(stmts) => walk_block(stmts, tokens, scopes, out),
+        S::If(cond, then, els) => {
+            walk_expr(cond, tokens, scopes, out);
+            walk_stmt(then, tokens, scopes, out);
+            if let Some(e) = els {
+                walk_stmt(e, tokens, scopes, out);
+            }
+        }
+        S::While(cond, body) => {
+            walk_expr(cond, tokens, scopes, out);
+            walk_stmt(body, tokens, scopes, out);
+        }
+        S::For(var, iterable, body) => {
+            walk_expr(iterable, tokens, scopes, out);
+            scopes.push(std::iter::once(var.clone()).collect());
+            walk_stmt(body, tokens, scopes, out);
+            scopes.pop();
+        }
+        S::Return(Some(e)) => walk_expr(e, tokens, scopes, out),
+        S::Break | S::Continue | S::Return(None) => {}
+    }
+}
+
+fn walk_expr(
+    expr: &crate::ast::Expr,
+    tokens: &[lexer::Token],
+    scopes: &mut Scopes,
+    out: &mut Findings,
+) {
+    use crate::ast::ExprKind as E;
+    match &expr.kind {
+        E::Var(name) => {
+            if !bound(scopes, name) {
+                report(name, expr.span.start, tokens, scopes, out);
+            }
+        }
+        E::List(items) => {
+            for e in items {
+                walk_expr(e, tokens, scopes, out);
+            }
+        }
+        E::Map(entries) => {
+            for (k, v) in entries {
+                walk_expr(k, tokens, scopes, out);
+                walk_expr(v, tokens, scopes, out);
+            }
+        }
+        E::Unary(_, e) => walk_expr(e, tokens, scopes, out),
+        E::Binary(_, a, b) => {
+            walk_expr(a, tokens, scopes, out);
+            walk_expr(b, tokens, scopes, out);
+        }
+        E::Call(callee, args) => {
+            walk_expr(callee, tokens, scopes, out);
+            for a in args {
+                walk_expr(a, tokens, scopes, out);
+            }
+        }
+        E::Index(base, idx) => {
+            walk_expr(base, tokens, scopes, out);
+            walk_expr(idx, tokens, scopes, out);
+        }
+        E::Fn(params, body) => {
+            scopes.push(params.iter().cloned().collect());
+            walk_block(body, tokens, scopes, out);
+            scopes.pop();
+        }
+        E::Int(_) | E::Float(_) | E::Str(_) | E::Bool(_) | E::Nil => {}
+    }
+}
+
+fn bound(scopes: &Scopes, name: &str) -> bool {
+    scopes.iter().any(|s| s.contains(name))
+}
+
+/// One finding, spanning the identifier itself (found in the token
+/// stream at or after `from`), with the nearest name in scope.
+fn report(name: &str, from: usize, tokens: &[lexer::Token], scopes: &Scopes, out: &mut Findings) {
+    let Some(tok) = tokens.iter().find(|t| {
+        t.span.start >= from && matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name)
+    }) else {
+        return;
+    };
+    let visible: Vec<&str> = scopes.iter().flatten().map(String::as_str).collect();
+    let message = match crate::diag::nearest(name, visible) {
+        Some(near) => format!("`{name}` is bound nowhere (did you mean `{near}`?)"),
+        None => format!("`{name}` is bound nowhere"),
+    };
+    out.push((tok.span.start, tok.span.end, message));
+}
+
 pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
@@ -825,6 +984,7 @@ pub fn shadowed_builtins(src: &str) -> Vec<(usize, usize, String)> {
 /// --check and the LSP.
 pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     let mut all = unknown_stdlib_members(src);
+    all.extend(unbound_names(src));
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));

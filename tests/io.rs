@@ -1284,6 +1284,61 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn check_flag_warns_about_a_name_bound_nowhere() {
+    let dir = std::env::temp_dir().join("ting-unbound");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("u.ting");
+    std::fs::write(&script, "fn g(a) { return a + b; }\nprint(g(1));\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "warnings do not fail the check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("`b` is bound nowhere"), "{stderr}");
+    assert!(stderr.contains(":1:22:"), "points at the name: {stderr}");
+
+    // The nearest name in scope is named.
+    std::fs::write(&script, "let total = 1;\nprint(totl);\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("`totl` is bound nowhere (did you mean `total`?)"),
+        "{stderr}"
+    );
+
+    // Forward references, loop variables, parameters, closures and
+    // builtins are all bound: nothing to report.
+    std::fs::write(
+        &script,
+        "let xs = [1, 2];\nfn later(n) { return helper(n); }\nfn helper(n) { return n * 2; }\nfor x in xs {\n  let y = x + 1;\n  print(later(y));\n}\nprint(len(xs));\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("bound nowhere"), "{stderr}");
+
+    // An assignment to a name that was never bound is reported too.
+    std::fs::write(&script, "nope = 1;\nprint(nope);\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("`nope` is bound nowhere"), "{stderr}");
+}
+
+#[test]
 fn unknown_options_suggest_the_nearest_option() {
     for (typo, meant) in [("--fmr", "--fmt"), ("--tst", "--test"), ("--lps", "--lsp")] {
         let out = Command::new(env!("CARGO_BIN_EXE_ting"))

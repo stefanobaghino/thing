@@ -290,7 +290,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a
   local path are checked too, each once under its own path.
-  Clean files may still get warnings (an imported stdlib module
+  Clean files may still get warnings (a name that is bound nowhere
+  the checker can see — not a parameter, not a `let` in an enclosing
+  block, not a builtin — with the nearest name in scope suggested;
+  an imported stdlib module
   indexed with a name it does not export; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
   only of bindings is a module and exempt; a `let` inside a block
@@ -324,9 +327,10 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings
-  for an imported stdlib module indexed with a name it does not
-  export, for unused bindings, top-level or local, and unused
-  parameters, and for a name that shadows a builtin),
+  for a name bound nowhere, for an imported stdlib module indexed
+  with a name it does not export, for unused bindings, top-level or
+  local, and unused parameters, and for a name that shadows a
+  builtin),
   hover docs for every builtin (and for imported stdlib functions,
   and the file's own functions with the `#` comment above them),
   completion
