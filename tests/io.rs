@@ -404,6 +404,32 @@ fn test_flag_fail_fast_skips_the_rest() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
+/// `--doc FILE.ting` lists the user's own top-level functions with the
+/// comment above each, the way a stdlib module is listed.
+#[test]
+fn doc_flag_lists_a_user_file() {
+    let path = std::env::temp_dir().join(format!("ting-doc-file-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "# Adds one. Never fails.\nfn inc(n) { return n + 1; }\n\nfn helper() { return 0; }\nlet x = 1;\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(
+        stdout.starts_with(&format!("{}:\n", path.display())),
+        "{stdout}"
+    );
+    assert!(stdout.contains("\n  inc(n)  Adds one.\n"), "{stdout}");
+    assert!(stdout.contains("\n  helper()"), "{stdout}");
+    assert!(!stdout.contains("let x"), "{stdout}");
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
@@ -702,7 +728,7 @@ fn doc_flag_lists_everything_or_a_module() {
     assert_eq!(out.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
-        stderr.contains("no builtin, stdlib function or module named nosuch"),
+        stderr.contains("no builtin, stdlib function, module or file named nosuch"),
         "{stderr}"
     );
 }
@@ -736,7 +762,7 @@ fn doc_flag_explains_a_name_from_the_shell() {
     assert_eq!(out.status.code(), Some(1));
     assert!(
         String::from_utf8_lossy(&out.stderr)
-            .contains("no builtin, stdlib function or module named nosuchthing")
+            .contains("no builtin, stdlib function, module or file named nosuchthing")
     );
 }
 
