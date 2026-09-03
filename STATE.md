@@ -119,12 +119,14 @@ current orientation.
   executed cold here.
 - v2.35.0 RELEASED and verified (56th tag); aarch64 glibc archive
   executed cold here. The 279 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  docs: a "testing" chapter in the tutorial (lib/test.ting +
-  --test); (b) LSP: document highlights / folding ranges; (c)
-  lib/list.ting zip_with / cartesian; (d) `--fmt` idempotence sweep
-  over fuzz-generated programs as a test; (e) bench: a JSON-heavy
-  script; (f) REPL: `:load` relative-path base dir sanity.
+- 287: replenishment — milestone "trust and teach" (v2.36–v2.38),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) tutorial "Testing" chapter
+  with an executed snippet; (2) formatter fuzz test over generated
+  programs (idempotent + AST-identical), generator moved to a shared
+  test helper; (3) lib/list.ting zip_with/cartesian; (4)
+  bench/json.ting + baseline row; (5) LSP folding ranges, protocol
+  test. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

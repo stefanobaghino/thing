@@ -4290,3 +4290,35 @@ through a pipe, check_approx passes on both engines. Site: all
 resources 200, changelog shows 2.35.0, stdlib page lists
 check_approx. 56 tags, 55 verified. The 279 milestone is complete;
 next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 287: replenishment — milestone "trust and teach"
+
+CI green on 286b (API verdict). Three milestones since the restart
+have each finished in eight to ten ticks. The pattern in what they
+left behind: every tool is now tested by CI, but the *formatter* is
+tested only on the hand-written corpus, and the tutorial still
+stops before the test runner it advertises. Chosen milestone, five
+strokes:
+
+1. Tutorial "Testing" chapter: lib/test.ting's check/check_eq/
+   check_approx/summary in an executed snippet (all passing, so
+   summary exits 0 and the expected block is the summary line),
+   then `ting --test tests/` and `--filter` in prose.
+2. Formatter fuzz: the differential generator's programs run
+   through --fmt with the two invariants the corpus test already
+   checks — idempotent, AST-identical — over thousands of generated
+   programs. The generator moves to a shared test helper so both
+   suites use one grammar.
+3. lib/list.ting zip_with(a, b, f) and cartesian(a, b): the two
+   pairwise constructions still missing beside zip. Selftests.
+4. bench/json.ting: json_parse/json_str round trips plus get_in/
+   set_in/merge_in on a generated document, so the json module and
+   the JSON builtins get a number; baseline row on this host.
+5. LSP folding ranges for brace blocks (foldingRangeProvider), from
+   token depth like the formatter; protocol test.
+
+Rejected: document highlights (an editor already does this
+lexically), a REPL :load base-dir change (imports resolve relative
+to the file today — correct, and documented).
