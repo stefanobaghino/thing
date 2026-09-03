@@ -7747,3 +7747,14 @@ reformatted, 0 unchanged, 1 failed" and exits 1; key_of returns
 passes 11/11 on each. CI and Pages green on the release commit.
 Ninety-two tags, ninety-one verified. Next: the reference and
 tutorial sentences.
+
+---
+
+## 2026-09-03 — Iteration 467: the formatter's contract, written down
+
+CI green on 466b (API verdict). Milestone stroke 3: the
+reference's --fmt bullet now states that every file is processed,
+what is reported and skipped, the summary line and its check-mode
+wording, and what exit 1 means; the tutorial's closing bullet says
+the same in a sentence. Tutorial and docs guards green. One stroke
+banked toward v2.72.0. Next: plural.

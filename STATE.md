@@ -120,8 +120,10 @@ holds only the current milestone and the standing rules.
   (v2.71–v2.72), reasoning in LOG.md.
 - v2.71.0 VERIFIED (92nd tag; strokes 461, 464, 465; both aarch64
   archives executed here).
-- Backlog after the release (in order): (3) reference and tutorial;
-  (4) lib/string.ting plural, selftests; (5) health tick + audit.
+- 467: the formatter's contract in the docs — one stroke banked
+  toward v2.72.0.
+- Backlog (in order): (4) lib/string.ting plural, selftests; (5)
+  health tick + audit; then replenish.
 - Tags: 92 (v2.71.0), 91 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
