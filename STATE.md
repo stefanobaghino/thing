@@ -105,12 +105,16 @@ current orientation.
   (correction, unreleased).
 - v2.32.0 RELEASED and verified (54th tag; musl archive executed
   cold here). The 264 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  `--test` filtering by name substring; (b) LSP: rename/references
-  for stdlib member keys; (c) a `lib/json.ting` helper module
-  (pretty paths, get_in/set_in); (d) examples: a small
-  data-pipeline example reading stdin; (e) health tick (bench on the
-  rebased baseline, big fuzz sweep on both fuzzers).
+- 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) lib/json.ting sixth module:
+  get_in/set_in/paths, EMBEDDED_STDLIB entry, stdlib.md section,
+  selftests, tutorial "five modules" → six; (2) examples/
+  pipeline.ting reading stdin with a built-in fallback, cookbook
+  regen; (3) `--check` reports the unknown-stdlib-member warning
+  (shared with the LSP), io test; (4) `--test --filter SUBSTR`, io
+  test; (5) health tick (bench, both fuzzers, distribution audit).
+  Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

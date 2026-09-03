@@ -3996,3 +3996,39 @@ in the shipped binary — on both engines. Site: all resources 200,
 changelog shows 2.32.0, retrospective carries the fifth act. 54
 tags, 53 verified. The 264 milestone is complete; next tick
 replenishes.
+
+---
+
+## 2026-09-03 — Iteration 272: replenishment — milestone "data in, data out"
+
+CI green on 271b (API verdict). The 264 milestone took eight ticks
+and produced two releases and one corrected claim. Where the seams
+are now: the stdlib has 84 functions across five modules but
+nothing for nested data, the checker knows only syntax while the
+editor knows a first semantic warning, and every example builds its
+input inline — none reads anything. Chosen milestone, five strokes:
+
+1. lib/json.ting, a sixth embedded module for nested values:
+   get_in(v, path) with a list of keys/indices (nil when the path
+   misses), set_in(v, path, x) returning a fresh value with copies
+   along the path only, and paths(v) listing every leaf path. Needs
+   the EMBEDDED_STDLIB entry, a stdlib.md section, selftests, and
+   the tutorial's "five modules" sentence corrected to six.
+2. examples/pipeline.ting: reads records from stdin via
+   read_file("-"), falling back to a built-in sample when stdin is
+   empty (the examples harness gives it none), aggregates with the
+   stdlib and prints a table — the first example that consumes
+   input; cookbook regenerates.
+3. `--check` reports the unknown-stdlib-member warning too: the
+   LSP's text scan moves behind check_source so the CLI and the
+   editor share one semantic check; warnings print to stderr, exit
+   status stays 0 unless there are errors. io test.
+4. `--test --filter SUBSTR`: run only files whose path contains the
+   substring, for iterating on one test in a big tree. io test.
+5. Health tick: bench against the rebased baseline, a big sweep on
+   both fuzzers, distribution audit at 55+ tags.
+
+Rejected: LSP rename for stdlib member keys (renaming a library
+function's call sites is not something a user does), and a
+`lib/json.ting` that re-implements parsing (json_parse is a builtin;
+the module is about navigation, not syntax).
