@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.71.0 (2026-09-03)
+
+- `--fmt`, `--fmt-check`, `--fmt --diff` and `--check` process every
+  file before failing: a file that cannot be read, does not lex or
+  cannot be written is reported and the run continues, with exit 1
+  at the end.
+- A multi-file `--fmt` run ends with a summary line.
+- lib/map.ting: `key_of(m, v)`.
+
 ## v2.70.0 (2026-09-03)
 
 - `ting --check --strict`: warnings fail the check.

@@ -7724,3 +7724,12 @@ two-file check, and the absence for one file (the first edit
 script missed a rustfmt-reflowed anchor and stopped before any
 commit). Full gate green (239 tests). Three strokes banked (461,
 464, 465) — v2.71.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 466: v2.71.0
+
+key_of, every-file processing in the formatter and checker, the
+formatter's summary line. CI green on 465 (API verdict). Full gate
+green, stdlib selftests pass on both engines. Tagging v2.71.0
+(92nd tag).

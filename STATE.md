@@ -118,12 +118,13 @@ holds only the current milestone and the standing rules.
   --fmt over a directory stops at the first file that fails to lex.
 - 463: replenishment — milestone "every file, every time"
   (v2.71–v2.72), reasoning in LOG.md.
-- 464: --fmt and --check process every file; 465: --fmt summary —
-  three strokes banked (461, 464, 465); RELEASE v2.71.0 next tick
-  if quiet.
+- v2.71.0 TAGGED (92nd tag; strokes 461, 464, 465): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (--fmt over a directory with a broken file, key_of,
+  selftests).
 - Backlog after the release (in order): (3) reference and tutorial;
   (4) lib/string.ting plural, selftests; (5) health tick + audit.
-- Tags: 91 (v2.70.0), 90 verified; v2.29.0 is publicly marked broken
+- Tags: 92 (v2.71.0), 90 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
