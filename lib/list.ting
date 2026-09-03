@@ -96,6 +96,18 @@ fn max_by(xs, key) {
   return best;
 }
 
+# [smallest, largest] of the elements in one pass; nil for an empty list.
+fn extent(xs) {
+  if len(xs) == 0 { return nil; }
+  let lo = xs[0];
+  let hi = xs[0];
+  for x in xs {
+    if x < lo { lo = x; }
+    if x > hi { hi = x; }
+  }
+  return [lo, hi];
+}
+
 # Split into sublists of n (the last may be shorter); n must be > 0.
 fn chunk(xs, n) {
   if n <= 0 { fail("chunk: size must be positive"); }

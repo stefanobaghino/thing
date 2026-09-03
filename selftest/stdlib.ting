@@ -52,6 +52,10 @@ assert(l["all"]([], fn(x) { return false; }), "all empty is true");
 assert(l["min_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "b", "min_by");
 assert(l["max_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "aaa", "max_by");
 assert(l["min_by"]([], fn(x) { return x; }) == nil, "min_by empty is nil");
+assert(l["extent"]([3, 1, 4, 1, 5]) == [1, 5], "extent");
+assert(l["extent"](["pear", "apple", "fig"]) == ["apple", "pear"], "extent strings");
+assert(l["extent"]([7]) == [7, 7], "extent singleton");
+assert(l["extent"]([]) == nil, "extent empty is nil");
 
 assert(m["values"]({"b": 2, "a": 1}) == [1, 2], "values sorted by key");
 assert(m["values"]({}) == [], "values empty");
