@@ -39,6 +39,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `drop(xs, n)` | everything after the first `n` elements |
 | `partition(xs, pred)` | `[matching, rest]` split by `pred`, both in input order |
 | `window(xs, n)` | sliding windows of `n` consecutive elements (empty if shorter) |
+| `first(xs)` | the first element, or `nil` on empty |
+| `last(xs)` | the last element, or `nil` on empty |
 
 ## lib/string.ting
 

@@ -226,3 +226,15 @@ fn count_by(xs, key) {
   }
   return out;
 }
+
+# The first element, or nil when the list is empty.
+fn first(xs) {
+  if len(xs) == 0 { return nil; }
+  return xs[0];
+}
+
+# The last element, or nil when the list is empty.
+fn last(xs) {
+  if len(xs) == 0 { return nil; }
+  return xs[len(xs) - 1];
+}
