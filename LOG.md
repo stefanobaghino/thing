@@ -5146,3 +5146,18 @@ numbering in order with the failing file's diagnostic as comments,
 and dedent agrees on the reference engine. Site: all resources 200,
 changelog shows 2.46.0, tutorial carries the shell-scripting
 chapter. 67 tags, 66 verified.
+
+---
+
+## 2026-09-03 — Iteration 335: rename across open documents
+
+CI green on 334b (API verdict). Milestone stroke 4: rename_result
+now takes the document map and returns a WorkspaceEdit with one
+change list per open document in which the identifier occurs
+(documents in uri order), so renaming in one file updates the
+others an editor has open — the second request that reads across
+the map after workspace symbols. The protocol test opens a document
+that uses the name and one that does not, and checks four edits
+across two uris. Reference line updated. Full gate green (206
+tests). First stroke toward v2.47.0; the 330 milestone's building
+strokes are done.
