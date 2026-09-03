@@ -3383,3 +3383,15 @@ succeeds on FAILED as well as ok. So 6fb11a9 is red on CI and
 e2f915b (the reworded entry) is the fix. Two lessons, both now in
 STATE.md: post-LOG test runs must assert `test result: ok`, and
 the angle-bracket rule applies to prose about file patterns too.
+
+---
+
+## 2026-09-03 — Iteration 239: interleave
+
+CI green on 238b (API verdict); the only red run in the window is
+6fb11a9, the guard slip, sandwiched between green commits. lib/
+list.ting gains interleave(a, b): alternate starting with a, then
+append whichever tail remains — the counterpart to zip that keeps
+every element instead of trimming. Four assertions, stdlib.md row.
+Full gate green on both engines. Third stroke banked — v2.25.0 next
+tick if quiet.
