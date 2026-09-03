@@ -143,14 +143,13 @@ current orientation.
   executed cold here.
 - v2.43.0 RELEASED and verified (64th tag); aarch64 glibc archive
   executed cold here. The 314 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a) a
-  README refresh (feature list has drifted: runner, TAP, six
-  modules, eleven LSP capabilities); (b) lib/math.ting stats:
-  variance/stddev (stats example computes them by hand); (c)
-  `--test` summary counts in the human output per directory; (d)
-  playground: a "load example" dropdown driven by examples/ (needs
-  build.sh work); (e) LSP: document links for import() paths; (f)
-  tutorial: modules chapter mentions --doc.
+- 322: replenishment — milestone "front door" (v2.44–v2.46),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) README status/tooling
+  refresh; (2) lib/math.ting variance/stddev + stats example
+  dogfood, cookbook regen; (3) LSP document links for import()
+  paths, protocol test; (4) tutorial modules chapter mentions
+  :doc/--doc; (5) health tick + audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

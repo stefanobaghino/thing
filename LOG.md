@@ -4892,3 +4892,32 @@ engines, and the released `--lsp` advertises
 workspaceSymbolProvider. Site: all resources 200, changelog shows
 2.43.0. 64 tags, 63 verified. The 314 milestone is complete; next
 tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 322: replenishment — milestone "front door"
+
+CI green on 321b (API verdict). Eight milestones since the restart,
+sixty-four tags. The README's status paragraph still describes a
+REPL with two meta-commands and never mentions the runner, the
+checker's directories, --doc, TAP or the cookbook: the front door
+has drifted three milestones behind the house. Five strokes:
+
+1. README refresh: the status and tooling paragraphs rewritten to
+   what ships today (seven REPL meta-commands, --test with
+   directories/--filter/--tap, --check and --fmt over directories,
+   --doc, eleven LSP capabilities, the cookbook), kept as prose
+   with links rather than a feature list that drifts again.
+2. lib/math.ting variance(xs) and stddev(xs) (population), and the
+   stats example stops computing them by hand — cookbook regen.
+3. LSP document links: every import("...") string becomes a
+   DocumentLink to the file resolved relative to the document (or
+   nothing for an embedded module with no file), the twelfth
+   capability; protocol test.
+4. Tutorial modules chapter mentions `:doc` and `--doc` as the way
+   to read a stdlib function without opening its source.
+5. Health tick + distribution audit.
+
+Deferred: a playground "load example" dropdown (needs build.sh and
+JavaScript work — a milestone of its own if the site ever warrants
+it).
