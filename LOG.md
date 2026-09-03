@@ -5245,3 +5245,18 @@ example's stem and first code line appear in the file and the
 entry count matches, naming the regeneration command on failure,
 like the cookbook's. Full gate green (207 tests). The Pages deploy
 of this commit is the live proof. First stroke toward v2.48.0.
+
+---
+
+## 2026-09-03 — Iteration 340: percentile
+
+CI and Pages green on 339 (API verdicts), and the deployed
+playground serves examples.js with twelve entries. Milestone stroke
+2: lib/math.ting gains percentile(xs, p), nearest-rank over a sorted
+copy (rank ceil(p·n/100), clamped to 1 for p = 0), with p outside
+[0, 100] and an empty list failing loudly. Six assertions on the
+textbook five-element sample, stdlib.md row. Two attempts at this
+stroke were refused by a transient tool-classifier outage before
+any command ran; the tree was verified clean and the stroke guarded
+against a partial run before retrying. Full gate green on both
+engines. Second stroke toward v2.48.0.

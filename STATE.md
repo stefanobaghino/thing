@@ -157,10 +157,9 @@ current orientation.
   executed cold here. The 330 milestone is complete.
 - 338: replenishment — milestone "the same thing everywhere"
   (v2.48–v2.50), reasoning in LOG.md.
-- 339: playground examples generated from examples/ — milestone
-  stroke 1; first toward v2.48.0.
-- Backlog (one per tick, in order): (2) lib/math.ting percentile,
-  selftests; (3) LSP hover on user-defined fns, protocol test; (4)
+- 339: playground examples; 340: percentile — milestone strokes
+  1–2; two toward v2.48.0.
+- Backlog (one per tick, in order): (3) LSP hover on user-defined fns, protocol test; (4)
   `--test --slow N`, io test; (5) health tick + audit. Release
   after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
