@@ -362,11 +362,66 @@ twice a stroke named in a replenishment turned out to already exist
 — flatten, and trunc, which is `int()` — and was corrected in the
 same log that had promised it, with the reason.
 
+## The tenth act: what the machine says back
+
+Twelve more tags, and the subject was the sentence a person reads
+when something is wrong. It started at the front door. An unknown
+option — `--fmr`, or a plain `-h` — was being taken for the name of
+a script, so the tool opened a file that did not exist instead of
+saying it did not know the flag; unknown options became usage
+errors with their own exit status, `-h` and `-V` joined their long
+forms, and the three exit codes went into `--help` and the
+reference. `--fmt` over a directory had been stopping at the first
+file it could not lex, leaving the rest unformatted and unreported;
+it, and `--check`, now finish the run and end with a summary.
+
+Then the table of contents. `--doc` prints 177 lines, and 81 of
+them ran past eighty columns — a page built to be read in a
+terminal, wrapping wherever the terminal happened to. It now wraps
+at 78, a comment indented under its signature, an index line's
+first sentence beside the name when it fits and underneath when it
+does not; and it takes several names at once, since looking up
+three functions had meant running the tool three times.
+
+The largest thread was the suggestion. ting knew, at every point
+where it gave up on a name, exactly which names it had: the scope,
+a map's keys, a module's exports, the doc index, the option table.
+It said none of them. Now an undefined variable names the nearest
+binding, parameter or builtin; a missing key names the nearest key;
+a misspelt stdlib member is named by the checker, the editor and
+the runtime alike; `--doc` and the command line suggest their own.
+The distance behind all of them took two corrections in as many
+ticks: `medain` was told it meant `mean` until ties started going
+to the longer shared start, and `-x` was told it meant `-V` until
+names under three characters stopped getting suggestions at all —
+a rule that arrived only because a swap of neighbours had first
+been made to cost one edit rather than two, so that `--lps` could
+find `--lsp`.
+
+Suggestions made the next question obvious. The runtime knew a name
+was bound nowhere; the checker, reading the same file, said
+nothing. It walks the scopes now — parameters, loop variables,
+every `let` of a block in scope for the whole block, since a
+function defined late is routinely called from one defined early —
+and reports what no run could resolve, with the suggestion and an
+editor quickfix. It also counts arguments against a function it can
+see, flags a map literal that gives the same key twice, and points
+at a statement that follows a `return`. The proof that none of this
+invents mistakes is the corpus itself: the whole of `lib`,
+`selftest`, `examples` and `bench` scanned on every build, with the
+three warnings it may print pinned by name — a shadowed builtin, an
+unbound name, a wrong-arity call, each one written on purpose to
+test the runtime that catches it. That guard's own first version
+matched `selftest/edge.ting` and went red on the Windows runner,
+which prints a backslash; the fix is a rule now.
+
 ## Where it stands
 
-Eighty-eight tags in, the loop still runs: pick one verifiable
-task, land it green, log the reasons, repeat. The lasting lesson of
-the tooling acts is that at some point the most valuable thing to
-build for a language stops being the language — and the lasting
+A hundred tags in, the loop still runs: pick one verifiable task,
+land it green, log the reasons, repeat. The lasting lesson of the
+tooling acts is that at some point the most valuable thing to build
+for a language stops being the language; the lesson of this last
+one is that the same information can be worth saying twice, once
+before the program runs and once when it does. And the lasting
 lesson of the loop is that a project can be driven indefinitely on
 one honest iteration at a time.
