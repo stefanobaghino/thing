@@ -392,6 +392,39 @@ fn tool_flags_accept_dash_for_stdin() {
 }
 
 #[test]
+fn repl_doc_explains_builtins_and_stdlib_functions() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":doc len\n:doc median\n:doc count\n:doc nosuchthing\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("len("), "{stdout}");
+    assert!(stdout.contains("median(xs)  [lib/list.ting]"), "{stdout}");
+    assert!(stdout.contains("sorted values"), "{stdout}");
+    // `count` exists in two modules: both are listed.
+    assert!(
+        stdout.contains("count(xs, v)  [lib/list.ting]")
+            && stdout.contains("count(s, sub)  [lib/string.ting]"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("(no builtin or stdlib function named nosuchthing)"),
+        "{stdout}"
+    );
+    assert_eq!(out.status.code(), Some(0));
+}
+
+#[test]
 fn repl_fmt_reprints_the_last_chunk_formatted() {
     use std::io::Write as _;
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))

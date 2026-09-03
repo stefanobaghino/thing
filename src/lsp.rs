@@ -443,7 +443,7 @@ fn ident_at(src: &str, line: usize, character: usize) -> Option<String> {
 /// Exported functions of every embedded stdlib module the document
 /// imports (matched on the module-path suffix, so relative paths
 /// count): (module path, name, signature, leading comment).
-fn imported_stdlib_functions(src: &str) -> Vec<(&'static str, String, String, String)> {
+pub fn imported_stdlib_functions(src: &str) -> Vec<(&'static str, String, String, String)> {
     let mut out = Vec::new();
     for (path, source) in crate::eval::embedded_stdlib() {
         if !src.contains(path) {

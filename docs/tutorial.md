@@ -322,7 +322,8 @@ poke at.
 Everything else ships in the same binary:
 
 - The REPL (`ting` with no arguments) keeps state across lines;
-  `:help` lists the builtins, `:load somefile.ting` pulls a script's
+  `:help` lists the builtins, `:doc median` explains one function
+  (builtin or stdlib), `:load somefile.ting` pulls a script's
   definitions into your session to poke at them, `:vars` shows what
   you have bound, `:fmt` reprints your last line the way the
   formatter would write it, and `:clear` starts over.

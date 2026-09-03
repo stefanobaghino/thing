@@ -101,6 +101,36 @@ fn say(text: &str) {
     emit("\n");
 }
 
+/// `:doc NAME` — a builtin's signature and doc line, or a stdlib
+/// function's module, signature and leading comment (every embedded
+/// module is searched, imported or not).
+fn print_doc(name: &str) {
+    if let Some(b) = crate::value::Builtin::ALL.iter().find(|b| b.name() == name) {
+        let (sig, text) = b.doc();
+        say(&format!("{sig}\n  {text}"));
+        return;
+    }
+    // A source that imports every module makes the LSP's scanner
+    // return all stdlib functions.
+    let everything: String = crate::eval::embedded_stdlib()
+        .iter()
+        .map(|(path, _)| format!("import(\"{path}\");\n"))
+        .collect();
+    let hits: Vec<_> = crate::lsp::imported_stdlib_functions(&everything)
+        .into_iter()
+        .filter(|(_, n, _, _)| n == name)
+        .collect();
+    if hits.is_empty() {
+        say(&format!("(no builtin or stdlib function named {name})"));
+    }
+    for (path, _, sig, comment) in hits {
+        say(&format!("{sig}  [{path}]"));
+        if !comment.is_empty() {
+            say(&format!("  {comment}"));
+        }
+    }
+}
+
 /// `:help` — every builtin's signature and one-liner, in name order.
 fn print_help() {
     let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
@@ -110,7 +140,7 @@ fn print_help() {
         say(&format!("{sig:width$}  {text}"));
     }
     say(
-        "(:vars bindings; :load <file> runs a file here; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
+        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
     );
 }
 
@@ -119,7 +149,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         say(&format!(
-            "ting {} — :help builtins, :vars bindings, :load <file>, :fmt, :clear",
+            "ting {} — :help, :doc NAME, :vars, :load <file>, :fmt, :clear",
             env!("CARGO_PKG_VERSION")
         ));
     }
@@ -158,6 +188,12 @@ fn run_inner() -> ExitCode {
         if buffer.is_empty() && line.trim() == ":clear" {
             interp = Interpreter::new(std::io::stdout());
             say("(session cleared)");
+            continue;
+        }
+        if buffer.is_empty()
+            && let Some(name) = line.trim().strip_prefix(":doc ")
+        {
+            print_doc(name.trim());
             continue;
         }
         if buffer.is_empty() && line.trim() == ":fmt" {
