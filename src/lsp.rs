@@ -606,6 +606,29 @@ fn diagnostics(src: &str, uri: &str) -> Value {
 /// defined late may be called from one defined early — so a name it
 /// reports is one no run could resolve.
 pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
+    unbound_findings(src)
+        .into_iter()
+        .map(|f| {
+            let message = match f.near {
+                Some(near) => format!("`{}` is bound nowhere (did you mean `{near}`?)", f.name),
+                None => format!("`{}` is bound nowhere", f.name),
+            };
+            (f.start, f.end, message)
+        })
+        .collect()
+}
+
+/// One name read but never bound, with the nearest name in scope.
+pub(crate) struct UnboundFinding {
+    pub start: usize,
+    pub end: usize,
+    pub name: String,
+    pub near: Option<String>,
+}
+
+/// The findings behind `unbound_names`, before they become sentences:
+/// the editor turns them into quickfixes as well as diagnostics.
+pub(crate) fn unbound_findings(src: &str) -> Vec<UnboundFinding> {
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
     };
@@ -620,12 +643,12 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
     ];
     let mut out = Vec::new();
     walk_block(&program, &tokens, &mut scopes, &mut out);
-    out.sort_by_key(|(start, _, _)| *start);
+    out.sort_by_key(|f| f.start);
     out
 }
 
 type Scopes = Vec<std::collections::HashSet<String>>;
-type Findings = Vec<(usize, usize, String)>;
+type Findings = Vec<UnboundFinding>;
 
 fn walk_block(
     stmts: &[crate::ast::Stmt],
@@ -751,11 +774,12 @@ fn report(name: &str, from: usize, tokens: &[lexer::Token], scopes: &Scopes, out
         return;
     };
     let visible: Vec<&str> = scopes.iter().flatten().map(String::as_str).collect();
-    let message = match crate::diag::nearest(name, visible) {
-        Some(near) => format!("`{name}` is bound nowhere (did you mean `{near}`?)"),
-        None => format!("`{name}` is bound nowhere"),
-    };
-    out.push((tok.span.start, tok.span.end, message));
+    out.push(UnboundFinding {
+        start: tok.span.start,
+        end: tok.span.end,
+        name: name.to_string(),
+        near: crate::diag::nearest(name, visible),
+    });
 }
 
 pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
@@ -1112,6 +1136,36 @@ fn levenshtein(a: &str, b: &str) -> usize {
 /// when it is close enough to be a plausible typo.
 fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize) -> Value {
     let mut actions = Vec::new();
+    let fix = |start: usize, end: usize, best: &str, actions: &mut Vec<Value>| {
+        let line = src[..start].matches('\n').count();
+        if line < first_line || line > last_line {
+            return;
+        }
+        let edit = obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, start)),
+                    ("end", position(src, end)),
+                ]),
+            ),
+            ("newText", s(best)),
+        ]);
+        actions.push(obj(vec![
+            ("title", s(&format!("Replace with `{best}`"))),
+            ("kind", s("quickfix")),
+            (
+                "edit",
+                obj(vec![("changes", obj(vec![(uri, Value::list(vec![edit]))]))]),
+            ),
+        ]));
+    };
+    // A name bound nowhere, when something in scope is close to it.
+    for f in unbound_findings(src) {
+        if let Some(near) = &f.near {
+            fix(f.start, f.end, near, &mut actions);
+        }
+    }
     for f in stdlib_member_findings(src) {
         let line = src[..f.start].matches('\n').count();
         if line < first_line || line > last_line {

@@ -345,8 +345,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   help inside calls of builtins, stdlib functions and the file's
   own functions, folding ranges for multi-line braces, workspace symbols
   across open files, document links on `import(...)` paths that
-  exist on disk, and a quickfix that corrects a misspelt stdlib
-  member to the nearest export.
+  exist on disk, and quickfixes that correct a misspelt stdlib member
+  or a name bound nowhere to the nearest one.
 
 Point your editor's generic LSP client at `ting --lsp`; a TextMate
 grammar for syntax highlighting ships in the repo under `editor/`.

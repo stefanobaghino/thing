@@ -294,6 +294,51 @@ fn completion_offers_imported_stdlib_functions() {
 }
 
 #[test]
+fn unbound_name_is_a_warning_with_a_quickfix() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+
+    // `totl` is bound nowhere; `total`, `xs` and the builtins are.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///u.ting","text":"let total = 1;\nlet xs = [total];\nprint(len(xs), totl);\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(diag.contains("\"severity\":2"), "{diag}");
+    assert!(
+        diag.contains("`totl` is bound nowhere (did you mean `total`?)"),
+        "{diag}"
+    );
+    // The name itself is the range: line 2, after `print(len(xs), `.
+    assert!(
+        diag.contains("\"start\":{\"character\":15,\"line\":2}"),
+        "{diag}"
+    );
+
+    // The editor can fix it in one keystroke.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":10,"method":"textDocument/codeAction","params":{"textDocument":{"uri":"file:///u.ting"},"range":{"start":{"line":2,"character":0},"end":{"line":2,"character":30}}}}"#,
+    );
+    let act = recv(&mut reader);
+    assert!(act.contains("\"kind\":\"quickfix\""), "{act}");
+    assert!(act.contains("Replace with `total`"), "{act}");
+    assert!(act.contains("\"newText\":\"total\""), "{act}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn unknown_stdlib_member_is_a_warning() {
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(
