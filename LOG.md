@@ -5197,3 +5197,34 @@ the run's own conclusion (success) and re-checking gave 200 with
 test on this aarch64 Linux host: `ting 2.47.0`, dedent agrees on
 both engines, the released `--lsp` advertises rename. 68 tags, 67
 verified. The 330 milestone is complete; next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 338: replenishment — milestone "the same thing everywhere"
+
+CI green on 337b (API verdict). Ten milestones since the restart,
+sixty-eight tags. Looking at the playground for the deferred
+"load example" idea showed it already has a dropdown — fed by a
+hand-written map inside index.html that stopped tracking examples/
+long ago: the site's examples and the cookbook's examples have
+drifted apart, which is exactly the kind of duplication the loop
+otherwise refuses to keep. Five strokes:
+
+1. Playground examples generated from examples/: a tools script
+   emits playground/examples.js (committed) from every
+   examples/*.ting; index.html loads it instead of its inline map;
+   a docs-style sync guard fails CI when the file is stale, like
+   the cookbook's.
+2. lib/math.ting percentile(xs, p): nearest-rank percentile over a
+   sorted copy, p in [0, 100]; selftests.
+3. LSP hover on user-defined functions: hovering a name bound by a
+   top-level fn shows its `fn name(params)` signature from the AST,
+   so hover covers builtins, stdlib and the user's own code.
+   Protocol test.
+4. `--test --slow N`: after the summary, the N slowest files with
+   their milliseconds, opt-in so default output stays identical.
+   io test.
+5. Health tick + distribution audit.
+
+Rejected: shuffle/sample (no random builtin, and adding one would
+break the engines' byte-identical differential guarantee).

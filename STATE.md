@@ -155,14 +155,14 @@ current orientation.
   executed cold here.
 - v2.47.0 RELEASED and verified (68th tag); aarch64 glibc archive
   executed cold here. The 330 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  `--test` summary per directory / slowest files list; (b)
-  lib/list.ting `sample`/`shuffle` need randomness — no PRNG
-  builtin, reject; (c) lib/math.ting percentile(xs, p); (d) LSP:
-  hover on user-defined functions (show signature from the fn
-  binding); (e) examples: a tiny template renderer (string
-  replace + maps); (f) playground: preload the cookbook examples via
-  a generated JS file (build.sh) — larger, defer again or do.
+- 338: replenishment — milestone "the same thing everywhere"
+  (v2.48–v2.50), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) playground examples
+  generated from examples/ (tools script → playground/examples.js,
+  sync guard, index.html loads it); (2) lib/math.ting percentile,
+  selftests; (3) LSP hover on user-defined fns, protocol test; (4)
+  `--test --slow N`, io test; (5) health tick + audit. Release
+  after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
