@@ -7875,3 +7875,15 @@ as an environment failure. Two existing tests that asserted 1 on
 usage errors now assert 2, and a new io test walks the three
 classes. Full gate green (241 tests). One stroke banked toward
 v2.73.0. Next: the reference's Running section.
+
+---
+
+## 2026-09-03 — Iteration 474: the Running section, complete
+
+CI green on 473 (API verdict). Milestone stroke 3: the reference's
+Running block lists every mode — run, REPL, check, fmt, test, doc,
+lsp, version and help with their short forms — and a paragraph
+states what the three exit codes mean; the README's quick-start
+uses -h; the binary's --help ends with the same exit-status line.
+Tutorial, docs and io guards green. Two strokes banked toward
+v2.73.0 (473, 474). Next: take_while and drop_while.

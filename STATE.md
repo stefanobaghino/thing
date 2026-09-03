@@ -128,10 +128,11 @@ holds only the current milestone and the standing rules.
   (v2.72–v2.73), reasoning in LOG.md.
 - v2.72.0 VERIFIED (93rd tag; strokes 467, 468, 471; both aarch64
   archives executed here).
-- 473: exit codes 0/1/2 — one stroke banked toward v2.73.0.
-- Backlog (in order): (3) reference Running section + README; (4)
-  lib/list.ting take_while/drop_while, selftests; (5) health tick +
-  audit; then replenish.
+- 473: exit codes 0/1/2; 474: the Running section — two strokes
+  banked toward v2.73.0.
+- Backlog (in order): (4) lib/list.ting take_while/drop_while,
+  selftests — then RELEASE v2.73.0; (5) health tick + audit; then
+  replenish.
 - Tags: 93 (v2.72.0), 92 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
