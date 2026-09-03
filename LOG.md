@@ -8414,3 +8414,19 @@ exactly what a tenth act is for. Milestone "the tenth act"
 (v2.79-v2.80): --check warns about a duplicate key in a map literal
 and about code that can never run; docs and selftests for both; the
 tenth act written and "Where it stands" brought current.
+
+---
+
+## 2026-09-03 — Iteration 503: the key written twice
+
+CI green on 502 (API verdict). Milestone stroke 1: `--check` and
+the LSP warn when a map literal gives the same string key twice —
+"duplicate key `a`: the last one wins" — underlining the second
+one, which is the entry that silently defeats the first. Only
+literal string keys are judged: `{k: 1, "a": 2}` with `k` bound to
+"a" is a run-time question and stays one. A small visitor over
+every expression came out of it, so the next pass that judges one
+node at a time will not need its own walk. Nested literals are
+covered by the same visitor and by the test. The corpus still shows
+its three expected warnings, guarded. Full gate green (253 tests).
+One stroke banked toward v2.79.0. Next: code that can never run.

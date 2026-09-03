@@ -17,11 +17,11 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 252 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 253 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, seven warnings, --strict), --doc (names, module, file, or
+  imports, eight warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
@@ -158,11 +158,11 @@ holds only the current milestone and the standing rules.
   complete.
 - 502: replenishment — milestone "the tenth act" (v2.79-v2.80),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) --check warns about a
-  duplicate key in a map literal; (2) --check warns about code that
-  can never run — then RELEASE v2.79.0; (3) the tenth act in
-  docs/retrospective.md, "Where it stands" current; (4) docs +
-  selftests, then RELEASE v2.80.0; (5) health tick + audit.
+- 503: the key written twice — one stroke banked toward v2.79.0.
+- Backlog (one per tick, in order): (1) --check warns about code that
+  can never run — then RELEASE v2.79.0; (2) the tenth act in
+  docs/retrospective.md, "Where it stands" current; (3) docs +
+  selftests, then RELEASE v2.80.0; (4) health tick + audit.
 - Tags: 99 (v2.78.0), 98 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
