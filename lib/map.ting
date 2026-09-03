@@ -1,6 +1,7 @@
 # Map helpers, written in ting. Use them via
 #   let m = import("lib/map.ting");
 
+# m[k] when the key is present, otherwise default.
 fn get(m, k, default) {
   if has(m, k) { return m[k]; }
   return default;
@@ -11,6 +12,15 @@ fn merge(a, b) {
   for k in a { out[k] = a[k]; }
   for k in b { out[k] = b[k]; }
   return out;
+}
+
+# The first key (in key order) whose value equals v, or nil when no
+# value does — the inverse lookup.
+fn key_of(m, v) {
+  for k in m {
+    if m[k] == v { return k; }
+  }
+  return nil;
 }
 
 # merge, except that a key present in both maps gets f(a[k], b[k])

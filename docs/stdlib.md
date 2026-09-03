@@ -1,7 +1,7 @@
 # The ting standard library
 
 Six modules written in ting itself — list, map, string, math, json
-and test, 116 functions between them — living in `lib/` and also
+and test, 117 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -103,6 +103,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | Function | Does |
 |----------|------|
 | `get(m, k, default)` | `m[k]` if present, else `default` |
+| `key_of(m, v)` | the first key (in key order) whose value equals `v`; `nil` when none |
 | `merge(a, b)` | a fresh map with `a`'s entries then `b`'s (`b` wins ties) |
 | `merge_with(a, b, f)` | `merge`, but a key in both maps gets `f(a[k], b[k])` |
 | `items(m)` | list of `[key, value]` pairs in sorted key order |
