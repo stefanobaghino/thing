@@ -10,11 +10,11 @@ fn main() -> ExitCode {
     };
     let mut args = std::env::args().skip(1).peekable();
     match args.peek().map(String::as_str) {
-        Some("--version") => {
+        Some("--version") | Some("-V") => {
             println!("ting {}", env!("CARGO_PKG_VERSION"));
             return ExitCode::SUCCESS;
         }
-        Some("--help") => {
+        Some("--help") | Some("-h") => {
             println!(
                 "ting {} — a tiny, zero-dependency scripting language\n\n\
                  usage:\n\
@@ -56,6 +56,9 @@ fn main() -> ExitCode {
         // `--diff`: show what --fmt would change, touch nothing.
         let diff = rest.iter().any(|a| a == "--diff");
         rest.retain(|a| a != "--diff");
+        if let Some(a) = rest.iter().find(|a| is_option(a)) {
+            return unknown_option(a);
+        }
         return run_fmt(check, diff, rest);
     }
     if args.peek().map(String::as_str) == Some("--check") {
@@ -109,12 +112,30 @@ fn main() -> ExitCode {
         }
         _ => {}
     }
+    if let Some(a) = args.peek()
+        && is_option(a)
+    {
+        return unknown_option(a);
+    }
     match args.next() {
         None => repl::run(),
         // Everything after the script path is the script's own argv,
         // exposed via the args() builtin.
         Some(path) => run_file(engine, path, args.collect()),
     }
+}
+
+/// An argument shaped like an option: a leading dash, but not the
+/// lone `-` that names stdin.
+fn is_option(a: &str) -> bool {
+    a.starts_with('-') && a != "-"
+}
+
+/// An option no mode recognises: say so, point at --help, exit 2 (a
+/// usage error, distinct from the 1 a failed run or check exits with).
+fn unknown_option(a: &str) -> ExitCode {
+    eprintln!("ting: unknown option {a} (see --help)");
+    ExitCode::from(2)
 }
 
 fn run_file(engine: Engine, path: String, script_args: Vec<String>) -> ExitCode {
@@ -179,6 +200,9 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
     // check too, for hooks and CI that want them enforced.
     let strict = args.iter().any(|a| a == "--strict");
     args.retain(|a| a != "--strict");
+    if let Some(a) = args.iter().find(|a| is_option(a)) {
+        return unknown_option(a);
+    }
     if args.is_empty() {
         eprintln!("usage: ting --check [--strict] <files or directories...>");
         return ExitCode::FAILURE;
@@ -283,6 +307,8 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                     return ExitCode::FAILURE;
                 }
             }
+        } else if is_option(&a) {
+            return unknown_option(&a);
         } else {
             paths.push(a);
         }

@@ -880,6 +880,39 @@ fn fmt_and_check_process_every_file_before_failing() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `-h` and `-V` work like their long forms; an option no mode knows
+/// is a usage error (exit 2) that names it and points at --help, at
+/// the top level and under --test, --check and --fmt.
+#[test]
+fn unknown_options_are_usage_errors() {
+    let run = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .output()
+            .expect("failed to run ting")
+    };
+    let out = run(&["-h"]);
+    assert_eq!(out.status.code(), Some(0));
+    assert!(String::from_utf8_lossy(&out.stdout).contains("usage:"));
+    let out = run(&["-V"]);
+    assert_eq!(out.status.code(), Some(0));
+    assert!(String::from_utf8_lossy(&out.stdout).starts_with("ting "));
+    for args in [
+        &["--nosuch"][..],
+        &["--test", "--nosuch", "selftest"][..],
+        &["--check", "--nosuch", "-"][..],
+        &["--fmt-check", "--nosuch"][..],
+    ] {
+        let out = run(args);
+        assert_eq!(out.status.code(), Some(2), "{args:?}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains("unknown option --nosuch (see --help)"),
+            "{args:?}: {stderr}"
+        );
+    }
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
