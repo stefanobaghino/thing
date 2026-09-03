@@ -4226,3 +4226,19 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 merge_in deep-merges identically on both engines. Site: all
 resources 200, changelog shows 2.34.0, stdlib page lists merge_in.
 55 tags, 54 verified.
+
+---
+
+## 2026-09-03 — Iteration 283: REPL :doc
+
+CI green on 282b (API verdict). Milestone stroke 3, and the sixth
+REPL meta-command: `:doc NAME` prints a builtin's signature and doc
+line, or for a stdlib function its signature, module and leading
+comment — every embedded module is searched whether or not the
+session imported it, by feeding the LSP's scanner a synthetic
+source that imports all six; a name present in two modules (count)
+lists both. Unknown names get a one-line "(no builtin or stdlib
+function named …)". Banner, :help footer, reference and tutorial
+updated; pipe test covers a builtin, a stdlib function, the
+two-module case and the miss. Full gate green. First stroke toward
+v2.35.0.
