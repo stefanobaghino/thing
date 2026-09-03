@@ -30,6 +30,7 @@ fn main() -> ExitCode {
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
                  \x20   [--tap]                   Test Anything Protocol output\n\
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
+                 \x20   [--slow N]                list the N slowest files after the summary\n\
                  \x20 ting --doc NAME             explain a builtin or stdlib function\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
@@ -203,17 +204,28 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     let mut filter: Option<String> = None;
     let mut tap = false;
     let mut jobs = 1usize;
+    let mut slow = 0usize;
     let mut paths = Vec::new();
     let mut it = args.into_iter();
     while let Some(a) = it.next() {
         if a == "--tap" {
             tap = true;
+        } else if a == "--slow" {
+            match it.next().and_then(|n| n.parse::<usize>().ok()) {
+                Some(n) => slow = n,
+                None => {
+                    eprintln!(
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+                    );
+                    return ExitCode::FAILURE;
+                }
+            }
         } else if a == "-j" {
             match it.next().and_then(|n| n.parse::<usize>().ok()) {
                 Some(n) if n >= 1 => jobs = n,
                 _ => {
                     eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -223,7 +235,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                 Some(f) => filter = Some(f),
                 None => {
                     eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -233,7 +245,9 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         }
     }
     if paths.is_empty() {
-        eprintln!("usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>");
+        eprintln!(
+            "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+        );
         return ExitCode::FAILURE;
     }
     // Directories expand to every .ting file beneath them, sorted, so
@@ -300,7 +314,9 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             .collect()
     };
     let mut failed = 0usize;
+    let mut timings: Vec<(u128, &str)> = Vec::new();
     for (i, (f, (ok, diag, ms))) in files.iter().zip(results).enumerate() {
+        timings.push((ms, f));
         if !ok {
             failed += 1;
         }
@@ -323,6 +339,16 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         println!("# {} passed, {} failed", files.len() - failed, failed);
     } else {
         println!("{} passed, {} failed", files.len() - failed, failed);
+    }
+    // `--slow N`: the N slowest files after the summary, opt-in so the
+    // default output is unchanged (as a TAP comment in --tap mode).
+    if slow > 0 {
+        timings.sort_by_key(|t| std::cmp::Reverse(t.0));
+        let prefix = if tap { "# " } else { "" };
+        println!("{prefix}slowest:");
+        for (ms, f) in timings.iter().take(slow) {
+            println!("{prefix}  {ms}ms {f}");
+        }
     }
     if failed > 0 {
         ExitCode::FAILURE

@@ -689,6 +689,26 @@ fn test_flag_expands_directories() {
         .expect("failed to run ting");
     assert_eq!(out.status.code(), Some(1), "-j 0 is a usage error");
 
+    // --slow N appends the slowest files after the summary; as a TAP
+    // comment in --tap mode so the stream stays clean.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--slow", "2", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let after = stdout
+        .split("2 passed, 1 failed\n")
+        .nth(1)
+        .expect("summary first");
+    assert!(after.starts_with("slowest:\n"), "{stdout}");
+    assert_eq!(after.matches("ms ").count(), 2, "{stdout}");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--tap", "--slow", "1", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\n# slowest:\n# "), "{stdout}");
+
     // --filter keeps only paths containing the substring; a filter
     // that matches nothing is an error, not "0 passed".
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))

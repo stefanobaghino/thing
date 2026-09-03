@@ -262,7 +262,8 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
   emits Test Anything Protocol output for CI consumers; `-j N` runs
-  up to N files at once with the output kept in order) in its own
+  up to N files at once with the output kept in order; `--slow N`
+  lists the N slowest files after the summary) in its own
   process and
   prints `ok` or `FAIL` per file (with the diagnostic under a
   failure) and a summary; exit 1 if anything failed. Pair it with
