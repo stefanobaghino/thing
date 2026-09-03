@@ -159,7 +159,7 @@ current orientation.
   (v2.48–v2.50), reasoning in LOG.md.
 - v2.48.0 RELEASED and verified (69th tag); aarch64 musl archive
   executed cold here.
-- v2.50.0 RELEASED and verified (70th tag); aarch64 glibc archive
+- v2.49.0 RELEASED and verified (70th tag); aarch64 glibc archive
   executed cold here. The 338 milestone is complete.
 - 346: replenishment — milestone "second opinions" (v2.50–v2.52),
   reasoning in LOG.md.
