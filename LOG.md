@@ -6607,3 +6607,17 @@ Hover comments for user functions, map_keys, and the loop's own
 STATE.md put in order. CI green on 405 (API verdict). Full gate
 green, stdlib selftests pass on both engines. Tagging v2.60.0
 (81st tag).
+
+---
+
+## 2026-09-03 — Iteration 406b: v2.60.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.60.0; a raw JSON-RPC session against the release binary's --lsp
+(initialize, didOpen of a commented function, hover on its call)
+returned the comment and the "defined in this file" line; map_keys
+upper-cases a key on the musl VM and the gnu reference engine;
+`--test selftest` passes 11/11 on each. CI and Pages green on the
+release commit. Eighty-one tags, eighty verified. Next: the
+tutorial's closing chapter.
