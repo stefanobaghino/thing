@@ -5868,3 +5868,21 @@ says 34 (the run above was checked after the commit, not before).
 Fixed in a follow-up commit. The rule from 358b covers the chain;
 this one is about reading the smoke output before, not after,
 writing the prose that quotes it.
+
+---
+
+## 2026-09-03 — Iteration 371: LSP diagnostic on a broken import
+
+CI and Pages green on 370 (API verdicts). Milestone stroke 3: when
+a document imports a local file that fails to lex, parse or
+compile, the editor gets an error diagnostic on the import string
+carrying the module's file name, position and message — the
+checker's import walk, seen from the importer. The resolver is the
+same import_targets the document links and --check use; embedded
+modules and missing files are skipped, healthy imports are silent.
+Protocol test with a temp directory holding one broken and one
+healthy module: severity 1, message with the module's position,
+range on the second line's string, exactly one error, the healthy
+file unmentioned. Reference bullet extended. Full gate green (216
+tests). Three strokes banked (369, 370, 371) — v2.54.0 next tick
+if quiet.
