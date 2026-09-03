@@ -13,6 +13,17 @@ fn merge(a, b) {
   return out;
 }
 
+# merge, except that a key present in both maps gets f(a[k], b[k])
+# instead of b's value.
+fn merge_with(a, b, f) {
+  let out = {};
+  for k in a { out[k] = a[k]; }
+  for k in b {
+    if has(out, k) { out[k] = f(out[k], b[k]); } else { out[k] = b[k]; }
+  }
+  return out;
+}
+
 fn items(m) {
   let out = [];
   for k in m { push(out, [k, m[k]]); }

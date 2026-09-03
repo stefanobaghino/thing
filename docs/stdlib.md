@@ -100,6 +100,7 @@ Imports return a map, so functions are reached with `["name"]`.
 |----------|------|
 | `get(m, k, default)` | `m[k]` if present, else `default` |
 | `merge(a, b)` | a fresh map with `a`'s entries then `b`'s (`b` wins ties) |
+| `merge_with(a, b, f)` | `merge`, but a key in both maps gets `f(a[k], b[k])` |
 | `items(m)` | list of `[key, value]` pairs in sorted key order |
 | `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
 | `values(m)` | values in sorted key order |
