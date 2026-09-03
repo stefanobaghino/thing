@@ -136,6 +136,13 @@ fn squeeze(s) {
   return join(words(s), " ");
 }
 
+# The count and the right noun for it: plural(1, "file", "files") is
+# "1 file", plural(3, "file", "files") is "3 files" — for summaries.
+fn plural(n, one, many) {
+  if n == 1 { return "1 " + one; }
+  return str(n) + " " + many;
+}
+
 # A URL-friendly form of s: lowercased, every run of characters that
 # is neither a digit nor a cased letter collapsed to one dash, dashes
 # trimmed from both ends ("" when nothing is left). Accented letters
