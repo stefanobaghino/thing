@@ -196,8 +196,9 @@ current orientation.
   story straight" complete.
 - 382: replenishment — milestone "worked examples" (v2.56–v2.57),
   reasoning in LOG.md.
-- 383: examples/text.ting — three strokes banked (379, 380, 383);
-  RELEASE v2.56.0 next tick if quiet.
+- v2.56.0 TAGGED (77th tag; strokes 379, 380, 383): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (text example against its .out, chunk_by, selftests).
 - Backlog after the release (in order): (2) examples/series.ting +
   .out, regen; (3) editor/README.md LSP section current; (4)
   lib/list.ting find_index, selftests; (5) health tick + audit.

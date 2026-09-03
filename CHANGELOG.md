@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.56.0 (2026-09-03)
+
+- Playground: a check button (the checker and its warnings, via a
+  new `ting_check` wasm export).
+- lib/list.ting: `chunk_by(xs, key)` groups consecutive runs.
+- examples/text.ting: words, frequencies, slug, wrap and
+  levenshtein at work; cookbook and playground regenerated.
+
 ## v2.55.0 (2026-09-03)
 
 - `ting --test --fail-fast` stops after the first failing file; the

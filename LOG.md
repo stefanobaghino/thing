@@ -6151,3 +6151,11 @@ byte-identical (diffed before commit); --check is clean on it.
 Cookbook and playground list regenerated with the tools, both
 guards green. Full gate green (219 tests). Three strokes banked
 (379, 380, 383) — v2.56.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 384: v2.56.0
+
+The playground check button, chunk_by, the text example. CI and
+Pages green on 383 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.56.0 (77th tag).
