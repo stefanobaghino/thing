@@ -535,11 +535,11 @@ input again: [5, 3, 8, 1, 9, 2, 7]
 
 ## stats
 
-Descriptive statistics over a fixed sample, using lib/math.ting and range with a step.
+Descriptive statistics over a fixed sample, using lib/math.ting, lib/list.ting and range with a step.
 
 ```ting
-# Descriptive statistics over a fixed sample, using lib/math.ting
-# and range with a step.
+# Descriptive statistics over a fixed sample, using lib/math.ting,
+# lib/list.ting and range with a step.
 
 let ma = import("../lib/math.ting");
 let li = import("../lib/list.ting");
@@ -550,13 +550,7 @@ let sample = range(2, 60, 3);
 let n = len(sample);
 let mean = li["mean"](sample);
 
-let variance = 0.0;
-for x in sample {
-  let d = x - mean;
-  variance = variance + d * d;
-}
-variance = variance / n;
-let stddev = ma["sqrt"](variance);
+let stddev = ma["stddev"](sample);
 
 print("n      =", n);
 print("min    =", min(sample), " max =", max(sample));

@@ -333,3 +333,8 @@ assert(s["levenshtein"]("", "abc") == 3 && s["levenshtein"]("abc", "") == 3, "le
 assert(s["levenshtein"]("same", "same") == 0, "levenshtein identical");
 assert(s["levenshtein"]("ab", "ba") == 2, "levenshtein transposition counts two");
 assert(s["levenshtein"]("héllo", "hello") == 1, "levenshtein counts characters");
+
+assert(ma["variance"]([2, 4, 4, 4, 5, 5, 7, 9]) == 4.0, "variance");
+assert(ma["stddev"]([2, 4, 4, 4, 5, 5, 7, 9]) == 2.0, "stddev");
+assert(ma["variance"]([3]) == 0.0, "variance single");
+assert(has(try(fn() { return ma["variance"]([]); }), "err"), "variance empty fails");

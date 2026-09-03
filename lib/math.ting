@@ -87,3 +87,21 @@ fn is_prime(n) {
   }
   return true;
 }
+
+# Population variance of a numeric list (mean of squared deviations)
+# as a float; empty fails.
+fn variance(xs) {
+  if len(xs) == 0 { fail("variance: empty list"); }
+  let total = 0.0;
+  for x in xs { total = total + x; }
+  let mean = total / len(xs);
+  let acc = 0.0;
+  for x in xs {
+    let d = x - mean;
+    acc = acc + d * d;
+  }
+  return acc / len(xs);
+}
+
+# Population standard deviation: sqrt(variance(xs)).
+fn stddev(xs) { return sqrt(variance(xs)); }

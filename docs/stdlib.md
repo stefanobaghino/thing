@@ -117,6 +117,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `ceil(x)` | smallest integer `>= x` |
 | `sqrt(x)` | Newton's method square root, returns a float |
 | `is_prime(n)` | true for prime `n` (trial division) |
+| `variance(xs)` | population variance as a float; empty fails |
+| `stddev(xs)` | population standard deviation |
 
 ## lib/json.ting
 
