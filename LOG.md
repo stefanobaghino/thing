@@ -8360,3 +8360,17 @@ were exactly as expected on every platform — only the test's
 spelling of a path was wrong. It now matches the file name alone.
 Local gate green again; pushed as its own commit before the
 release, since the release must be cut from a green CI.
+
+---
+
+## 2026-09-03 — Iteration 500: release v2.78.0
+
+CI green on 499b (API verdict). Cut v2.78.0 with the arity warning
+(498) and the corpus guard (499, fixed in 499b). The release
+workflow is green with all six archives; CI and Pages green on the
+release commit (API verdicts). Cold-verified here: both aarch64
+Linux archives downloaded fresh, unpacked and run — `-V` reports
+2.78.0, and the same file draws "`f` takes 2 arguments, called with
+1" from --check and "expected 2 argument(s), got 1" from the run,
+at the same line and column. 99th tag, and the five hundredth
+iteration. Next: health tick + audit.

@@ -151,11 +151,12 @@ holds only the current milestone and the standing rules.
 - v2.77.0 VERIFIED (98th tag; strokes 495, 496; both aarch64 archives
   executed here).
 - 498: a call that cannot match; 499: the corpus warning set guarded
-  by a test (499b fixed its Windows path assumption) — two strokes
-  banked toward v2.78.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.78.0 (strokes 498,
-  499); (2) health tick + audit.
-- Tags: 98 (v2.77.0), 97 verified; v2.29.0 is publicly marked broken
+  by a test (499b fixed its Windows path assumption).
+- v2.78.0 VERIFIED (99th tag; strokes 498, 499; both aarch64 archives
+  executed here).
+- Backlog (one per tick, in order): (1) health tick + audit — then
+  replenishment.
+- Tags: 99 (v2.78.0), 98 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
