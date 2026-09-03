@@ -5018,3 +5018,21 @@ NAME`, the REPL's `:doc`, and that an editor's hover shows the
 same text — three ways to read one stdlib function without opening
 the module. Prose only; the tutorial test still runs every snippet.
 Markdown guard and full gate green. First stroke toward v2.45.0.
+
+---
+
+## 2026-09-03 — Iteration 328: health tick + audit
+
+CI and Pages green on 327 (API verdicts). Milestone stroke 5.
+Bench at load ~5–7: all six checksums match; the json row's VM
+ratio has now read -20%, +4% and +62% on three consecutive ticks
+with no engine change — the clearest demonstration yet that ratios
+on this shared host carry no signal below a factor of two, so the
+rule stays: checksums decide, timings inform. Fuzz: 50000
+differential cases (seed 20260903328), the crash fuzzer, and 20000
+formatter cases (seed 328) all pass in release. Distribution: 65
+releases with the expected asset counts (36 × 3, 14 × 4, 15 × 6),
+all six v2.44.0 download URLs resolve, all eight site resources
+answer 200 and the tutorial page carries the --doc sentence.
+Nothing to fix. The 322 milestone's strokes are done; v2.45.0 next
+tick, then replenish.
