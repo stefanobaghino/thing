@@ -190,9 +190,39 @@ had felt like ceremony for forty-eight releases. It was the only
 check in the whole pipeline that could have caught this, because CI
 runs where it builds.
 
+## The sixth act: the rhythm
+
+After the machine move the loop found a cadence and kept it for
+six milestones and twenty-six releases. Each milestone begins with
+a replenishment tick that does no building: it reads what the last
+milestone left uneven, weighs candidates, rejects some with a
+reason, and writes five ordered strokes into the backlog. Then one
+stroke per tick — a stdlib function with selftests on both engines,
+a tool flag with an integration test, a chapter with an executed
+snippet — and a release whenever three have landed, each release
+downloaded cold and executed on the loop's own machine. A health
+tick closes the milestone: benchmark checksums, fuzz sweeps on the
+engines and the formatter, an audit of every release's assets and
+every page on the site.
+
+What the rules gained along the way, each from a specific slip:
+verdicts come from the API and never from a watcher's exit code;
+the docs guard runs *after* the log entry is written, and the push
+gates on the literal `test result: ok` because a looser grep once
+let a failed run through; Linux release builds stay on the oldest
+runner with a glibc floor enforced in the workflow; a failed Pages
+deploy is retried only by dispatching the workflow; the cold test
+is never skipped, because it is the only check that runs where
+users do rather than where CI builds.
+
+The stdlib roughly tripled to six modules; the runner grew
+directories, filters and a TAP mode; the editor server reached ten
+capabilities, several of them stdlib-aware. None of it changed the
+language. That was the point of freezing it.
+
 ## Where it stands
 
-Fifty-three tags in, the loop still runs: pick one verifiable
+Sixty-one tags in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
