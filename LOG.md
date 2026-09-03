@@ -3880,3 +3880,19 @@ an argument that yields nothing is an error rather than a silent
 io test with a nested temp dir pins order, filtering, recursion and
 the summary; help, reference and tutorial updated. Full gate green.
 First stroke toward v2.31.0.
+
+---
+
+## 2026-09-03 — Iteration 266: CI dogfoods the runner
+
+CI green on 265 across all five jobs (API verdict), so the
+directory expansion orders the same on Windows. Milestone stroke 2:
+both CI jobs gain a step that runs the freshly built binary's own
+`--test selftest` — the four-platform matrix on the VM and the
+reference-engine job with TING_ENGINE=eval, which the runner
+forwards to its children. The Rust selftest harness stays as the
+stricter "silent" check (it also rejects stray output); the new
+step proves the runner itself, continuously, the way a user would
+invoke it. Verified locally on both engines (11 passed). Full gate
+green. Second stroke toward v2.31.0; the step's first CI run is
+this push.

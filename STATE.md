@@ -100,10 +100,9 @@ current orientation.
   Linux archives executed cold here, musl fully static).
 - 264: replenishment — milestone "the runner and the operator"
   (v2.31–v2.33), reasoning in LOG.md.
-- 265: --test expands directories — milestone stroke 1; first
-  toward v2.31.0.
-- Backlog (one per tick, in order): (2) CI step runs the built
-  binary's `--test selftest` on every platform; (3)
+- 265: --test expands directories; 266: CI dogfoods the runner —
+  milestone strokes 1–2; two toward v2.31.0.
+- Backlog (one per tick, in order): (3)
   lib/string.ting table(rows) column alignment, dogfooded in an
   example; (4) LSP warning for an unknown stdlib member in
   m["..."] when m is bound to an import, protocol test; (5)
