@@ -161,3 +161,6 @@ fn indent(s, prefix) {
   }
   return join(out, "\n");
 }
+
+# True if s is empty or only whitespace.
+fn is_blank(s) { return trim_start(s) == ""; }

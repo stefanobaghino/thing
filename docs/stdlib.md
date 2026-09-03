@@ -28,6 +28,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
 | `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |
+| `compact(xs)` | a fresh list without the `nil` elements |
 | `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
@@ -73,6 +74,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `reverse(s)` | the characters in reverse order |
 | `is_digit(s)` | non-empty and all ASCII digits |
 | `is_alpha(s)` | non-empty and all cased letters (upper and lower forms differ) |
+| `is_blank(s)` | empty or only whitespace |
 
 ## lib/map.ting
 

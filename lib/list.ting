@@ -301,3 +301,6 @@ fn product(xs) { return reduce(xs, 1, fn(a, x) { return a * x; }); }
 
 # Mean of f(x) over the elements as a float; empty list fails.
 fn mean_by(xs, f) { return mean(map(xs, f)); }
+
+# A fresh list without the nil elements.
+fn compact(xs) { return filter(xs, fn(x) { return x != nil; }); }

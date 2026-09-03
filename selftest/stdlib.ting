@@ -257,3 +257,8 @@ assert(l["product"]([]) == 1, "product empty");
 assert(l["product"]([2, 0.5]) == 1.0, "product float");
 assert(l["mean_by"](["a", "bbb"], fn(w) { return len(w); }) == 2.0, "mean_by");
 assert(has(try(fn() { return l["mean_by"]([], fn(x) { return x; }); }), "err"), "mean_by empty fails");
+
+assert(l["compact"]([1, nil, "a", nil, [nil]]) == [1, "a", [nil]], "compact drops top-level nils");
+assert(l["compact"]([]) == [], "compact empty");
+assert(s["is_blank"]("") && s["is_blank"](" \t\n"), "is_blank");
+assert(!s["is_blank"](" x "), "is_blank non-blank");
