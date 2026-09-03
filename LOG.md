@@ -4841,3 +4841,18 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 against the bundled lib to its golden tail on both engines. Site:
 all resources 200, changelog shows 2.42.0, cookbook carries config.
 63 tags, 62 verified.
+
+---
+
+## 2026-09-03 — Iteration 319: LSP workspace symbols
+
+CI green on 318b (API verdict). Milestone stroke 4, the server's
+eleventh capability: workspace/symbol lists every top-level binding
+of every open document whose name contains the query
+(case-insensitive, empty matches all) as SymbolInformation with a
+Location, documents in uri order — the first request that reads
+across the document map instead of one entry. Protocol test opens
+two documents and checks a substring match spanning both, an
+excluded name, and the empty-query count. Reference line updated.
+Full gate green (204 tests). First stroke toward v2.43.0; the 314
+milestone's building strokes are done.

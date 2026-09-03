@@ -141,9 +141,10 @@ current orientation.
   reasoning in LOG.md.
 - v2.42.0 RELEASED and verified (63rd tag); aarch64 musl archive
   executed cold here.
-- Backlog after the release (in order): (4) LSP workspace/symbol
-  across open documents, protocol test; (5) health tick + audit;
-  then replenish.
+- 319: LSP workspace symbols — milestone stroke 4; first toward
+  v2.43.0.
+- Backlog (one per tick, in order): (5) health tick + distribution
+  audit; one more stroke or release v2.43.0; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
