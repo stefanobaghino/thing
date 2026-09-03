@@ -17,12 +17,13 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 120 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 223 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 243 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, five warnings, --strict), --doc (name, module, file, or everything), --test (dirs,
-  --filter, --tap, -j, --slow, --fail-fast), --lsp (thirteen
+  imports, five warnings, --strict), --doc (names, module, file, or
+  everything), --test (dirs, --filter, --tap, -j, --slow,
+  --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.
 - Distribution: six release archives per tag since v2.30.0 (x86_64
@@ -133,11 +134,11 @@ holds only the current milestone and the standing rules.
   milestone "the front door's handle" complete.
 - 478: replenishment — milestone "reading width" (v2.74–v2.75),
   reasoning in LOG.md.
-- 479: --doc within 78 columns; 480: examples/inventory.ting — two
-  strokes banked toward v2.74.0.
-- Backlog (one per tick, in order): (3) --doc with several names, io
-  test — then RELEASE v2.74.0; (4) lib/string.ting ordinal,
-  selftests; (5) health tick + audit.
+- 479: --doc within 78 columns; 480: examples/inventory.ting; 481:
+  --doc with several names — three strokes banked toward v2.74.0.
+- Backlog (one per tick, in order): (1) RELEASE v2.74.0 (strokes 479,
+  480, 481); (2) lib/string.ting ordinal, selftests; (3) health tick
+  + audit.
 - Tags: 94 (v2.73.0), 93 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

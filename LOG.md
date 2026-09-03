@@ -7999,3 +7999,19 @@ is byte-identical; --check clean. Cookbook and playground list
 regenerated, guards green. Full gate green (242 tests). Two
 strokes banked toward v2.74.0 (479, 480). Next: --doc with several
 names, then the release.
+
+---
+
+## 2026-09-03 — Iteration 481: --doc with several names
+
+CI green on 480 (API verdict). Milestone stroke 3: `--doc` takes a
+list of names, not one. The lookup that resolved a builtin, a
+stdlib function, a module or a .ting file moved into doc_lookup;
+the dispatch loops over the arguments, prints each entry in the
+order asked with a blank line between them, and keeps printing
+after a name it does not know — that one goes to stderr and the
+run exits 1. No name at all still prints the whole index. io test
+covers the order, the single blank line between entries, and the
+mixed known/unknown run; the reference page and the usage line say
+NAMES now. Full gate green (243 tests). Three strokes banked
+(479, 480, 481). Next: release v2.74.0.
