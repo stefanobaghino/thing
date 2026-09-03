@@ -5161,3 +5161,18 @@ that uses the name and one that does not, and checks four edits
 across two uris. Reference line updated. Full gate green (206
 tests). First stroke toward v2.47.0; the 330 milestone's building
 strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 336: health tick + audit
+
+CI and Pages green on 335 (API verdicts). Milestone stroke 5.
+Bench at load ~7: all six checksums match; ratios in the contended
+band (maps +2%, strings +1% for the VM), no engine code changed.
+Fuzz: 50000 differential cases (seed 20260903336), the crash
+fuzzer, and 20000 formatter cases (seed 336) all pass in release.
+Distribution: 67 releases with the expected asset counts (36 × 3,
+14 × 4, 17 × 6), all six v2.46.0 download URLs resolve, all eight
+site resources answer 200 and the reference mentions rename across
+open files. Nothing to fix. The 330 milestone's strokes are done;
+v2.47.0 next tick, then replenish.
