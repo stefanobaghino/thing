@@ -3265,3 +3265,11 @@ builtin over range(20) — stdlib functions are ordinary values, and
 that sieve reads as the language's own advertisement. Seven
 assertions, two stdlib.md rows. Full gate green on both engines.
 Third stroke banked — v2.23.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 232: v2.23.0
+
+rotate, unique_by, truncate, is_prime. CI green on 231 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.23.0 (43rd release).

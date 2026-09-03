@@ -72,9 +72,9 @@ current orientation.
   site current.
 - v2.22.0 RELEASED and verified (42nd); aarch64-linux asset
   executed cold on this host, both engines; Pages green first time.
-- 228: rotate; 229: truncate; 231: unique_by/is_prime — three
-  strokes banked; RELEASE v2.23.0 next tick if quiet.
-- Backlog after the release: retrospective.md act four (the arm64
+- v2.23.0 TAGGED (43rd release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run succeeded.
+- Backlog after verification: retrospective.md act four (the arm64
   move, shell-citizen fixes, formatter gap); candidates:
   lib/list.ting scan (running reduce), lib/string.ting
   strip_prefix/strip_suffix.
