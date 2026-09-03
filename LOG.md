@@ -3159,3 +3159,15 @@ allowed all along. Dispatched: run 33725422231 succeeded, and the
 live changelog now shows v2.21.0 with all seven resources 200.
 Rule refined in STATE.md. Maintenance took this tick; building
 resumes next.
+
+---
+
+## 2026-09-03 — Iteration 224: sum_by and words
+
+CI green on 223 (API verdict). lib/list.ting gains sum_by(xs, f),
+a one-liner over sum and map; lib/string.ting gains words(s), which
+splits on runs of any whitespace and never yields empty words —
+the thing split(s, " ") cannot do, and what the tutorial's word
+frequency script had to work around with a continue. Seven
+assertions, two stdlib.md rows. Full gate green on both engines.
+First stroke toward v2.22.0.
