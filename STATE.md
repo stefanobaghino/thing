@@ -198,9 +198,8 @@ current orientation.
   reasoning in LOG.md.
 - v2.56.0 VERIFIED (77th tag, 76 verified; both aarch64 archives
   executed here).
-- v2.57.0 TAGGED (78th tag; strokes 385, 386, 387): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (series example against its .out, find_index, selftests).
+- v2.57.0 VERIFIED (78th tag, 77 verified; both aarch64 archives
+  executed here).
 - Backlog after the release: (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,

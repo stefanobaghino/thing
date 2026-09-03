@@ -6222,3 +6222,16 @@ tick if quiet.
 The series example, the editor README's LSP section, find_index.
 CI and Pages green on 387 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.57.0 (78th tag).
+
+---
+
+## 2026-09-03 — Iteration 388b: v2.57.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.57.0, the series example's output byte-identical to its
+committed .out on the musl VM and the gnu reference engine,
+find_index returns 2 on both, and `--test selftest` passes 11/11
+on each. CI and Pages green on the release commit. Seventy-eight
+tags, seventy-seven verified. Next: health tick + audit, then
+replenish.
