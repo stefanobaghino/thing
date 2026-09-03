@@ -198,10 +198,10 @@ current orientation.
   reasoning in LOG.md.
 - v2.56.0 VERIFIED (77th tag, 76 verified; both aarch64 archives
   executed here).
-- 385: examples/series.ting; 386: editor README LSP section — two
-  strokes banked toward v2.57.0.
-- Backlog (in order): (4) lib/list.ting find_index, selftests — then
-  RELEASE v2.57.0; (5) health tick + audit; then replenish.
+- 385: examples/series.ting; 386: editor README LSP section; 387:
+  find_index — three strokes banked; RELEASE v2.57.0 next tick if
+  quiet.
+- Backlog after the release: (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

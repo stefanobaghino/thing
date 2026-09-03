@@ -6201,3 +6201,16 @@ diagnostic, and the twelve capabilities by name — before the
 Neovim, VS Code and Zed pointers, which were already right. Docs
 guard green. Two strokes banked toward v2.57.0 (385, 386). Next:
 find_index.
+
+---
+
+## 2026-09-03 — Iteration 387: find_index
+
+CI green on 386 (API verdict). Milestone stroke 4:
+`find_index(xs, pred)` in lib/list.ting — the index of the first
+element satisfying the predicate, nil when none does; the
+predicate form of the find builtin, which takes a value. Four
+selftests (match in the middle, first match, no match, empty),
+stdlib.md row. Selftests pass on both engines; full gate green
+(219 tests). Three strokes banked (385, 386, 387) — v2.57.0 next
+tick if quiet.
