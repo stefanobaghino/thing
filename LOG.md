@@ -8148,3 +8148,17 @@ name is caught as readily as a function's. io test covers a
 function, a module and a name with nothing near it. Full gate green
 (247 tests). Three strokes banked (486, 487, 488). Next: release
 v2.75.0.
+
+---
+
+## 2026-09-03 — Iteration 489: release v2.75.0
+
+CI green on 488 (API verdict). Cut v2.75.0 with the three
+suggestion strokes: undefined variables (486), unknown keys and
+stdlib members (487), and --doc's own names (488). The release
+workflow is green with all six archives; CI and Pages green on the
+release commit (API verdicts). Cold-verified here: both aarch64
+Linux archives downloaded fresh, unpacked and run — `-V` reports
+2.75.0, the undefined-variable suggestion reads the same byte for
+byte on both engines, and `--doc medain` points at median. 96th
+tag. Next: unknown options suggest an option.

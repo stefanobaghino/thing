@@ -140,13 +140,12 @@ holds only the current milestone and the standing rules.
   + audit green — milestone "reading width" complete.
 - 485: replenishment — milestone "the nearest name" (v2.75-v2.76),
   reasoning in LOG.md.
-- 486: did you mean, on undefined variables (diag::nearest); 487: the
-  member you meant; 488: --doc suggests a documented name — three
-  strokes banked toward v2.75.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.75.0 (strokes 486,
-  487, 488); (2) unknown options suggest an option; (3) docs +
-  selftests, then RELEASE v2.76.0; (4) health tick + audit.
-- Tags: 95 (v2.74.0), 94 verified; v2.29.0 is publicly marked broken
+- v2.75.0 VERIFIED (96th tag; strokes 486, 487, 488; both aarch64
+  archives executed here).
+- Backlog (one per tick, in order): (1) unknown options suggest an
+  option; (2) docs + selftests, then RELEASE v2.76.0; (3) health
+  tick + audit.
+- Tags: 96 (v2.75.0), 95 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
