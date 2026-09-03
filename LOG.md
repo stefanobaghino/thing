@@ -4704,3 +4704,16 @@ two (the LSP's quickfix uses the transposition-aware variant; the
 comment says which this is), and character-based so accented text
 measures as one edit. Five assertions, stdlib.md row. Full gate
 green on both engines. First stroke toward v2.41.0.
+
+---
+
+## 2026-09-03 — Iteration 311: retrospective act six
+
+CI green on 310 (API verdict). Milestone stroke 5: a sixth act on
+the rhythm — replenishment tick, five strokes, a release per three,
+a health tick per milestone, the cold test as the one check that
+runs where users do — and the rules each slip added (API verdicts,
+post-log guard with the strict grep, glibc floor, Pages dispatch).
+Closing section's count moves to sixty-one tags. Markdown guard and
+full gate green. Second stroke toward v2.41.0; the 305 milestone's
+five strokes are done.
