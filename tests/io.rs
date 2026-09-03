@@ -687,6 +687,38 @@ fn failed_import_says_where_it_looked() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A CRLF file that is otherwise formatted passes --fmt-check, and
+/// --fmt on a misformatted CRLF file keeps every line ending.
+#[test]
+fn fmt_keeps_crlf_line_endings() {
+    let dir = std::env::temp_dir().join(format!("ting-fmt-crlf-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let clean = dir.join("clean.ting");
+    std::fs::write(&clean, "let x = 1;\r\nprint(x);\r\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt-check", clean.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stdout)
+    );
+    let messy = dir.join("messy.ting");
+    std::fs::write(&messy, "let   x=1;\r\nprint( x );\r\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt", messy.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    assert_eq!(
+        std::fs::read_to_string(&messy).unwrap(),
+        "let x = 1;\r\nprint(x);\r\n"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

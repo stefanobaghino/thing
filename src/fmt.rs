@@ -124,8 +124,18 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
     }
 }
 
-/// Format ting source. Errors only if the source doesn't lex.
+/// Format ting source. Errors only if the source doesn't lex. A source
+/// with CRLF line endings formats to CRLF, so a Windows checkout is
+/// neither "unformatted" nor rewritten to LF by --fmt.
 pub fn format(src: &str) -> Result<String, LexError> {
+    if src.contains("\r\n") {
+        let lf = src.replace("\r\n", "\n");
+        return format_lf(&lf).map(|out| out.replace('\n', "\r\n"));
+    }
+    format_lf(src)
+}
+
+fn format_lf(src: &str) -> Result<String, LexError> {
     let pieces = pieces(src)?;
     let mut out = String::new();
     let mut depth: usize = 0;

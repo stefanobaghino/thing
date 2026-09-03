@@ -73,5 +73,19 @@ fn generated_programs_format_idempotently_and_preserve_ast() {
             ast_fingerprint(&once),
             "AST changed by formatting on case {case}:\n{src}\n--- formatted:\n{once}"
         );
+        // The same program with CRLF endings formats to the same text
+        // with CRLF endings, and stays put on a second pass.
+        let crlf = src.replace('\n', "\r\n");
+        let once_crlf = ting::fmt::format(&crlf).unwrap();
+        assert_eq!(
+            once_crlf,
+            once.replace('\n', "\r\n"),
+            "CRLF case {case}:\n{src}"
+        );
+        assert_eq!(
+            ting::fmt::format(&once_crlf).unwrap(),
+            once_crlf,
+            "CRLF idempotence {case}"
+        );
     }
 }
