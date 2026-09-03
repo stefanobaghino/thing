@@ -540,6 +540,46 @@ fn repl_history_lists_successful_chunks() {
     assert_eq!(out.status.code(), Some(0));
 }
 
+/// `:save FILE` writes the transcript as a script that replays the
+/// session; with nothing evaluated it says so and writes no file.
+#[test]
+fn repl_save_writes_a_runnable_script() {
+    use std::io::Write as _;
+    let path = std::env::temp_dir().join(format!("ting-repl-save-{}.ting", std::process::id()));
+    let _ = std::fs::remove_file(&path);
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    let script = format!(
+        ":save {p}\nlet x = 2;\nfn sq(n) {{\n  return n * n;\n}}\nnosuch\nprint(sq(x));\n:save {p}\n",
+        p = path.display()
+    );
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(script.as_bytes())
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("(nothing to save yet)"), "{stdout}");
+    assert!(stdout.contains("(saved 3 chunk(s) to "), "{stdout}");
+    let saved = std::fs::read_to_string(&path).unwrap();
+    assert_eq!(
+        saved,
+        "let x = 2;\n\nfn sq(n) {\n  return n * n;\n}\n\nprint(sq(x));\n"
+    );
+    let rerun = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&path)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(String::from_utf8_lossy(&rerun.stdout), "4\n");
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

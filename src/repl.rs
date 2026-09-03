@@ -227,7 +227,7 @@ fn print_help() {
         say(&format!("{sig:width$}  {text}"));
     }
     say(
-        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :clear resets; ctrl-d exits)",
+        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :save <file> writes them as a script; :clear resets; ctrl-d exits)",
     );
 }
 
@@ -236,7 +236,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         say(&format!(
-            "ting {} — :help, :doc NAME, :vars, :load <file>, :time EXPR, :fmt, :history, :clear",
+            "ting {} — :help, :doc NAME, :vars, :load <file>, :time EXPR, :fmt, :history, :save <file>, :clear",
             env!("CARGO_PKG_VERSION")
         ));
     }
@@ -279,6 +279,28 @@ fn run_inner() -> ExitCode {
             interp = Interpreter::new(std::io::stdout());
             history.clear();
             say("(session cleared)");
+            continue;
+        }
+        if buffer.is_empty()
+            && let Some(path) = line.trim().strip_prefix(":save ")
+        {
+            // The transcript as a runnable script: chunks in order, a
+            // blank line between them, so `ting FILE` replays the session.
+            let path = path.trim();
+            if history.is_empty() {
+                say("(nothing to save yet)");
+                continue;
+            }
+            let script: String = history
+                .iter()
+                .map(|c| c.trim_end().to_string())
+                .collect::<Vec<_>>()
+                .join("\n\n")
+                + "\n";
+            match std::fs::write(path, script) {
+                Ok(()) => say(&format!("(saved {} chunk(s) to {path})", history.len())),
+                Err(e) => eprintln!("ting: cannot write {path}: {e}"),
+            }
             continue;
         }
         if buffer.is_empty() && line.trim() == ":history" {
