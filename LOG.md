@@ -3595,3 +3595,14 @@ milestone.
 product, mean_by, compact, is_blank, tutorial tally. CI green on
 253 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.28.0 (48th release).
+
+---
+
+## 2026-09-03 — Iteration 254b: v2.28.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.28.0`; product, mean_by, compact and is_blank print
+identically on both engines. Site: all resources 200, changelog
+shows 2.28.0, stdlib page lists the new rows. 48 releases, all
+verified. Next tick is the replenishment tick LOOP.md calls for.
