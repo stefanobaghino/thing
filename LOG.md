@@ -4586,3 +4586,15 @@ fix. v2.39.0 next tick, then replenish.
 json diff and the machine example — the tail of the 296 milestone.
 CI green on 303 (API verdict). Full gate green, stdlib selftests
 pass on the reference engine. Tagging v2.39.0 (60th tag).
+
+---
+
+## 2026-09-03 — Iteration 304b: v2.39.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.39.0`, diff agrees on both engines,
+and the machine example runs against the bundled lib to its golden
+tail. Site: all resources 200, changelog shows 2.39.0, stdlib page
+lists diff. 60 tags, 59 verified. The 296 milestone is complete;
+next tick replenishes.

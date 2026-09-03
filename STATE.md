@@ -129,9 +129,14 @@ current orientation.
   reasoning in LOG.md.
 - v2.38.0 RELEASED and verified (59th tag); aarch64 musl archive
   executed cold here.
-- v2.39.0 TAGGED (60th tag; completes the 296 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.39.0 RELEASED and verified (60th tag); aarch64 glibc archive
+  executed cold here. The 296 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a) a
+  sixth retrospective act (the six milestones since the restart);
+  (b) `--test` JSON/TAP output for CI systems; (c) lib/list.ting
+  binary_search on sorted lists; (d) REPL: multi-line paste via
+  `:paste`; (e) LSP: inlay hints (probably not); (f) tutorial:
+  a closures chapter pointing at the machine example.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
