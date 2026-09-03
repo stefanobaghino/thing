@@ -945,6 +945,39 @@ fn exit_codes_are_zero_one_two() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// Every line --doc prints fits an 80-column terminal: a long comment
+/// wraps under its signature, in the index and for a single entry.
+#[test]
+fn doc_output_fits_eighty_columns() {
+    for args in [
+        &["--doc"][..],
+        &["--doc", "json"][..],
+        &["--doc", "get_in"][..],
+    ] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        let long: Vec<&str> = stdout.lines().filter(|l| l.chars().count() > 78).collect();
+        assert!(
+            long.is_empty(),
+            "{args:?} has lines over 78 columns: {long:?}"
+        );
+        assert!(stdout.contains("get_in(v, path)"), "{args:?}: {stdout}");
+    }
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "get_in"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.starts_with("get_in(v, path)  [lib/json.ting]\n  The value at path"),
+        "{stdout}"
+    );
+    assert!(stdout.lines().count() >= 3, "{stdout}");
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
@@ -1221,7 +1254,7 @@ fn doc_flag_lists_everything_or_a_module() {
     assert!(stdout.contains("\n  len(x)"), "{stdout}");
     assert!(stdout.contains("\nlib/list.ting:\n"), "{stdout}");
     assert!(stdout.contains("\nlib/test.ting:\n"), "{stdout}");
-    assert!(stdout.contains("\n  median(xs)  "), "{stdout}");
+    assert!(stdout.contains("\n  median(xs)"), "{stdout}");
 
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "math"])

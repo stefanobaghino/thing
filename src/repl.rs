@@ -124,10 +124,38 @@ fn print_doc(name: &str) {
 /// function (signature, module, leading comment — every embedded
 /// module searched; a name in several modules lists all), or None.
 /// Shared by the REPL's :doc and the CLI's --doc.
+/// Width every doc line is kept within, so nothing runs past an
+/// 80-column terminal.
+const DOC_WIDTH: usize = 78;
+
+/// `text` word-wrapped to DOC_WIDTH, every line prefixed with `indent`
+/// spaces; an empty text gives no lines.
+fn wrap_indented(text: &str, indent: usize) -> Vec<String> {
+    let pad = " ".repeat(indent);
+    let mut lines = Vec::new();
+    let mut line = String::new();
+    for word in text.split_whitespace() {
+        if !line.is_empty() && indent + line.len() + 1 + word.len() > DOC_WIDTH {
+            lines.push(format!("{pad}{line}"));
+            line.clear();
+        }
+        if !line.is_empty() {
+            line.push(' ');
+        }
+        line.push_str(word);
+    }
+    if !line.is_empty() {
+        lines.push(format!("{pad}{line}"));
+    }
+    lines
+}
+
 pub fn doc_text(name: &str) -> Option<String> {
     if let Some(b) = crate::value::Builtin::ALL.iter().find(|b| b.name() == name) {
         let (sig, text) = b.doc();
-        return Some(format!("{sig}\n  {text}"));
+        let mut out = vec![sig.to_string()];
+        out.extend(wrap_indented(text, 2));
+        return Some(out.join("\n"));
     }
     // A source that imports every module makes the LSP's scanner
     // return all stdlib functions.
@@ -145,9 +173,7 @@ pub fn doc_text(name: &str) -> Option<String> {
     let mut out = Vec::new();
     for (path, _, sig, comment) in hits {
         out.push(format!("{sig}  [{path}]"));
-        if !comment.is_empty() {
-            out.push(format!("  {comment}"));
-        }
+        out.extend(wrap_indented(&comment, 2));
     }
     Some(out.join("\n"))
 }
@@ -164,7 +190,7 @@ pub fn doc_index(module: Option<&str>) -> Option<String> {
         let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
         docs.sort();
         for (sig, text) in docs {
-            out.push(format!("  {sig}  {text}"));
+            out.push(member_line(sig, text));
         }
     }
     let everything: String = crate::eval::embedded_stdlib()
@@ -199,18 +225,24 @@ pub fn doc_index(module: Option<&str>) -> Option<String> {
     Some(out.join("\n"))
 }
 
-/// One index line: the signature, then the first sentence of the
-/// comment (keeps the list one line per name).
+/// One index entry: the signature, then the first sentence of the
+/// comment — on the same line when it fits in DOC_WIDTH, otherwise
+/// wrapped underneath, indented further than the signature.
 fn member_line(sig: &str, comment: &str) -> String {
     let first = match comment.find(". ") {
         Some(i) => &comment[..=i],
         None => comment,
     };
     if first.is_empty() {
-        format!("  {sig}")
-    } else {
-        format!("  {sig}  {first}")
+        return format!("  {sig}");
     }
+    let one = format!("  {sig}  {first}");
+    if one.len() <= DOC_WIDTH {
+        return one;
+    }
+    let mut lines = vec![format!("  {sig}")];
+    lines.extend(wrap_indented(first, 6));
+    lines.join("\n")
 }
 
 /// `--doc FILE.ting` — the file's own top-level functions, one line
