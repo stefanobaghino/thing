@@ -210,6 +210,30 @@ print(li["sum"](sizes), ma["pow"](2, 8));
 6 256
 ```
 
+The list module is where most of the everyday shape-shifting lives —
+splitting by a predicate, grouping by a key, taking a prefix:
+
+```ting
+let li = import("lib/list.ting");
+let words = ["ant", "bee", "cow", "eel", "fox"];
+
+let split = li["partition"](words, fn(w) { return contains("aeiou", w[0]); });
+print(split[0], split[1]);
+
+let by_len = li["group_by"](["a", "bb", "cc", "d"], fn(w) { return str(len(w)); });
+print(by_len);
+print(li["take"](words, 2), li["drop"](words, 4));
+```
+
+```text
+["ant", "eel"] ["bee", "cow", "fox"]
+{"1": ["a", "d"], "2": ["bb", "cc"]}
+["ant", "bee"] ["fox"]
+```
+
+Keys of a map are always strings, so `group_by`'s key function must
+return one — `str(...)` is the idiom.
+
 The [stdlib page](stdlib.html) documents all five
 (list/map/string/math/test).
 
