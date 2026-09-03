@@ -7307,3 +7307,17 @@ it; stdlib.md row; selftest/testlib.ting exercises a pass and a
 failure and the failure's wording. Selftests pass on both engines;
 full gate green (233 tests). Two strokes banked toward v2.67.0
 (439, 442). Next: json flatten.
+
+---
+
+## 2026-09-03 — Iteration 443: json flatten
+
+CI and Pages green on 442 (API verdicts). Milestone stroke 2:
+`flatten(v)` in lib/json.ting — a map from each leaf's dotted path
+to its value, built on paths and get_in, the view configuration
+tooling wants for diffing and listing; paths_into, the worker
+behind paths, gains the comment it lacked. Four selftests (nested
+map and list, bare leaf, empty map, empty container inside),
+stdlib.md row. Selftests pass on both engines; full gate green
+(233 tests). Three strokes banked (439, 442, 443) — v2.67.0 next
+tick if quiet.

@@ -96,12 +96,12 @@ holds only the current milestone and the standing rules.
   audit green — milestone "the small print" complete.
 - 441: replenishment — milestone "tests and json" (v2.67–v2.68),
   reasoning in LOG.md.
-- 442: test module comments + check_type — two strokes banked
-  toward v2.67.0 (439, 442).
-- Backlog (one per tick, in order): (2) lib/json.ting flatten +
-  paths_into comment, selftests — then RELEASE v2.67.0; (3) LSP
-  formatting end position, protocol test; (4) tutorial JSON
-  chapter: diff and flatten; (5) health tick + audit.
+- 442: test module comments + check_type; 443: json flatten — three
+  strokes banked (439, 442, 443); RELEASE v2.67.0 next tick if
+  quiet.
+- Backlog after the release (in order): (3) LSP formatting end
+  position, protocol test; (4) tutorial JSON chapter: diff and
+  flatten; (5) health tick + audit.
 - Tags: 87 (v2.66.0), 86 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
