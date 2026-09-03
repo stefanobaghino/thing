@@ -123,10 +123,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.36.0 RELEASED and verified (57th tag); aarch64 musl archive
   executed cold here.
-- 292: bench/json.ting; 293: LSP folding ranges — milestone strokes
-  4–5 done; two toward v2.37.0.
-- Backlog (one per tick, in order): health tick + distribution
-  audit; release v2.37.0; replenish.
+- 292: bench/json.ting; 293: LSP folding ranges; 294: health tick
+  green — RELEASE v2.37.0 next tick if quiet (completes the 287
+  milestone), then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

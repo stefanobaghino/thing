@@ -4409,3 +4409,18 @@ the formatter tracks depth. One-line blocks fold nothing. Protocol
 test pins a nested fn/if pair and the count. Reference line
 updated. Full gate green (199 tests). Second stroke toward v2.37.0;
 the 287 milestone's five strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 294: health tick + audit
+
+CI and Pages green on 293 (API verdicts). Bench at load ~8: all six
+checksums match; absolute times and even the vm/eval ratios swing
+widely (json +27%, maps +26% for the VM) — the same contention
+signature as 216, 230 and 278, and no engine code has changed, so
+no chase. Fuzz: 50000 differential cases (seed 20260903294), the
+crash fuzzer, and 20000 formatter cases (seed 294) all pass in
+release. Distribution: 57 releases with the expected asset counts
+(36 × 3, 14 × 4, 7 × 6), all six v2.36.0 download URLs resolve, all
+eight site resources answer 200 and the reference mentions folding.
+Nothing to fix. v2.37.0 next tick, then replenish.
