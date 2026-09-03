@@ -141,10 +141,16 @@ current orientation.
   reasoning in LOG.md.
 - v2.42.0 RELEASED and verified (63rd tag); aarch64 musl archive
   executed cold here.
-- v2.43.0 TAGGED (64th tag; completes the 314 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here (LSP initialize advertises workspace symbols).
-  Then replenish.
+- v2.43.0 RELEASED and verified (64th tag); aarch64 glibc archive
+  executed cold here. The 314 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a) a
+  README refresh (feature list has drifted: runner, TAP, six
+  modules, eleven LSP capabilities); (b) lib/math.ting stats:
+  variance/stddev (stats example computes them by hand); (c)
+  `--test` summary counts in the human output per directory; (d)
+  playground: a "load example" dropdown driven by examples/ (needs
+  build.sh work); (e) LSP: document links for import() paths; (f)
+  tutorial: modules chapter mentions --doc.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

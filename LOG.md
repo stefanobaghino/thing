@@ -4880,3 +4880,15 @@ v2.43.0 next tick, then replenish.
 Workspace symbols — the tail of the 314 milestone. CI green on 320
 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.43.0 (64th tag).
+
+---
+
+## 2026-09-03 — Iteration 321b: v2.43.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.43.0`, sort_with agrees on both
+engines, and the released `--lsp` advertises
+workspaceSymbolProvider. Site: all resources 200, changelog shows
+2.43.0. 64 tags, 63 verified. The 314 milestone is complete; next
+tick replenishes.
