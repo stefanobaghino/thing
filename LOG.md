@@ -6005,3 +6005,21 @@ file; the unknown-name message says "file" now too. io test with a
 commented function, a bare one and a non-function binding. Help
 and reference updated. Full gate green (218 tests). Three strokes
 banked (373, 376, 377) — v2.55.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 377b: correction
+
+The 377 entry was written and pushed with the gate red: the tick's
+script asserted on a test-file anchor that rustfmt had reflowed,
+the assertion failed, and the chain kept going — `set -e` does
+nothing here, because the harness evaluates the command inside a
+construct where errexit is suppressed (checked directly: `set -e;
+false; echo` prints). The 358b rule named `set -e` as an
+alternative; it is not one. The rule is now: one `&&` list, with
+heredoc bodies following the line. What was actually pushed at
+6835d06: the feature complete, the io suite red on the two
+unknown-name assertions, no user-file test. This tick: the two
+assertions updated to the new message, the user-file test added,
+the full gate green (218 tests). `--doc list` shows sum without a
+comment because the module has none above it — not a regression.
