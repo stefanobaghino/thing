@@ -194,6 +194,9 @@ pub struct Interpreter<W: Write> {
     /// The origin of each function on the call stack (None for one
     /// defined in the source being run), innermost last.
     call_origins: Vec<Option<Rc<Origin>>>,
+    /// The file being run: what a span with no origin is read
+    /// against when a program asks where something failed.
+    source: Option<(String, Rc<str>)>,
 }
 
 /// The standard library, baked into the binary at build time (always
@@ -251,6 +254,7 @@ impl<W: Write> Interpreter<W> {
             importing: Vec::new(),
             origin_stack: Vec::new(),
             call_origins: Vec::new(),
+            source: None,
         }
     }
 
@@ -271,6 +275,35 @@ impl<W: Write> Interpreter<W> {
 
     pub fn set_args(&mut self, args: Vec<String>) {
         self.script_args = args;
+    }
+
+    /// The path and text of the source being run, so `try` can say
+    /// where a failure happened in it. Unset, locations in it are
+    /// reported as line 1 of an unnamed file.
+    pub fn set_source(&mut self, path: &str, src: &str) {
+        self.source = Some((path.to_string(), Rc::from(src)));
+    }
+
+    /// A span as the entries of a ting map: the file it belongs to,
+    /// and the line and column in that file.
+    fn site(
+        &self,
+        span: Span,
+        origin: &Option<Rc<Origin>>,
+    ) -> std::collections::BTreeMap<String, Value> {
+        let (path, src): (&str, &str) = match origin {
+            Some(o) => (&o.path, &o.src),
+            None => match &self.source {
+                Some((p, s)) => (p, s),
+                None => ("", ""),
+            },
+        };
+        let (line, col) = span.line_col(src);
+        let mut m = std::collections::BTreeMap::new();
+        m.insert("file".to_string(), Value::Str(path.to_string()));
+        m.insert("line".to_string(), Value::Int(line as i64));
+        m.insert("col".to_string(), Value::Int(col as i64));
+        m
     }
 
     /// Define a name in the current (global, for the VM) scope.
@@ -1008,8 +1041,35 @@ impl<W: Write> Interpreter<W> {
                         let f = f.clone();
                         let mut m = std::collections::BTreeMap::new();
                         match self.call_value(&f, Vec::new(), span) {
-                            Ok(v) => m.insert("ok".to_string(), v),
-                            Err(e) => m.insert("err".to_string(), Value::Str(e.message)),
+                            Ok(v) => {
+                                m.insert("ok".to_string(), v);
+                            }
+                            Err(e) => {
+                                // The same three things the diagnostic
+                                // prints: what failed, where, and the
+                                // calls it came out of.
+                                m.insert(
+                                    "at".to_string(),
+                                    Value::map(self.site(e.span, &e.origin)),
+                                );
+                                let trace = e
+                                    .frames
+                                    .iter()
+                                    .map(|f| {
+                                        let mut site = self.site(f.span, &f.origin);
+                                        site.insert(
+                                            "fn".to_string(),
+                                            match &f.name {
+                                                Some(n) => Value::Str(n.to_string()),
+                                                None => Value::Nil,
+                                            },
+                                        );
+                                        Value::map(site)
+                                    })
+                                    .collect();
+                                m.insert("trace".to_string(), Value::list(trace));
+                                m.insert("err".to_string(), Value::Str(e.message));
+                            }
                         };
                         Ok(Value::map(m))
                     }
@@ -2388,9 +2448,20 @@ mod tests {
             output("print(try(fn() { return 41 + 1; }));"),
             "{\"ok\": 42}\n"
         );
+        // The error branch carries the message, where it was raised
+        // and the calls it came out of — here just the literal `try`
+        // itself called, and no source set to name.
         assert_eq!(
-            output("print(try(fn() { return 1 / 0; }));"),
-            "{\"err\": \"division by zero\"}\n"
+            output("print(try(fn() { return 1 / 0; })[\"err\"]);"),
+            "division by zero\n"
+        );
+        assert_eq!(
+            output("print(len(try(fn() { return 1 / 0; })[\"trace\"]));"),
+            "1\n"
+        );
+        assert_eq!(
+            output("print(has(try(fn() { return 1 / 0; }), \"at\"));"),
+            "true\n"
         );
         // fail raises; try catches; the message travels.
         assert_eq!(

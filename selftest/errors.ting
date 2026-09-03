@@ -51,3 +51,19 @@ let anon = try(fn() { return apply(fn(a, b) { return a + b; }); });
 assert(contains(anon["err"], "an anonymous function expects 2 arguments"), "a literal has no name");
 let fmt = try(fn() { return format("{}", 1, 2); });
 assert(contains(fmt["err"], "1 placeholder but 2 value arguments"), "placeholders count too");
+
+# try() hands back where the failure happened and the calls it came
+# out of, not just the message.
+let raised = try(fn() { fail("here"); });
+let next_line = try(fn() { fail("there"); });
+assert(next_line["at"]["line"] == raised["at"]["line"] + 1, "consecutive lines count up");
+assert(contains(raised["at"]["file"], "errors.ting"), "the file is named");
+assert(raised["at"]["col"] > 0, "a column too");
+fn middle(x) { return x + "a"; }
+fn outermost(x) { return middle(x); }
+let deep = try(fn() { return outermost(1); });
+assert(len(deep["trace"]) == 3, "one frame per call");
+assert(deep["trace"][0]["fn"] == "middle", "innermost frame first");
+assert(deep["trace"][1]["fn"] == "outermost", "then its caller");
+assert(deep["trace"][2]["fn"] == nil, "the literal try() called has no name");
+assert(deep["trace"][0]["line"] == deep["at"]["line"] + 1, "frames carry their call site");

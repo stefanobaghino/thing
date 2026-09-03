@@ -18,6 +18,10 @@ t["check_err"]("wrong message", fn() { fail("other"); }, "kaboom");
 t["check_err"]("no error at all", fn() { return 5; }, "kaboom");
 assert(t["state"]["failed"] == 4, "err failures counted");
 assert(contains(t["state"]["failures"][2], "lacks"), "wrong-message shape");
+# Where the error was raised, which check_err takes from try(). The
+# file name only: a path prints with the separators of the platform
+# it was given on, and its line moves whenever this file is edited.
+assert(contains(t["state"]["failures"][2], "testlib.ting:"), "the failing file is named");
 assert(contains(t["state"]["failures"][3], "expected an error, got 5"), "no-error shape");
 
 t["check_approx"]("approx passes", 0.1 + 0.2, 0.3, 0.000001);

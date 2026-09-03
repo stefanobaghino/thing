@@ -33,6 +33,9 @@ pub fn eval_chunk<W: Write>(interp: &mut Interpreter<W>, src: &str) -> Outcome {
 /// `eval_chunk` with the name diagnostics are rendered under: "repl"
 /// for a typed chunk, the file's path for a `:load`.
 pub fn eval_chunk_at<W: Write>(interp: &mut Interpreter<W>, path: &str, src: &str) -> Outcome {
+    // Each line is its own source: what `try` names when a failure
+    // happens in it.
+    interp.set_source(path, src);
     let tokens = match lexer::lex(src) {
         Ok(t) => t,
         Err(e) => return Outcome::Error(diag::render(path, src, &e.message, e.span)),

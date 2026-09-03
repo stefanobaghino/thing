@@ -195,7 +195,7 @@ scope).
 | `write_file(path, s)` / `write_file(path, s, "append")` | writes (or overwrites) the file; `"append"` adds to the end |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
-| `try(f)`       | calls `f()`; `{"ok": result}` on success, `{"err": message}` on a runtime error |
+| `try(f)`       | calls `f()`; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
 | `fail(msg)`    | raises a runtime error with the given string message         |
 | `map(xs, f)`   | a fresh list of `f(x)` for each element                      |
 | `filter(xs, f)` | a fresh list of the elements where `f(x)` is `true` (bool required) |

@@ -3,7 +3,8 @@
 #   let t = import("lib/test.ting");
 #   t["check"]("math works", 1 + 1 == 2);
 #   t["check_eq"]("name", got, want);
-#   t["check_err"]("name", fn() { fail("boom"); }, "boom");
+#   t["check_err"]("name", fn() { fail("boom"); }, "boom");   # names
+#                                        # the line that raised it
 #   t["check_approx"]("name", got, want, 0.001);
 #   t["check_type"]("name", value, "list");
 #   t["summary"]();   # prints results; exits 1 if anything failed
@@ -45,7 +46,11 @@ fn check_err(name, f, want) {
     state["passed"] = state["passed"] + 1;
   } else if has(r, "err") {
     state["failed"] = state["failed"] + 1;
-    push(state["failures"], format("{}: error {} lacks {}", name, r["err"], want));
+    # try() says where the failure happened; a wrong message is much
+    # easier to chase with the line that raised it.
+    let at = r["at"];
+    push(state["failures"], format("{}: error {} raised at {}:{}:{} lacks {}",
+    name, r["err"], at["file"], at["line"], at["col"], want));
   } else {
     state["failed"] = state["failed"] + 1;
     push(state["failures"], format("{}: expected an error, got {}", name, r["ok"]));

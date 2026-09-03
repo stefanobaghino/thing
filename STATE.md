@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 257 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 258 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -26,8 +26,8 @@ current orientation.
   --fail-fast, per-file check counts), --lsp (thirteen
   capabilities). A runtime error points at the line that raised it
   and carries a note per call it unwound through (named, capped at
-  ten with the middle elided); module errors point into the module's
-  own file; cyclic data prints, compares and json-fails cleanly.
+  ten with the middle elided), which try() also hands back as "at"
+  and "trace"; module errors point into the module's own file; cyclic data prints, compares and json-fails cleanly.
 - Distribution: six release archives per tag since v2.30.0 (x86_64
   and aarch64 Linux gnu + musl, darwin arm64, windows), built on
   22.04 runners with a glibc floor guard; Pages site at
@@ -188,10 +188,11 @@ holds only the current milestone and the standing rules.
   errors count in English and name the function called.
 - v2.83.0 VERIFIED (104th tag; strokes 519, 520; both aarch64
   archives executed here).
+- 522: try() hands back "at" and "trace"; lib/test.ting names the
+  line that raised.
 - Backlog (one per tick, in order):
-  (1) try() hands the trace back, and lib/test.ting says where the
-  error was raised; (2) the docs read the trace; (3) RELEASE
-  v2.84.0; (4) health tick + audit.
+  (1) the docs read the trace; (2) RELEASE v2.84.0; (3) health tick
+  + audit.
 - Tags: 104 (v2.83.0), 103 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

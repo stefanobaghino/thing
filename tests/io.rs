@@ -409,6 +409,35 @@ fn errors_show_the_whole_way_back() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `try` hands a failure's location and call trace back to the
+/// program, identically under both engines.
+#[test]
+fn try_reports_where_a_failure_happened() {
+    let path = std::env::temp_dir().join(format!("ting-try-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "fn inner(x) { return x + \"a\"; }\nfn outer(x) { return inner(x); }\nlet r = try(fn() { return outer(1); });\nprint(r[\"at\"][\"line\"], r[\"at\"][\"col\"]);\nfor f in r[\"trace\"] { print(f[\"fn\"], f[\"line\"]); }\n",
+    )
+    .unwrap();
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(0), "{engine}");
+        let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+        assert_eq!(stdout.lines().next(), Some("1 22"), "{engine}: {stdout}");
+        assert!(stdout.contains("inner 2"), "{engine}: {stdout}");
+        assert!(stdout.contains("outer 3"), "{engine}: {stdout}");
+        assert!(stdout.contains("nil 3"), "{engine}: {stdout}");
+        seen.push(stdout);
+    }
+    assert_eq!(seen[0], seen[1], "engines disagree");
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--check` follows local imports: a broken module reached through
 /// `import("./...")` is reported under its own path, once, and fails
 /// the check; embedded stdlib imports are not files and are skipped.

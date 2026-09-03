@@ -8781,3 +8781,34 @@ two-deep failure prints "note: in inner, called from ...:2:22" and
 through a parameter says "two expects 2 arguments, got 1", naming
 a function the call site never mentions. 104th tag. Next: try()
 hands the trace back to ting programs.
+
+---
+
+## 2026-09-04 — Iteration 522: try() hands the trace back
+
+CI green on 521 (API verdict). Milestone stroke 3: what a
+diagnostic prints, a ting program can now read. `try(f)` still
+answers `{"ok": v}` on success, but a failure comes back with three
+keys instead of one: "err", the message; "at", a map of the file,
+line and column where it was raised; and "trace", a list of the
+calls it came out of, innermost first, each with the same three
+fields plus "fn" — the function's name, or nil for a literal that
+never had one. It is additive, so the 2.x promise holds. The
+interpreter needed one new thing to answer "which file", since a
+span with no origin belongs to the source being run and nothing in
+the interpreter knew what that was: a `set_source` alongside the
+existing `set_args` and `set_base_dir`, called by the runner for a
+script and by the REPL for each line, so a REPL failure reports
+"repl". lib/test.ting spends it immediately — a `check_err` whose
+error carries the wrong message now says where that error was
+raised, which is the difference between "some call in this file
+failed" and a line number. Tested from inside ting: the corpus
+checks that two failures on consecutive lines report consecutive
+line numbers (no hard-coded position to rot), that a three-deep
+failure has three frames named middle, outermost and nil, and that
+a frame's line is its call site rather than the failure's; an io
+test pins the same output identical under both engines. The
+reference's `try` row now lists the three keys. Full gate green
+(258 tests, corpus at 555 checks), plus 20000 differential cases
+(seed 20260904522), 5000 formatter cases and the crash fuzzer.
+Next: the docs read the trace.
