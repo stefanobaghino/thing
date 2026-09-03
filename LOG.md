@@ -8281,3 +8281,22 @@ report, the suggestion, an assignment to an unbound name, and a
 file of forward references, loop variables and closures that must
 stay silent. Full gate green (249 tests). One stroke banked toward
 v2.77.0. Next: the LSP's own tests for it.
+
+---
+
+## 2026-09-03 — Iteration 496: the editor fixes it
+
+CI green on 495 (API verdict). Milestone stroke 2: the LSP has its
+own test for the new diagnostic, and an editor can now apply it —
+the walk's findings are exposed as a struct (name, span, nearest)
+rather than a formatted sentence, so code_action_result offers
+"Replace with `total`" on a name bound nowhere, beside the quickfix
+it already offered for a misspelt stdlib member. The first draft of
+the test hung the suite for two and a half minutes: the script's
+newlines went into the JSON as real newlines instead of `\n`, the
+server never answered a message it could not parse, and the
+test's reader blocked. Driving the server by hand showed both
+messages arriving correctly; the fix was in the test's own quoting.
+The reference's LSP paragraph now names both quickfixes. Full gate
+green (250 tests). Two strokes banked (495, 496). Next: release
+v2.77.0.
