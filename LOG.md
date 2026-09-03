@@ -3958,3 +3958,18 @@ correct name and the non-function export stay silent, and fixing
 the document clears the list. Reference Tooling line updated. Full
 gate green. First stroke toward v2.32.0 (with 268b's ordering fix
 already banked).
+
+---
+
+## 2026-09-03 — Iteration 270: retrospective act five
+
+CI green on 269 (API verdict). Milestone stroke 5: a short fifth
+act on the glibc episode — the first failed cold test, why a
+dependency-free crate still shipped a C-library dependency, the
+three responses (oldest runner + floor guard, static musl assets,
+the broken release left published with honest notes), and the
+lesson that the cold test was the only check that could have
+caught it. Closing section's count moves to fifty-three tags.
+Markdown guard and full gate green. Third stroke banked (with
+268b's ordering fix and 269's warning) — v2.32.0 next tick if
+quiet; the 264 milestone is then complete.

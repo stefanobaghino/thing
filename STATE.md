@@ -103,10 +103,10 @@ current orientation.
 - v2.31.0 RELEASED and verified (53rd tag); aarch64 glibc archive
   executed cold here. 268b: --test lists files before descending
   (correction, unreleased).
-- 269: LSP unknown-member warning — milestone stroke 4; toward
-  v2.32.0 with 268b's ordering fix.
-- Backlog (one per tick, in order): (5) retrospective act five
-  (glibc episode); then release v2.32.0; then replenish.
+- 268b: --test ordering fix; 269: LSP unknown-member warning; 270:
+  retrospective act five — three strokes banked; RELEASE v2.32.0
+  next tick if quiet (completes the 264 milestone).
+- After verification: replenishment tick.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
