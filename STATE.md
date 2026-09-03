@@ -106,10 +106,11 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.68.0 VERIFIED (89th tag; strokes 445, 446, 449; both aarch64
   archives executed here).
-- 451: builtin-shadowing warning; 452: is_number; 453: argmax and
-  argmin — three strokes banked; RELEASE v2.69.0 next tick if quiet.
+- v2.69.0 TAGGED (90th tag; strokes 451, 452, 453): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (shadowing warning, is_number, argmax, selftests).
 - Backlog after the release: (5) health tick + audit; then replenish.
-- Tags: 89 (v2.68.0), 88 verified; v2.29.0 is publicly marked broken
+- Tags: 90 (v2.69.0), 88 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

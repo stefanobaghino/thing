@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.69.0 (2026-09-03)
+
+- `--check` and the LSP warn when a `let`, `fn` or parameter shadows
+  a builtin.
+- lib/string.ting: `is_number(s)`; lib/list.ting: `argmax(xs)` and
+  `argmin(xs)`.
+
 ## v2.68.0 (2026-09-03)
 
 - LSP: the whole-document formatting edit ends at the document's

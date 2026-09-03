@@ -7498,3 +7498,11 @@ the index-returning twins of max_by and min_by, which return the
 element. Four selftests (ties, strings, empty), stdlib.md row.
 Selftests pass on both engines; full gate green (236 tests). Three
 strokes banked (451, 452, 453) — v2.69.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 454: v2.69.0
+
+The shadowing warning, is_number, argmax and argmin. CI and Pages
+green on 453 (API verdicts). Full gate green, stdlib selftests pass
+on both engines. Tagging v2.69.0 (90th tag).
