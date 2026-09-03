@@ -125,12 +125,14 @@ current orientation.
   executed cold here.
 - v2.37.0 RELEASED and verified (58th tag); aarch64 glibc archive
   executed cold here. The 287 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  `--check` runs over directories like --test; (b) lib/string.ting
-  wrap(s, width); (c) a `--doc NAME` CLI flag mirroring :doc; (d)
-  json module: `equal_in`/diff paths between two values; (e) LSP:
-  semantic tokens (probably too big); (f) examples: a text
-  adventure or state machine showing closures + maps.
+- 296: replenishment — milestone "closing loops" (v2.38–v2.40),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) --check/--fmt/--fmt-check
+  accept directories (shared collector), io test; (2) `ting --doc
+  NAME` CLI flag sharing the REPL lookup, io test; (3)
+  lib/string.ting wrap(s, width), selftests; (4) lib/json.ting
+  diff(a, b), selftests; (5) examples/machine.ting (closure state
+  machine), cookbook regen. Release after ~3; health tick after.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

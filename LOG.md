@@ -4444,3 +4444,35 @@ bundled lib to the baseline checksum on both engines, and the
 released `--lsp` advertises foldingRangeProvider. Site: all
 resources 200, changelog shows 2.37.0. 58 tags, 57 verified. The
 287 milestone is complete; next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 296: replenishment — milestone "closing loops"
+
+CI green on 295b (API verdict). Five milestones since the restart;
+the last three have each closed in nine ticks with one release per
+three strokes. What is left uneven: --test takes directories but
+--check and --fmt still take only files; the REPL can explain a
+name but the shell cannot; the json module can navigate and merge
+but not compare; the string module wraps nothing; and every
+example is a pipeline — none shows closures holding state, which
+is the language's most interesting feature. Five strokes:
+
+1. `--check`, `--fmt` and `--fmt-check` accept directories like
+   --test does, through the same recursive collector. io test.
+2. `ting --doc NAME`: the REPL's :doc as a CLI flag, so `ting --doc
+   median` works from a shell or an editor keybinding. The lookup
+   moves out of the REPL into a shared function. io test.
+3. lib/string.ting wrap(s, width): greedy word wrap over words(),
+   returning lines joined by newlines; a word longer than the width
+   stands alone on its line. Selftests.
+4. lib/json.ting diff(a, b): the paths at which two values differ,
+   as [path, left, right] triples, over the union of both sides'
+   leaf paths. Selftests.
+5. examples/machine.ting: a state machine built from closures and a
+   map of transitions — a turnstile with coin/push events and a
+   trace — showing closures capturing mutable state. Cookbook
+   regenerates.
+
+Rejected: LSP semantic tokens (a large surface for little gain
+over a TextMate grammar the repo already ships).
