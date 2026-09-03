@@ -124,9 +124,13 @@ holds only the current milestone and the standing rules.
   strokes banked toward v2.72.0. 469: health tick + audit green —
   milestone "every file, every time" complete. Found: unknown
   options (-h, -V, --nosuch) are taken for script paths.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md; the release
-  follows the next stroke.
+- 470: replenishment — milestone "the front door's handle"
+  (v2.72–v2.73), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) unknown options are errors,
+  -h/-V aliases, io test — then RELEASE v2.72.0 (467, 468, +1); (2)
+  exit codes 0/1/2, io test; (3) reference Running section + README;
+  (4) lib/list.ting take_while/drop_while, selftests; (5) health tick
+  + audit.
 - Tags: 92 (v2.71.0), 91 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

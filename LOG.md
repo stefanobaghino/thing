@@ -7793,3 +7793,35 @@ should work. First candidate for the next milestone. The "every
 file, every time" milestone is complete; two strokes (467, 468)
 are banked toward v2.72.0. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-03 — Iteration 470: replenishment — milestone "the front door's handle"
+
+CI green on 469 (API verdict). Twenty-eight milestones since the
+restart, ninety-two tags. The 469 probe: `ting -h`, `ting -V` and
+`ting --nosuch` are read as script paths and fail with "cannot
+read -h"; a second probe shows `--test --nosuch` reporting a FAIL
+for a file named --nosuch and `--check --nosuch` the same "cannot
+read". The binary's front door has no handle for the two flags
+every shell user tries first, and no way to say "that is not an
+option". Five strokes:
+
+1. An argument that starts with `-` (other than `-` itself) and
+   that no mode recognises is "ting: unknown option X (see
+   --help)" with exit 2 — at the top level and under --test,
+   --check and --fmt; `-h` and `-V` alias --help and --version. io
+   test. Then release v2.72.0 (467, 468, +1).
+2. Exit codes made consistent and documented: 0 for success, 1 for
+   a failure the tool reports (a failed run, test, check or format),
+   2 for a usage error (bad option, missing operand); the usage
+   messages that exit 1 today move to 2. io test.
+3. The reference's Running section lists the options, the short
+   forms and the exit codes; the README's one-liner mentions -h.
+4. lib/list.ting take_while(xs, pred) and drop_while(xs, pred):
+   the longest prefix satisfying pred, and the rest. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a full option parser (nine flags and one operand shape
+do not need one), `--` to end options (no operand of ting's
+starts with a dash except `-` itself).
