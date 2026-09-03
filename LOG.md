@@ -6921,3 +6921,16 @@ null on a builtin; merge_with sums a shared key on the musl VM and
 the gnu reference engine; `--test selftest` passes 11/11 on each.
 CI and Pages green on the release commit. Eighty-four tags,
 eighty-three verified. Next: the thirteen-capability count.
+
+---
+
+## 2026-09-03 — Iteration 423: thirteen, everywhere
+
+CI green on 422b (API verdict). Milestone stroke 3: the README's
+opening and toolchain paragraph, the reference's LSP bullet, the
+editor README's capability sentence and STATE.md's shape line all
+say thirteen capabilities and name the two new ones — highlights
+of the symbol under the cursor, and a rename prepare step that
+declines keywords and builtins. No "twelve" is left in those four
+files (the retrospective's are history and stay). Docs guard
+green. One stroke banked toward v2.64.0. Next: squeeze.
