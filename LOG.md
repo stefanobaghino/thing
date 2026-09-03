@@ -8162,3 +8162,22 @@ Linux archives downloaded fresh, unpacked and run — `-V` reports
 2.75.0, the undefined-variable suggestion reads the same byte for
 byte on both engines, and `--doc medain` points at median. 96th
 tag. Next: unknown options suggest an option.
+
+---
+
+## 2026-09-03 — Iteration 490: the option you meant
+
+CI green on the v2.75.0 verification commit (API verdict).
+Milestone stroke 1 toward v2.76.0: `ting --fmr` now says "unknown
+option --fmr (did you mean --fmt?) (see --help)", from a table of
+the nineteen options the dispatch accepts. Two changes to
+diag::nearest came out of trying it. `--lps` for `--lsp` got
+nothing, because a swap of neighbours costs two in plain
+Levenshtein; the distance is now Damerau's, where it costs one, and
+`medain` is a single slip from `median` too. And `-x` was told it
+meant `-V`, since one edit is the whole of a two-character name —
+names under three characters now get no suggestion at all. io test
+covers three typos, a name with nothing near it and the
+one-letter case; the reference says both rules. Full gate green
+(248 tests). One stroke banked toward v2.76.0. Next: docs and
+selftests for the suggestions, then the release.

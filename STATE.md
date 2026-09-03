@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 247 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 248 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -142,9 +142,10 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.75.0 VERIFIED (96th tag; strokes 486, 487, 488; both aarch64
   archives executed here).
-- Backlog (one per tick, in order): (1) unknown options suggest an
-  option; (2) docs + selftests, then RELEASE v2.76.0; (3) health
-  tick + audit.
+- 490: the option you meant (Damerau distance; no suggestion under
+  three characters) — one stroke banked toward v2.76.0.
+- Backlog (one per tick, in order): (1) docs + selftests for the
+  suggestions — then RELEASE v2.76.0; (2) health tick + audit.
 - Tags: 96 (v2.75.0), 95 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
