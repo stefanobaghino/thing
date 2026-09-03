@@ -121,9 +121,9 @@ current orientation.
   executed cold here. The 279 milestone is complete.
 - 287: replenishment — milestone "trust and teach" (v2.36–v2.38),
   reasoning in LOG.md.
-- 288: tutorial Testing chapter; 289: formatter fuzz; 290:
-  zip_with/cartesian — three strokes banked; RELEASE v2.36.0 next
-  tick if quiet.
+- v2.36.0 TAGGED (57th tag; milestone strokes 1–3): verify next
+  tick — six assets, glibc guard, cold-execute the aarch64 musl
+  archive here.
 - Backlog after the release (in order): (4) bench/json.ting +
   baseline row; (5) LSP folding ranges, protocol test; then health
   tick and replenish.

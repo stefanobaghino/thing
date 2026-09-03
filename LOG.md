@@ -4361,3 +4361,11 @@ zip_with(a, b, f) (one line over zip and map, trimming like zip)
 and cartesian(a, b) (a-major pairs, empty if either side is). Four
 assertions, two stdlib.md rows. Full gate green on both engines.
 Third stroke banked — v2.36.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 291: v2.36.0
+
+Testing chapter, formatter fuzz, zip_with/cartesian. CI green on
+290 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.36.0 (57th tag).
