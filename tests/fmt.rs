@@ -45,3 +45,33 @@ fn formatting_is_idempotent_and_ast_preserving() {
     }
     assert!(checked >= 15, "only {checked} ting files checked");
 }
+
+mod common;
+
+/// The formatter's two invariants — idempotence and an unchanged AST —
+/// over thousands of grammar-generated programs, not just the
+/// hand-written corpus. TING_FMT_CASES / TING_FMT_SEED tune a sweep.
+#[test]
+fn generated_programs_format_idempotently_and_preserve_ast() {
+    let seed = std::env::var("TING_FMT_SEED")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(0xF0F0);
+    let cases = std::env::var("TING_FMT_CASES")
+        .ok()
+        .and_then(|v| v.parse().ok())
+        .unwrap_or(2000);
+    let mut g = common::Gen::new(seed);
+    for case in 0..cases {
+        let src = g.program();
+        let once = ting::fmt::format(&src)
+            .unwrap_or_else(|e| panic!("case {case} does not lex: {}\n{src}", e.message));
+        let twice = ting::fmt::format(&once).unwrap();
+        assert_eq!(once, twice, "not idempotent on case {case}:\n{src}");
+        assert_eq!(
+            ast_fingerprint(&src),
+            ast_fingerprint(&once),
+            "AST changed by formatting on case {case}:\n{src}\n--- formatted:\n{once}"
+        );
+    }
+}
