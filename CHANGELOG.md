@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.79.0 (2026-09-03)
+
+- `ting --check` and the LSP warn about a map literal that gives the
+  same string key twice — the last one silently wins.
+- They also warn about a statement that can never run, after a
+  `return`, `break` or `continue` in the same block.
+
 ## v2.78.0 (2026-09-03)
 
 - `ting --check` and the LSP warn when a call's argument count
