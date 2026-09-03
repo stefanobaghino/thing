@@ -8584,3 +8584,22 @@ run is none. Both engines share the builtin, so both count the
 same; the io test asserts that, plus the failing case, the silent
 case and a file that checks nothing. Full gate green (255 tests).
 One stroke banked toward v2.81.0. Next: --test prints the counts.
+
+---
+
+## 2026-09-03 — Iteration 512: what each file verified
+
+CI green on 511 (API verdict). Milestone stroke 2: `--test` now
+says how much each file checked — "ok tests/list.ting (12 checks)",
+a total in the summary, "# 12 checks" in the TAP stream, and "(no
+checks)" for a file that passed without verifying anything, with
+the number of such files named in the summary. The runner sets
+TING_TEST_REPORT on each child and lifts the reported line out of
+its stderr, so a failure's diagnostic is unchanged. A failing file
+is never counted among those that checked nothing: it has already
+said what went wrong. Run over selftest, the suite reports 530
+checks in eleven files, one of which — _lib.ting, a helper module —
+honestly checks nothing. Two older tests pinned the summary line
+and were updated to the counts their own fixtures run. Full gate
+green (256 tests). Two strokes banked (511, 512). Next: release
+v2.81.0.

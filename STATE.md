@@ -17,13 +17,13 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 255 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 256 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
-  --fail-fast), --lsp (thirteen
+  --fail-fast, per-file check counts), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.
 - Distribution: six release archives per tag since v2.30.0 (x86_64
@@ -170,10 +170,10 @@ holds only the current milestone and the standing rules.
   complete.
 - 510: replenishment — milestone "how much it checked" (v2.81-v2.82),
   reasoning in LOG.md.
-- 511: counting the checks (TING_TEST_REPORT) — one stroke banked
-  toward v2.81.0.
-- Backlog (one per tick, in order): (1) --test prints per-file
-  and total counts, names files with none — then RELEASE v2.81.0;
+- 511: counting the checks (TING_TEST_REPORT); 512: what each file
+  verified — two strokes banked toward v2.81.0.
+- Backlog (one per tick, in order): (1) RELEASE v2.81.0 (strokes 511,
+  512);
   (3) lib/test.ting's helpers count too, selftests; (4) docs, then
   RELEASE v2.82.0; (5) health tick + audit.
 - Tags: 101 (v2.80.0), 100 verified; v2.29.0 is publicly marked broken
