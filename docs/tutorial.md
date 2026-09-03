@@ -233,8 +233,23 @@ hi, ting - module v1
 
 Relative paths resolve against the importing file's directory. A module
 runs once per program: every later `import` of the same file returns
-the very same map, and errors inside a module point at the module's own
-line and column.
+the very same map.
+
+When something fails inside a module's function, the diagnostic points
+at the module's own file and line, and a note names the place in your
+script that called into it. Say `greeter.ting` had a typo in `greet`
+and the script above called it on line 4:
+
+```text
+greeter.ting:1:28: error: undefined variable 'nam'
+ 1 | fn greet(name) { return "hi, " + nam; }
+   |                                  ^^^
+note: called from main.ting:4:7
+```
+
+Errors the checker can find without running — a syntax error in a
+module, say — surface earlier: `ting --check main.ting` follows every
+`import` of a local file and reports each one under its own path.
 
 Six stdlib modules ship embedded in the interpreter itself — any
 path starting with `lib/` falls back to the built-in copy when no
