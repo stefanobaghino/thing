@@ -4174,3 +4174,22 @@ adds nothing), and a Levenshtein-based "did you mean" for *builtin*
 names in the checker (unknown identifiers are runtime errors in
 ting; the checker has no symbol table and building one is a bigger
 milestone than a quickfix).
+
+---
+
+## 2026-09-03 — Iteration 280: LSP quickfix
+
+CI green on 279 (API verdict). Milestone stroke 1: the server
+advertises codeActionProvider and answers textDocument/codeAction
+with a quickfix for every unknown-member warning on the requested
+lines: "Replace with `x`" where x is the module export nearest to
+the key by edit distance, offered only within one edit per four
+characters (at least two). The member scan was refactored to carry
+the module's exports alongside each finding, so the diagnostic and
+the fix share one pass. First cut used plain Levenshtein and the
+test caught it choosing "mean" over "median" for "medain" (both at
+distance 2, alphabetical tie-break) — switched to optimal string
+alignment, where the transposition costs one, and the right name
+wins. A key unlike any export gets the warning but no action.
+Protocol test covers the fix, an unrelated range, and the far name.
+Full gate green. Second stroke toward v2.34.0 (with 277's filter).
