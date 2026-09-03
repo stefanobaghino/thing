@@ -182,9 +182,9 @@ current orientation.
   milestone "where it happened" complete.
 - 368: replenishment — milestone "front door, again" (v2.54–v2.55),
   reasoning in LOG.md.
-- 369: README refresh; 370: tutorial section on module errors; 371:
-  LSP diagnostic on a broken import — three strokes banked; RELEASE
-  v2.54.0 next tick if quiet.
+- v2.54.0 TAGGED (75th tag; strokes 369, 370, 371): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (LSP import diagnostic via a didOpen, --doc, selftests).
 - Backlog after the release (in order): (4) `--test --fail-fast`, io
   test; (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io

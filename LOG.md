@@ -5886,3 +5886,12 @@ range on the second line's string, exactly one error, the healthy
 file unmentioned. Reference bullet extended. Full gate green (216
 tests). Three strokes banked (369, 370, 371) — v2.54.0 next tick
 if quiet.
+
+---
+
+## 2026-09-03 — Iteration 372: v2.54.0
+
+README refresh, tutorial section on module errors, LSP diagnostic
+on a broken import. CI and Pages green on 371 (API verdicts). Full
+gate green, stdlib selftests pass on both engines. Tagging v2.54.0
+(75th tag).

@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.54.0 (2026-09-03)
+
+- LSP: an `import` of a local file that fails to lex, parse or
+  compile is an error diagnostic on the import string, with the
+  module's position and message.
+- README tooling paragraphs and the tutorial's modules chapter
+  brought up to date (module error locations, the call-site note,
+  `--check` following imports).
+
 ## v2.53.0 (2026-09-03)
 
 - A module-origin error is followed by `note: called from
