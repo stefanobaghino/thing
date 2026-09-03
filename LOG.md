@@ -6817,3 +6817,22 @@ value winning; keys on one side only pass through. Three selftests
 combiner), stdlib.md row. Selftests pass on both engines; full gate
 green (226 tests). One stroke banked toward v2.63.0. Next: health
 tick + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 418: health tick + audit
+
+CI and Pages green on 417 (API verdicts). Bench at load ~3: all
+six checksums match; ratios in the baseline's band. Fuzz: 50000
+differential cases (seed 20260903418), the crash fuzzer with its
+cyclic case, and 20000 formatter cases (seed 418) all pass in
+release. Distribution: 83 releases with the expected asset counts
+(36 × 3, 14 × 4, 33 × 6), all six v2.62.0 download URLs resolve,
+all nine site resources answer 200, and the site serves the
+nine-command REPL paragraph and merge_with. Nothing to fix. Survey
+note: the language server handles fifteen textDocument and
+workspace methods and lacks documentHighlight (occurrences of the
+symbol under the cursor) and prepareRename, both a short walk from
+the references logic. The "session" milestone is complete; one
+stroke (417) is banked toward v2.63.0. Backlog empty: next tick is
+replenishment.
