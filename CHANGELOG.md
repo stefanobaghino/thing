@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.38.0 (2026-09-03)
+
+- `ting --doc NAME` explains a builtin or stdlib function from the
+  shell.
+- `--check`, `--fmt` and `--fmt-check` accept directories.
+- `lib/string.ting`: `wrap`.
+
 ## v2.37.0 (2026-09-03)
 
 - LSP: folding ranges for multi-line braces.

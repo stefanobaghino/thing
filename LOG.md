@@ -4514,3 +4514,11 @@ lib/string.ting gains wrap(s, width), greedy word wrap over words()
 than the width stands alone, and a non-positive width fails loudly.
 Five assertions, stdlib.md row. Full gate green on both engines.
 Third stroke banked — v2.38.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 300: v2.38.0
+
+--doc, directory-aware check/fmt, wrap. CI green on 299 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.38.0 (59th tag). Three hundred iterations.
