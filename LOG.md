@@ -5133,3 +5133,16 @@ engines. Third stroke banked — v2.46.0 next tick if quiet.
 Shell-scripting chapter, --test -j, dedent. CI green on 333 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.46.0 (67th tag).
+
+---
+
+## 2026-09-03 — Iteration 334b: v2.46.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.46.0`, `--test -j 2 --tap` over three files keeps its plan and
+numbering in order with the failing file's diagnostic as comments,
+and dedent agrees on the reference engine. Site: all resources 200,
+changelog shows 2.46.0, tutorial carries the shell-scripting
+chapter. 67 tags, 66 verified.

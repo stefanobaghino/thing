@@ -151,9 +151,8 @@ current orientation.
   executed cold here. The 322 milestone is complete.
 - 330: replenishment — milestone "shell citizen, part two"
   (v2.46–v2.48), reasoning in LOG.md.
-- v2.46.0 TAGGED (67th tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here (--test -j 2 --tap).
+- v2.46.0 RELEASED and verified (67th tag); aarch64 musl archive
+  executed cold here.
 - Backlog after the release (in order): (4) LSP rename across open
   documents, protocol test; (5) health tick + audit; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
