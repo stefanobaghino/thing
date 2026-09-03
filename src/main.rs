@@ -26,6 +26,7 @@ fn main() -> ExitCode {
                  \x20   [--diff]                  print what would change instead; exit 1 if anything\n\
                  \x20 ting --fmt-check <paths...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <paths...>     report syntax errors without running\n\
+                 \x20   [--strict]                warnings fail the check too\n\
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
@@ -173,9 +174,13 @@ fn expand_paths(args: &[String]) -> Vec<String> {
     files
 }
 
-fn run_check(args: Vec<String>) -> ExitCode {
+fn run_check(mut args: Vec<String>) -> ExitCode {
+    // `--strict` (anywhere among the arguments): warnings fail the
+    // check too, for hooks and CI that want them enforced.
+    let strict = args.iter().any(|a| a == "--strict");
+    args.retain(|a| a != "--strict");
     if args.is_empty() {
-        eprintln!("usage: ting --check <files or directories...>");
+        eprintln!("usage: ting --check [--strict] <files or directories...>");
         return ExitCode::FAILURE;
     }
     let files = expand_paths(&args);
@@ -202,10 +207,14 @@ fn run_check(args: Vec<String>) -> ExitCode {
                 eprintln!("{diagnostic}");
                 failed = true;
             }
-            // Warnings never change the exit status; they are advice.
+            // Warnings are advice and leave the exit status alone —
+            // unless --strict asked for them to count.
             Ok(()) => {
                 for w in ting::check_warnings(&f, &src) {
                     eprintln!("{w}");
+                    if strict {
+                        failed = true;
+                    }
                 }
             }
         }

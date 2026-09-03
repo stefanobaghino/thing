@@ -777,6 +777,32 @@ fn check_flag_warns_about_shadowed_builtins() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check --strict` turns warnings into a failing exit status; a
+/// clean file still passes, and without the flag warnings stay advice.
+#[test]
+fn check_flag_strict_fails_on_warnings() {
+    let dir = std::env::temp_dir().join(format!("ting-check-strict-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let warned = dir.join("warned.ting");
+    std::fs::write(&warned, "let unused = 1;\nprint(2);\n").unwrap();
+    let clean = dir.join("clean.ting");
+    std::fs::write(&clean, "print(2);\n").unwrap();
+    let run = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .output()
+            .expect("failed to run ting")
+    };
+    let out = run(&["--check", warned.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(0));
+    let out = run(&["--check", "--strict", warned.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("warning: `unused` is never used"));
+    let out = run(&["--check", "--strict", clean.to_str().unwrap()]);
+    assert_eq!(out.status.code(), Some(0));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
