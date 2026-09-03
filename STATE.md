@@ -36,7 +36,7 @@ current orientation.
 - v2.12.0 RELEASED and verified (32nd release, all verified).
 - Post-182: fuzz generator emits find + stepped range; clippy fix
   green on CI.
-- Strokes banked for v2.13.0: fuzzer grammar extension, lib/map
-  pick/omit, string+list count. Release next tick if quiet.
+- v2.13.0 tagged (fuzzer grammar + pick/omit + count); release
+  run in flight — verify assets next wake.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
