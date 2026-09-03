@@ -4254,3 +4254,19 @@ the difference so a tolerance that is merely too tight reads as
 such. Usage header, selftest/testlib.ting (pass, fail, message
 shape) and the stdlib.md row updated. Full gate green on both
 engines. Second stroke toward v2.35.0.
+
+---
+
+## 2026-09-03 — Iteration 285: health tick + audit
+
+CI green on 284 (API verdict). Milestone stroke 5. Bench: all five
+checksums match; at load ~5 the absolute times sit 10–100% above the
+baseline (maps.ting worst, on both engines alike) with the vm/eval
+ratios in the usual contended band — no engine code changed since
+the baseline, so nothing to chase. Fuzz: 50000 differential cases
+on seed 20260903285 agree; the crash fuzzer passes in release.
+Distribution: 55 releases with the expected asset counts (36 × 3,
+14 × 4, 5 × 6), all six v2.34.0 download URLs resolve, all eight
+site resources answer 200 and the reference page carries :doc.
+Nothing to fix. The 279 milestone's five strokes are done; v2.35.0
+next tick, then replenish.
