@@ -121,11 +121,9 @@ current orientation.
   executed cold here. The 279 milestone is complete.
 - 287: replenishment — milestone "trust and teach" (v2.36–v2.38),
   reasoning in LOG.md.
-- 288: tutorial Testing chapter — milestone stroke 1; first toward
-  v2.36.0.
-- Backlog (one per tick, in order): (2) formatter fuzz test over generated
-  programs (idempotent + AST-identical), generator moved to a shared
-  test helper; (3) lib/list.ting zip_with/cartesian; (4)
+- 288: tutorial Testing chapter; 289: formatter fuzz — milestone
+  strokes 1–2; two toward v2.36.0.
+- Backlog (one per tick, in order): (3) lib/list.ting zip_with/cartesian; (4)
   bench/json.ting + baseline row; (5) LSP folding ranges, protocol
   test. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from

@@ -4335,3 +4335,18 @@ harness's exit-0 rule holds), then prose for check_err, plain
 assert, `ting --test tests/` and `--filter`. The tutorial test runs
 the snippet. Markdown guard and full gate green. First stroke
 toward v2.36.0.
+
+---
+
+## 2026-09-03 — Iteration 289: formatter fuzz
+
+CI and Pages green on 288 (API verdicts). Milestone stroke 2: the
+grammar-directed generator moved out of tests/differential.rs into
+tests/common/mod.rs (with a constructor, dead-code allowed since
+each suite uses a different subset), and tests/fmt.rs gained a test
+that formats generated programs and checks the two invariants the
+corpus test always had — idempotent, AST-identical — 2000 cases by
+default, TING_FMT_SEED/TING_FMT_CASES for sweeps. A 20000-case
+sweep on seed 288 found nothing: the formatter that the corpus
+alone had vouched for holds up on programs no human wrote. Full
+gate green (198 tests). Second stroke toward v2.36.0.
