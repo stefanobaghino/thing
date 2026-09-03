@@ -205,12 +205,11 @@ current orientation.
   overflow); first candidate for the next milestone.
 - 390: replenishment — milestone "cycles" (v2.58–v2.59), reasoning
   in LOG.md.
-- 391: cyclic print; 392: cyclic equality — two strokes banked
-  toward v2.58.0.
-- Backlog (one per tick, in order): (3) json_str on a cycle is an
-  error, test — then RELEASE v2.58.0; (4) reference Limits + tutorial
-  Testing chapter flags; (5) health tick + audit with a cycle in the
-  crash fuzzer.
+- 391: cyclic print; 392: cyclic equality; 393: json_str refuses
+  cycles — three strokes banked; RELEASE v2.58.0 next tick if quiet.
+- Backlog after the release (in order): (4) tutorial Testing chapter
+  flags (the reference Limits line is already current); (5) health
+  tick + audit with a cycle in the crash fuzzer.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

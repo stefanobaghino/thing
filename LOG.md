@@ -6330,3 +6330,20 @@ true false` and `true` for the map case, on both engines, in the
 io test; the reference's Limits line says what comparison does.
 Full gate green (221 tests). Two strokes banked toward v2.58.0.
 Next: json_str on a cycle.
+
+---
+
+## 2026-09-03 — Iteration 393: json_str refuses cycles
+
+CI and Pages green on 392 (API verdicts). Milestone stroke 3: both
+JSON encoders carry the path of containers they are inside; a
+container met again on its own path is "json_str cannot encode a
+cyclic value", an ordinary catchable error like the non-finite
+float and function cases, instead of a stack overflow. The path is
+popped on the way out, so a container that appears twice without a
+cycle (`[shared, shared]`) still encodes. io test on both engines
+covers the compact and the pretty form and the shared-but-acyclic
+case; the reference's Limits line completes. The one-line programs
+from 389 and 390 now all run to a result or a diagnostic. Full
+gate green (222 tests). Three strokes banked (391, 392, 393) —
+v2.58.0 next tick if quiet.
