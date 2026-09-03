@@ -76,6 +76,10 @@ assert(l["extent"]([3, 1, 4, 1, 5]) == [1, 5], "extent");
 assert(l["extent"](["pear", "apple", "fig"]) == ["apple", "pear"], "extent strings");
 assert(l["extent"]([7]) == [7, 7], "extent singleton");
 assert(l["extent"]([]) == nil, "extent empty is nil");
+assert(l["argmax"]([3, 9, 4, 9]) == 1, "argmax first of equals");
+assert(l["argmin"]([3, 1, 4, 1]) == 1, "argmin first of equals");
+assert(l["argmax"](["b", "c", "a"]) == 1 && l["argmin"](["b", "c", "a"]) == 2, "argmax argmin strings");
+assert(l["argmax"]([]) == nil && l["argmin"]([]) == nil, "argmax argmin empty are nil");
 
 assert(m["values"]({"b": 2, "a": 1}) == [1, 2], "values sorted by key");
 assert(m["values"]({}) == [], "values empty");

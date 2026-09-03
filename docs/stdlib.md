@@ -44,6 +44,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
 | `max_by(xs, key)` | element with the largest `key(x)`; `nil` on empty |
 | `extent(xs)` | `[smallest, largest]` of the elements in one pass; `nil` on empty |
+| `argmax(xs)` / `argmin(xs)` | index of the largest / smallest element (first of equals); `nil` on empty |
 | `chunk(xs, n)` | sublists of `n` elements, last may be shorter |
 | `insert_at(xs, i, v)` | fresh list with `v` inserted before index `i` |
 | `remove_at(xs, i)` | fresh list without the element at index `i` |

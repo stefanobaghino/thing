@@ -154,6 +154,28 @@ fn extent(xs) {
   return [lo, hi];
 }
 
+# Index of the largest element (the first of equals); nil for an
+# empty list.
+fn argmax(xs) {
+  if len(xs) == 0 { return nil; }
+  let best = 0;
+  for i in range(len(xs)) {
+    if xs[i] > xs[best] { best = i; }
+  }
+  return best;
+}
+
+# Index of the smallest element (the first of equals); nil for an
+# empty list.
+fn argmin(xs) {
+  if len(xs) == 0 { return nil; }
+  let best = 0;
+  for i in range(len(xs)) {
+    if xs[i] < xs[best] { best = i; }
+  }
+  return best;
+}
+
 # Split into sublists of n (the last may be shorter); n must be > 0.
 fn chunk(xs, n) {
   if n <= 0 { fail("chunk: size must be positive"); }
