@@ -23,6 +23,7 @@ fn main() -> ExitCode {
                  \x20 ting --eval <script>        run on the reference tree-walker\n\
                  \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
                  \x20 ting --fmt <paths...>       reformat files in place (- filters stdin to stdout)\n\
+                 \x20   [--diff]                  print what would change instead; exit 1 if anything\n\
                  \x20 ting --fmt-check <paths...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <paths...>     report syntax errors without running\n\
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
@@ -47,7 +48,11 @@ fn main() -> ExitCode {
         Some("--fmt") | Some("--fmt-check")
     ) {
         let check = args.next().as_deref() == Some("--fmt-check");
-        return run_fmt(check, args.collect());
+        let mut rest: Vec<String> = args.collect();
+        // `--diff`: show what --fmt would change, touch nothing.
+        let diff = rest.iter().any(|a| a == "--diff");
+        rest.retain(|a| a != "--diff");
+        return run_fmt(check, diff, rest);
     }
     if args.peek().map(String::as_str) == Some("--check") {
         args.next();
@@ -412,10 +417,10 @@ fn engine_name() -> &'static str {
     }
 }
 
-fn run_fmt(check: bool, args: Vec<String>) -> ExitCode {
+fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
     if args.is_empty() {
         eprintln!(
-            "usage: ting --fmt <files or directories...> | ting --fmt-check <files or directories...>"
+            "usage: ting --fmt [--diff] <files or directories...> | ting --fmt-check <files or directories...>"
         );
         return ExitCode::FAILURE;
     }
@@ -444,7 +449,10 @@ fn run_fmt(check: bool, args: Vec<String>) -> ExitCode {
                 }
             }
             Ok(formatted) if formatted != src => {
-                if check {
+                if diff {
+                    print_line_diff(f, &src, &formatted);
+                    dirty = true;
+                } else if check {
                     println!("would reformat {f}");
                     dirty = true;
                 } else if let Err(e) = std::fs::write(f, formatted) {
@@ -461,9 +469,43 @@ fn run_fmt(check: bool, args: Vec<String>) -> ExitCode {
             }
         }
     }
-    if check && dirty {
+    if (check || diff) && dirty {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
+    }
+}
+
+/// A line diff of `old` against `new` for `--fmt --diff`: a header
+/// naming the file, then every changed line prefixed with `-` or `+`
+/// and its line number in the respective version. Computed from a
+/// longest-common-subsequence table; the inputs are source files, so
+/// quadratic space is fine.
+fn print_line_diff(path: &str, old: &str, new: &str) {
+    let a: Vec<&str> = old.lines().collect();
+    let b: Vec<&str> = new.lines().collect();
+    let mut lcs = vec![vec![0usize; b.len() + 1]; a.len() + 1];
+    for i in (0..a.len()).rev() {
+        for j in (0..b.len()).rev() {
+            lcs[i][j] = if a[i] == b[j] {
+                lcs[i + 1][j + 1] + 1
+            } else {
+                lcs[i + 1][j].max(lcs[i][j + 1])
+            };
+        }
+    }
+    println!("--- {path}");
+    let (mut i, mut j) = (0, 0);
+    while i < a.len() || j < b.len() {
+        if i < a.len() && j < b.len() && a[i] == b[j] {
+            i += 1;
+            j += 1;
+        } else if j < b.len() && (i == a.len() || lcs[i][j + 1] > lcs[i + 1][j]) {
+            println!("+{}: {}", j + 1, b[j]);
+            j += 1;
+        } else {
+            println!("-{}: {}", i + 1, a[i]);
+            i += 1;
+        }
     }
 }

@@ -104,6 +104,42 @@ fn check_flag_reports_without_running() {
 /// `--check` also prints the semantic warning the LSP knows — an
 /// imported stdlib module indexed with a name it lacks — without
 /// changing the exit status.
+/// `--fmt --diff` prints changed lines with `-`/`+` and line numbers,
+/// leaves the file alone, and exits 1 only when something would change.
+#[test]
+fn fmt_diff_shows_changes_without_writing() {
+    let path = std::env::temp_dir().join(format!("ting-fmt-diff-{}.ting", std::process::id()));
+    std::fs::write(&path, "let a = 1;\nlet   b=2;\nprint(a + b);\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt", "--diff", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(stdout.starts_with("--- "), "{stdout}");
+    assert!(
+        stdout.contains("\n-2: let   b=2;\n") && stdout.contains("\n+2: let b = 2;\n"),
+        "{stdout}"
+    );
+    assert!(
+        !stdout.contains("print(a + b)"),
+        "unchanged lines are not printed: {stdout}"
+    );
+    assert_eq!(
+        std::fs::read_to_string(&path).unwrap(),
+        "let a = 1;\nlet   b=2;\nprint(a + b);\n",
+        "untouched"
+    );
+    std::fs::write(&path, "let b = 2;\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt", "--diff", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    assert!(out.stdout.is_empty());
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn check_and_fmt_flags_expand_directories() {
     let root = std::env::temp_dir().join(format!("ting-check-dir-{}", std::process::id()));

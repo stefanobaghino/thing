@@ -251,7 +251,8 @@ if has(r, "err") { print("not a number:", r["err"]); }
 The `ting` binary is the whole toolchain — no separate installs:
 
 - `ting --fmt <paths...>` reformats in place; `--fmt-check` exits 1
-  if anything would change (use it in CI). Directories recurse. The formatter is
+  if anything would change (use it in CI); `--fmt --diff` prints the
+  changed lines instead of writing. Directories recurse. The formatter is
   idempotent and never alters program meaning.
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
