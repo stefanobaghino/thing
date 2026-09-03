@@ -3477,3 +3477,13 @@ Editor-side stdlib awareness (hover, signature help, documented
 completion) and frequencies. CI green on 244 (API verdict). Full
 gate green, stdlib selftests pass on the reference engine. Tagging
 v2.26.0 (46th release).
+
+---
+
+## 2026-09-03 — Iteration 245b: v2.26.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.26.0`, frequencies prints identically on both
+engines. Site: all resources 200, changelog shows 2.26.0, stdlib
+page lists frequencies. 46 releases, all verified.

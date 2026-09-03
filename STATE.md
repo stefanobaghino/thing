@@ -82,12 +82,12 @@ current orientation.
   executed cold on this host, both engines.
 - v2.25.0 RELEASED and verified (45th); aarch64-linux asset
   executed cold on this host, both engines.
-- v2.26.0 TAGGED (46th release): verify next tick by executing the
-  aarch64-linux asset cold here; confirm the Pages run succeeded.
-- Backlog after verification: tutorial mention of the editor's
-  stdlib awareness (Beyond scripts); distribution audit; candidates:
-  lib/map.ting top(m, n) (largest values), lib/string.ting
-  indent(s, prefix).
+- v2.26.0 RELEASED and verified (46th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.27.0 (one per tick): tutorial mention of the
+  editor's stdlib awareness (Beyond scripts); lib/string.ting
+  indent(s, prefix); lib/map.ting top(m, n); distribution audit;
+  release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
