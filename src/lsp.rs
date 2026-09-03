@@ -1608,7 +1608,9 @@ pub fn run() -> i32 {
                     Some(src) => match crate::fmt::format(&src) {
                         Ok(formatted) if formatted != src => {
                             // One edit replacing the whole document.
-                            let end_line = src.split('\n').count() as i64;
+                            // The whole document: from its first position
+                            // to its real last one (the split count used
+                            // to land one line past the end).
                             Value::list(vec![obj(vec![
                                 (
                                     "range",
@@ -1620,13 +1622,7 @@ pub fn run() -> i32 {
                                                 ("character", Value::Int(0)),
                                             ]),
                                         ),
-                                        (
-                                            "end",
-                                            obj(vec![
-                                                ("line", Value::Int(end_line)),
-                                                ("character", Value::Int(0)),
-                                            ]),
-                                        ),
+                                        ("end", position(&src, src.len())),
                                     ]),
                                 ),
                                 ("newText", s(&formatted)),

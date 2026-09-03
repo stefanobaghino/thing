@@ -754,6 +754,52 @@ fn definition_jumps_to_top_level_binding() {
 }
 
 #[test]
+fn formatting_edit_ends_at_the_documents_last_position() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    // Two lines and a trailing newline: the document ends at line 2,
+    // character 0 — not line 3.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///f.ting","text":"let   x=1;\nprint( x );\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/formatting","params":{"textDocument":{"uri":"file:///f.ting"},"options":{}}}"#,
+    );
+    let fmt = recv(&mut reader);
+    assert!(fmt.contains(r#""end":{"character":0,"line":2}"#), "{fmt}");
+    assert!(
+        fmt.contains(r#""newText":"let x = 1;\nprint(x);\n""#),
+        "{fmt}"
+    );
+    // Without a trailing newline the end is the last line's length.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///f.ting","version":2},"contentChanges":[{"text":"let   x=1;"}]}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/formatting","params":{"textDocument":{"uri":"file:///f.ting"},"options":{}}}"#,
+    );
+    let fmt = recv(&mut reader);
+    assert!(fmt.contains(r#""end":{"character":10,"line":0}"#), "{fmt}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_highlight_marks_binding_sites_as_writes() {
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(
