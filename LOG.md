@@ -3785,3 +3785,20 @@ were from the loop's former Mac. Caveat recorded in the file's own
 the run), so absolute numbers carry noise — ratios and checksums
 are what to compare. Full gate green. Second stroke toward v2.30.0;
 milestone strokes 1–5 all landed.
+
+---
+
+## 2026-09-03 — Iteration 262: static musl assets
+
+CI green on 261 (API verdict). Follow-through on the glibc episode:
+release.yml gains x86_64- and aarch64-unknown-linux-musl builds on
+the 22.04 runners, so two fully static Linux archives will sit
+beside the glibc ones (six assets per release from v2.30.0). Every
+matrix job now builds with an explicit --target and packages from
+the per-target release directory, the toolchain step adds the target, and the
+glibc-floor guard treats "no GLIBC symbols at all" as passing.
+Proven locally first: the aarch64 musl binary is a statically linked
+ELF of 1.5 MB, prints its version, runs selftest/stdlib.ting, and
+objdump finds zero GLIBC references. The workflow half is verified
+at the next tag. README platform sentence updated. Full gate green.
+Third stroke banked — v2.30.0 next tick if quiet.

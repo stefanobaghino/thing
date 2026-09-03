@@ -96,12 +96,13 @@ current orientation.
   test failed; release notes warn). v2.29.1 (50th) RELEASED and
   verified: Linux builds on ubuntu-22.04(-arm), GLIBC_2.34, guard
   step green, aarch64 asset executed cold here.
-- 260: crash fuzzer audit; 261: stdlib bench + baseline rebased on
-  this host — milestone strokes 4–5; two toward v2.30.0.
-- Backlog (one per tick): Linux musl static builds as extra release
-  assets (the glibc episode showed the C library is a dependency;
-  zero-dep crate → musl links out of the box); then release v2.30.0;
-  then replenish.
+- 260: crash fuzzer audit; 261: stdlib bench; 262: musl static
+  builds in release.yml (workflow half unproven until the tag) —
+  three strokes banked; RELEASE v2.30.0 next tick if quiet, then
+  verify SIX assets and cold-execute the aarch64 musl one here too.
+- After verification: replenishment tick.
+- Distribution audit expectation: 3 assets up to v2.16.0, 4 from
+  v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md — now recorded on
   this host, five rows — big fuzz sweeps) when quiet.
