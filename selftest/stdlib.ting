@@ -185,3 +185,11 @@ assert(s["is_alpha"]("Ωmega"), "is_alpha greek");
 assert(!s["is_alpha"]("h3llo"), "is_alpha digit");
 assert(!s["is_alpha"]("a b"), "is_alpha space");
 assert(!s["is_alpha"](""), "is_alpha empty");
+
+assert(l["sum_by"](["a", "bb", "ccc"], fn(w) { return len(w); }) == 6, "sum_by");
+assert(l["sum_by"]([], fn(x) { return x; }) == 0, "sum_by empty");
+assert(l["sum_by"]([1.5, 2.5], fn(x) { return x * 2; }) == 8.0, "sum_by floats");
+assert(s["words"]("  the\tquick\n brown  fox ") == ["the", "quick", "brown", "fox"], "words");
+assert(s["words"]("") == [], "words empty");
+assert(s["words"]("   ") == [], "words only spaces");
+assert(s["words"]("one") == ["one"], "words single");

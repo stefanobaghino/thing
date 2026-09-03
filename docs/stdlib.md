@@ -18,6 +18,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | Function | Does |
 |----------|------|
 | `sum(xs)` | adds the elements (0 for an empty list) |
+| `sum_by(xs, f)` | adds `f(x)` over the elements (0 for an empty list) |
 | `reverse(xs)` | a fresh list in reverse order |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `enumerate(xs)` | list of `[index, value]` pairs |
@@ -51,6 +52,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `pad_right(s, width, fill)` | appends `fill` until at least `width` chars |
 | `center(s, width, fill)` | `s` centred in `width` with `fill` on both sides (odd gap: extra on the right) |
 | `lines(s)` | split on `"\n"` |
+| `words(s)` | whitespace-separated words, no empties |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |

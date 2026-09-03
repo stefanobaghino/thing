@@ -112,3 +112,20 @@ fn is_alpha(s) {
   }
   return true;
 }
+
+# The whitespace-separated words of s (runs of spaces, tabs and
+# newlines count as one separator; no empty words).
+fn words(s) {
+  let out = [];
+  let cur = "";
+  for c in s {
+    if contains(" \t\n\r", c) {
+      if cur != "" { push(out, cur); }
+      cur = "";
+    } else {
+      cur = cur + c;
+    }
+  }
+  if cur != "" { push(out, cur); }
+  return out;
+}

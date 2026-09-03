@@ -238,3 +238,6 @@ fn last(xs) {
   if len(xs) == 0 { return nil; }
   return xs[len(xs) - 1];
 }
+
+# Sum of f(x) over the elements (0 for an empty list).
+fn sum_by(xs, f) { return sum(map(xs, f)); }
