@@ -4692,3 +4692,15 @@ the plan, both line shapes, the diagnostic and timing comments and
 exits 1; binary_search answers on the reference engine. Site: all
 resources 200, changelog shows 2.40.0, tutorial carries the
 closures chapter. 61 tags, 60 verified.
+
+---
+
+## 2026-09-03 — Iteration 310: levenshtein
+
+CI green on 309b (API verdict). Milestone stroke 4: lib/string.ting
+gains levenshtein(a, b), the two-row dynamic-programming edit
+distance over chars() — plain Levenshtein, so a transposition costs
+two (the LSP's quickfix uses the transposition-aware variant; the
+comment says which this is), and character-based so accented text
+measures as one edit. Five assertions, stdlib.md row. Full gate
+green on both engines. First stroke toward v2.41.0.
