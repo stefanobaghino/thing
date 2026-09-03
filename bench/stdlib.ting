@@ -1,0 +1,15 @@
+# Stdlib churn: module import, then the ting-level helpers that do
+# real work (comparator sort, grouping, word tallies, windows).
+let li = import("../lib/list.ting");
+let st = import("../lib/string.ting");
+let ma = import("../lib/map.ting");
+
+let ns = map(range(20000), fn(x) { return x * 7919 % 10007; });
+let sorted = li["sort_with"](ns, fn(p, q) { return q - p; });
+let groups = li["group_by"](ns, fn(x) { return str(x % 10); });
+let text = join(map(range(20000), fn(x) { return "w" + str(x % 500); }), " ");
+let freq = li["frequencies"](st["words"](text));
+let best = ma["top"](freq, 3);
+let windows = li["window"](li["take"](sorted, 2000), 5);
+let smooth = map(windows, fn(w) { return li["mean"](w); });
+print(sorted[0], len(groups), len(freq), best[0][0], int(li["sum"](smooth)));
