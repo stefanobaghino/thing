@@ -1,10 +1,14 @@
 # The ting standard library
 
-Three modules written in ting itself, living in `lib/` — and also
+Six modules written in ting itself — list, map, string, math, json
+and test, 105 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
-and modify them freely.
+and modify them freely. The same text as this page is in the binary:
+`ting --doc` lists everything, `ting --doc list` one module, and
+`ting --doc median` (or `:doc median` in the REPL) one function with
+its comment.
 
 ```ting
 let l = import("lib/list.ting");
