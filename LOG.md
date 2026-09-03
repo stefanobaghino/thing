@@ -2871,3 +2871,19 @@ as strokes: (1) writing to a closed pipe (`ting x.ting | head -1`)
 ends in a broken-pipe error/panic instead of a quiet exit, which
 is the convention for CLI filters; (2) `--fmt-check -` does not
 read stdin even though read_file("-") does.
+
+---
+
+## 2026-09-03 — Iteration 205: quiet exit on broken pipe
+
+CI green on 204b (API verdict). The rough edge found while cold
+testing: print() turned EPIPE into "print failed: Broken pipe" plus
+exit 1, and the REPL's own output (:help through `head`) panicked in
+the standard print macros. Now print() exits 0 on BrokenPipe (a
+reader going away is not the script's fault), and every REPL output
+site goes through one helper that does the same; the wasm build is
+excluded as before. New io test spawns both cases with a
+deliberately closed read end and asserts exit 0 and empty stderr —
+verified to fail on the old code (exit 1) before landing. Reference
+Tooling section gains the shell-citizen sentence. Full gate green.
+First stroke toward v2.18.0.
