@@ -211,12 +211,15 @@ fn collect_ting_files(dir: &std::path::Path, out: &mut Vec<String>) {
     };
     let mut paths: Vec<_> = entries.flatten().map(|e| e.path()).collect();
     paths.sort();
-    for p in paths {
-        if p.is_dir() {
-            collect_ting_files(&p, out);
-        } else if p.extension().and_then(|e| e.to_str()) == Some("ting") {
+    // Files of a directory first, then its subdirectories: a suite's
+    // own tests report before anything nested under it.
+    for p in paths.iter().filter(|p| !p.is_dir()) {
+        if p.extension().and_then(|e| e.to_str()) == Some("ting") {
             out.push(p.to_string_lossy().into_owned());
         }
+    }
+    for p in paths.iter().filter(|p| p.is_dir()) {
+        collect_ting_files(p, out);
     }
 }
 

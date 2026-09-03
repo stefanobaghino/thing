@@ -434,7 +434,9 @@ fn test_flag_runs_files_and_summarises() {
 #[test]
 fn test_flag_expands_directories() {
     let root = std::env::temp_dir().join(format!("ting-test-dir-{}", std::process::id()));
-    let nested = root.join("nested");
+    // Named to sort BEFORE the files: the runner must still list the
+    // directory's own files first, then descend.
+    let nested = root.join("aa-nested");
     std::fs::create_dir_all(&nested).unwrap();
     std::fs::write(root.join("b.ting"), "assert(true);\n").unwrap();
     std::fs::write(root.join("a.ting"), "assert(true);\n").unwrap();
@@ -450,7 +452,10 @@ fn test_flag_expands_directories() {
     let a = stdout.find("a.ting").unwrap();
     let b = stdout.find("b.ting").unwrap();
     let c = stdout.find("c.ting").unwrap();
-    assert!(a < b && b < c, "sorted, files before nested dir: {stdout}");
+    assert!(
+        a < b && b < c,
+        "sorted, files before the nested dir: {stdout}"
+    );
     assert!(!stdout.contains("notes.txt"), "{stdout}");
     assert!(stdout.contains("deep failure"), "{stdout}");
     assert!(stdout.contains("2 passed, 1 failed"), "{stdout}");
