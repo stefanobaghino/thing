@@ -62,8 +62,10 @@ holds only the current milestone and the standing rules.
   (81st tag; strokes 401, 402, 405; both aarch64 archives executed
   here).
 - v2.61.0 VERIFIED (82nd tag; strokes 407, 408, 409; both aarch64
-  archives executed here).
-- Backlog after the release: (5) health tick + audit; then replenish.
+  archives executed here). 411: health tick + audit green —
+  milestone "the loop's own house" complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

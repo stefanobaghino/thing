@@ -6685,3 +6685,22 @@ musl VM and the gnu reference engine; `--test selftest` passes
 11/11 on each. CI and Pages green on the release commit.
 Eighty-two tags, eighty-one verified. Next: health tick + audit,
 then replenish.
+
+---
+
+## 2026-09-03 — Iteration 411: health tick + audit
+
+CI green on 410b (API verdict). Bench at load ~3, the quietest of
+the day: all six checksums match and the ratios sit where the
+baseline put them. Fuzz: 50000 differential cases (seed
+20260903411), the crash fuzzer with its cyclic case, and 20000
+formatter cases (seed 411) all pass in release. Distribution: 82
+releases with the expected asset counts (36 × 3, 14 × 4, 32 × 6),
+all six v2.61.0 download URLs resolve, all nine site resources
+answer 200, and the site serves flatten_deep and the tutorial's
+updated closing chapter. Nothing to fix. Survey notes for the next
+replenishment: the reference's REPL paragraph still says `:doc
+NAME` explains "one builtin or stdlib function" (it lists a module
+too), and the changelog's head names Linux, macOS and Windows
+binaries without the static musl ones. The "loop's own house"
+milestone is complete. Backlog empty: next tick is replenishment.
