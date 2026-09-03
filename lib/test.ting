@@ -9,11 +9,14 @@
 #   t["summary"]();   # prints results; exits 1 if anything failed
 #
 # The `state` map is exported too, for tools that want the counters.
+# Every helper calls assert(true) first, which is how `ting --test`
+# counts what a file verified: one check per call, pass or fail.
 
 let state = {"passed": 0, "failed": 0, "failures": []};
 
 # Records a pass when cond is true, otherwise a failure under name.
 fn check(name, cond) {
+  assert(true);
   if cond {
     state["passed"] = state["passed"] + 1;
   } else {
@@ -25,6 +28,7 @@ fn check(name, cond) {
 # Passes when got == want (structural equality); the failure message
 # shows both values.
 fn check_eq(name, got, want) {
+  assert(true);
   if got == want {
     state["passed"] = state["passed"] + 1;
   } else {
@@ -35,6 +39,7 @@ fn check_eq(name, got, want) {
 
 # f must fail with a message containing want; passing is a failure.
 fn check_err(name, f, want) {
+  assert(true);
   let r = try(f);
   if has(r, "err") && contains(r["err"], want) {
     state["passed"] = state["passed"] + 1;
@@ -50,6 +55,7 @@ fn check_err(name, f, want) {
 # For floats: passes when |got - want| <= eps; the failure message
 # shows both values and the difference.
 fn check_approx(name, got, want, eps) {
+  assert(true);
   if abs(got - want) <= eps {
     state["passed"] = state["passed"] + 1;
   } else {
@@ -62,6 +68,7 @@ fn check_approx(name, got, want, eps) {
 # "nil", "list", "map" or "function"); the failure names the actual
 # type.
 fn check_type(name, v, type_name) {
+  assert(true);
   if type(v) == type_name {
     state["passed"] = state["passed"] + 1;
   } else {

@@ -1950,6 +1950,20 @@ fn test_flag_counts_checks() {
         "{stdout}"
     );
 
+    // lib/test.ting's helpers count as checks too.
+    std::fs::write(
+        dir.join("lib_test.ting"),
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"one\", true);\nt[\"check_eq\"](\"two\", 1, 1);\nt[\"summary\"]();\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", dir.join("lib_test.ting").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.contains("lib_test.ting (2 checks)"), "{stdout}");
+
     // The count is a TAP comment in --tap mode.
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--test", "--tap", dir.to_str().unwrap()])
