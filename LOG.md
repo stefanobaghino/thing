@@ -4490,3 +4490,16 @@ repo itself: `--fmt-check lib selftest examples bench` and `--check`
 over the same four directories both pass. io test covers a nested
 tree for both flags and the empty case; help and reference
 updated. Full gate green (200 tests). First stroke toward v2.38.0.
+
+---
+
+## 2026-09-03 — Iteration 298: --doc
+
+CI and Pages green on 297 (API verdicts). Milestone stroke 2: the
+REPL's :doc lookup moved into a shared doc_text function returning
+the text (or None), and `ting --doc NAME` prints it from the shell —
+exit 1 with a one-line stderr message for an unknown name, so an
+editor keybinding or a script can rely on the status. io test
+covers a stdlib function, a builtin and the miss; help and the
+reference Tooling list updated. Full gate green (201 tests). Second
+stroke toward v2.38.0.

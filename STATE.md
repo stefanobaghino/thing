@@ -127,10 +127,9 @@ current orientation.
   executed cold here. The 287 milestone is complete.
 - 296: replenishment — milestone "closing loops" (v2.38–v2.40),
   reasoning in LOG.md.
-- 297: --check/--fmt expand directories — milestone stroke 1; first
-  toward v2.38.0.
-- Backlog (one per tick, in order): (2) `ting --doc
-  NAME` CLI flag sharing the REPL lookup, io test; (3)
+- 297: --check/--fmt expand directories; 298: --doc — milestone
+  strokes 1–2; two toward v2.38.0.
+- Backlog (one per tick, in order): (3)
   lib/string.ting wrap(s, width), selftests; (4) lib/json.ting
   diff(a, b), selftests; (5) examples/machine.ting (closure state
   machine), cookbook regen. Release after ~3; health tick after.
