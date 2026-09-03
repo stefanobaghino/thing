@@ -389,6 +389,34 @@ That's the whole tour. From here: the [reference](reference.md) for
 every operator and builtin, or `ting` with no arguments for a REPL to
 poke at.
 
+## Shell scripting
+
+A ting script is a shell citizen. `args()` is the argument list after
+the script path, `env(name)` reads an environment variable (`nil` when
+unset), `read_file("-")` reads all of stdin, and `exit(code)` sets the
+process's exit status:
+
+```ting
+let verbose = env("TING_TUTORIAL_VERBOSE") != nil;
+print(len(args()), "arguments; verbose:", verbose);
+if len(args()) > 3 {
+  print("too many arguments");
+  exit(2);
+}
+```
+
+```text
+0 arguments; verbose: false
+```
+
+Combined with the stdlib that makes small filters short: split stdin
+into `lines`, keep the ones matching a `contains`, count them with
+`frequencies`, print an aligned `table`. Errors that escape the script
+print a caret diagnostic to stderr and exit 1, so `set -e` and CI
+steps behave; `ting script.ting | head` exits quietly when the reader
+goes away, like any well-behaved filter. The cookbook's `pipeline`
+example is a complete stdin-to-report script.
+
 ## Testing
 
 `lib/test.ting` is a test framework in forty lines of ting: record
