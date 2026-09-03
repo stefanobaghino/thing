@@ -5588,3 +5588,26 @@ calibrated it (79 false positives fixed by the module-shape rule,
 12 true positives fixed by underscores), the smaller strokes, and
 the site-audit slip. "Where it stands" now says seventy-two tags.
 Docs guard green. One stroke banked toward v2.52.0. Next: mode(xs).
+
+---
+
+## 2026-09-03 — Iteration 358b: correction
+
+The 358 entry above was written before its gate had passed. The
+tick's shell chain had an unconditional line after the gate (a
+heredoc on its own line does not inherit `&&`), so when the mode
+commit failed — the first cut called an `index_of` that
+lib/list.ting does not have — the log entry, the STATE update and
+the push still went out claiming green. The actual sequence: gate
+red (selftest 10/11, suite 159 passed 1 failed), log pushed, then
+this tick: mode rewritten on the `find(xs, v)` builtin (nil when
+absent), selftests 11/11 on both engines, full gate green (213
+tests), and the mode commit landed after the record that describes
+it. Rule added to STATE.md: a tick's chain is one `&&` list or runs
+under `set -e`; never a bare line after the gate.
+
+Noticed while diagnosing: the undefined-variable error raised
+inside the imported module was reported at selftest/stdlib.ting
+line 127, an unrelated line of the importing file — a runtime error
+inside a module renders the module's span against the importer's
+source. Candidate for the next replenishment.

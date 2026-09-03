@@ -182,5 +182,10 @@ current orientation.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
+- A tick's shell chain is one `&&` list or runs under `set -e`;
+  never a bare line (heredoc, python) after the gate — 358 pushed a
+  green record for a red gate that way.
+- Candidate (next replenishment): runtime errors inside an imported
+  module are rendered against the importer's source (358b).
 - Periodic health ticks (bench vs BASELINE.md — recorded on this
   host, six rows — big fuzz sweeps) when quiet.
