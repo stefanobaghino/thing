@@ -6907,3 +6907,17 @@ strokes banked (417, 420, 421) — v2.63.0 next tick if quiet.
 merge_with, documentHighlight, prepareRename. CI green on 421
 (API verdict). Full gate green, stdlib selftests pass on both
 engines. Tagging v2.63.0 (84th tag).
+
+---
+
+## 2026-09-03 — Iteration 422b: v2.63.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.63.0; a raw JSON-RPC session against the release binary's --lsp
+returned one write and one read highlight for a binding and its
+use, the binding's range and placeholder from prepareRename, and
+null on a builtin; merge_with sums a shared key on the musl VM and
+the gnu reference engine; `--test selftest` passes 11/11 on each.
+CI and Pages green on the release commit. Eighty-four tags,
+eighty-three verified. Next: the thirteen-capability count.
