@@ -187,6 +187,20 @@ pub fn embedded_stdlib() -> &'static [(&'static str, &'static str)] {
     EMBEDDED_STDLIB
 }
 
+/// Checks run in this process: every `assert` call, and every
+/// `lib/test.ting` helper (which calls `assert(true)` to say so).
+/// `--test` asks the child for this count; nothing else reads it.
+static CHECKS: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+pub(crate) fn count_check() {
+    CHECKS.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// How many checks this process has run.
+pub fn checks_run() -> usize {
+    CHECKS.load(std::sync::atomic::Ordering::Relaxed)
+}
+
 fn global_env() -> Rc<RefCell<Env>> {
     let mut globals = HashMap::new();
     for b in Builtin::ALL {
@@ -1073,6 +1087,9 @@ impl<W: Write> Interpreter<W> {
             }
             Builtin::Assert => {
                 arity(1, 2)?;
+                // Every assert is a check, whether it holds or not:
+                // `--test` reports the count per file.
+                count_check();
                 let msg = match args.get(1) {
                     None => None,
                     Some(Value::Str(s)) => Some(s.clone()),

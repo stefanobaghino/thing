@@ -201,13 +201,20 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitC
             return ExitCode::FAILURE;
         }
     };
-    match run_source_engine(engine, path, &src, std::io::stdout().lock(), script_args) {
+    let outcome = match run_source_engine(engine, path, &src, std::io::stdout().lock(), script_args)
+    {
         Ok(()) => ExitCode::SUCCESS,
         Err(diagnostic) => {
             eprintln!("{diagnostic}");
             ExitCode::FAILURE
         }
+    };
+    // `--test` runs each file as a child of itself and asks it, this
+    // way, how many checks it ran.
+    if std::env::var_os("TING_TEST_REPORT").is_some() {
+        eprintln!("ting-checks: {}", ting::eval::checks_run());
     }
+    outcome
 }
 
 /// Source for a tool flag: a file path, or `-` for stdin (read to

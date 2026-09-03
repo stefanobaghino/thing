@@ -1284,6 +1284,59 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn checks_are_counted_and_reported_on_request() {
+    let dir = std::env::temp_dir().join("ting-checks");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("c.ting");
+    std::fs::write(&script, "assert(1 == 1, \"a\");\nassert(2 == 2, \"b\");\n").expect("write");
+
+    // Both engines count the same, and only when asked.
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .env("TING_TEST_REPORT", "1")
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(0));
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(stderr.contains("ting-checks: 2"), "{engine}: {stderr}");
+    }
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("ting-checks"), "{stderr}");
+
+    // A failing assert is still a check that ran.
+    std::fs::write(
+        &script,
+        "assert(1 == 1, \"a\");\nassert(false, \"boom\");\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .env("TING_TEST_REPORT", "1")
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("assertion failed: boom"), "{stderr}");
+    assert!(stderr.contains("ting-checks: 2"), "{stderr}");
+
+    // A file that checks nothing says so.
+    std::fs::write(&script, "# nothing here\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .env("TING_TEST_REPORT", "1")
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("ting-checks: 0"), "{stderr}");
+}
+
+#[test]
 fn check_flag_warns_about_code_that_can_never_run() {
     let dir = std::env::temp_dir().join("ting-unreachable");
     std::fs::create_dir_all(&dir).expect("mkdir");
