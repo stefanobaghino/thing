@@ -247,6 +247,39 @@ greeter.ting:1:34: error: undefined variable 'nam' (did you mean 'name'?)
 note: in greet, called from main.ting:4:7
 ```
 
+That note is not only for modules. Every call an error unwound
+through leaves one, innermost first, so a failure deep in a chain of
+calls says how the program got there:
+
+```text
+report.ting:1:22: error: cannot apply '+' to int and string
+ 1 | fn total(x) { return x + "!"; }
+   |                      ^^^^^^^
+note: in total, called from report.ting:2:21
+note: in line, called from report.ting:3:7
+```
+
+Runaway recursion would otherwise print one note per frame, so a
+trace longer than ten keeps four at each end and says how many it
+left out (`note: ... 192 more frames`).
+
+A program can read the same three things. `try` returns the message
+under `"err"`, where it was raised under `"at"`, and the calls it
+came out of under `"trace"` — each frame a map of `"fn"` (nil for a
+function with no name), `"file"`, `"line"` and `"col"`:
+
+```ting
+fn parse(s) { return int(s); }
+let r = try(fn() { return parse("x"); });
+print(r["err"]);
+print("raised on line", r["at"]["line"], "in", r["trace"][0]["fn"]);
+```
+
+```text
+cannot convert "x" to int
+raised on line 1 in parse
+```
+
 The parenthesis after the name is ting guessing at a typo: when the
 name you wrote is close to one in scope — a binding, a parameter, a
 builtin — the error names it. Keys work the same way (`key "medain"

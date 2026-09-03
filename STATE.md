@@ -189,10 +189,10 @@ holds only the current milestone and the standing rules.
 - v2.83.0 VERIFIED (104th tag; strokes 519, 520; both aarch64
   archives executed here).
 - 522: try() hands back "at" and "trace"; lib/test.ting names the
-  line that raised.
+  line that raised. 523: the docs read the trace (tutorial,
+  reference, stdlib).
 - Backlog (one per tick, in order):
-  (1) the docs read the trace; (2) RELEASE v2.84.0; (3) health tick
-  + audit.
+  (1) RELEASE v2.84.0 (strokes 522, 523); (2) health tick + audit.
 - Tags: 104 (v2.83.0), 103 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

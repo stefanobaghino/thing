@@ -8812,3 +8812,26 @@ reference's `try` row now lists the three keys. Full gate green
 (258 tests, corpus at 555 checks), plus 20000 differential cases
 (seed 20260904522), 5000 formatter cases and the crash fuzzer.
 Next: the docs read the trace.
+
+---
+
+## 2026-09-04 — Iteration 523: the docs read the trace
+
+CI green on 522 (API verdict). Milestone stroke 4: the pages say
+what the last three strokes built. The tutorial's module-error
+passage now continues past the module case — every call an error
+unwound through leaves a note, innermost first — with a two-deep
+example whose text was produced by running the binary on a real
+three-line file rather than written from memory, the elision rule
+for runaway recursion, and a runnable snippet that reads "err",
+"at" and "trace" back out of `try` and prints the line and the
+function that raised. The tutorial guard runs that snippet and
+compares its output, so the page cannot drift from the language.
+The reference's error paragraph now covers where an error is
+reported, how frames are named (after the binding, or "an anonymous
+function"), and the ten-frame cap; its `try` section documents the
+three keys and the frame fields, including that the trace always
+holds at least the call `try` itself made. The stdlib page's
+check_err row says a wrong message names the line that raised it.
+Full gate green (258 tests, tutorial and docs guards included).
+Two strokes banked (522, 523). Next: release v2.84.0.

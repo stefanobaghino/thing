@@ -256,10 +256,15 @@ other (`lenght` finds `len`); names under three characters get none. A key that 
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.
 
-An error raised inside a function that an imported module defines is
-reported against that module's file and line (for an embedded stdlib
-module, its `lib/...` path), followed by a `note: in NAME, called
-from` line for every call it unwound through, innermost first.
+An error is reported against the file and line that raised it — for
+one raised inside a function an imported module defines, that
+module's own file (for an embedded stdlib module, its `lib/...`
+path) — followed by a `note: in NAME, called from FILE:LINE:COL`
+line for every call it unwound through, innermost first. A function
+is named after the binding it was defined as; one that never had a
+name reads `an anonymous function`. A trace longer than ten frames
+keeps four at each end and replaces the rest with `note: ... N more
+frames`, so runaway recursion cannot bury the message.
 
 The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
@@ -272,6 +277,13 @@ and hand it to `try`; raise your own errors with `fail`:
 let r = try(fn() { return int(input()); });
 if has(r, "err") { print("not a number:", r["err"]); }
 ```
+
+A caught failure carries what the diagnostic would have printed:
+`"err"` is the message, `"at"` is a map of the `"file"`, `"line"`
+and `"col"` it was raised at, and `"trace"` is the list of calls it
+came out of, innermost first — each frame those same three fields
+plus `"fn"`, the function's name or `nil` for one that has none. The
+trace always holds at least the call `try` itself made.
 
 ## Tooling
 
