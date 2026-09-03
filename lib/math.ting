@@ -105,3 +105,15 @@ fn variance(xs) {
 
 # Population standard deviation: sqrt(variance(xs)).
 fn stddev(xs) { return sqrt(variance(xs)); }
+
+# Nearest-rank percentile: the value at rank ceil(p / 100 * n) of the
+# sorted list (rank 1 for p = 0). p must be in [0, 100]; empty fails.
+fn percentile(xs, p) {
+  if len(xs) == 0 { fail("percentile: empty list"); }
+  if p < 0 || p > 100 { fail("percentile: p must be in [0, 100]"); }
+  let sorted = sort(xs);
+  let n = len(sorted);
+  let rank = ceil(float(p) * n / 100.0);
+  if rank < 1 { rank = 1; }
+  return sorted[rank - 1];
+}

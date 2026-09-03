@@ -120,6 +120,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `is_prime(n)` | true for prime `n` (trial division) |
 | `variance(xs)` | population variance as a float; empty fails |
 | `stddev(xs)` | population standard deviation |
+| `percentile(xs, p)` | nearest-rank percentile, `p` in `[0, 100]`; empty fails |
 
 ## lib/json.ting
 

@@ -344,3 +344,11 @@ assert(s["dedent"]("  a\n\n  b\n") == "a\n\nb\n", "dedent keeps blank lines empt
 assert(s["dedent"]("a\n  b") == "a\n  b", "dedent nothing shared");
 assert(s["dedent"]("") == "", "dedent empty");
 assert(s["dedent"]("\tx\n\t\ty") == "x\n\ty", "dedent tabs");
+
+let pct = [15, 20, 35, 40, 50];
+assert(ma["percentile"](pct, 40) == 20, "percentile nearest rank");
+assert(ma["percentile"](pct, 0) == 15 && ma["percentile"](pct, 100) == 50, "percentile ends");
+assert(ma["percentile"](pct, 50) == 35, "percentile median");
+assert(ma["percentile"]([9, 1], 1) == 1, "percentile low p");
+assert(has(try(fn() { return ma["percentile"]([], 50); }), "err"), "percentile empty fails");
+assert(has(try(fn() { return ma["percentile"]([1], 101); }), "err"), "percentile out of range fails");
