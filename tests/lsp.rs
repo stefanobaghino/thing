@@ -201,6 +201,34 @@ fn completion_offers_imported_stdlib_functions() {
     assert!(comp.contains("lib/list.ting: median(xs)"), "{comp}");
     assert!(!comp.contains("\"label\":\"pad_left\""), "{comp}");
 
+    // Hover on a user-defined function shows its signature from the
+    // document; a plain variable still gets nothing.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":9},"contentChanges":[{"text":"fn area(w, h) { return w * h; }\nlet side = 3;\nprint(area(side, 2));\n"}]}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":30,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":7}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(
+        hov.contains("fn area(w, h)") && hov.contains("defined in this file"),
+        "{hov}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":31,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":12}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(hov.contains("\"result\":null"), "{hov}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":10},"contentChanges":[{"text":"let l = import(\"lib/list.ting\");\nprint(l[\"median\"]([1]), pad_left);\n"}]}}"#,
+    );
+    let _ = recv(&mut reader);
+
     // Hover on the name inside l["median"] shows the signature and
     // the function's leading comment; an unimported module's name
     // gets nothing.

@@ -275,7 +275,8 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors, and a warning when an
   imported stdlib module is indexed with a name it does not export),
-  hover docs for every builtin (and for imported stdlib functions),
+  hover docs for every builtin (and for imported stdlib functions,
+  and the signature of the file's own functions),
   completion
   (builtins, keywords, the document's own names, and the functions of
   any stdlib module it imports),

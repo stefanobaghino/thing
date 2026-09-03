@@ -666,6 +666,12 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
             format!("{comment}\n\n(from `{path}`)")
         };
         format!("```ting\n{sig}\n```\n\n{about}")
+    } else if let Some(params) = user_fn_params(src, &word) {
+        // A top-level fn (or let bound to a fn literal) in this document.
+        format!(
+            "```ting\nfn {word}({})\n```\n\ndefined in this file",
+            params.join(", ")
+        )
     } else {
         return Value::Nil;
     };
@@ -673,6 +679,20 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
         "contents",
         obj(vec![("kind", s("markdown")), ("value", s(&text))]),
     )])
+}
+
+/// The parameter names of a top-level function bound to `name` in
+/// `src`, if the document parses and such a binding exists.
+fn user_fn_params(src: &str, name: &str) -> Option<Vec<String>> {
+    let tokens = lexer::lex(src).ok()?;
+    let program = crate::parser::parse_program(&tokens).ok()?;
+    program.iter().find_map(|stmt| match &stmt.kind {
+        crate::ast::StmtKind::Let(n, expr) if n == name => match &expr.kind {
+            crate::ast::ExprKind::Fn(params, _) => Some(params.clone()),
+            _ => None,
+        },
+        _ => None,
+    })
 }
 
 /// Signature help inside a call: scan left from the cursor for the
