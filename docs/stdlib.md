@@ -58,6 +58,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `count(s, sub)` | non-overlapping occurrences of `sub` |
 | `chars(s)` | the characters as a list of one-character strings |
 | `reverse(s)` | the characters in reverse order |
+| `is_digit(s)` | non-empty and all ASCII digits |
+| `is_alpha(s)` | non-empty and all cased letters (upper and lower forms differ) |
 
 ## lib/map.ting
 

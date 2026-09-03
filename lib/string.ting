@@ -92,3 +92,23 @@ fn reverse(s) {
   }
   return out;
 }
+
+# True if s is non-empty and every character is an ASCII digit.
+fn is_digit(s) {
+  if len(s) == 0 { return false; }
+  for c in s {
+    if !contains("0123456789", c) { return false; }
+  }
+  return true;
+}
+
+# True if s is non-empty and every character is a cased letter — one
+# whose upper- and lowercase forms differ, which covers accented
+# Latin, Greek and Cyrillic letters but not scripts without case.
+fn is_alpha(s) {
+  if len(s) == 0 { return false; }
+  for c in s {
+    if upper(c) == lower(c) { return false; }
+  }
+  return true;
+}

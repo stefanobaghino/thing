@@ -175,3 +175,13 @@ assert(l["last"]([7, 8, 9]) == 9, "last");
 assert(l["first"]([]) == nil, "first empty is nil");
 assert(l["last"]([]) == nil, "last empty is nil");
 assert(l["first"]([[1]]) == [1], "first nested");
+
+assert(s["is_digit"]("2026"), "is_digit");
+assert(!s["is_digit"]("20a6"), "is_digit letter");
+assert(!s["is_digit"](""), "is_digit empty");
+assert(!s["is_digit"]("-1"), "is_digit sign");
+assert(s["is_alpha"]("héllo"), "is_alpha accented");
+assert(s["is_alpha"]("Ωmega"), "is_alpha greek");
+assert(!s["is_alpha"]("h3llo"), "is_alpha digit");
+assert(!s["is_alpha"]("a b"), "is_alpha space");
+assert(!s["is_alpha"](""), "is_alpha empty");
