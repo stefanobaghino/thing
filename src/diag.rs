@@ -44,6 +44,16 @@ pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Spa
     )
 }
 
+/// "1 argument", "2 arguments": a count and the word it counts, so a
+/// message never has to say "argument(s)".
+pub fn plural(n: usize, word: &str) -> String {
+    if n == 1 {
+        format!("{n} {word}")
+    } else {
+        format!("{n} {word}s")
+    }
+}
+
 /// The candidate nearest to `name` by edit distance, if one is close
 /// enough to be worth suggesting: at most a third of the name wrong
 /// (and always at least one edit, so short names still get help), or

@@ -37,3 +37,17 @@ let key = try(fn() { return m["alpah"]; });
 assert(contains(key["err"], "did you mean \"alpha\""), "unknown key suggests");
 let far = try(fn() { return m["zqxjw"]; });
 assert(!contains(far["err"], "did you mean"), "nothing near, nothing said");
+
+# Arity errors count in plain English and name the function called.
+let one = try(fn() { return len(); });
+assert(contains(one["err"], "len expects 1 argument, got 0"), "one argument, singular");
+let many = try(fn() { return range(1, 2, 3, 4); });
+assert(contains(many["err"], "range expects 1 to 3 arguments, got 4"), "a range of arities");
+fn two(a, b) { return a + b; }
+fn apply(f) { return f(1); }
+let user = try(fn() { return apply(two); });
+assert(contains(user["err"], "two expects 2 arguments, got 1"), "the callee is named");
+let anon = try(fn() { return apply(fn(a, b) { return a + b; }); });
+assert(contains(anon["err"], "an anonymous function expects 2 arguments"), "a literal has no name");
+let fmt = try(fn() { return format("{}", 1, 2); });
+assert(contains(fmt["err"], "1 placeholder but 2 value arguments"), "placeholders count too");

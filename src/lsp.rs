@@ -902,12 +902,12 @@ fn check_calls(
                     && let Some(want) = arities.get(name)
                     && *want != args.len()
                 {
-                    let s = if *want == 1 { "" } else { "s" };
                     out.push((
                         callee.span.start,
                         callee.span.end,
                         format!(
-                            "`{name}` takes {want} argument{s}, called with {}",
+                            "`{name}` takes {}, called with {}",
+                            crate::diag::plural(*want, "argument"),
                             args.len()
                         ),
                     ));

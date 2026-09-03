@@ -522,16 +522,12 @@ impl<W: Write> Interpreter<W> {
         let arity = |lo: usize, hi: usize| -> Result<(), RuntimeError> {
             if args.len() < lo || args.len() > hi {
                 let want = if lo == hi {
-                    format!("{lo}")
+                    crate::diag::plural(lo, "argument")
                 } else {
-                    format!("{lo} to {hi}")
+                    format!("{lo} to {hi} arguments")
                 };
                 Err(error(
-                    format!(
-                        "{} expects {want} argument(s), got {}",
-                        b.name(),
-                        args.len()
-                    ),
+                    format!("{} expects {want}, got {}", b.name(), args.len()),
                     span,
                 ))
             } else {
@@ -666,7 +662,7 @@ impl<W: Write> Interpreter<W> {
                     [Value::Int(lo), Value::Int(hi)] => (*lo, *hi, 1),
                     [Value::Int(lo), Value::Int(hi), Value::Int(step)] => (*lo, *hi, *step),
                     _ => {
-                        return Err(error("range expects int argument(s)", span));
+                        return Err(error("range expects int arguments", span));
                     }
                 };
                 if step == 0 {
@@ -1216,9 +1212,9 @@ impl<W: Write> Interpreter<W> {
                 if next != args.len() {
                     return Err(error(
                         format!(
-                            "format: {} placeholder(s) but {} value argument(s)",
-                            next - 1,
-                            args.len() - 1
+                            "format: {} but {}",
+                            crate::diag::plural(next - 1, "placeholder"),
+                            crate::diag::plural(args.len() - 1, "value argument")
                         ),
                         span,
                     ));
@@ -1443,10 +1439,16 @@ impl<W: Write> Interpreter<W> {
         span: Span,
     ) -> Result<Value, RuntimeError> {
         if args.len() != func.params.len() {
+            // Named after the function it was defined as, the same way
+            // a trace frame is; a literal has no name to give.
+            let who = match &func.name {
+                Some(name) => name.to_string(),
+                None => "an anonymous function".to_string(),
+            };
             return Err(error(
                 format!(
-                    "expected {} argument(s), got {}",
-                    func.params.len(),
+                    "{who} expects {}, got {}",
+                    crate::diag::plural(func.params.len(), "argument"),
                     args.len()
                 ),
                 span,
@@ -2508,10 +2510,10 @@ mod tests {
 
     #[test]
     fn builtin_arity_errors() {
-        assert_eq!(program_err("len();"), "len expects 1 argument(s), got 0");
+        assert_eq!(program_err("len();"), "len expects 1 argument, got 0");
         assert_eq!(
             program_err("range(1, 2, 3, 4);"),
-            "range expects 1 to 3 argument(s), got 4"
+            "range expects 1 to 3 arguments, got 4"
         );
     }
 
@@ -2762,7 +2764,7 @@ mod tests {
     fn arity_mismatch_errors() {
         assert_eq!(
             program_err("fn f(a, b) { return a; } f(1);"),
-            "expected 2 argument(s), got 1"
+            "f expects 2 arguments, got 1"
         );
     }
 

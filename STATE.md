@@ -184,13 +184,12 @@ holds only the current milestone and the standing rules.
 - 518: replenishment — milestone "the way back" (v2.83-v2.84),
   reasoning in LOG.md.
 - 519: the whole way back — every call an error unwinds through
-  leaves a named frame; deep traces elide the middle.
+  leaves a named frame; deep traces elide the middle. 520: arity
+  errors count in English and name the function called.
 - Backlog (one per tick, in order):
-  (1) one argument, not argument(s): arity messages pluralise and
-  name the function called; (2) RELEASE v2.83.0; (3) try() hands the
-  trace back, and lib/test.ting says where the error was raised;
-  (4) the docs read the trace; (5) RELEASE v2.84.0; (6) health tick
-  + audit.
+  (1) RELEASE v2.83.0 (strokes 519, 520); (2) try() hands the trace
+  back, and lib/test.ting says where the error was raised; (3) the
+  docs read the trace; (4) RELEASE v2.84.0; (5) health tick + audit.
 - Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -8738,3 +8738,31 @@ corrected. Full gate green (257 tests), plus 20000 differential
 cases (seed 20260903519), 5000 formatter cases, the crash fuzzer
 and the selftest corpus (541 checks). One stroke banked toward
 v2.83.0. Next: arity messages that pluralise and name the callee.
+
+---
+
+## 2026-09-04 — Iteration 520: one argument, not argument(s)
+
+CI green on 519 (API verdict). Milestone stroke 2: the arity errors
+say what they mean. "len expects 1 argument(s), got 0" was the
+oldest bit of lazy wording in the interpreter, and the user-function
+case was worse — "expected 2 argument(s), got 1" named nobody at
+all, so a wrong call through a parameter left the reader hunting.
+A `diag::plural` helper now turns a count and a word into "1
+argument" or "2 arguments", and the messages read "len expects 1
+argument, got 0", "range expects 1 to 3 arguments, got 4",
+"format: 1 placeholder but 2 value arguments". The function case
+borrows the name stroke 519 gave every closure: "two expects 2
+arguments, got 1", or "an anonymous function expects 2 arguments,
+got 1" for a literal that never had a name — the same phrase the
+trace uses, so the two read as one voice. The static checker had
+pluralised properly all along; it now goes through the same helper,
+so the runtime and `--check` cannot drift apart. Tested from inside
+ting: five new assertions in selftest/errors.ting cover the
+singular, the range, the named callee, the anonymous one and the
+format count, reached through an `apply` helper so the checker's
+own arity warning does not fire and the corpus keeps exactly its
+five deliberate warnings. Full gate green (257 tests, corpus at 546
+checks), plus 20000 differential cases (seed 20260904520), 5000
+formatter cases and the crash fuzzer. Two strokes banked (519,
+520). Next: release v2.83.0.
