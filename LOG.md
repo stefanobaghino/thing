@@ -5726,3 +5726,21 @@ and an embedded one). Reference sentence extended; the io test
 asserts the note, the line, and that the importer's path appears
 exactly once. Full gate green (214 tests). One stroke banked toward
 v2.53.0. Next: --check follows local imports.
+
+---
+
+## 2026-09-03 — Iteration 364: --check follows local imports
+
+CI green on 363 (API verdict). Milestone stroke 3: `--check`
+walks a queue — every file reached through `import("...")` of a
+path that exists on disk relative to the importing file is checked
+too, once (canonical path set), under its own display path; stdin
+has no directory and is not followed; embedded stdlib modules are
+not files and are skipped. The resolver is the LSP document-link
+scanner's, factored into import_targets and exposed as
+ting::local_imports, so the two tools agree on what an import
+points at. io test: a main importing lib/list.ting and two local
+modules, one reaching the broken one through `../`; the error is
+reported under the broken file exactly once and fails the check.
+Reference bullet extended. Corpus clean. Full gate green (215
+tests). Two strokes banked toward v2.53.0. Next: slug.

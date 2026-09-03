@@ -177,10 +177,10 @@ current orientation.
   reasoning in LOG.md.
 - v2.52.0 VERIFIED (73rd tag, 72 verified; both aarch64 archives
   executed here).
-- 363: `note: called from` — one stroke banked toward v2.53.0.
-- Backlog (in order): (3) --check follows local imports, io test;
-  (4) lib/string.ting slug, selftests; (5) health tick + audit.
-  Release after ~3.
+- 363: `note: called from`; 364: --check follows local imports —
+  two strokes banked toward v2.53.0.
+- Backlog (in order): (4) lib/string.ting slug, selftests — then
+  RELEASE v2.53.0; (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
