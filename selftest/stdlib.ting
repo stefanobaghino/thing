@@ -135,3 +135,10 @@ assert(s["chars"]("héy") == ["h", "é", "y"], "chars");
 assert(s["chars"]("") == [], "chars empty");
 assert(s["reverse"]("héllo") == "olléh", "string reverse");
 assert(s["reverse"]("") == "", "string reverse empty");
+
+assert(m["filter_map"]({"a": 1, "b": 2, "c": 3}, fn(k, v) { return v % 2 == 1; }) == {"a": 1, "c": 3}, "filter_map by value");
+assert(m["filter_map"]({"a": 1, "b": 2}, fn(k, v) { return k == "b"; }) == {"b": 2}, "filter_map by key");
+assert(m["filter_map"]({}, fn(k, v) { return true; }) == {}, "filter_map empty");
+assert(m["has_all"]({"a": 1, "b": 2}, ["a", "b"]), "has_all");
+assert(!m["has_all"]({"a": 1}, ["a", "z"]), "has_all missing");
+assert(m["has_all"]({}, []), "has_all empty keys");

@@ -66,6 +66,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `map_values(m, f)` | a fresh map with `f` applied to every value |
 | `pick(m, ks)` | a fresh map with only the listed keys (missing skipped) |
 | `omit(m, ks)` | a fresh map without the listed keys |
+| `filter_map(m, pred)` | a fresh map with only the entries where `pred(key, value)` holds |
+| `has_all(m, ks)` | true if every listed key is present |
 
 ## lib/math.ting
 

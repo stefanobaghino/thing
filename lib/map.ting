@@ -56,3 +56,20 @@ fn omit(m, ks) {
   }
   return out;
 }
+
+# A fresh map with only the entries for which pred(key, value) holds.
+fn filter_map(m, pred) {
+  let out = {};
+  for k in m {
+    if pred(k, m[k]) { out[k] = m[k]; }
+  }
+  return out;
+}
+
+# True if every listed key is present (true for an empty list).
+fn has_all(m, ks) {
+  for k in ks {
+    if !has(m, k) { return false; }
+  }
+  return true;
+}
