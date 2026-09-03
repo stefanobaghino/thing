@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.33.0 (2026-09-03)
+
+- `lib/json.ting`, a sixth embedded module: `get_in`, `set_in`,
+  `paths` for nested values.
+- `ting --check` prints the unknown-stdlib-member warning the LSP
+  shows (exit status unchanged).
+- `examples/pipeline.ting`: records from stdin, grouped and tabled.
+
 ## v2.32.0 (2026-09-03)
 
 - LSP: a warning when an imported stdlib module is indexed with a

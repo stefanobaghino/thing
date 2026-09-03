@@ -4082,3 +4082,11 @@ pre-commit hook must not start failing on them. io test pins the
 message, the caret position and the exit code; reference bullet
 updated. Full gate green. Third stroke banked — v2.33.0 next tick
 if quiet.
+
+---
+
+## 2026-09-03 — Iteration 276: v2.33.0
+
+lib/json.ting, --check warnings, pipeline example. CI and Pages
+green on 275 (API verdicts). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.33.0 (55th tag).
