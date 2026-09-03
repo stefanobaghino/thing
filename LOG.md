@@ -8300,3 +8300,17 @@ messages arriving correctly; the fix was in the test's own quoting.
 The reference's LSP paragraph now names both quickfixes. Full gate
 green (250 tests). Two strokes banked (495, 496). Next: release
 v2.77.0.
+
+---
+
+## 2026-09-03 — Iteration 497: release v2.77.0
+
+CI green on 496 (API verdict). Cut v2.77.0 with the checker's new
+eye: a name bound nowhere (495) and the editor's quickfix for it
+(496). The release workflow is green with all six archives; CI and
+Pages green on the release commit (API verdicts). Cold-verified
+here: both aarch64 Linux archives downloaded fresh, unpacked and
+run — `-V` reports 2.77.0, and the same file now draws a warning
+from --check and an error from the run, at the same line and column
+and with the same suggestion. 98th tag. Next: a call whose argument
+count cannot match.

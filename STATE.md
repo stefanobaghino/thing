@@ -148,14 +148,13 @@ holds only the current milestone and the standing rules.
   complete.
 - 494: replenishment — milestone "before it runs" (v2.77-v2.78),
   reasoning in LOG.md.
-- 495: bound nowhere (--check and the LSP); 496: its LSP test and
-  quickfix — two strokes banked toward v2.77.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.77.0 (strokes 495,
-  496); (2) --check warns
-  about a call whose argument count cannot match a function in the
-  same file; (4) docs + selftests, then RELEASE v2.78.0; (5) health
-  tick + audit.
-- Tags: 97 (v2.76.0), 96 verified; v2.29.0 is publicly marked broken
+- v2.77.0 VERIFIED (98th tag; strokes 495, 496; both aarch64 archives
+  executed here).
+- Backlog (one per tick, in order): (1) --check warns about a call
+  whose argument count cannot match a function in the same file;
+  (2) docs + selftests, then RELEASE v2.78.0; (3) health tick +
+  audit.
+- Tags: 98 (v2.77.0), 97 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
