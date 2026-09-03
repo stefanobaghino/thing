@@ -4679,3 +4679,16 @@ banked — v2.40.0 next tick if quiet.
 TAP output, the closures chapter, binary_search. CI green on 308
 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.40.0 (61st tag).
+
+---
+
+## 2026-09-03 — Iteration 309b: v2.40.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.40.0`, `--test --tap` over a passing and a failing file prints
+the plan, both line shapes, the diagnostic and timing comments and
+exits 1; binary_search answers on the reference engine. Site: all
+resources 200, changelog shows 2.40.0, tutorial carries the
+closures chapter. 61 tags, 60 verified.

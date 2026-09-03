@@ -133,9 +133,8 @@ current orientation.
   executed cold here. The 296 milestone is complete.
 - 305: replenishment — milestone "reporting" (v2.40–v2.42),
   reasoning in LOG.md.
-- v2.40.0 TAGGED (61st tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here (--test --tap).
+- v2.40.0 RELEASED and verified (61st tag); aarch64 musl archive
+  executed cold here.
 - Backlog after the release (in order): (4) lib/string.ting
   levenshtein, selftests; (5) retrospective act six. Release after
   ~3; health tick after.
