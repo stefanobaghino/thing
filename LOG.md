@@ -7733,3 +7733,17 @@ key_of, every-file processing in the formatter and checker, the
 formatter's summary line. CI green on 465 (API verdict). Full gate
 green, stdlib selftests pass on both engines. Tagging v2.71.0
 (92nd tag).
+
+---
+
+## 2026-09-03 — Iteration 466b: v2.71.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.71.0; the musl binary's --fmt over a three-file directory with a
+broken middle file reformats the other two, ends with "2
+reformatted, 0 unchanged, 1 failed" and exits 1; key_of returns
+"b" on the musl VM and the gnu reference engine; `--test selftest`
+passes 11/11 on each. CI and Pages green on the release commit.
+Ninety-two tags, ninety-one verified. Next: the reference and
+tutorial sentences.
