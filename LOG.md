@@ -2843,3 +2843,13 @@ iteration — and has_all(m, ks), the multi-key companion to the has
 builtin (vacuously true on an empty list). Six assertions, two
 stdlib.md rows. Full gate green on both engines. Third stroke banked
 — v2.17.0 next tick if quiet, with the first four-platform release.
+
+---
+
+## 2026-09-03 — Iteration 204: v2.17.0
+
+Four-platform release: aarch64-linux archive, string chars/reverse,
+map filter_map/has_all. CI green on 203 (API verdict). Full gate
+green, stdlib selftests pass on the reference engine. Tagging
+v2.17.0 (37th release); the arm64 Linux build step runs for the
+first time on this tag.

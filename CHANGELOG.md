@@ -1,8 +1,15 @@
 # Changelog
 
 All notable changes to ting. Versions are git tags; binaries for
-Linux/macOS/Windows are attached to each
+Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
+
+## v2.17.0 (2026-09-03)
+
+- Releases now also ship an `aarch64-unknown-linux-gnu` archive (four
+  platforms).
+- `lib/string.ting`: `chars`, `reverse`.
+- `lib/map.ting`: `filter_map`, `has_all`.
 
 ## v2.16.0 (2026-09-03)
 
