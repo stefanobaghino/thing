@@ -8133,3 +8133,18 @@ engines print the same sentence (asserted). Full gate green (246
 tests); the corpus scan still shows its one expected warning. Two
 strokes banked toward v2.75.0. Next: --doc suggests the nearest
 name.
+
+---
+
+## 2026-09-03 — Iteration 488: the name you wanted to read about
+
+CI green on 487 (API verdict). Milestone stroke 3: `ting --doc
+medain` says "no builtin, stdlib function, module or file named
+medain (did you mean median?)", and the REPL's `:doc` says the same
+in its parenthesis. repl::doc_names gathers the candidates the two
+already answer to — every builtin, every stdlib function, and each
+module under both `list` and `lib/list.ting` — so a mistyped module
+name is caught as readily as a function's. io test covers a
+function, a module and a name with nothing near it. Full gate green
+(247 tests). Three strokes banked (486, 487, 488). Next: release
+v2.75.0.
