@@ -4,14 +4,15 @@
 let li = import("../lib/list.ting");
 let st = import("../lib/string.ting");
 
-let lines = [];
-push(lines, "INFO  12 GET /");
-push(lines, "INFO  18 GET /docs");
-push(lines, "WARN  95 GET /search");
-push(lines, "INFO  15 GET /");
-push(lines, "ERROR 210 POST /login");
-push(lines, "INFO  x GET /broken");
-push(lines, "INFO  22 GET /about");
+let lines = [
+  "INFO  12 GET /",
+  "INFO  18 GET /docs",
+  "WARN  95 GET /search",
+  "INFO  15 GET /",
+  "ERROR 210 POST /login",
+  "INFO  x GET /broken",
+  "INFO  22 GET /about",
+];
 
 let parsed = [];
 for line in lines {

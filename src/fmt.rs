@@ -3,10 +3,11 @@
 //! source via spans. Guarantees checked by tests: idempotent, and the
 //! formatted program parses to the identical AST.
 //!
-//! Rules: two-space indentation from brace depth; the author's line
-//! breaks are kept (runs of blank lines collapse to one); canonical
-//! single spaces between tokens; trailing comments get two spaces
-//! before the `#`.
+//! Rules: two-space indentation from brace depth, plus one level for
+//! every `[` or `(` that ends its line (a hanging opener) until its
+//! closer; the author's line breaks are kept (runs of blank lines
+//! collapse to one); canonical single spaces between tokens; trailing
+//! comments get two spaces before the `#`.
 
 use crate::lexer::{self, LexError, Span, TokenKind};
 
@@ -134,8 +135,11 @@ pub fn format(src: &str) -> Result<String, LexError> {
     // Open braces: true = map literal, false = block. Decided from the
     // token before `{`: expression positions mean a map.
     let mut braces: Vec<bool> = Vec::new();
+    // Open `[`/`(`: true = hanging (last on its line, so it opened an
+    // indented continuation), false = inline.
+    let mut hanging: Vec<bool> = Vec::new();
 
-    for (piece, newlines) in &pieces {
+    for (i, (piece, newlines)) in pieces.iter().enumerate() {
         if *newlines > 0 && !out.is_empty() {
             out.push('\n');
             if *newlines >= 2 {
@@ -156,7 +160,9 @@ pub fn format(src: &str) -> Result<String, LexError> {
                 out.push_str(src[span.start..span.end].trim_end());
             }
             Piece::Token(kind, span) => {
-                let line_depth = if matches!(kind, TokenKind::RBrace) {
+                let closes_hanging = matches!(kind, TokenKind::RBracket | TokenKind::RParen)
+                    && hanging.last().copied().unwrap_or(false);
+                let line_depth = if matches!(kind, TokenKind::RBrace) || closes_hanging {
                     depth.saturating_sub(1)
                 } else {
                     depth
@@ -187,6 +193,17 @@ pub fn format(src: &str) -> Result<String, LexError> {
                     TokenKind::RBrace => {
                         depth = depth.saturating_sub(1);
                         braces.pop();
+                    }
+                    TokenKind::LBracket | TokenKind::LParen => {
+                        let hangs = pieces.get(i + 1).is_some_and(|(_, n)| *n > 0);
+                        if hangs {
+                            depth += 1;
+                        }
+                        hanging.push(hangs);
+                    }
+                    TokenKind::RBracket | TokenKind::RParen => {
+                        let hung = hanging.pop().unwrap_or(false);
+                        depth = depth.saturating_sub(usize::from(hung));
                     }
                     _ => {}
                 }
@@ -233,6 +250,21 @@ mod tests {
         assert_eq!(
             format(src).unwrap(),
             "fn f(n) {\n  if n < 2 {\n    return n;\n  }\n  return f(n - 1);\n}\n"
+        );
+    }
+
+    #[test]
+    fn hanging_brackets_indent_their_continuation() {
+        let src = "let xs = [\n\"a\",\n[1,\n2],\n];\nprint(\nxs,\nlen(xs)\n);";
+        assert_eq!(
+            format(src).unwrap(),
+            "let xs = [\n  \"a\",\n  [1,\n  2],\n];\nprint(\n  xs,\n  len(xs)\n);\n"
+        );
+        // Inline openers (closure-as-argument) keep the brace-only depth.
+        let src = "sort_by(xs, fn(a) {\nreturn a;\n});";
+        assert_eq!(
+            format(src).unwrap(),
+            "sort_by(xs, fn(a) {\n  return a;\n});\n"
         );
     }
 
