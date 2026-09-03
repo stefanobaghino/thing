@@ -4949,3 +4949,21 @@ its golden output is byte-identical, which is the point of a
 dogfood stroke. Four assertions on the textbook sample, two
 stdlib.md rows, cookbook regenerated. Full gate green on both
 engines. Second stroke toward v2.44.0.
+
+---
+
+## 2026-09-03 — Iteration 325: LSP document links
+
+CI and Pages green on 324 (API verdicts). Milestone stroke 3, the
+server's twelfth capability: textDocument/documentLink turns every
+import("...") string whose path resolves — relative to the
+document's directory, `.` and `..` normalised lexically — to an
+existing file into a link to that file; an embedded module with no
+file on disk and a missing path get no link, since there is nothing
+to open. Protocol test writes a real file under a temp directory and
+checks exactly one link among three imports. A first test draft
+sent raw newlines inside the JSON string and the server dropped the
+malformed message (the test's send then hit a closed pipe) —
+escaping fixed the test, not the server. Reference line updated.
+Full gate green (205 tests). Third stroke banked — v2.44.0 next
+tick if quiet.
