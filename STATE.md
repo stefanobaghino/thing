@@ -139,9 +139,8 @@ current orientation.
   executed cold here. The 305 milestone is complete.
 - 314: replenishment — milestone "configuration" (v2.42–v2.44),
   reasoning in LOG.md.
-- v2.42.0 TAGGED (63rd tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here (:time through a pipe, config example).
+- v2.42.0 RELEASED and verified (63rd tag); aarch64 musl archive
+  executed cold here.
 - Backlog after the release (in order): (4) LSP workspace/symbol
   across open documents, protocol test; (5) health tick + audit;
   then replenish.

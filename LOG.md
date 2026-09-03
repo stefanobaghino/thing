@@ -4829,3 +4829,15 @@ next tick if quiet.
 Config example, tutorial JSON paths, REPL :time. CI and Pages green
 on 317 (API verdicts). Full gate green, stdlib selftests pass on
 the reference engine. Tagging v2.42.0 (63rd tag).
+
+---
+
+## 2026-09-03 — Iteration 318b: v2.42.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.42.0`, `:time` answers through a pipe, and the config example runs
+against the bundled lib to its golden tail on both engines. Site:
+all resources 200, changelog shows 2.42.0, cookbook carries config.
+63 tags, 62 verified.
