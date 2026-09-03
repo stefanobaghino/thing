@@ -7355,3 +7355,16 @@ quietly clamped. Protocol test: a two-line document with a
 trailing newline ends at line 2 character 0, one without ends at
 the last line's length. Full gate green (234 tests). One stroke
 banked toward v2.68.0. Next: the tutorial's JSON chapter.
+
+---
+
+## 2026-09-03 — Iteration 446: diff and flatten in the tutorial
+
+CI green on 445 (API verdict). Milestone stroke 4: the JSON
+chapter gains an executed snippet showing diff's `[path, left,
+right]` triples across a changed port and a new nested key, and
+flatten's dotted-path map of the result; the expected block is
+the binary's own output, captured on both engines before the
+prose was written (the 370 rule). Tutorial and docs guards green.
+Two strokes banked toward v2.68.0 (445, 446). Next: health tick +
+audit, then replenish.

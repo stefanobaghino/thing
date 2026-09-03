@@ -98,10 +98,10 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.67.0 VERIFIED (88th tag; strokes 439, 442, 443; both aarch64
   archives executed here).
-- 445: formatting edit ends at the last position — one stroke banked
-  toward v2.68.0.
-- Backlog (in order): (4) tutorial JSON chapter: diff and flatten;
-  (5) health tick + audit; then replenish.
+- 445: formatting edit ends at the last position; 446: diff and
+  flatten in the tutorial — two strokes banked toward v2.68.0.
+- Backlog (in order): (5) health tick + audit; then replenish (the
+  release follows the next stroke).
 - Tags: 88 (v2.67.0), 87 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
