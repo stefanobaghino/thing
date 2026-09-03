@@ -4116,3 +4116,23 @@ nothing is an error naming the filter, never a silent "0 passed";
 a missing value after --filter is a usage error. io test extended
 for both; help and reference updated. Full gate green. First
 stroke toward v2.34.0.
+
+---
+
+## 2026-09-03 — Iteration 278: health tick
+
+CI green on 277 (API verdict). Milestone stroke 5. Bench against
+the rebased baseline: all five checksums match; the shared host was
+at load ~5, and one median (stdlib.ting, vm +29% vs the baseline's
+-6%) looked like a regression until three back-to-back re-timings
+put the VM at 782–910 ms against the tree-walker's 815–873 — inside
+each other's noise, no engine code has changed since the baseline,
+so: contention, not regression. Fuzz: 50000 differential cases on
+seed 20260903278 agree; the crash fuzzer passes in release.
+Distribution: 54 releases with the expected asset counts (36 × 3,
+14 × 4, 4 × 6), all six v2.33.0 download URLs resolve, all eight
+site resources answer 200. Correction: entries 263b–276b counted
+one tag too many ("52 releases" at 263b should have read 51; v2.33.0
+is the 54th tag, not the 55th) — the audit's count is the truth,
+and STATE.md is fixed. Nothing else to fix. The 272 milestone is
+complete; next tick replenishes.

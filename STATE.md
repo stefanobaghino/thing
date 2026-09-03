@@ -108,12 +108,17 @@ current orientation.
   cold here). The 264 milestone is complete.
 - 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
   reasoning in LOG.md.
-- v2.33.0 RELEASED and verified (55th tag); aarch64 glibc archive
+- v2.33.0 RELEASED and verified (54th tag — counts in 263b–276b
+  were one high; 278 audit corrected them); aarch64 glibc archive
   executed cold here with the bundled json module.
-- 277: --test --filter — milestone stroke 4; first toward v2.34.0.
-- Backlog (one per tick, in order): (5) health tick (bench, both
-  fuzzers, distribution audit); then replenish (the 272 milestone
-  is complete after it).
+- 277: --test --filter (first toward v2.34.0); 278: health tick
+  green — the 272 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  REPL `:test` / `:check` meta-commands; (b) lib/json.ting merge_in
+  (deep merge); (c) `--fmt` for multi-line map literals (hanging `{`
+  in expression position — check whether the 221 rule covers it);
+  (d) a sixth retrospective act is NOT due yet; (e) LSP: code
+  action "fix spelling" for the member warning (nearest export).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
