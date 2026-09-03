@@ -290,7 +290,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a
   local path are checked too, each once under its own path.
-  Clean files may still get warnings (a map literal that gives the
+  Clean files may still get warnings (a statement that can never run,
+  after a `return`, `break` or `continue` in the same block; a map
+  literal that gives the
   same string key twice, where the last one silently wins; a call
   whose argument count
   cannot match a function bound once at the top level and never
@@ -332,7 +334,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings
   for a name bound nowhere, for a call that cannot match the function
-  it names, for a duplicate key in a map literal, for an imported
+  it names, for a duplicate key in a map literal, for code that can
+  never run, for an imported
   stdlib module indexed
   with a name it does not export, for unused bindings, top-level or
   local, and unused parameters, and for a name that shadows a

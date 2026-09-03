@@ -618,6 +618,67 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
         .collect()
 }
 
+/// Statements that can never run: whatever follows a `return`, a
+/// `break` or a `continue` in the same block. Only the first orphan
+/// is reported — the rest of the block is the same mistake.
+pub fn unreachable_code(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    let mut out = Vec::new();
+    visit_blocks(&program, &mut |stmts| {
+        use crate::ast::StmtKind as S;
+        for (i, stmt) in stmts.iter().enumerate() {
+            let word = match &stmt.kind {
+                S::Return(_) => "return",
+                S::Break => "break",
+                S::Continue => "continue",
+                _ => continue,
+            };
+            let Some(next) = stmts.get(i + 1) else {
+                break;
+            };
+            out.push((
+                next.span.start,
+                next.span.end,
+                format!("this can never run: the {word} above always leaves"),
+            ));
+            break;
+        }
+    });
+    out.sort_by_key(|(start, _, _)| *start);
+    out
+}
+
+/// Every block of statements in the program: the top level, function
+/// bodies, and the bodies of `if`, `while`, `for` and bare blocks.
+fn visit_blocks(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&[crate::ast::Stmt])) {
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    f(stmts);
+    for stmt in stmts {
+        match &stmt.kind {
+            S::Block(inner) => visit_blocks(inner, f),
+            S::If(_, then, els) => {
+                visit_blocks(std::slice::from_ref(then), f);
+                if let Some(e) = els {
+                    visit_blocks(std::slice::from_ref(e), f);
+                }
+            }
+            S::While(_, body) | S::For(_, _, body) => visit_blocks(std::slice::from_ref(body), f),
+            _ => {}
+        }
+    }
+    // Function bodies are blocks too, wherever the literal sits.
+    visit_exprs(stmts, &mut |e| {
+        if let E::Fn(_, body) = &e.kind {
+            visit_blocks(body, f);
+        }
+    });
+}
+
 /// Map literals that give the same string key twice: the last wins
 /// silently, so `{"a": 1, "a": 2}` is `{"a": 2}` and the first entry
 /// was written for nothing. Only literal string keys are judged; a
@@ -1296,6 +1357,7 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     all.extend(unbound_names(src));
     all.extend(arity_mismatches(src));
     all.extend(duplicate_map_keys(src));
+    all.extend(unreachable_code(src));
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));

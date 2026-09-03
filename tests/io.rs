@@ -1284,6 +1284,61 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn check_flag_warns_about_code_that_can_never_run() {
+    let dir = std::env::temp_dir().join("ting-unreachable");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("r.ting");
+    std::fs::write(
+        &script,
+        "fn f() { return 1; print(\"never\"); }\nprint(f());\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "warnings do not fail the check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("this can never run: the return above always leaves"),
+        "{stderr}"
+    );
+    // Only the first orphan is reported, at its own column.
+    assert_eq!(stderr.matches("warning:").count(), 1, "{stderr}");
+    assert!(stderr.contains(":1:20:"), "{stderr}");
+
+    // `break` and `continue` end a block the same way.
+    std::fs::write(
+        &script,
+        "for x in [1, 2] {\n  if x > 1 { break; print(x); }\n  print(x);\n}\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("the break above always leaves"), "{stderr}");
+
+    // A return at the end of its block, and one inside a branch that
+    // the block continues past, are both fine.
+    std::fs::write(
+        &script,
+        "fn h(n) {\n  if n > 0 { return n; }\n  return 0;\n}\nprint(h(1), h(-1));\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("can never run"), "{stderr}");
+}
+
+#[test]
 fn check_flag_warns_about_a_duplicate_map_key() {
     let dir = std::env::temp_dir().join("ting-dupkey");
     std::fs::create_dir_all(&dir).expect("mkdir");
