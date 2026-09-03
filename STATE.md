@@ -72,10 +72,11 @@ current orientation.
   site current.
 - v2.22.0 RELEASED and verified (42nd); aarch64-linux asset
   executed cold on this host, both engines; Pages green first time.
-- 228: rotate — first stroke toward v2.23.0.
-- Backlog (one per tick): lib/string.ting truncate(s, n, suffix);
-  quiet-machine bench re-measure; distribution audit; release after
-  ~3 strokes.
+- 228: rotate; 229: truncate — two strokes toward v2.23.0.
+- Backlog (one per tick): quiet-machine bench re-measure +
+  distribution audit (one health tick); one more feature stroke
+  (candidates: lib/list.ting dedupe_by, lib/math.ting is_prime);
+  release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

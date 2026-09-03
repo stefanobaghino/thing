@@ -3225,3 +3225,14 @@ so the shift is normalised into [0, len) explicitly; the empty list
 short-circuits to avoid a modulo by zero. Five assertions,
 stdlib.md row. Full gate green on both engines. First stroke toward
 v2.23.0.
+
+---
+
+## 2026-09-03 — Iteration 229: truncate
+
+CI green on 228 (API verdict). lib/string.ting gains truncate(s,
+width, suffix): the suffix counts toward the width so the result
+never exceeds it, a suffix wider than the width is itself cut, and
+character-indexed strings make the multibyte case free (pinned with
+an ellipsis and accented input). Five assertions, stdlib.md row.
+Full gate green on both engines. Second stroke toward v2.23.0.
