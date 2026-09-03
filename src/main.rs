@@ -38,7 +38,8 @@ fn main() -> ExitCode {
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
                  \x20 ting --lsp                  language server on stdio\n\
-                 \x20 ting --version | --help\n\n\
+                 \x20 ting --version | --help    (also ting -V | -h)\n\n\
+                 exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
                  docs: http://www.baghino.me/thing/",
                 env!("CARGO_PKG_VERSION")

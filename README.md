@@ -81,7 +81,7 @@ fail loudly with a caret pointing at the source.
 cargo build --release
 ./target/release/ting script.ting   # run a script
 ./target/release/ting               # start the REPL
-./target/release/ting --help        # everything else
+./target/release/ting -h            # everything else
 ```
 
 Requires only a Rust toolchain — zero dependencies. `cargo test` runs

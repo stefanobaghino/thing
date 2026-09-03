@@ -9,14 +9,25 @@ sitting.
 ```sh
 ting script.ting [args...]   # run a file; extra args go to args()
 ting                         # interactive REPL (ctrl-d exits)
-ting --check files...        # report syntax errors without running
+ting --check files...        # report errors and warnings without running
 ting --fmt files...          # reformat in place (--fmt-check to verify)
+ting --test dirs...          # run every .ting file as a test
+ting --doc [NAME]            # explain a function, list a module, or list all
+ting --lsp                   # language server on stdio
+ting --version | -V          # the version
+ting --help | -h             # every option
 ```
 
 Scripts run on the bytecode VM by default; `--eval` (or
 `TING_ENGINE=eval`) selects the reference tree-walking interpreter —
 the two are held byte-identical by differential tests. The REPL uses
 the reference engine.
+
+Exit status is 0 on success; 1 when the tool reports a failure — a
+script that raises, a red test file, a file `--fmt-check` would
+change, a warning under `--check --strict`; and 2 on a usage error —
+an unknown option, a mode with no operand, a bad option value —
+which also prints a pointer to `--help`.
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
