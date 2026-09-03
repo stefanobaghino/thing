@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.24.0 (2026-09-03)
+
+- `lib/list.ting`: `scan`.
+- `lib/string.ting`: `strip_prefix`, `strip_suffix`.
+- Retrospective: a fourth act on the move to a new machine.
+
 ## v2.23.0 (2026-09-03)
 
 - `lib/list.ting`: `rotate`, `unique_by`.

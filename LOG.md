@@ -3320,3 +3320,11 @@ slice: the input passes through unchanged when the affix is absent
 so identity is the honest no-op). Six assertions, two stdlib.md
 rows. Full gate green on both engines. Third stroke banked —
 v2.24.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 236: v2.24.0
+
+scan, strip_prefix/strip_suffix, retrospective act four. CI green
+on 235 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.24.0 (44th release).

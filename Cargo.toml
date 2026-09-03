@@ -1,6 +1,6 @@
 [package]
 name = "ting"
-version = "2.23.0"
+version = "2.24.0"
 edition = "2024"
 description = "A tiny, zero-dependency scripting language"
 license = "MIT"
