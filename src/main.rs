@@ -26,7 +26,7 @@ fn main() -> ExitCode {
                  \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <files...>     report syntax errors without running\n\
                  \x20                             (tool flags accept - for stdin)\n\
-                 \x20 ting --test <files...>      run each file; ok/FAIL per file, exit 1 if any fail\n\
+                 \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -147,9 +147,23 @@ fn run_check(files: Vec<String>) -> ExitCode {
 /// exit() or a failed assert cannot take the runner down), and the
 /// verdict is its exit status. stdout is discarded; stderr is shown
 /// under a FAIL line so the diagnostic stays next to its file.
-fn run_tests(files: Vec<String>) -> ExitCode {
+fn run_tests(args: Vec<String>) -> ExitCode {
+    if args.is_empty() {
+        eprintln!("usage: ting --test <files or directories...>");
+        return ExitCode::FAILURE;
+    }
+    // Directories expand to every .ting file beneath them, sorted, so
+    // `ting --test selftest` is the whole suite in a stable order.
+    let mut files = Vec::new();
+    for a in &args {
+        if std::path::Path::new(a).is_dir() {
+            collect_ting_files(std::path::Path::new(a), &mut files);
+        } else {
+            files.push(a.clone());
+        }
+    }
     if files.is_empty() {
-        eprintln!("usage: ting --test <files...>");
+        eprintln!("ting: no .ting files found under {}", args.join(" "));
         return ExitCode::FAILURE;
     }
     let me = match std::env::current_exe() {
@@ -188,6 +202,21 @@ fn run_tests(files: Vec<String>) -> ExitCode {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
+    }
+}
+
+fn collect_ting_files(dir: &std::path::Path, out: &mut Vec<String>) {
+    let Ok(entries) = std::fs::read_dir(dir) else {
+        return;
+    };
+    let mut paths: Vec<_> = entries.flatten().map(|e| e.path()).collect();
+    paths.sort();
+    for p in paths {
+        if p.is_dir() {
+            collect_ting_files(&p, out);
+        } else if p.extension().and_then(|e| e.to_str()) == Some("ting") {
+            out.push(p.to_string_lossy().into_owned());
+        }
     }
 }
 

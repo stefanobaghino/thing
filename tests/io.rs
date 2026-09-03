@@ -428,3 +428,32 @@ fn test_flag_runs_files_and_summarises() {
     let _ = std::fs::remove_file(&good);
     let _ = std::fs::remove_file(&bad);
 }
+
+/// A directory argument expands to every .ting file beneath it, in
+/// sorted order, recursively; other files are ignored.
+#[test]
+fn test_flag_expands_directories() {
+    let root = std::env::temp_dir().join(format!("ting-test-dir-{}", std::process::id()));
+    let nested = root.join("nested");
+    std::fs::create_dir_all(&nested).unwrap();
+    std::fs::write(root.join("b.ting"), "assert(true);\n").unwrap();
+    std::fs::write(root.join("a.ting"), "assert(true);\n").unwrap();
+    std::fs::write(root.join("notes.txt"), "not a test\n").unwrap();
+    std::fs::write(nested.join("c.ting"), "assert(false, \"deep failure\");\n").unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    let a = stdout.find("a.ting").unwrap();
+    let b = stdout.find("b.ting").unwrap();
+    let c = stdout.find("c.ting").unwrap();
+    assert!(a < b && b < c, "sorted, files before nested dir: {stdout}");
+    assert!(!stdout.contains("notes.txt"), "{stdout}");
+    assert!(stdout.contains("deep failure"), "{stdout}");
+    assert!(stdout.contains("2 passed, 1 failed"), "{stdout}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}
