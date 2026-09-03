@@ -4856,3 +4856,19 @@ two documents and checks a substring match spanning both, an
 excluded name, and the empty-query count. Reference line updated.
 Full gate green (204 tests). First stroke toward v2.43.0; the 314
 milestone's building strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 320: health tick + audit
+
+CI and Pages green on 319 (API verdicts). Milestone stroke 5.
+Bench at load ~6–7: all six checksums match; ratios in the usual
+contended band (lists -1%, strings +2% for the VM against the
+baseline's -34% and -6%) and no engine code changed, so no chase.
+Fuzz: 50000 differential cases (seed 20260903320), the crash
+fuzzer, and 20000 formatter cases (seed 320) all pass in release.
+Distribution: 63 releases with the expected asset counts (36 × 3,
+14 × 4, 13 × 6), all six v2.42.0 download URLs resolve, all eight
+site resources answer 200 and the reference mentions workspace
+symbols. Nothing to fix. The 314 milestone's strokes are done;
+v2.43.0 next tick, then replenish.
