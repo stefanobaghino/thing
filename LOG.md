@@ -6368,3 +6368,16 @@ cyclic-value error on the musl VM and the gnu reference engine;
 `--test selftest` passes 11/11 on each. CI and Pages green on the
 release commit. Seventy-nine tags, seventy-eight verified. Next:
 the tutorial's Testing chapter flags.
+
+---
+
+## 2026-09-03 — Iteration 395: tutorial: the runner's flags
+
+CI green on 394b (API verdict). Milestone stroke 4: the tutorial's
+Testing chapter, which knew only `--filter`, now mentions
+--fail-fast, -j, --slow and --tap in one paragraph, each with the
+situation it is for. The reference's Limits line was already
+completed by strokes 1–3, so this stroke is the tutorial alone.
+Tutorial and docs guards green. One stroke banked toward v2.59.0.
+Next: health tick + audit, with a cycle taught to the crash
+fuzzer.

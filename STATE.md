@@ -207,9 +207,9 @@ current orientation.
   in LOG.md.
 - v2.58.0 VERIFIED (79th tag, 78 verified; both aarch64 archives
   executed here on the three cyclic programs).
-- Backlog after the release (in order): (4) tutorial Testing chapter
-  flags (the reference Limits line is already current); (5) health
-  tick + audit with a cycle in the crash fuzzer.
+- 395: tutorial runner flags — one stroke banked toward v2.59.0.
+- Backlog (in order): (5) health tick + audit, with a cycle taught to
+  the crash fuzzer; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
