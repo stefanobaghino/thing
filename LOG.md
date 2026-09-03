@@ -3362,8 +3362,8 @@ on every program. Full gate green. First stroke toward v2.25.0.
 
 CI green on 237 across all jobs (API verdict). Completion now
 includes the exported functions of every embedded stdlib module the
-document imports — matched on the "lib/<name>.ting" suffix so
-relative paths count — with the module path and signature as the
+document imports — matched on the `lib/…/.ting` module-path suffix
+so relative paths count — with the module path and signature as the
 item's detail. The names come from scanning the embedded sources
 for top-level `fn` lines (the same text import() resolves to, so it
 cannot drift). Modules that are not imported stay out of the list,
