@@ -94,8 +94,13 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 439: hypot — one stroke banked toward v2.67.0. 440: health tick +
   audit green — milestone "the small print" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 441: replenishment — milestone "tests and json" (v2.67–v2.68),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) lib/test.ting comments +
+  check_type, selftests; (2) lib/json.ting flatten + paths_into
+  comment, selftests — then RELEASE v2.67.0 (439, +2); (3) LSP
+  formatting end position, protocol test; (4) tutorial JSON
+  chapter: diff and flatten; (5) health tick + audit.
 - Tags: 87 (v2.66.0), 86 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

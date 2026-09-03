@@ -7262,3 +7262,33 @@ LF and CRLF alike (the split count), which every client clamps —
 a nit, not a bug. Nothing to fix. The "small print" milestone is
 complete; one stroke (439) is banked toward v2.67.0. Backlog
 empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 441: replenishment — milestone "tests and json"
+
+CI green on 440 (API verdict). Twenty-four milestones since the
+restart, eighty-seven tags. `--doc test` shows check, check_eq and
+summary with no description and `--doc json` shows paths_into
+bare — the two smallest modules are the two whose own text is
+thinnest; the test module cannot assert a value's type; the json
+module can list paths and diff two documents but cannot give the
+flat "dotted path to leaf" view that configuration tooling lives
+on; and the 440 probe left the formatting edit's end position one
+line past the document. Five strokes:
+
+1. lib/test.ting: `#` comments for check, check_eq and summary,
+   and check_type(name, v, type_name) — passes when type(v) is the
+   name, the failure shows the actual type. Selftests.
+2. lib/json.ting: flatten(v), a map from each leaf's dotted path
+   ("a.b.0") to its value, and a comment for paths_into.
+   Selftests. Then release v2.67.0 (439 + two).
+3. LSP formatting: the replaced range ends at the document's real
+   last position rather than one line past it. Protocol test.
+4. Tutorial's JSON chapter: diff and flatten in an executed
+   snippet.
+5. Health tick + distribution audit.
+
+Rejected: json schema validation (a language of its own), a test
+module reporter format beyond the summary line (the runner's TAP
+mode is the machine-readable path).
