@@ -6541,3 +6541,36 @@ tick reads first has drifted the way the README did. The "eighth
 act" milestone is complete; two strokes (401, 402) are banked
 toward v2.60.0. Backlog empty: next tick is replenishment, with
 STATE.md's shape section as the first candidate.
+
+---
+
+## 2026-09-03 — Iteration 404: replenishment — milestone "the loop's own house"
+
+CI green on 403 (API verdict). Nineteen milestones since the
+restart, eighty tags. The survey turned inward: STATE.md, the file
+every tick reads first, carries a "Standing shape" that is three
+milestones stale in four places and a "Now" section that has
+become a 190-line history — LOOP.md says the file is orientation
+only and LOG.md is the history. The tutorial's closing chapter
+still says `--check` "reports syntax errors" as if the three
+warnings, the import walk and the playground's check button did
+not exist. Five strokes:
+
+1. STATE.md: the shape section brought current (six-asset archives
+   since v2.30.0, 27 ting programs, 223 Rust tests in 11 suites, a
+   playground with run, fmt and check, twelve editor capabilities)
+   and the Now section compacted to the current milestone, the
+   standing rules, and one pointer to LOG.md for everything older.
+   Then release v2.60.0 (401, 402, +1).
+2. Tutorial "Beyond scripts": --check with its warnings and the
+   import walk, --doc, and the playground's check button.
+3. LSP completion offers the file's own top-level functions, each
+   with the comment above it as its detail, alongside builtins and
+   stdlib members. Protocol test.
+4. lib/list.ting flatten(xs): one level of nesting removed
+   (non-list elements kept). Selftests.
+5. Health tick + distribution audit.
+
+Rejected: trimming LOG.md (append-only by charter), a STATE.md
+size guard in CI (the file is the loop's, not the project's; the
+health tick's survey is where drift is caught).

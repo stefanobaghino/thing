@@ -218,9 +218,13 @@ current orientation.
   banked toward v2.60.0. 403: health tick + audit green — milestone
   "the eighth act" complete; found this file's Standing shape
   section stale.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md; the release
-  follows the next stroke.
+- 404: replenishment — milestone "the loop's own house"
+  (v2.60–v2.61), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) STATE.md shape refresh +
+  Now compaction — then RELEASE v2.60.0 (401, 402, +1); (2) tutorial
+  "Beyond scripts" current; (3) LSP completion offers user fns,
+  protocol test; (4) lib/list.ting flatten, selftests; (5) health
+  tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
