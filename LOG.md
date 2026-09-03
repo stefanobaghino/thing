@@ -8603,3 +8603,17 @@ honestly checks nothing. Two older tests pinned the summary line
 and were updated to the counts their own fixtures run. Full gate
 green (256 tests). Two strokes banked (511, 512). Next: release
 v2.81.0.
+
+---
+
+## 2026-09-03 — Iteration 513: release v2.81.0
+
+CI green on 512 (API verdict). Cut v2.81.0 with the check counter
+(511) and the runner's report of it (512). The release workflow is
+green with all six archives; CI and Pages green on the release
+commit (API verdicts). Cold-verified here: both aarch64 Linux
+archives downloaded fresh, unpacked and run — `-V` reports 2.81.0,
+and a two-file directory reports "(2 checks)" for the file that
+asserts and "(no checks)" for the one that does not, with the
+summary naming it. 102nd tag. Next: lib/test.ting's helpers count
+too.

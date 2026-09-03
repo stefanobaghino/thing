@@ -171,12 +171,13 @@ holds only the current milestone and the standing rules.
 - 510: replenishment — milestone "how much it checked" (v2.81-v2.82),
   reasoning in LOG.md.
 - 511: counting the checks (TING_TEST_REPORT); 512: what each file
-  verified — two strokes banked toward v2.81.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.81.0 (strokes 511,
-  512);
-  (3) lib/test.ting's helpers count too, selftests; (4) docs, then
-  RELEASE v2.82.0; (5) health tick + audit.
-- Tags: 101 (v2.80.0), 100 verified; v2.29.0 is publicly marked broken
+  verified.
+- v2.81.0 VERIFIED (102nd tag; strokes 511, 512; both aarch64
+  archives executed here).
+- Backlog (one per tick, in order):
+  (1) lib/test.ting's helpers count too, selftests; (2) docs, then
+  RELEASE v2.82.0; (3) health tick + audit.
+- Tags: 102 (v2.81.0), 101 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
