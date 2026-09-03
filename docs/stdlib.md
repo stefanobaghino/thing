@@ -20,6 +20,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sum(xs)` | adds the elements (0 for an empty list) |
 | `sum_by(xs, f)` | adds `f(x)` over the elements (0 for an empty list) |
 | `reverse(xs)` | a fresh list in reverse order |
+| `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |

@@ -241,3 +241,13 @@ fn last(xs) {
 
 # Sum of f(x) over the elements (0 for an empty list).
 fn sum_by(xs, f) { return sum(map(xs, f)); }
+
+# A fresh list rotated left by n places (negative n rotates right);
+# any n works, including multiples of the length.
+fn rotate(xs, n) {
+  let len_ = len(xs);
+  if len_ == 0 { return []; }
+  let k = n % len_;
+  if k < 0 { k = k + len_; }
+  return slice(xs, k, len_) + slice(xs, 0, k);
+}

@@ -200,3 +200,9 @@ assert(m["with"](base, "a", 9) == {"a": 9}, "with replaces");
 assert(base == {"a": 1}, "with leaves the input untouched");
 assert(m["update"]({"n": 1}, "n", fn(v) { return v + 10; }) == {"n": 11}, "update");
 assert(has(try(fn() { return m["update"]({}, "n", fn(v) { return v; }); }), "err"), "update missing key fails");
+
+assert(l["rotate"]([1, 2, 3, 4], 1) == [2, 3, 4, 1], "rotate left");
+assert(l["rotate"]([1, 2, 3, 4], -1) == [4, 1, 2, 3], "rotate right");
+assert(l["rotate"]([1, 2, 3], 3) == [1, 2, 3], "rotate full turn");
+assert(l["rotate"]([1, 2, 3], 7) == [2, 3, 1], "rotate wraps");
+assert(l["rotate"]([], 2) == [], "rotate empty");
