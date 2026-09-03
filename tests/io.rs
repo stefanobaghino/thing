@@ -486,5 +486,24 @@ fn test_flag_expands_directories() {
     assert!(stdout.contains("deep failure"), "{stdout}");
     assert!(stdout.contains("2 passed, 1 failed"), "{stdout}");
 
+    // --filter keeps only paths containing the substring; a filter
+    // that matches nothing is an error, not "0 passed".
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--filter", "c.ti", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("FAIL ") && !stdout.contains("a.ting"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("0 passed, 1 failed"), "{stdout}");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap(), "--filter", "zzz"])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("no .ting files matching"));
+
     let _ = std::fs::remove_dir_all(&root);
 }
