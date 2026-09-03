@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.67.0 (2026-09-03)
+
+- lib/test.ting: `check_type(name, v, type_name)`; check, check_eq
+  and summary documented.
+- lib/json.ting: `flatten(v)`, a map from dotted leaf paths to
+  values.
+- lib/math.ting: `hypot(a, b)`.
+
 ## v2.66.0 (2026-09-03)
 
 - The formatter keeps the file's line endings: a CRLF file stays

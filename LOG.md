@@ -7321,3 +7321,11 @@ map and list, bare leaf, empty map, empty container inside),
 stdlib.md row. Selftests pass on both engines; full gate green
 (233 tests). Three strokes banked (439, 442, 443) — v2.67.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 444: v2.67.0
+
+hypot, the test module's comments and check_type, json flatten. CI
+and Pages green on 443 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.67.0 (88th tag).
