@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.29.1 (2026-09-03)
+
+- Linux binaries are built against glibc 2.35 again (v2.29.0's
+  required 2.39 and would not start on Debian 12 / Ubuntu 22.04); the
+  release workflow now fails if a Linux binary needs anything newer.
+
 ## v2.29.0 (2026-09-03)
 
 - `ting --test <files...>`: a test runner — each file in its own

@@ -25,9 +25,13 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-latest
+          # Linux builds pin the oldest supported runner so the binaries
+          # keep running on older distributions: the glibc a binary is
+          # built against is the glibc it demands (v2.29.0, built on
+          # 24.04, required 2.39 and failed on Debian 12).
+          - os: ubuntu-22.04
             target: x86_64-unknown-linux-gnu
-          - os: ubuntu-24.04-arm
+          - os: ubuntu-22.04-arm
             target: aarch64-unknown-linux-gnu
           - os: macos-latest
             target: aarch64-apple-darwin
@@ -40,6 +44,15 @@ jobs:
         run: rustup update stable && rustup default stable
       - name: Build
         run: cargo build --release
+      - name: Check glibc floor (linux)
+        if: runner.os == 'Linux'
+        run: |
+          need=$(objdump -T target/release/ting | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)
+          echo "highest glibc symbol version: $need"
+          if [ "$(printf '%s\n' "$need" GLIBC_2.35 | sort -V | tail -1)" != GLIBC_2.35 ]; then
+            echo "::error::binary requires $need; the floor is GLIBC_2.35"
+            exit 1
+          fi
       - name: Package (unix)
         if: runner.os != 'Windows'
         run: |

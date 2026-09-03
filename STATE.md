@@ -31,7 +31,9 @@ current orientation.
    LOG/STATE, rerun the docs guard and gate the push on the literal
    `test result: ok` (a grep for "test result" passed a FAILED line
    in 238 and shipped a red commit). No angle-bracket placeholders
-   anywhere in markdown, quoted or not.
+   anywhere in markdown, quoted or not. Linux release builds stay on
+   the oldest runner (22.04); the glibc-floor step in release.yml is
+   the guard — never move them to -latest.
 3. Release when ~3 strokes accumulate; verify every release by cold
    asset download and execution; verdicts always from the API, never
    from gh run watch's exit code. A failed Pages deploy is retried
@@ -90,9 +92,11 @@ current orientation.
   executed cold on this host, both engines.
 - 255: replenishment tick — milestone "programs, not one-liners"
   (v2.29–v2.31), reasoning in LOG.md.
-- v2.29.0 TAGGED (49th release; milestone strokes 1–3): verify next
-  tick by executing the aarch64-linux asset cold here, including
-  `--test` on the bundled lib; confirm the Pages run succeeded.
+- v2.29.0 (49th) published but its Linux binaries need glibc 2.39
+  (pidfd_spawnp via std::process::Command in --test) — cold test
+  FAILED here. v2.29.1 TAGGED with Linux builds on ubuntu-22.04(-arm)
+  and a glibc-floor guard step: verify next tick by executing the
+  aarch64-linux asset cold here (must print `ting 2.29.1`).
 - Backlog after the release (in order): (4) crash-fuzzer
   (tests/fuzz.rs) builtin-coverage audit; (5) bench/stdlib.ting +
   BASELINE row with host note; then replenish.

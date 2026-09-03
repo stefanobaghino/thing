@@ -3708,3 +3708,30 @@ First release of the "programs, not one-liners" milestone: the
 258, cookbook.html live with eleven sections (API verdicts + HTTP).
 Full gate green, stdlib selftests pass on the reference engine.
 Tagging v2.29.0 (49th release).
+
+---
+
+## 2026-09-03 — Iteration 259b: v2.29.0 broken on older glibc; v2.29.1
+
+Release, CI and Pages green on the tag (API verdicts), four
+archives published — and the cold test FAILED for the first time in
+49 releases: the aarch64-linux binary refused to start here with
+"GLIBC_2.39 not found". Host glibc is 2.36 (Debian 12). v2.28.0's
+binary needs GLIBC_2.34; v2.29.0's needs 2.39, and the two symbols
+that carry that version are pidfd_spawnp and pidfd_getpid — pulled
+in by std::process::Command, which the binary first used in 257's
+--test runner. Same rustc on both builds; the difference is purely
+which std code got linked, and Ubuntu 24.04's glibc versions those
+symbols at 2.39. So every Linux archive of v2.29.0 (x86-64 too, built
+on ubuntu-latest = 24.04) is dead on anything older than 24.04.
+
+Fix: the Linux release builds now run on ubuntu-22.04 and
+ubuntu-22.04-arm (glibc 2.35 — pidfd_spawnp does not exist there,
+so std takes its fallback path and the versioned reference is never
+emitted), and a new workflow step reads the binary's highest GLIBC
+symbol version with objdump and fails the build above 2.35, so this
+class of regression can never ship silently again. Tagging v2.29.1
+with that workflow; verification of the fix is the cold test on
+this very host. The lesson for the ledger: "zero dependencies"
+never covered the C library, and the cold test is the only thing
+that would have caught it — the CI matrix runs where it builds.
