@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.76.0 (2026-09-03)
+
+- An unknown option names the one you probably meant (`--fmr` finds
+  `--fmt`).
+- Suggestions count a swap of neighbours as one slip (`--lps` finds
+  `--lsp`) and stay silent for names under three characters.
+- The tutorial explains the suggestions; selftest/errors.ting checks
+  them from inside ting.
+
 ## v2.75.0 (2026-09-03)
 
 - "Did you mean?": an undefined variable (or an assignment to one)
