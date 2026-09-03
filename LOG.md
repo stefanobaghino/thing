@@ -3251,3 +3251,17 @@ asset count (36 × 3 up to v2.16.0, 6 × 4 since), the four v2.22.0
 download URLs resolve, all seven site resources answer 200, and the
 rendered stdlib page already lists rotate and truncate. Nothing to
 fix. One feature stroke left before v2.23.0.
+
+---
+
+## 2026-09-03 — Iteration 231: unique_by and is_prime
+
+CI green on 230 (API verdict). lib/list.ting gains unique_by(xs,
+key), the keyed sibling of unique (structural equality on keys,
+first element wins, input order kept); lib/math.ting gains
+is_prime(n) by odd trial division up to the square root, with
+n < 2 false. A selftest passes is_prime straight into the filter
+builtin over range(20) — stdlib functions are ordinary values, and
+that sieve reads as the language's own advertisement. Seven
+assertions, two stdlib.md rows. Full gate green on both engines.
+Third stroke banked — v2.23.0 next tick if quiet.
