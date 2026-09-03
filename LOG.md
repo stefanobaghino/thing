@@ -2769,3 +2769,11 @@ partition(xs, pred) returning [matching, rest] in input order; a
 non-bool predicate result fails through the strict if, which the
 selftest pins. Three assertions, stdlib.md row. Full gate green on
 both engines. Third stroke banked — v2.16.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 199: v2.16.0
+
+List-helpers release: group_by, take, drop, partition. CI green on
+198 (verdict from the API). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.16.0 (36th release).

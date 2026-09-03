@@ -4,6 +4,10 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.16.0 (2026-09-03)
+
+- `lib/list.ting`: `group_by`, `take`, `drop`, `partition`.
+
 ## v2.15.0 (2026-09-03)
 
 - `lib/list.ting`: `median`.
