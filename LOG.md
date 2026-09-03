@@ -3811,3 +3811,22 @@ Static musl assets, fuzzer coverage, stdlib benchmark. CI green on
 262 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.30.0 (51st release; first with six
 assets — the musl jobs run for the first time on this tag).
+
+---
+
+## 2026-09-03 — Iteration 263b: v2.30.0 verified
+
+Release (six jobs), CI and Pages all green on the tag (API
+verdicts). The glibc-floor guard reported GLIBC_2.34 on both glibc
+builds and "none (static)" on both musl builds — the first time the
+workflow half of 262 ran, and it did exactly what the local proof
+predicted. Six assets published (musl archives ~60 KB larger than
+their glibc siblings). Cold tests on this aarch64 Linux host, both
+archives: the glibc one prints `ting 2.30.0`, runs --test and the
+reference engine; the musl one is a statically linked ELF with zero
+GLIBC references, prints its version, runs words() on both engines,
+the --test runner (child-process spawning works statically too) and
+exits 0 into a closed pipe. Site: all resources 200, changelog
+shows 2.30.0. 52 releases (51 verified, one marked broken). The
+milestone from 255 is complete plus the glibc follow-through; next
+tick replenishes.

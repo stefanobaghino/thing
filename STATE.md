@@ -96,10 +96,14 @@ current orientation.
   test failed; release notes warn). v2.29.1 (50th) RELEASED and
   verified: Linux builds on ubuntu-22.04(-arm), GLIBC_2.34, guard
   step green, aarch64 asset executed cold here.
-- v2.30.0 TAGGED (51st release; first six-asset release): verify
-  next tick — six assets, glibc guard on all four Linux jobs,
-  cold-execute BOTH aarch64 Linux archives (glibc and musl) here.
-- After verification: replenishment tick.
+- v2.30.0 RELEASED and verified (52nd tag; six assets; both aarch64
+  Linux archives executed cold here, musl fully static).
+- NEXT: replenishment tick per LOOP.md — the 255 milestone is done.
+  Candidates to weigh: (a) `--test` discovers directories; (b)
+  string module `format_table`/column alignment for CLI output; (c)
+  LSP: diagnostics for unknown stdlib function names in m["..."];
+  (d) a second retrospective act five (glibc episode); (e) selftest
+  for every example via --test in CI (dogfood the runner).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
