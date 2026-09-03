@@ -5346,3 +5346,34 @@ directory prints the summary then the slowest file, and the suite
 passes on the reference engine. Site: all resources 200, changelog
 shows 2.49.0. 70 tags, 69 verified. The 338 milestone is complete;
 next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 346: replenishment — milestone "second opinions"
+
+CI green on 345b (API verdict). Eleven milestones since the
+restart, seventy tags. The checker and the editor share one
+semantic warning; a second one — the unused top-level binding — is
+the most common thing a reader of ting scripts notices that the
+tools do not. Signature help stops at builtins and stdlib while
+hover no longer does. And the formatter can rewrite or refuse but
+not show. Five strokes:
+
+1. Unused top-level lets: a warning (shared by --check and the LSP,
+   like the member warning) for a top-level `let` whose name is
+   never referenced elsewhere in the file — fn bindings included,
+   since an unused function is the same smell. Text/AST scan; io
+   and protocol tests.
+2. LSP signature help for user-defined functions, from the same
+   AST lookup hover uses (341). Protocol test.
+3. `ting --fmt --diff`: prints a line diff of what --fmt would
+   change (removed lines with `-`, added with `+`, files unchanged
+   left silent) without touching anything; exit 1 if any file would
+   change, like --fmt-check. io test.
+4. lib/list.ting extent(xs): [min, max] of a list, nil on empty.
+   Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a seventh retrospective act (acts have come every six
+milestones; the seventh is due after the next), an LSP benchmark
+(no user has asked, and the server is stateless per request).

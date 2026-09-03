@@ -161,14 +161,13 @@ current orientation.
   executed cold here.
 - v2.49.0 RELEASED and verified (70th tag); aarch64 glibc archive
   executed cold here. The 338 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  retrospective act seven is NOT due (six milestones per act so
-  far — wait); (b) lib/list.ting `min_max`/`extent`; (c) LSP:
-  signature help for user-defined fns (mirror 341); (d) `--check`
-  warning for unused top-level lets (needs a use scan — feasible,
-  text-based); (e) examples: a markdown-table renderer; (f)
-  bench: an LSP request benchmark (tools, not language); (g)
-  `ting --fmt --diff` showing what would change.
+- 346: replenishment — milestone "second opinions" (v2.50–v2.52),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) unused top-level let
+  warning shared by --check and the LSP, io + protocol tests; (2)
+  LSP signature help for user-defined fns, protocol test; (3)
+  `--fmt --diff`, io test; (4) lib/list.ting extent, selftests; (5)
+  health tick + audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
