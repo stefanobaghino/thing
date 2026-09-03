@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.53.0 (2026-09-03)
+
+- A module-origin error is followed by `note: called from
+  FILE:LINE:COL`, the call site in the importer.
+- `--check` follows `import("...")` of local files, checking each
+  reached file once under its own path.
+- lib/string.ting: `slug(s)`.
+
 ## v2.52.0 (2026-09-03)
 
 - Runtime errors raised inside an imported module's function are

@@ -5758,3 +5758,11 @@ module's is_alpha is case-pair based, not ASCII. Five selftests
 stdlib.md row. Selftests pass on both engines; full gate green
 (215 tests). Three strokes banked (363, 364, 365) — v2.53.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 366: v2.53.0
+
+The call-site note, --check following imports, slug. CI and Pages
+green on 365 (API verdicts). Full gate green, stdlib selftests pass
+on both engines. Tagging v2.53.0 (74th tag).
