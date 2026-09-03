@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
-  (list/map/string/math/json/test, 105+ functions); 27 ting programs
+  (list/map/string/math/json/test, 116 functions, guarded); 27 ting programs
   (11 selftest files, 16 examples with .out); 223 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
@@ -111,10 +111,11 @@ holds only the current milestone and the standing rules.
   milestone "the ninth act" complete.
 - 456: replenishment — milestone "counted and guarded" (v2.70–v2.71),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) stdlib docs guard + count
-  fixed to 116; (2) `--check --strict`, io test; (3) docs mention
-  --strict and check_type — then RELEASE v2.70.0; (4) lib/map.ting
-  key_of, selftests; (5) health tick + audit.
+- 457: stdlib docs guard, count 116 — one stroke banked toward
+  v2.70.0.
+- Backlog (one per tick, in order): (2) `--check --strict`, io test;
+  (3) docs mention --strict and check_type — then RELEASE v2.70.0;
+  (4) lib/map.ting key_of, selftests; (5) health tick + audit.
 - Tags: 90 (v2.69.0), 89 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

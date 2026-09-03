@@ -7564,3 +7564,16 @@ Rejected: per-warning switches (five names to remember and
 document; a single strict mode is the honest first step), a guard
 over prose counts in the README (the shape line in STATE.md says
 "105+" on purpose).
+
+---
+
+## 2026-09-03 — Iteration 457: the stdlib page, guarded
+
+CI green on 456 (API verdict). Milestone stroke 1: a docs guard in
+tests/docs.rs walks every `fn` in lib/*.ting, requires a
+backticked row for each on docs/stdlib.md, and requires the
+page's "N functions between them" to equal the real count. Making
+it pass took two edits: the count to 116, and a row for
+paths_into, the one exported helper that had none. Full gate green
+(237 tests). One stroke banked toward v2.70.0. Next: --check
+--strict.
