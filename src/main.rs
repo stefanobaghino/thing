@@ -22,9 +22,10 @@ fn main() -> ExitCode {
                  \x20 ting <script> [args...]     run a script (argv reaches args())\n\
                  \x20 ting --eval <script>        run on the reference tree-walker\n\
                  \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
-                 \x20 ting --fmt <files...>       reformat files in place\n\
+                 \x20 ting --fmt <files...>       reformat files in place (- filters stdin to stdout)\n\
                  \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <files...>     report syntax errors without running\n\
+                 \x20                             (tool flags accept - for stdin)\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -100,6 +101,20 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitC
     }
 }
 
+/// Source for a tool flag: a file path, or `-` for stdin (read to
+/// EOF), the same convention read_file() follows inside scripts.
+fn read_tool_source(f: &str) -> Result<String, ExitCode> {
+    let read = if f == "-" {
+        std::io::read_to_string(std::io::stdin().lock())
+    } else {
+        std::fs::read_to_string(f)
+    };
+    read.map_err(|e| {
+        eprintln!("ting: cannot read {f}: {e}");
+        ExitCode::FAILURE
+    })
+}
+
 fn run_check(files: Vec<String>) -> ExitCode {
     if files.is_empty() {
         eprintln!("usage: ting --check <files...>");
@@ -107,12 +122,9 @@ fn run_check(files: Vec<String>) -> ExitCode {
     }
     let mut failed = false;
     for f in &files {
-        let src = match std::fs::read_to_string(f) {
+        let src = match read_tool_source(f) {
             Ok(src) => src,
-            Err(e) => {
-                eprintln!("ting: cannot read {f}: {e}");
-                return ExitCode::FAILURE;
-            }
+            Err(code) => return code,
         };
         if let Err(diagnostic) = ting::check_source(f, &src) {
             eprintln!("{diagnostic}");
@@ -133,14 +145,23 @@ fn run_fmt(check: bool, files: Vec<String>) -> ExitCode {
     }
     let mut dirty = false;
     for f in &files {
-        let src = match std::fs::read_to_string(f) {
+        let src = match read_tool_source(f) {
             Ok(src) => src,
-            Err(e) => {
-                eprintln!("ting: cannot read {f}: {e}");
-                return ExitCode::FAILURE;
-            }
+            Err(code) => return code,
         };
         match ting::fmt::format(&src) {
+            // Stdin cannot be rewritten in place: `--fmt -` is a filter
+            // and always writes the formatted source to stdout.
+            Ok(formatted) if f == "-" && !check => {
+                use std::io::Write;
+                if std::io::stdout()
+                    .lock()
+                    .write_all(formatted.as_bytes())
+                    .is_err()
+                {
+                    return ExitCode::FAILURE;
+                }
+            }
             Ok(formatted) if formatted != src => {
                 if check {
                     println!("would reformat {f}");

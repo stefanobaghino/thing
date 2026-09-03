@@ -321,3 +321,46 @@ fn broken_pipe_exits_quietly() {
         String::from_utf8_lossy(&out.stderr)
     );
 }
+
+/// `-` means stdin for the tool flags: `--fmt -` filters to stdout,
+/// `--fmt-check -` and `--check -` judge the piped source.
+#[test]
+fn tool_flags_accept_dash_for_stdin() {
+    let run = |args: &[&str], stdin: &str| {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("failed to run ting");
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(stdin.as_bytes())
+            .unwrap();
+        child.wait_with_output().unwrap()
+    };
+
+    let out = run(&["--fmt", "-"], "let   x=1;\n");
+    assert_eq!(out.status.code(), Some(0));
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "let x = 1;\n");
+
+    // Already formatted input still echoes through: a filter never
+    // swallows its input.
+    let out = run(&["--fmt", "-"], "let x = 1;\n");
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "let x = 1;\n");
+
+    let out = run(&["--fmt-check", "-"], "let   x=1;\n");
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stdout).contains("would reformat -"));
+
+    let out = run(&["--check", "-"], "exit(7);\n");
+    assert_eq!(out.status.code(), Some(0), "clean stdin, not executed");
+
+    let out = run(&["--check", "-"], "let = 3;\n");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("expected variable name"), "got: {stderr}");
+}
