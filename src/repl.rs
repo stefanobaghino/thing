@@ -96,7 +96,7 @@ fn emit(text: &str) {
     }
 }
 
-fn say(text: &str) {
+pub fn say(text: &str) {
     emit(text);
     emit("\n");
 }
@@ -105,9 +105,11 @@ fn say(text: &str) {
 /// function's module, signature and leading comment (every embedded
 /// module is searched, imported or not).
 fn print_doc(name: &str) {
-    match doc_text(name) {
+    match doc_text(name).or_else(|| doc_index(Some(name))) {
         Some(text) => say(&text),
-        None => say(&format!("(no builtin or stdlib function named {name})")),
+        None => say(&format!(
+            "(no builtin, stdlib function or module named {name})"
+        )),
     }
 }
 
@@ -139,6 +141,62 @@ pub fn doc_text(name: &str) -> Option<String> {
         if !comment.is_empty() {
             out.push(format!("  {comment}"));
         }
+    }
+    Some(out.join("\n"))
+}
+
+/// `--doc` with no name (a table of contents: every builtin, then
+/// every stdlib function grouped by module) or with a module name
+/// (`list` or `lib/list.ting`: that module's members). One line per
+/// function: the signature, then the first sentence of its comment.
+/// None when the module does not exist.
+pub fn doc_index(module: Option<&str>) -> Option<String> {
+    let mut out = Vec::new();
+    if module.is_none() {
+        out.push("builtins:".to_string());
+        let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
+        docs.sort();
+        for (sig, text) in docs {
+            out.push(format!("  {sig}  {text}"));
+        }
+    }
+    let everything: String = crate::eval::embedded_stdlib()
+        .iter()
+        .map(|(path, _)| format!("import(\"{path}\");\n"))
+        .collect();
+    let all = crate::lsp::imported_stdlib_functions(&everything);
+    let mut found = false;
+    for (path, _) in crate::eval::embedded_stdlib() {
+        let short = path.trim_start_matches("lib/").trim_end_matches(".ting");
+        if let Some(m) = module
+            && m != *path
+            && m != short
+        {
+            continue;
+        }
+        found = true;
+        if !out.is_empty() {
+            out.push(String::new());
+        }
+        out.push(format!("{path}:"));
+        for (p, _, sig, comment) in &all {
+            if p != path {
+                continue;
+            }
+            // The first sentence of the comment keeps the list one line per name.
+            let first = match comment.find(". ") {
+                Some(i) => &comment[..=i],
+                None => comment.as_str(),
+            };
+            if first.is_empty() {
+                out.push(format!("  {sig}"));
+            } else {
+                out.push(format!("  {sig}  {first}"));
+            }
+        }
+    }
+    if !found {
+        return None;
     }
     Some(out.join("\n"))
 }

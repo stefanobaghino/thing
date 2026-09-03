@@ -500,6 +500,45 @@ fn tool_flags_accept_dash_for_stdin() {
 }
 
 #[test]
+fn doc_flag_lists_everything_or_a_module() {
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.starts_with("builtins:\n"), "{stdout}");
+    assert!(stdout.contains("\n  len(x)"), "{stdout}");
+    assert!(stdout.contains("\nlib/list.ting:\n"), "{stdout}");
+    assert!(stdout.contains("\nlib/test.ting:\n"), "{stdout}");
+    assert!(stdout.contains("\n  median(xs)  "), "{stdout}");
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "math"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.starts_with("lib/math.ting:\n"), "{stdout}");
+    assert!(stdout.contains("  clamp(x, lo, hi)"), "{stdout}");
+    assert!(
+        !stdout.contains("builtins:") && !stdout.contains("lib/list.ting"),
+        "{stdout}"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "nosuch"])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("no builtin, stdlib function or module named nosuch"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn doc_flag_explains_a_name_from_the_shell() {
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "median"])
@@ -528,7 +567,7 @@ fn doc_flag_explains_a_name_from_the_shell() {
     assert_eq!(out.status.code(), Some(1));
     assert!(
         String::from_utf8_lossy(&out.stderr)
-            .contains("no builtin or stdlib function named nosuchthing")
+            .contains("no builtin, stdlib function or module named nosuchthing")
     );
 }
 
@@ -559,7 +598,7 @@ fn repl_doc_explains_builtins_and_stdlib_functions() {
         "{stdout}"
     );
     assert!(
-        stdout.contains("(no builtin or stdlib function named nosuchthing)"),
+        stdout.contains("(no builtin, stdlib function or module named nosuchthing)"),
         "{stdout}"
     );
     assert_eq!(out.status.code(), Some(0));

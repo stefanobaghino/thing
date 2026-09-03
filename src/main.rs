@@ -32,7 +32,8 @@ fn main() -> ExitCode {
                  \x20   [--tap]                   Test Anything Protocol output\n\
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
                  \x20   [--slow N]                list the N slowest files after the summary\n\
-                 \x20 ting --doc NAME             explain a builtin or stdlib function\n\
+                 \x20 ting --doc [NAME]           explain a builtin or stdlib function;\n\
+                 \x20                             a module lists its members, no name lists all\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -61,19 +62,19 @@ fn main() -> ExitCode {
     if args.peek().map(String::as_str) == Some("--doc") {
         args.next();
         return match args.next() {
-            Some(name) => match repl::doc_text(&name) {
+            Some(name) => match repl::doc_text(&name).or_else(|| repl::doc_index(Some(&name))) {
                 Some(text) => {
-                    println!("{text}");
+                    repl::say(&text);
                     ExitCode::SUCCESS
                 }
                 None => {
-                    eprintln!("ting: no builtin or stdlib function named {name}");
+                    eprintln!("ting: no builtin, stdlib function or module named {name}");
                     ExitCode::FAILURE
                 }
             },
             None => {
-                eprintln!("usage: ting --doc NAME");
-                ExitCode::FAILURE
+                repl::say(&repl::doc_index(None).unwrap_or_default());
+                ExitCode::SUCCESS
             }
         };
     }
