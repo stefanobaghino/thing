@@ -4806,3 +4806,18 @@ executed snippet with get_in (a hit and a nil miss), set_in (fresh
 document) and merge_in, and prose pointing at the config example
 for diff. The tutorial test runs it. Markdown guard and full gate
 green. Second stroke toward v2.42.0.
+
+---
+
+## 2026-09-03 — Iteration 317: REPL :time
+
+CI and Pages green on 316 (API verdicts). Milestone stroke 3, the
+seventh REPL meta-command: `:time EXPR` evaluates a one-line chunk
+and prints its value (if any) followed by the elapsed wall-clock
+milliseconds to one decimal — the REPL's answer to "is this slow"
+without leaving it. An incomplete chunk is reported rather than
+buffered, since a timed multi-line construct has no natural end.
+Banner, :help footer, reference (seven meta-commands) and tutorial
+updated; pipe test covers a value, a statement, and the incomplete
+case. Full gate green (203 tests). Third stroke banked — v2.42.0
+next tick if quiet.
