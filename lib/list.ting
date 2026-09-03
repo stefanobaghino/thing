@@ -153,3 +153,13 @@ fn mean(xs) {
   if len(xs) == 0 { fail("mean: empty list"); }
   return float(sum(xs)) / len(xs);
 }
+
+# Median of a numeric list: middle of the sorted values, or the mean
+# of the two middles for even lengths (a float then); empty fails.
+fn median(xs) {
+  if len(xs) == 0 { fail("median: empty list"); }
+  let sorted = sort(xs);
+  let n = len(sorted);
+  if n % 2 == 1 { return sorted[n / 2]; }
+  return float(sorted[n / 2 - 1] + sorted[n / 2]) / 2;
+}

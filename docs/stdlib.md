@@ -31,6 +31,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `remove_at(xs, i)` | fresh list without the element at index `i` |
 | `count(xs, v)` | elements structurally equal to `v` |
 | `mean(xs)` | arithmetic mean as a float; empty list fails |
+| `median(xs)` | middle of the sorted values (mean of two middles when even) |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 
 ## lib/string.ting

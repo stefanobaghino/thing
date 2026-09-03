@@ -107,3 +107,9 @@ assert(l["mean"]([1, 2, 3, 4]) == 2.5, "mean");
 assert(l["mean"]([5]) == 5.0, "mean single");
 assert(l["mean"]([1.5, 2.5]) == 2.0, "mean floats");
 assert(has(try(fn() { return l["mean"]([]); }), "err"), "mean empty fails");
+
+assert(l["median"]([3, 1, 2]) == 2, "median odd");
+assert(l["median"]([4, 1, 3, 2]) == 2.5, "median even");
+assert(l["median"]([7]) == 7, "median single");
+assert(l["median"]([2.5, 1.5]) == 2.0, "median floats");
+assert(has(try(fn() { return l["median"]([]); }), "err"), "median empty fails");

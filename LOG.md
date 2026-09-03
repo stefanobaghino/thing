@@ -2677,3 +2677,11 @@ Tagging v2.14.0 (34th release).
 Three archives published; darwin-arm64 cold test: ting 2.14.0,
 mean([1,2,3,4]) = 2.5, :vars lists the session binding. 34
 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 191: median
+
+lib/list.ting gains median(xs) — sorted middle, mean-of-middles
+(float) for even lengths, empty fails. Five selftest assertions;
+stdlib.md row. Full gate green. First stroke toward v2.15.0.
