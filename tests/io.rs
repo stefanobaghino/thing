@@ -913,6 +913,38 @@ fn unknown_options_are_usage_errors() {
     }
 }
 
+/// Exit codes mean one thing each: 0 for success, 1 for a failure the
+/// tool reports (a script that raises, a red test), 2 for a usage error
+/// (a mode with no operand, a bad option value).
+#[test]
+fn exit_codes_are_zero_one_two() {
+    let dir = std::env::temp_dir().join(format!("ting-exit-codes-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let ok = dir.join("ok.ting");
+    std::fs::write(&ok, "print(1);\n").unwrap();
+    let bad = dir.join("bad.ting");
+    std::fs::write(&bad, "fail(\"red\");\n").unwrap();
+    let run = |args: &[&str]| {
+        Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .output()
+            .expect("failed to run ting")
+            .status
+            .code()
+    };
+    assert_eq!(run(&[ok.to_str().unwrap()]), Some(0));
+    assert_eq!(run(&[bad.to_str().unwrap()]), Some(1));
+    assert_eq!(run(&["--test", bad.to_str().unwrap()]), Some(1));
+    assert_eq!(run(&["--test"]), Some(2));
+    assert_eq!(run(&["--check"]), Some(2));
+    assert_eq!(run(&["--fmt"]), Some(2));
+    assert_eq!(
+        run(&["--test", "--slow", "x", ok.to_str().unwrap()]),
+        Some(2)
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
@@ -1471,7 +1503,7 @@ fn test_flag_expands_directories() {
         .args(["--test", "-j", "0", root.to_str().unwrap()])
         .output()
         .expect("failed to run ting");
-    assert_eq!(out.status.code(), Some(1), "-j 0 is a usage error");
+    assert_eq!(out.status.code(), Some(2), "-j 0 is a usage error");
 
     // --slow N appends the slowest files after the summary; as a TAP
     // comment in --tap mode so the stream stays clean.
@@ -1509,7 +1541,7 @@ fn test_flag_expands_directories() {
         .args(["--test", root.to_str().unwrap(), "--filter", "zzz"])
         .output()
         .expect("failed to run ting");
-    assert_eq!(out.status.code(), Some(1));
+    assert_eq!(out.status.code(), Some(2));
     assert!(String::from_utf8_lossy(&out.stderr).contains("no .ting files matching"));
 
     let _ = std::fs::remove_dir_all(&root);

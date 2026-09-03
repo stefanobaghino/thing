@@ -205,12 +205,12 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
     }
     if args.is_empty() {
         eprintln!("usage: ting --check [--strict] <files or directories...>");
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     let files = expand_paths(&args);
     if files.is_empty() {
         eprintln!("ting: no .ting files found under {}", args.join(" "));
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     let mut failed = false;
     // Files a checked file imports are checked too, each once, under
@@ -284,7 +284,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                     eprintln!(
                         "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
-                    return ExitCode::FAILURE;
+                    return ExitCode::from(2);
                 }
             }
         } else if a == "-j" {
@@ -294,7 +294,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                     eprintln!(
                         "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
-                    return ExitCode::FAILURE;
+                    return ExitCode::from(2);
                 }
             }
         } else if a == "--filter" {
@@ -304,7 +304,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                     eprintln!(
                         "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
-                    return ExitCode::FAILURE;
+                    return ExitCode::from(2);
                 }
             }
         } else if is_option(&a) {
@@ -317,7 +317,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         eprintln!(
             "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
         );
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     // Directories expand to every .ting file beneath them, sorted, so
     // `ting --test selftest` is the whole suite in a stable order.
@@ -333,7 +333,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             ),
             None => eprintln!("ting: no .ting files found under {}", paths.join(" ")),
         }
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     let me = match std::env::current_exe() {
         Ok(p) => p,
@@ -515,12 +515,12 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
         eprintln!(
             "usage: ting --fmt [--diff] <files or directories...> | ting --fmt-check <files or directories...>"
         );
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     let files = expand_paths(&args);
     if files.is_empty() {
         eprintln!("ting: no .ting files found under {}", args.join(" "));
-        return ExitCode::FAILURE;
+        return ExitCode::from(2);
     }
     let mut dirty = false;
     // A file that cannot be read, does not lex, or cannot be written
