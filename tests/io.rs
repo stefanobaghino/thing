@@ -1284,6 +1284,72 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn check_flag_warns_about_a_call_that_cannot_match() {
+    let dir = std::env::temp_dir().join("ting-arity");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("a.ting");
+    std::fs::write(
+        &script,
+        "fn f(a, b) { return a + b; }\nprint(f(1));\nprint(f(1, 2));\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "warnings do not fail the check");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("`f` takes 2 arguments, called with 1"),
+        "{stderr}"
+    );
+    // Only the wrong call is reported.
+    assert_eq!(stderr.matches("warning:").count(), 1, "{stderr}");
+
+    // One parameter reads as a singular.
+    std::fs::write(&script, "fn g(a) { return a; }\nprint(g(1, 2));\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("`g` takes 1 argument, called with 2"),
+        "{stderr}"
+    );
+
+    // A name that is rebound, shadowed or taken as a parameter is
+    // beyond the pass: nothing is claimed about it.
+    std::fs::write(
+        &script,
+        "fn h(a) { return a; }\nh = fn(a, b) { return a + b; };\nprint(h(1, 2));\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("called with"), "{stderr}");
+
+    std::fs::write(
+        &script,
+        "fn apply(k, x) { return k(x); }\nfn twice(v) { return v * 2; }\nprint(apply(twice, 3));\n",
+    )
+    .expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("called with"), "{stderr}");
+}
+
+#[test]
 fn check_flag_warns_about_a_name_bound_nowhere() {
     let dir = std::env::temp_dir().join("ting-unbound");
     std::fs::create_dir_all(&dir).expect("mkdir");

@@ -618,6 +618,200 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
         .collect()
 }
 
+/// Calls whose argument count cannot match the function called, for
+/// the plainest case there is: a function bound once at the top level,
+/// never reassigned, never shadowed by a parameter or an inner `let`
+/// anywhere in the file. Anything less certain is left to the run.
+pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    // Top-level `let name = fn(...)`, with the arity it was given.
+    let mut arities: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    for stmt in &program {
+        if let S::Let(name, value) = &stmt.kind {
+            *seen.entry(name.clone()).or_insert(0) += 1;
+            if let E::Fn(params, _) = &value.kind {
+                arities.insert(name.clone(), params.len());
+            }
+        }
+    }
+    // Any name bound twice, rebound, shadowed or used as a parameter
+    // is beyond this pass: drop it rather than guess.
+    let mut unsure: std::collections::HashSet<String> = seen
+        .iter()
+        .filter(|(_, n)| **n > 1)
+        .map(|(name, _)| name.clone())
+        .collect();
+    collect_rebindings(&program, true, &mut unsure);
+    arities.retain(|name, _| !unsure.contains(name));
+
+    let mut out = Vec::new();
+    check_calls(&program, &arities, &mut out);
+    out.sort_by_key(|(start, _, _)| *start);
+    out
+}
+
+/// Names that a second binding, an assignment, a parameter list or an
+/// inner `let` puts beyond the top-level view.
+fn collect_rebindings(
+    stmts: &[crate::ast::Stmt],
+    top: bool,
+    out: &mut std::collections::HashSet<String>,
+) {
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    fn expr(e: &crate::ast::Expr, out: &mut std::collections::HashSet<String>) {
+        match &e.kind {
+            E::Fn(params, body) => {
+                out.extend(params.iter().cloned());
+                collect_rebindings(body, false, out);
+            }
+            E::List(items) => items.iter().for_each(|i| expr(i, out)),
+            E::Map(entries) => entries.iter().for_each(|(k, v)| {
+                expr(k, out);
+                expr(v, out);
+            }),
+            E::Unary(_, a) => expr(a, out),
+            E::Binary(_, a, b) => {
+                expr(a, out);
+                expr(b, out);
+            }
+            E::Call(callee, args) => {
+                expr(callee, out);
+                args.iter().for_each(|a| expr(a, out));
+            }
+            E::Index(base, idx) => {
+                expr(base, out);
+                expr(idx, out);
+            }
+            _ => {}
+        }
+    }
+    for stmt in stmts {
+        match &stmt.kind {
+            S::Let(name, value) => {
+                if !top {
+                    out.insert(name.clone());
+                }
+                expr(value, out);
+            }
+            S::Assign(name, value) => {
+                out.insert(name.clone());
+                expr(value, out);
+            }
+            S::IndexAssign(base, idx, value) => {
+                expr(base, out);
+                expr(idx, out);
+                expr(value, out);
+            }
+            S::Expr(e) => expr(e, out),
+            S::Block(inner) => collect_rebindings(inner, false, out),
+            S::If(cond, then, els) => {
+                expr(cond, out);
+                collect_rebindings(std::slice::from_ref(then), false, out);
+                if let Some(e) = els {
+                    collect_rebindings(std::slice::from_ref(e), false, out);
+                }
+            }
+            S::While(cond, body) => {
+                expr(cond, out);
+                collect_rebindings(std::slice::from_ref(body), false, out);
+            }
+            S::For(var, iterable, body) => {
+                out.insert(var.clone());
+                expr(iterable, out);
+                collect_rebindings(std::slice::from_ref(body), false, out);
+            }
+            S::Return(Some(e)) => expr(e, out),
+            S::Break | S::Continue | S::Return(None) => {}
+        }
+    }
+}
+
+fn check_calls(
+    stmts: &[crate::ast::Stmt],
+    arities: &std::collections::HashMap<String, usize>,
+    out: &mut Vec<(usize, usize, String)>,
+) {
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    fn expr(
+        e: &crate::ast::Expr,
+        arities: &std::collections::HashMap<String, usize>,
+        out: &mut Vec<(usize, usize, String)>,
+    ) {
+        match &e.kind {
+            E::Call(callee, args) => {
+                if let E::Var(name) = &callee.kind
+                    && let Some(want) = arities.get(name)
+                    && *want != args.len()
+                {
+                    let s = if *want == 1 { "" } else { "s" };
+                    out.push((
+                        callee.span.start,
+                        callee.span.end,
+                        format!(
+                            "`{name}` takes {want} argument{s}, called with {}",
+                            args.len()
+                        ),
+                    ));
+                }
+                expr(callee, arities, out);
+                args.iter().for_each(|a| expr(a, arities, out));
+            }
+            E::Fn(_, body) => check_calls(body, arities, out),
+            E::List(items) => items.iter().for_each(|i| expr(i, arities, out)),
+            E::Map(entries) => entries.iter().for_each(|(k, v)| {
+                expr(k, arities, out);
+                expr(v, arities, out);
+            }),
+            E::Unary(_, a) => expr(a, arities, out),
+            E::Binary(_, a, b) => {
+                expr(a, arities, out);
+                expr(b, arities, out);
+            }
+            E::Index(base, idx) => {
+                expr(base, arities, out);
+                expr(idx, arities, out);
+            }
+            _ => {}
+        }
+    }
+    for stmt in stmts {
+        match &stmt.kind {
+            S::Let(_, e) | S::Assign(_, e) | S::Expr(e) | S::Return(Some(e)) => {
+                expr(e, arities, out)
+            }
+            S::IndexAssign(base, idx, value) => {
+                expr(base, arities, out);
+                expr(idx, arities, out);
+                expr(value, arities, out);
+            }
+            S::Block(inner) => check_calls(inner, arities, out),
+            S::If(cond, then, els) => {
+                expr(cond, arities, out);
+                check_calls(std::slice::from_ref(then), arities, out);
+                if let Some(e) = els {
+                    check_calls(std::slice::from_ref(e), arities, out);
+                }
+            }
+            S::While(cond, body) => {
+                expr(cond, arities, out);
+                check_calls(std::slice::from_ref(body), arities, out);
+            }
+            S::For(_, iterable, body) => {
+                expr(iterable, arities, out);
+                check_calls(std::slice::from_ref(body), arities, out);
+            }
+            S::Break | S::Continue | S::Return(None) => {}
+        }
+    }
+}
+
 /// One name read but never bound, with the nearest name in scope.
 pub(crate) struct UnboundFinding {
     pub start: usize,
@@ -1009,6 +1203,7 @@ pub fn shadowed_builtins(src: &str) -> Vec<(usize, usize, String)> {
 pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     let mut all = unknown_stdlib_members(src);
     all.extend(unbound_names(src));
+    all.extend(arity_mismatches(src));
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));
