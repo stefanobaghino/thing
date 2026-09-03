@@ -30,7 +30,8 @@ current orientation.
    (clippy skipped once, iteration 182, cost a red CI).
 3. Release when ~3 strokes accumulate; verify every release by cold
    asset download and execution; verdicts always from the API, never
-   from gh run watch's exit code.
+   from gh run watch's exit code. Never rerun the Pages workflow with
+   `--failed` (single job → duplicate artifact); push or dispatch.
 
 ## Now
 
@@ -63,11 +64,14 @@ current orientation.
   quiet.
 - v2.20.0 RELEASED and verified (40th); aarch64-linux asset
   executed cold on this host, both engines.
-- v2.21.0 TAGGED (41st release): verify next tick by executing the
-  aarch64-linux asset cold here (include a --fmt - hanging-list
-  check).
-- Backlog after verification: quiet-machine bench re-measure;
-  candidates: lib/list.ting sum_by, lib/string.ting words(s).
+- v2.21.0 RELEASED and verified (41st); aarch64-linux asset
+  executed cold on this host, both engines.
+- Pages deploy for 757f764 failed (transient OIDC timeout); a
+  `--failed` rerun cannot fix Pages (duplicate artifact) — retry is
+  a fresh push. Confirm the site shows 2.21.0 next tick.
+- Backlog toward v2.22.0 (one per tick): quiet-machine bench
+  re-measure; candidates: lib/list.ting sum_by, lib/string.ting
+  words(s).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

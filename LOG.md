@@ -3122,3 +3122,25 @@ v2.21.0 next tick if quiet.
 Formatter hanging openers, is_digit/is_alpha, logs example. CI
 green on 221 (API verdict). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.21.0 (41st release).
+
+---
+
+## 2026-09-03 — Iteration 222b: v2.21.0 verified; Pages deploy incident
+
+Release and CI runs green (API verdicts). Four archives published.
+Cold test on this aarch64 Linux host: `ting 2.21.0`,
+is_digit/is_alpha agree on both engines, and `--fmt -` indents a
+hanging list literal as designed. All four asset URLs resolve.
+
+The Pages run for the release commit FAILED: actions/deploy-pages
+timed out fetching its OIDC ID token ("Failed to get ID Token …
+Request timeout") — a transient on GitHub's side, permissions
+unchanged since the last 40 green deploys. Rerunning the failed job
+made it worse: pages.yml builds and deploys in one job, so the rerun
+uploaded a second github-pages artifact to the same run, and
+deploy-pages refuses a run with two ("Multiple artifacts named
+github-pages"). Lesson for the rules: never `gh run rerun --failed`
+the Pages workflow; a fresh push (or workflow_dispatch) is the only
+clean retry. This commit is that fresh run. Until it lands the site
+still serves the 2.20.0 pages (all 200), so nothing is broken for
+visitors, only stale. 41 releases, all verified.
