@@ -28,6 +28,7 @@ fn main() -> ExitCode {
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
+                 \x20   [--tap]                   Test Anything Protocol output\n\
                  \x20 ting --doc NAME             explain a builtin or stdlib function\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
@@ -199,14 +200,19 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     // `--filter SUBSTR` (anywhere among the arguments) keeps only the
     // files whose path contains the substring.
     let mut filter: Option<String> = None;
+    let mut tap = false;
     let mut paths = Vec::new();
     let mut it = args.into_iter();
     while let Some(a) = it.next() {
-        if a == "--filter" {
+        if a == "--tap" {
+            tap = true;
+        } else if a == "--filter" {
             match it.next() {
                 Some(f) => filter = Some(f),
                 None => {
-                    eprintln!("usage: ting --test [--filter SUBSTR] <files or directories...>");
+                    eprintln!(
+                        "usage: ting --test [--filter SUBSTR] [--tap] <files or directories...>"
+                    );
                     return ExitCode::FAILURE;
                 }
             }
@@ -215,7 +221,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         }
     }
     if paths.is_empty() {
-        eprintln!("usage: ting --test [--filter SUBSTR] <files or directories...>");
+        eprintln!("usage: ting --test [--filter SUBSTR] [--tap] <files or directories...>");
         return ExitCode::FAILURE;
     }
     // Directories expand to every .ting file beneath them, sorted, so
@@ -241,31 +247,57 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             return ExitCode::FAILURE;
         }
     };
+    // TAP (Test Anything Protocol) mode: a plan, `ok N - path` /
+    // `not ok N - path` lines, diagnostics as `# ` comments, and the
+    // elapsed time per file as a comment — for CI systems and TAP
+    // consumers. The human-readable default is unchanged.
+    if tap {
+        println!("1..{}", files.len());
+    }
     let mut failed = 0usize;
-    for f in &files {
+    for (i, f) in files.iter().enumerate() {
+        let started = std::time::Instant::now();
         let out = std::process::Command::new(&me)
             .arg(f)
             .env("TING_ENGINE", engine_name())
             .stdin(std::process::Stdio::null())
             .stdout(std::process::Stdio::null())
             .output();
-        match out {
-            Ok(out) if out.status.success() => println!("ok   {f}"),
-            Ok(out) => {
-                failed += 1;
-                println!("FAIL {f}");
-                for line in String::from_utf8_lossy(&out.stderr).lines() {
-                    println!("     {line}");
-                }
+        let ms = started.elapsed().as_millis();
+        let (ok, diag): (bool, Vec<String>) = match out {
+            Ok(out) if out.status.success() => (true, Vec::new()),
+            Ok(out) => (
+                false,
+                String::from_utf8_lossy(&out.stderr)
+                    .lines()
+                    .map(str::to_string)
+                    .collect(),
+            ),
+            Err(e) => (false, vec![format!("cannot run: {e}")]),
+        };
+        if !ok {
+            failed += 1;
+        }
+        if tap {
+            println!("{} {} - {f}", if ok { "ok" } else { "not ok" }, i + 1);
+            for line in &diag {
+                println!("# {line}");
             }
-            Err(e) => {
-                failed += 1;
-                println!("FAIL {f}");
-                println!("     cannot run: {e}");
+            println!("# time: {ms}ms");
+        } else if ok {
+            println!("ok   {f}");
+        } else {
+            println!("FAIL {f}");
+            for line in &diag {
+                println!("     {line}");
             }
         }
     }
-    println!("{} passed, {} failed", files.len() - failed, failed);
+    if tap {
+        println!("# {} passed, {} failed", files.len() - failed, failed);
+    } else {
+        println!("{} passed, {} failed", files.len() - failed, failed);
+    }
     if failed > 0 {
         ExitCode::FAILURE
     } else {

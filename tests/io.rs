@@ -564,6 +564,53 @@ fn test_flag_runs_files_and_summarises() {
 
 /// A directory argument expands to every .ting file beneath it, in
 /// sorted order, recursively; other files are ignored.
+/// `--tap` emits a TAP stream: plan, ok/not ok lines numbered from 1,
+/// diagnostics and timings as comments, exit status as before.
+#[test]
+fn test_flag_tap_output() {
+    let dir = std::env::temp_dir();
+    let good = dir.join(format!("ting-tap-good-{}.ting", std::process::id()));
+    let bad = dir.join(format!("ting-tap-bad-{}.ting", std::process::id()));
+    std::fs::write(&good, "assert(true);\n").unwrap();
+    std::fs::write(&bad, "fail(\"tap boom\");\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args([
+            "--test",
+            "--tap",
+            good.to_str().unwrap(),
+            bad.to_str().unwrap(),
+        ])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    let lines: Vec<&str> = stdout.lines().collect();
+    assert_eq!(lines[0], "1..2", "{stdout}");
+    assert!(lines[1].starts_with("ok 1 - "), "{stdout}");
+    assert!(stdout.contains("\nnot ok 2 - "), "{stdout}");
+    assert!(
+        stdout.contains("\n# ") && stdout.contains("tap boom"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("# time: "), "{stdout}");
+    assert!(
+        stdout.trim_end().ends_with("# 1 passed, 1 failed"),
+        "{stdout}"
+    );
+    // Every non-comment line is a plan or a test line: TAP-clean.
+    for l in &lines {
+        assert!(
+            l.starts_with('#')
+                || l.starts_with("ok ")
+                || l.starts_with("not ok ")
+                || l.starts_with("1.."),
+            "stray line: {l}"
+        );
+    }
+    let _ = std::fs::remove_file(&good);
+    let _ = std::fs::remove_file(&bad);
+}
+
 #[test]
 fn test_flag_expands_directories() {
     let root = std::env::temp_dir().join(format!("ting-test-dir-{}", std::process::id()));

@@ -258,7 +258,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   indexed with a name it does not export); warnings never change
   the exit status.
 - `ting --test <paths...>` runs each file (directories recurse,
-  sorted; `--filter SUBSTR` keeps only matching paths) in its own
+  sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
+  emits Test Anything Protocol output for CI consumers) in its own
   process and
   prints `ok` or `FAIL` per file (with the diagnostic under a
   failure) and a summary; exit 1 if anything failed. Pair it with
