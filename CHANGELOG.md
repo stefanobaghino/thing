@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.34.0 (2026-09-03)
+
+- LSP: a quickfix code action replaces a misspelt stdlib member with
+  the nearest export.
+- `ting --test --filter SUBSTR` runs only matching paths.
+- `lib/json.ting`: `merge_in`, a deep merge.
+
 ## v2.33.0 (2026-09-03)
 
 - `lib/json.ting`, a sixth embedded module: `get_in`, `set_in`,

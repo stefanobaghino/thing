@@ -4206,3 +4206,11 @@ helps), and the result is fresh so neither input moves. Five
 assertions incl. the untouched-inputs check, stdlib.md row. Full
 gate green on both engines. Third stroke banked — v2.34.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 282: v2.34.0
+
+LSP quickfix, --test --filter, merge_in. CI green on 281 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.34.0 (55th tag).
