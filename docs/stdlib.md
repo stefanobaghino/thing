@@ -34,6 +34,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `median(xs)` | middle of the sorted values (mean of two middles when even) |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 | `group_by(xs, key)` | map from `key(x)` (a string) to the elements with that key, in input order |
+| `count_by(xs, key)` | map from `key(x)` (a string) to how many elements share it |
 | `take(xs, n)` | the first `n` elements (fewer if the list is shorter) |
 | `drop(xs, n)` | everything after the first `n` elements |
 | `partition(xs, pred)` | `[matching, rest]` split by `pred`, both in input order |
@@ -70,6 +71,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `omit(m, ks)` | a fresh map without the listed keys |
 | `filter_map(m, pred)` | a fresh map with only the entries where `pred(key, value)` holds |
 | `has_all(m, ks)` | true if every listed key is present |
+| `invert(m)` | keys and values swapped (values must be strings; last key wins on duplicates) |
 
 ## lib/math.ting
 

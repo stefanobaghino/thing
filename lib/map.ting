@@ -73,3 +73,15 @@ fn has_all(m, ks) {
   }
   return true;
 }
+
+# A fresh map with keys and values swapped; every value must be a
+# string, and among duplicate values the last key (in key order) wins.
+fn invert(m) {
+  let out = {};
+  for k in m {
+    let v = m[k];
+    if type(v) != "string" { fail("invert: values must be strings, got " + type(v)); }
+    out[v] = k;
+  }
+  return out;
+}

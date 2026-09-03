@@ -161,3 +161,11 @@ assert(s["center"]("ab", 5, "*") == "*ab**", "center odd gap right");
 assert(s["center"]("abc", 2, "*") == "abc", "center no-op when wider");
 assert(s["center"]("", 2, "-") == "--", "center empty");
 assert(has(try(fn() { return s["center"]("a", 3, ""); }), "err"), "center empty fill fails");
+
+assert(l["count_by"](["ab", "c", "de"], fn(w) { return str(len(w)); }) == {"1": 1, "2": 2}, "count_by");
+assert(l["count_by"]([], fn(x) { return x; }) == {}, "count_by empty");
+assert(has(try(fn() { return l["count_by"]([1], fn(x) { return x; }); }), "err"), "count_by non-string key fails");
+assert(m["invert"]({"a": "x", "b": "y"}) == {"x": "a", "y": "b"}, "invert");
+assert(m["invert"]({"a": "x", "b": "x"}) == {"x": "b"}, "invert last key wins");
+assert(m["invert"]({}) == {}, "invert empty");
+assert(has(try(fn() { return m["invert"]({"a": 1}); }), "err"), "invert non-string value fails");
