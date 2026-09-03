@@ -81,11 +81,12 @@ holds only the current milestone and the standing rules.
   in the diagnostic.
 - 426: replenishment — milestone "load and import" (v2.64–v2.65),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) :load uses the file's
-  directory and path, io test — then RELEASE v2.64.0 (423, 424,
-  +1); (2) :load reports new bindings, io test; (3) failed import
-  says where it looked, io test; (4) lib/list.ting transpose,
-  selftests; (5) health tick + audit.
+- 427: :load uses the file's directory and name — three strokes
+  banked (423, 424, 427); RELEASE v2.64.0 next tick if quiet.
+- Backlog after the release (in order): (2) :load reports new
+  bindings, io test; (3) failed import says where it looked, io
+  test; (4) lib/list.ting transpose, selftests; (5) health tick +
+  audit.
 - Tags: 84 (v2.63.0), 83 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

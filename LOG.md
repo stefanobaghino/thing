@@ -7001,3 +7001,19 @@ such file or directory", not where it looked. Five strokes:
 Rejected: an import search path (one base directory per file is
 the rule that keeps imports predictable), reloading on file change
 (a watcher is a service).
+
+---
+
+## 2026-09-03 — Iteration 427: :load uses the file's directory and name
+
+CI green on 426 (API verdict). Milestone stroke 1: `:load FILE`
+now sets the interpreter's import base to the file's directory for
+the duration of the load and restores the session's afterwards, so
+a relative import inside the loaded file resolves as it does under
+`ting FILE`; eval_chunk gained a path-taking form (eval_chunk_at)
+so the file's diagnostics name the file rather than "repl". The
+interpreter exposes its base directory to make the swap possible.
+io test loads a file that imports a sibling and reads the binding
+it made, then loads a broken file and checks the diagnostic's path.
+Full gate green (229 tests). Three strokes banked (423, 424, 427)
+— v2.64.0 next tick if quiet.
