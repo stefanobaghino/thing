@@ -8199,3 +8199,18 @@ the other three places it appears. Both engines run the file
 identically; the corpus scan still shows its one expected warning.
 Full gate green (248 tests). Two strokes banked (490, 491). Next:
 release v2.76.0.
+
+---
+
+## 2026-09-03 — Iteration 492: release v2.76.0
+
+CI green on 491 (API verdict — the previous tick's watcher had
+followed the Pages run and reported an empty conclusion, so the CI
+run was rewatched by workflow and the verdict read from the API
+before tagging). Cut v2.76.0 with the option suggestion (490) and
+its selftests and tutorial paragraph (491). The release workflow is
+green with all six archives; CI and Pages green on the release
+commit (API verdicts). Cold-verified here: both aarch64 Linux
+archives downloaded fresh, unpacked and run — `-V` reports 2.76.0,
+a transposed key names the right one identically on both engines,
+and `--lps` points at `--lsp`. 97th tag. Next: health tick + audit.
