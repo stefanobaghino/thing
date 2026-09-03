@@ -748,6 +748,35 @@ fn check_flag_warns_about_unused_local_lets() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check` warns about a let, fn or parameter named after a builtin;
+/// ordinary names are silent.
+#[test]
+fn check_flag_warns_about_shadowed_builtins() {
+    let path = std::env::temp_dir().join(format!("ting-check-shadow-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let len = 3;\nfn print(x) { return x; }\nfn f(map, total) { return total; }\nprint(len, f(1, 2));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    for name in ["len", "print", "map"] {
+        assert!(
+            stderr.contains(&format!("warning: `{name}` shadows a builtin")),
+            "{name}: {stderr}"
+        );
+    }
+    assert!(
+        !stderr.contains("`total`") && !stderr.contains("`f`") && !stderr.contains("`x`"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

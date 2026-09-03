@@ -633,6 +633,36 @@ fn unused_local_let_is_a_warning() {
 }
 
 #[test]
+fn shadowed_builtin_is_a_warning() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///s.ting","text":"let keys = [1];\nprint(keys);\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert!(
+        diag.contains("`keys` shadows a builtin") && diag.contains("\"severity\":2"),
+        "{diag}"
+    );
+    assert!(
+        diag.contains(r#""start":{"character":4,"line":0}"#),
+        "{diag}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn unused_top_level_let_is_a_warning() {
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(

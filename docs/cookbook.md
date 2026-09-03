@@ -213,11 +213,11 @@ let defaults = {
 let file = json_parse("{\"server\": {\"port\": 9000}, \"features\": [\"health\", \"metrics\"]}");
 
 # Environment-style overrides as dotted paths.
-let env = {"server.tls": "true", "log.level": "debug"};
+let overrides = {"server.tls": "true", "log.level": "debug"};
 
 let effective = j["merge_in"](defaults, file);
-for key in keys(env) {
-  let value = env[key];
+for key in keys(overrides) {
+  let value = overrides[key];
   if value == "true" { value = true; } else if value == "false" { value = false; }
   effective = j["set_in"](effective, split(key, "."), value);
 }
@@ -462,14 +462,14 @@ let li = import("../lib/list.ting");
 let st = import("../lib/string.ting");
 let ma = import("../lib/map.ting");
 
-let input = read_file("-");
-if st["is_blank"](input) {
-  input = "ann,north,120\nbob,south,80\nann,north,40\ncid,east,x\nbob,north,60\n";
+let text = read_file("-");
+if st["is_blank"](text) {
+  text = "ann,north,120\nbob,south,80\nann,north,40\ncid,east,x\nbob,north,60\n";
   print("(no stdin; using the built-in sample)");
 }
 
 let records = [];
-for line in st["lines"](trim(input)) {
+for line in st["lines"](trim(text)) {
   let fields = split(line, ",");
   if len(fields) != 3 || !st["is_digit"](fields[2]) {
     print("skipping:", line);
@@ -513,8 +513,8 @@ let ma = import("../lib/math.ting");
 
 let temps = [18, 19, 21, 24, 24, 23, 20, 17, 16, 16, 19, 22, 25, 24];
 
-let range = li["extent"](temps);
-print("days:", len(temps), "range:", range[0], "to", range[1]);
+let span = li["extent"](temps);
+print("days:", len(temps), "range:", span[0], "to", span[1]);
 print("mean:", ma["round"](li["mean"](temps)), "median:", li["median"](temps),
 "mode:", li["mode"](temps));
 print("90th percentile:", ma["percentile"](temps, 90));

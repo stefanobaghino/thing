@@ -271,7 +271,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   is never used — prefix the name with `_` to opt out; a file made
   only of bindings is a module and exempt; a `let` inside a block
   that nothing in the block uses, same opt-out; a function parameter
-  its body never names, same opt-out); warnings never change the exit
+  its body never names, same opt-out; a binding or parameter named
+  after a builtin, which hides it); warnings never change the exit
   status.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
@@ -296,8 +297,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings
   for an imported stdlib module indexed with a name it does not
-  export and for unused bindings, top-level or local, and unused
-  parameters),
+  export, for unused bindings, top-level or local, and unused
+  parameters, and for a name that shadows a builtin),
   hover docs for every builtin (and for imported stdlib functions,
   and the file's own functions with the `#` comment above them),
   completion

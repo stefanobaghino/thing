@@ -787,6 +787,39 @@ pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
     out
 }
 
+/// Bindings named after a builtin — a `let`, a `fn`, or a parameter —
+/// which hide it for the rest of their scope; the language allows it,
+/// but a later `len(xs)` failing with "not callable" is the usual
+/// outcome. Token-based: the identifier after `let`/`fn`, and every
+/// identifier inside a `fn`'s parameter list.
+pub fn shadowed_builtins(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let is_builtin = |n: &str| Builtin::ALL.iter().any(|b| b.name() == n);
+    let mut out = Vec::new();
+    let mut in_params = false;
+    for (i, t) in tokens.iter().enumerate() {
+        match &t.kind {
+            lexer::TokenKind::Fn => {
+                // `fn name(` or `fn(`: the parameter list follows the `(`.
+                in_params = true;
+            }
+            lexer::TokenKind::RParen if in_params => in_params = false,
+            lexer::TokenKind::Ident(n) => {
+                let after_let = i > 0 && matches!(tokens[i - 1].kind, lexer::TokenKind::Let);
+                let after_fn = i > 0 && matches!(tokens[i - 1].kind, lexer::TokenKind::Fn);
+                let param = in_params && !after_fn;
+                if (after_let || after_fn || param) && is_builtin(n) {
+                    out.push((t.span.start, t.span.end, format!("`{n}` shadows a builtin")));
+                }
+            }
+            _ => {}
+        }
+    }
+    out
+}
+
 /// Every semantic warning for a source: unknown stdlib members, then
 /// unused top-level bindings, then unused parameters. Shared by
 /// --check and the LSP.
@@ -795,6 +828,7 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     all.extend(unused_top_level_lets(src));
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));
+    all.extend(shadowed_builtins(src));
     all
 }
 

@@ -61,7 +61,8 @@ JSON-RPC over stdio. On every open and change it publishes
 diagnostics — lex, parse and compile errors; an error on an `import`
 of a local file that has one; and the checker's warnings (a stdlib
 module indexed with a name it does not export, an unused binding at
-the top level or inside a block, an unused parameter). Beyond diagnostics it provides hover
+the top level or inside a block, an unused parameter, a name that
+shadows a builtin). Beyond diagnostics it provides hover
 (builtins, stdlib functions and the file's own), completion,
 signature help, formatting, document and workspace symbols,
 go-to-definition, references, highlights of the symbol under the

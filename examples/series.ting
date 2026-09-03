@@ -7,8 +7,8 @@ let ma = import("../lib/math.ting");
 
 let temps = [18, 19, 21, 24, 24, 23, 20, 17, 16, 16, 19, 22, 25, 24];
 
-let range = li["extent"](temps);
-print("days:", len(temps), "range:", range[0], "to", range[1]);
+let span = li["extent"](temps);
+print("days:", len(temps), "range:", span[0], "to", span[1]);
 print("mean:", ma["round"](li["mean"](temps)), "median:", li["median"](temps),
 "mode:", li["mode"](temps));
 print("90th percentile:", ma["percentile"](temps, 90));

@@ -16,11 +16,11 @@ let defaults = {
 let file = json_parse("{\"server\": {\"port\": 9000}, \"features\": [\"health\", \"metrics\"]}");
 
 # Environment-style overrides as dotted paths.
-let env = {"server.tls": "true", "log.level": "debug"};
+let overrides = {"server.tls": "true", "log.level": "debug"};
 
 let effective = j["merge_in"](defaults, file);
-for key in keys(env) {
-  let value = env[key];
+for key in keys(overrides) {
+  let value = overrides[key];
   if value == "true" { value = true; } else if value == "false" { value = false; }
   effective = j["set_in"](effective, split(key, "."), value);
 }

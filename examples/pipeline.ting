@@ -6,14 +6,14 @@ let li = import("../lib/list.ting");
 let st = import("../lib/string.ting");
 let ma = import("../lib/map.ting");
 
-let input = read_file("-");
-if st["is_blank"](input) {
-  input = "ann,north,120\nbob,south,80\nann,north,40\ncid,east,x\nbob,north,60\n";
+let text = read_file("-");
+if st["is_blank"](text) {
+  text = "ann,north,120\nbob,south,80\nann,north,40\ncid,east,x\nbob,north,60\n";
   print("(no stdin; using the built-in sample)");
 }
 
 let records = [];
-for line in st["lines"](trim(input)) {
+for line in st["lines"](trim(text)) {
   let fields = split(line, ",");
   if len(fields) != 3 || !st["is_digit"](fields[2]) {
     print("skipping:", line);

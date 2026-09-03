@@ -506,8 +506,8 @@ Everything else ships in the same binary:
 - `ting --check *.ting` reports syntax errors without running
   anything, follows `import` to your local modules, and warns about
   a misspelt stdlib member, an unused binding (at the top level or
-  inside a function) or an unused parameter — wire it into a
-  pre-commit hook. The playground's
+  inside a function), an unused parameter or a name that shadows a
+  builtin — wire it into a pre-commit hook. The playground's
   check button does the same in the browser.
 - `ting --test tests/` runs every `.ting` file under a directory
   and prints `ok` or `FAIL` per file plus a summary — a test runner
