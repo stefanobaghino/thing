@@ -4432,3 +4432,15 @@ Nothing to fix. v2.37.0 next tick, then replenish.
 LSP folding ranges and the JSON benchmark — the tail of the 287
 milestone. CI green on 294 (API verdict). Full gate green, stdlib
 selftests pass on the reference engine. Tagging v2.37.0 (58th tag).
+
+---
+
+## 2026-09-03 — Iteration 295b: v2.37.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.37.0` runs bench/json.ting with the
+bundled lib to the baseline checksum on both engines, and the
+released `--lsp` advertises foldingRangeProvider. Site: all
+resources 200, changelog shows 2.37.0. 58 tags, 57 verified. The
+287 milestone is complete; next tick replenishes.

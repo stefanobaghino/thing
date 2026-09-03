@@ -123,9 +123,14 @@ current orientation.
   reasoning in LOG.md.
 - v2.36.0 RELEASED and verified (57th tag); aarch64 musl archive
   executed cold here.
-- v2.37.0 TAGGED (58th tag; completes the 287 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.37.0 RELEASED and verified (58th tag); aarch64 glibc archive
+  executed cold here. The 287 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  `--check` runs over directories like --test; (b) lib/string.ting
+  wrap(s, width); (c) a `--doc NAME` CLI flag mirroring :doc; (d)
+  json module: `equal_in`/diff paths between two values; (e) LSP:
+  semantic tokens (probably too big); (f) examples: a text
+  adventure or state machine showing closures + maps.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
