@@ -37,3 +37,35 @@ fn selftests_pass_silently() {
         "expected at least 5 selftests, found {checked}"
     );
 }
+
+/// The whole corpus under `--check`: the warnings it may print are
+/// enumerated here, so a new false positive fails the build. Each of
+/// these three is deliberate — a shadowed builtin, an unbound name and
+/// a wrong-arity call, every one of them written to test the runtime
+/// that catches it.
+#[test]
+fn corpus_check_warnings_are_the_expected_three() {
+    let root = Path::new(env!("CARGO_MANIFEST_DIR"));
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--check")
+        .args(["lib", "selftest", "examples", "bench"])
+        .current_dir(root)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
+    assert_eq!(warnings.len(), 3, "{stderr}");
+    assert!(
+        warnings[0].contains("selftest/edge.ting") && warnings[0].contains("shadows a builtin"),
+        "{stderr}"
+    );
+    assert!(
+        warnings[1].contains("selftest/errors.ting") && warnings[1].contains("bound nowhere"),
+        "{stderr}"
+    );
+    assert!(
+        warnings[2].contains("selftest/functions.ting") && warnings[2].contains("called with 1"),
+        "{stderr}"
+    );
+}
