@@ -212,3 +212,11 @@ assert(s["truncate"]("hello", 8, "...") == "hello", "truncate short passes throu
 assert(s["truncate"]("hello", 5, "...") == "hello", "truncate exact fit");
 assert(s["truncate"]("hello world", 2, "...") == "..", "truncate suffix wider than width");
 assert(s["truncate"]("héllo wörld", 6, "…") == "héllo…", "truncate counts characters");
+
+assert(l["unique_by"](["ab", "cd", "e", "fg"], fn(w) { return len(w); }) == ["ab", "e"], "unique_by");
+assert(l["unique_by"]([], fn(x) { return x; }) == [], "unique_by empty");
+assert(l["unique_by"]([[1, "a"], [1, "b"], [2, "c"]], fn(p) { return p[0]; }) == [[1, "a"], [2, "c"]], "unique_by keeps first");
+assert(ma["is_prime"](2) && ma["is_prime"](3) && ma["is_prime"](97), "is_prime primes");
+assert(!ma["is_prime"](1) && !ma["is_prime"](0) && !ma["is_prime"](-7), "is_prime small");
+assert(!ma["is_prime"](91) && !ma["is_prime"](100), "is_prime composites");
+assert(filter(range(20), ma["is_prime"]) == [2, 3, 5, 7, 11, 13, 17, 19], "is_prime sieve");

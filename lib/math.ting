@@ -74,3 +74,16 @@ fn lcm(a, b) {
 
 # |a - b|, for ints or floats.
 fn abs_diff(a, b) { return abs(a - b); }
+
+# True if n is a prime number (trial division; n < 2 is never prime).
+fn is_prime(n) {
+  if n < 2 { return false; }
+  if n < 4 { return true; }
+  if n % 2 == 0 { return false; }
+  let d = 3;
+  while d * d <= n {
+    if n % d == 0 { return false; }
+    d = d + 2;
+  }
+  return true;
+}

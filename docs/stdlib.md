@@ -24,6 +24,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
+| `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |
 | `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
@@ -97,6 +98,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `floor(x)` | largest integer `<= x` |
 | `ceil(x)` | smallest integer `>= x` |
 | `sqrt(x)` | Newton's method square root, returns a float |
+| `is_prime(n)` | true for prime `n` (trial division) |
 
 ## lib/test.ting
 

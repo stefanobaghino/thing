@@ -251,3 +251,18 @@ fn rotate(xs, n) {
   if k < 0 { k = k + len_; }
   return slice(xs, k, len_) + slice(xs, 0, k);
 }
+
+# First element for each distinct key(x) (structural equality on the
+# keys), in input order.
+fn unique_by(xs, key) {
+  let seen = [];
+  let out = [];
+  for x in xs {
+    let k = key(x);
+    if !contains(seen, k) {
+      push(seen, k);
+      push(out, x);
+    }
+  }
+  return out;
+}
