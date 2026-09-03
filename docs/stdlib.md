@@ -37,6 +37,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `take(xs, n)` | the first `n` elements (fewer if the list is shorter) |
 | `drop(xs, n)` | everything after the first `n` elements |
 | `partition(xs, pred)` | `[matching, rest]` split by `pred`, both in input order |
+| `window(xs, n)` | sliding windows of `n` consecutive elements (empty if shorter) |
 
 ## lib/string.ting
 

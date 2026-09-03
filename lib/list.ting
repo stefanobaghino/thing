@@ -202,3 +202,16 @@ fn partition(xs, pred) {
   }
   return [yes, no];
 }
+
+# Sliding windows of n consecutive elements: [xs[0..n], xs[1..n+1], ...].
+# Empty when the list is shorter than n; n must be positive.
+fn window(xs, n) {
+  if n <= 0 { fail("window: size must be positive"); }
+  let out = [];
+  let i = 0;
+  while i + n <= len(xs) {
+    push(out, slice(xs, i, i + n));
+    i = i + 1;
+  }
+  return out;
+}

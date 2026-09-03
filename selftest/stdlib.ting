@@ -149,3 +149,9 @@ assert(ma["lcm"](0, 5) == 0, "lcm zero");
 assert(ma["lcm"](7, 7) == 7, "lcm equal");
 assert(ma["abs_diff"](3, 10) == 7, "abs_diff");
 assert(ma["abs_diff"](2.5, 1) == 1.5, "abs_diff float");
+
+assert(l["window"]([1, 2, 3, 4], 2) == [[1, 2], [2, 3], [3, 4]], "window");
+assert(l["window"]([1, 2, 3], 3) == [[1, 2, 3]], "window whole");
+assert(l["window"]([1, 2], 3) == [], "window too short");
+assert(l["window"]([], 1) == [], "window empty");
+assert(has(try(fn() { return l["window"]([1], 0); }), "err"), "window zero fails");
