@@ -4369,3 +4369,14 @@ Third stroke banked — v2.36.0 next tick if quiet.
 Testing chapter, formatter fuzz, zip_with/cartesian. CI green on
 290 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.36.0 (57th tag).
+
+---
+
+## 2026-09-03 — Iteration 291b: v2.36.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.36.0`, zip_with and cartesian agree on both engines. Site: all
+resources 200, changelog shows 2.36.0, tutorial page carries the
+Testing chapter. 57 tags, 56 verified.
