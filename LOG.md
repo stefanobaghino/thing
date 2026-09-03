@@ -3182,3 +3182,15 @@ skip empties, has/else counting) for one line of stdlib:
 count_by(words(lower(text)), identity). Same golden output, and the
 chapter intro now names the two helpers. The tutorial test runs the
 snippet. Full gate green. Second stroke toward v2.22.0.
+
+---
+
+## 2026-09-03 — Iteration 226: map with/update
+
+CI and Pages green on 225 (API verdicts). lib/map.ting gains
+with(m, k, v) and update(m, k, f), both returning fresh maps in the
+module's style (built on merge, so the input is provably untouched —
+a selftest checks the original afterwards); update fails on a
+missing key rather than inventing a value. Five assertions, two
+stdlib.md rows. Full gate green on both engines. Third stroke
+banked — v2.22.0 next tick if quiet.
