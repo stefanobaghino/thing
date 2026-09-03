@@ -8543,3 +8543,29 @@ answer 200, the changelog leads with v2.80.0, and the retrospective
 serves the tenth act and its "a hundred tags" closing. Nothing to
 fix. The "tenth act" milestone is complete. Backlog empty: next
 tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 510: replenishment — milestone "how much it checked"
+
+CI green on 509 (API verdict). Thirty-three milestones since the
+restart, a hundred and one tags. This survey left the checker alone
+and pointed at the test runner. A file containing nothing but a
+comment is reported "ok" and counted as a pass: `ting --test` knows
+that a file exited 0, and nothing else. That is the oldest trap in
+test tooling — a suite that asserts nothing is indistinguishable
+from a suite that asserts everything and is right — and ting is
+well placed to close it, because a check in a ting test is either
+the `assert` builtin or one of lib/test.ting's `check` functions,
+and both go through code this project owns. The interpreter can
+count assert calls; the runner spawns each file as a child, so the
+child can report the count on stderr under an env var the runner
+sets, and print "ok FILE (12 checks)", a total in the summary, and
+"no checks" for a file that verified nothing. lib/test.ting's
+helpers keep their own counters and never call assert, so they will
+bump the same counter deliberately, in both branches, with a
+comment saying why. Milestone "how much it checked" (v2.81-v2.82):
+the interpreter counts checks and reports them on request; --test
+prints per-file and total counts and names the files that checked
+nothing; lib/test.ting's helpers count too; docs and selftests
+follow.

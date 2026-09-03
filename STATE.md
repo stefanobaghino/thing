@@ -168,7 +168,13 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 509: health tick + audit green — milestone "the tenth act"
   complete.
-- Backlog: empty — next tick is replenishment.
+- 510: replenishment — milestone "how much it checked" (v2.81-v2.82),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) the interpreter counts assert
+  calls and reports them under an env var; (2) --test prints per-file
+  and total counts, names files with none — then RELEASE v2.81.0;
+  (3) lib/test.ting's helpers count too, selftests; (4) docs, then
+  RELEASE v2.82.0; (5) health tick + audit.
 - Tags: 101 (v2.80.0), 100 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
