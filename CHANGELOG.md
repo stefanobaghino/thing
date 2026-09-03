@@ -5,6 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.74.0 (2026-09-03)
+
+- `--doc` and `:doc` wrap at 78 columns: a comment under its
+  signature, an index line's first sentence beside the name when it
+  fits and underneath when it does not.
+- `ting --doc len median slug`: several names at once, printed in
+  order and separated by a blank line; an unknown name exits 1 and
+  the rest are still printed.
+- A new example, `examples/inventory.ting` (stock list: `key_of`,
+  `take_while`/`drop_while`, `flatten`, `plural`).
+
 ## v2.73.0 (2026-09-03)
 
 - Exit codes: 0 success, 1 a reported failure, 2 a usage error
