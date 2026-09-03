@@ -149,13 +149,14 @@ current orientation.
   executed cold here, LSP survives a garbage frame.
 - v2.45.0 RELEASED and verified (66th tag); aarch64 glibc archive
   executed cold here. The 322 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  lib/string.ting split_lines-aware `dedent(s)`; (b) `--test`
-  parallelism (run N children at once); (c) LSP: rename across open
-  documents (workspace-wide); (d) json module `pretty(v)` alias of
-  json_str(v, 2) — too thin; (e) a `ting --version --json`? no; (f)
-  tutorial: a "shell scripting" chapter (args, env, read_file("-"),
-  exit codes) — the tooling exists, the chapter does not.
+- 330: replenishment — milestone "shell citizen, part two"
+  (v2.46–v2.48), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) tutorial "Shell scripting"
+  chapter with a deterministic executed snippet; (2) `--test -j N`
+  parallel children with ordered output, io test; (3)
+  lib/string.ting dedent, selftests; (4) LSP rename across open
+  documents, protocol test; (5) health tick + audit. Release after
+  ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

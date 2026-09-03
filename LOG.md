@@ -5055,3 +5055,32 @@ this aarch64 Linux host: `ting 2.45.0`, `--doc variance` answers,
 variance agrees on both engines. Site: all resources 200, changelog
 shows 2.45.0. 66 tags, 65 verified. The 322 milestone is complete;
 next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 330: replenishment — milestone "shell citizen, part two"
+
+CI green on 329b (API verdict). Nine milestones since the restart,
+sixty-six tags. The binary behaves well in a shell — quiet on a
+closed pipe, stdin everywhere, exit codes that mean something — but
+the tutorial never teaches any of it; the runner is sequential on
+a machine with four cores; the string module cannot dedent a block;
+and rename stops at the document edge. Five strokes:
+
+1. Tutorial "Shell scripting" chapter: args(), env(), read_file("-"),
+   exit() and exit codes, piping into head — with an executed
+   snippet that is deterministic under the harness (no arguments,
+   an environment variable that does not exist).
+2. `--test -j N`: run up to N files at once, printing results in
+   the original order once each finishes (collect per file, emit in
+   sequence) so TAP numbering and the human output stay stable. io
+   test compares -j 2 with the sequential summary.
+3. lib/string.ting dedent(s): strip the common leading whitespace of
+   all non-blank lines. Selftests.
+4. LSP rename across every open document: the WorkspaceEdit carries
+   changes for each uri where the identifier appears. Protocol test
+   with two documents.
+5. Health tick + distribution audit.
+
+Rejected: json pretty(v) (json_str(v, 2) is one argument away),
+a JSON --version (nothing consumes it).
