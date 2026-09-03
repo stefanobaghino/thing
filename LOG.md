@@ -7160,3 +7160,19 @@ Rejected: a --fmt flag to choose endings (the file already says
 which it uses), warning about unused parameters of nested
 closures differently from top-level ones (the parameter warning
 already covers every `fn`).
+
+---
+
+## 2026-09-03 — Iteration 435: the formatter keeps CRLF
+
+CI green on 434 (API verdict). Milestone stroke 1: a source with
+CRLF line endings formats to CRLF — the formatter normalises to LF
+internally, formats, and puts the endings back — so --fmt-check is
+clean on a Windows checkout and --fmt changes layout, never
+endings; the LSP's formatting goes through the same function. The
+formatter fuzzer now also formats every generated program in CRLF
+form and checks it equals the LF result with CRLF endings and is
+idempotent. io test: a clean CRLF file passes --fmt-check, a messy
+one is reformatted with its endings intact. Full gate green (231
+tests). One stroke banked toward v2.66.0. Next: unused local
+bindings.
