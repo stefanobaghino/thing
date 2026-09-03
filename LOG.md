@@ -3057,3 +3057,13 @@ if quiet.
 REPL :fmt, count_by/invert, first/last. CI green on 217 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.20.0 (40th release).
+
+---
+
+## 2026-09-03 — Iteration 218b: v2.20.0 verified
+
+Release, CI and Pages runs all green (API verdicts). Four archives
+published. Cold test on this aarch64 Linux host: `ting 2.20.0`,
+count_by/invert/first/last print identically on both engines, and
+:fmt reprints a piped chunk formatted. Site: all resources 200,
+changelog shows 2.20.0. 40 releases, all verified.

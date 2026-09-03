@@ -61,11 +61,11 @@ current orientation.
 - 216: health tick — checksums match, 30k fuzz cases agree; bench
   times contended by other workloads (load 5.5), re-measure when
   quiet.
-- v2.20.0 TAGGED (40th release): verify next tick by executing the
-  aarch64-linux asset cold here.
-- Backlog after verification: lib/string.ting is_digit/is_alpha;
-  quiet-machine bench re-measure; examples/ dogfood of window or
-  count_by.
+- v2.20.0 RELEASED and verified (40th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.21.0 (one per tick): lib/string.ting
+  is_digit/is_alpha; examples/ dogfood of window or count_by;
+  quiet-machine bench re-measure; release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
