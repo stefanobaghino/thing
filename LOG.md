@@ -4503,3 +4503,14 @@ editor keybinding or a script can rely on the status. io test
 covers a stdlib function, a builtin and the miss; help and the
 reference Tooling list updated. Full gate green (201 tests). Second
 stroke toward v2.38.0.
+
+---
+
+## 2026-09-03 — Iteration 299: wrap
+
+CI and Pages green on 298 (API verdicts). Milestone stroke 3:
+lib/string.ting gains wrap(s, width), greedy word wrap over words()
+— so runs of whitespace normalise to single spaces, a word longer
+than the width stands alone, and a non-positive width fails loudly.
+Five assertions, stdlib.md row. Full gate green on both engines.
+Third stroke banked — v2.38.0 next tick if quiet.
