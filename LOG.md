@@ -7758,3 +7758,15 @@ what is reported and skipped, the summary line and its check-mode
 wording, and what exit 1 means; the tutorial's closing bullet says
 the same in a sentence. Tutorial and docs guards green. One stroke
 banked toward v2.72.0. Next: plural.
+
+---
+
+## 2026-09-03 — Iteration 468: plural
+
+CI and Pages green on 467 (API verdicts). Milestone stroke 4:
+`plural(n, one, many)` in lib/string.ting — the count and the noun
+that fits it ("1 file", "3 files", "0 files"), for the summary
+lines scripts print. Three selftests, a stdlib.md row, the page's
+count to 118 as the guard requires. Selftests pass on both
+engines; full gate green (239 tests). Two strokes banked toward
+v2.72.0 (467, 468). Next: health tick + audit, then replenish.

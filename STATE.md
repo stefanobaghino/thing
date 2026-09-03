@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
-  (list/map/string/math/json/test, 117 functions, guarded); 27 ting programs
+  (list/map/string/math/json/test, 118 functions, guarded); 27 ting programs
   (11 selftest files, 16 examples with .out); 223 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
@@ -120,10 +120,10 @@ holds only the current milestone and the standing rules.
   (v2.71–v2.72), reasoning in LOG.md.
 - v2.71.0 VERIFIED (92nd tag; strokes 461, 464, 465; both aarch64
   archives executed here).
-- 467: the formatter's contract in the docs — one stroke banked
-  toward v2.72.0.
-- Backlog (in order): (4) lib/string.ting plural, selftests; (5)
-  health tick + audit; then replenish.
+- 467: the formatter's contract in the docs; 468: plural — two
+  strokes banked toward v2.72.0.
+- Backlog (in order): (5) health tick + audit; then replenish (the
+  release follows the next stroke).
 - Tags: 92 (v2.71.0), 91 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
