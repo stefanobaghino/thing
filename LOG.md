@@ -2853,3 +2853,21 @@ map filter_map/has_all. CI green on 203 (API verdict). Full gate
 green, stdlib selftests pass on the reference engine. Tagging
 v2.17.0 (37th release); the arm64 Linux build step runs for the
 first time on this tag.
+
+---
+
+## 2026-09-03 — Iteration 204b: v2.17.0 verified
+
+Release, CI and Pages runs all green (API verdicts); the arm64
+Linux build job passed on its first tag. Four archives published.
+Cold test on this aarch64 Linux host — the first executed cold test
+since the loop moved machines: downloaded the
+aarch64-unknown-linux-gnu archive, ELF ARM aarch64, `ting 2.17.0`,
+lib/ bundled; a script exercising reverse/chars, has_all/filter_map,
+partition/group_by prints identical output on both engines. Site:
+all resources 200, changelog shows 2.17.0. 37 releases, all
+verified. Two rough edges noticed while poking the binary, queued
+as strokes: (1) writing to a closed pipe (`ting x.ting | head -1`)
+ends in a broken-pipe error/panic instead of a quiet exit, which
+is the convention for CLI filters; (2) `--fmt-check -` does not
+read stdin even though read_file("-") does.

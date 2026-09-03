@@ -47,10 +47,12 @@ current orientation.
   201: string chars/reverse — two strokes toward v2.17.0.
 - 202: health tick green (checksums match, ratios hold, 20k fuzz
   cases agree).
-- v2.17.0 TAGGED (37th release; first with an aarch64-linux asset):
-  verify next tick by downloading and EXECUTING that asset here.
-- Backlog after the release: lib/math.ting abs_diff/lcm; tutorial
-  mention of group_by/partition; distribution audit incl. arm64.
+- v2.17.0 RELEASED and verified (37th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.18.0 (one per tick): quiet exit on broken pipe
+  (print/REPL hit EPIPE → panic/exit 101 today); `--fmt`/`--fmt-check`
+  accept `-` for stdin; lib/math.ting abs_diff/lcm; tutorial mention
+  of group_by/partition; distribution audit incl. arm64.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
