@@ -7440,3 +7440,15 @@ The formatting edit's end, diff and flatten in the tutorial, the
 ninth act. CI and Pages green on 449 (API verdicts). Full gate
 green, stdlib selftests pass on both engines. Tagging v2.68.0
 (89th tag). Four hundred and fifty iterations.
+
+---
+
+## 2026-09-03 — Iteration 450b: v2.68.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.68.0; a raw JSON-RPC formatting request to each release binary's
+--lsp returned the edit ending at line 2 character 0 with the
+formatted text; `--test selftest` passes 11/11 on each. CI and
+Pages green on the release commit. Eighty-nine tags, eighty-eight
+verified. Next: the builtin-shadowing warning.
