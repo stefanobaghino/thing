@@ -7017,3 +7017,11 @@ io test loads a file that imports a sibling and reads the binding
 it made, then loads a broken file and checks the diagnostic's path.
 Full gate green (229 tests). Three strokes banked (423, 424, 427)
 — v2.64.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 428: v2.64.0
+
+The thirteen-capability count, squeeze, and :load fixed. CI green
+on 427 (API verdict). Full gate green, stdlib selftests pass on
+both engines. Tagging v2.64.0 (85th tag).

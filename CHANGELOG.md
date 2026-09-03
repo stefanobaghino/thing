@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.64.0 (2026-09-03)
+
+- REPL: `:load FILE` resolves the file's relative imports against
+  its own directory and names the file in diagnostics.
+- lib/string.ting: `squeeze(s)`.
+- Docs count the thirteen editor capabilities.
+
 ## v2.63.0 (2026-09-03)
 
 - LSP: documentHighlight (occurrences of the symbol under the
