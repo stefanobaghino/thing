@@ -190,6 +190,66 @@ sat 1
 the 3
 ```
 
+## config
+
+Layered configuration with lib/json.ting: built-in defaults, a config-file overlay and environment-style overrides folded together with merge_in, the effective settings printed as a table, and diff reporting exactly what the overrides changed.
+
+```ting
+# Layered configuration with lib/json.ting: built-in defaults, a
+# config-file overlay and environment-style overrides folded together
+# with merge_in, the effective settings printed as a table, and diff
+# reporting exactly what the overrides changed.
+
+let j = import("../lib/json.ting");
+let st = import("../lib/string.ting");
+
+let defaults = {
+  "server": {"host": "127.0.0.1", "port": 8080, "tls": false},
+  "log": {"level": "info", "format": "text"},
+  "features": ["health"],
+};
+
+# What a config file might contribute (here parsed from a string).
+let file = json_parse("{\"server\": {\"port\": 9000}, \"features\": [\"health\", \"metrics\"]}");
+
+# Environment-style overrides as dotted paths.
+let env = {"server.tls": "true", "log.level": "debug"};
+
+let effective = j["merge_in"](defaults, file);
+for key in keys(env) {
+  let value = env[key];
+  if value == "true" { value = true; } else if value == "false" { value = false; }
+  effective = j["set_in"](effective, split(key, "."), value);
+}
+
+let rows = [["setting", "value"]];
+for path in j["paths"](effective) {
+  push(rows, [join(map(path, str), "."), str(j["get_in"](effective, path))]);
+}
+print(st["table"](rows));
+
+print("changed from defaults:");
+for change in j["diff"](defaults, effective) {
+  print(" ", join(map(change[0], str), "."), str(change[1]), "->", str(change[2]));
+}
+```
+
+```text
+setting      value
+features.0   health
+features.1   metrics
+log.format   text
+log.level    debug
+server.host  127.0.0.1
+server.port  9000
+server.tls   true
+changed from defaults:
+  log.level info -> debug
+  server.port 8080 -> 9000
+  server.tls false -> true
+  features.1 nil -> metrics
+```
+
 ## fibonacci
 
 Fibonacci two ways: naive recursion and an iterative list build.

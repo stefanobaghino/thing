@@ -1,0 +1,13 @@
+setting      value
+features.0   health
+features.1   metrics
+log.format   text
+log.level    debug
+server.host  127.0.0.1
+server.port  9000
+server.tls   true
+changed from defaults:
+  log.level info -> debug
+  server.port 8080 -> 9000
+  server.tls false -> true
+  features.1 nil -> metrics
