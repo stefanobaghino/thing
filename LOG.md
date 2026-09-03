@@ -3413,3 +3413,16 @@ verdicts). Four archives published. Cold test on this aarch64 Linux
 host: `ting 2.25.0`, interleave prints identically on both engines.
 Site: all resources 200, changelog shows 2.25.0, stdlib page lists
 interleave. 45 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 241: health tick
+
+CI green on 240b (API verdict). Fuzz: 50000 differential cases on
+seed 20260903240 over the grammar widened in 237 (string predicates,
+replace/split/trim/lower, max, type, closures inside filter/reduce)
+— engines agree on every program; first big sweep with the new
+arms. Bench: all four checksums match BASELINE.md; the machine is
+still shared (load ~3.5) and the times and ratios sit in the same
+contended band seen in 216 and 230 (strings vm +4%), so no
+conclusion beyond "no regression in checksums". Nothing to fix.
