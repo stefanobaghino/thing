@@ -270,20 +270,57 @@ fn ident_at(src: &str, line: usize, character: usize) -> Option<String> {
     Some(chars[start..end].iter().collect())
 }
 
+/// Exported functions of every embedded stdlib module the document
+/// imports (matched on the module-path suffix, so relative paths
+/// count): (module path, name, signature, leading comment).
+fn imported_stdlib_functions(src: &str) -> Vec<(&'static str, String, String, String)> {
+    let mut out = Vec::new();
+    for (path, source) in crate::eval::embedded_stdlib() {
+        if !src.contains(path) {
+            continue;
+        }
+        let mut comment: Vec<&str> = Vec::new();
+        for line in source.lines() {
+            if let Some(text) = line.strip_prefix('#') {
+                comment.push(text.trim());
+                continue;
+            }
+            if let Some(rest) = line.strip_prefix("fn ")
+                && let Some(close) = rest.find(')')
+            {
+                let sig = &rest[..=close];
+                let name = &sig[..sig.find('(').unwrap_or(sig.len())];
+                out.push((*path, name.to_string(), sig.to_string(), comment.join(" ")));
+            }
+            comment.clear();
+        }
+    }
+    out
+}
+
 fn hover_result(src: &str, line: usize, character: usize) -> Value {
     let Some(word) = ident_at(src, line, character) else {
         return Value::Nil;
     };
-    let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) else {
+    let text = if let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) {
+        let (sig, summary) = b.doc();
+        format!("```ting\n{sig}\n```\n\n{summary}")
+    } else if let Some((path, _, sig, comment)) = imported_stdlib_functions(src)
+        .into_iter()
+        .find(|(_, name, _, _)| *name == word)
+    {
+        let about = if comment.is_empty() {
+            format!("from `{path}`")
+        } else {
+            format!("{comment}\n\n(from `{path}`)")
+        };
+        format!("```ting\n{sig}\n```\n\n{about}")
+    } else {
         return Value::Nil;
     };
-    let (sig, summary) = b.doc();
     obj(vec![(
         "contents",
-        obj(vec![
-            ("kind", s("markdown")),
-            ("value", s(&format!("```ting\n{sig}\n```\n\n{summary}"))),
-        ]),
+        obj(vec![("kind", s("markdown")), ("value", s(&text))]),
     )])
 }
 
@@ -377,25 +414,13 @@ fn completion_result(src: &str) -> Value {
     // Exported functions of every stdlib module the document imports
     // (matched by the "lib/<name>.ting" suffix, so "../lib/list.ting"
     // counts too): the names users reach for through m["name"].
-    for (path, source) in crate::eval::embedded_stdlib() {
-        if !src.contains(path) {
-            continue;
-        }
-        for line in source.lines() {
-            let Some(rest) = line.strip_prefix("fn ") else {
-                continue;
-            };
-            let Some(close) = rest.find(')') else {
-                continue;
-            };
-            let sig = &rest[..=close];
-            let name = &sig[..sig.find('(').unwrap_or(sig.len())];
-            items.push(obj(vec![
-                ("label", s(name)),
-                ("kind", Value::Int(3)), // Function
-                ("detail", s(&format!("{path}: {sig}"))),
-            ]));
-        }
+    for (path, name, sig, comment) in imported_stdlib_functions(src) {
+        items.push(obj(vec![
+            ("label", s(&name)),
+            ("kind", Value::Int(3)), // Function
+            ("detail", s(&format!("{path}: {sig}"))),
+            ("documentation", s(&comment)),
+        ]));
     }
     Value::list(items)
 }

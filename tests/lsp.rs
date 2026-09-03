@@ -201,6 +201,29 @@ fn completion_offers_imported_stdlib_functions() {
     assert!(comp.contains("lib/list.ting: median(xs)"), "{comp}");
     assert!(!comp.contains("\"label\":\"pad_left\""), "{comp}");
 
+    // Hover on the name inside l["median"] shows the signature and
+    // the function's leading comment; an unimported module's name
+    // gets nothing.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":3},"contentChanges":[{"text":"let l = import(\"lib/list.ting\");\nprint(l[\"median\"]([1]), pad_left);\n"}]}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":10,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":1,"character":11}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(hov.contains("median(xs)"), "{hov}");
+    assert!(hov.contains("sorted values"), "{hov}");
+    assert!(hov.contains("lib/list.ting"), "{hov}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":11,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":1,"character":28}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(hov.contains("\"result\":null"), "{hov}");
+
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
