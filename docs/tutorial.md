@@ -474,7 +474,8 @@ t["summary"]();
 ```
 
 `check_err(name, f, want)` asserts that calling `f` fails with a
-message containing `want`. A failed check keeps its name, and
+message containing `want`, and `check_type(name, v, "list")` that a
+value has the type you expect. A failed check keeps its name, and
 `check_eq` and `check_approx` say what they got and what they
 wanted, so the summary reads like a report rather than a stack
 trace. Plain `assert(cond, msg)` works too when a framework is more
@@ -507,7 +508,8 @@ Everything else ships in the same binary:
   anything, follows `import` to your local modules, and warns about
   a misspelt stdlib member, an unused binding (at the top level or
   inside a function), an unused parameter or a name that shadows a
-  builtin — wire it into a pre-commit hook. The playground's
+  builtin — wire it into a pre-commit hook, with `--strict` if the
+  warnings should block the commit too. The playground's
   check button does the same in the browser.
 - `ting --test tests/` runs every `.ting` file under a directory
   and prints `ok` or `FAIL` per file plus a summary — a test runner

@@ -41,7 +41,8 @@ directories (stdin with `-`), the formatter showing its changes with
 `--diff` and keeping a file's line endings, the checker following
 local imports and warning about misspelt stdlib members, unused
 bindings (top-level or local), unused parameters and names that
-shadow a builtin; `--doc NAME` for any builtin or stdlib function, `--doc
+shadow a builtin (`--strict` makes them fail the check); `--doc NAME`
+for any builtin or stdlib function, `--doc
 MODULE` for a module's members and `--doc` alone for the whole table
 of contents; and `--lsp`, a language server with diagnostics (the
 same warnings), hover, completion, signature help, formatting,

@@ -273,7 +273,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   that nothing in the block uses, same opt-out; a function parameter
   its body never names, same opt-out; a binding or parameter named
   after a builtin, which hides it); warnings never change the exit
-  status.
+  status unless `--strict` is given, which makes any warning exit 1
+  for hooks and CI that want them enforced.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
   emits Test Anything Protocol output for CI consumers; `-j N` runs
