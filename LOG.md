@@ -4066,3 +4066,19 @@ reproducible; piped input was checked by hand and takes the real
 path. Malformed lines are skipped loudly. Twelfth example; cookbook
 regenerated. Full gate green on both engines. Second stroke toward
 v2.33.0.
+
+---
+
+## 2026-09-03 — Iteration 275: --check warns too
+
+CI green on 274 across all jobs (API verdict). Milestone stroke 3:
+the checker and the editor now share one semantic check. The LSP's
+unknown-stdlib-member scan is exposed through lib.rs as
+check_warnings, which renders each finding with a new "warning"
+level in diag.rs (render grew a level word; "error" callers are
+untouched), and --check prints them to stderr after a clean check
+with the exit status unchanged — warnings are advice, and a
+pre-commit hook must not start failing on them. io test pins the
+message, the caret position and the exit code; reference bullet
+updated. Full gate green. Third stroke banked — v2.33.0 next tick
+if quiet.

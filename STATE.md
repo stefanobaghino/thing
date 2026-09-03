@@ -108,12 +108,11 @@ current orientation.
   cold here). The 264 milestone is complete.
 - 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
   reasoning in LOG.md.
-- 273: lib/json.ting; 274: pipeline example — milestone strokes
-  1–2; two toward v2.33.0.
-- Backlog (one per tick, in order): (3) `--check` reports the unknown-stdlib-member warning
-  (shared with the LSP), io test; (4) `--test --filter SUBSTR`, io
-  test; (5) health tick (bench, both fuzzers, distribution audit).
-  Release after ~3.
+- 273: lib/json.ting; 274: pipeline example; 275: --check warns —
+  milestone strokes 1–3; RELEASE v2.33.0 next tick if quiet.
+- Backlog after the release (in order): (4) `--test --filter
+  SUBSTR`, io test; (5) health tick (bench, both fuzzers,
+  distribution audit); then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
