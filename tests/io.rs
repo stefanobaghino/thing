@@ -580,6 +580,33 @@ fn repl_save_writes_a_runnable_script() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `:doc` alone prints the table of contents and `:doc MODULE` one
+/// module, as the CLI's --doc does.
+#[test]
+fn repl_doc_alone_lists_everything() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":doc\n:doc math\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.starts_with("builtins:\n"), "{stdout}");
+    assert!(stdout.contains("\nlib/list.ting:\n"), "{stdout}");
+    assert!(
+        stdout.contains("\nlib/math.ting:\n  clamp(x, lo, hi)"),
+        "{stdout}"
+    );
+    assert_eq!(out.status.code(), Some(0));
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

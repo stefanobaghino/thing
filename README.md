@@ -32,7 +32,8 @@ then the [language reference](docs/reference.md), the
 runnable examples, and the [changelog](CHANGELOG.md).
 
 The whole toolchain is the one binary. A REPL with meta-commands
-(`:help`, `:doc NAME`, `:vars`, `:load`, `:time`, `:fmt`, `:clear`);
+(`:help`, `:doc`, `:vars`, `:load`, `:time`, `:fmt`, `:history`, `:save`,
+`:clear`);
 `ting --test` running every file under a directory in its own process,
 in parallel with `-j`, with `--filter`, `--slow` and Test Anything
 Protocol output (`--tap`); `--check` and `--fmt` over files or

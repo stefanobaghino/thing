@@ -20,17 +20,19 @@ the reference engine.
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
-cancels), and forgives a missing final `;`. Seven meta-commands:
-`:help` lists every builtin with its doc line, `:doc NAME` explains
-one builtin or stdlib function (module, signature, comment), `:vars`
-lists the
-session's own bindings, `:load <file>` evaluates a file in the
-current session so its bindings stay available, `:time EXPR`
-evaluates a one-line chunk and prints the elapsed milliseconds,
-`:fmt` reprints the
-last evaluated chunk as the formatter would write it, and `:clear`
-resets the session. It has no built-in line editing or history (zero
-dependencies); wrap it with
+cancels), and forgives a missing final `;`. Nine meta-commands:
+`:help` lists every builtin with its doc line; `:doc NAME` explains
+one builtin or stdlib function (module, signature, comment), `:doc
+MODULE` lists a module's members and `:doc` alone the whole table of
+contents, as `--doc` does; `:vars` lists the session's own bindings;
+`:load <file>` evaluates a file in the current session so its
+bindings stay available; `:time EXPR` evaluates a one-line chunk and
+prints the elapsed milliseconds; `:fmt` reprints the last evaluated
+chunk as the formatter would write it; `:history` lists every chunk
+that ran without error, numbered; `:save <file>` writes those chunks
+as a script that replays the session; and `:clear` resets the
+session and the transcript. It has no built-in line editing or
+up-arrow recall (zero dependencies); wrap it with
 [rlwrap](https://github.com/hanslub42/rlwrap) — `rlwrap ting` — for
 both.
 

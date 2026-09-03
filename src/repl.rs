@@ -227,7 +227,7 @@ fn print_help() {
         say(&format!("{sig:width$}  {text}"));
     }
     say(
-        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :save <file> writes them as a script; :clear resets; ctrl-d exits)",
+        "(:doc NAME explains a builtin or stdlib function, :doc MODULE lists a module, :doc alone lists everything; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :save <file> writes them as a script; :clear resets; ctrl-d exits)",
     );
 }
 
@@ -316,6 +316,11 @@ fn run_inner() -> ExitCode {
                     say(&format!("     {rest}"));
                 }
             }
+            continue;
+        }
+        if buffer.is_empty() && line.trim() == ":doc" {
+            // The table of contents, as `ting --doc` prints it.
+            say(&doc_index(None).unwrap_or_default());
             continue;
         }
         if buffer.is_empty()

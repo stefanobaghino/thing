@@ -478,8 +478,10 @@ Everything else ships in the same binary:
   (builtin or stdlib), `:load somefile.ting` pulls a script's
   definitions into your session to poke at them, `:vars` shows what
   you have bound, `:time EXPR` says how long a line took, `:fmt`
-  reprints your last line the way the
-  formatter would write it, and `:clear` starts over.
+  reprints your last line the way the formatter would write it,
+  `:history` lists what you have run so far, `:save notes.ting`
+  writes it out as a script you can run again, and `:clear` starts
+  over.
 - `ting --check *.ting` reports syntax errors without running
   anything, follows `import` to your local modules, and warns about
   a misspelt stdlib member, an unused top-level binding or an unused

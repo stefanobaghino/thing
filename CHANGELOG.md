@@ -1,7 +1,8 @@
 # Changelog
 
 All notable changes to ting. Versions are git tags; binaries for
-Linux (x86-64, arm64), macOS and Windows are attached to each
+Linux (x86-64 and arm64, glibc and fully static musl), macOS and
+Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
 ## v2.61.0 (2026-09-03)
