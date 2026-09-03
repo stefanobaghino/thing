@@ -38,7 +38,8 @@ current orientation.
   green on CI.
 - v2.13.0 RELEASED and verified (33rd); darwin-arm64 cold-tested.
 - v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
-- Toward v2.15.0: list median + stats example dogfooding banked.
-  One more stroke, then release. Periodic health ticks when quiet.
+- Toward v2.15.0: median, stats dogfooding, REPL :clear banked.
+  Release next tick if quiet. (193 was a distribution audit — all
+  34 releases and the whole site verified healthy.)
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
