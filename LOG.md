@@ -7417,3 +7417,17 @@ strokes:
 
 Rejected: a warning for shadowing a stdlib member name (those are
 map keys, not bindings), a tenth act ahead of its cadence.
+
+---
+
+## 2026-09-03 — Iteration 449: retrospective act nine
+
+CI green on 448 (API verdict). Milestone stroke 1: "The ninth act:
+the loop's own house" in docs/retrospective.md, covering tags 80
+to 88 — STATE.md's drift and compaction and the front-door
+refreshes, the REPL's session and the :load bug, the editor's
+thirteen, CRLF and the local warning, the test and json modules,
+and the process notes (probes first, one chain, smoke before
+prose, two promised strokes that already existed). "Where it
+stands" now says eighty-eight tags. Docs guard green. Three
+strokes banked (445, 446, 449) — v2.68.0 next tick if quiet.
