@@ -4,6 +4,10 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.43.0 (2026-09-03)
+
+- LSP: workspace symbols across open documents.
+
 ## v2.42.0 (2026-09-03)
 
 - REPL: `:time EXPR` reports elapsed milliseconds.
