@@ -4,6 +4,11 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.41.0 (2026-09-03)
+
+- `lib/string.ting`: `levenshtein`.
+- Retrospective: a sixth act on the loop's rhythm.
+
 ## v2.40.0 (2026-09-03)
 
 - `ting --test --tap` emits Test Anything Protocol output with

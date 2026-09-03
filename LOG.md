@@ -4732,3 +4732,11 @@ with the expected asset counts (36 × 3, 14 × 4, 11 × 6), all six
 v2.40.0 download URLs resolve, all eight site resources answer 200
 and the retrospective page carries the sixth act. Nothing to fix.
 v2.41.0 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 313: v2.41.0
+
+levenshtein and the sixth act — the tail of the 305 milestone. CI
+green on 312 (API verdict). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.41.0 (62nd tag).
