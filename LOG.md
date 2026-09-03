@@ -7038,3 +7038,20 @@ collapses runs on the musl VM and the gnu reference engine;
 `--test selftest` passes 11/11 on each. CI and Pages green on the
 release commit. Eighty-five tags, eighty-four verified. Next:
 :load reports new bindings.
+
+---
+
+## 2026-09-03 — Iteration 429: :load reports what it added
+
+CI green on 428b (API verdict). Milestone stroke 2: after a
+successful `:load`, the REPL says "(loaded FILE: N new
+binding(s))", N being the difference in the session's bindings
+before and after — a file of definitions is no longer loaded in
+silence, and a file that only prints says it added nothing. A
+failed or incomplete load prints its diagnostic and no report. The
+427 io test now asserts the count for the two-binding file and
+that the broken file gets no report. Two false starts before any
+commit: an edit script missed a rustfmt-reflowed test anchor, and
+the first cut tested the outcome after the match had moved its
+message. Full gate green (229 tests). One stroke banked toward
+v2.65.0. Next: a failed import says where it looked.

@@ -83,10 +83,11 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.64.0 VERIFIED (85th tag; strokes 423, 424, 427; both aarch64
   archives executed here).
-- Backlog after the release (in order): (2) :load reports new
-  bindings, io test; (3) failed import says where it looked, io
+- 429: :load reports new bindings — one stroke banked toward
+  v2.65.0.
+- Backlog (in order): (3) failed import says where it looked, io
   test; (4) lib/list.ting transpose, selftests; (5) health tick +
-  audit.
+  audit; then replenish.
 - Tags: 85 (v2.64.0), 84 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
