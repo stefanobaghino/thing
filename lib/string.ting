@@ -129,3 +129,11 @@ fn words(s) {
   if cur != "" { push(out, cur); }
   return out;
 }
+
+# s cut to at most width characters, with suffix marking the cut
+# (the suffix counts toward the width). Shorter strings pass through.
+fn truncate(s, width, suffix) {
+  if len(s) <= width { return s; }
+  if len(suffix) >= width { return slice(suffix, 0, width); }
+  return slice(s, 0, width - len(suffix)) + suffix;
+}

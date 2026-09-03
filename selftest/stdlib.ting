@@ -206,3 +206,9 @@ assert(l["rotate"]([1, 2, 3, 4], -1) == [4, 1, 2, 3], "rotate right");
 assert(l["rotate"]([1, 2, 3], 3) == [1, 2, 3], "rotate full turn");
 assert(l["rotate"]([1, 2, 3], 7) == [2, 3, 1], "rotate wraps");
 assert(l["rotate"]([], 2) == [], "rotate empty");
+
+assert(s["truncate"]("hello world", 8, "...") == "hello...", "truncate");
+assert(s["truncate"]("hello", 8, "...") == "hello", "truncate short passes through");
+assert(s["truncate"]("hello", 5, "...") == "hello", "truncate exact fit");
+assert(s["truncate"]("hello world", 2, "...") == "..", "truncate suffix wider than width");
+assert(s["truncate"]("héllo wörld", 6, "…") == "héllo…", "truncate counts characters");
