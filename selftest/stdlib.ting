@@ -244,6 +244,10 @@ assert(l["interleave"]([], []) == [], "interleave empty");
 assert(l["frequencies"](["a", "b", "a"]) == {"a": 2, "b": 1}, "frequencies");
 assert(l["frequencies"]([]) == {}, "frequencies empty");
 assert(has(try(fn() { return l["frequencies"]([1]); }), "err"), "frequencies non-string fails");
+assert(l["mode"]([1, 2, 2, 3, 3, 3]) == 3, "mode");
+assert(l["mode"](["b", "a", "b", "a"]) == "b", "mode first to top wins ties");
+assert(l["mode"]([[1], [2], [1]]) == [1], "mode structural");
+assert(l["mode"]([]) == nil, "mode empty is nil");
 
 assert(s["indent"]("a\nb", "  ") == "  a\n  b", "indent");
 assert(s["indent"]("a\n\nb\n", "> ") == "> a\n\n> b\n", "indent keeps empty lines and trailing newline");

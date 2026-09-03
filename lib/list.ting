@@ -308,6 +308,30 @@ fn interleave(a, b) {
 # the identity; elements must be strings).
 fn frequencies(xs) { return count_by(xs, fn(x) { return x; }); }
 
+# The most frequent element by structural equality (any value type);
+# the first to reach the top count wins ties; nil for an empty list.
+fn mode(xs) {
+  let seen = [];
+  let counts = [];
+  let best = nil;
+  let best_n = 0;
+  for x in xs {
+    let i = find(seen, x);
+    if i == nil {
+      push(seen, x);
+      push(counts, 1);
+      i = len(seen) - 1;
+    } else {
+      counts[i] = counts[i] + 1;
+    }
+    if counts[i] > best_n {
+      best = x;
+      best_n = counts[i];
+    }
+  }
+  return best;
+}
+
 # Product of the elements (1 for an empty list).
 fn product(xs) { return reduce(xs, 1, fn(a, x) { return a * x; }); }
 
