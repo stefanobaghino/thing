@@ -17,6 +17,15 @@ fn pad_right(s, width, fill) {
   return s;
 }
 
+# s centred in width using fill on both sides; the extra character of
+# an odd gap goes on the right. fill must be a single character.
+fn center(s, width, fill) {
+  if len(fill) != 1 { fail("center: fill must be one character"); }
+  let gap = width - len(s);
+  if gap <= 0 { return s; }
+  return repeat(fill, gap / 2) + s + repeat(fill, gap - gap / 2);
+}
+
 fn lines(s) { return split(s, "\n"); }
 
 fn title(s) {

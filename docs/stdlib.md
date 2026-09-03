@@ -46,6 +46,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `repeat(s, n)` | `s` concatenated `n` times |
 | `pad_left(s, width, fill)` | prepends `fill` until at least `width` chars |
 | `pad_right(s, width, fill)` | appends `fill` until at least `width` chars |
+| `center(s, width, fill)` | `s` centred in `width` with `fill` on both sides (odd gap: extra on the right) |
 | `lines(s)` | split on `"\n"` |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
