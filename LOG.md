@@ -3749,3 +3749,19 @@ inspected here without execution, also needs only GLIBC_2.34. The
 v2.29.0 release notes now warn Linux users off it and point at
 v2.29.1. 50 releases (49 verified plus one publicly marked broken).
 Building resumes: milestone strokes 4 and 5 remain.
+
+---
+
+## 2026-09-03 — Iteration 260: crash-fuzzer audit
+
+CI green on 259c (API verdict). Milestone stroke 4: the token-soup
+crash fuzzer had 7 builtins in its table; 26 pure ones never
+appeared (abs through upper, including every higher-order builtin).
+All 26 are in now, plus a closure literal token so filter/map/
+reduce/sort_by get something callable. The driver also runs every
+parsed program through the bytecode compiler and VM after the
+tree-walker — errors fine, unwinding not — so the VM gets the same
+panic hunt the reference engine always had. I/O, blocking (input
+would hang the test) and clock builtins stay out on purpose. Green
+on the first run; rustfmt reflowed the table. Full gate green.
+First stroke toward v2.30.0.

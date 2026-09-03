@@ -96,9 +96,12 @@ current orientation.
   test failed; release notes warn). v2.29.1 (50th) RELEASED and
   verified: Linux builds on ubuntu-22.04(-arm), GLIBC_2.34, guard
   step green, aarch64 asset executed cold here.
-- Backlog (one per tick, in order): (4) crash-fuzzer (tests/fuzz.rs)
-  builtin-coverage audit; (5) bench/stdlib.ting + BASELINE row with
-  host note; then replenish.
+- 260: crash fuzzer covers all pure builtins + the VM path —
+  milestone stroke 4; first toward v2.30.0.
+- Backlog (one per tick, in order): (5) bench/stdlib.ting + BASELINE
+  row with host note; one more stroke (candidate: Linux musl static
+  builds as extra assets, since the glibc episode showed the C
+  library is a dependency); then replenish.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
