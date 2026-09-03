@@ -27,39 +27,46 @@ pub enum Outcome {
 /// `;` appended (so `let x = 1` works), then reports Incomplete to request
 /// another line.
 pub fn eval_chunk<W: Write>(interp: &mut Interpreter<W>, src: &str) -> Outcome {
+    eval_chunk_at(interp, "repl", src)
+}
+
+/// `eval_chunk` with the name diagnostics are rendered under: "repl"
+/// for a typed chunk, the file's path for a `:load`.
+pub fn eval_chunk_at<W: Write>(interp: &mut Interpreter<W>, path: &str, src: &str) -> Outcome {
     let tokens = match lexer::lex(src) {
         Ok(t) => t,
-        Err(e) => return Outcome::Error(diag::render("repl", src, &e.message, e.span)),
+        Err(e) => return Outcome::Error(diag::render(path, src, &e.message, e.span)),
     };
     if let Ok(expr) = parser::parse_expr(&tokens) {
         return match interp.eval(&expr) {
             Ok(Value::Nil) => Outcome::Unit,
             Ok(v) => Outcome::Value(render(&v)),
-            Err(e) => Outcome::Error(e.render("repl", src)),
+            Err(e) => Outcome::Error(e.render(path, src)),
         };
     }
     match parser::parse_program(&tokens) {
-        Ok(prog) => run_program(interp, src, &prog),
+        Ok(prog) => run_program(interp, path, src, &prog),
         Err(e) if e.message.ends_with("found end of input") => {
             if let Ok(t2) = lexer::lex(&format!("{src};"))
                 && let Ok(prog) = parser::parse_program(&t2)
             {
-                return run_program(interp, src, &prog);
+                return run_program(interp, path, src, &prog);
             }
             Outcome::Incomplete
         }
-        Err(e) => Outcome::Error(diag::render("repl", src, &e.message, e.span)),
+        Err(e) => Outcome::Error(diag::render(path, src, &e.message, e.span)),
     }
 }
 
 fn run_program<W: Write>(
     interp: &mut Interpreter<W>,
+    path: &str,
     src: &str,
     prog: &[crate::ast::Stmt],
 ) -> Outcome {
     match interp.run(prog) {
         Ok(()) => Outcome::Unit,
-        Err(e) => Outcome::Error(e.render("repl", src)),
+        Err(e) => Outcome::Error(e.render(path, src)),
     }
 }
 
@@ -370,13 +377,25 @@ fn run_inner() -> ExitCode {
         if buffer.is_empty()
             && let Some(path) = line.trim().strip_prefix(":load ")
         {
-            match std::fs::read_to_string(path.trim()) {
-                Ok(src) => match eval_chunk(&mut interp, &src) {
-                    Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
-                    Outcome::Unit => {}
-                    Outcome::Value(v) => say(&v.to_string()),
-                    Outcome::Error(msg) => eprintln!("{msg}"),
-                },
+            let path = path.trim();
+            match std::fs::read_to_string(path) {
+                Ok(src) => {
+                    // The loaded file's relative imports resolve against
+                    // its own directory, as they would under `ting FILE`;
+                    // the session's base comes back afterwards.
+                    let saved = interp.base_dir();
+                    if let Some(dir) = std::path::Path::new(path).parent() {
+                        interp.set_base_dir(dir.to_path_buf());
+                    }
+                    let outcome = eval_chunk_at(&mut interp, path, &src);
+                    interp.set_base_dir(saved);
+                    match outcome {
+                        Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
+                        Outcome::Unit => {}
+                        Outcome::Value(v) => say(&v.to_string()),
+                        Outcome::Error(msg) => eprintln!("{msg}"),
+                    }
+                }
                 Err(e) => eprintln!("ting: cannot read {path}: {e}"),
             }
             continue;

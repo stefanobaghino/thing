@@ -259,6 +259,12 @@ impl<W: Write> Interpreter<W> {
         self.dir_stack[0] = dir;
     }
 
+    /// The current base directory (see set_base_dir), so a caller can
+    /// change it for a while and put it back.
+    pub fn base_dir(&self) -> std::path::PathBuf {
+        self.dir_stack[0].clone()
+    }
+
     /// Consume the interpreter, handing back its output writer (used by
     /// tests to inspect what a session printed).
     #[cfg(test)]

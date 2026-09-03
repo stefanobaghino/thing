@@ -607,6 +607,50 @@ fn repl_doc_alone_lists_everything() {
     assert_eq!(out.status.code(), Some(0));
 }
 
+/// `:load FILE` resolves the file's relative imports against the
+/// file's directory (like `ting FILE`) and names the file in its
+/// diagnostics, not "repl".
+#[test]
+fn repl_load_uses_the_files_directory_and_name() {
+    use std::io::Write as _;
+    let dir = std::env::temp_dir().join(format!("ting-repl-load-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("m.ting"), "fn hi() { return \"hi\"; }\n").unwrap();
+    std::fs::write(
+        dir.join("main.ting"),
+        "let m = import(\"./m.ting\");\nlet greeting = m[\"hi\"]();\n",
+    )
+    .unwrap();
+    std::fs::write(dir.join("bad.ting"), "let y = nosuch;\n").unwrap();
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    let script = format!(
+        ":load {main}\ngreeting\n:load {bad}\n",
+        main = dir.join("main.ting").display(),
+        bad = dir.join("bad.ting").display()
+    );
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(script.as_bytes())
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stdout.contains("\"hi\"\n"), "{stdout}\n{stderr}");
+    assert!(
+        stderr.contains("bad.ting:1:9: error: undefined variable 'nosuch'"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("repl:"), "{stderr}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
