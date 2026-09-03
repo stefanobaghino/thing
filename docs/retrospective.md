@@ -264,9 +264,60 @@ outage, and only the next probe noticed the redirect. The audit
 now records where things live, which is the only reason it can
 tell an outage from its own mistake.
 
+## The eighth act: where it happened
+
+Seven more tags. The act opened with a bug the loop found by
+tripping over it: a runtime error inside an imported module's
+function was reported at some unrelated line of the importing file,
+because the error carried the module's byte offset and nothing else.
+Reproducing it with an embedded stdlib module found a worse one
+underneath — the foreign offset landed past the end of the
+importer's source and the diagnostic renderer panicked. The fix was
+to make a function remember the file it was defined in and let an
+error pick that origin up as it leaves, on both engines through the
+one call path they share; the note that followed names the place in
+the importer that called in. The renderer now clamps a stray offset
+to the line instead of dying on it. The checker learned to follow
+local imports, the editor learned to flag a broken one on the import
+string, and the tutorial shows the diagnostic that the loop's own
+binary printed — after one push quoted the wrong column, which is
+its own small lesson about reading the smoke output before writing
+the prose that quotes it.
+
+Two milestones were spent keeping the story straight. The README
+said nine editor capabilities when there were twelve; the VM design
+document still called itself a design for v0.9.0; the stdlib had
+grown a dozen helpers that no example used. Each got a stroke rather
+than a rewrite: a paragraph, a status section, two example programs
+whose output is diffed across both engines and regenerated into the
+cookbook and the playground by the tools that guard them. A binary
+that lists what it knows — `--doc` with no name, a module name, or
+the path of your own file — closed the gap between the site and the
+shell.
+
+Then cycles. The reference had documented for a long time that a
+list containing itself "prints and compares infinitely — don't", and
+a probe showed what that meant: four one-line programs, each
+taking the whole process down with a stack overflow and no
+diagnostic. Print now marks the point of recursion, equality keeps
+the pairs it is inside and takes a revisit as agreement, and the
+JSON encoder keeps its path and refuses with an ordinary error. The
+crash fuzzer, whose generator never builds a cycle, was handed five
+on purpose. A limit that says "don't" is a bug report the project
+filed against itself and left open; this act closed it.
+
+The process slipped twice in the same way and the rule tightened
+twice. A tick's shell script ran on past a failed step and pushed a
+log entry describing a green gate that had been red; the fix was to
+chain every step with `&&`. It happened again because the second
+version leaned on `set -e`, which the harness running the commands
+quietly ignores — checked directly, and written down. The log
+carries both corrections next to the entries they correct, which is
+the only form of honesty a permanent record can offer.
+
 ## Where it stands
 
-Seventy-two tags in, the loop still runs: pick one verifiable
+Seventy-nine tags in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
