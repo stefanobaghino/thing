@@ -98,3 +98,12 @@ fn update(m, k, f) {
   if !has(m, k) { fail("update: missing key " + k); }
   return with(m, k, f(m[k]));
 }
+
+# The n entries with the largest values as [key, value] pairs, largest
+# first; ties keep key order. Values must be numbers.
+fn top(m, n) {
+  if n < 0 { fail("top: negative count"); }
+  let ranked = sort_by(items(m), fn(p) { return 0 - p[1]; });
+  if n > len(ranked) { n = len(ranked); }
+  return slice(ranked, 0, n);
+}

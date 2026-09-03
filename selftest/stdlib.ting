@@ -245,3 +245,9 @@ assert(s["indent"]("a\nb", "  ") == "  a\n  b", "indent");
 assert(s["indent"]("a\n\nb\n", "> ") == "> a\n\n> b\n", "indent keeps empty lines and trailing newline");
 assert(s["indent"]("", "  ") == "", "indent empty");
 assert(s["indent"]("x", "") == "x", "indent empty prefix");
+
+assert(m["top"]({"a": 2, "b": 5, "c": 3}, 2) == [["b", 5], ["c", 3]], "top");
+assert(m["top"]({"a": 2, "b": 2}, 1) == [["a", 2]], "top ties keep key order");
+assert(m["top"]({"a": 1}, 5) == [["a", 1]], "top past size");
+assert(m["top"]({}, 3) == [], "top empty");
+assert(has(try(fn() { return m["top"]({"a": 1}, -1); }), "err"), "top negative fails");

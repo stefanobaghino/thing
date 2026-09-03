@@ -89,6 +89,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `invert(m)` | keys and values swapped (values must be strings; last key wins on duplicates) |
 | `with(m, k, v)` | a fresh map with `k` set to `v` |
 | `update(m, k, f)` | a fresh map with `f` applied to the value at `k` (must exist) |
+| `top(m, n)` | the `n` entries with the largest numeric values as `[key, value]` pairs |
 
 ## lib/math.ting
 
