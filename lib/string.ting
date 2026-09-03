@@ -207,3 +207,25 @@ fn wrap(s, width) {
   if cur != "" { push(lines, cur); }
   return join(lines, "\n");
 }
+
+# Edit distance between two strings (insertions, deletions and
+# substitutions each cost one; plain Levenshtein — a transposition
+# counts two). Character-based, so accented text measures correctly.
+fn levenshtein(a, b) {
+  let ca = chars(a);
+  let cb = chars(b);
+  let prev = range(len(cb) + 1);
+  for i in range(len(ca)) {
+    let cur = [i + 1];
+    for j in range(len(cb)) {
+      let cost = 1;
+      if ca[i] == cb[j] { cost = 0; }
+      let best = prev[j] + cost;
+      if prev[j + 1] + 1 < best { best = prev[j + 1] + 1; }
+      if cur[j] + 1 < best { best = cur[j] + 1; }
+      push(cur, best);
+    }
+    prev = cur;
+  }
+  return prev[len(cb)];
+}

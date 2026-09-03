@@ -327,3 +327,9 @@ assert(l["binary_search"]([], 1) == nil, "binary_search empty");
 assert(l["binary_search"](["ant", "bee", "cow"], "bee") == 1, "binary_search strings");
 let sorted = range(0, 1000, 3);
 assert(l["binary_search"](sorted, 999) == 333 && l["binary_search"](sorted, 998) == nil, "binary_search large");
+
+assert(s["levenshtein"]("kitten", "sitting") == 3, "levenshtein classic");
+assert(s["levenshtein"]("", "abc") == 3 && s["levenshtein"]("abc", "") == 3, "levenshtein empty side");
+assert(s["levenshtein"]("same", "same") == 0, "levenshtein identical");
+assert(s["levenshtein"]("ab", "ba") == 2, "levenshtein transposition counts two");
+assert(s["levenshtein"]("héllo", "hello") == 1, "levenshtein counts characters");
