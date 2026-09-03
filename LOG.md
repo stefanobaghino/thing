@@ -6598,3 +6598,12 @@ tag count, and the standing rules — each with the LOG iteration
 that produced it — under a one-line pointer to LOG.md for
 everything older. 242 lines became about 100. Docs guard green.
 Three strokes banked (401, 402, 405) — v2.60.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 406: v2.60.0
+
+Hover comments for user functions, map_keys, and the loop's own
+STATE.md put in order. CI green on 405 (API verdict). Full gate
+green, stdlib selftests pass on both engines. Tagging v2.60.0
+(81st tag).

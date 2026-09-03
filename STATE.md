@@ -58,13 +58,15 @@ History: every iteration is in LOG.md (append-only). This section
 holds only the current milestone and the standing rules.
 
 - 404: milestone "the loop's own house" (v2.60–v2.61), reasoning in
-  LOG.md. 405: STATE.md refreshed and compacted — three strokes
-  banked (401, 402, 405); RELEASE v2.60.0 next tick if quiet.
+  LOG.md. 405: STATE.md refreshed and compacted. v2.60.0 TAGGED
+  (81st tag; strokes 401, 402, 405): verify next tick — six assets,
+  glibc guard, cold-execute an aarch64 archive here (hover comment
+  over raw JSON-RPC, map_keys, selftests).
 - Backlog after the release (in order): (2) tutorial "Beyond
   scripts" current; (3) LSP completion offers user fns, protocol
   test; (4) lib/list.ting flatten_deep + a comment on flatten,
   selftests; (5) health tick + audit; then replenish.
-- Tags: 80 (v2.59.0), 79 verified; v2.29.0 is publicly marked broken
+- Tags: 81 (v2.60.0), 79 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
