@@ -161,10 +161,11 @@ holds only the current milestone and the standing rules.
 - 503: the key written twice; 504: what can never run.
 - v2.79.0 VERIFIED (100th tag; strokes 503, 504; both aarch64
   archives executed here).
-- 506: the tenth act written, "Where it stands" current — one stroke
-  banked toward v2.80.0.
-- Backlog (one per tick, in order): (1) docs + selftests for the two
-  new checks, then RELEASE v2.80.0; (2) health tick + audit.
+- 506: the tenth act written, "Where it stands" current; 507: both
+  new checks tested from inside ting — two strokes banked toward
+  v2.80.0.
+- Backlog (one per tick, in order): (1) RELEASE v2.80.0 (strokes 506,
+  507); (2) health tick + audit.
 - Tags: 100 (v2.79.0), 99 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
@@ -188,9 +189,11 @@ Standing rules (each from a slip; the LOG entry named has the story):
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  three warnings, guarded by a test since 499, all on purpose: selftest/edge.ting shadows `len`
-  (451), selftest/errors.ting reads the unbound `totl` (495) and
-  selftest/functions.ting calls `add(1)` to prove arity (498).
+  five warnings, guarded by a test since 499, all on purpose:
+  edge.ting shadows `len` (451), repeats a map key and writes a
+  statement after a return (507), errors.ting reads the unbound
+  `totl` (495) and functions.ting calls `add(1)` to prove arity
+  (498). A file's warnings come in line order (507).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
