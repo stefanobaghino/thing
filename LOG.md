@@ -4193,3 +4193,16 @@ alignment, where the transposition costs one, and the right name
 wins. A key unlike any export gets the warning but no action.
 Protocol test covers the fix, an unrelated range, and the far name.
 Full gate green. Second stroke toward v2.34.0 (with 277's filter).
+
+---
+
+## 2026-09-03 — Iteration 281: merge_in
+
+CI and Pages green on 280 (API verdicts). Milestone stroke 2:
+lib/json.ting gains merge_in(a, b), the config-overlay operation:
+maps merge recursively, anything else in b replaces a's value
+(lists included — appending would surprise more often than it
+helps), and the result is fresh so neither input moves. Five
+assertions incl. the untouched-inputs check, stdlib.md row. Full
+gate green on both engines. Third stroke banked — v2.34.0 next
+tick if quiet.
