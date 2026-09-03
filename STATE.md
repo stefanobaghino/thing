@@ -37,6 +37,8 @@ current orientation.
 - Post-182: fuzz generator emits find + stepped range; clippy fix
   green on CI.
 - v2.13.0 RELEASED and verified (33rd); darwin-arm64 cold-tested.
-- v2.14.0 tagged; release run in flight — verify assets next wake.
+- v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
+- Next: small strokes toward v2.15.0; periodic health ticks when
+  quiet.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

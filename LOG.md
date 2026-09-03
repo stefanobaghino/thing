@@ -2669,3 +2669,11 @@ Third stroke banked — v2.14.0 next tick if quiet.
 REPL-and-docs release: :vars, list mean, tutorial stdlib chapter.
 Full gate green, stdlib selftests pass on the reference engine.
 Tagging v2.14.0 (34th release).
+
+---
+
+## 2026-09-03 — Iteration 190b: v2.14.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.14.0,
+mean([1,2,3,4]) = 2.5, :vars lists the session binding. 34
+releases, all verified.
