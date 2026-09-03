@@ -6046,3 +6046,20 @@ attempt ran from the download directory and failed to find the
 suite — a path slip, rerun from the repo). CI and Pages green on
 the release commit. Seventy-six tags, seventy-five verified. Next:
 the playground Check button.
+
+---
+
+## 2026-09-03 — Iteration 379: playground check button
+
+CI green on 378b (API verdict). Milestone stroke 3: a `ting_check`
+export in the hand-rolled wasm ABI — the checker then the warnings,
+"no problems found" when clean, the rendered error with 0 when the
+source does not compile — and a "check" button in the playground
+that posts a third worker mode and shows the result in the output
+pane with a clean / warnings / error status. The export has a unit
+test driving the ABI as the JS does (clean, unused binding,
+syntax error); the JS itself is untested here, as the run and fmt
+buttons always were — Pages builds the wasm and the next audit
+tick presses the button by fetching the page and grepping the
+mode. Full gate green (219 tests). One stroke banked toward
+v2.56.0. Next: chunk_by.
