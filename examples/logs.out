@@ -1,0 +1,4 @@
+skipping malformed line: INFO  x GET /broken
+by level: {"ERROR": 1, "INFO": 4, "WARN": 1}
+3-point moving average: [41, 42, 106, 82]
+slow: ["/search", "/login"]

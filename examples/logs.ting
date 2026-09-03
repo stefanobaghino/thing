@@ -1,0 +1,33 @@
+# Summarising a log: tally lines by level with count_by, smooth the
+# latencies with a sliding window, validate fields with is_digit.
+
+let li = import("../lib/list.ting");
+let st = import("../lib/string.ting");
+
+let lines = [];
+push(lines, "INFO  12 GET /");
+push(lines, "INFO  18 GET /docs");
+push(lines, "WARN  95 GET /search");
+push(lines, "INFO  15 GET /");
+push(lines, "ERROR 210 POST /login");
+push(lines, "INFO  x GET /broken");
+push(lines, "INFO  22 GET /about");
+
+let parsed = [];
+for line in lines {
+  let fields = filter(split(line, " "), fn(f) { return f != ""; });
+  if !st["is_digit"](fields[1]) {
+    print("skipping malformed line:", line);
+    continue;
+  }
+  push(parsed, {"level": fields[0], "ms": int(fields[1]), "path": fields[3]});
+}
+
+print("by level:", li["count_by"](parsed, fn(e) { return e["level"]; }));
+
+let latencies = map(parsed, fn(e) { return e["ms"]; });
+let smoothed = map(li["window"](latencies, 3), fn(w) { return li["mean"](w); });
+print("3-point moving average:", map(smoothed, fn(x) { return int(x); }));
+
+let slow = filter(parsed, fn(e) { return e["ms"] >= 90; });
+print("slow:", map(slow, fn(e) { return e["path"]; }));
