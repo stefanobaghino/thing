@@ -144,8 +144,9 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - v2.76.0 VERIFIED (97th tag; strokes 490, 491; both aarch64 archives
   executed here).
-- Backlog (one per tick, in order): (1) health tick + audit — then
-  replenishment.
+- 493: health tick + audit green — milestone "the nearest name"
+  complete.
+- Backlog: empty — next tick is replenishment.
 - Tags: 97 (v2.76.0), 96 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

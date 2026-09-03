@@ -8214,3 +8214,21 @@ commit (API verdicts). Cold-verified here: both aarch64 Linux
 archives downloaded fresh, unpacked and run — `-V` reports 2.76.0,
 a transposed key names the right one identically on both engines,
 and `--lps` points at `--lsp`. 97th tag. Next: health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 493: health tick + audit
+
+CI green on the v2.76.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline; fib and lists keep
+their wide margins for the VM, strings ran 15% ahead of eval this
+time and json and maps came out level — timings on this host are
+weather, checksums are the verdict. Fuzz: 50000 differential cases
+(seed 20260903492), 20000 formatter cases (seed 492, LF and CRLF)
+and the crash fuzzer with its cyclic case all pass in release.
+Distribution: 97 releases with the expected asset counts (36 x 3,
+14 x 4, 47 x 6) and all six v2.76.0 download URLs resolve. Site:
+all nine resources answer 200, the changelog leads with v2.76.0 and
+the tutorial serves the suggestions paragraph. Nothing to fix. The
+"the nearest name" milestone is complete. Backlog empty: next tick
+is replenishment.
