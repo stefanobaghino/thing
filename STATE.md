@@ -82,10 +82,10 @@ current orientation.
   executed cold on this host, both engines.
 - v2.25.0 RELEASED and verified (45th); aarch64-linux asset
   executed cold on this host, both engines.
-- 242: LSP hover; 243: LSP signature help; 244: frequencies — three
-  strokes banked; RELEASE v2.26.0 next tick if quiet.
-- Backlog after the release: distribution audit; tutorial mention
-  of the editor's stdlib awareness (Beyond scripts); candidates:
+- v2.26.0 TAGGED (46th release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run succeeded.
+- Backlog after verification: tutorial mention of the editor's
+  stdlib awareness (Beyond scripts); distribution audit; candidates:
   lib/map.ting top(m, n) (largest values), lib/string.ting
   indent(s, prefix).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

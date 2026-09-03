@@ -3468,3 +3468,12 @@ count_by with the identity key: the word-count idiom in one call,
 inheriting count_by's string-key rule (non-string elements fail
 loudly, pinned). Three assertions, stdlib.md row. Full gate green
 on both engines. Third stroke banked — v2.26.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 245: v2.26.0
+
+Editor-side stdlib awareness (hover, signature help, documented
+completion) and frequencies. CI green on 244 (API verdict). Full
+gate green, stdlib selftests pass on the reference engine. Tagging
+v2.26.0 (46th release).

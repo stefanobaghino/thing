@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.26.0 (2026-09-03)
+
+- LSP: hover and signature help work for stdlib functions called
+  through an imported module map (`l["median"](...)`), showing the
+  signature and the function's comment; completion items carry the
+  same comment.
+- `lib/list.ting`: `frequencies`.
+
 ## v2.25.0 (2026-09-03)
 
 - LSP: completion offers the functions of every stdlib module the
