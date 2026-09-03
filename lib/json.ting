@@ -79,3 +79,21 @@ fn merge_in(a, b) {
   }
   return out;
 }
+
+# The differences between two values as [path, left, right] triples
+# over the union of both sides' leaf paths, a's paths first; a path
+# absent on one side reads as nil there.
+fn diff(a, b) {
+  let seen = paths(a);
+  let all = slice(seen, 0, len(seen));
+  for p in paths(b) {
+    if !contains(seen, p) { push(all, p); }
+  }
+  let out = [];
+  for p in all {
+    let l = get_in(a, p);
+    let r = get_in(b, p);
+    if l != r { push(out, [p, l, r]); }
+  }
+  return out;
+}

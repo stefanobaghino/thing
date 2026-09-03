@@ -128,6 +128,7 @@ index lists.
 | `set_in(v, path, x)` | a fresh value with `x` at `path` (copies along the path; missing map keys created) |
 | `paths(v)` | every path to a leaf, depth first, keys sorted |
 | `merge_in(a, b)` | deep merge: maps recurse, anything else in `b` replaces `a`'s value |
+| `diff(a, b)` | `[path, left, right]` for every leaf path where the two differ (absent reads as `nil`) |
 
 ## lib/test.ting
 
