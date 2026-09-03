@@ -188,6 +188,11 @@ assert(s["is_alpha"]("héllo"), "is_alpha accented");
 assert(s["is_alpha"]("Ωmega"), "is_alpha greek");
 assert(!s["is_alpha"]("h3llo"), "is_alpha digit");
 assert(!s["is_alpha"]("a b"), "is_alpha space");
+assert(s["slug"]("Hello, World!") == "hello-world", "slug");
+assert(s["slug"]("  --Ting  v2.53.0 -- ") == "ting-v2-53-0", "slug collapses and trims");
+assert(s["slug"]("Crème Brûlée") == "crème-brûlée", "slug keeps accented letters");
+assert(s["slug"]("!!!") == "", "slug nothing left");
+assert(s["slug"]("") == "", "slug empty");
 assert(!s["is_alpha"](""), "is_alpha empty");
 
 assert(l["sum_by"](["a", "bb", "ccc"], fn(w) { return len(w); }) == 6, "sum_by");

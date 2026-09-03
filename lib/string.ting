@@ -130,6 +130,25 @@ fn words(s) {
   return out;
 }
 
+# A URL-friendly form of s: lowercased, every run of characters that
+# is neither a digit nor a cased letter collapsed to one dash, dashes
+# trimmed from both ends ("" when nothing is left). Accented letters
+# stay as they are, lowercased.
+fn slug(s) {
+  let out = "";
+  let pending = false;
+  for c in lower(s) {
+    if is_digit(c) || is_alpha(c) {
+      if pending && out != "" { out = out + "-"; }
+      pending = false;
+      out = out + c;
+    } else {
+      pending = true;
+    }
+  }
+  return out;
+}
+
 # s cut to at most width characters, with suffix marking the cut
 # (the suffix counts toward the width). Shorter strings pass through.
 fn truncate(s, width, suffix) {

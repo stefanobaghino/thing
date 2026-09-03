@@ -73,6 +73,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `levenshtein(a, b)` | edit distance (insert, delete, substitute each cost one) |
 | `lines(s)` | split on `"\n"` |
 | `words(s)` | whitespace-separated words, no empties |
+| `slug(s)` | lowercased, non-alphanumeric runs collapsed to one dash, dashes trimmed |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |
