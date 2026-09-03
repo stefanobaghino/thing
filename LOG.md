@@ -7194,3 +7194,16 @@ bench) was clean on the first scan, so no source changed. io test
 and protocol test (severity 2, range on the name). Full gate green
 (233 tests). Two strokes banked toward v2.66.0 (435, 436). Next:
 the docs sentences, then the release.
+
+---
+
+## 2026-09-03 — Iteration 437: the small print, written down
+
+CI green on 436 (API verdict). Milestone stroke 3: the reference's
+--fmt bullet says the formatter keeps the file's line endings and
+its --check bullet and LSP bullet list the fourth warning; the
+README, the tutorial's closing chapter and the editor README say
+"unused bindings, top-level or local"; STATE.md's shape line
+counts four warnings and notes CRLF. Tutorial and docs guards
+green. Three strokes banked (435, 436, 437) — v2.66.0 next tick if
+quiet.
