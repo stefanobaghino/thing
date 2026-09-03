@@ -7887,3 +7887,16 @@ states what the three exit codes mean; the README's quick-start
 uses -h; the binary's --help ends with the same exit-status line.
 Tutorial, docs and io guards green. Two strokes banked toward
 v2.73.0 (473, 474). Next: take_while and drop_while.
+
+---
+
+## 2026-09-03 — Iteration 475: take_while and drop_while
+
+CI and Pages green on 474 (API verdicts). Milestone stroke 4:
+`take_while(xs, pred)` and `drop_while(xs, pred)` in lib/list.ting
+— the longest prefix satisfying the predicate, and everything
+after it — beside take and drop, which count instead. Four
+selftests (a split, empty input, an empty prefix), a shared
+stdlib.md row, the count to 120. Selftests pass on both engines;
+full gate green (241 tests). Three strokes banked (473, 474, 475)
+— v2.73.0 next tick if quiet.
