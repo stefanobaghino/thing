@@ -4214,3 +4214,15 @@ tick if quiet.
 LSP quickfix, --test --filter, merge_in. CI green on 281 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.34.0 (55th tag).
+
+---
+
+## 2026-09-03 — Iteration 282b: v2.34.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.34.0`, `--test --filter` narrows a directory to one file, and
+merge_in deep-merges identically on both engines. Site: all
+resources 200, changelog shows 2.34.0, stdlib page lists merge_in.
+55 tags, 54 verified.
