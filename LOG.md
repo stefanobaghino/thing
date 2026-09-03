@@ -7341,3 +7341,17 @@ prints the same three lines on the musl VM and the gnu reference
 engine; `--test selftest` passes 11/11 on each. CI and Pages green
 on the release commit. Eighty-eight tags, eighty-seven verified.
 Next: the LSP formatting edit's end position.
+
+---
+
+## 2026-09-03 — Iteration 445: the formatting edit's end
+
+CI green on 444b (API verdict). Milestone stroke 3: the LSP's
+whole-document formatting edit now ends at the document's real
+last position — the line and character of its final byte, from
+the same position helper every other range uses — instead of one
+line past the end, which the split count produced and every client
+quietly clamped. Protocol test: a two-line document with a
+trailing newline ends at line 2 character 0, one without ends at
+the last line's length. Full gate green (234 tests). One stroke
+banked toward v2.68.0. Next: the tutorial's JSON chapter.
