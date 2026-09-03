@@ -7055,3 +7055,17 @@ commit: an edit script missed a rustfmt-reflowed test anchor, and
 the first cut tested the outcome after the match had moved its
 message. Full gate green (229 tests). One stroke banked toward
 v2.65.0. Next: a failed import says where it looked.
+
+---
+
+## 2026-09-03 — Iteration 430: a failed import says where it looked
+
+CI green on 429 (API verdict). Milestone stroke 3: "cannot import
+X: No such file or directory" becomes "cannot import X: no file at
+RESOLVED (the OS error), and no embedded module of that name" —
+the path as resolved against the importing file's directory, so a
+wrong `../` or a missing sibling shows itself, and the second
+clause says the stdlib fallback was tried too. Both engines share
+import_module. io test from a subdirectory with a `../` path on
+both engines. Full gate green (230 tests). Two strokes banked
+toward v2.65.0 (429, 430). Next: transpose.
