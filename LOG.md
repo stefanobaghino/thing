@@ -4136,3 +4136,41 @@ one tag too many ("52 releases" at 263b should have read 51; v2.33.0
 is the 54th tag, not the 55th) — the audit's count is the truth,
 and STATE.md is fixed. Nothing else to fix. The 272 milestone is
 complete; next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 279: replenishment — milestone "polish the loop's tools"
+
+CI green on 278 (API verdict). Candidate (c) from STATE — hanging
+map literals in the formatter — was checked first and already
+works: the brace-depth rule from before 221 covers `{` in
+expression position, so a nested map/list literal formats as
+expected; retired without work. The 272 milestone showed that the
+most reused pieces are the editor server, the test module and the
+json module, so this milestone polishes exactly those, five
+strokes:
+
+1. LSP code action: a quickfix for the unknown-member warning that
+   replaces the key with the nearest export (Levenshtein distance
+   over the module's exports, offered only when the distance is
+   small). Needs codeActionProvider in the capabilities and a
+   textDocument/codeAction handler; protocol test for the fix and
+   for a name too far from anything.
+2. lib/json.ting merge_in(a, b): recursive map merge where b wins
+   on leaves and both sides being maps merges deeper; lists and
+   scalars are replaced. Selftests.
+3. REPL `:doc NAME`: prints a builtin's signature and doc line, or
+   for a stdlib function its module, signature and leading comment
+   (searching every embedded module), so the REPL answers "what
+   does this do" without leaving it. Pipe test.
+4. lib/test.ting check_approx(name, got, want, eps) for floats,
+   with the failure message showing the difference. Selftest in
+   selftest/testlib.ting.
+5. Health tick + distribution audit (the count correction from 278
+   makes an early re-audit cheap insurance).
+
+Rejected: REPL `:test` (the runner is a shell command; a REPL wrapper
+adds nothing), and a Levenshtein-based "did you mean" for *builtin*
+names in the checker (unknown identifiers are runtime errors in
+ting; the checker has no symbol table and building one is a bigger
+milestone than a quickfix).

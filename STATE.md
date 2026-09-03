@@ -113,12 +113,15 @@ current orientation.
   executed cold here with the bundled json module.
 - 277: --test --filter (first toward v2.34.0); 278: health tick
   green — the 272 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
-  REPL `:test` / `:check` meta-commands; (b) lib/json.ting merge_in
-  (deep merge); (c) `--fmt` for multi-line map literals (hanging `{`
-  in expression position — check whether the 221 rule covers it);
-  (d) a sixth retrospective act is NOT due yet; (e) LSP: code
-  action "fix spelling" for the member warning (nearest export).
+- 279: replenishment — milestone "polish the loop's tools"
+  (v2.34–v2.36), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) LSP quickfix code action for
+  the unknown-member warning (nearest export by edit distance),
+  capability + handler + protocol test; (2) lib/json.ting
+  merge_in(a, b) deep merge, selftests; (3) REPL `:doc NAME` for
+  builtins and stdlib functions, pipe test; (4) lib/test.ting
+  check_approx(name, got, want, eps), selftest; (5) health tick +
+  distribution audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
