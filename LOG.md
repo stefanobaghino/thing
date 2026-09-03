@@ -6063,3 +6063,18 @@ buttons always were — Pages builds the wasm and the next audit
 tick presses the button by fetching the page and grepping the
 mode. Full gate green (219 tests). One stroke banked toward
 v2.56.0. Next: chunk_by.
+
+---
+
+## 2026-09-03 — Iteration 380: chunk_by
+
+CI and Pages green on 379 (API verdicts), and the deployed
+playground page carries the check mode. Milestone stroke 4:
+`chunk_by(xs, key)` in lib/list.ting — consecutive elements with
+the same key(x) grouped into runs, order kept, keys compared
+structurally so any type works (group_by needs string keys because
+map keys are strings; chunk_by does not, because it never builds a
+map). Four selftests (identity, by length, structural keys, empty),
+stdlib.md row. Selftests pass on both engines; full gate green (219
+tests). Two strokes banked toward v2.56.0 (379, 380). Next: health
+tick + audit, then replenish; the release follows the next stroke.

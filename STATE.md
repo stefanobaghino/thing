@@ -191,10 +191,10 @@ current orientation.
   (v2.55–v2.56), reasoning in LOG.md.
 - v2.55.0 VERIFIED (76th tag, 75 verified; both aarch64 archives
   executed here).
-- 379: playground check button — one stroke banked toward v2.56.0.
-- Backlog (in order): (4) lib/list.ting chunk_by, selftests; (5)
-  health tick + audit (also: site index.html contains the check
-  mode); then replenish.
+- 379: playground check button; 380: chunk_by — two strokes banked
+  toward v2.56.0.
+- Backlog (in order): (5) health tick + audit; then replenish (the
+  release follows the next stroke).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
