@@ -5708,3 +5708,21 @@ no panic, mode returns "a", and `--test selftest` passes 11/11 on
 each binary. CI and Pages green on the release commit.
 Seventy-three tags, seventy-two verified. Next: the `note: called
 from` line.
+
+---
+
+## 2026-09-03 — Iteration 363: note: called from
+
+CI green on 362b (API verdict). Milestone stroke 2: under a
+module-origin error, `note: called from FILE:LINE:COL` names the
+call site in the importer. The interpreter keeps a stack of the
+origin of each function being called; when an error passes back
+through a call whose caller's origin differs from the error's, the
+call span and the caller's origin are recorded once — so a module
+function calling another module function does not produce the
+note, and an error in a main-file function called from main never
+does. Both engines produce the same span (checked on a file module
+and an embedded one). Reference sentence extended; the io test
+asserts the note, the line, and that the importer's path appears
+exactly once. Full gate green (214 tests). One stroke banked toward
+v2.53.0. Next: --check follows local imports.
