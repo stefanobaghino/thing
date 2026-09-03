@@ -5534,3 +5534,23 @@ Correction to 353: `median` already lives in lib/list.ting (the
 --doc test has used it for weeks). Stroke 4 becomes lib/list.ting
 mode(xs) — the most frequent element, first seen wins ties, nil on
 empty — which the module lacks.
+
+---
+
+## 2026-09-03 — Iteration 355: unused parameter warning
+
+CI green on 354 (API verdict). Milestone stroke 2: a third semantic
+warning shared by --check and the LSP — "parameter `b` is never
+used" for a parameter no identifier in the function's body names.
+Token-based: `fn`, an optional name, the parenthesised parameter
+list, then the brace-balanced body; `_`-prefixed parameters are
+exempt, and a nested function reusing the name counts as a use (a
+false negative, never a false positive). The corpus scan found
+twelve hits, all in selftest/stdlib.ting, all constant callbacks
+such as `fn(x) { return true; }` that really do ignore their
+argument — renamed to `_x`; lib, examples and bench were clean. io
+test (used, unused, underscore) and protocol test (severity 2,
+range on the parameter — my first assertion had the JSON keys in
+the wrong order, the server sorts them). Reference updated in both
+places. Full gate green (213 tests). Three strokes banked (351,
+354, 355) — v2.51.0 next tick if quiet.
