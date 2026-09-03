@@ -30,6 +30,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sort_with(xs, cmp)` | stable sort by a three-way comparator (`cmp(a, b)` negative, zero, positive) |
 | `binary_search(xs, x)` | index of `x` in an ascending list, or `nil` |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
+| `transpose(xss)` | rows to columns for a rectangular list of lists; ragged input fails |
 | `interleave(a, b)` | elements alternated starting with `a`; the longer tail follows |
 | `zip_with(a, b, f)` | `f(a[i], b[i])` for each index, trimmed to the shorter input |
 | `cartesian(a, b)` | every `[x, y]` pair, `a`-major order |

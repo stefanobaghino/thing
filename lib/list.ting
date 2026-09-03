@@ -14,6 +14,25 @@ fn reverse(xs) {
   return out;
 }
 
+# Rows to columns: transpose([[1, 2], [3, 4]]) is [[1, 3], [2, 4]].
+# Every row must have the same length (a ragged input fails); an
+# empty list of rows gives [].
+fn transpose(xss) {
+  if len(xss) == 0 { return []; }
+  let width = len(xss[0]);
+  for row in xss {
+    if len(row) != width { fail("transpose: rows have different lengths"); }
+  }
+  let out = [];
+  for i in range(width) {
+    let col = [];
+    for row in xss { push(col, row[i]); }
+    push(out, col);
+  }
+  return out;
+}
+
+# Pairs [a[i], b[i]] up to the shorter of the two lists.
 fn zip(a, b) {
   let n = len(a);
   if len(b) < n { n = len(b); }
