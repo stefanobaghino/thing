@@ -8513,3 +8513,16 @@ message. Nothing was lost and nothing was green that should have
 been red — the gate had already passed — but the rule stands and
 was not followed: one `&&` list per tick, so a failure stops
 everything after it.
+
+---
+
+## 2026-09-03 — Iteration 508: release v2.80.0
+
+CI green on 507b (API verdict). Cut v2.80.0 with the tenth act
+(506) and the selftests, the corpus guard's five and the
+line-ordered warnings (507). The release workflow is green with all
+six archives; CI and Pages green on the release commit (API
+verdicts). Cold-verified here: both aarch64 Linux archives
+downloaded fresh, unpacked and run — `-V` reports 2.80.0, and a
+file holding three different mistakes lists them in line order,
+from three different passes. 101st tag. Next: health tick + audit.

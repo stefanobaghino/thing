@@ -162,11 +162,13 @@ holds only the current milestone and the standing rules.
 - v2.79.0 VERIFIED (100th tag; strokes 503, 504; both aarch64
   archives executed here).
 - 506: the tenth act written, "Where it stands" current; 507: both
-  new checks tested from inside ting — two strokes banked toward
-  v2.80.0.
-- Backlog (one per tick, in order): (1) RELEASE v2.80.0 (strokes 506,
-  507); (2) health tick + audit.
-- Tags: 100 (v2.79.0), 99 verified; v2.29.0 is publicly marked broken
+  new checks tested from inside ting (507b: a tick's two commits,
+  the rule restated).
+- v2.80.0 VERIFIED (101st tag; strokes 506, 507; both aarch64
+  archives executed here).
+- Backlog (one per tick, in order): (1) health tick + audit — then
+  replenishment.
+- Tags: 101 (v2.80.0), 100 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
