@@ -7386,3 +7386,34 @@ twenty-fifth since the restart — is complete; two strokes (445,
 written during the nineteenth milestone and the cadence is six, so
 the ninth falls due in the next. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-03 — Iteration 448: replenishment — milestone "the ninth act"
+
+CI green on 447 (API verdict). Twenty-five milestones since the
+restart, eighty-eight tags. The eighth act was written in the
+nineteenth milestone and the cadence is six, so the ninth is due:
+tags 80 to 88, the six milestones from the loop's own house to
+tests and json. Alongside it, a checker gap the survey has walked
+past several times: `let len = 3;` silently shadows a builtin for
+the rest of the file, and nothing says so until a later `len(xs)`
+fails with "not callable"; and two small stdlib gaps. Five
+strokes:
+
+1. Retrospective act nine, "the loop's own house": STATE.md's
+   refresh, the REPL's session, the editor's thirteen, :load and
+   the import message, CRLF and the local warning, the test and
+   json modules. Then release v2.68.0 (445, 446, +1).
+2. A fifth warning shared by --check and the LSP: a top-level or
+   local `let`, or a parameter, whose name is a builtin's ("`len`
+   shadows a builtin"). Corpus scan first; io and protocol tests.
+3. lib/string.ting is_number(s): true when int() or float() would
+   accept s. Selftests.
+4. lib/list.ting argmax(xs) and argmin(xs): the index of the
+   largest and smallest element, nil on empty, first wins ties.
+   Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a warning for shadowing a stdlib member name (those are
+map keys, not bindings), a tenth act ahead of its cadence.

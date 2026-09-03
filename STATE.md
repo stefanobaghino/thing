@@ -102,10 +102,13 @@ holds only the current milestone and the standing rules.
   flatten in the tutorial — two strokes banked toward v2.68.0. 447:
   health tick + audit green — milestone "tests and json" (the
   25th) complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md; the ninth
-  retrospective act is due in it; the release follows the next
-  stroke.
+- 448: replenishment — milestone "the ninth act" (v2.68–v2.69),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) retrospective act nine —
+  then RELEASE v2.68.0 (445, 446, +1); (2) builtin-shadowing
+  warning, io + protocol tests; (3) lib/string.ting is_number,
+  selftests; (4) lib/list.ting argmax/argmin, selftests; (5) health
+  tick + audit.
 - Tags: 88 (v2.67.0), 87 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
