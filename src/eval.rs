@@ -142,6 +142,20 @@ impl<W: Write> Interpreter<W> {
     }
 
     /// Command-line arguments exposed to the script via `args()`.
+    /// User-defined names in the top-level environment (builtins
+    /// excluded), sorted — the REPL's :vars view.
+    pub fn user_bindings(&self) -> Vec<(String, String)> {
+        let env = self.env.borrow();
+        let mut out: Vec<(String, String)> = env
+            .vars
+            .iter()
+            .filter(|(_, v)| !matches!(v, Value::Builtin(_)))
+            .map(|(k, v)| (k.to_string(), v.type_name().to_string()))
+            .collect();
+        out.sort();
+        out
+    }
+
     pub fn set_args(&mut self, args: Vec<String>) {
         self.script_args = args;
     }

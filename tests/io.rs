@@ -220,3 +220,27 @@ fn write_file_append_mode() {
     let _ = std::fs::remove_file(&script);
     let _ = std::fs::remove_file(&data);
 }
+
+#[test]
+fn repl_vars_lists_user_bindings() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":vars\nlet total = 4;\nfn double(x) { return x * 2; }\n:vars\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("(no bindings yet)"), "{stdout}");
+    assert!(stdout.contains("double: function"), "{stdout}");
+    assert!(stdout.contains("total: int"), "{stdout}");
+    // Builtins stay out of the listing.
+    assert!(!stdout.contains("print: "), "{stdout}");
+    assert_eq!(out.status.code(), Some(0));
+}

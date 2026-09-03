@@ -89,7 +89,7 @@ fn print_help() {
     for (sig, text) in docs {
         println!("{sig:width$}  {text}");
     }
-    println!("(:load <file> runs a file in this session; empty line cancels; ctrl-d exits)");
+    println!("(:vars lists bindings; :load <file> runs a file here; ctrl-d exits)");
 }
 
 fn run_inner() -> ExitCode {
@@ -97,7 +97,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         println!(
-            "ting {} — :help builtins, :load <file> runs a file here, ctrl-d exits",
+            "ting {} — :help builtins, :vars bindings, :load <file>, ctrl-d exits",
             env!("CARGO_PKG_VERSION")
         );
     }
@@ -129,6 +129,16 @@ fn run_inner() -> ExitCode {
         // Meta-commands: only at the start of a fresh chunk.
         if buffer.is_empty() && line.trim() == ":help" {
             print_help();
+            continue;
+        }
+        if buffer.is_empty() && line.trim() == ":vars" {
+            let bindings = interp.user_bindings();
+            if bindings.is_empty() {
+                println!("(no bindings yet)");
+            }
+            for (name, ty) in bindings {
+                println!("{name}: {ty}");
+            }
             continue;
         }
         if buffer.is_empty()

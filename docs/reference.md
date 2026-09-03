@@ -20,10 +20,10 @@ the reference engine.
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
-cancels), and forgives a missing final `;`. Two meta-commands:
-`:help` lists every builtin with its doc line, and `:load <file>`
-evaluates a file in the current session so its bindings stay
-available. It has no built-in line editing or history (zero
+cancels), and forgives a missing final `;`. Three meta-commands:
+`:help` lists every builtin with its doc line, `:vars` lists the
+session's own bindings, and `:load <file>` evaluates a file in the
+current session so its bindings stay available. It has no built-in line editing or history (zero
 dependencies); wrap it with
 [rlwrap](https://github.com/hanslub42/rlwrap) — `rlwrap ting` — for
 both.

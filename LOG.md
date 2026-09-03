@@ -2640,3 +2640,14 @@ The modules chapter explained import() but never mentioned the five
 embedded lib/ modules or the disk-first fallback rule. Added a
 CI-executed snippet (sum + pow through real imports) and a link to
 the stdlib page. 14/14 suites. First stroke toward v2.14.0.
+
+---
+
+## 2026-09-03 — Iteration 188: REPL :vars
+
+Third REPL meta-command: :vars lists the session's own top-level
+bindings (name: type, sorted; builtins filtered out; friendly empty
+message), backed by a new Interpreter::user_bindings(). Banner,
+:help footer, and the reference's REPL paragraph updated. Pipe test
+covers empty, populated, and builtin-exclusion. Full gate green.
+Second stroke toward v2.14.0.
