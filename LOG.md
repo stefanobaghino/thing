@@ -5479,3 +5479,36 @@ ting.wasm), not under /playground — the first probe used the old
 paths and read 404s that were probe errors, not outages; all nine
 resources answer 200 at the real paths. Rule recorded in STATE.md.
 Nothing to fix. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 353: replenishment — milestone "table of contents"
+
+CI green on 352 (API verdict). Twelve milestones since the restart,
+seventy-one tags. `ting --doc NAME` explains one function but there
+is no way to ask the binary what it knows: `--doc` with no name
+prints usage and `--doc list` says there is no such function, so
+the table of contents lives only on the website. The checker warns
+about an unused top-level binding but not an unused parameter, the
+next thing a reader notices. And the retrospective's sixth act said
+the seventh is due after the next milestone; that milestone has
+shipped. Five strokes:
+
+1. `ting --doc` with no name lists every builtin and every stdlib
+   function, grouped by module, one line each; `ting --doc MODULE`
+   lists that module's members. io test.
+2. Unused function parameter warning (`_`-prefixed names exempt),
+   shared by --check and the LSP like the other two. io and
+   protocol tests.
+3. Retrospective act seven: "second opinions" — what it took for
+   the checker and the editor to say the same thing, and what the
+   warnings cost in false positives before the module-shape rule.
+4. lib/math.ting median(xs): the middle value, mean of the two
+   middles for even length, fails on empty. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: REPL line history (up-arrow needs the terminal in raw
+mode, which std cannot do without a libc binding — not
+zero-dependency), `--check --json` (no consumer asked; the LSP is
+the machine interface), a `lib/time.ting` (one builtin, time_ms,
+is not enough to build on honestly).

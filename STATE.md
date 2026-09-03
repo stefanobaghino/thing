@@ -166,9 +166,14 @@ current orientation.
 - v2.50.0 VERIFIED (71st tag, 70 verified; both aarch64 archives
   executed here). Milestone "second opinions" shipped.
 - 351: extent in lib/list.ting — one stroke banked toward v2.51.0.
-- 352: health tick + audit green. Backlog EMPTY: next tick is
-  replenishment — design the next milestone ("No idle" rule),
-  reasoning in LOG.md. One stroke (351 extent) banked toward v2.51.0.
+- 352: health tick + audit green. 353: replenishment — milestone
+  "table of contents" (v2.51–v2.52), reasoning in LOG.md. One stroke
+  (351 extent) banked toward v2.51.0.
+- Backlog (one per tick, in order): (1) `--doc` with no name lists
+  everything, `--doc MODULE` lists a module, io test; (2) unused
+  parameter warning, io + protocol tests; (3) retrospective act
+  seven; (4) lib/math.ting median, selftests; (5) health tick +
+  audit. Release after ~3 (351 counts).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
