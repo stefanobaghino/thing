@@ -19,3 +19,9 @@ t["check_err"]("no error at all", fn() { return 5; }, "kaboom");
 assert(t["state"]["failed"] == 4, "err failures counted");
 assert(contains(t["state"]["failures"][2], "lacks"), "wrong-message shape");
 assert(contains(t["state"]["failures"][3], "expected an error, got 5"), "no-error shape");
+
+t["check_approx"]("approx passes", 0.1 + 0.2, 0.3, 0.000001);
+assert(t["state"]["passed"] == 4, "approx pass counted");
+t["check_approx"]("approx meant to fail", 1.0, 1.5, 0.1);
+assert(t["state"]["failed"] == 5, "approx failure counted");
+assert(contains(t["state"]["failures"][4], "off by 0.5"), "approx diff shape");

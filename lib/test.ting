@@ -4,6 +4,7 @@
 #   t["check"]("math works", 1 + 1 == 2);
 #   t["check_eq"]("name", got, want);
 #   t["check_err"]("name", fn() { fail("boom"); }, "boom");
+#   t["check_approx"]("name", got, want, 0.001);
 #   t["summary"]();   # prints results; exits 1 if anything failed
 #
 # The `state` map is exported too, for tools that want the counters.
@@ -39,6 +40,17 @@ fn check_err(name, f, want) {
   } else {
     state["failed"] = state["failed"] + 1;
     push(state["failures"], format("{}: expected an error, got {}", name, r["ok"]));
+  }
+}
+
+# For floats: passes when |got - want| <= eps; the failure message
+# shows both values and the difference.
+fn check_approx(name, got, want, eps) {
+  if abs(got - want) <= eps {
+    state["passed"] = state["passed"] + 1;
+  } else {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], format("{}: got {}, want {} (off by {})", name, got, want, abs(got - want)));
   }
 }
 
