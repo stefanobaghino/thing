@@ -586,6 +586,69 @@ t["summary"]();
 3 passed, 0 failed
 ```
 
+## text
+
+Working with text: the most common words across some titles, a URL slug for each, a paragraph wrapped to a narrow column, and a "did you mean" built on edit distance.
+
+```ting
+# Working with text: the most common words across some titles, a
+# URL slug for each, a paragraph wrapped to a narrow column, and a
+# "did you mean" built on edit distance.
+
+let li = import("../lib/list.ting");
+let st = import("../lib/string.ting");
+
+let titles = [
+  "Zero-Dependency Scripting in Rust",
+  "Why Two Engines Beat One",
+  "Testing the Formatter with Random Programs",
+  "The Formatter, Byte for Byte",
+  "Scripting the Shell Without Surprises",
+];
+
+# Word frequencies over every title, lowercased.
+let all_words = [];
+for t in titles {
+  for w in st["words"](lower(t)) { push(all_words, w); }
+}
+let freq = li["frequencies"](all_words);
+let ranked = sort_by(keys(freq), fn(w) { return -freq[w]; });
+print("top words:", li["take"](ranked, 3));
+
+# Slugs: what each title looks like in a URL.
+for t in titles { print(st["slug"](t)); }
+
+# A paragraph wrapped at 36 columns.
+let blurb = "ting is a tiny scripting language whose whole toolchain "
++ "lives in one binary: a runner, a formatter, a checker, a test "
++ "runner and a language server.";
+print(st["wrap"](blurb, 36));
+
+# Did you mean: the known word closest to a typo by edit distance.
+let known = ["formatter", "scripting", "engines", "programs"];
+for typo in ["fromatter", "scriptng", "enginee"] {
+  let best = li["min_by"](known, fn(w) { return st["levenshtein"](w, typo); });
+  print(typo, "->", best, "(distance " + str(st["levenshtein"](best, typo)) + ")");
+}
+```
+
+```text
+top words: ["the", "byte", "scripting"]
+zero-dependency-scripting-in-rust
+why-two-engines-beat-one
+testing-the-formatter-with-random-programs
+the-formatter-byte-for-byte
+scripting-the-shell-without-surprises
+ting is a tiny scripting language
+whose whole toolchain lives in one
+binary: a runner, a formatter, a
+checker, a test runner and a
+language server.
+fromatter -> formatter (distance 2)
+scriptng -> scripting (distance 1)
+enginee -> engines (distance 1)
+```
+
 ## todo
 
 A todo CLI backed by a JSON file — args, env, json, file I/O, and error recovery working together.  ting todo.ting                 # list (the default) ting todo.ting add buy milk    # add an item ting todo.ting done 2          # mark #2 done ting todo.ting rm 1            # delete #1  The list lives in todo.json (override with the TODO_FILE env var).

@@ -1,0 +1,14 @@
+top words: ["the", "byte", "scripting"]
+zero-dependency-scripting-in-rust
+why-two-engines-beat-one
+testing-the-formatter-with-random-programs
+the-formatter-byte-for-byte
+scripting-the-shell-without-surprises
+ting is a tiny scripting language
+whose whole toolchain lives in one
+binary: a runner, a formatter, a
+checker, a test runner and a
+language server.
+fromatter -> formatter (distance 2)
+scriptng -> scripting (distance 1)
+enginee -> engines (distance 1)
