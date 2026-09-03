@@ -3765,3 +3765,23 @@ panic hunt the reference engine always had. I/O, blocking (input
 would hang the test) and clock builtins stay out on purpose. Green
 on the first run; rustfmt reflowed the table. Full gate green.
 First stroke toward v2.30.0.
+
+---
+
+## 2026-09-03 — Iteration 261: stdlib benchmark, baseline rebased
+
+CI green on 260 (API verdict). Milestone stroke 5: bench/stdlib.ting
+imports three modules and runs the ting-level helpers that do real
+work — sort_with over 20000 ints, group_by, words + frequencies +
+top over a 20000-word string, window + mean. Both engines agree on
+its checksum. Finding: on this workload the VM is only 6% ahead of
+the tree-walker (fib: 38%) — time goes into closure calls and list
+building inside stdlib functions, not into expression dispatch, so
+any future speed work on stdlib-heavy programs should look at call
+overhead first. BASELINE.md is regenerated on this host so all five
+rows share one machine, as its header requires; the previous rows
+were from the loop's former Mac. Caveat recorded in the file's own
+"recorded on" line and here: this host is shared (load ~3 during
+the run), so absolute numbers carry noise — ratios and checksums
+are what to compare. Full gate green. Second stroke toward v2.30.0;
+milestone strokes 1–5 all landed.
