@@ -8374,3 +8374,20 @@ Linux archives downloaded fresh, unpacked and run — `-V` reports
 1" from --check and "expected 2 argument(s), got 1" from the run,
 at the same line and column. 99th tag, and the five hundredth
 iteration. Next: health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 501: health tick + audit
+
+CI green on the v2.78.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline; fib and lists stay
+the VM's wide wins, strings ran 16% behind eval this round on a
+loaded host — timings are weather, checksums are the verdict. Fuzz:
+50000 differential cases (seed 20260903501), 20000 formatter cases
+(seed 501, LF and CRLF) and the crash fuzzer with its cyclic case
+all pass in release. Distribution: 99 releases with the expected
+asset counts (36 x 3, 14 x 4, 49 x 6) and all six v2.78.0 download
+URLs resolve. Site: all nine resources answer 200, the changelog
+leads with v2.78.0 and the reference serves the arity warning's
+paragraph. Nothing to fix. The "before it runs" milestone is
+complete. Backlog empty: next tick is replenishment.
