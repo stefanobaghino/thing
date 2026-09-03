@@ -8617,3 +8617,21 @@ and a two-file directory reports "(2 checks)" for the file that
 asserts and "(no checks)" for the one that does not, with the
 summary naming it. 102nd tag. Next: lib/test.ting's helpers count
 too.
+
+---
+
+## 2026-09-03 — Iteration 514: the framework counts too
+
+CI green on the v2.81.0 verification commit (API verdict).
+Milestone stroke 1 toward v2.82.0: lib/test.ting's five helpers now
+count. They keep their own pass/fail tallies and never raise, so
+they were invisible to a counter that watches `assert`; each now
+calls `assert(true)` as its first statement, which is exactly the
+statement "a check ran here", pass or fail. The module header says
+so, once, rather than five comments saying it again. selftest's
+testlib file went from 15 checks to 26 — the difference is its own
+calls into the framework — and the suite over selftest now reports
+541. An io test pins a small lib/test.ting file at two checks. Full
+gate green (256 tests); the corpus scan still shows its five
+expected warnings. One stroke banked toward v2.82.0. Next: docs for
+the counts, then the release.
