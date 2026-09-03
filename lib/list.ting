@@ -304,3 +304,26 @@ fn mean_by(xs, f) { return mean(map(xs, f)); }
 
 # A fresh list without the nil elements.
 fn compact(xs) { return filter(xs, fn(x) { return x != nil; }); }
+
+# A fresh list sorted by a three-way comparator: cmp(a, b) returns a
+# negative int when a comes first, positive when b does, 0 for ties —
+# which keep their input order (stable merge sort).
+fn sort_with(xs, cmp) {
+  if len(xs) <= 1 { return slice(xs, 0, len(xs)); }
+  let mid = len(xs) / 2;
+  let a = sort_with(slice(xs, 0, mid), cmp);
+  let b = sort_with(slice(xs, mid, len(xs)), cmp);
+  let out = [];
+  let i = 0;
+  let j = 0;
+  while i < len(a) && j < len(b) {
+    if cmp(b[j], a[i]) < 0 {
+      push(out, b[j]);
+      j = j + 1;
+    } else {
+      push(out, a[i]);
+      i = i + 1;
+    }
+  }
+  return out + slice(a, i, len(a)) + slice(b, j, len(b));
+}

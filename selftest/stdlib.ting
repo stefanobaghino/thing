@@ -262,3 +262,12 @@ assert(l["compact"]([1, nil, "a", nil, [nil]]) == [1, "a", [nil]], "compact drop
 assert(l["compact"]([]) == [], "compact empty");
 assert(s["is_blank"]("") && s["is_blank"](" \t\n"), "is_blank");
 assert(!s["is_blank"](" x "), "is_blank non-blank");
+
+let by_len_desc = fn(p, q) { return len(q) - len(p); };
+assert(l["sort_with"](["bb", "a", "ccc"], by_len_desc) == ["ccc", "bb", "a"], "sort_with");
+assert(l["sort_with"](["ab", "x", "cd", "y"], by_len_desc) == ["ab", "cd", "x", "y"], "sort_with stable");
+assert(l["sort_with"]([], by_len_desc) == [], "sort_with empty");
+assert(l["sort_with"]([5], fn(p, q) { return p - q; }) == [5], "sort_with single");
+let big = l["reverse"](range(300));
+assert(l["sort_with"](big, fn(p, q) { return p - q; }) == range(300), "sort_with 300 elements");
+assert(has(try(fn() { return l["sort_with"]([1, 2], fn(p, q) { return true; }); }), "err"), "sort_with non-int comparator fails");

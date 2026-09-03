@@ -23,6 +23,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `product(xs)` | multiplies the elements (1 for an empty list) |
 | `reverse(xs)` | a fresh list in reverse order |
 | `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
+| `sort_with(xs, cmp)` | stable sort by a three-way comparator (`cmp(a, b)` negative, zero, positive) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `interleave(a, b)` | elements alternated starting with `a`; the longer tail follows |
 | `enumerate(xs)` | list of `[index, value]` pairs |
