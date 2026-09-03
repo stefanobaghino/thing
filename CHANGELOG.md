@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.40.0 (2026-09-03)
+
+- `ting --test --tap` emits Test Anything Protocol output with
+  per-file timings.
+- `lib/list.ting`: `binary_search`.
+- Tutorial: a "Closures as objects" chapter.
+
 ## v2.39.0 (2026-09-03)
 
 - `lib/json.ting`: `diff`.

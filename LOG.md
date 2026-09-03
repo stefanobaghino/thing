@@ -4671,3 +4671,11 @@ only == and <, so it works for strings as well as numbers. Six
 assertions including both ends and a 334-element stepped range.
 stdlib.md row. Full gate green on both engines. Third stroke
 banked — v2.40.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 309: v2.40.0
+
+TAP output, the closures chapter, binary_search. CI green on 308
+(API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.40.0 (61st tag).
