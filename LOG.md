@@ -6504,3 +6504,17 @@ failed because a ting comment starting with `# ` inside a Rust
 position still pointing at the old line. Reference bullet updated.
 Full gate green (223 tests). One stroke banked toward v2.60.0.
 Next: map_keys.
+
+---
+
+## 2026-09-03 — Iteration 402: map_keys
+
+CI and Pages green on 401 (API verdicts). Milestone stroke 4:
+`map_keys(m, f)` in lib/map.ting — the key-side twin of
+map_values: a fresh map with every key passed through f, which
+must return a string (map keys are strings; a non-string is a
+clean failure like group_by's), later keys winning collisions in
+key order. Four selftests (upper-casing, collision, empty,
+non-string), stdlib.md row. Selftests pass on both engines; full
+gate green (223 tests). Two strokes banked toward v2.60.0 (401,
+402). Next: health tick + audit, then replenish.
