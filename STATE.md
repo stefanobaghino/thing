@@ -116,8 +116,12 @@ holds only the current milestone and the standing rules.
 - 461: key_of — one stroke banked toward v2.71.0. 462: health tick
   + audit green — milestone "counted and guarded" complete. Found:
   --fmt over a directory stops at the first file that fails to lex.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 463: replenishment — milestone "every file, every time"
+  (v2.71–v2.72), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) --fmt/--check process every
+  file, io test; (2) --fmt summary line, io test — then RELEASE
+  v2.71.0 (461, +2); (3) reference and tutorial; (4)
+  lib/string.ting plural, selftests; (5) health tick + audit.
 - Tags: 91 (v2.70.0), 90 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

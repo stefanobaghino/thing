@@ -7659,3 +7659,36 @@ give, so nothing says the run was cut short. --fmt-check and
 The "counted and guarded" milestone is complete; one stroke (461)
 is banked toward v2.71.0. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-03 — Iteration 463: replenishment — milestone "every file, every time"
+
+CI green on 462 (API verdict). Twenty-seven milestones since the
+restart, ninety-one tags. The 462 probe found the formatter
+stopping at the first file that does not lex: the files before it
+are reformatted, the ones after are not, and the exit status
+cannot tell a cut-short run from a finished one — the checker and
+the runner both continue to the end and report, the formatter does
+not. Reading the loop showed the same early return on an
+unreadable file in both --fmt and --check. Five strokes:
+
+1. --fmt, --fmt-check and --fmt --diff process every file:
+   a file that cannot be read, does not lex, or cannot be written
+   is reported and the loop goes on; exit 1 at the end if anything
+   failed or (in check and diff) anything would change. --check
+   gets the same for an unreadable file. io test with a directory
+   whose middle file is broken.
+2. A summary line when --fmt ran over more than one file — "N
+   reformatted, M unchanged, K failed" (check mode: "would
+   reformat" counts) — so a run over a tree ends the way a test run
+   does. io test. Then release v2.71.0 (461 + two).
+3. Reference and tutorial: the formatter processes every file and
+   what its exit status means.
+4. lib/string.ting plural(n, one, many): "1 file" / "3 files", the
+   count and the right noun, for summaries. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: making the formatter format around a lex error (a file
+that does not lex has no tokens to lay out), a --fmt --quiet (the
+summary is one line).
