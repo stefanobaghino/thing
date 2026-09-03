@@ -74,12 +74,12 @@ current orientation.
   executed cold on this host, both engines; Pages green first time.
 - v2.23.0 RELEASED and verified (43rd); aarch64-linux asset
   executed cold on this host, both engines.
-- 233: retrospective act four; 234: scan — two strokes toward
-  v2.24.0.
-- Backlog (one per tick): lib/string.ting strip_prefix/strip_suffix;
-  then release v2.24.0; candidates after: fuzz generator emits the
-  newer stdlib-free builtins it still lacks (audit), LSP completion
-  of stdlib function names after `lib["`.
+- 233: retrospective act four; 234: scan; 235: strip_prefix/
+  strip_suffix — three strokes banked; RELEASE v2.24.0 next tick if
+  quiet.
+- Backlog after the release: fuzz generator audit (which builtins
+  it never emits); LSP completion of stdlib function names after
+  `lib["`; health tick.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

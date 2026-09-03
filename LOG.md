@@ -3308,3 +3308,15 @@ with init and has one element more than the input, so an empty
 list yields [init] rather than [] — the convention that makes
 prefix sums line up with indices. Three assertions, stdlib.md row.
 Full gate green on both engines. Second stroke toward v2.24.0.
+
+---
+
+## 2026-09-03 — Iteration 235: strip_prefix/strip_suffix
+
+CI green on 234 (API verdict). lib/string.ting gains strip_prefix
+and strip_suffix, thin over the starts_with/ends_with builtins and
+slice: the input passes through unchanged when the affix is absent
+(the Rust-style "Option" is a poor fit for a language without one,
+so identity is the honest no-op). Six assertions, two stdlib.md
+rows. Full gate green on both engines. Third stroke banked —
+v2.24.0 next tick if quiet.
