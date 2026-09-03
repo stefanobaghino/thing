@@ -139,9 +139,9 @@ current orientation.
   executed cold here. The 305 milestone is complete.
 - 314: replenishment — milestone "configuration" (v2.42–v2.44),
   reasoning in LOG.md.
-- 315: config example — milestone stroke 1; first toward v2.42.0.
-- Backlog (one per tick, in order): (2) tutorial JSON chapter
-  snippet with get_in/set_in/merge_in; (3) REPL `:time EXPR`, pipe
+- 315: config example; 316: tutorial JSON paths — milestone strokes
+  1–2; two toward v2.42.0.
+- Backlog (one per tick, in order): (3) REPL `:time EXPR`, pipe
   test; (4) LSP workspace/symbol across open documents, protocol
   test; (5) health tick + audit. Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from

@@ -4795,3 +4795,14 @@ get_in, then reports what changed from the defaults with diff. All
 six json-module functions in one program. Golden output identical
 on both engines; fourteenth example; cookbook regenerated. Full
 gate green. First stroke toward v2.42.0.
+
+---
+
+## 2026-09-03 — Iteration 316: tutorial JSON chapter grows paths
+
+CI and Pages green on 315 (API verdicts). Milestone stroke 2: the
+JSON chapter, written before lib/json.ting existed, gains an
+executed snippet with get_in (a hit and a nil miss), set_in (fresh
+document) and merge_in, and prose pointing at the config example
+for diff. The tutorial test runs it. Markdown guard and full gate
+green. Second stroke toward v2.42.0.
