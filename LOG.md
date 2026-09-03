@@ -5395,3 +5395,17 @@ convention. Corpus warnings after the rule: zero, with no source
 edits. io test (used, unused, underscore, unused fn) and protocol
 test (warning range, cleared by a use); reference updated in two
 places. Full gate green. First stroke toward v2.50.0.
+
+---
+
+## 2026-09-03 — Iteration 348: signature help for user functions
+
+CI and Pages green on 347 (API verdicts). Milestone stroke 2:
+signature help's third branch reuses hover's AST lookup, so a call
+of one of the file's own top-level functions shows `name(params)`
+with "defined in this file" — builtins, stdlib and user code now
+answer the same three requests. Two edit scripts missed their
+anchors because rustfmt had reflowed the test's assert; re-read and
+re-applied, nothing else touched. Protocol test extended; reference
+line updated. Full gate green (209 tests). Second stroke toward
+v2.50.0.
