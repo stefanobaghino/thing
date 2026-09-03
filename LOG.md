@@ -7230,3 +7230,16 @@ it mid-run) and Pages green on the release commit. Eighty-seven
 tags, eighty-six verified. Next: the math stroke — trunc is
 already `int()` (the module's own floor comment says so), so it
 becomes hypot.
+
+---
+
+## 2026-09-03 — Iteration 439: hypot
+
+CI green on 438b (API verdict). Milestone stroke 4, corrected at
+438b from trunc (which is the int() builtin — the floor comment in
+the same module says so): `hypot(a, b)` in lib/math.ting, the
+hypotenuse as a float via the module's Newton sqrt. Four selftests
+(3-4-5, the origin, a negative leg, root two within a tolerance),
+stdlib.md row. Selftests pass on both engines; full gate green
+(233 tests). One stroke banked toward v2.67.0. Next: health tick
++ audit, then replenish.

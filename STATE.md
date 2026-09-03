@@ -92,9 +92,8 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.66.0 VERIFIED (87th tag; strokes 435, 436, 437; both aarch64
   archives executed here).
-- Backlog after the release (in order): (4) lib/math.ting hypot
-  (trunc is int(); 438b), selftests; (5) health tick + audit; then
-  replenish.
+- 439: hypot — one stroke banked toward v2.67.0.
+- Backlog (in order): (5) health tick + audit; then replenish.
 - Tags: 87 (v2.66.0), 86 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
