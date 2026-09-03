@@ -2706,3 +2706,13 @@ v2.14.0, none missing), and all seven live site resources (index,
 five doc pages, ting.wasm) respond 200. Nothing to fix. Third
 stroke slot spent on verification — v2.15.0 waits for one more
 feature stroke instead.
+
+---
+
+## 2026-09-03 — Iteration 194: REPL :clear
+
+Fourth REPL meta-command: :clear swaps in a fresh interpreter
+(bindings, import cache, everything). Banner/:help/reference
+updated; pipe test proves the old binding is really gone and the
+session survives the resulting error. Full gate green. Third
+stroke banked — v2.15.0 next tick if quiet.

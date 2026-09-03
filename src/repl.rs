@@ -89,7 +89,7 @@ fn print_help() {
     for (sig, text) in docs {
         println!("{sig:width$}  {text}");
     }
-    println!("(:vars lists bindings; :load <file> runs a file here; ctrl-d exits)");
+    println!("(:vars bindings; :load <file> runs a file here; :clear resets; ctrl-d exits)");
 }
 
 fn run_inner() -> ExitCode {
@@ -97,7 +97,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         println!(
-            "ting {} — :help builtins, :vars bindings, :load <file>, ctrl-d exits",
+            "ting {} — :help builtins, :vars bindings, :load <file>, :clear resets",
             env!("CARGO_PKG_VERSION")
         );
     }
@@ -129,6 +129,11 @@ fn run_inner() -> ExitCode {
         // Meta-commands: only at the start of a fresh chunk.
         if buffer.is_empty() && line.trim() == ":help" {
             print_help();
+            continue;
+        }
+        if buffer.is_empty() && line.trim() == ":clear" {
+            interp = Interpreter::new(std::io::stdout());
+            println!("(session cleared)");
             continue;
         }
         if buffer.is_empty() && line.trim() == ":vars" {

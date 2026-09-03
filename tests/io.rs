@@ -244,3 +244,28 @@ fn repl_vars_lists_user_bindings() {
     assert!(!stdout.contains("print: "), "{stdout}");
     assert_eq!(out.status.code(), Some(0));
 }
+
+#[test]
+fn repl_clear_resets_the_session() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"let gone = 1;\n:clear\n:vars\nprint(gone);\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stdout.contains("(session cleared)"), "{stdout}");
+    assert!(stdout.contains("(no bindings yet)"), "{stdout}");
+    // The old binding is really gone, and the session survives the error.
+    assert!(stderr.contains("undefined variable 'gone'"), "{stderr}");
+    assert_eq!(out.status.code(), Some(0));
+}
