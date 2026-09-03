@@ -461,8 +461,12 @@ than a script needs.
 
 Put test files under a directory and run them all with
 `ting --test tests/` — one process per file, `ok` or `FAIL` per file,
-exit 1 if any failed — and `--filter NAME` to run only the files
-whose path contains `NAME` while iterating on one of them. The
+exit 1 if any failed. While iterating on one file, `--filter NAME`
+runs only the files whose path contains `NAME`, and `--fail-fast`
+stops at the first red one. On a multi-core machine `-j 4` runs four
+files at once with the output kept in order; `--slow 3` names the
+three slowest files after the summary; and `--tap` switches to Test
+Anything Protocol output for CI systems that consume it. The
 project's own suite under `selftest/` runs exactly that way in CI.
 
 ## Beyond scripts
