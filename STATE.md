@@ -70,9 +70,10 @@ current orientation.
   executed cold on this host, both engines.
 - 223: Pages deploy for v2.21.0 recovered via workflow_dispatch;
   site current.
-- 224: sum_by/words; 225: tutorial tally; 226: map with/update —
-  three strokes banked; RELEASE v2.22.0 next tick if quiet.
-- Backlog after the release: quiet-machine bench re-measure;
+- v2.22.0 TAGGED (42nd release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run for the tag
+  commit succeeded (dispatch if not).
+- Backlog after verification: quiet-machine bench re-measure;
   distribution audit; candidates: lib/list.ting rotate(xs, n),
   lib/string.ting truncate(s, n).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

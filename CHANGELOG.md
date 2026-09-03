@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.22.0 (2026-09-03)
+
+- `lib/list.ting`: `sum_by`.
+- `lib/string.ting`: `words`.
+- `lib/map.ting`: `with`, `update`.
+- Tutorial: the word-frequency script tallies with `words` and
+  `count_by`.
+
 ## v2.21.0 (2026-09-03)
 
 - Formatter: a `[` or `(` that ends its line indents its

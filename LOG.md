@@ -3194,3 +3194,11 @@ a selftest checks the original afterwards); update fails on a
 missing key rather than inventing a value. Five assertions, two
 stdlib.md rows. Full gate green on both engines. Third stroke
 banked — v2.22.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 227: v2.22.0
+
+sum_by, words, map with/update, tutorial tally. CI green on 226
+(API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.22.0 (42nd release).
