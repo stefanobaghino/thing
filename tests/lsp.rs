@@ -806,6 +806,52 @@ fn references_list_every_occurrence() {
 }
 
 #[test]
+fn prepare_rename_offers_the_identifier_or_declines() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///p.ting","text":"let total = len([1]);\nprint(total);\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    // On the binding: its range and its name as the placeholder.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/prepareRename","params":{"textDocument":{"uri":"file:///p.ting"},"position":{"line":0,"character":6}}}"#,
+    );
+    let ok = recv(&mut reader);
+    assert!(
+        ok.contains(r#""placeholder":"total""#)
+            && ok.contains(r#""start":{"character":4,"line":0}"#)
+            && ok.contains(r#""end":{"character":9,"line":0}"#),
+        "{ok}"
+    );
+    // On a builtin (len) and on a keyword (let): null, so the editor
+    // declines before prompting.
+    for (id, ch) in [(3, 13), (4, 1)] {
+        send(
+            &mut stdin,
+            &format!(
+                r#"{{"jsonrpc":"2.0","id":{id},"method":"textDocument/prepareRename","params":{{"textDocument":{{"uri":"file:///p.ting"}},"position":{{"line":0,"character":{ch}}}}}}}"#
+            ),
+        );
+        let no = recv(&mut reader);
+        assert!(no.contains("\"result\":null"), "{no}");
+    }
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":5,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn rename_produces_a_workspace_edit() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 
@@ -814,7 +860,10 @@ fn rename_produces_a_workspace_edit() {
         r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
     );
     let init = recv(&mut reader);
-    assert!(init.contains("\"renameProvider\":true"), "{init}");
+    assert!(
+        init.contains("\"renameProvider\":{\"prepareProvider\":true}"),
+        "{init}"
+    );
 
     send(
         &mut stdin,

@@ -285,6 +285,55 @@ fn highlight_result(src: &str, line: usize, character: usize) -> Value {
     Value::list(out)
 }
 
+/// Prepare a rename: the range of the identifier under the cursor and
+/// its text as the placeholder, or null when there is no identifier
+/// there or it is a keyword or a builtin — so the editor declines
+/// before opening the prompt instead of after.
+fn prepare_rename_result(src: &str, line: usize, character: usize) -> Value {
+    let Some(text) = src.lines().nth(line) else {
+        return Value::Nil;
+    };
+    let chars: Vec<char> = text.chars().collect();
+    let is_ident = |c: char| c.is_ascii_alphanumeric() || c == '_';
+    let mut start = character.min(chars.len());
+    while start > 0 && is_ident(chars[start - 1]) {
+        start -= 1;
+    }
+    let mut end = start;
+    while end < chars.len() && is_ident(chars[end]) {
+        end += 1;
+    }
+    if start == end || chars[start].is_ascii_digit() {
+        return Value::Nil;
+    }
+    let name: String = chars[start..end].iter().collect();
+    if KEYWORDS.contains(&name.as_str()) || Builtin::ALL.iter().any(|b| b.name() == name) {
+        return Value::Nil;
+    }
+    obj(vec![
+        (
+            "range",
+            obj(vec![
+                (
+                    "start",
+                    obj(vec![
+                        ("line", Value::Int(line as i64)),
+                        ("character", Value::Int(start as i64)),
+                    ]),
+                ),
+                (
+                    "end",
+                    obj(vec![
+                        ("line", Value::Int(line as i64)),
+                        ("character", Value::Int(end as i64)),
+                    ]),
+                ),
+            ]),
+        ),
+        ("placeholder", s(&name)),
+    ])
+}
+
 /// Rename every occurrence of the identifier at (line, character):
 /// a WorkspaceEdit with one TextEdit per token, same scan as
 /// references (token-level, shadowing not resolved).
@@ -1140,7 +1189,10 @@ pub fn run() -> i32 {
                             ("definitionProvider", Value::Bool(true)),
                             ("referencesProvider", Value::Bool(true)),
                             ("documentHighlightProvider", Value::Bool(true)),
-                            ("renameProvider", Value::Bool(true)),
+                            (
+                                "renameProvider",
+                                obj(vec![("prepareProvider", Value::Bool(true))]),
+                            ),
                             ("codeActionProvider", Value::Bool(true)),
                             ("foldingRangeProvider", Value::Bool(true)),
                             ("workspaceSymbolProvider", Value::Bool(true)),
@@ -1304,6 +1356,31 @@ pub fn run() -> i32 {
                     (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
                         .get(&uri)
                         .map(|src| highlight_result(src, l.max(0) as usize, c.max(0) as usize))
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/prepareRename" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let result = match (uri, line, character) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
+                        .get(&uri)
+                        .map(|src| prepare_rename_result(src, l.max(0) as usize, c.max(0) as usize))
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,
                 };
