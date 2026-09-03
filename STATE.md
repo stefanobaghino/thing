@@ -54,9 +54,9 @@ current orientation.
 - 209: tutorial snippet for partition/group_by/take — first stroke
   toward v2.19.0. 210: distribution audit green (38 releases, arm64
   assets included, site all 200).
-- Backlog (one per tick): lib/list.ting window(xs, n);
-  lib/string.ting center(s, width, fill); REPL :fmt of the last
-  chunk; release v2.19.0 after ~3 strokes.
+- 211: window in lib/list.ting — second stroke toward v2.19.0.
+- Backlog (one per tick): lib/string.ting center(s, width, fill);
+  REPL :fmt of the last chunk; release v2.19.0 after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

@@ -2957,3 +2957,13 @@ download URLs resolve, all seven live site resources answer 200, and
 the rendered stdlib and tutorial pages already carry the 2.18-era
 functions and the new list snippet. Nothing to fix. Feature strokes
 resume next tick.
+
+---
+
+## 2026-09-03 — Iteration 211: window
+
+CI green on 210 (API verdict). lib/list.ting gains window(xs, n),
+the sliding companion to chunk: every run of n consecutive
+elements, empty when the list is shorter, loud failure on a
+non-positive size. Five assertions, stdlib.md row. Full gate green
+on both engines. Second stroke toward v2.19.0.
