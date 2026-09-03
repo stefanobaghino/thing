@@ -3442,3 +3442,19 @@ documentation. Names from modules the document does not import get
 null, pinned by the protocol test alongside the positive case.
 Reference Tooling line updated. Full gate green. First stroke
 toward v2.26.0.
+
+---
+
+## 2026-09-03 — Iteration 243: LSP signature help through module maps
+
+CI and Pages green on 242 (API verdicts). The backlog's
+"check_err for lib/test.ting" turned out to already exist (written
+in an earlier act; the backlog entry was stale) — retired without
+work. Instead: signature help now resolves calls made through a
+module map — the string key of an index expression followed by a
+call — to the stdlib function's signature and comment when the
+module is imported, via the same scanner hover and completion use.
+A small helper reads the quoted key back from the closing bracket.
+Protocol test extended. Full gate green. Second stroke toward
+v2.26.0 (the three LSP strokes 238/242/243 make stdlib modules
+first-class in the editor).
