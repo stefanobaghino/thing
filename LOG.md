@@ -4242,3 +4242,15 @@ function named …)". Banner, :help footer, reference and tutorial
 updated; pipe test covers a builtin, a stdlib function, the
 two-module case and the miss. Full gate green. First stroke toward
 v2.35.0.
+
+---
+
+## 2026-09-03 — Iteration 284: check_approx
+
+CI and Pages green on 283 (API verdicts). Milestone stroke 4:
+lib/test.ting gains check_approx(name, got, want, eps) for floats —
+passes within eps, and the failure message carries both values and
+the difference so a tolerance that is merely too tight reads as
+such. Usage header, selftest/testlib.ting (pass, fail, message
+shape) and the stdlib.md row updated. Full gate green on both
+engines. Second stroke toward v2.35.0.
