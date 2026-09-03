@@ -1,7 +1,7 @@
 # The ting standard library
 
 Six modules written in ting itself — list, map, string, math, json
-and test, 118 functions between them — living in `lib/` and also
+and test, 120 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -61,6 +61,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `mode(xs)` | most frequent element (any type); first to reach the top count wins ties; `nil` on empty |
 | `take(xs, n)` | the first `n` elements (fewer if the list is shorter) |
 | `drop(xs, n)` | everything after the first `n` elements |
+| `take_while(xs, pred)` / `drop_while(xs, pred)` | the longest prefix satisfying `pred`, and everything after it |
 | `partition(xs, pred)` | `[matching, rest]` split by `pred`, both in input order |
 | `window(xs, n)` | sliding windows of `n` consecutive elements (empty if shorter) |
 | `first(xs)` | the first element, or `nil` on empty |

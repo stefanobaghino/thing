@@ -257,6 +257,24 @@ fn group_by(xs, key) {
   return out;
 }
 
+# The longest prefix whose elements all satisfy pred.
+fn take_while(xs, pred) {
+  let out = [];
+  for x in xs {
+    if !pred(x) { return out; }
+    push(out, x);
+  }
+  return out;
+}
+
+# Everything after the longest prefix whose elements all satisfy
+# pred: drop_while(xs, p) + take_while(xs, p) is xs, reordered.
+fn drop_while(xs, pred) {
+  let i = 0;
+  while i < len(xs) && pred(xs[i]) { i = i + 1; }
+  return slice(xs, i, len(xs));
+}
+
 # The first n elements (all of them when n exceeds the length); n < 0 fails.
 fn take(xs, n) {
   if n < 0 { fail("take: negative count"); }
