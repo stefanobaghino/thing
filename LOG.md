@@ -3297,3 +3297,14 @@ writing an example exposed, and the Pages incident distilled into
 a rule. The closing section's release count moves from twenty-five
 to forty-three. Markdown guard and full gate green. First stroke
 toward v2.24.0.
+
+---
+
+## 2026-09-03 — Iteration 234: scan
+
+CI and Pages green on 233 (API verdicts). lib/list.ting gains
+scan(xs, init, f), the running form of reduce: the result starts
+with init and has one element more than the input, so an empty
+list yields [init] rather than [] — the convention that makes
+prefix sums line up with indices. Three assertions, stdlib.md row.
+Full gate green on both engines. Second stroke toward v2.24.0.
