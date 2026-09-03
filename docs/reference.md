@@ -20,12 +20,14 @@ the reference engine.
 
 The REPL echoes the value of bare expressions, keeps state across lines,
 continues multi-line constructs with a `.. ` prompt (an empty line
-cancels), and forgives a missing final `;`. Six meta-commands:
+cancels), and forgives a missing final `;`. Seven meta-commands:
 `:help` lists every builtin with its doc line, `:doc NAME` explains
 one builtin or stdlib function (module, signature, comment), `:vars`
 lists the
 session's own bindings, `:load <file>` evaluates a file in the
-current session so its bindings stay available, `:fmt` reprints the
+current session so its bindings stay available, `:time EXPR`
+evaluates a one-line chunk and prints the elapsed milliseconds,
+`:fmt` reprints the
 last evaluated chunk as the formatter would write it, and `:clear`
 resets the session. It has no built-in line editing or history (zero
 dependencies); wrap it with

@@ -427,7 +427,8 @@ Everything else ships in the same binary:
   `:help` lists the builtins, `:doc median` explains one function
   (builtin or stdlib), `:load somefile.ting` pulls a script's
   definitions into your session to poke at them, `:vars` shows what
-  you have bound, `:fmt` reprints your last line the way the
+  you have bound, `:time EXPR` says how long a line took, `:fmt`
+  reprints your last line the way the
   formatter would write it, and `:clear` starts over.
 - `ting --check *.ting` reports syntax errors without running
   anything — wire it into a pre-commit hook.

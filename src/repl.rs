@@ -152,7 +152,7 @@ fn print_help() {
         say(&format!("{sig:width$}  {text}"));
     }
     say(
-        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
+        "(:doc NAME explains a builtin or stdlib function; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :clear resets; ctrl-d exits)",
     );
 }
 
@@ -161,7 +161,7 @@ fn run_inner() -> ExitCode {
     let tty = stdin.is_terminal();
     if tty {
         say(&format!(
-            "ting {} — :help, :doc NAME, :vars, :load <file>, :fmt, :clear",
+            "ting {} — :help, :doc NAME, :vars, :load <file>, :time EXPR, :fmt, :clear",
             env!("CARGO_PKG_VERSION")
         ));
     }
@@ -227,6 +227,23 @@ fn run_inner() -> ExitCode {
             for (name, ty) in bindings {
                 say(&format!("{name}: {ty}"));
             }
+            continue;
+        }
+        if buffer.is_empty()
+            && let Some(src) = line.trim().strip_prefix(":time ")
+        {
+            // One-line chunk, timed: the value (if any) then the elapsed
+            // wall-clock milliseconds on its own line.
+            let started = std::time::Instant::now();
+            let outcome = eval_chunk(&mut interp, src);
+            let ms = started.elapsed().as_secs_f64() * 1000.0;
+            match outcome {
+                Outcome::Incomplete => eprintln!("ting: :time needs a complete expression"),
+                Outcome::Unit => {}
+                Outcome::Value(v) => say(&v.to_string()),
+                Outcome::Error(msg) => eprintln!("{msg}"),
+            }
+            say(&format!("({ms:.1} ms)"));
             continue;
         }
         if buffer.is_empty()

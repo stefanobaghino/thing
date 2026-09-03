@@ -499,6 +499,30 @@ fn repl_doc_explains_builtins_and_stdlib_functions() {
 }
 
 #[test]
+fn repl_time_reports_milliseconds() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":time len(range(1000))\n:time let z = 1;\n:time 1 +\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stdout.contains("1000\n("), "value then timing: {stdout}");
+    assert_eq!(stdout.matches(" ms)").count(), 3, "{stdout}");
+    assert!(stderr.contains("needs a complete expression"), "{stderr}");
+    assert_eq!(out.status.code(), Some(0));
+}
+
+#[test]
 fn repl_fmt_reprints_the_last_chunk_formatted() {
     use std::io::Write as _;
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
