@@ -72,9 +72,10 @@ current orientation.
   site current.
 - v2.22.0 RELEASED and verified (42nd); aarch64-linux asset
   executed cold on this host, both engines; Pages green first time.
-- Backlog toward v2.23.0 (one per tick): lib/list.ting rotate(xs,
-  n); lib/string.ting truncate(s, n, suffix); quiet-machine bench
-  re-measure; distribution audit; release after ~3 strokes.
+- 228: rotate — first stroke toward v2.23.0.
+- Backlog (one per tick): lib/string.ting truncate(s, n, suffix);
+  quiet-machine bench re-measure; distribution audit; release after
+  ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

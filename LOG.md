@@ -3213,3 +3213,15 @@ Four archives published. Cold test on this aarch64 Linux host:
 `ting 2.22.0`, sum_by/words/with/update print identically on both
 engines. Site: all resources 200, changelog shows 2.22.0, tutorial
 page carries the count_by tally. 42 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 228: rotate
+
+CI green on 227b (API verdict). lib/list.ting gains rotate(xs, n):
+left for positive n, right for negative, any magnitude. ting's `%`
+keeps the dividend's sign (-7 % 3 == -1, checked before writing),
+so the shift is normalised into [0, len) explicitly; the empty list
+short-circuits to avoid a modulo by zero. Five assertions,
+stdlib.md row. Full gate green on both engines. First stroke toward
+v2.23.0.
