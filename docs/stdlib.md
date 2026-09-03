@@ -103,6 +103,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
 | `values(m)` | values in sorted key order |
 | `map_values(m, f)` | a fresh map with `f` applied to every value |
+| `map_keys(m, f)` | a fresh map with every key passed through `f` (a string); later keys win collisions |
 | `pick(m, ks)` | a fresh map with only the listed keys (missing skipped) |
 | `omit(m, ks)` | a fresh map without the listed keys |
 | `filter_map(m, pred)` | a fresh map with only the entries where `pred(key, value)` holds |

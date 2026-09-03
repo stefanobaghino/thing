@@ -39,6 +39,19 @@ fn map_values(m, f) {
   return out;
 }
 
+# A fresh map with every key passed through f, which must return a
+# string; when two keys map to the same name the later one (in key
+# order) wins.
+fn map_keys(m, f) {
+  let out = {};
+  for k in m {
+    let nk = f(k);
+    if type(nk) != "string" { fail("map_keys: f must return a string, got " + type(nk)); }
+    out[nk] = m[k];
+  }
+  return out;
+}
+
 # A fresh map with only the listed keys (missing keys are skipped).
 fn pick(m, ks) {
   let out = {};
