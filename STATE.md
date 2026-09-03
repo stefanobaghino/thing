@@ -63,11 +63,11 @@ current orientation.
   quiet.
 - v2.20.0 RELEASED and verified (40th); aarch64-linux asset
   executed cold on this host, both engines.
-- 219: is_digit/is_alpha; 220: logs example; 221: formatter hanging
-  openers — three strokes banked; RELEASE v2.21.0 next tick if quiet.
-- Backlog after the release: quiet-machine bench re-measure; LSP
-  formatting already uses fmt::format (no extra work); candidates:
-  lib/list.ting sum_by, lib/string.ting words(s).
+- v2.21.0 TAGGED (41st release): verify next tick by executing the
+  aarch64-linux asset cold here (include a --fmt - hanging-list
+  check).
+- Backlog after verification: quiet-machine bench re-measure;
+  candidates: lib/list.ting sum_by, lib/string.ting words(s).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

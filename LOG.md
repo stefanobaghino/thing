@@ -3114,3 +3114,11 @@ every run (idempotence + AST-preservation tests included). Clippy
 asked for a collapsed match; done with arithmetic rather than a
 side-effecting guard. Full gate green. Third stroke banked —
 v2.21.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 222: v2.21.0
+
+Formatter hanging openers, is_digit/is_alpha, logs example. CI
+green on 221 (API verdict). Full gate green, stdlib selftests pass
+on the reference engine. Tagging v2.21.0 (41st release).

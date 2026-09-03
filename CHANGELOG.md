@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.21.0 (2026-09-03)
+
+- Formatter: a `[` or `(` that ends its line indents its
+  continuation lines by one level until the closer (inline openers
+  are unchanged).
+- `lib/string.ting`: `is_digit`, `is_alpha`.
+- `examples/logs.ting`: a log summary using `count_by`, `window` and
+  `is_digit`.
+
 ## v2.20.0 (2026-09-03)
 
 - REPL: `:fmt` reprints the last evaluated chunk as the formatter
