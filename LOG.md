@@ -8709,3 +8709,32 @@ all. Milestone "the way back" (v2.83-v2.84): errors carry every
 frame they passed through, capped and named; arity messages
 pluralise and name the callee; try() hands the trace back to ting
 programs and lib/test.ting uses it; docs follow.
+
+---
+
+## 2026-09-03 — Iteration 519: the whole way back
+
+CI green on 518 (API verdict). Milestone stroke 1: a runtime error
+now carries the calls it came out of. `RuntimeError`'s single
+`called_from` — set once, only when an error crossed out of an
+imported module — became a `Vec<Frame>` that `Interpreter::call`
+pushes to as the error unwinds, so every frame is recorded with the
+function's name, the span of the call that entered it and the
+caller's own file. Both engines call through that one function, so
+the trace is byte-identical between them without a second
+implementation; the io test asserts that equality directly rather
+than trusting it. Naming the frames meant a function had to know
+its own name: `fn f(..)` parses as a let of a fn literal, so the
+let is where the name is attached — in the tree-walker through a
+`make_fn` helper, in the compiler through a `closure` helper that
+records it on the FnProto. A closure bound with `let f = fn(..)` is
+named the same way, which is what a reader expects; a literal
+passed straight to a call is "an anonymous function". Runaway
+recursion would otherwise print two hundred notes and bury the
+message, so a trace longer than ten frames keeps four at each end
+and says how many it dropped ("... 192 more frames"). Two doc
+passages quoted the old single-note output and were re-run and
+corrected. Full gate green (257 tests), plus 20000 differential
+cases (seed 20260903519), 5000 formatter cases, the crash fuzzer
+and the selftest corpus (541 checks). One stroke banked toward
+v2.83.0. Next: arity messages that pluralise and name the callee.

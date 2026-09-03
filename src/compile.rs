@@ -83,6 +83,10 @@ pub struct Chunk {
 
 #[derive(Debug)]
 pub struct FnProto {
+    /// The name the closure is bound to, when it is a `fn f(..)`
+    /// definition rather than an anonymous literal: what a trace calls
+    /// the frame.
+    pub name: Option<String>,
     pub params: Vec<String>,
     pub chunk: std::rc::Rc<Chunk>,
 }
@@ -347,7 +351,14 @@ impl Compiler {
     fn stmt(&mut self, s: &Stmt) -> Result<(), CompileError> {
         match &s.kind {
             StmtKind::Let(name, init) => {
-                self.expr(init)?;
+                // `fn f(..) {..}` parses as a let of a fn literal, so
+                // this is where a function learns its name.
+                match &init.kind {
+                    ExprKind::Fn(params, body) => {
+                        self.closure(params, body, init.span, Some(name))?
+                    }
+                    _ => self.expr(init)?,
+                }
                 match self.bind(name) {
                     Some(slot) => self.emit(Op::SetSlot(slot), s.span),
                     None => {
@@ -613,24 +624,35 @@ impl Compiler {
                 }
                 self.emit(Op::Call(args.len() as u8, callee.span), e.span);
             }
-            ExprKind::Fn(params, body) => {
-                let mut captured = std::collections::HashSet::new();
-                captured_names(body, &mut captured);
-                let ctx = FnCtx {
-                    scopes: vec![Vec::new()],
-                    captured,
-                    next_slot: 0,
-                    uses_env: false,
-                };
-                let chunk = compile_stmts(body, Some((params, ctx)))?;
-                self.chunk.protos.push(FnProto {
-                    params: params.clone(),
-                    chunk: std::rc::Rc::new(chunk),
-                });
-                let i = (self.chunk.protos.len() - 1) as u32;
-                self.emit(Op::MakeFn(i), e.span);
-            }
+            ExprKind::Fn(params, body) => self.closure(params, body, e.span, None)?,
         }
+        Ok(())
+    }
+
+    /// Compile a fn literal into a proto and emit the MakeFn for it.
+    fn closure(
+        &mut self,
+        params: &[String],
+        body: &std::rc::Rc<Vec<Stmt>>,
+        span: Span,
+        name: Option<&str>,
+    ) -> Result<(), CompileError> {
+        let mut captured = std::collections::HashSet::new();
+        captured_names(body, &mut captured);
+        let ctx = FnCtx {
+            scopes: vec![Vec::new()],
+            captured,
+            next_slot: 0,
+            uses_env: false,
+        };
+        let chunk = compile_stmts(body, Some((params, ctx)))?;
+        self.chunk.protos.push(FnProto {
+            name: name.map(str::to_string),
+            params: params.to_vec(),
+            chunk: std::rc::Rc::new(chunk),
+        });
+        let i = (self.chunk.protos.len() - 1) as u32;
+        self.emit(Op::MakeFn(i), span);
         Ok(())
     }
 

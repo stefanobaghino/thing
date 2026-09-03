@@ -293,9 +293,10 @@ fn module_runtime_errors_point_into_the_module() {
             "{engine}: {stderr}"
         );
         assert!(stderr.contains("return nosuch + 1;"), "{engine}: {stderr}");
-        // The importer's call site follows as a note, and nowhere else.
+        // The importer's call site follows as a named frame, and
+        // nowhere else.
         assert!(
-            stderr.contains("note: called from") && stderr.contains("main.ting:3:"),
+            stderr.contains("note: in boom, called from") && stderr.contains("main.ting:3:"),
             "{engine}: {stderr}"
         );
         assert_eq!(
@@ -323,10 +324,88 @@ fn module_runtime_errors_point_into_the_module() {
         "{stderr}"
     );
     assert!(
-        stderr.contains("note: called from") && stderr.contains("emb.ting:2:"),
+        stderr.contains("note: in mean, called from") && stderr.contains("emb.ting:2:"),
         "{stderr}"
     );
     assert!(!stderr.contains("panicked"), "{stderr}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// An error carries every call it unwound through: one note per
+/// frame, innermost first, named after the function it was raised in,
+/// identical under both engines. A long trace is elided in the middle
+/// so a runaway recursion cannot bury the message.
+#[test]
+fn errors_show_the_whole_way_back() {
+    let dir = std::env::temp_dir().join(format!("ting-trace-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let nested = dir.join("nested.ting");
+    std::fs::write(
+        &nested,
+        "fn inner(x) { return x + \"a\"; }\nfn outer(x) { return inner(x); }\nlet apply = fn(f) { return f(1); };\napply(outer);\n",
+    )
+    .unwrap();
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&nested)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1), "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        let notes: Vec<&str> = stderr.lines().filter(|l| l.starts_with("note:")).collect();
+        assert_eq!(notes.len(), 3, "{engine}: {stderr}");
+        assert!(
+            notes[0].starts_with("note: in inner, called from"),
+            "{engine}: {stderr}"
+        );
+        assert!(notes[0].ends_with("nested.ting:2:22"), "{engine}: {stderr}");
+        assert!(
+            notes[1].starts_with("note: in outer, called from"),
+            "{engine}: {stderr}"
+        );
+        assert!(notes[1].ends_with("nested.ting:3:28"), "{engine}: {stderr}");
+        // `let apply = fn(..)` is named by the binding it is given.
+        assert!(
+            notes[2].starts_with("note: in apply, called from"),
+            "{engine}: {stderr}"
+        );
+        assert!(notes[2].ends_with("nested.ting:4:1"), "{engine}: {stderr}");
+        seen.push(stderr);
+    }
+    assert_eq!(seen[0], seen[1], "engines disagree");
+
+    // A function with no name of its own says so.
+    let anon = dir.join("anon.ting");
+    std::fs::write(
+        &anon,
+        "fn run(f) { return f(); }\nrun(fn() { return nosuch; });\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&anon)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("note: in an anonymous function, called from"),
+        "{stderr}"
+    );
+
+    // 200 frames deep, the trace keeps four at each end and counts
+    // the rest.
+    let deep = dir.join("deep.ting");
+    std::fs::write(&deep, "fn r(n) { return r(n + 1); }\nr(0);\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&deep)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("error: stack overflow"), "{stderr}");
+    let notes = stderr.lines().filter(|l| l.starts_with("note:")).count();
+    assert_eq!(notes, 9, "{stderr}");
+    assert!(stderr.contains("note: ... 192 more frames"), "{stderr}");
     let _ = std::fs::remove_dir_all(&dir);
 }
 

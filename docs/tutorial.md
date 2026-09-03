@@ -244,7 +244,7 @@ and the script above called it on line 4:
 greeter.ting:1:34: error: undefined variable 'nam' (did you mean 'name'?)
  1 | fn greet(name) { return "hi, " + nam; }
    |                                  ^^^
-note: called from main.ting:4:7
+note: in greet, called from main.ting:4:7
 ```
 
 The parenthesis after the name is ting guessing at a typo: when the

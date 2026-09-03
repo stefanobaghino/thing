@@ -16,18 +16,21 @@ pub struct RuntimeError {
     /// function defined in an imported file; None means the span is
     /// in the source being run.
     pub origin: Option<Rc<Origin>>,
-    /// Where the importer called into the module the error came from:
-    /// the call's span and the caller's own origin (None for the
-    /// source being run). Set once, at the first crossing.
-    pub called_from: Option<(Span, Option<Rc<Origin>>)>,
+    /// The calls the error came out of, innermost first: one frame per
+    /// function it unwound through, pushed as it went.
+    pub frames: Vec<Frame>,
 }
 
-fn same_origin(a: &Option<Rc<Origin>>, b: &Option<Rc<Origin>>) -> bool {
-    match (a, b) {
-        (None, None) => true,
-        (Some(x), Some(y)) => Rc::ptr_eq(x, y),
-        _ => false,
-    }
+/// One call an error passed through on its way out: the function it
+/// was raised inside (None when that function is anonymous), the span
+/// of the call that entered it, and the origin the *caller* belongs
+/// to (None for the source being run), which is the file the span is
+/// to be read against.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Frame {
+    pub name: Option<Rc<str>>,
+    pub span: Span,
+    pub origin: Option<Rc<Origin>>,
 }
 
 /// A file a function was defined in: what an error raised inside it
@@ -47,24 +50,45 @@ impl RuntimeError {
             Some(o) => crate::diag::render(&o.path, &o.src, &self.message, self.span),
             None => crate::diag::render(path, src, &self.message, self.span),
         };
-        if let Some((span, caller)) = &self.called_from {
-            let (p, s): (&str, &str) = match caller {
+        let n = self.frames.len();
+        for (i, frame) in self.frames.iter().enumerate() {
+            // A deep trace (runaway recursion, most often) is elided in
+            // the middle: the innermost calls say what failed and the
+            // outermost say who started it, and the count in between
+            // says how much was left out.
+            if n > TRACE_LIMIT && i == TRACE_EDGE {
+                let hidden = n - 2 * TRACE_EDGE;
+                text.push_str(&format!("\nnote: ... {hidden} more frames"));
+            }
+            if n > TRACE_LIMIT && i >= TRACE_EDGE && i < n - TRACE_EDGE {
+                continue;
+            }
+            let (p, s): (&str, &str) = match &frame.origin {
                 Some(o) => (&o.path, &o.src),
                 None => (path, src),
             };
-            let (line, col) = span.line_col(s);
-            text.push_str(&format!("\nnote: called from {p}:{line}:{col}"));
+            let (line, col) = frame.span.line_col(s);
+            let what = match &frame.name {
+                Some(name) => format!("in {name}"),
+                None => "in an anonymous function".to_string(),
+            };
+            text.push_str(&format!("\nnote: {what}, called from {p}:{line}:{col}"));
         }
         text
     }
 }
+
+/// Traces longer than this are elided in the middle, keeping
+/// `TRACE_EDGE` frames at each end.
+const TRACE_LIMIT: usize = 10;
+const TRACE_EDGE: usize = 4;
 
 pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     RuntimeError {
         message: message.into(),
         span,
         origin: None,
-        called_from: None,
+        frames: Vec::new(),
     }
 }
 
@@ -121,6 +145,9 @@ impl Env {
 /// closure, bytecode when the VM did — either engine can call either.
 #[derive(Debug)]
 pub struct Function {
+    /// The name it was defined under, for traces; None when the
+    /// function is an anonymous literal.
+    pub name: Option<Rc<str>>,
     pub params: Vec<Rc<str>>,
     pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
@@ -317,7 +344,12 @@ impl<W: Write> Interpreter<W> {
     fn exec(&mut self, stmt: &Stmt) -> Result<Control, RuntimeError> {
         match &stmt.kind {
             StmtKind::Let(name, init) => {
-                let v = self.eval(init)?;
+                // `fn f(..) {..}` parses as a let of a fn literal, so
+                // this is where a function learns its name.
+                let v = match &init.kind {
+                    ExprKind::Fn(params, body) => self.make_fn(params, body, Some(name.as_str())),
+                    _ => self.eval(init)?,
+                };
                 self.env
                     .borrow_mut()
                     .vars
@@ -442,6 +474,23 @@ impl<W: Write> Interpreter<W> {
 
     pub(crate) fn lookup(&self, name: &str) -> Option<Value> {
         Env::get(&self.env, name)
+    }
+
+    /// A closure over the current environment, named when it is being
+    /// bound to a name and anonymous otherwise.
+    pub(crate) fn make_fn(
+        &self,
+        params: &[String],
+        body: &Rc<Vec<Stmt>>,
+        name: Option<&str>,
+    ) -> Value {
+        Value::Fn(Rc::new(Function {
+            name: name.map(Rc::from),
+            params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
+            body: FnBody::Ast(Rc::clone(body)),
+            env: Rc::clone(&self.env),
+            origin: self.current_origin(),
+        }))
     }
 
     /// "undefined variable 'cont'", plus the nearest name in scope
@@ -1468,15 +1517,17 @@ impl<W: Write> Interpreter<W> {
         self.env = saved;
         crate::vm::give_buf(locals);
         // An error leaving a module's function is located in that
-        // module's file; the first call site in a *different* file is
-        // where the importer reached in, noted once.
+        // module's file; every call it unwinds through leaves a frame,
+        // so the diagnostic can show the whole way back.
         let result = result.map_err(|mut e| {
             if e.origin.is_none() {
                 e.origin = func.origin.clone();
             }
-            if e.called_from.is_none() && !same_origin(&caller, &e.origin) {
-                e.called_from = Some((span, caller.clone()));
-            }
+            e.frames.push(Frame {
+                name: func.name.clone(),
+                span,
+                origin: caller.clone(),
+            });
             e
         });
         match result? {
@@ -1539,12 +1590,7 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
-            ExprKind::Fn(params, body) => Ok(Value::Fn(Rc::new(Function {
-                params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
-                body: FnBody::Ast(Rc::clone(body)),
-                env: Rc::clone(&self.env),
-                origin: self.current_origin(),
-            }))),
+            ExprKind::Fn(params, body) => Ok(self.make_fn(params, body, None)),
             ExprKind::Unary(op, operand) => {
                 let v = self.eval(operand)?;
                 unary(*op, v, expr.span)

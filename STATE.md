@@ -17,15 +17,17 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 256 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 257 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast, per-file check counts), --lsp (thirteen
-  capabilities). Module errors point at the module's line with a
-  call-site note; cyclic data prints, compares and json-fails cleanly.
+  capabilities). A runtime error points at the line that raised it
+  and carries a note per call it unwound through (named, capped at
+  ten with the middle elided); module errors point into the module's
+  own file; cyclic data prints, compares and json-fails cleanly.
 - Distribution: six release archives per tag since v2.30.0 (x86_64
   and aarch64 Linux gnu + musl, darwin arm64, windows), built on
   22.04 runners with a glibc floor guard; Pages site at
@@ -181,14 +183,14 @@ holds only the current milestone and the standing rules.
   complete.
 - 518: replenishment — milestone "the way back" (v2.83-v2.84),
   reasoning in LOG.md.
+- 519: the whole way back — every call an error unwinds through
+  leaves a named frame; deep traces elide the middle.
 - Backlog (one per tick, in order):
-  (1) the whole way back: an error carries every frame it passed
-  through — name, call site, file — capped for deep recursion, one
-  path (Interpreter::call) so both engines agree; (2) one argument,
-  not argument(s): arity messages pluralise and name the function
-  called; (3) RELEASE v2.83.0; (4) try() hands the trace back, and
-  lib/test.ting says where the error was raised; (5) the docs read
-  the trace; (6) RELEASE v2.84.0; (7) health tick + audit.
+  (1) one argument, not argument(s): arity messages pluralise and
+  name the function called; (2) RELEASE v2.83.0; (3) try() hands the
+  trace back, and lib/test.ting says where the error was raised;
+  (4) the docs read the trace; (5) RELEASE v2.84.0; (6) health tick
+  + audit.
 - Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

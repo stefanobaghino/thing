@@ -258,8 +258,8 @@ an imported module is named both by `--check` and at runtime.
 
 An error raised inside a function that an imported module defines is
 reported against that module's file and line (for an embedded stdlib
-module, its `lib/...` path), followed by a `note: called from` line
-giving the call site in the importer.
+module, its `lib/...` path), followed by a `note: in NAME, called
+from` line for every call it unwound through, innermost first.
 
 The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
