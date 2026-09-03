@@ -5184,3 +5184,16 @@ v2.47.0 next tick, then replenish.
 Workspace-wide rename — the tail of the 330 milestone. CI green on
 336 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.47.0 (68th tag).
+
+---
+
+## 2026-09-03 — Iteration 337b: v2.47.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static) and CI green on the
+tag (API verdicts); the Pages deploy was still running when first
+listed and the changelog page answered 503 mid-deploy — waiting for
+the run's own conclusion (success) and re-checking gave 200 with
+2.47.0 on the page, so nothing to retry. Six assets published. Cold
+test on this aarch64 Linux host: `ting 2.47.0`, dedent agrees on
+both engines, the released `--lsp` advertises rename. 68 tags, 67
+verified. The 330 milestone is complete; next tick replenishes.

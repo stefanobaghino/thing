@@ -153,9 +153,16 @@ current orientation.
   (v2.46–v2.48), reasoning in LOG.md.
 - v2.46.0 RELEASED and verified (67th tag); aarch64 musl archive
   executed cold here.
-- v2.47.0 TAGGED (68th tag; completes the 330 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.47.0 RELEASED and verified (68th tag); aarch64 glibc archive
+  executed cold here. The 330 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  `--test` summary per directory / slowest files list; (b)
+  lib/list.ting `sample`/`shuffle` need randomness — no PRNG
+  builtin, reject; (c) lib/math.ting percentile(xs, p); (d) LSP:
+  hover on user-defined functions (show signature from the fn
+  binding); (e) examples: a tiny template renderer (string
+  replace + maps); (f) playground: preload the cookbook examples via
+  a generated JS file (build.sh) — larger, defer again or do.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
