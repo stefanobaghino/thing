@@ -2724,3 +2724,11 @@ stroke banked — v2.15.0 next tick if quiet.
 Stats-and-REPL release: median, :clear, stats example dogfooding.
 Full gate green, stdlib selftests pass on the reference engine.
 Tagging v2.15.0 (35th release).
+
+---
+
+## 2026-09-03 — Iteration 195b: v2.15.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.15.0,
+median([4,1,3,2]) = 2.5, :clear + :vars behave. 35 releases, all
+verified.
