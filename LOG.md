@@ -3940,3 +3940,21 @@ descends afterwards, and the test's nested directory is named to
 sort before the files so it would fail on the old order. Ships in
 the next release; v2.31.0's order is merely different, not wrong.
 Full gate green.
+
+---
+
+## 2026-09-03 — Iteration 269: LSP warning for unknown stdlib members
+
+CI green on 268b across all jobs (API verdict). Milestone stroke 4,
+and the server's first diagnostic that is not a syntax error: when
+a document binds a name with `let m = import(...)` to an embedded
+stdlib module and later indexes it with a string key the module
+does not export, a severity-2 warning lands on the key itself,
+worded as "lib/x.ting has no `name`". Exports are the module's
+top-level fns and lets (so test.ting's `state` map counts), the
+lookup respects identifier boundaries, and it is all text-based
+like the rest of lsp.rs. Protocol test: a misspelling warns, the
+correct name and the non-function export stay silent, and fixing
+the document clears the list. Reference Tooling line updated. Full
+gate green. First stroke toward v2.32.0 (with 268b's ordering fix
+already banked).
