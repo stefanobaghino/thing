@@ -4395,3 +4395,17 @@ document was scaled up before the baseline row was written.
 BASELINE.md regenerated on this host (six rows; load ~4, so the
 usual noise caveat applies to absolute times). Full gate green.
 First stroke toward v2.37.0.
+
+---
+
+## 2026-09-03 — Iteration 293: LSP folding ranges
+
+CI green on 292 (API verdict). Milestone stroke 5, the server's
+tenth capability: foldingRangeProvider, answering
+textDocument/foldingRange with one region per brace pair that spans
+more than one line (blocks and map literals alike, nested ranges
+included, outermost first), computed from the token stream the way
+the formatter tracks depth. One-line blocks fold nothing. Protocol
+test pins a nested fn/if pair and the count. Reference line
+updated. Full gate green (199 tests). Second stroke toward v2.37.0;
+the 287 milestone's five strokes are done.
