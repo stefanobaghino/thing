@@ -176,3 +176,18 @@ fn group_by(xs, key) {
   }
   return out;
 }
+
+# The first n elements (all of them when n exceeds the length); n < 0 fails.
+fn take(xs, n) {
+  if n < 0 { fail("take: negative count"); }
+  if n > len(xs) { n = len(xs); }
+  return slice(xs, 0, n);
+}
+
+# Everything after the first n elements (empty when n exceeds the
+# length); n < 0 fails.
+fn drop(xs, n) {
+  if n < 0 { fail("drop: negative count"); }
+  if n > len(xs) { n = len(xs); }
+  return slice(xs, n, len(xs));
+}

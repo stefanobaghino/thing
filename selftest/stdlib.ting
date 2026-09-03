@@ -117,3 +117,12 @@ assert(has(try(fn() { return l["median"]([]); }), "err"), "median empty fails");
 assert(l["group_by"](["ab", "c", "de"], fn(w) { return str(len(w)); }) == {"1": ["c"], "2": ["ab", "de"]}, "group_by");
 assert(l["group_by"]([], fn(x) { return x; }) == {}, "group_by empty");
 assert(has(try(fn() { return l["group_by"]([1], fn(x) { return x; }); }), "err"), "group_by non-string key fails");
+
+assert(l["take"]([1, 2, 3], 2) == [1, 2], "take");
+assert(l["take"]([1, 2], 5) == [1, 2], "take past end");
+assert(l["take"]([1, 2], 0) == [], "take zero");
+assert(l["drop"]([1, 2, 3], 2) == [3], "drop");
+assert(l["drop"]([1, 2], 5) == [], "drop past end");
+assert(l["drop"]([], 0) == [], "drop empty");
+assert(has(try(fn() { return l["take"]([1], -1); }), "err"), "take negative fails");
+assert(has(try(fn() { return l["drop"]([1], -1); }), "err"), "drop negative fails");
