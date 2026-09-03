@@ -40,6 +40,8 @@ fn unique(xs) {
   return out;
 }
 
+# One level of nesting removed: list elements are spliced in, other
+# elements pass through unchanged.
 fn flatten(xs) {
   let out = [];
   for x in xs {
@@ -57,6 +59,20 @@ fn any(xs, pred) {
     if pred(x) { return true; }
   }
   return false;
+}
+
+# Every level of nesting removed: a list of the non-list leaves in
+# order, however deep they sit.
+fn flatten_deep(xs) {
+  let out = [];
+  for x in xs {
+    if type(x) == "list" {
+      for y in flatten_deep(x) { push(out, y); }
+    } else {
+      push(out, x);
+    }
+  }
+  return out;
 }
 
 # Index of the first element for which pred holds, or nil when none

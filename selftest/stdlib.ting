@@ -8,6 +8,10 @@ assert(l["zip"]([1, 2, 3], ["a", "b"]) == [[1, "a"], [2, "b"]], "zip trims");
 assert(l["enumerate"](["x", "y"]) == [[0, "x"], [1, "y"]], "enumerate");
 assert(l["unique"]([1, 2, 1, 3, 2]) == [1, 2, 3], "unique");
 assert(l["flatten"]([[1, 2], 3, [4]]) == [1, 2, 3, 4], "flatten");
+assert(l["flatten_deep"]([[1, [2, [3]]], 4, [[5]]]) == [1, 2, 3, 4, 5], "flatten_deep");
+assert(l["flatten_deep"]([1, 2]) == [1, 2], "flatten_deep flat stays");
+assert(l["flatten_deep"]([[], [[]]]) == [], "flatten_deep empties vanish");
+assert(l["flatten_deep"]([]) == [], "flatten_deep empty");
 
 let s = import("../lib/string.ting");
 assert(s["repeat"]("ab", 3) == "ababab", "repeat");

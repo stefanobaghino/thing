@@ -51,6 +51,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `median(xs)` | middle of the sorted values (mean of two middles when even) |
 | `mean_by(xs, f)` | mean of `f(x)` as a float; empty list fails |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
+| `flatten_deep(xs)` | every level of nesting removed: the non-list leaves in order |
 | `group_by(xs, key)` | map from `key(x)` (a string) to the elements with that key, in input order |
 | `chunk_by(xs, key)` | consecutive elements with the same `key(x)` grouped into runs, in order |
 | `count_by(xs, key)` | map from `key(x)` (a string) to how many elements share it |
