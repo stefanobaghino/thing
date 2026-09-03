@@ -70,8 +70,13 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 417: merge_with — one stroke banked toward v2.63.0. 418: health
   tick + audit green — milestone "the session" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 419: replenishment — milestone "the editor, again" (v2.63–v2.64),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) LSP documentHighlight,
+  protocol test; (2) LSP prepareRename, protocol test — then RELEASE
+  v2.63.0 (417, +2); (3) the thirteen-capability count in README,
+  reference, editor/README, STATE; (4) lib/string.ting squeeze,
+  selftests; (5) health tick + audit.
 - Tags: 83 (v2.62.0), 82 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

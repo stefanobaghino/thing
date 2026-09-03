@@ -6836,3 +6836,36 @@ symbol under the cursor) and prepareRename, both a short walk from
 the references logic. The "session" milestone is complete; one
 stroke (417) is banked toward v2.63.0. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-03 — Iteration 419: replenishment — milestone "the editor, again"
+
+CI green on 418 (API verdict). Twenty-one milestones since the
+restart, eighty-three tags. The language server has twelve
+capabilities and the survey at 418 found two an editor asks for on
+every cursor move and every rename that are a short walk from the
+references scan: documentHighlight, which lights up the other
+occurrences of the symbol under the cursor, and prepareRename,
+which lets the editor refuse a rename on a keyword or a builtin
+before it opens the prompt. The string module can pad, wrap, slug
+and dedent but not collapse whitespace. Five strokes:
+
+1. LSP documentHighlight: every token equal to the identifier
+   under the cursor, the binding sites (`let name`, `fn name`) as
+   Write and the rest as Read. Protocol test. The thirteenth
+   capability.
+2. LSP prepareRename: the identifier's range and placeholder;
+   null for a keyword, a builtin or no identifier, so the editor
+   declines early; renameProvider advertises prepareProvider.
+   Protocol test. Then release v2.63.0 (417 + two).
+3. The count: README, the reference's LSP bullet, editor/README
+   and STATE.md's shape line say thirteen and name the two.
+4. lib/string.ting squeeze(s): runs of whitespace (spaces, tabs,
+   newlines) collapsed to one space, ends trimmed. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: semantic tokens (a colour table per client, and the
+TextMate grammar already colours everything the lexer knows),
+inlay hints (nothing to infer in a dynamically typed language
+without a type checker).
