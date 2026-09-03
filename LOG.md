@@ -7243,3 +7243,22 @@ hypotenuse as a float via the module's Newton sqrt. Four selftests
 stdlib.md row. Selftests pass on both engines; full gate green
 (233 tests). One stroke banked toward v2.67.0. Next: health tick
 + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 440: health tick + audit
+
+CI and Pages green on 439 (API verdicts). Bench at load ~7: all
+six checksums match; timings are weather. Fuzz: 50000 differential
+cases (seed 20260903440), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 440, each also in CRLF form) all
+pass in release. Distribution: 87 releases with the expected asset
+counts (36 × 3, 14 × 4, 37 × 6), all six v2.66.0 download URLs
+resolve, all nine site resources answer 200, and the site serves
+hypot and the CRLF rule. Probes: the test runner, stdin checking
+and stdin formatting all take CRLF input cleanly; the LSP's
+whole-document formatting edit ends one line past the last for
+LF and CRLF alike (the split count), which every client clamps —
+a nit, not a bug. Nothing to fix. The "small print" milestone is
+complete; one stroke (439) is banked toward v2.67.0. Backlog
+empty: next tick is replenishment.
