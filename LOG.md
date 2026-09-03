@@ -5334,3 +5334,15 @@ strokes are done; v2.49.0 next tick, then replenish.
 --test --slow — the tail of the 338 milestone. CI green on 344 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.49.0 (70th tag).
+
+---
+
+## 2026-09-03 — Iteration 345b: v2.49.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.49.0`, `--test --slow 1` over a
+directory prints the summary then the slowest file, and the suite
+passes on the reference engine. Site: all resources 200, changelog
+shows 2.49.0. 70 tags, 69 verified. The 338 milestone is complete;
+next tick replenishes.

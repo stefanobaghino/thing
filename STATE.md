@@ -159,9 +159,16 @@ current orientation.
   (v2.48–v2.50), reasoning in LOG.md.
 - v2.48.0 RELEASED and verified (69th tag); aarch64 musl archive
   executed cold here.
-- v2.49.0 TAGGED (70th tag; completes the 338 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.49.0 RELEASED and verified (70th tag); aarch64 glibc archive
+  executed cold here. The 338 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  retrospective act seven is NOT due (six milestones per act so
+  far — wait); (b) lib/list.ting `min_max`/`extent`; (c) LSP:
+  signature help for user-defined fns (mirror 341); (d) `--check`
+  warning for unused top-level lets (needs a use scan — feasible,
+  text-based); (e) examples: a markdown-table renderer; (f)
+  bench: an LSP request benchmark (tools, not language); (g)
+  `ting --fmt --diff` showing what would change.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
