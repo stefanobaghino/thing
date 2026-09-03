@@ -7967,3 +7967,20 @@ example showing them at work. Five strokes:
 Rejected: reading the terminal width from the environment (COLUMNS
 is unreliable and a pipe has none; 78 is the honest constant),
 markdown in --doc output (it is a terminal, not a page).
+
+---
+
+## 2026-09-03 — Iteration 479: --doc within eighty columns
+
+CI green on 478 (API verdict). Milestone stroke 1: every line
+--doc and :doc print fits 78 columns. A single entry's comment
+wraps under its signature at two spaces; an index entry keeps the
+signature and the first sentence on one line when that fits and
+otherwise puts the sentence underneath, indented past the
+signature so the eye can still scan the names; builtins in the
+index go through the same path. io test measures every line of
+the full index, a module and a single entry; one older assertion
+that expected median's sentence beside its name was relaxed, since
+that line is exactly the kind that now wraps. Full gate green
+(242 tests). One stroke banked toward v2.74.0. Next: the
+inventory example.
