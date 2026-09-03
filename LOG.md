@@ -6347,3 +6347,11 @@ case; the reference's Limits line completes. The one-line programs
 from 389 and 390 now all run to a result or a diagnostic. Full
 gate green (222 tests). Three strokes banked (391, 392, 393) —
 v2.58.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 394: v2.58.0
+
+Cyclic print, cyclic equality, json_str refusing cycles. CI and
+Pages green on 393 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.58.0 (79th tag).

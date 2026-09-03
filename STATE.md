@@ -205,8 +205,9 @@ current orientation.
   overflow); first candidate for the next milestone.
 - 390: replenishment — milestone "cycles" (v2.58–v2.59), reasoning
   in LOG.md.
-- 391: cyclic print; 392: cyclic equality; 393: json_str refuses
-  cycles — three strokes banked; RELEASE v2.58.0 next tick if quiet.
+- v2.58.0 TAGGED (79th tag; strokes 391, 392, 393): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (the three cyclic programs, selftests).
 - Backlog after the release (in order): (4) tutorial Testing chapter
   flags (the reference Limits line is already current); (5) health
   tick + audit with a cycle in the crash fuzzer.

@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.58.0 (2026-09-03)
+
+- Cyclic data no longer crashes the process: printing shows `[...]`
+  / `{...}` at the point of recursion, `==` terminates (two cycles
+  that agree everywhere they can be inspected are equal), and
+  `json_str` reports a cyclic value as an error.
+
 ## v2.57.0 (2026-09-03)
 
 - lib/list.ting: `find_index(xs, pred)`.
