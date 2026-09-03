@@ -4578,3 +4578,11 @@ no engine conclusion is drawn; no engine code has changed. Fuzz:
 all six v2.38.0 download URLs resolve, all eight site resources
 answer 200 and the cookbook page carries the turnstile. Nothing to
 fix. v2.39.0 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 304: v2.39.0
+
+json diff and the machine example — the tail of the 296 milestone.
+CI green on 303 (API verdict). Full gate green, stdlib selftests
+pass on the reference engine. Tagging v2.39.0 (60th tag).

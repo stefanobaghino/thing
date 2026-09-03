@@ -4,4 +4,4 @@ version = 4
 
 [[package]]
 name = "ting"
-version = "2.38.0"
+version = "2.39.0"

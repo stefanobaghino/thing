@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.39.0 (2026-09-03)
+
+- `lib/json.ting`: `diff`.
+- `examples/machine.ting`: a state machine from closures and a
+  transition table.
+
 ## v2.38.0 (2026-09-03)
 
 - `ting --doc NAME` explains a builtin or stdlib function from the
