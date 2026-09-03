@@ -133,8 +133,9 @@ current orientation.
   executed cold here. The 296 milestone is complete.
 - 305: replenishment — milestone "reporting" (v2.40–v2.42),
   reasoning in LOG.md.
-- 306: --test --tap — milestone stroke 1; first toward v2.40.0.
-- Backlog (one per tick, in order): (2) tutorial Closures chapter with an executed snippet; (3)
+- 306: --test --tap; 307: tutorial closures chapter — milestone
+  strokes 1–2; two toward v2.40.0.
+- Backlog (one per tick, in order): (3)
   lib/list.ting binary_search, selftests; (4) lib/string.ting
   levenshtein, selftests; (5) retrospective act six. Release after
   ~3; health tick after.

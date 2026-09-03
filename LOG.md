@@ -4645,3 +4645,17 @@ exists now in the default path's data, unused there. io test checks
 the plan, both line shapes, the diagnostic, the timing comment and
 that every line is TAP-clean; help and reference updated. Full gate
 green (202 tests). First stroke toward v2.40.0.
+
+---
+
+## 2026-09-03 — Iteration 307: tutorial "Closures as objects"
+
+CI and Pages green on 306 (API verdicts). Milestone stroke 2: the
+tutorial already had the counter factory under "Functions are
+values", so the new chapter goes one step further — an executed
+account example where three closures share balance and history and
+come back in a map as the object's interface, with a failed
+withdrawal caught by try(). Prose points at the cookbook's machine
+example for the full state machine. The tutorial test runs the
+snippet. Markdown guard and full gate green. Second stroke toward
+v2.40.0.
