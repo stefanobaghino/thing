@@ -84,9 +84,9 @@ current orientation.
   executed cold on this host, both engines.
 - v2.26.0 RELEASED and verified (46th); aarch64-linux asset
   executed cold on this host, both engines.
-- 246: tutorial closing chapter; 247: indent; 248: map top — three
-  strokes banked; RELEASE v2.27.0 next tick if quiet.
-- Backlog after the release: distribution audit; tutorial word-
+- v2.27.0 TAGGED (47th release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run succeeded.
+- Backlog after verification: distribution audit; tutorial word-
   frequency script via top(frequencies(words(...)), 3); candidates:
   lib/list.ting product, lib/math.ting mean_by.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

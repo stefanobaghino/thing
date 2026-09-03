@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.27.0 (2026-09-03)
+
+- `lib/string.ting`: `indent`.
+- `lib/map.ting`: `top`.
+- Tutorial: the closing chapter covers every REPL meta-command, the
+  stdin filter, and the editor's stdlib awareness.
+
 ## v2.26.0 (2026-09-03)
 
 - LSP: hover and signature help work for stdlib functions called

@@ -3523,3 +3523,11 @@ writing), so ties come out in key order and the selftest pins it.
 The word-frequency idiom becomes top(frequencies(words(text)), 3).
 Five assertions, stdlib.md row. Full gate green on both engines.
 Third stroke banked — v2.27.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 249: v2.27.0
+
+indent, top, tutorial closing chapter. CI green on 248 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.27.0 (47th release).
