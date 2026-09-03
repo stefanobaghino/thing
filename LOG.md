@@ -7534,3 +7534,33 @@ all nine site resources answer 200, and the site serves the ninth
 act, argmax and is_number. A probe of diagnostic positions on a
 CRLF document came back right. Nothing to fix. The "ninth act"
 milestone is complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 456: replenishment — milestone "counted and guarded"
+
+CI green on 455 (API verdict). Twenty-six milestones since the
+restart, ninety tags. The survey counted 116 functions across the
+six stdlib modules against a page that says 105 and nothing that
+would notice: the cookbook and the playground list are guarded,
+the builtins are guarded against the reference, but the stdlib
+page's rows and its headline number are checked by nobody. And
+the checker's five warnings stay advice: a project that wants
+them enforced in CI has no switch. Five strokes:
+
+1. A docs guard: every `fn` in lib/*.ting has a row on the stdlib
+   page, and the page's stated function count is the real one; the
+   page corrected to 116 to make the guard pass.
+2. `ting --check --strict`: warnings fail the check (exit 1), for
+   pre-commit hooks and CI that want the five enforced; the LSP is
+   unaffected. io test.
+3. Reference, tutorial and README mention --strict; the tutorial's
+   Testing chapter mentions check_type. Then release v2.70.0.
+4. lib/map.ting key_of(m, v): the first key (in key order) whose
+   value equals v, nil when none — the inverse lookup. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: per-warning switches (five names to remember and
+document; a single strict mode is the honest first step), a guard
+over prose counts in the README (the shape line in STATE.md says
+"105+" on purpose).
