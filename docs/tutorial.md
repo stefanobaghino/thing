@@ -513,7 +513,8 @@ Everything else ships in the same binary:
 - `ting --check *.ting` reports syntax errors without running
   anything, follows `import` to your local modules, and warns about
   a name bound nowhere, a call whose argument count cannot match the
-  function it names, a misspelt stdlib member, an unused binding (at
+  function it names, a duplicate key in a map literal, a statement
+  that can never run, a misspelt stdlib member, an unused binding (at
   the top level or inside a function), an unused parameter or a name
   that shadows a builtin — wire it into a pre-commit hook, with
   `--strict` if the warnings should block the commit too. The

@@ -1362,6 +1362,9 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
     all.extend(unused_params(src));
     all.extend(unused_local_lets(src));
     all.extend(shadowed_builtins(src));
+    // One file's warnings read in the order its lines do, whatever
+    // pass found them.
+    all.sort_by_key(|(start, _, _)| *start);
     all
 }
 

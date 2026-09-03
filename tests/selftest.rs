@@ -39,12 +39,12 @@ fn selftests_pass_silently() {
 }
 
 /// The whole corpus under `--check`: the warnings it may print are
-/// enumerated here, so a new false positive fails the build. Each of
-/// these three is deliberate — a shadowed builtin, an unbound name and
-/// a wrong-arity call, every one of them written to test the runtime
-/// that catches it.
+/// enumerated here, so a new false positive fails the build. Every one
+/// is deliberate — a shadowed builtin, a duplicate key, a statement
+/// after a return, an unbound name and a wrong-arity call — and each
+/// was written to test the runtime that catches it.
 #[test]
-fn corpus_check_warnings_are_the_expected_three() {
+fn corpus_check_warnings_are_the_expected_five() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
@@ -55,18 +55,20 @@ fn corpus_check_warnings_are_the_expected_three() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 3, "{stderr}");
-    // File names only: Windows prints the paths with backslashes.
-    assert!(
-        warnings[0].contains("edge.ting") && warnings[0].contains("shadows a builtin"),
-        "{stderr}"
-    );
-    assert!(
-        warnings[1].contains("errors.ting") && warnings[1].contains("bound nowhere"),
-        "{stderr}"
-    );
-    assert!(
-        warnings[2].contains("functions.ting") && warnings[2].contains("called with 1"),
-        "{stderr}"
-    );
+    assert_eq!(warnings.len(), 5, "{stderr}");
+    // File names only: Windows prints the paths with backslashes. A
+    // file's warnings come in the order its lines do.
+    let expected = [
+        ("edge.ting", "shadows a builtin"),
+        ("edge.ting", "duplicate key `a`"),
+        ("edge.ting", "can never run"),
+        ("errors.ting", "bound nowhere"),
+        ("functions.ting", "called with 1"),
+    ];
+    for (i, (file, phrase)) in expected.iter().enumerate() {
+        assert!(
+            warnings[i].contains(file) && warnings[i].contains(phrase),
+            "{stderr}"
+        );
+    }
 }

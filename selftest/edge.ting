@@ -76,3 +76,17 @@ assert(find("héllo", "llo") == 2, "find counts chars not bytes");
 assert(find([10, 20, 30], 20) == 1, "find in list");
 assert(find([1, 2], 9) == nil, "find list miss");
 assert(find([1, [2]], [2]) == 1, "find structural equality");
+
+# A map literal with the same key twice: the last one wins, and the
+# map holds one entry. --check warns about the literal on purpose.
+let dup = {"a": 1, "a": 2};
+assert(dup["a"] == 2, "the last duplicate key wins");
+assert(len(dup) == 1, "one entry, not two");
+
+# A statement after return never runs: were it to run, the print
+# would break this suite, which demands silence. --check warns.
+fn after_return() {
+  return "left";
+  print("unreachable");
+}
+assert(after_return() == "left", "return leaves at once");
