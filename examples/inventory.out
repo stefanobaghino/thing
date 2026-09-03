@@ -1,0 +1,8 @@
+45 in stock: washer
+9 in stock: nil
+out of stock: ["nut", "screw"]
+in stock: ["rivet", "washer", "bolt"]
+bays.a.rows = 4
+bays.b.rows = 6
+site = north
+2 items to reorder, 3 items on the shelf

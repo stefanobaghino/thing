@@ -333,6 +333,55 @@ print("hello, world");
 hello, world
 ```
 
+## inventory
+
+A stock list: nested config flattened to dotted paths, the item behind a stock count found with key_of, the first items still in stock taken with take_while, and a summary that pluralises itself.
+
+```ting
+# A stock list: nested config flattened to dotted paths, the item
+# behind a stock count found with key_of, the first items still in
+# stock taken with take_while, and a summary that pluralises itself.
+
+let li = import("../lib/list.ting");
+let ma = import("../lib/map.ting");
+let st = import("../lib/string.ting");
+let js = import("../lib/json.ting");
+
+let stock = {"bolt": 120, "nut": 0, "washer": 45, "screw": 0, "rivet": 7};
+
+# Which item has exactly 45 in stock? key_of is the inverse lookup.
+print("45 in stock:", ma["key_of"](stock, 45));
+print("9 in stock:", ma["key_of"](stock, 9));
+
+# Items sorted by count, then the leading run that is out of stock.
+let names = sort_by(keys(stock), fn(k) { return stock[k]; });
+let empty = li["take_while"](names, fn(k) { return stock[k] == 0; });
+let stocked = li["drop_while"](names, fn(k) { return stock[k] == 0; });
+print("out of stock:", empty);
+print("in stock:", stocked);
+
+# A nested warehouse record, flattened for a one-line-per-setting view.
+let warehouse = {"site": "north", "bays": {"a": {"rows": 4}, "b": {"rows": 6}}};
+for path in keys(js["flatten"](warehouse)) {
+  print(path, "=", js["flatten"](warehouse)[path]);
+}
+
+# The summary reads correctly whatever the counts are.
+print(st["plural"](len(empty), "item", "items"), "to reorder,",
+st["plural"](len(stocked), "item", "items"), "on the shelf");
+```
+
+```text
+45 in stock: washer
+9 in stock: nil
+out of stock: ["nut", "screw"]
+in stock: ["rivet", "washer", "bolt"]
+bays.a.rows = 4
+bays.b.rows = 6
+site = north
+2 items to reorder, 3 items on the shelf
+```
+
 ## logs
 
 Summarising a log: tally lines by level with count_by, smooth the latencies with a sliding window, validate fields with is_digit, print the slow ones as an aligned table.
