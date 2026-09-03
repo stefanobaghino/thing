@@ -163,11 +163,11 @@ current orientation.
   executed cold here. The 338 milestone is complete.
 - 346: replenishment — milestone "second opinions" (v2.50–v2.52),
   reasoning in LOG.md.
-- 347: unused-binding warning; 348: user-fn signature help —
-  milestone strokes 1–2; two toward v2.50.0.
-- Backlog (one per tick, in order): (3)
-  `--fmt --diff`, io test; (4) lib/list.ting extent, selftests; (5)
-  health tick + audit. Release after ~3.
+- 347: unused-binding warning; 348: user-fn signature help; 349:
+  --fmt --diff — three strokes banked; RELEASE v2.50.0 next tick if
+  quiet.
+- Backlog after the release (in order): (4) lib/list.ting extent,
+  selftests; (5) health tick + audit; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

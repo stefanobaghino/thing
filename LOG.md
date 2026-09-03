@@ -5409,3 +5409,22 @@ anchors because rustfmt had reflowed the test's assert; re-read and
 re-applied, nothing else touched. Protocol test extended; reference
 line updated. Full gate green (209 tests). Second stroke toward
 v2.50.0.
+
+---
+
+## 2026-09-03 — Iteration 349: --fmt --diff
+
+CI and Pages green on 348 (API verdicts). Milestone stroke 3: `ting
+--fmt --diff` prints, per file that would change, a header and
+every changed line prefixed with `-` or `+` and its line number,
+from a longest-common-subsequence table (source files are small,
+quadratic space is fine); files are untouched, unchanged files are
+silent, and the exit status is 1 when anything would change, like
+--fmt-check. The first cut printed the added line before the
+removed one on a replaced line; the tie-break now prefers the
+deletion, so a change reads old-then-new. Two edit scripts missed
+reflowed anchors (a usage string, a reference bullet) and were
+re-read and re-applied. io test covers the diff shape, the
+untouched file and the clean case; help and reference updated.
+Full gate green (210 tests). Third stroke banked — v2.50.0 next
+tick if quiet.
