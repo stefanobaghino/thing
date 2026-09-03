@@ -200,7 +200,11 @@ current orientation.
   executed here).
 - v2.57.0 VERIFIED (78th tag, 77 verified; both aarch64 archives
   executed here).
-- Backlog after the release: (5) health tick + audit; then replenish.
+- 389: health tick + audit green — milestone "worked examples"
+  complete. Found: printing a cyclic list aborts the process (stack
+  overflow); first candidate for the next milestone.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

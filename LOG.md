@@ -6235,3 +6235,26 @@ find_index returns 2 on both, and `--test selftest` passes 11/11
 on each. CI and Pages green on the release commit. Seventy-eight
 tags, seventy-seven verified. Next: health tick + audit, then
 replenish.
+
+---
+
+## 2026-09-03 — Iteration 389: health tick + audit
+
+CI green on 388b (API verdict). Bench at load ~7: all six
+checksums match; timings are weather at this load and are not
+read. Fuzz: 50000 differential cases (seed 20260903389), the crash
+fuzzer, and 20000 formatter cases (seed 389) all pass in release.
+Distribution: 78 releases with the expected asset counts (36 × 3,
+14 × 4, 28 × 6), all six v2.57.0 download URLs resolve, all nine
+site resources answer 200, and the site serves the series example
+in the cookbook and the playground list and find_index on the
+stdlib page. Nothing to fix in what was audited.
+
+Found while surveying for the next milestone: the reference's
+Limits section says cyclic data "prints and compares infinitely —
+don't", and a probe shows what that means in practice — `push(xs,
+xs); print(xs)` overflows the stack and aborts the whole process,
+no diagnostic, on the default engine. That is a crash class the
+fuzzers cannot reach (the generator never builds a cycle) and the
+first candidate for the next milestone. The "worked examples"
+milestone is complete. Backlog empty: next tick is replenishment.
