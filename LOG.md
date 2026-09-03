@@ -4629,3 +4629,19 @@ the newest example exists to show. Five strokes:
 
 Rejected: LSP inlay hints (no types to hint), REPL :paste (the REPL
 already continues multi-line constructs).
+
+---
+
+## 2026-09-03 — Iteration 306: --test --tap
+
+CI green on 305 (API verdict). Milestone stroke 1: `--tap` turns
+the runner's output into a Test Anything Protocol stream — a `1..N`
+plan, `ok N - path` / `not ok N - path` numbered from 1, the child's
+stderr as `# ` diagnostic comments, elapsed milliseconds per file as
+a comment, and the summary as a final comment — so a CI system or
+any TAP consumer can read the runner directly; exit status and the
+human-readable default are unchanged. The per-file timing also
+exists now in the default path's data, unused there. io test checks
+the plan, both line shapes, the diagnostic, the timing comment and
+that every line is TAP-clean; help and reference updated. Full gate
+green (202 tests). First stroke toward v2.40.0.
