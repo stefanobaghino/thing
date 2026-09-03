@@ -241,7 +241,7 @@ script that called into it. Say `greeter.ting` had a typo in `greet`
 and the script above called it on line 4:
 
 ```text
-greeter.ting:1:34: error: undefined variable 'nam'
+greeter.ting:1:34: error: undefined variable 'nam' (did you mean 'name'?)
  1 | fn greet(name) { return "hi, " + nam; }
    |                                  ^^^
 note: called from main.ting:4:7

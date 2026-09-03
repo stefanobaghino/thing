@@ -1282,6 +1282,64 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn undefined_names_suggest_the_nearest_one() {
+    let dir = std::env::temp_dir().join("ting-suggest");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("s.ting");
+    std::fs::write(&script, "let count = 1;\nprint(cont);\n").expect("write");
+
+    // Both engines say the same thing, down to the byte.
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1));
+        seen.push(String::from_utf8_lossy(&out.stderr).to_string());
+    }
+    assert_eq!(seen[0], seen[1], "{seen:?}");
+    assert!(
+        seen[0].contains("undefined variable 'cont' (did you mean 'count'?)"),
+        "{}",
+        seen[0]
+    );
+
+    // A builtin counts as a name in scope; an assignment is told too.
+    std::fs::write(&script, "print(lenght(\"abc\"));\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("(did you mean 'len'?)"), "{stderr}");
+
+    std::fs::write(&script, "let count = 1;\ncont = 2;\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("cannot assign to undefined variable 'cont' (did you mean 'count'?)"),
+        "{stderr}"
+    );
+
+    // Nothing near it, nothing added.
+    std::fs::write(&script, "print(zqxjw);\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("undefined variable 'zqxjw'") && !stderr.contains("did you mean"),
+        "{stderr}"
+    );
+}
+
+#[test]
 fn doc_flag_explains_several_names_at_once() {
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "len", "median", "slug"])

@@ -242,10 +242,15 @@ An unhandled runtime error stops the program with a diagnostic pointing
 at the offending source:
 
 ```text
-script.ting:2:7: error: undefined variable 'totl'
+script.ting:2:7: error: undefined variable 'totl' (did you mean 'total'?)
  2 | print(totl + 1);
    |       ^^^^
 ```
+
+When the name you typed is close to one that is in scope — a binding,
+a parameter or a builtin — the error names it, as above. A suggestion
+is offered only when at most a third of the name is wrong, or when one
+of the two names starts the other (`lenght` finds `len`).
 
 An error raised inside a function that an imported module defines is
 reported against that module's file and line (for an embedded stdlib

@@ -70,9 +70,7 @@ fn exec<W: Write>(
                 let name = &chunk.names[*i as usize];
                 match interp.lookup(name) {
                     Some(v) => stack.push(v),
-                    None => {
-                        return Err(eval::error(format!("undefined variable '{name}'"), span));
-                    }
+                    None => return Err(interp.undefined(name, span)),
                 }
             }
             Op::Define(i) => {
@@ -83,10 +81,7 @@ fn exec<W: Write>(
                 let v = stack.pop().expect("stack underflow");
                 let name = &chunk.names[*i as usize];
                 if !interp.assign(name, v) {
-                    return Err(eval::error(
-                        format!("cannot assign to undefined variable '{name}'"),
-                        span,
-                    ));
+                    return Err(interp.undefined_assign(name, span));
                 }
             }
             Op::Unary(op) => {

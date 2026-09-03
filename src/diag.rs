@@ -44,6 +44,53 @@ pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Spa
     )
 }
 
+/// The candidate nearest to `name` by edit distance, if one is close
+/// enough to be worth suggesting: at most a third of the name wrong
+/// (and always at least one edit, so short names still get help), or
+/// a name of three characters or more that one of the two starts with
+/// — `lenght` is three edits from `len`, but nobody doubts the intent.
+/// Ties go to the alphabetically first candidate, so the answer never
+/// depends on the order the candidates arrive in.
+pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
+    let limit = (name.chars().count() / 3).max(1);
+    let mut best: Option<(usize, &str)> = None;
+    for c in candidates {
+        if c == name {
+            continue;
+        }
+        let d = distance(name, c);
+        let shares_start = c.chars().count() >= 3
+            && name.chars().count() >= 3
+            && (name.starts_with(c) || c.starts_with(name));
+        if d > limit && !shares_start {
+            continue;
+        }
+        match best {
+            Some((bd, bc)) if bd < d || (bd == d && bc <= c) => {}
+            _ => best = Some((d, c)),
+        }
+    }
+    best.map(|(_, c)| c.to_string())
+}
+
+/// Levenshtein distance in characters (insert, delete and substitute
+/// each cost one), over one row of state.
+fn distance(a: &str, b: &str) -> usize {
+    let a: Vec<char> = a.chars().collect();
+    let b: Vec<char> = b.chars().collect();
+    let mut prev: Vec<usize> = (0..=b.len()).collect();
+    let mut cur = vec![0usize; b.len() + 1];
+    for (i, ca) in a.iter().enumerate() {
+        cur[0] = i + 1;
+        for (j, cb) in b.iter().enumerate() {
+            let cost = usize::from(ca != cb);
+            cur[j + 1] = (prev[j] + cost).min(prev[j + 1] + 1).min(cur[j] + 1);
+        }
+        std::mem::swap(&mut prev, &mut cur);
+    }
+    prev[b.len()]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -111,5 +158,30 @@ mod tests {
             Span::new(start, start + "wörld".len()),
         );
         assert!(out.ends_with(" |             ^^^^^"), "got:\n{out}");
+    }
+
+    #[test]
+    fn nearest_suggests_only_close_names() {
+        assert_eq!(
+            nearest("cont", ["count", "print", "len"]),
+            Some("count".to_string())
+        );
+        assert_eq!(
+            nearest("lenght", ["len", "length", "left"]),
+            Some("length".to_string())
+        );
+        // Three edits, but "len" starts the name: still the answer.
+        assert_eq!(nearest("lenght", ["len", "map"]), Some("len".to_string()));
+        assert_eq!(
+            nearest("prnt", ["print", "push"]),
+            Some("print".to_string())
+        );
+        // Nothing within a third of the name is no suggestion at all.
+        assert_eq!(nearest("elephant", ["print", "len"]), None);
+        // The name itself is never its own suggestion.
+        assert_eq!(nearest("len", ["len"]), None);
+        // Ties go to the alphabetically first candidate, either order.
+        assert_eq!(nearest("ab", ["ac", "bb"]), Some("ac".to_string()));
+        assert_eq!(nearest("ab", ["bb", "ac"]), Some("ac".to_string()));
     }
 }

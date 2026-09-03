@@ -84,6 +84,15 @@ impl Env {
         }))
     }
 
+    /// Every name visible from here outwards, innermost first.
+    fn names(env: &Rc<RefCell<Env>>, out: &mut Vec<String>) {
+        let e = env.borrow();
+        out.extend(e.vars.keys().map(|k| k.to_string()));
+        if let Some(p) = e.parent.as_ref() {
+            Env::names(p, out);
+        }
+    }
+
     fn get(env: &Rc<RefCell<Env>>, name: &str) -> Option<Value> {
         let e = env.borrow();
         match e.vars.get(name) {
@@ -306,10 +315,7 @@ impl<W: Write> Interpreter<W> {
                 if Env::assign(&self.env, name, v) {
                     Ok(Control::Normal)
                 } else {
-                    Err(error(
-                        format!("cannot assign to undefined variable '{name}'"),
-                        stmt.span,
-                    ))
+                    Err(self.undefined_assign(name, stmt.span))
                 }
             }
             StmtKind::IndexAssign(base, idx, value) => {
@@ -422,6 +428,26 @@ impl<W: Write> Interpreter<W> {
 
     pub(crate) fn lookup(&self, name: &str) -> Option<Value> {
         Env::get(&self.env, name)
+    }
+
+    /// "undefined variable 'cont'", plus the nearest name in scope
+    /// (a binding or a builtin) when there is one worth naming.
+    pub(crate) fn undefined(&self, name: &str, span: Span) -> RuntimeError {
+        self.undefined_msg("undefined variable", name, span)
+    }
+
+    /// The same for an assignment to a name that was never bound.
+    pub(crate) fn undefined_assign(&self, name: &str, span: Span) -> RuntimeError {
+        self.undefined_msg("cannot assign to undefined variable", name, span)
+    }
+
+    fn undefined_msg(&self, what: &str, name: &str, span: Span) -> RuntimeError {
+        let mut names = Vec::new();
+        Env::names(&self.env, &mut names);
+        match crate::diag::nearest(name, names.iter().map(String::as_str)) {
+            Some(near) => error(format!("{what} '{name}' (did you mean '{near}'?)"), span),
+            None => error(format!("{what} '{name}'"), span),
+        }
     }
 
     fn call_builtin(
@@ -1479,7 +1505,7 @@ impl<W: Write> Interpreter<W> {
             }
             ExprKind::Var(name) => match self.lookup(name) {
                 Some(v) => Ok(v),
-                None => Err(error(format!("undefined variable '{name}'"), expr.span)),
+                None => Err(self.undefined(name, expr.span)),
             },
             ExprKind::Call(callee, args) => {
                 let callee_v = self.eval(callee)?;
