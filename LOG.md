@@ -5562,3 +5562,16 @@ places. Full gate green (213 tests). Three strokes banked (351,
 extent, --doc listing, unused parameter warning. CI and Pages
 green on 355 (API verdicts). Full gate green, stdlib selftests pass
 on both engines. Tagging v2.51.0 (72nd tag).
+
+---
+
+## 2026-09-03 — Iteration 356b: v2.51.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.51.0, `--doc` prints the builtins then six module sections,
+`--doc math` one module, `--check` reports the unused parameter
+with a caret, extent runs identically on both engines, and
+`--test selftest` passes 11/11 on each binary. CI and Pages green
+on the release commit. Seventy-two tags, seventy-one verified.
+Next: retrospective act seven.

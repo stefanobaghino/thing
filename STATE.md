@@ -169,9 +169,8 @@ current orientation.
 - 352: health tick + audit green. 353: replenishment — milestone
   "table of contents" (v2.51–v2.52), reasoning in LOG.md. One stroke
   (351 extent) banked toward v2.51.0.
-- v2.51.0 TAGGED (72nd tag; strokes 351, 354, 355): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (--doc listing, parameter warning, extent).
+- v2.51.0 VERIFIED (72nd tag, 71 verified; both aarch64 archives
+  executed here).
 - Backlog after the release (in order): (3) retrospective act
   seven; (4) lib/list.ting mode(xs) (median already exists there),
   selftests; (5) health tick + audit; then replenish.
