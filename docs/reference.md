@@ -281,7 +281,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   any stdlib module it imports),
   whole-document formatting, an outline of top-level bindings
   (document symbols), go-to-definition for them, token-level
-  find-references and rename, signature help inside builtin
+  find-references and rename (across every open file), signature
+  help inside builtin
   calls, folding ranges for multi-line braces, workspace symbols
   across open files, document links on `import(...)` paths that
   exist on disk, and a quickfix that corrects a misspelt stdlib

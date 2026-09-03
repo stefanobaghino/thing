@@ -245,7 +245,16 @@ fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Val
 /// Rename every occurrence of the identifier at (line, character):
 /// a WorkspaceEdit with one TextEdit per token, same scan as
 /// references (token-level, shadowing not resolved).
-fn rename_result(src: &str, uri: &str, line: usize, character: usize, new_name: &str) -> Value {
+/// Rename the identifier at (line, character) in `uri` across every
+/// open document: the WorkspaceEdit carries one change list per
+/// document in which the name occurs (documents in uri order).
+fn rename_result(
+    docs: &BTreeMap<String, String>,
+    uri: &str,
+    line: usize,
+    character: usize,
+    new_name: &str,
+) -> Value {
     let valid = !new_name.is_empty()
         && !new_name.chars().next().unwrap().is_ascii_digit()
         && new_name
@@ -254,33 +263,41 @@ fn rename_result(src: &str, uri: &str, line: usize, character: usize, new_name: 
     if !valid {
         return Value::Nil;
     }
+    let Some(src) = docs.get(uri) else {
+        return Value::Nil;
+    };
     let Some(name) = ident_at(src, line, character) else {
         return Value::Nil;
     };
-    let Ok(tokens) = lexer::lex(src) else {
-        return Value::Nil;
-    };
-    let mut edits = Vec::new();
-    for tok in &tokens {
-        if let lexer::TokenKind::Ident(n) = &tok.kind
-            && n == &name
-        {
-            edits.push(obj(vec![
-                (
-                    "range",
-                    obj(vec![
-                        ("start", position(src, tok.span.start)),
-                        ("end", position(src, tok.span.end)),
-                    ]),
-                ),
-                ("newText", s(new_name)),
-            ]));
+    let mut changes = Vec::new();
+    for (doc_uri, doc_src) in docs {
+        let Ok(tokens) = lexer::lex(doc_src) else {
+            continue;
+        };
+        let edits: Vec<Value> = tokens
+            .iter()
+            .filter(|tok| matches!(&tok.kind, lexer::TokenKind::Ident(n) if n == &name))
+            .map(|tok| {
+                obj(vec![
+                    (
+                        "range",
+                        obj(vec![
+                            ("start", position(doc_src, tok.span.start)),
+                            ("end", position(doc_src, tok.span.end)),
+                        ]),
+                    ),
+                    ("newText", s(new_name)),
+                ])
+            })
+            .collect();
+        if !edits.is_empty() {
+            changes.push((doc_uri.as_str(), Value::list(edits)));
         }
     }
-    if edits.is_empty() {
+    if changes.is_empty() {
         return Value::Nil;
     }
-    obj(vec![("changes", obj(vec![(uri, Value::list(edits))]))])
+    obj(vec![("changes", obj(changes))])
 }
 
 /// Document links: every `import("path")` whose path resolves, relative
@@ -972,18 +989,9 @@ pub fn run() -> i32 {
                 let character = pos.as_ref().and_then(|p| get(p, "character"));
                 let new_name = params.as_ref().and_then(|p| get_str(p, "newName"));
                 let result = match (uri, line, character, new_name) {
-                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c)), Some(new_name)) => docs
-                        .get(&uri)
-                        .map(|src| {
-                            rename_result(
-                                src,
-                                &uri,
-                                l.max(0) as usize,
-                                c.max(0) as usize,
-                                &new_name,
-                            )
-                        })
-                        .unwrap_or(Value::Nil),
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c)), Some(new_name)) => {
+                        rename_result(&docs, &uri, l.max(0) as usize, c.max(0) as usize, &new_name)
+                    }
                     _ => Value::Nil,
                 };
                 write_message(

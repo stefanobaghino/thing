@@ -620,6 +620,29 @@ fn rename_produces_a_workspace_edit() {
     assert_eq!(edit.matches("\"newText\":\"total\"").count(), 3, "{edit}");
     assert!(edit.contains("\"changes\""), "{edit}");
 
+    // A second open document using the same name is renamed too; one
+    // that does not mention it gets no change list.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///m.ting","text":"let m = n * 2;\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///o.ting","text":"let other = 1;\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":20,"method":"textDocument/rename","params":{"textDocument":{"uri":"file:///n.ting"},"position":{"line":0,"character":4},"newName":"total"}}"#,
+    );
+    let edit = recv(&mut reader);
+    assert_eq!(edit.matches("\"newText\":\"total\"").count(), 4, "{edit}");
+    assert!(
+        edit.contains("file:///m.ting") && !edit.contains("file:///o.ting"),
+        "{edit}"
+    );
+
     // An invalid identifier is rejected with a null result.
     send(
         &mut stdin,
