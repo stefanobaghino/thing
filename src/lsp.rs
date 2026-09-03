@@ -25,7 +25,10 @@ fn s(text: &str) -> Value {
 }
 
 /// Read one framed JSON-RPC message; None on clean EOF.
-fn read_message(input: &mut impl BufRead) -> Option<Value> {
+/// One framed message: None at end of input (or an unreadable frame),
+/// Some(None) for a frame whose body is not JSON — skipped by the
+/// caller, so one malformed message cannot end the session.
+fn read_message(input: &mut impl BufRead) -> Option<Option<Value>> {
     let mut content_length: Option<usize> = None;
     loop {
         let mut line = String::new();
@@ -43,7 +46,36 @@ fn read_message(input: &mut impl BufRead) -> Option<Value> {
     let len = content_length?;
     let mut buf = vec![0u8; len];
     input.read_exact(&mut buf).ok()?;
-    json::decode(std::str::from_utf8(&buf).ok()?).ok()
+    Some(
+        std::str::from_utf8(&buf)
+            .ok()
+            .and_then(|text| json::decode(text).ok()),
+    )
+}
+
+/// The filesystem path of a file: URI, tolerating both `file:///tmp/x`
+/// and Windows' `file:///C:/x` (whose leading slash is not part of
+/// the path).
+fn uri_to_path(uri: &str) -> Option<std::path::PathBuf> {
+    let rest = uri.strip_prefix("file://")?;
+    let bytes = rest.as_bytes();
+    let rest = if bytes.len() > 2 && bytes[0] == b'/' && bytes[2] == b':' {
+        &rest[1..]
+    } else {
+        rest
+    };
+    Some(std::path::PathBuf::from(rest))
+}
+
+/// The file: URI of a path, with forward slashes and the leading slash
+/// Windows drive letters need.
+fn path_to_uri(path: &std::path::Path) -> String {
+    let text = path.display().to_string().replace('\\', "/");
+    if text.starts_with('/') {
+        format!("file://{text}")
+    } else {
+        format!("file:///{text}")
+    }
 }
 
 fn write_message(output: &mut impl Write, msg: &Value) {
@@ -260,11 +292,7 @@ fn document_links(src: &str, uri: &str) -> Value {
     let Ok(tokens) = lexer::lex(src) else {
         return Value::list(vec![]);
     };
-    let Some(dir) = uri
-        .strip_prefix("file://")
-        .map(std::path::Path::new)
-        .and_then(|p| p.parent())
-    else {
+    let Some(dir) = uri_to_path(uri).and_then(|p| p.parent().map(|d| d.to_path_buf())) else {
         return Value::list(vec![]);
     };
     let mut links = Vec::new();
@@ -298,7 +326,7 @@ fn document_links(src: &str, uri: &str) -> Value {
                     ("end", position(src, w[2].span.end)),
                 ]),
             ),
-            ("target", s(&format!("file://{}", target.display()))),
+            ("target", s(&path_to_uri(&target))),
         ]));
     }
     Value::list(links)
@@ -762,7 +790,10 @@ pub fn run() -> i32 {
     let mut shutdown_seen = false;
     let mut docs: BTreeMap<String, String> = BTreeMap::new();
 
-    while let Some(msg) = read_message(&mut input) {
+    while let Some(read) = read_message(&mut input) {
+        let Some(msg) = read else {
+            continue;
+        };
         let method = get_str(&msg, "method").unwrap_or_default();
         let id = get(&msg, "id");
         match method.as_str() {

@@ -408,7 +408,14 @@ fn document_links_point_at_importable_files() {
     let dir = std::env::temp_dir().join(format!("ting-lsp-links-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("sub")).unwrap();
     std::fs::write(dir.join("sub").join("b.ting"), "fn f() { return 1; }\n").unwrap();
-    let uri = format!("file://{}/a.ting", dir.display());
+    // A proper file: URI on every platform: forward slashes, and the
+    // extra leading slash a Windows drive letter needs.
+    let dir_text = dir.display().to_string().replace('\\', "/");
+    let uri = if dir_text.starts_with('/') {
+        format!("file://{dir_text}/a.ting")
+    } else {
+        format!("file:///{dir_text}/a.ting")
+    };
     let (mut child, mut stdin, mut reader) = spawn_server();
     send(
         &mut stdin,
@@ -443,6 +450,27 @@ fn document_links_point_at_importable_files() {
     send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
     assert_eq!(child.wait().unwrap().code(), Some(0));
     let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// A frame whose body is not JSON is skipped, not fatal: the next
+/// well-formed request still gets its answer.
+#[test]
+fn malformed_message_does_not_end_the_session() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(&mut stdin, "this is not json");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"capabilities\""), "{init}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
 }
 
 #[test]
