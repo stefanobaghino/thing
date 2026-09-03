@@ -29,6 +29,7 @@ fn main() -> ExitCode {
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
                  \x20   [--tap]                   Test Anything Protocol output\n\
+                 \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
                  \x20 ting --doc NAME             explain a builtin or stdlib function\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
@@ -201,17 +202,28 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     // files whose path contains the substring.
     let mut filter: Option<String> = None;
     let mut tap = false;
+    let mut jobs = 1usize;
     let mut paths = Vec::new();
     let mut it = args.into_iter();
     while let Some(a) = it.next() {
         if a == "--tap" {
             tap = true;
+        } else if a == "-j" {
+            match it.next().and_then(|n| n.parse::<usize>().ok()) {
+                Some(n) if n >= 1 => jobs = n,
+                _ => {
+                    eprintln!(
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>"
+                    );
+                    return ExitCode::FAILURE;
+                }
+            }
         } else if a == "--filter" {
             match it.next() {
                 Some(f) => filter = Some(f),
                 None => {
                     eprintln!(
-                        "usage: ting --test [--filter SUBSTR] [--tap] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -221,7 +233,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         }
     }
     if paths.is_empty() {
-        eprintln!("usage: ting --test [--filter SUBSTR] [--tap] <files or directories...>");
+        eprintln!("usage: ting --test [-j N] [--filter SUBSTR] [--tap] <files or directories...>");
         return ExitCode::FAILURE;
     }
     // Directories expand to every .ting file beneath them, sorted, so
@@ -254,27 +266,41 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     if tap {
         println!("1..{}", files.len());
     }
+    // `-j N` runs up to N files at once; results are collected per
+    // file and printed in the original order, so TAP numbering and
+    // the human output are identical whatever the parallelism.
+    let results: Vec<TestOutcome> = if jobs <= 1 {
+        files.iter().map(|f| run_one(&me, f)).collect()
+    } else {
+        let next = std::sync::Mutex::new(0usize);
+        let slots: Vec<std::sync::Mutex<Option<TestOutcome>>> =
+            files.iter().map(|_| std::sync::Mutex::new(None)).collect();
+        std::thread::scope(|scope| {
+            for _ in 0..jobs.min(files.len()) {
+                scope.spawn(|| {
+                    loop {
+                        let i = {
+                            let mut n = next.lock().unwrap();
+                            let i = *n;
+                            *n += 1;
+                            i
+                        };
+                        if i >= files.len() {
+                            break;
+                        }
+                        let r = run_one(&me, &files[i]);
+                        *slots[i].lock().unwrap() = Some(r);
+                    }
+                });
+            }
+        });
+        slots
+            .into_iter()
+            .map(|m| m.into_inner().unwrap().expect("every file ran"))
+            .collect()
+    };
     let mut failed = 0usize;
-    for (i, f) in files.iter().enumerate() {
-        let started = std::time::Instant::now();
-        let out = std::process::Command::new(&me)
-            .arg(f)
-            .env("TING_ENGINE", engine_name())
-            .stdin(std::process::Stdio::null())
-            .stdout(std::process::Stdio::null())
-            .output();
-        let ms = started.elapsed().as_millis();
-        let (ok, diag): (bool, Vec<String>) = match out {
-            Ok(out) if out.status.success() => (true, Vec::new()),
-            Ok(out) => (
-                false,
-                String::from_utf8_lossy(&out.stderr)
-                    .lines()
-                    .map(str::to_string)
-                    .collect(),
-            ),
-            Err(e) => (false, vec![format!("cannot run: {e}")]),
-        };
+    for (i, (f, (ok, diag, ms))) in files.iter().zip(results).enumerate() {
         if !ok {
             failed += 1;
         }
@@ -302,6 +328,33 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS
+    }
+}
+
+/// (passed, stderr lines, elapsed ms) for one test file.
+type TestOutcome = (bool, Vec<String>, u128);
+
+/// One test file in a child process.
+fn run_one(me: &std::path::Path, f: &str) -> TestOutcome {
+    let started = std::time::Instant::now();
+    let out = std::process::Command::new(me)
+        .arg(f)
+        .env("TING_ENGINE", engine_name())
+        .stdin(std::process::Stdio::null())
+        .stdout(std::process::Stdio::null())
+        .output();
+    let ms = started.elapsed().as_millis();
+    match out {
+        Ok(out) if out.status.success() => (true, Vec::new(), ms),
+        Ok(out) => (
+            false,
+            String::from_utf8_lossy(&out.stderr)
+                .lines()
+                .map(str::to_string)
+                .collect(),
+            ms,
+        ),
+        Err(e) => (false, vec![format!("cannot run: {e}")], ms),
     }
 }
 

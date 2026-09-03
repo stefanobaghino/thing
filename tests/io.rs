@@ -664,6 +664,31 @@ fn test_flag_expands_directories() {
     assert!(stdout.contains("deep failure"), "{stdout}");
     assert!(stdout.contains("2 passed, 1 failed"), "{stdout}");
 
+    // -j runs files concurrently but reports them in the same order
+    // with the same summary as the sequential run.
+    let seq = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--tap", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let par = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--tap", "-j", "3", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let strip_times = |b: &[u8]| -> String {
+        String::from_utf8_lossy(b)
+            .lines()
+            .filter(|l| !l.starts_with("# time:"))
+            .collect::<Vec<_>>()
+            .join("\n")
+    };
+    assert_eq!(strip_times(&seq.stdout), strip_times(&par.stdout));
+    assert_eq!(par.status.code(), Some(1));
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "-j", "0", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1), "-j 0 is a usage error");
+
     // --filter keeps only paths containing the substring; a filter
     // that matches nothing is an error, not "0 passed".
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
