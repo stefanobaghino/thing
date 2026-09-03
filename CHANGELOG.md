@@ -4,6 +4,12 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.42.0 (2026-09-03)
+
+- REPL: `:time EXPR` reports elapsed milliseconds.
+- `examples/config.ting`: layered configuration with `lib/json.ting`.
+- Tutorial: the JSON chapter shows `get_in`, `set_in` and `merge_in`.
+
 ## v2.41.0 (2026-09-03)
 
 - `lib/string.ting`: `levenshtein`.

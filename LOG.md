@@ -4821,3 +4821,11 @@ Banner, :help footer, reference (seven meta-commands) and tutorial
 updated; pipe test covers a value, a statement, and the incomplete
 case. Full gate green (203 tests). Third stroke banked — v2.42.0
 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 318: v2.42.0
+
+Config example, tutorial JSON paths, REPL :time. CI and Pages green
+on 317 (API verdicts). Full gate green, stdlib selftests pass on
+the reference engine. Tagging v2.42.0 (63rd tag).
