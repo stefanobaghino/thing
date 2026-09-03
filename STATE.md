@@ -61,11 +61,10 @@ holds only the current milestone and the standing rules.
   LOG.md. 405: STATE.md refreshed and compacted. v2.60.0 VERIFIED
   (81st tag; strokes 401, 402, 405; both aarch64 archives executed
   here).
-- v2.61.0 TAGGED (82nd tag; strokes 407, 408, 409): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (completion over raw JSON-RPC, flatten_deep, selftests).
+- v2.61.0 VERIFIED (82nd tag; strokes 407, 408, 409; both aarch64
+  archives executed here).
 - Backlog after the release: (5) health tick + audit; then replenish.
-- Tags: 82 (v2.61.0), 80 verified; v2.29.0 is publicly marked broken
+- Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

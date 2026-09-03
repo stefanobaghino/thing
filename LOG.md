@@ -6671,3 +6671,17 @@ The tutorial's closing chapter, completion of the file's own
 functions, flatten_deep. CI and Pages green on 409 (API
 verdicts). Full gate green, stdlib selftests pass on both engines.
 Tagging v2.61.0 (82nd tag).
+
+---
+
+## 2026-09-03 — Iteration 410b: v2.61.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.61.0; a raw JSON-RPC session against the release binary's --lsp
+returned the file's own function as a completion item with its
+signature and comment; flatten_deep flattens three levels on the
+musl VM and the gnu reference engine; `--test selftest` passes
+11/11 on each. CI and Pages green on the release commit.
+Eighty-two tags, eighty-one verified. Next: health tick + audit,
+then replenish.
