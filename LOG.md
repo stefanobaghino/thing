@@ -4032,3 +4032,21 @@ Rejected: LSP rename for stdlib member keys (renaming a library
 function's call sites is not something a user does), and a
 `lib/json.ting` that re-implements parsing (json_parse is a builtin;
 the module is about navigation, not syntax).
+
+---
+
+## 2026-09-03 — Iteration 273: lib/json.ting
+
+CI green on 272 (API verdict). Milestone stroke 1: a sixth embedded
+module for nested values. get_in follows a path of string keys and
+int indices and answers nil for any miss (missing key, index out of
+range, a step into a non-container) instead of the builtin index
+error, since "maybe absent" is exactly why one reaches for it;
+set_in returns a fresh value copying only the containers along the
+path, creates missing map keys, and refuses out-of-range list
+indices; paths lists every leaf path depth-first with sorted keys.
+Registered in EMBEDDED_STDLIB (so the LSP's completion, hover and
+member warning cover it with no extra work), documented as its own
+stdlib.md section, fourteen selftests over a json_parse'd document,
+and every "five modules" sentence (tutorial, README) now says six.
+Full gate green on both engines. First stroke toward v2.33.0.

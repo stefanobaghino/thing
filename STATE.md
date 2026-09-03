@@ -14,7 +14,8 @@ current orientation.
 - Two engines (bytecode VM default, tree-walking reference) held
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases) and a CI job rerunning everything on eval.
-- 44 builtins; five embedded stdlib modules (list/map/string/math/test);
+- 44 builtins; six embedded stdlib modules
+  (list/map/string/math/json/test);
   25 selftest+example ting programs; 182 Rust tests in 14 suites.
 - Distribution: 4-platform GitHub release archives per tag (from
   v2.17.0; 3 before), Pages site
@@ -107,9 +108,8 @@ current orientation.
   cold here). The 264 milestone is complete.
 - 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) lib/json.ting sixth module:
-  get_in/set_in/paths, EMBEDDED_STDLIB entry, stdlib.md section,
-  selftests, tutorial "five modules" → six; (2) examples/
+- 273: lib/json.ting — milestone stroke 1; first toward v2.33.0.
+- Backlog (one per tick, in order): (2) examples/
   pipeline.ting reading stdin with a built-in fallback, cookbook
   regen; (3) `--check` reports the unknown-stdlib-member warning
   (shared with the LSP), io test; (4) `--test --filter SUBSTR`, io
