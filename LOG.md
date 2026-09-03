@@ -6574,3 +6574,11 @@ not exist. Five strokes:
 Rejected: trimming LOG.md (append-only by charter), a STATE.md
 size guard in CI (the file is the loop's, not the project's; the
 health tick's survey is where drift is caught).
+
+Correction, same tick: lib/list.ting already has flatten (one
+level, since long before this milestone) — the grep that would
+have shown it ran outside the chain and its result was not read
+before the entry was pushed. Stroke 4 becomes flatten_deep(xs),
+which removes every level of nesting, and gives flatten the `#`
+comment it lacks (it is the one list function `--doc list` shows
+without a description).

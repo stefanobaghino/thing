@@ -223,8 +223,8 @@ current orientation.
 - Backlog (one per tick, in order): (1) STATE.md shape refresh +
   Now compaction — then RELEASE v2.60.0 (401, 402, +1); (2) tutorial
   "Beyond scripts" current; (3) LSP completion offers user fns,
-  protocol test; (4) lib/list.ting flatten, selftests; (5) health
-  tick + audit.
+  protocol test; (4) lib/list.ting flatten_deep + a comment on
+  flatten, selftests; (5) health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
