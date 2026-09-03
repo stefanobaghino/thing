@@ -4522,3 +4522,15 @@ Third stroke banked — v2.38.0 next tick if quiet.
 --doc, directory-aware check/fmt, wrap. CI green on 299 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.38.0 (59th tag). Three hundred iterations.
+
+---
+
+## 2026-09-03 — Iteration 300b: v2.38.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.38.0`, `--doc wrap` answers, `--check` accepts a directory, and
+wrap prints identically on both engines. Site: all resources 200,
+changelog shows 2.38.0, reference documents --doc. 59 tags, 58
+verified.

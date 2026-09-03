@@ -127,9 +127,8 @@ current orientation.
   executed cold here. The 287 milestone is complete.
 - 296: replenishment — milestone "closing loops" (v2.38–v2.40),
   reasoning in LOG.md.
-- v2.38.0 TAGGED (59th tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here (--doc and --check on a directory).
+- v2.38.0 RELEASED and verified (59th tag); aarch64 musl archive
+  executed cold here.
 - Backlog after the release (in order): (4) lib/json.ting
   diff(a, b), selftests; (5) examples/machine.ting (closure state
   machine), cookbook regen. Release after ~3; health tick after.
