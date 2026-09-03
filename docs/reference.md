@@ -282,7 +282,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   (document symbols), go-to-definition for them, token-level
   find-references and rename, signature help inside builtin
   calls, folding ranges for multi-line braces, workspace symbols
-  across open files, and a quickfix that corrects a misspelt stdlib
+  across open files, document links on `import(...)` paths that
+  exist on disk, and a quickfix that corrects a misspelt stdlib
   member to the nearest export.
 
 Point your editor's generic LSP client at `ting --lsp`; a TextMate

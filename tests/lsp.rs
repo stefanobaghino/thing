@@ -404,6 +404,48 @@ fn workspace_symbols_span_open_documents() {
 }
 
 #[test]
+fn document_links_point_at_importable_files() {
+    let dir = std::env::temp_dir().join(format!("ting-lsp-links-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    std::fs::write(dir.join("sub").join("b.ting"), "fn f() { return 1; }\n").unwrap();
+    let uri = format!("file://{}/a.ting", dir.display());
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(init.contains("\"documentLinkProvider\""), "{init}");
+
+    // One import resolves through a `..`-free relative path, one is an
+    // embedded module with no file on disk, one does not exist.
+    let text = "let b = import(\"./sub/b.ting\");\nlet l = import(\"lib/list.ting\");\nlet x = import(\"missing.ting\");\n";
+    let open = format!(
+        r#"{{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{{"textDocument":{{"uri":"{uri}","text":"{}"}}}}}}"#,
+        text.replace('"', "\\\"").replace('\n', "\\n")
+    );
+    send(&mut stdin, &open);
+    let _ = recv(&mut reader);
+    let req = format!(
+        r#"{{"jsonrpc":"2.0","id":2,"method":"textDocument/documentLink","params":{{"textDocument":{{"uri":"{uri}"}}}}}}"#
+    );
+    send(&mut stdin, &req);
+    let links = recv(&mut reader);
+    assert!(links.contains("sub/b.ting\""), "{links}");
+    assert_eq!(links.matches("\"target\"").count(), 1, "{links}");
+    assert!(links.contains("\"line\":0"), "{links}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 

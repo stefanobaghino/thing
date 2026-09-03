@@ -251,6 +251,59 @@ fn rename_result(src: &str, uri: &str, line: usize, character: usize, new_name: 
     obj(vec![("changes", obj(vec![(uri, Value::list(edits))]))])
 }
 
+/// Document links: every `import("path")` whose path resolves, relative
+/// to the document's directory, to a file that exists becomes a link
+/// to that file. Embedded stdlib modules with no file on disk get no
+/// link (there is nothing to open); `..` and `.` segments normalise
+/// lexically.
+fn document_links(src: &str, uri: &str) -> Value {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::list(vec![]);
+    };
+    let Some(dir) = uri
+        .strip_prefix("file://")
+        .map(std::path::Path::new)
+        .and_then(|p| p.parent())
+    else {
+        return Value::list(vec![]);
+    };
+    let mut links = Vec::new();
+    for w in tokens.windows(3) {
+        let (lexer::TokenKind::Ident(name), lexer::TokenKind::LParen, lexer::TokenKind::Str(path)) =
+            (&w[0].kind, &w[1].kind, &w[2].kind)
+        else {
+            continue;
+        };
+        if name != "import" {
+            continue;
+        }
+        let mut target = std::path::PathBuf::new();
+        for part in dir.join(path).components() {
+            match part {
+                std::path::Component::ParentDir => {
+                    target.pop();
+                }
+                std::path::Component::CurDir => {}
+                other => target.push(other),
+            }
+        }
+        if !target.is_file() {
+            continue;
+        }
+        links.push(obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, w[2].span.start)),
+                    ("end", position(src, w[2].span.end)),
+                ]),
+            ),
+            ("target", s(&format!("file://{}", target.display()))),
+        ]));
+    }
+    Value::list(links)
+}
+
 /// Folding ranges: every `{ ... }` pair that spans more than one line,
 /// from the token stream (blocks and map literals alike), outermost
 /// first in source order.
@@ -731,6 +784,10 @@ pub fn run() -> i32 {
                             ("foldingRangeProvider", Value::Bool(true)),
                             ("workspaceSymbolProvider", Value::Bool(true)),
                             (
+                                "documentLinkProvider",
+                                obj(vec![("resolveProvider", Value::Bool(false))]),
+                            ),
+                            (
                                 "signatureHelpProvider",
                                 obj(vec![(
                                     "triggerCharacters",
@@ -975,6 +1032,22 @@ pub fn run() -> i32 {
                         ("jsonrpc", s("2.0")),
                         ("id", id.unwrap_or(Value::Nil)),
                         ("result", workspace_symbols(&docs, &query)),
+                    ]),
+                );
+            }
+            "textDocument/documentLink" => {
+                let uri = get(&msg, "params")
+                    .and_then(|p| get(&p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let result = uri
+                    .and_then(|u| docs.get(&u).map(|src| document_links(src, &u)))
+                    .unwrap_or_else(|| Value::list(vec![]));
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
                     ]),
                 );
             }
