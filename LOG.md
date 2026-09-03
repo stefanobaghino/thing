@@ -7082,3 +7082,11 @@ next to it gains the `#` comment it lacked. Five selftests
 (rectangle, involution, empty, empty rows, ragged), stdlib.md row.
 Selftests pass on both engines; full gate green (230 tests). Three
 strokes banked (429, 430, 431) — v2.65.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 432: v2.65.0
+
+:load's report, the failed-import message, transpose. CI and Pages
+green on 431 (API verdicts). Full gate green, stdlib selftests pass
+on both engines. Tagging v2.65.0 (86th tag).

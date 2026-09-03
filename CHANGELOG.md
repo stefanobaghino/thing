@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.65.0 (2026-09-03)
+
+- REPL: `:load` reports how many bindings it added.
+- A failed `import` names the path it resolved to and says no
+  embedded module matched.
+- lib/list.ting: `transpose(xss)`.
+
 ## v2.64.0 (2026-09-03)
 
 - REPL: `:load FILE` resolves the file's relative imports against
