@@ -489,7 +489,13 @@ than a script needs.
 
 Put test files under a directory and run them all with
 `ting --test tests/` — one process per file, `ok` or `FAIL` per file,
-exit 1 if any failed. While iterating on one file, `--filter NAME`
+exit 1 if any failed. Each line says how much that file verified —
+`ok tests/list.ting (12 checks)`, counting every `assert` and every
+`lib/test.ting` helper call — and the summary totals them, so a
+suite that quietly stops checking anything is visible instead of
+green. A file that passes without a single check is named as such,
+in its line and in the summary. While iterating on one file,
+`--filter NAME`
 runs only the files whose path contains `NAME`, and `--fail-fast`
 stops at the first red one. On a multi-core machine `-j 4` runs four
 files at once with the output kept in order; `--slow 3` names the
@@ -520,8 +526,9 @@ Everything else ships in the same binary:
   `--strict` if the warnings should block the commit too. The
   playground's check button does the same in the browser.
 - `ting --test tests/` runs every `.ting` file under a directory
-  and prints `ok` or `FAIL` per file plus a summary — a test runner
-  with no setup (the [Testing](#testing) chapter has its flags).
+  and prints `ok` or `FAIL` per file, how many checks each ran, and a
+  summary — a test runner with no setup (the [Testing](#testing)
+  chapter has its flags).
 - `ting --fmt *.ting` reformats in place and ends with a summary of
   what it did; CI can enforce it with `--fmt-check`, `--fmt --diff`
   shows what would change, and `ting --fmt -` filters stdin to stdout

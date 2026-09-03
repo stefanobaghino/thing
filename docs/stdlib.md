@@ -180,6 +180,9 @@ t["summary"]();   # prints failures + totals; exits 1 if any failed
 | `summary()` | prints `FAIL:` lines and totals; `exit(1)` on any failure |
 | `state` | the counters map (`passed`, `failed`, `failures`) for tooling |
 
+Every helper counts as one check under `ting --test`, which reports
+per-file and total counts.
+
 All of this is ordinary ting — read the sources in
 [lib/](https://github.com/stefanobaghino/thing/tree/main/lib); the
 self-hosted suite (`selftest/stdlib.ting`, `selftest/testlib.ting`)
