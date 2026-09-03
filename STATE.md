@@ -49,10 +49,9 @@ current orientation.
   cases agree).
 - v2.17.0 RELEASED and verified (37th); aarch64-linux asset
   executed cold on this host, both engines.
-- 205: quiet exit on broken pipe; 206: tool flags accept `-` for
-  stdin; 207: math lcm/abs_diff — three strokes banked; RELEASE
-  v2.18.0 next tick if quiet.
-- Backlog after the release: tutorial mention of group_by/partition;
+- v2.18.0 TAGGED (38th release): verify next tick by executing the
+  aarch64-linux asset cold here.
+- Backlog after verification: tutorial mention of group_by/partition;
   distribution audit incl. arm64; health tick.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)

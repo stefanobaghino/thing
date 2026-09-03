@@ -2912,3 +2912,12 @@ gains lcm(a, b) — divides before multiplying to keep the checked
 i64 arithmetic in range, 0 when either input is 0 — and abs_diff.
 Six assertions, two stdlib.md rows. Full gate green on both engines.
 Third stroke banked — v2.18.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 208: v2.18.0
+
+Shell-citizen release: quiet exit on broken pipe, stdin for the
+tool flags, math lcm/abs_diff. CI green on 207 (API verdict). Full
+gate green, stdlib selftests pass on the reference engine. Tagging
+v2.18.0 (38th release).

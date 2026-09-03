@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.18.0 (2026-09-03)
+
+- `ting x.ting | head` ends quietly with exit 0 when the reader goes
+  away; the REPL does the same instead of panicking.
+- `--fmt`, `--fmt-check` and `--check` accept `-` for stdin; `--fmt -`
+  filters to stdout.
+- `lib/math.ting`: `lcm`, `abs_diff`.
+
 ## v2.17.0 (2026-09-03)
 
 - Releases now also ship an `aarch64-unknown-linux-gnu` archive (four
