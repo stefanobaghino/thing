@@ -5695,3 +5695,16 @@ Retrospective act seven, mode, module-origin errors and the
 renderer clamp. CI and Pages green on 361 (API verdicts). Full
 gate green, stdlib selftests pass on both engines. Tagging v2.52.0
 (73rd tag).
+
+---
+
+## 2026-09-03 — Iteration 362b: v2.52.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.52.0, a module's runtime error reported at m.ting:3:10 on both
+engines, an embedded module's error at lib/list.ting:165:21 with
+no panic, mode returns "a", and `--test selftest` passes 11/11 on
+each binary. CI and Pages green on the release commit.
+Seventy-three tags, seventy-two verified. Next: the `note: called
+from` line.

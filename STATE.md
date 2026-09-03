@@ -175,9 +175,8 @@ current orientation.
   toward v2.52.0; 359: health tick + audit green.
 - 360: replenishment — milestone "where it happened" (v2.52–v2.53),
   reasoning in LOG.md.
-- v2.52.0 TAGGED (73rd tag; strokes 357, 358, 361): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (module error location, embedded-module error, mode).
+- v2.52.0 VERIFIED (73rd tag, 72 verified; both aarch64 archives
+  executed here).
 - Backlog after the release (in order): (2) `note: called from`
   line, io test; (3) --check follows local imports, io test; (4)
   lib/string.ting slug, selftests; (5) health tick + audit.
