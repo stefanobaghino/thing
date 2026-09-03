@@ -3283,3 +3283,17 @@ verdicts). Four archives published. Cold test on this aarch64 Linux
 host: `ting 2.23.0`; rotate, unique_by, truncate and a filter over
 is_prime print identically on both engines. Site: all resources
 200, changelog shows 2.23.0. 43 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 233: retrospective act four
+
+CI green on 232b (API verdict). docs/retrospective.md gains "The
+fourth act: a new machine": the stop and restart on an arm64 Linux
+host, verification going structural for one release and then
+executable again via the added release target, the two shell
+rough edges and the formatter gap that only running the binary and
+writing an example exposed, and the Pages incident distilled into
+a rule. The closing section's release count moves from twenty-five
+to forty-three. Markdown guard and full gate green. First stroke
+toward v2.24.0.

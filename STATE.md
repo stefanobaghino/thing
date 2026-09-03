@@ -74,10 +74,10 @@ current orientation.
   executed cold on this host, both engines; Pages green first time.
 - v2.23.0 RELEASED and verified (43rd); aarch64-linux asset
   executed cold on this host, both engines.
-- Backlog toward v2.24.0 (one per tick): retrospective.md act four
-  (the arm64 move, shell-citizen fixes, formatter gap);
-  lib/list.ting scan (running reduce); lib/string.ting
-  strip_prefix/strip_suffix; release after ~3 strokes.
+- 233: retrospective act four — first stroke toward v2.24.0.
+- Backlog (one per tick): lib/list.ting scan (running reduce);
+  lib/string.ting strip_prefix/strip_suffix; release after ~3
+  strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
