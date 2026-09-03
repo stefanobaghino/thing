@@ -136,9 +136,9 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.74.0 VERIFIED (95th tag; strokes 479, 480, 481; both aarch64
   archives executed here).
-- 483: ordinal — one stroke banked toward v2.75.0.
-- Backlog (one per tick, in order): (1) health tick + audit — then
-  replenishment.
+- 483: ordinal — one stroke banked toward v2.75.0. 484: health tick
+  + audit green — milestone "reading width" complete.
+- Backlog: empty — next tick is replenishment.
 - Tags: 95 (v2.74.0), 94 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

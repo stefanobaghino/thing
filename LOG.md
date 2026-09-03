@@ -8045,3 +8045,19 @@ assertions cover the units, the teens, the twenties, a hundred and
 eleven, zero, the sign and the failure. Stdlib page row and count
 updated (121 functions), guard green. Full gate green (243 tests).
 One stroke banked toward v2.75.0. Next: health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 484: health tick + audit
+
+CI green on 483 (API verdict). Bench in release: all six checksums
+match the baseline and the ratios sit in their band (fib and lists
+still the VM's clearest wins, maps and strings a wash). Fuzz: 50000
+differential cases (seed 20260903484), 20000 formatter cases (seed
+484, LF and CRLF) and the crash fuzzer with its cyclic case all
+pass in release. Distribution: 95 releases with the expected asset
+counts (36 x 3, 14 x 4, 45 x 6) and all six v2.74.0 download URLs
+resolve. Site: all nine resources answer 200, the stdlib page
+serves ordinal(n) and says 121 functions, the changelog leads with
+v2.74.0. Nothing to fix. The "reading width" milestone is
+complete. Backlog empty: next tick is replenishment.
