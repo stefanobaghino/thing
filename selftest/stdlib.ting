@@ -130,3 +130,8 @@ assert(has(try(fn() { return l["drop"]([1], -1); }), "err"), "drop negative fail
 assert(l["partition"]([1, 2, 3, 4], fn(x) { return x % 2 == 0; }) == [[2, 4], [1, 3]], "partition");
 assert(l["partition"]([], fn(x) { return true; }) == [[], []], "partition empty");
 assert(has(try(fn() { return l["partition"]([1], fn(x) { return 1; }); }), "err"), "partition non-bool pred fails");
+
+assert(s["chars"]("héy") == ["h", "é", "y"], "chars");
+assert(s["chars"]("") == [], "chars empty");
+assert(s["reverse"]("héllo") == "olléh", "string reverse");
+assert(s["reverse"]("") == "", "string reverse empty");

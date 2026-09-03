@@ -51,6 +51,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `trim_start(s)` | leading whitespace removed |
 | `trim_end(s)` | trailing whitespace removed |
 | `count(s, sub)` | non-overlapping occurrences of `sub` |
+| `chars(s)` | the characters as a list of one-character strings |
+| `reverse(s)` | the characters in reverse order |
 
 ## lib/map.ting
 
