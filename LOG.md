@@ -4598,3 +4598,34 @@ and the machine example runs against the bundled lib to its golden
 tail. Site: all resources 200, changelog shows 2.39.0, stdlib page
 lists diff. 60 tags, 59 verified. The 296 milestone is complete;
 next tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 305: replenishment — milestone "reporting"
+
+CI green on 304b (API verdict). Six milestones since the restart,
+sixty tags. The runner, the editor and the stdlib are each in good
+shape; what the project does not yet do is *report* in forms other
+tools consume, and the tutorial still has no chapter on the feature
+the newest example exists to show. Five strokes:
+
+1. `--test --tap`: Test Anything Protocol output — a `1..N` plan,
+   `ok N - path` / `not ok N - path` lines with the child's stderr
+   as `# ` diagnostic lines, and elapsed milliseconds per file as a
+   trailing comment — so CI systems and TAP consumers can read the
+   runner directly. io test; the human-readable default is
+   unchanged.
+2. Tutorial "Closures" chapter: an executed snippet with a counter
+   factory and a two-line machine, then prose pointing at
+   examples/machine.ting for the full turnstile.
+3. lib/list.ting binary_search(xs, x): index in a sorted list or
+   nil; iterative, works with any ordered values. Selftests.
+4. lib/string.ting levenshtein(a, b): the edit distance (plain
+   Levenshtein, unlike the LSP's transposition-aware one, and the
+   doc says so), for scripts that want "did you mean". Selftests.
+5. Retrospective act six: the six post-restart milestones as a
+   pattern — replenish, five strokes, three releases, health tick —
+   and what changed in the loop's rules along the way.
+
+Rejected: LSP inlay hints (no types to hint), REPL :paste (the REPL
+already continues multi-line constructs).

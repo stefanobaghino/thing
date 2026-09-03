@@ -131,12 +131,13 @@ current orientation.
   executed cold here.
 - v2.39.0 RELEASED and verified (60th tag); aarch64 glibc archive
   executed cold here. The 296 milestone is complete.
-- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a) a
-  sixth retrospective act (the six milestones since the restart);
-  (b) `--test` JSON/TAP output for CI systems; (c) lib/list.ting
-  binary_search on sorted lists; (d) REPL: multi-line paste via
-  `:paste`; (e) LSP: inlay hints (probably not); (f) tutorial:
-  a closures chapter pointing at the machine example.
+- 305: replenishment — milestone "reporting" (v2.40–v2.42),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) `--test --tap` output, io
+  test; (2) tutorial Closures chapter with an executed snippet; (3)
+  lib/list.ting binary_search, selftests; (4) lib/string.ting
+  levenshtein, selftests; (5) retrospective act six. Release after
+  ~3; health tick after.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
