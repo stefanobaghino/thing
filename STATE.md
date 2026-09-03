@@ -43,11 +43,11 @@ current orientation.
 - Loop stopped by the human after 195b, restarted at 196 (2026-09-03).
 - v2.16.0 RELEASED and verified (36th); structural cold check only,
   since this host is aarch64 Linux (no matching asset yet).
-- 200: aarch64 Linux added to CI + release matrices — first stroke
-  toward v2.17.0 (release half proven only at the next tag).
-- Backlog (one per tick): chars/reverse in lib/string.ting; health
-  tick (bench vs BASELINE.md, big fuzz sweep); then release v2.17.0
-  and execute its aarch64-linux asset cold on this host.
+- 200: aarch64 Linux in CI + release matrices (CI arm job green);
+  201: string chars/reverse — two strokes toward v2.17.0.
+- Backlog (one per tick): health tick (bench vs BASELINE.md, big
+  fuzz sweep); one more feature stroke; then release v2.17.0 and
+  execute its aarch64-linux asset cold on this host.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

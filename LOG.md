@@ -2806,3 +2806,15 @@ label and build are proven on every push rather than first at tag
 time. README platform sentence updated. Only the CI half is
 verifiable now; the release half is verified by the v2.17.0 tag,
 which this host will then execute cold. First stroke toward v2.17.0.
+
+---
+
+## 2026-09-03 — Iteration 201: string chars/reverse
+
+CI green on 200 across all five jobs, the ubuntu-24.04-arm runner
+included (API verdict), so the arm64 label is proven for release
+time. lib/string.ting gains chars(s) and reverse(s); both lean on
+ting's character-indexed strings, so multibyte text (héllo → olléh)
+is correct without extra work, which the selftests pin. Four
+assertions, two stdlib.md rows. Full gate green on both engines.
+Second stroke toward v2.17.0.
