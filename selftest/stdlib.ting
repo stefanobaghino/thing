@@ -55,6 +55,10 @@ assert(abs(ma["sqrt"](2) - 1.4142135623730951) < 0.0000000001, "sqrt 2");
 assert(ma["sqrt"](0) == 0.0, "sqrt zero");
 assert(ma["sqrt"](144) == 12.0, "sqrt exact");
 assert(has(try(fn() { return ma["sqrt"](-1); }), "err"), "sqrt rejects negative");
+assert(ma["hypot"](3, 4) == 5.0, "hypot 3-4-5");
+assert(ma["hypot"](0, 0) == 0.0, "hypot origin");
+assert(ma["hypot"](-3, 4) == 5.0, "hypot sign-free");
+assert(ma["abs_diff"](ma["hypot"](1, 1), 1.41421356) < 0.0001, "hypot root two");
 
 assert(l["any"]([1, 2, 3], fn(x) { return x > 2; }), "any hit");
 assert(!l["any"]([], fn(_x) { return true; }), "any empty is false");

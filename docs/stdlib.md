@@ -131,6 +131,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `floor(x)` | largest integer `<= x` |
 | `ceil(x)` | smallest integer `>= x` |
 | `sqrt(x)` | Newton's method square root, returns a float |
+| `hypot(a, b)` | `sqrt(a*a + b*b)` as a float: the distance to `(a, b)` |
 | `is_prime(n)` | true for prime `n` (trial division) |
 | `variance(xs)` | population variance as a float; empty fails |
 | `stddev(xs)` | population standard deviation |

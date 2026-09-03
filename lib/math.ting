@@ -51,6 +51,12 @@ fn sqrt(x) {
   return guess;
 }
 
+# The hypotenuse sqrt(a*a + b*b) as a float: the distance from the
+# origin to (a, b), or between two points when given the differences.
+fn hypot(a, b) {
+  return sqrt(a * a + b * b);
+}
+
 # Largest integer <= x. int() truncates toward zero, so negatives
 # with a fractional part need one more step down.
 fn floor(x) {
