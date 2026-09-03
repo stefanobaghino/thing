@@ -8334,3 +8334,17 @@ selftest/functions.ting calls `add(1)` inside a `try` to prove the
 runtime checks arity. STATE.md's rule says so. Full gate green (251
 tests). One stroke banked toward v2.78.0. Next: docs and selftests
 for both checks.
+
+---
+
+## 2026-09-03 — Iteration 499: the corpus is the guard
+
+CI green on 498 (API verdict). Milestone stroke 2 toward v2.78.0:
+the rule that the corpus scan reports exactly three warnings is now
+a test rather than a habit. It runs `--check lib selftest examples
+bench` from the repository root and pins each line — edge.ting
+shadowing `len`, errors.ting reading `totl`, functions.ting calling
+`add(1)` — so a false positive from either static check fails the
+build instead of being noticed by a reader. The tutorial's --check
+bullet lists both new warnings. Full gate green (252 tests). Two
+strokes banked (498, 499). Next: release v2.78.0.
