@@ -35,6 +35,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `compact(xs)` | a fresh list without the `nil` elements |
 | `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |
+| `find_index(xs, pred)` | index of the first element for which `pred` holds; `nil` when none |
 | `min_by(xs, key)` | element with the smallest `key(x)`; `nil` on empty |
 | `max_by(xs, key)` | element with the largest `key(x)`; `nil` on empty |
 | `extent(xs)` | `[smallest, largest]` of the elements in one pass; `nil` on empty |

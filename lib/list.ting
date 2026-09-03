@@ -59,6 +59,17 @@ fn any(xs, pred) {
   return false;
 }
 
+# Index of the first element for which pred holds, or nil when none
+# does — the predicate form of the find builtin.
+fn find_index(xs, pred) {
+  let i = 0;
+  for x in xs {
+    if pred(x) { return i; }
+    i = i + 1;
+  }
+  return nil;
+}
+
 fn all(xs, pred) {
   for x in xs {
     if !pred(x) { return false; }
