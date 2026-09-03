@@ -3236,3 +3236,18 @@ never exceeds it, a suffix wider than the width is itself cut, and
 character-indexed strings make the multibyte case free (pinned with
 an ellipsis and accented input). Five assertions, stdlib.md row.
 Full gate green on both engines. Second stroke toward v2.23.0.
+
+---
+
+## 2026-09-03 — Iteration 230: health tick + distribution audit
+
+CI green on 229 (API verdict). Bench: all four checksums match
+BASELINE.md; the machine is still shared (load ~4, chess engines)
+yet the vm/eval ratios are back to the baseline's shape (fib -38%,
+lists -30%, maps -1%, strings -7%), which retires iteration 216's
+"re-measure when quiet" item — the 216 drift was contention, as
+suspected. Distribution: all 42 release tags carry the expected
+asset count (36 × 3 up to v2.16.0, 6 × 4 since), the four v2.22.0
+download URLs resolve, all seven site resources answer 200, and the
+rendered stdlib page already lists rotate and truncate. Nothing to
+fix. One feature stroke left before v2.23.0.
