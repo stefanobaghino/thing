@@ -6621,3 +6621,18 @@ upper-cases a key on the musl VM and the gnu reference engine;
 `--test selftest` passes 11/11 on each. CI and Pages green on the
 release commit. Eighty-one tags, eighty verified. Next: the
 tutorial's closing chapter.
+
+---
+
+## 2026-09-03 — Iteration 407: tutorial's closing chapter
+
+CI green on 406b (API verdict). Milestone stroke 2: "Beyond
+scripts" no longer describes a checker that finds syntax errors
+and nothing else. Its bullets now cover the import walk and the
+three warnings (and the playground's check button), the runner
+with a pointer to the Testing chapter's flags, the formatter's
+--diff, a new bullet for --doc in its four forms, and a language
+server whose list matches the twelve capabilities, including the
+comment shown when hovering the user's own function. Tutorial and
+docs guards green. One stroke banked toward v2.61.0. Next: LSP
+completion offers user functions.

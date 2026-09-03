@@ -61,8 +61,9 @@ holds only the current milestone and the standing rules.
   LOG.md. 405: STATE.md refreshed and compacted. v2.60.0 VERIFIED
   (81st tag; strokes 401, 402, 405; both aarch64 archives executed
   here).
-- Backlog after the release (in order): (2) tutorial "Beyond
-  scripts" current; (3) LSP completion offers user fns, protocol
+- 407: tutorial's closing chapter current — one stroke banked toward
+  v2.61.0.
+- Backlog (in order): (3) LSP completion offers user fns, protocol
   test; (4) lib/list.ting flatten_deep + a comment on flatten,
   selftests; (5) health tick + audit; then replenish.
 - Tags: 81 (v2.60.0), 80 verified; v2.29.0 is publicly marked broken
