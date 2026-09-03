@@ -1023,6 +1023,17 @@ fn completion_result(src: &str) -> Value {
     for kw in KEYWORDS {
         items.push(obj(vec![("label", s(kw)), ("kind", Value::Int(14))]));
     }
+    // The file's own top-level functions complete as functions, with
+    // their signature and the `#` comment above them, like the stdlib's.
+    let own: Vec<(String, String, String)> = source_functions(src);
+    for (name, sig, comment) in &own {
+        items.push(obj(vec![
+            ("label", s(name)),
+            ("kind", Value::Int(3)), // Function
+            ("detail", s(&format!("fn {sig}"))),
+            ("documentation", s(comment)),
+        ]));
+    }
     let mut seen: Vec<String> = Vec::new();
     let mut word = String::new();
     for c in src.chars().chain([' ']) {
@@ -1033,6 +1044,7 @@ fn completion_result(src: &str) -> Value {
             if !w.chars().next().is_some_and(|c| c.is_ascii_digit())
                 && !KEYWORDS.contains(&w.as_str())
                 && Builtin::ALL.iter().all(|b| b.name() != w)
+                && own.iter().all(|(name, _, _)| *name != w)
                 && !seen.contains(&w)
             {
                 seen.push(w);

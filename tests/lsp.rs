@@ -227,6 +227,18 @@ fn completion_offers_imported_stdlib_functions() {
     let sig = recv(&mut reader);
     assert!(sig.contains("\"label\":\"area(w, h)\""), "{sig}");
     assert!(sig.contains("defined in this file"), "{sig}");
+    // Completion offers the file's own function as a function (not a
+    // plain identifier), with its signature and comment.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":33,"method":"textDocument/completion","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":3,"character":0}}}"#,
+    );
+    let comp = recv(&mut reader);
+    assert!(
+        comp.contains(r#""detail":"fn area(w, h)","documentation":"Area of a rectangle.","kind":3,"label":"area""#),
+        "{comp}"
+    );
+    assert!(!comp.contains(r#""kind":6,"label":"area""#), "{comp}");
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":31,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":12}}}"#,
