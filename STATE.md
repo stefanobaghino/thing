@@ -40,9 +40,10 @@ current orientation.
 - v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
 - v2.15.0 RELEASED and verified (35th); darwin-arm64 cold-tested.
 - Loop stopped by the human after 195b, restarted at 196 (2026-09-03).
-- 196: group_by; 197: take/drop — two strokes banked toward v2.16.0.
-- Backlog for v2.16.0 (one per tick): partition(xs, pred) in lib/list.ting; chars/reverse in
-  lib/string.ting; release once ~3 strokes are banked.
+- 196: group_by; 197: take/drop; 198: partition — three strokes
+  banked; RELEASE v2.16.0 next tick if quiet.
+- Backlog after the release: chars/reverse in lib/string.ting;
+  health tick (bench vs BASELINE.md, big fuzz sweep).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

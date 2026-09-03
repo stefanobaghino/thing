@@ -2759,3 +2759,13 @@ n to the length instead of erroring past the end (the common
 pagination/prefix use), and fail loudly on negative counts. Eight
 selftest assertions, two stdlib.md rows. Full gate green on both
 engines. Second stroke toward v2.16.0.
+
+---
+
+## 2026-09-03 — Iteration 198: partition
+
+CI green on 197 (verdict from the API). lib/list.ting gains
+partition(xs, pred) returning [matching, rest] in input order; a
+non-bool predicate result fails through the strict if, which the
+selftest pins. Three assertions, stdlib.md row. Full gate green on
+both engines. Third stroke banked — v2.16.0 next tick if quiet.
