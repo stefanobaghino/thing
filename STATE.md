@@ -178,8 +178,10 @@ current orientation.
 - v2.52.0 VERIFIED (73rd tag, 72 verified; both aarch64 archives
   executed here).
 - v2.53.0 VERIFIED (74th tag, 73 verified; both aarch64 archives
-  executed here). Pages verdict for 054c9fc pending at 366b.
-- Backlog after the release: (5) health tick + audit; then replenish.
+  executed here; Pages green). 367: health tick + audit green —
+  milestone "where it happened" complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

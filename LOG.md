@@ -5781,3 +5781,20 @@ prints hello-world on both engines, and `--test selftest` passes
 deploying at the time of writing (verdict on the next tick).
 Seventy-four tags, seventy-three verified. Next: health tick +
 audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 367: health tick + audit
+
+CI green on 366b and Pages green on the v2.53.0 commit (API
+verdicts). Bench at load ~3.2: all six checksums match; the VM
+ratios sit inside the band the last four ticks drew, so the
+per-call origin bookkeeping added in 361 and 363 is not visible
+above this host's noise — checksums decide, as always. Fuzz: 50000
+differential cases (seed 20260903367), the crash fuzzer, and 20000
+formatter cases (seed 367) all pass in release. Distribution: 74
+releases with the expected asset counts (36 × 3, 14 × 4, 24 × 6),
+all six v2.53.0 download URLs resolve, all nine site resources
+answer 200 and the site serves slug and the call-site note.
+Nothing to fix. The "where it happened" milestone is complete.
+Backlog empty: next tick is replenishment.
