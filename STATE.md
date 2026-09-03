@@ -51,8 +51,9 @@ current orientation.
   executed cold on this host, both engines.
 - v2.18.0 RELEASED and verified (38th); aarch64-linux asset
   executed cold on this host, both engines.
-- Backlog toward v2.19.0 (one per tick): tutorial mention of
-  group_by/partition; distribution audit incl. arm64; then feature
+- 209: tutorial snippet for partition/group_by/take — first stroke
+  toward v2.19.0.
+- Backlog (one per tick): distribution audit incl. arm64; feature
   strokes (candidates: lib/list.ting window(xs, n), lib/string.ting
   center(s, width, fill), REPL :fmt of the last chunk).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

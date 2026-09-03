@@ -2933,3 +2933,14 @@ lcm(4, 6) = 12 and abs_diff(2.5, 1) = 1.5 on both engines, a
 `--fmt -` filters stdin to stdout, `--check -` reports the stdin
 diagnostic with exit 1. Site: all resources 200, changelog shows
 2.18.0. 38 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 209: tutorial list snippet
+
+CI green on 208b (API verdict). The modules chapter of the tutorial
+gains an executed snippet using partition, group_by and take/drop
+from lib/list.ting, plus the sentence explaining why group_by's key
+must be a string (maps are string-keyed; str() is the idiom). The
+tutorial test runs it and matches the expected output block. Full
+gate green. First stroke toward v2.19.0.
