@@ -9,6 +9,7 @@ on:
       - "playground/**"
       - "src/**"
       - "docs/**"
+      - "examples/**"
       - "tools/md2html.py"
       - "CHANGELOG.md"
       - "Cargo.toml"
@@ -41,6 +42,7 @@ jobs:
           python3 tools/md2html.py docs/tutorial.md _site/tutorial.html
           python3 tools/md2html.py docs/reference.md _site/reference.html
           python3 tools/md2html.py docs/stdlib.md _site/stdlib.html
+          python3 tools/md2html.py docs/cookbook.md _site/cookbook.html
           python3 tools/md2html.py docs/retrospective.md _site/retrospective.html
           python3 tools/md2html.py CHANGELOG.md _site/changelog.html
       - uses: actions/configure-pages@v5
