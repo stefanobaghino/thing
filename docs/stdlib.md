@@ -19,6 +19,7 @@ Imports return a map, so functions are reached with `["name"]`.
 |----------|------|
 | `sum(xs)` | adds the elements (0 for an empty list) |
 | `sum_by(xs, f)` | adds `f(x)` over the elements (0 for an empty list) |
+| `scan(xs, init, f)` | running reduce: `[init, f(init, x0), f(that, x1), ...]` |
 | `reverse(xs)` | a fresh list in reverse order |
 | `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |

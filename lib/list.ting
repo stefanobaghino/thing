@@ -266,3 +266,15 @@ fn unique_by(xs, key) {
   }
   return out;
 }
+
+# Running reduce: every intermediate accumulator, starting with init
+# (so the result has one more element than xs).
+fn scan(xs, init, f) {
+  let out = [init];
+  let acc = init;
+  for x in xs {
+    acc = f(acc, x);
+    push(out, acc);
+  }
+  return out;
+}
