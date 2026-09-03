@@ -2661,3 +2661,11 @@ promotion handles mixed int/float input. Four selftest assertions;
 stdlib.md row. Also confirmed LSP completion already offers
 document words alongside builtins (no gap there). Full gate green.
 Third stroke banked — v2.14.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 190: v2.14.0
+
+REPL-and-docs release: :vars, list mean, tutorial stdlib chapter.
+Full gate green, stdlib selftests pass on the reference engine.
+Tagging v2.14.0 (34th release).

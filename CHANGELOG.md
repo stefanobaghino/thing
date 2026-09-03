@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux/macOS/Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.14.0 (2026-09-03)
+
+- REPL: `:vars` lists the session's own bindings (name and type).
+- `lib/list.ting`: `mean`.
+- Tutorial: the modules chapter now shows the embedded stdlib and
+  the disk-first fallback rule.
+
 ## v2.13.0 (2026-09-03)
 
 - `lib/map.ting`: `pick`, `omit`.
