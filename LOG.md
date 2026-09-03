@@ -4534,3 +4534,15 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 wrap prints identically on both engines. Site: all resources 200,
 changelog shows 2.38.0, reference documents --doc. 59 tags, 58
 verified.
+
+---
+
+## 2026-09-03 — Iteration 301: json diff
+
+CI green on 300b (API verdict). Milestone stroke 4: lib/json.ting
+gains diff(a, b) — [path, left, right] triples over the union of
+both sides' leaf paths (a's first, then b's extras), with an absent
+path reading as nil, built on paths and get_in so it stays a dozen
+lines. Two scalars diff as one triple at the empty path. Four
+assertions, stdlib.md row. Full gate green on both engines. First
+stroke toward v2.39.0.
