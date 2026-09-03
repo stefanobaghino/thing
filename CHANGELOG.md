@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.31.0 (2026-09-03)
+
+- `ting --test` accepts directories (recursive, sorted), so
+  `ting --test tests/` is the whole suite; CI runs the binary's own
+  runner over `selftest/` on every platform.
+- `lib/string.ting`: `table`, aligned columns for CLI output; the
+  logs example prints one.
+
 ## v2.30.0 (2026-09-03)
 
 - Releases now also ship fully static Linux archives

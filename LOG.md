@@ -3911,3 +3911,11 @@ requests as a table under indent(), golden output and the cookbook
 regenerated (the sync guard would have caught a stale page). Four
 assertions, stdlib.md row. Full gate green on both engines. Third
 stroke banked — v2.31.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 268: v2.31.0
+
+--test directories, CI dogfooding, table. CI and Pages green on
+267 (API verdicts). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.31.0 (53rd tag).
