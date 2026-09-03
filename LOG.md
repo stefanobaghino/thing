@@ -6886,3 +6886,16 @@ document with a let, an assignment, a use, a print argument and a
 same-named fn: two writes, three reads, the let's range first, and
 null on a number. Full gate green (227 tests). Two strokes banked
 toward v2.63.0 (417, 420). Next: prepareRename.
+
+---
+
+## 2026-09-03 — Iteration 421: prepareRename
+
+CI green on 420 (API verdict). Milestone stroke 2:
+textDocument/prepareRename returns the identifier's range and its
+text as the placeholder, or null when the cursor is on a keyword,
+a builtin, a number or nothing at all, so an editor declines the
+rename before opening its prompt; renameProvider now advertises
+prepareProvider. Protocol test: the binding gets its range and
+name, `len` and `let` get null. Full gate green (228 tests). Three
+strokes banked (417, 420, 421) — v2.63.0 next tick if quiet.
