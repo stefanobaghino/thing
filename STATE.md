@@ -108,10 +108,9 @@ current orientation.
   cold here). The 264 milestone is complete.
 - 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
   reasoning in LOG.md.
-- 273: lib/json.ting — milestone stroke 1; first toward v2.33.0.
-- Backlog (one per tick, in order): (2) examples/
-  pipeline.ting reading stdin with a built-in fallback, cookbook
-  regen; (3) `--check` reports the unknown-stdlib-member warning
+- 273: lib/json.ting; 274: pipeline example — milestone strokes
+  1–2; two toward v2.33.0.
+- Backlog (one per tick, in order): (3) `--check` reports the unknown-stdlib-member warning
   (shared with the LSP), io test; (4) `--test --filter SUBSTR`, io
   test; (5) health tick (bench, both fuzzers, distribution audit).
   Release after ~3.

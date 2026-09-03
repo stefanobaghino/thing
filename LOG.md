@@ -4050,3 +4050,19 @@ member warning cover it with no extra work), documented as its own
 stdlib.md section, fourteen selftests over a json_parse'd document,
 and every "five modules" sentence (tutorial, README) now says six.
 Full gate green on both engines. First stroke toward v2.33.0.
+
+---
+
+## 2026-09-03 — Iteration 274: pipeline example
+
+CI and Pages green on 273 (API verdicts). Milestone stroke 2:
+examples/pipeline.ting is the first example that consumes input —
+comma-separated records from stdin via read_file("-"), grouped by
+region with group_by, summed and averaged, printed with table(),
+plus a count_by/top for the busiest name. With nothing on stdin
+(the examples harness closes it; Command::output() never inherits
+it) it announces a built-in sample, so the golden output is
+reproducible; piped input was checked by hand and takes the real
+path. Malformed lines are skipped loudly. Twelfth example; cookbook
+regenerated. Full gate green on both engines. Second stroke toward
+v2.33.0.
