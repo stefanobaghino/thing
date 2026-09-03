@@ -214,9 +214,10 @@ current orientation.
   reasoning in LOG.md.
 - v2.59.0 VERIFIED (80th tag, 79 verified; both aarch64 archives
   executed here).
-- Backlog after the release (in order): (3) LSP hover shows a user
-  fn's comment, protocol test; (4) lib/map.ting map_keys, selftests;
-  (5) health tick + audit.
+- 401: hover shows a user fn's comment — one stroke banked toward
+  v2.60.0.
+- Backlog (in order): (4) lib/map.ting map_keys, selftests; (5)
+  health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

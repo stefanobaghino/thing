@@ -6486,3 +6486,21 @@ programs run to their results on the musl VM and the gnu reference
 engine, and `--test selftest` passes 11/11 on each. CI and Pages
 green on the release commit. Eighty tags, seventy-nine verified.
 Next: hover shows a user function's comment.
+
+---
+
+## 2026-09-03 — Iteration 401: hover shows a user function's comment
+
+CI green on 400b (API verdict). Milestone stroke 3: hovering a
+function defined in the open file shows the `#` comment written
+above it, from the same line-based scanner that feeds --doc for
+stdlib modules and user files, above the "defined in this file"
+line; a function without a comment reads as before. The protocol
+test's document gained a comment line, so its hover and
+signature-help positions moved down a line — the first build
+failed because a ting comment starting with `# ` inside a Rust
+`r#"..."#` literal ends the literal (the message now uses
+`r##"..."##`), and the first test run failed on the signature-help
+position still pointing at the old line. Reference bullet updated.
+Full gate green (223 tests). One stroke banked toward v2.60.0.
+Next: map_keys.
