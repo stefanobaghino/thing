@@ -355,20 +355,43 @@ fn signature_help_result(src: &str, line: usize, character: usize) -> Value {
         start -= 1;
     }
     let word: String = chars[start..open].iter().collect();
-    let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) else {
+    let (sig, doc) = if let Some(b) = Builtin::ALL.iter().find(|b| b.name() == word) {
+        let (sig, summary) = b.doc();
+        (sig.to_string(), summary.to_string())
+    } else if let Some(key) = quoted_key_before(&chars, open)
+        && let Some((path, _, sig, comment)) = imported_stdlib_functions(src)
+            .into_iter()
+            .find(|(_, name, _, _)| *name == key)
+    {
+        // A stdlib call through its module map: m["name"](...).
+        (sig, format!("{comment} (from {path})"))
+    } else {
         return Value::Nil;
     };
-    let (sig, summary) = b.doc();
     obj(vec![
         (
             "signatures",
             Value::list(vec![obj(vec![
-                ("label", s(sig)),
-                ("documentation", s(summary)),
+                ("label", s(&sig)),
+                ("documentation", s(doc.trim())),
             ])]),
         ),
         ("activeSignature", Value::Int(0)),
     ])
+}
+
+/// The string inside `["..."]` ending right before position `end`,
+/// for calls made through a module map.
+fn quoted_key_before(chars: &[char], end: usize) -> Option<String> {
+    if end < 4 || chars[end - 1] != ']' || chars[end - 2] != '"' {
+        return None;
+    }
+    let close = end - 2;
+    let open = chars[..close].iter().rposition(|&c| c == '"')?;
+    if open == 0 || chars[open - 1] != '[' {
+        return None;
+    }
+    Some(chars[open + 1..close].iter().collect())
 }
 
 const KEYWORDS: &[&str] = &[

@@ -224,6 +224,16 @@ fn completion_offers_imported_stdlib_functions() {
     let hov = recv(&mut reader);
     assert!(hov.contains("\"result\":null"), "{hov}");
 
+    // Signature help inside l["median"](...) resolves through the
+    // module map to the stdlib signature.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":12,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":1,"character":19}}}"#,
+    );
+    let sig = recv(&mut reader);
+    assert!(sig.contains("\"label\":\"median(xs)\""), "{sig}");
+    assert!(sig.contains("lib/list.ting"), "{sig}");
+
     send(
         &mut stdin,
         r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
