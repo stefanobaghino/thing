@@ -147,3 +147,9 @@ fn count(xs, v) {
   }
   return n;
 }
+
+# Arithmetic mean as a float; empty list fails.
+fn mean(xs) {
+  if len(xs) == 0 { fail("mean: empty list"); }
+  return float(sum(xs)) / len(xs);
+}

@@ -2651,3 +2651,13 @@ message), backed by a new Interpreter::user_bindings(). Banner,
 :help footer, and the reference's REPL paragraph updated. Pipe test
 covers empty, populated, and builtin-exclusion. Full gate green.
 Second stroke toward v2.14.0.
+
+---
+
+## 2026-09-03 — Iteration 189: mean
+
+lib/list.ting gains mean(xs) — float result, empty list fails,
+promotion handles mixed int/float input. Four selftest assertions;
+stdlib.md row. Also confirmed LSP completion already offers
+document words alongside builtins (no gap there). Full gate green.
+Third stroke banked — v2.14.0 next tick if quiet.
