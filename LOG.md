@@ -7692,3 +7692,19 @@ unreadable file in both --fmt and --check. Five strokes:
 Rejected: making the formatter format around a lex error (a file
 that does not lex has no tokens to lay out), a --fmt --quiet (the
 summary is one line).
+
+---
+
+## 2026-09-03 — Iteration 464: every file, before failing
+
+CI green on 463 (API verdict). Milestone stroke 1: --fmt,
+--fmt-check and --fmt --diff no longer stop at a file that cannot
+be read, does not lex, or cannot be written — each is reported
+and the loop goes on, and the exit status is 1 at the end if any
+failed (or, in check and diff, if any would change); --check
+continues past an unreadable file the same way. io test with a
+directory whose middle file has an unterminated string: --fmt-check
+lists the third file, --fmt reformats it and exits 1, and --check
+over a missing file and the broken one reports both. Full gate
+green (239 tests). Two strokes banked toward v2.71.0 (461, 464).
+Next: the formatter's summary line, then the release.
