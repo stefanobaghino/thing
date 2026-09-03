@@ -143,6 +143,23 @@ fn plural(n, one, many) {
   return str(n) + " " + many;
 }
 
+# The English ordinal for an integer: "1st", "2nd", "3rd", "4th",
+# and "th" for the teens ("11th", "12th", "13th") whatever their last
+# digit. Negative counts keep their sign ("-1st"); a non-integer fails.
+fn ordinal(n) {
+  if type(n) != "int" { fail("ordinal: expected an int, got " + type(n)); }
+  let m = n;
+  if m < 0 { m = -m; }
+  let suffix = "th";
+  if m % 100 < 11 || m % 100 > 13 {
+    let last = m % 10;
+    if last == 1 { suffix = "st"; }
+    if last == 2 { suffix = "nd"; }
+    if last == 3 { suffix = "rd"; }
+  }
+  return str(n) + suffix;
+}
+
 # A URL-friendly form of s: lowercased, every run of characters that
 # is neither a digit nor a cased letter collapsed to one dash, dashes
 # trimmed from both ends ("" when nothing is left). Accented letters

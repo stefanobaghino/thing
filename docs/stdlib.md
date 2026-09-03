@@ -1,7 +1,7 @@
 # The ting standard library
 
 Six modules written in ting itself — list, map, string, math, json
-and test, 120 functions between them — living in `lib/` and also
+and test, 121 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -86,6 +86,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `slug(s)` | lowercased, non-alphanumeric runs collapsed to one dash, dashes trimmed |
 | `squeeze(s)` | runs of whitespace collapsed to one space, ends trimmed |
 | `plural(n, one, many)` | `"1 file"` / `"3 files"`: the count and the noun that fits it |
+| `ordinal(n)` | the English ordinal of an integer: `"1st"`, `"2nd"`, `"11th"` |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |
