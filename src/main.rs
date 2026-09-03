@@ -200,7 +200,10 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
         }
         let src = match read_tool_source(&f) {
             Ok(src) => src,
-            Err(code) => return code,
+            Err(_) => {
+                failed = true;
+                continue;
+            }
         };
         match ting::check_source(&f, &src) {
             Err(diagnostic) => {
@@ -494,10 +497,17 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
         return ExitCode::FAILURE;
     }
     let mut dirty = false;
+    // A file that cannot be read, does not lex, or cannot be written
+    // is reported and the run goes on to the next one; the exit
+    // status says at the end whether anything failed.
+    let mut failed = false;
     for f in &files {
         let src = match read_tool_source(f) {
             Ok(src) => src,
-            Err(code) => return code,
+            Err(_) => {
+                failed = true;
+                continue;
+            }
         };
         match ting::fmt::format(&src) {
             // Stdin cannot be rewritten in place: `--fmt -` is a filter
@@ -521,7 +531,7 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
                     dirty = true;
                 } else if let Err(e) = std::fs::write(f, formatted) {
                     eprintln!("ting: cannot write {f}: {e}");
-                    return ExitCode::FAILURE;
+                    failed = true;
                 } else {
                     println!("reformatted {f}");
                 }
@@ -529,11 +539,11 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
             Ok(_) => {}
             Err(e) => {
                 eprintln!("{}", ting::diag::render(f, &src, &e.message, e.span));
-                return ExitCode::FAILURE;
+                failed = true;
             }
         }
     }
-    if (check || diff) && dirty {
+    if failed || ((check || diff) && dirty) {
         ExitCode::FAILURE
     } else {
         ExitCode::SUCCESS

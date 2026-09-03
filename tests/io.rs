@@ -803,6 +803,55 @@ fn check_flag_strict_fails_on_warnings() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `--fmt` over a directory with a file that does not lex reports it,
+/// still reformats the files after it, and exits 1; `--fmt-check`
+/// likewise lists every file that would change. `--check` continues
+/// past an unreadable file the same way.
+#[test]
+fn fmt_and_check_process_every_file_before_failing() {
+    let dir = std::env::temp_dir().join(format!("ting-every-file-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(dir.join("a.ting"), "let   a=1;\n").unwrap();
+    std::fs::write(dir.join("b.ting"), "let b = \"unterminated;\n").unwrap();
+    std::fs::write(dir.join("c.ting"), "let   c=3;\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt-check", dir.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("would reformat") && stdout.contains("c.ting"),
+        "{stdout}"
+    );
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt", dir.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    assert!(String::from_utf8_lossy(&out.stderr).contains("unterminated string"));
+    assert_eq!(
+        std::fs::read_to_string(dir.join("c.ting")).unwrap(),
+        "let c = 3;\n"
+    );
+    // --check: a missing file is reported and the next one still runs.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args([
+            "--check",
+            dir.join("missing.ting").to_str().unwrap(),
+            dir.join("b.ting").to_str().unwrap(),
+        ])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("cannot read") && stderr.contains("unterminated string"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
