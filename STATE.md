@@ -121,9 +121,12 @@ holds only the current milestone and the standing rules.
 - v2.71.0 VERIFIED (92nd tag; strokes 461, 464, 465; both aarch64
   archives executed here).
 - 467: the formatter's contract in the docs; 468: plural — two
-  strokes banked toward v2.72.0.
-- Backlog (in order): (5) health tick + audit; then replenish (the
-  release follows the next stroke).
+  strokes banked toward v2.72.0. 469: health tick + audit green —
+  milestone "every file, every time" complete. Found: unknown
+  options (-h, -V, --nosuch) are taken for script paths.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md; the release
+  follows the next stroke.
 - Tags: 92 (v2.71.0), 91 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

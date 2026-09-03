@@ -7770,3 +7770,26 @@ lines scripts print. Three selftests, a stdlib.md row, the page's
 count to 118 as the guard requires. Selftests pass on both
 engines; full gate green (239 tests). Two strokes banked toward
 v2.72.0 (467, 468). Next: health tick + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 469: health tick + audit
+
+CI and Pages green on 468 (API verdicts). Bench at load ~3: all
+six checksums match; ratios in the band. Fuzz: 50000 differential
+cases (seed 20260903469), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 469, LF and CRLF) all pass in
+release. Distribution: 92 releases with the expected asset counts
+(36 × 3, 14 × 4, 42 × 6), all six v2.71.0 download URLs resolve,
+all nine site resources answer 200, and the site serves the
+formatter's summary sentence, key_of and plural. Nothing to fix in
+what was audited.
+
+Found by a probe: `ting -h`, `ting -V` and `ting --nosuch` are all
+taken for script paths and fail with "cannot read -h: No such file
+or directory" — an unknown option should say so and point at
+--help, and the two short forms every shell user tries first
+should work. First candidate for the next milestone. The "every
+file, every time" milestone is complete; two strokes (467, 468)
+are banked toward v2.72.0. Backlog empty: next tick is
+replenishment.
