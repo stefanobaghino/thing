@@ -6582,3 +6582,19 @@ before the entry was pushed. Stroke 4 becomes flatten_deep(xs),
 which removes every level of nesting, and gives flatten the `#`
 comment it lacks (it is the one list function `--doc list` shows
 without a description).
+
+---
+
+## 2026-09-03 — Iteration 405: STATE.md refreshed and compacted
+
+CI green on 404 (API verdict). Milestone stroke 1: the loop's own
+orientation file. The Standing shape section now says what ships
+(three fuzzers, 105+ stdlib functions, 27 programs, 223 tests in
+11 suites, the whole toolchain in one paragraph, six-asset
+archives since v2.30.0 on 22.04 runners, the site's real address
+and pages); the Now section, a 190-line accretion of every release
+and stroke since 196, is replaced by the current milestone, the
+tag count, and the standing rules — each with the LOG iteration
+that produced it — under a one-line pointer to LOG.md for
+everything older. 242 lines became about 100. Docs guard green.
+Three strokes banked (401, 402, 405) — v2.60.0 next tick if quiet.
