@@ -3328,3 +3328,14 @@ v2.24.0 next tick if quiet.
 scan, strip_prefix/strip_suffix, retrospective act four. CI green
 on 235 (API verdict). Full gate green, stdlib selftests pass on the
 reference engine. Tagging v2.24.0 (44th release).
+
+---
+
+## 2026-09-03 — Iteration 236b: v2.24.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.24.0`; scan, strip_prefix and strip_suffix print
+identically on both engines. Site: all resources 200, changelog
+shows 2.24.0, retrospective page carries the fourth act. 44
+releases, all verified.

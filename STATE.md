@@ -74,11 +74,12 @@ current orientation.
   executed cold on this host, both engines; Pages green first time.
 - v2.23.0 RELEASED and verified (43rd); aarch64-linux asset
   executed cold on this host, both engines.
-- v2.24.0 TAGGED (44th release): verify next tick by executing the
-  aarch64-linux asset cold here; confirm the Pages run succeeded.
-- Backlog after verification: fuzz generator audit (which builtins
-  it never emits); LSP completion of stdlib function names after
-  `lib["`; health tick.
+- v2.24.0 RELEASED and verified (44th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.25.0 (one per tick): fuzz generator audit
+  (which builtins it never emits, then add the cheap ones); LSP
+  completion of stdlib function names after `lib["`; health tick;
+  release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
