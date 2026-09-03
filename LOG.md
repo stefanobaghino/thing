@@ -4090,3 +4090,16 @@ if quiet.
 lib/json.ting, --check warnings, pipeline example. CI and Pages
 green on 275 (API verdicts). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.33.0 (55th tag).
+
+---
+
+## 2026-09-03 — Iteration 276b: v2.33.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.33.0`, the archive bundles six
+modules including json.ting, get_in and paths agree on both
+engines, and --check prints the member warning with a caret and
+exit 0. Site: all resources 200, changelog shows 2.33.0, stdlib
+page has the json section, cookbook has the pipeline example. 55
+tags, 54 verified.

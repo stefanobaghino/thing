@@ -108,10 +108,8 @@ current orientation.
   cold here). The 264 milestone is complete.
 - 272: replenishment — milestone "data in, data out" (v2.33–v2.35),
   reasoning in LOG.md.
-- v2.33.0 TAGGED (55th tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 glibc
-  archive here, including lib/json.ting from the bundled lib/ and
-  --check warnings.
+- v2.33.0 RELEASED and verified (55th tag); aarch64 glibc archive
+  executed cold here with the bundled json module.
 - Backlog after the release (in order): (4) `--test --filter
   SUBSTR`, io test; (5) health tick (bench, both fuzzers,
   distribution audit); then replenish.
