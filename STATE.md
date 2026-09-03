@@ -138,7 +138,14 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 483: ordinal — one stroke banked toward v2.75.0. 484: health tick
   + audit green — milestone "reading width" complete.
-- Backlog: empty — next tick is replenishment.
+- 485: replenishment — milestone "the nearest name" (v2.75-v2.76),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) edit-distance helper +
+  "did you mean" on undefined variables; (2) the unknown-member
+  warning and its runtime error suggest a member — then RELEASE
+  v2.75.0; (3) --doc suggests the nearest name; (4) unknown options
+  suggest an option; (5) docs + selftests, then RELEASE v2.76.0;
+  (6) health tick + audit.
 - Tags: 95 (v2.74.0), 94 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

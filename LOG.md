@@ -8061,3 +8061,29 @@ resolve. Site: all nine resources answer 200, the stdlib page
 serves ordinal(n) and says 121 functions, the changelog leads with
 v2.74.0. Nothing to fix. The "reading width" milestone is
 complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 485: replenishment — milestone "the nearest name"
+
+CI green on 484 (API verdict). Thirty milestones since the restart,
+ninety-five tags. The survey typed the mistakes a tired user makes
+and read what ting says back. `print(cont)` when `count` is bound:
+"undefined variable 'cont'", full stop. `lenght("abc")`: the same
+sentence, though `len` is a builtin one edit away. An imported
+module's misspelled member: "key \"medain\" not found" at runtime,
+and from --check "lib/list.ting has no `medain`" — both true, and
+both leaving the reader to scan a table of 121 names. `ting --doc
+nosuchname` names nothing near it; `ting --fmr` says "unknown
+option --fmr (see --help)" with --fmt sitting right there. Every
+one of these already has the candidate list in hand at the moment
+it gives up: the scope, the module's keys, the doc index, the
+option table. The milestone spends them. levenshtein is already in
+lib/string.ting, so the shape is known; the Rust side gets its own
+small edit-distance helper, a threshold that keeps a suggestion
+honest (no more than a third of the name wrong), and one help line
+per diagnostic. Milestone "the nearest name" (v2.75-v2.76):
+undefined variables suggest an in-scope binding or builtin; the
+unknown-member warning and its runtime error suggest a member;
+--doc and the option parser suggest theirs; docs and selftests
+follow.
