@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.19.0 (2026-09-03)
+
+- `lib/list.ting`: `window`.
+- `lib/string.ting`: `center`.
+- Tutorial: the modules chapter shows `partition`, `group_by` and
+  `take`/`drop`.
+
 ## v2.18.0 (2026-09-03)
 
 - `ting x.ting | head` ends quietly with exit 0 when the reader goes

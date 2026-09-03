@@ -54,9 +54,9 @@ current orientation.
 - 209: tutorial snippet for partition/group_by/take — first stroke
   toward v2.19.0. 210: distribution audit green (38 releases, arm64
   assets included, site all 200).
-- 211: window; 212: string center — three strokes banked (with 209's
-  tutorial snippet); RELEASE v2.19.0 next tick if quiet.
-- Backlog after the release: REPL :fmt of the last chunk; health
+- v2.19.0 TAGGED (39th release): verify next tick by executing the
+  aarch64-linux asset cold here.
+- Backlog after verification: REPL :fmt of the last chunk; health
   tick; lib/map.ting count_by/invert candidates.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)

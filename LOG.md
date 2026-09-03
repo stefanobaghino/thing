@@ -2979,3 +2979,12 @@ input passes through unchanged, and a fill that is not exactly one
 character fails loudly since the width arithmetic assumes it. Five
 assertions, stdlib.md row. Full gate green on both engines. Third
 stroke banked — v2.19.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 213: v2.19.0
+
+Small stdlib release: window, center, and the tutorial's list
+snippet. CI green on 212 (API verdict). Full gate green, stdlib
+selftests pass on the reference engine. Tagging v2.19.0 (39th
+release).
