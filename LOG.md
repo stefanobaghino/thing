@@ -8635,3 +8635,17 @@ calls into the framework — and the suite over selftest now reports
 gate green (256 tests); the corpus scan still shows its five
 expected warnings. One stroke banked toward v2.82.0. Next: docs for
 the counts, then the release.
+
+---
+
+## 2026-09-03 — Iteration 515: saying what it counts
+
+CI green on 514 (API verdict). Milestone stroke 2 toward v2.82.0:
+the docs say what the counts mean. The tutorial's testing chapter
+explains the per-file count, the total, and why a passing file that
+checked nothing is named — a suite that quietly stops checking
+anything should be visible rather than green — and its tooling
+bullet mentions the counts; the stdlib page notes that every
+lib/test.ting helper counts as one. The reference already carried
+the runner's paragraph from 512. Full gate green (256 tests). Two
+strokes banked (514, 515). Next: release v2.82.0.
