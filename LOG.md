@@ -5437,3 +5437,16 @@ Unused-binding warning, user-fn signature help, --fmt --diff. CI
 and Pages green on 349 (API verdicts). Full gate green, stdlib
 selftests pass on the reference engine. Tagging v2.50.0 (71st tag).
 Three hundred and fifty iterations.
+
+---
+
+## 2026-09-03 — Iteration 350b: v2.50.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Downloaded both aarch64 archives to this host and executed
+them: version 2.50.0, `--check` prints the unused-binding warning
+with a caret, `--fmt --diff` prints old-then-new and exits 1
+leaving the file untouched, the script runs identically on both
+engines, and `--test selftest` passes 11/11 on each binary. CI and
+Pages green on the release commit. Seventy-one tags, seventy
+verified. Next: extent(xs) in lib/list.ting.

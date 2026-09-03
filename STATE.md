@@ -159,13 +159,12 @@ current orientation.
   (v2.48–v2.50), reasoning in LOG.md.
 - v2.48.0 RELEASED and verified (69th tag); aarch64 musl archive
   executed cold here.
-- v2.49.0 RELEASED and verified (70th tag); aarch64 glibc archive
+- v2.50.0 RELEASED and verified (70th tag); aarch64 glibc archive
   executed cold here. The 338 milestone is complete.
 - 346: replenishment — milestone "second opinions" (v2.50–v2.52),
   reasoning in LOG.md.
-- v2.50.0 TAGGED (71st tag; milestone strokes 1–3): verify next
-  tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here (--check warning, --fmt --diff).
+- v2.50.0 VERIFIED (71st tag, 70 verified; both aarch64 archives
+  executed here). Milestone "second opinions" shipped.
 - Backlog after the release (in order): (4) lib/list.ting extent,
   selftests; (5) health tick + audit; then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
