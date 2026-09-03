@@ -49,10 +49,12 @@ current orientation.
   cases agree).
 - v2.17.0 RELEASED and verified (37th); aarch64-linux asset
   executed cold on this host, both engines.
-- v2.18.0 TAGGED (38th release): verify next tick by executing the
-  aarch64-linux asset cold here.
-- Backlog after verification: tutorial mention of group_by/partition;
-  distribution audit incl. arm64; health tick.
+- v2.18.0 RELEASED and verified (38th); aarch64-linux asset
+  executed cold on this host, both engines.
+- Backlog toward v2.19.0 (one per tick): tutorial mention of
+  group_by/partition; distribution audit incl. arm64; then feature
+  strokes (candidates: lib/list.ting window(xs, n), lib/string.ting
+  center(s, width, fill), REPL :fmt of the last chunk).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

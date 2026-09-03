@@ -2921,3 +2921,15 @@ Shell-citizen release: quiet exit on broken pipe, stdin for the
 tool flags, math lcm/abs_diff. CI green on 207 (API verdict). Full
 gate green, stdlib selftests pass on the reference engine. Tagging
 v2.18.0 (38th release).
+
+---
+
+## 2026-09-03 — Iteration 208b: v2.18.0 verified
+
+Release, CI and Pages runs all green (API verdicts). Four archives
+published. Cold test on this aarch64 Linux host: `ting 2.18.0`,
+lcm(4, 6) = 12 and abs_diff(2.5, 1) = 1.5 on both engines, a
+200000-line print piped into `head -1` exits 0 on both engines,
+`--fmt -` filters stdin to stdout, `--check -` reports the stdin
+diagnostic with exit 1. Site: all resources 200, changelog shows
+2.18.0. 38 releases, all verified.
