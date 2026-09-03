@@ -88,8 +88,13 @@ holds only the current milestone and the standing rules.
   milestone "load and import" complete. Found: CRLF files fail
   --fmt-check and get rewritten to LF; unused locals in function
   bodies are not warned about.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md.
+- 434: replenishment — milestone "the small print" (v2.66–v2.67),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) formatter keeps CRLF, io
+  test + fuzz; (2) unused local bindings warning, io + protocol
+  tests; (3) reference/tutorial/editor README sentences — then
+  RELEASE v2.66.0; (4) lib/math.ting trunc, selftests; (5) health
+  tick + audit.
 - Tags: 86 (v2.65.0), 85 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -7128,3 +7128,35 @@ and the formatter fights the editor; and an unused binding inside
 a function body gets no warning, since the unused-binding check is
 top-level only. The "load and import" milestone is complete.
 Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 434: replenishment — milestone "the small print"
+
+CI green on 433 (API verdict). Twenty-three milestones since the
+restart, eighty-six tags. The 433 probes found two things a user
+meets on the second day rather than the first: on a Windows
+checkout every file has CRLF endings, the formatter rewrites them
+all to LF and --fmt-check calls every file unformatted, so the
+formatter fights the editor; and the unused-binding warning stops
+at the top level, so a stale `let` inside a function — the more
+common kind — is never mentioned. Five strokes:
+
+1. The formatter keeps the source's line endings: a CRLF file
+   formats to CRLF, so --fmt-check is clean on a Windows checkout
+   and --fmt changes nothing but layout; the formatter fuzzer
+   feeds CRLF input too. io test.
+2. Unused local bindings: a `let` inside a function body whose
+   name appears nowhere else in that body warns, `_`-prefixed
+   exempt, shared by --check and the LSP like the other three. io
+   and protocol tests; corpus scan first.
+3. Reference and tutorial: the line-ending rule and the fourth
+   warning; editor README's warning list. Then release v2.66.0.
+4. lib/math.ting trunc(x): toward zero, beside floor, ceil and
+   round. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a --fmt flag to choose endings (the file already says
+which it uses), warning about unused parameters of nested
+closures differently from top-level ones (the parameter warning
+already covers every `fn`).
