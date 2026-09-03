@@ -7908,3 +7908,31 @@ full gate green (241 tests). Three strokes banked (473, 474, 475)
 Exit codes 0/1/2, the Running section, take_while and drop_while.
 CI and Pages green on 475 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.73.0 (94th tag).
+
+---
+
+## 2026-09-03 — Iteration 476b: v2.73.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.73.0 from `-V`, `--test` with no operand exiting 2, take_while
+and drop_while splitting a list on the musl VM and the gnu
+reference engine, and `--test selftest` passing 11/11 on each. CI
+and Pages green on the release commit. Ninety-four tags,
+ninety-three verified.
+
+---
+
+## 2026-09-03 — Iteration 477: health tick + audit
+
+Run alongside the release watch, its report written once the
+verdicts were in. Bench at load ~3: all six checksums match;
+ratios in the band. Fuzz: 50000 differential cases (seed
+20260903477), the crash fuzzer with its cyclic case, and 20000
+formatter cases (seed 477, LF and CRLF) all pass in release.
+Distribution: 94 releases with the expected asset counts (36 × 3,
+14 × 4, 44 × 6), all six v2.73.0 download URLs resolve, all nine
+site resources answer 200, and the site serves the exit-status
+paragraph and take_while. Nothing to fix. The "front door's
+handle" milestone is complete. Backlog empty: next tick is
+replenishment.
