@@ -5973,3 +5973,18 @@ group consecutive runs. Five strokes:
 Rejected: a REPL `:doc` with no name (the CLI form exists and the
 REPL's `:help` already lists builtins), an editor extension beyond
 the TextMate grammar (nothing to test it with here).
+
+---
+
+## 2026-09-03 — Iteration 376: vm.md status
+
+CI green on 375 (API verdict). Milestone stroke 1: docs/vm.md no
+longer opens as a design for v0.9.0. A Status section states what
+ships — the VM as default since v1.1.0, `--eval` and TING_ENGINE
+for the reference engine, the differential suite with its seed
+variables and the CI rerun, the shared call path that made module
+origins one change for both engines, and where the numbers live
+(bench/BASELINE.md, with the checksums-decide caveat). The design
+body and the two measured-outcome sections stay as the record.
+Docs guard green. Two strokes banked toward v2.55.0 (373, 376).
+Next: --doc FILE.ting.

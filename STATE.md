@@ -189,10 +189,11 @@ current orientation.
   complete.
 - 375: replenishment — milestone "the story straight"
   (v2.55–v2.56), reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) docs/vm.md status section;
-  (2) `--doc FILE.ting`, io test — then RELEASE v2.55.0 (373, +2);
-  (3) playground Check button (wasm export + unit test); (4)
-  lib/list.ting chunk_by, selftests; (5) health tick + audit.
+- 376: vm.md status section — two strokes banked (373, 376).
+- Backlog (one per tick, in order): (2) `--doc FILE.ting`, io test —
+  then RELEASE v2.55.0; (3) playground Check button (wasm export +
+  unit test); (4) lib/list.ting chunk_by, selftests; (5) health tick
+  + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
