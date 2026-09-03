@@ -319,3 +319,11 @@ assert(j["diff"]({"a": 1, "b": [1, 2]}, {"a": 1, "b": [1, 3], "c": true}) == [[[
 assert(j["diff"]({"x": {"y": 1}}, {}) == [[["x", "y"], 1, nil]], "diff missing on the right");
 assert(j["diff"]({"a": 1}, {"a": 1}) == [], "diff identical");
 assert(j["diff"](1, 2) == [[[], 1, 2]], "diff leaves");
+
+assert(l["binary_search"]([1, 3, 5, 7, 9], 7) == 3, "binary_search hit");
+assert(l["binary_search"]([1, 3, 5, 7, 9], 1) == 0 && l["binary_search"]([1, 3, 5, 7, 9], 9) == 4, "binary_search ends");
+assert(l["binary_search"]([1, 3, 5, 7, 9], 4) == nil, "binary_search miss");
+assert(l["binary_search"]([], 1) == nil, "binary_search empty");
+assert(l["binary_search"](["ant", "bee", "cow"], "bee") == 1, "binary_search strings");
+let sorted = range(0, 1000, 3);
+assert(l["binary_search"](sorted, 999) == 333 && l["binary_search"](sorted, 998) == nil, "binary_search large");

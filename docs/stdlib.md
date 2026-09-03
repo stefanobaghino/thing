@@ -24,6 +24,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `reverse(xs)` | a fresh list in reverse order |
 | `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
 | `sort_with(xs, cmp)` | stable sort by a three-way comparator (`cmp(a, b)` negative, zero, positive) |
+| `binary_search(xs, x)` | index of `x` in an ascending list, or `nil` |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
 | `interleave(a, b)` | elements alternated starting with `a`; the longer tail follows |
 | `zip_with(a, b, f)` | `f(a[i], b[i])` for each index, trimmed to the shorter input |

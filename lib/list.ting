@@ -339,3 +339,16 @@ fn cartesian(a, b) {
   }
   return out;
 }
+
+# Index of x in a list sorted ascending, or nil when absent; when x
+# occurs more than once any of its indices may be returned.
+fn binary_search(xs, x) {
+  let lo = 0;
+  let hi = len(xs);
+  while lo < hi {
+    let mid = (lo + hi) / 2;
+    if xs[mid] == x { return mid; }
+    if xs[mid] < x { lo = mid + 1; } else { hi = mid; }
+  }
+  return nil;
+}
