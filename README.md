@@ -17,7 +17,7 @@ language server (`--lsp`).
 
 The language is complete: ints/floats/strings/bools/nil, lists and
 maps, functions and closures, control flow, modules via `import()`
-plus five embedded stdlib modules (list/map/string/math/test),
+plus six embedded stdlib modules (list/map/string/math/json/test),
 44 builtins (file and stdin I/O, JSON with pretty printing, sorting,
 map/filter/reduce, try/fail error recovery, string formatting), an
 interactive REPL with `:help` and `:load`, and rustc-style caret

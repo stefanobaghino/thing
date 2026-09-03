@@ -1,0 +1,68 @@
+# Nested-value helpers, written in ting. Use them via
+#   let j = import("lib/json.ting");
+# A path is a list of steps: strings index maps, ints index lists.
+
+# The value at path, or nil when any step misses (a missing key, an
+# index out of range, or a step into a non-container).
+fn get_in(v, path) {
+  let cur = v;
+  for k in path {
+    if type(k) == "string" {
+      if type(cur) != "map" || !has(cur, k) { return nil; }
+      cur = cur[k];
+    } else if type(k) == "int" {
+      if type(cur) != "list" || k < 0 || k >= len(cur) { return nil; }
+      cur = cur[k];
+    } else {
+      fail("get_in: path steps must be strings or ints, got " + type(k));
+    }
+  }
+  return cur;
+}
+
+# A fresh value with x placed at path: containers along the path are
+# copied (the input is untouched), missing map keys are created, and
+# a list index must already be in range.
+fn set_in(v, path, x) {
+  if len(path) == 0 { return x; }
+  let k = path[0];
+  let rest = slice(path, 1, len(path));
+  if type(k) == "string" {
+    let base = v;
+    if base == nil { base = {}; }
+    if type(base) != "map" { fail("set_in: expected a map before key " + k); }
+    let out = {};
+    for key in base { out[key] = base[key]; }
+    let child = nil;
+    if has(base, k) { child = base[k]; }
+    out[k] = set_in(child, rest, x);
+    return out;
+  }
+  if type(k) == "int" {
+    if type(v) != "list" { fail("set_in: expected a list before index " + str(k)); }
+    if k < 0 || k >= len(v) { fail("set_in: index " + str(k) + " out of range"); }
+    let out = slice(v, 0, len(v));
+    out[k] = set_in(v[k], rest, x);
+    return out;
+  }
+  fail("set_in: path steps must be strings or ints, got " + type(k));
+}
+
+# Every path to a leaf (a non-container value), depth first, maps in
+# key order and lists in index order. Empty containers contribute
+# no paths.
+fn paths(v) {
+  let out = [];
+  paths_into(v, [], out);
+  return out;
+}
+
+fn paths_into(v, prefix, out) {
+  if type(v) == "map" {
+    for k in v { paths_into(v[k], prefix + [k], out); }
+  } else if type(v) == "list" {
+    for i in range(len(v)) { paths_into(v[i], prefix + [i], out); }
+  } else {
+    push(out, prefix);
+  }
+}

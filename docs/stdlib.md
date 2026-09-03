@@ -113,6 +113,18 @@ Imports return a map, so functions are reached with `["name"]`.
 | `sqrt(x)` | Newton's method square root, returns a float |
 | `is_prime(n)` | true for prime `n` (trial division) |
 
+## lib/json.ting
+
+Navigation for nested values (the output of `json_parse`, or any
+maps and lists). A path is a list of steps: strings index maps, ints
+index lists.
+
+| Function | Does |
+|----------|------|
+| `get_in(v, path)` | the value at `path`, or `nil` when any step misses |
+| `set_in(v, path, x)` | a fresh value with `x` at `path` (copies along the path; missing map keys created) |
+| `paths(v)` | every path to a leaf, depth first, keys sorted |
+
 ## lib/test.ting
 
 A tiny test framework:

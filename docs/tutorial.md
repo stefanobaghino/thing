@@ -194,7 +194,7 @@ runs once per program: every later `import` of the same file returns
 the very same map, and errors inside a module point at the module's own
 line and column.
 
-Five stdlib modules ship embedded in the interpreter itself — any
+Six stdlib modules ship embedded in the interpreter itself — any
 path starting with `lib/` falls back to the built-in copy when no
 such file exists on disk:
 
@@ -234,8 +234,8 @@ print(li["take"](words, 2), li["drop"](words, 4));
 Keys of a map are always strings, so `group_by`'s key function must
 return one — `str(...)` is the idiom.
 
-The [stdlib page](stdlib.html) documents all five
-(list/map/string/math/test).
+The [stdlib page](stdlib.html) documents all six
+(list/map/string/math/json/test).
 
 ## Working with JSON
 
