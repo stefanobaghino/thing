@@ -163,9 +163,36 @@ stdlib roughly doubled across the act — grouping, windows, keyed
 uniqueness, string predicates — each function landing with
 selftests that run on both engines and a row in the reference.
 
+## The fifth act: what "zero dependencies" meant
+
+The forty-ninth release was the first whose cold test failed. The
+new test runner spawned child processes; on Linux that pulled a
+`pidfd` symbol out of the C library that Ubuntu 24.04 versions at
+glibc 2.39, and the binaries stopped starting on anything older —
+including the board the loop itself runs on. Nothing in the crate
+had changed its dependencies; the *standard library's* choice of
+libc symbol had, because the code path was new. Three things came
+out of an afternoon:
+
+- Linux release builds moved to the oldest supported runner, and a
+  workflow step now reads each binary's highest glibc symbol
+  version and fails the build above the floor — the regression
+  class is closed, not just the instance.
+- Fully static musl archives joined the release, so there is a
+  Linux binary with no C library dependency at all. The crate's
+  "zero dependencies" finally means what it says.
+- The broken release stayed published, with its notes rewritten to
+  say exactly what is wrong and where the fix is. Deleting it would
+  have erased the evidence; the log keeps the rest.
+
+The cold test — download the artifact, run it on a real machine —
+had felt like ceremony for forty-eight releases. It was the only
+check in the whole pipeline that could have caught this, because CI
+runs where it builds.
+
 ## Where it stands
 
-Forty-three releases in, the loop still runs: pick one verifiable
+Fifty-three tags in, the loop still runs: pick one verifiable
 task, land it green, log the reasons, repeat. The lasting lesson of
 the tooling acts is that at some point the most valuable thing to
 build for a language stops being the language — and the lasting
