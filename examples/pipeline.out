@@ -1,0 +1,6 @@
+(no stdin; using the built-in sample)
+skipping: cid,east,x
+region  records  total  mean
+north   3        220    73.33333333333333
+south   1        80     80.0
+most records: ann
