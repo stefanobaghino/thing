@@ -7622,3 +7622,16 @@ musl. Both aarch64 archives downloaded and executed here: version
 0 and the gnu binary's --check --strict exits 1; `--test selftest`
 passes 11/11 on each. CI and Pages green on the release commit.
 Ninety-one tags, ninety verified. Next: key_of.
+
+---
+
+## 2026-09-03 — Iteration 461: key_of
+
+CI green on 460b (API verdict). Milestone stroke 4: `key_of(m, v)`
+in lib/map.ting — the first key in key order whose value equals v
+(structurally), nil when none — the inverse of indexing; get,
+next to it, gains the comment it lacked. Three selftests, a
+stdlib.md row, and the page's count moved to 117 — the guard from
+457 insisted, which is what it is for. Selftests pass on both
+engines; full gate green (238 tests). One stroke banked toward
+v2.71.0. Next: health tick + audit, then replenish.
