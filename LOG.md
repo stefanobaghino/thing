@@ -3426,3 +3426,19 @@ arms. Bench: all four checksums match BASELINE.md; the machine is
 still shared (load ~3.5) and the times and ratios sit in the same
 contended band seen in 216 and 230 (strings vm +4%), so no
 conclusion beyond "no regression in checksums". Nothing to fix.
+
+---
+
+## 2026-09-03 — Iteration 242: LSP stdlib hover
+
+CI green on 241 (API verdict). Hover now answers for a stdlib
+function name under the cursor — the identifier inside a module
+lookup like the string key of a map index — when the document
+imports that module: signature in a code fence, then the function's
+leading comment block from the embedded source, then the module
+path. Completion and hover share one scanner over the embedded
+sources, so completion items also gain that comment as their
+documentation. Names from modules the document does not import get
+null, pinned by the protocol test alongside the positive case.
+Reference Tooling line updated. Full gate green. First stroke
+toward v2.26.0.

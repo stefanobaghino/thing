@@ -83,9 +83,11 @@ current orientation.
 - v2.25.0 RELEASED and verified (45th); aarch64-linux asset
   executed cold on this host, both engines.
 - 241: health tick green (50k fuzz cases on the widened grammar).
-- Backlog toward v2.26.0 (one per tick): LSP hover on m["name"]
-  for stdlib functions; lib/test.ting check_err(name, thunk); one
-  more feature stroke; release after ~3 strokes.
+  242: LSP hover for imported stdlib functions — first stroke
+  toward v2.26.0.
+- Backlog (one per tick): lib/test.ting check_err(name, thunk); one
+  more feature stroke (candidate: LSP signature help for stdlib
+  functions via the same scanner); release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
