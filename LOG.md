@@ -4322,3 +4322,16 @@ strokes:
 Rejected: document highlights (an editor already does this
 lexically), a REPL :load base-dir change (imports resolve relative
 to the file today — correct, and documented).
+
+---
+
+## 2026-09-03 — Iteration 288: tutorial "Testing" chapter
+
+CI green on 287 (API verdict). Milestone stroke 1: the tutorial
+gains a Testing chapter before "Beyond scripts" — an executed
+snippet using check, check_eq and check_approx with summary() (all
+passing, so the expected block is the summary line and the
+harness's exit-0 rule holds), then prose for check_err, plain
+assert, `ting --test tests/` and `--filter`. The tutorial test runs
+the snippet. Markdown guard and full gate green. First stroke
+toward v2.36.0.
