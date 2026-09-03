@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.78.0 (2026-09-03)
+
+- `ting --check` and the LSP warn when a call's argument count
+  cannot match the function it names — for a function bound once at
+  the top level and never rebound or shadowed.
+- The corpus scan's warning set is guarded by a test, so a false
+  positive from either static check fails the build.
+
 ## v2.77.0 (2026-09-03)
 
 - `ting --check` and the LSP warn about a name that is bound nowhere
