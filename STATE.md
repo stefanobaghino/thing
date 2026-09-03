@@ -106,10 +106,9 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.68.0 VERIFIED (89th tag; strokes 445, 446, 449; both aarch64
   archives executed here).
-- 451: builtin-shadowing warning; 452: is_number — two strokes
-  banked toward v2.69.0.
-- Backlog (in order): (4) lib/list.ting argmax/argmin, selftests —
-  then RELEASE v2.69.0; (5) health tick + audit; then replenish.
+- 451: builtin-shadowing warning; 452: is_number; 453: argmax and
+  argmin — three strokes banked; RELEASE v2.69.0 next tick if quiet.
+- Backlog after the release: (5) health tick + audit; then replenish.
 - Tags: 89 (v2.68.0), 88 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

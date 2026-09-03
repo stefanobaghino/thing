@@ -7486,3 +7486,15 @@ input validation where int() and float() fail. Two selftests over
 seven inputs, stdlib.md row. Selftests pass on both engines; full
 gate green (236 tests). Two strokes banked toward v2.69.0 (451,
 452). Next: argmax and argmin.
+
+---
+
+## 2026-09-03 — Iteration 453: argmax and argmin
+
+CI and Pages green on 452 (API verdicts). Milestone stroke 4:
+`argmax(xs)` and `argmin(xs)` in lib/list.ting — the index of the
+largest and smallest element, the first of equals, nil on empty;
+the index-returning twins of max_by and min_by, which return the
+element. Four selftests (ties, strings, empty), stdlib.md row.
+Selftests pass on both engines; full gate green (236 tests). Three
+strokes banked (451, 452, 453) — v2.69.0 next tick if quiet.
