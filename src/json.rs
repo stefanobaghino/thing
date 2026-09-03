@@ -7,15 +7,29 @@ use std::collections::BTreeMap;
 
 pub fn encode(v: &Value) -> Result<String, String> {
     let mut out = String::new();
-    encode_into(v, &mut out)?;
+    encode_into(v, &mut out, &mut Vec::new())?;
     Ok(out)
 }
 
 /// Pretty encoding: `indent` spaces per level, entries one per line.
 pub fn encode_pretty(v: &Value, indent: usize) -> Result<String, String> {
     let mut out = String::new();
-    encode_pretty_into(v, indent, 0, &mut out)?;
+    encode_pretty_into(v, indent, 0, &mut out, &mut Vec::new())?;
     Ok(out)
+}
+
+/// The containers the encoder is currently inside (pointers, never
+/// dereferenced): a container met again on its own path is a cycle,
+/// which JSON cannot express, so it is an error rather than a stack
+/// overflow.
+type Path = Vec<*const ()>;
+
+fn enter(path: &mut Path, ptr: *const ()) -> Result<(), String> {
+    if path.contains(&ptr) {
+        return Err("json_str cannot encode a cyclic value".to_string());
+    }
+    path.push(ptr);
+    Ok(())
 }
 
 fn encode_pretty_into(
@@ -23,12 +37,15 @@ fn encode_pretty_into(
     indent: usize,
     depth: usize,
     out: &mut String,
+    path: &mut Path,
 ) -> Result<(), String> {
     match v {
         Value::List(items) => {
+            enter(path, std::rc::Rc::as_ptr(items) as *const ())?;
             let items = items.borrow();
             if items.is_empty() {
                 out.push_str("[]");
+                path.pop();
                 return Ok(());
             }
             out.push('[');
@@ -38,16 +55,19 @@ fn encode_pretty_into(
                 }
                 out.push('\n');
                 out.push_str(&" ".repeat(indent * (depth + 1)));
-                encode_pretty_into(it, indent, depth + 1, out)?;
+                encode_pretty_into(it, indent, depth + 1, out, path)?;
             }
             out.push('\n');
             out.push_str(&" ".repeat(indent * depth));
             out.push(']');
+            path.pop();
         }
         Value::Map(entries) => {
+            enter(path, std::rc::Rc::as_ptr(entries) as *const ())?;
             let entries = entries.borrow();
             if entries.is_empty() {
                 out.push_str("{}");
+                path.pop();
                 return Ok(());
             }
             out.push('{');
@@ -59,18 +79,19 @@ fn encode_pretty_into(
                 out.push_str(&" ".repeat(indent * (depth + 1)));
                 encode_string(k, out);
                 out.push_str(": ");
-                encode_pretty_into(val, indent, depth + 1, out)?;
+                encode_pretty_into(val, indent, depth + 1, out, path)?;
             }
             out.push('\n');
             out.push_str(&" ".repeat(indent * depth));
             out.push('}');
+            path.pop();
         }
-        scalar => encode_into(scalar, out)?,
+        scalar => encode_into(scalar, out, path)?,
     }
     Ok(())
 }
 
-fn encode_into(v: &Value, out: &mut String) -> Result<(), String> {
+fn encode_into(v: &Value, out: &mut String, path: &mut Path) -> Result<(), String> {
     match v {
         Value::Nil => out.push_str("null"),
         Value::Bool(b) => out.push_str(if *b { "true" } else { "false" }),
@@ -89,16 +110,19 @@ fn encode_into(v: &Value, out: &mut String) -> Result<(), String> {
         }
         Value::Str(s) => encode_string(s, out),
         Value::List(items) => {
+            enter(path, std::rc::Rc::as_ptr(items) as *const ())?;
             out.push('[');
             for (i, it) in items.borrow().iter().enumerate() {
                 if i > 0 {
                     out.push(',');
                 }
-                encode_into(it, out)?;
+                encode_into(it, out, path)?;
             }
             out.push(']');
+            path.pop();
         }
         Value::Map(entries) => {
+            enter(path, std::rc::Rc::as_ptr(entries) as *const ())?;
             out.push('{');
             for (i, (k, v)) in entries.borrow().iter().enumerate() {
                 if i > 0 {
@@ -106,9 +130,10 @@ fn encode_into(v: &Value, out: &mut String) -> Result<(), String> {
                 }
                 encode_string(k, out);
                 out.push(':');
-                encode_into(v, out)?;
+                encode_into(v, out, path)?;
             }
             out.push('}');
+            path.pop();
         }
         Value::Fn(_) | Value::Builtin(_) => {
             return Err("json_str cannot encode a function".to_string());

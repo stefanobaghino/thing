@@ -481,6 +481,34 @@ fn cyclic_values_compare_without_overflowing() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// json_str on a cyclic value is a catchable error on both engines,
+/// in the compact and the pretty form; the same container appearing
+/// twice without a cycle still encodes.
+#[test]
+fn json_str_reports_cycles_as_errors() {
+    let path = std::env::temp_dir().join(format!("ting-cyclic-json-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let a = [1];\npush(a, a);\nlet r = try(fn() { return json_str(a); });\nprint(r[\"err\"]);\nlet p = try(fn() { return json_str({\"a\": a}, 2); });\nprint(p[\"err\"]);\nlet shared = [1];\nprint(json_str([shared, shared]));\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(out.status.code(), Some(0), "{engine}: {stdout}");
+        assert_eq!(
+            stdout,
+            "json_str cannot encode a cyclic value\njson_str cannot encode a cyclic value\n[[1],[1]]\n",
+            "{engine}"
+        );
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;
