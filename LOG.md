@@ -4781,3 +4781,17 @@ document at a time. Five strokes:
 
 Rejected: a --bench flag (bench/run.py exists and measures the
 release binary properly), pairwise() (window(xs, 2) already).
+
+---
+
+## 2026-09-03 — Iteration 315: config example
+
+CI green on 314 (API verdict). Milestone stroke 1: examples/
+config.ting layers built-in defaults, a json_parse'd file overlay
+and dotted-path environment overrides — merge_in for the overlay,
+set_in along split(key, ".") for the overrides with "true"/"false"
+coerced — prints every effective setting as a table via paths and
+get_in, then reports what changed from the defaults with diff. All
+six json-module functions in one program. Golden output identical
+on both engines; fourteenth example; cookbook regenerated. Full
+gate green. First stroke toward v2.42.0.

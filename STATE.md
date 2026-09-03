@@ -139,8 +139,8 @@ current orientation.
   executed cold here. The 305 milestone is complete.
 - 314: replenishment — milestone "configuration" (v2.42–v2.44),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) examples/config.ting
-  (merge_in/diff/table), cookbook regen; (2) tutorial JSON chapter
+- 315: config example — milestone stroke 1; first toward v2.42.0.
+- Backlog (one per tick, in order): (2) tutorial JSON chapter
   snippet with get_in/set_in/merge_in; (3) REPL `:time EXPR`, pipe
   test; (4) LSP workspace/symbol across open documents, protocol
   test; (5) health tick + audit. Release after ~3.
