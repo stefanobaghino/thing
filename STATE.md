@@ -145,9 +145,8 @@ current orientation.
   executed cold here. The 314 milestone is complete.
 - 322: replenishment — milestone "front door" (v2.44–v2.46),
   reasoning in LOG.md.
-- v2.44.0 TAGGED (65th tag; milestone strokes 1–3 plus the 325b
-  fixes): verify next tick — six assets, glibc guard, cold-execute
-  the aarch64 musl archive here (stddev, --lsp survives garbage).
+- v2.44.0 RELEASED and verified (65th tag); aarch64 musl archive
+  executed cold here, LSP survives a garbage frame.
 - Backlog after the release (in order): (4) tutorial modules
   chapter mentions :doc/--doc; (5) health tick + audit; then
   replenish.

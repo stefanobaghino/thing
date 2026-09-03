@@ -4995,3 +4995,15 @@ README refresh, variance/stddev, LSP document links plus the
 malformed-message and Windows URI fixes. CI green on 325b across
 all five jobs (API verdict). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.44.0 (65th tag).
+
+---
+
+## 2026-09-03 — Iteration 326b: v2.44.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.44.0`, stddev agrees on both engines, and the released `--lsp`
+answers initialize after a garbage frame — 325b's fix in the
+shipped binary. Site: all resources 200, changelog shows 2.44.0,
+stdlib page lists stddev. 65 tags, 64 verified.
