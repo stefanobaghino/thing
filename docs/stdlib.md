@@ -81,6 +81,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `lines(s)` | split on `"\n"` |
 | `words(s)` | whitespace-separated words, no empties |
 | `slug(s)` | lowercased, non-alphanumeric runs collapsed to one dash, dashes trimmed |
+| `squeeze(s)` | runs of whitespace collapsed to one space, ends trimmed |
 | `title(s)` | first character of each space-separated word uppercased |
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |

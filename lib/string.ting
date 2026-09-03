@@ -130,6 +130,12 @@ fn words(s) {
   return out;
 }
 
+# s with every run of whitespace (spaces, tabs, newlines) collapsed to
+# one space and the ends trimmed: "a  b\n c" becomes "a b c".
+fn squeeze(s) {
+  return join(words(s), " ");
+}
+
 # A URL-friendly form of s: lowercased, every run of characters that
 # is neither a digit nor a cased letter collapsed to one dash, dashes
 # trimmed from both ends ("" when nothing is left). Accented letters
