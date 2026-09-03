@@ -328,6 +328,67 @@ slow requests:
   ERROR  210  /login
 ```
 
+## machine
+
+A state machine from closures and a map: the machine is a function that captures its current state and a trace, and a transition table maps state -> event -> [next state, action]. A turnstile: it locks after each push, and a coin unlocks it.
+
+```ting
+# A state machine from closures and a map: the machine is a function
+# that captures its current state and a trace, and a transition table
+# maps state -> event -> [next state, action]. A turnstile: it locks
+# after each push, and a coin unlocks it.
+
+let li = import("../lib/list.ting");
+let st = import("../lib/string.ting");
+
+let table = {
+  "locked": {"coin": ["unlocked", "unlock"], "push": ["locked", "alarm"]},
+  "unlocked": {"coin": ["unlocked", "refund"], "push": ["locked", "pass"]},
+};
+
+fn make_machine(table, start) {
+  let state = start;
+  let trace = [];
+  fn send(event) {
+    let moves = table[state];
+    if !has(moves, event) { fail("no transition for " + event + " in " + state); }
+    let next = moves[event][0];
+    push(trace, [state, event, moves[event][1], next]);
+    state = next;
+    return moves[event][1];
+  }
+  fn current() { return state; }
+  fn history() { return trace; }
+  return {"send": send, "current": current, "history": history};
+}
+
+let m = make_machine(table, "locked");
+for event in ["push", "coin", "coin", "push", "push", "coin"] {
+  m["send"](event);
+}
+
+let rows = [["from", "event", "action", "to"]];
+for step in m["history"]() { push(rows, step); }
+print(st["table"](rows));
+print("final state:", m["current"]());
+print("actions:", li["frequencies"](map(m["history"](), fn(s) { return s[2]; })));
+let bad = try(fn() { return m["send"]("kick"); });
+print("unknown event:", bad["err"]);
+```
+
+```text
+from      event  action  to
+locked    push   alarm   locked
+locked    coin   unlock  unlocked
+unlocked  coin   refund  unlocked
+unlocked  push   pass    locked
+locked    push   alarm   locked
+locked    coin   unlock  unlocked
+final state: unlocked
+actions: {"alarm": 2, "pass": 1, "refund": 1, "unlock": 2}
+unknown event: no transition for kick in unlocked
+```
+
 ## pipeline
 
 A data pipeline over stdin: one "name,region,amount" record per line (try `cat sales.csv | ting pipeline.ting`). With nothing on stdin it runs on a built-in sample so the output is reproducible.

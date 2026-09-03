@@ -1,0 +1,10 @@
+from      event  action  to
+locked    push   alarm   locked
+locked    coin   unlock  unlocked
+unlocked  coin   refund  unlocked
+unlocked  push   pass    locked
+locked    push   alarm   locked
+locked    coin   unlock  unlocked
+final state: unlocked
+actions: {"alarm": 2, "pass": 1, "refund": 1, "unlock": 2}
+unknown event: no transition for kick in unlocked
