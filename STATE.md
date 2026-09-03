@@ -173,10 +173,13 @@ current orientation.
   executed here).
 - 357: retrospective act seven; 358: mode — two strokes banked
   toward v2.52.0; 359: health tick + audit green.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md; first candidate
-  is the module-span diagnostic bug (358b). RELEASE v2.52.0 after
-  the next stroke lands.
+- 360: replenishment — milestone "where it happened" (v2.52–v2.53),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) module runtime errors render
+  against the module's file (both engines), io test — then RELEASE
+  v2.52.0 (357, 358, +1); (2) `note: called from` line, io test;
+  (3) --check follows local imports, io test; (4) lib/string.ting
+  slug, selftests; (5) health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

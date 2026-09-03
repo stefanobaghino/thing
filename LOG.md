@@ -5628,3 +5628,38 @@ contents" milestone's strokes are done; two are banked toward
 v2.52.0, so the release follows the next stroke. Backlog empty:
 next tick is replenishment, with the module-span diagnostic bug
 (358b) as the first candidate.
+
+---
+
+## 2026-09-03 — Iteration 360: replenishment — milestone "where it happened"
+
+CI green on 359 (API verdict). Thirteen milestones since the
+restart, seventy-two tags. Reproduced 358b on both engines: a
+runtime error raised inside an imported module's function carries
+the module's span but no file, so the caret lands on an unrelated
+line of the importer (a parse error in a module is already wrapped
+with the module path and position at the import site, so only
+runtime errors are wrong). The loop found this by tripping over
+it; a user would have too. Five strokes:
+
+1. Runtime errors inside an imported module render against the
+   module's file: a closure remembers the path and source it was
+   defined in, and an error escaping such a closure without an
+   origin gets one, on both engines; main renders the origin's path
+   and source when present. io test with a module raising from a
+   function called by the importer.
+2. A `note: called from FILE:LINE:COL` line under a module-origin
+   error, pointing at the call site in the importer. io test.
+3. `--check` follows local imports: `import("...")` strings that
+   resolve to a file relative to the checked one are checked too,
+   each under its own path, once. io test.
+4. lib/string.ting slug(s): lowercase, runs of non-alphanumerics
+   collapsed to one dash, dashes trimmed from the ends. Selftests.
+5. Health tick + distribution audit.
+
+Release v2.52.0 after stroke 1 lands (357 and 358 are banked).
+
+Rejected: a full stack trace (the language has no frames to name
+beyond the closure; one note line says what a user needs), a
+--check flag to disable the import walk (warnings never change the
+exit status, and errors in an import are errors).
