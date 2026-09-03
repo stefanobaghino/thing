@@ -2777,3 +2777,20 @@ both engines. Third stroke banked — v2.16.0 next tick if quiet.
 List-helpers release: group_by, take, drop, partition. CI green on
 198 (verdict from the API). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.16.0 (36th release).
+
+---
+
+## 2026-09-03 — Iteration 199b: v2.16.0 verified
+
+Release, CI and Pages runs all green (API verdicts). Three archives
+published. Cold verification changed shape this time: the loop now
+runs on an aarch64 Linux host, which none of the three targets
+match, so no binary could be executed here. Verified structurally
+instead: all three archives downloaded cold, the Linux binary is an
+x86-64 ELF, the macOS one an arm64 Mach-O, the zip carries ting.exe,
+and every archive bundles lib/ with group_by, take, drop and
+partition present. Site: all six resources 200, changelog and stdlib
+pages show 2.16.0 content. 36 releases. Consequence for the backlog:
+add an aarch64-unknown-linux-gnu release target (GitHub's free
+arm64 Linux runners) so future releases can be executed cold on this
+host as well — first stroke toward v2.17.0.

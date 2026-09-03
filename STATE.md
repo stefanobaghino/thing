@@ -40,10 +40,12 @@ current orientation.
 - v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
 - v2.15.0 RELEASED and verified (35th); darwin-arm64 cold-tested.
 - Loop stopped by the human after 195b, restarted at 196 (2026-09-03).
-- v2.16.0 TAGGED (36th release: group_by, take, drop, partition);
-  verify by cold asset download next tick.
-- Backlog after verification: chars/reverse in lib/string.ting;
-  health tick (bench vs BASELINE.md, big fuzz sweep).
+- v2.16.0 RELEASED and verified (36th); structural cold check only,
+  since this host is aarch64 Linux (no matching asset yet).
+- Backlog toward v2.17.0 (one per tick): aarch64-unknown-linux-gnu
+  release target (free arm64 runner) so cold tests can execute here;
+  chars/reverse in lib/string.ting; health tick (bench vs
+  BASELINE.md, big fuzz sweep).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
