@@ -57,6 +57,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `pad_right(s, width, fill)` | appends `fill` until at least `width` chars |
 | `center(s, width, fill)` | `s` centred in `width` with `fill` on both sides (odd gap: extra on the right) |
 | `truncate(s, width, suffix)` | at most `width` chars, ending in `suffix` when cut |
+| `indent(s, prefix)` | `prefix` before every non-empty line |
 | `lines(s)` | split on `"\n"` |
 | `words(s)` | whitespace-separated words, no empties |
 | `title(s)` | first character of each space-separated word uppercased |

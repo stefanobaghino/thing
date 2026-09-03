@@ -151,3 +151,13 @@ fn strip_suffix(s, suffix) {
   if !ends_with(s, suffix) { return s; }
   return slice(s, 0, len(s) - len(suffix));
 }
+
+# prefix prepended to every non-empty line of s (empty lines stay
+# empty; a trailing newline is preserved).
+fn indent(s, prefix) {
+  let out = [];
+  for line in split(s, "\n") {
+    if line == "" { push(out, line); } else { push(out, prefix + line); }
+  }
+  return join(out, "\n");
+}

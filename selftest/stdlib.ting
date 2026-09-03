@@ -240,3 +240,8 @@ assert(l["interleave"]([], []) == [], "interleave empty");
 assert(l["frequencies"](["a", "b", "a"]) == {"a": 2, "b": 1}, "frequencies");
 assert(l["frequencies"]([]) == {}, "frequencies empty");
 assert(has(try(fn() { return l["frequencies"]([1]); }), "err"), "frequencies non-string fails");
+
+assert(s["indent"]("a\nb", "  ") == "  a\n  b", "indent");
+assert(s["indent"]("a\n\nb\n", "> ") == "> a\n\n> b\n", "indent keeps empty lines and trailing newline");
+assert(s["indent"]("", "  ") == "", "indent empty");
+assert(s["indent"]("x", "") == "x", "indent empty prefix");
