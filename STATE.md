@@ -68,8 +68,8 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.62.0 VERIFIED (83rd tag; strokes 413, 414, 415; both aarch64
   archives executed here).
-- Backlog after the release (in order): (4) lib/map.ting merge_with,
-  selftests; (5) health tick + audit; then replenish.
+- 417: merge_with — one stroke banked toward v2.63.0.
+- Backlog (in order): (5) health tick + audit; then replenish.
 - Tags: 83 (v2.62.0), 82 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

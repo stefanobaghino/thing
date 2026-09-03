@@ -6804,3 +6804,16 @@ them, the gnu binary replayed the saved script to the same 6,
 `:doc` alone prints the table of contents, and `--test selftest`
 passes 11/11 on each. CI and Pages green on the release commit.
 Eighty-three tags, eighty-two verified. Next: merge_with.
+
+---
+
+## 2026-09-03 — Iteration 417: merge_with
+
+CI green on 416b (API verdict). Milestone stroke 4:
+`merge_with(a, b, f)` in lib/map.ting — merge, except that a key
+present in both maps gets f(a's value, b's value) instead of b's
+value winning; keys on one side only pass through. Three selftests
+(summing ties, an empty left side, list concatenation as the
+combiner), stdlib.md row. Selftests pass on both engines; full gate
+green (226 tests). One stroke banked toward v2.63.0. Next: health
+tick + audit, then replenish.
