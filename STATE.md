@@ -182,11 +182,11 @@ current orientation.
   milestone "where it happened" complete.
 - 368: replenishment — milestone "front door, again" (v2.54–v2.55),
   reasoning in LOG.md.
-- 369: README refresh — one stroke banked toward v2.54.0.
-- Backlog (one per tick, in order): (2) tutorial modules chapter:
-  errors inside modules; (3) LSP diagnostic on a broken local
-  import, protocol test; (4) `--test --fail-fast`, io test; (5)
-  health tick + audit. Release after ~3.
+- 369: README refresh; 370: tutorial section on module errors —
+  two strokes banked toward v2.54.0.
+- Backlog (one per tick, in order): (3) LSP diagnostic on a broken
+  local import, protocol test — then RELEASE v2.54.0; (4) `--test
+  --fail-fast`, io test; (5) health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

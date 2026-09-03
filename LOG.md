@@ -5846,3 +5846,19 @@ document links and cross-file rename; and module errors pointing
 at the module's line with the call-site note. Still prose with
 links, per the 322 rule. Docs guard green. One stroke banked
 toward v2.54.0. Next: the tutorial's modules chapter.
+
+---
+
+## 2026-09-03 — Iteration 370: tutorial: errors inside modules
+
+CI green on 369 (API verdict). Milestone stroke 2: the modules
+chapter's one-line claim that errors point at the module's line
+(true only since 361) becomes a section: the module's own file and
+line, the `note: called from` line naming the call site, and
+`--check` following local imports. The tutorial harness requires
+every ting snippet to succeed, so the diagnostic is a standalone
+text block after prose (not paired with a snippet), and its content
+was produced by running exactly that greeter with the typo — the
+column, caret and note line are the binary's. Tutorial and docs
+guards green. Two strokes banked toward v2.54.0. Next: LSP
+diagnostic on a broken local import.
