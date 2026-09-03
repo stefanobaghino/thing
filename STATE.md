@@ -123,11 +123,12 @@ current orientation.
   reasoning in LOG.md.
 - v2.36.0 RELEASED and verified (57th tag); aarch64 musl archive
   executed cold here.
-- Backlog after the release (in order): (4) bench/json.ting +
-  baseline row; (5) LSP folding ranges, protocol test; then health
-  tick and replenish.
+- 292: bench/json.ting + baseline row — milestone stroke 4; first
+  toward v2.37.0.
+- Backlog (one per tick, in order): (5) LSP folding ranges, protocol
+  test; then health tick, release v2.37.0 and replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
-- Periodic health ticks (bench vs BASELINE.md — now recorded on
-  this host, five rows — big fuzz sweeps) when quiet.
+- Periodic health ticks (bench vs BASELINE.md — recorded on this
+  host, six rows — big fuzz sweeps) when quiet.

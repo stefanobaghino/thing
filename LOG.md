@@ -4380,3 +4380,18 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 2.36.0`, zip_with and cartesian agree on both engines. Site: all
 resources 200, changelog shows 2.36.0, tutorial page carries the
 Testing chapter. 57 tags, 56 verified.
+
+---
+
+## 2026-09-03 — Iteration 292: bench/json.ting
+
+CI green on 291b (API verdict). Milestone stroke 4: bench/json.ting
+builds a 10000-user document, round-trips it through json_str and
+json_parse (compact and pretty), sums scores through get_in, and
+rewrites it with set_in and merge_in — the JSON builtins and the
+json module get a number. Both engines agree on its checksum. The
+first cut ran in 60 ms, too short for a stable median, so the
+document was scaled up before the baseline row was written.
+BASELINE.md regenerated on this host (six rows; load ~4, so the
+usual noise caveat applies to absolute times). Full gate green.
+First stroke toward v2.37.0.
