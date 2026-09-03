@@ -1,5 +1,5 @@
 n      = 20
 min    = 2  max = 59
-mean   = 30.5
+mean   = 30.5  median = 30.5
 stddev = 17.3
 gcd of extremes = 1

@@ -8,7 +8,7 @@ let li = import("../lib/list.ting");
 let sample = range(2, 60, 3);
 
 let n = len(sample);
-let mean = float(li["sum"](sample)) / n;
+let mean = li["mean"](sample);
 
 let variance = 0.0;
 for x in sample {
@@ -20,6 +20,6 @@ let stddev = ma["sqrt"](variance);
 
 print("n      =", n);
 print("min    =", min(sample), " max =", max(sample));
-print("mean   =", mean);
+print("mean   =", mean, " median =", li["median"](sample));
 print("stddev =", ma["round"](stddev * 100) / 100.0);
 print("gcd of extremes =", ma["gcd"](min(sample), max(sample)));

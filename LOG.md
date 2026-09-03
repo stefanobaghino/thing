@@ -2685,3 +2685,13 @@ releases, all verified.
 lib/list.ting gains median(xs) — sorted middle, mean-of-middles
 (float) for even lengths, empty fails. Five selftest assertions;
 stdlib.md row. Full gate green. First stroke toward v2.15.0.
+
+---
+
+## 2026-09-03 — Iteration 192: stats example dogfoods mean/median
+
+examples/stats.ting now uses li["mean"] and li["median"] instead of
+computing the mean by hand; golden output gains the median column
+(30.5 — equal to the mean for this arithmetic-progression sample,
+which is itself a nice property check). Both engines byte-identical;
+full gate green. Second stroke toward v2.15.0.
