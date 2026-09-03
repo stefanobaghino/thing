@@ -8391,3 +8391,26 @@ URLs resolve. Site: all nine resources answer 200, the changelog
 leads with v2.78.0 and the reference serves the arity warning's
 paragraph. Nothing to fix. The "before it runs" milestone is
 complete. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 502: replenishment — milestone "the tenth act"
+
+CI green on 501 (API verdict). Thirty-two milestones since the
+restart, ninety-nine tags, five hundred iterations. The survey went
+back to the checker with the same question as last time — what does
+it watch a program do wrong without a word? — and found two more.
+`{"a": 1, "a": 2}` is silently `{"a": 2}`: the second key wins,
+which is what the reader least expects and what a mistyped key
+looks like. And a statement after `return` in the same block, or
+after `break` or `continue`, never runs; the file lexes, parses,
+checks and executes without anyone mentioning it. Both are decided
+by shapes already in the AST, neither needs a scope walk, and both
+are the kind of thing a reader skims past. The retrospective is
+also due: its ninth act closed at eighty-eight tags, and "Where it
+stands" still says so, eleven tags and a hundred iterations later —
+two static checks and a milestone about the loop's own habits are
+exactly what a tenth act is for. Milestone "the tenth act"
+(v2.79-v2.80): --check warns about a duplicate key in a map literal
+and about code that can never run; docs and selftests for both; the
+tenth act written and "Where it stands" brought current.

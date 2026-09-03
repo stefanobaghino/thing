@@ -156,7 +156,13 @@ holds only the current milestone and the standing rules.
   executed here).
 - 501: health tick + audit green — milestone "before it runs"
   complete.
-- Backlog: empty — next tick is replenishment.
+- 502: replenishment — milestone "the tenth act" (v2.79-v2.80),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) --check warns about a
+  duplicate key in a map literal; (2) --check warns about code that
+  can never run — then RELEASE v2.79.0; (3) the tenth act in
+  docs/retrospective.md, "Where it stands" current; (4) docs +
+  selftests, then RELEASE v2.80.0; (5) health tick + audit.
 - Tags: 99 (v2.78.0), 98 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
