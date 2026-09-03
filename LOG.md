@@ -5663,3 +5663,26 @@ Rejected: a full stack trace (the language has no frames to name
 beyond the closure; one note line says what a user needs), a
 --check flag to disable the import walk (warnings never change the
 exit status, and errors in an import are errors).
+
+---
+
+## 2026-09-03 — Iteration 361: module errors point into the module
+
+CI green on 360 (API verdict). Milestone stroke 1: a function now
+remembers the imported file it was defined in (an Origin: path and
+source, pushed while a module's top level runs, captured by both
+the tree-walker's and the VM's closure constructors), and an error
+escaping such a function without an origin takes the function's;
+RuntimeError::render uses the origin's file when present. Both
+engines share Interpreter::call, so one hook covers both. The
+script runner, the REPL's two runtime paths and the embedded
+fallback all go through it; formatter and lexer errors keep the
+plain renderer. Reproducing with an embedded module exposed a
+second, worse bug: the module's offset rendered against the short
+importer source panicked diag::render (min > max) — the renderer
+now clamps a foreign span to the line's end, so even a stray offset
+degrades to a caret rather than a crash. Reference sentence added
+under Errors. io test covers a file module on both engines and the
+embedded case (path, message, no panic). Full gate green (214
+tests). Three strokes banked (357, 358, 361) — v2.52.0 next tick
+if quiet.
