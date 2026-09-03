@@ -54,11 +54,20 @@ Zed consumes TextMate grammars through its extension format; point a
 local extension's `grammars` entry at this file. See Zed's docs on
 "languages" for the two-file scaffold.
 
-## Live diagnostics (LSP)
+## Language server (LSP)
 
 The `ting` binary doubles as a language server: `ting --lsp` speaks
-JSON-RPC over stdio and pushes lex/parse/compile diagnostics on every
-open and change. Point any LSP client at it:
+JSON-RPC over stdio. On every open and change it publishes
+diagnostics — lex, parse and compile errors; an error on an `import`
+of a local file that has one; and the checker's warnings (a stdlib
+module indexed with a name it does not export, an unused top-level
+binding, an unused parameter). Beyond diagnostics it provides hover
+(builtins, stdlib functions and the file's own), completion,
+signature help, formatting, document and workspace symbols,
+go-to-definition, references, rename across open files, folding,
+document links on imports, and a quickfix for misspelt stdlib
+members — twelve capabilities, all from the one binary with no
+configuration. Point any LSP client at it:
 
 **Neovim** (built-in LSP):
 
