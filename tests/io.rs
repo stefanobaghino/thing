@@ -361,6 +361,49 @@ fn check_flag_follows_local_imports() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `--test --fail-fast` stops at the first failing file: later files
+/// are skipped (never run), the summary counts them, and in TAP mode
+/// they are `# SKIP` lines so the plan still adds up.
+#[test]
+fn test_flag_fail_fast_skips_the_rest() {
+    let root = std::env::temp_dir().join(format!("ting-fail-fast-{}", std::process::id()));
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("a.ting"), "print(1);\n").unwrap();
+    std::fs::write(root.join("b.ting"), "fail(\"red\");\n").unwrap();
+    let marker = root.join("c-ran");
+    std::fs::write(
+        root.join("c.ting"),
+        format!("write_file({:?}, \"yes\");\n", marker.to_str().unwrap()),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--fail-fast", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("FAIL ") && stdout.contains("b.ting"),
+        "{stdout}"
+    );
+    assert!(stdout.contains("1 passed, 1 failed, 1 skipped"), "{stdout}");
+    assert!(!stdout.contains("c.ting"), "{stdout}");
+    assert!(!marker.exists(), "c.ting ran despite --fail-fast");
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--tap", "--fail-fast", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.starts_with("1..3\n"), "{stdout}");
+    assert!(stdout.contains("# SKIP fail-fast"), "{stdout}");
+    assert!(
+        stdout.contains("# 1 passed, 1 failed, 1 skipped"),
+        "{stdout}"
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

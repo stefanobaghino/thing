@@ -32,6 +32,7 @@ fn main() -> ExitCode {
                  \x20   [--tap]                   Test Anything Protocol output\n\
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
                  \x20   [--slow N]                list the N slowest files after the summary\n\
+                 \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
                  \x20 ting --doc [NAME]           explain a builtin or stdlib function;\n\
                  \x20                             a module lists its members, no name lists all\n\
                  \x20 ting --lsp                  language server on stdio\n\
@@ -222,6 +223,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     // files whose path contains the substring.
     let mut filter: Option<String> = None;
     let mut tap = false;
+    let mut fail_fast = false;
     let mut jobs = 1usize;
     let mut slow = 0usize;
     let mut paths = Vec::new();
@@ -229,12 +231,14 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     while let Some(a) = it.next() {
         if a == "--tap" {
             tap = true;
+        } else if a == "--fail-fast" {
+            fail_fast = true;
         } else if a == "--slow" {
             match it.next().and_then(|n| n.parse::<usize>().ok()) {
                 Some(n) => slow = n,
                 None => {
                     eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -244,7 +248,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                 Some(n) if n >= 1 => jobs = n,
                 _ => {
                     eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -254,7 +258,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                 Some(f) => filter = Some(f),
                 None => {
                     eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
                     );
                     return ExitCode::FAILURE;
                 }
@@ -265,7 +269,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     }
     if paths.is_empty() {
         eprintln!(
-            "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] <files or directories...>"
+            "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
         );
         return ExitCode::FAILURE;
     }
@@ -302,16 +306,35 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     // `-j N` runs up to N files at once; results are collected per
     // file and printed in the original order, so TAP numbering and
     // the human output are identical whatever the parallelism.
-    let results: Vec<TestOutcome> = if jobs <= 1 {
-        files.iter().map(|f| run_one(&me, f)).collect()
+    // `--fail-fast` stops after the first failing file: no further
+    // file starts (running ones finish), and the rest are skipped —
+    // None below, reported as skipped rather than passed or failed.
+    let results: Vec<Option<TestOutcome>> = if jobs <= 1 {
+        let mut out = Vec::with_capacity(files.len());
+        for f in &files {
+            if fail_fast
+                && out
+                    .iter()
+                    .any(|r: &Option<TestOutcome>| matches!(r, Some((false, ..))))
+            {
+                out.push(None);
+                continue;
+            }
+            out.push(Some(run_one(&me, f)));
+        }
+        out
     } else {
         let next = std::sync::Mutex::new(0usize);
+        let stop = std::sync::atomic::AtomicBool::new(false);
         let slots: Vec<std::sync::Mutex<Option<TestOutcome>>> =
             files.iter().map(|_| std::sync::Mutex::new(None)).collect();
         std::thread::scope(|scope| {
             for _ in 0..jobs.min(files.len()) {
                 scope.spawn(|| {
                     loop {
+                        if stop.load(std::sync::atomic::Ordering::Relaxed) {
+                            break;
+                        }
                         let i = {
                             let mut n = next.lock().unwrap();
                             let i = *n;
@@ -322,19 +345,27 @@ fn run_tests(args: Vec<String>) -> ExitCode {
                             break;
                         }
                         let r = run_one(&me, &files[i]);
+                        if fail_fast && !r.0 {
+                            stop.store(true, std::sync::atomic::Ordering::Relaxed);
+                        }
                         *slots[i].lock().unwrap() = Some(r);
                     }
                 });
             }
         });
-        slots
-            .into_iter()
-            .map(|m| m.into_inner().unwrap().expect("every file ran"))
-            .collect()
+        slots.into_iter().map(|m| m.into_inner().unwrap()).collect()
     };
     let mut failed = 0usize;
+    let mut skipped = 0usize;
     let mut timings: Vec<(u128, &str)> = Vec::new();
-    for (i, (f, (ok, diag, ms))) in files.iter().zip(results).enumerate() {
+    for (i, (f, result)) in files.iter().zip(results).enumerate() {
+        let Some((ok, diag, ms)) = result else {
+            skipped += 1;
+            if tap {
+                println!("ok {} - {f} # SKIP fail-fast", i + 1);
+            }
+            continue;
+        };
         timings.push((ms, f));
         if !ok {
             failed += 1;
@@ -354,10 +385,12 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             }
         }
     }
-    if tap {
-        println!("# {} passed, {} failed", files.len() - failed, failed);
+    let passed = files.len() - failed - skipped;
+    let prefix = if tap { "# " } else { "" };
+    if skipped > 0 {
+        println!("{prefix}{passed} passed, {failed} failed, {skipped} skipped");
     } else {
-        println!("{} passed, {} failed", files.len() - failed, failed);
+        println!("{prefix}{passed} passed, {failed} failed");
     }
     // `--slow N`: the N slowest files after the summary, opt-in so the
     // default output is unchanged (as a TAP comment in --tap mode).
