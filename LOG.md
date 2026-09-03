@@ -2631,3 +2631,12 @@ release).
 Three archives published; darwin-arm64 cold test: ting 2.13.0,
 pick and count correct from the bundled modules. 33 releases, all
 verified.
+
+---
+
+## 2026-09-03 — Iteration 187: tutorial covers the embedded stdlib
+
+The modules chapter explained import() but never mentioned the five
+embedded lib/ modules or the disk-first fallback rule. Added a
+CI-executed snippet (sum + pow through real imports) and a link to
+the stdlib page. 14/14 suites. First stroke toward v2.14.0.

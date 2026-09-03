@@ -194,6 +194,25 @@ runs once per program: every later `import` of the same file returns
 the very same map, and errors inside a module point at the module's own
 line and column.
 
+Five stdlib modules ship embedded in the interpreter itself — any
+path starting with `lib/` falls back to the built-in copy when no
+such file exists on disk:
+
+```ting
+let li = import("lib/list.ting");
+let ma = import("lib/math.ting");
+
+let sizes = map(["a", "bbb", "cc"], fn(s) { return len(s); });
+print(li["sum"](sizes), ma["pow"](2, 8));
+```
+
+```text
+6 256
+```
+
+The [stdlib page](stdlib.html) documents all five
+(list/map/string/math/test).
+
 ## Working with JSON
 
 `json_parse` turns a JSON string into ting values (objects become maps,
