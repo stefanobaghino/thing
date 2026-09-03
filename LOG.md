@@ -2732,3 +2732,19 @@ Tagging v2.15.0 (35th release).
 Three archives published; darwin-arm64 cold test: ting 2.15.0,
 median([4,1,3,2]) = 2.5, :clear + :vars behave. 35 releases, all
 verified.
+
+---
+
+## 2026-09-03 — Iteration 196: loop resumed; group_by
+
+The human restarted the loop via /loop (the earlier stop-directive
+commit is no longer on main; HEAD was 853428e at orient time, tree
+clean, CI green, no issues or PRs). Stroke: lib/list.ting gains
+group_by(xs, key) — a map from key(x) to the elements sharing that
+key, in input order; non-string keys fail loudly (maps are
+string-keyed). Three selftest assertions, stdlib.md row. Surprises:
+the local toolchain had moved to rustc 1.98 without rustfmt/clippy
+(reinstalled via rustup), and the git identity had gone missing from
+the global config (set repo-locally to match every prior commit).
+Full gate green on both engines. First stroke toward v2.16.0.
+Backlog replenished: take/drop, partition, string chars/reverse.
