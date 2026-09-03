@@ -3500,3 +3500,14 @@ module map), and the shell-citizen behaviours (quiet exit on a
 closed pipe, read_file("-")). No executed snippet changed. Markdown
 guard, tutorial test and full gate green. First stroke toward
 v2.27.0.
+
+---
+
+## 2026-09-03 — Iteration 247: indent
+
+CI and Pages green on 246 (API verdicts). lib/string.ting gains
+indent(s, prefix): every non-empty line gets the prefix, empty
+lines stay empty (so a blank line never carries trailing spaces),
+and because split/join round-trip the separators a trailing newline
+survives. Four assertions, stdlib.md row. Full gate green on both
+engines. Second stroke toward v2.27.0.
