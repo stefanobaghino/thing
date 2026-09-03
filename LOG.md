@@ -7839,3 +7839,11 @@ in --check and --fmt after their own flags are taken out; `-h` and
 the four places an unknown option can land. Full gate green (240
 tests). Three strokes banked (467, 468, 471) — v2.72.0 next tick
 if quiet.
+
+---
+
+## 2026-09-03 — Iteration 472: v2.72.0
+
+The formatter's contract in the docs, plural, unknown options
+with -h and -V. CI green on 471 (API verdict). Full gate green,
+stdlib selftests pass on both engines. Tagging v2.72.0 (93rd tag).

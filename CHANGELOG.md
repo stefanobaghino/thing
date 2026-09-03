@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.72.0 (2026-09-03)
+
+- An unknown option is a usage error (exit 2) that names it and
+  points at `--help`; `-h` and `-V` work as short forms.
+- lib/string.ting: `plural(n, one, many)`.
+- Docs: the formatter's every-file run and summary line.
+
 ## v2.71.0 (2026-09-03)
 
 - `--fmt`, `--fmt-check`, `--fmt --diff` and `--check` process every

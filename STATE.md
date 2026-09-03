@@ -126,12 +126,13 @@ holds only the current milestone and the standing rules.
   options (-h, -V, --nosuch) are taken for script paths.
 - 470: replenishment — milestone "the front door's handle"
   (v2.72–v2.73), reasoning in LOG.md.
-- 471: unknown options are usage errors, -h and -V — three strokes
-  banked (467, 468, 471); RELEASE v2.72.0 next tick if quiet.
+- v2.72.0 TAGGED (93rd tag; strokes 467, 468, 471): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (-h, -V, an unknown option's exit 2, selftests).
 - Backlog after the release (in order): (2) exit codes 0/1/2, io
   test; (3) reference Running section + README; (4) lib/list.ting
   take_while/drop_while, selftests; (5) health tick + audit.
-- Tags: 92 (v2.71.0), 91 verified; v2.29.0 is publicly marked broken
+- Tags: 93 (v2.72.0), 91 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
