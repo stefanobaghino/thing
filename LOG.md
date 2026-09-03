@@ -8460,3 +8460,22 @@ commit (API verdicts). Cold-verified here: both aarch64 Linux
 archives downloaded fresh, unpacked and run — `-V` reports 2.79.0,
 and one line holding both mistakes draws both warnings and then
 prints the map the last key won. 100th tag. Next: the tenth act.
+
+---
+
+## 2026-09-03 — Iteration 506: the tenth act
+
+CI green on the v2.79.0 verification commit (API verdict).
+Milestone stroke 1 toward v2.80.0: the retrospective's tenth act,
+"what the machine says back", covering the twelve tags since the
+ninth — the front door's unknown options and exit codes, --fmt
+finishing its run, --doc wrapped at 78 columns and taking several
+names, the suggestions everywhere a name is given up on (and the
+two corrections the distance needed: ties by shared start, and no
+suggestion under three characters, which only became possible once
+a swap of neighbours cost one edit), and the checker learning to
+see what the runtime always knew, with the corpus scan as the proof
+and its own Windows slip recorded. "Where it stands" now says a
+hundred tags, not eighty-eight. Full gate green (254 tests). One
+stroke banked toward v2.80.0. Next: docs and selftests for the two
+new checks.
