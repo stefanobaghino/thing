@@ -8497,3 +8497,19 @@ key on line 82 — so warnings() sorts by position now, which is how
 a reader goes through a file. The tutorial's --check bullet lists
 both. Full gate green (254 tests). Two strokes banked (506, 507).
 Next: release v2.80.0.
+
+---
+
+## 2026-09-03 — Iteration 507b: two commits for one record
+
+The record for 507 went in as two commits, and the first was
+misnamed. The tick's shell ran the LOG append and the STATE edit as
+separate statements rather than one `&&` list, so when the STATE
+edit failed on an anchor that rustfmt-style rewrapping had joined
+onto one line, the commit that followed still ran and carried only
+the LOG entry under the message "Record iteration 507 in STATE.md".
+STATE.md was updated and pushed straight after, under its own
+message. Nothing was lost and nothing was green that should have
+been red — the gate had already passed — but the rule stands and
+was not followed: one `&&` list per tick, so a failure stops
+everything after it.
