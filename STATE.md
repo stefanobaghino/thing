@@ -212,9 +212,9 @@ current orientation.
   milestone "cycles" complete.
 - 397: replenishment — milestone "the eighth act" (v2.59–v2.60),
   reasoning in LOG.md.
-- 398: retrospective act eight; 399: stdlib page opening — three
-  strokes banked (395, 398, 399); RELEASE v2.59.0 next tick if
-  quiet.
+- v2.59.0 TAGGED (80th tag; strokes 395, 398, 399): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (--doc listing, cyclic programs, selftests).
 - Backlog after the release (in order): (3) LSP hover shows a user
   fn's comment, protocol test; (4) lib/map.ting map_keys, selftests;
   (5) health tick + audit.

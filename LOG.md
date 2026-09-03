@@ -6463,3 +6463,13 @@ functions, which is also the page's row count), and says that the
 same text is in the binary through --doc and :doc. Docs guard
 green. Three strokes banked (395, 398, 399) — v2.59.0 next tick if
 quiet.
+
+---
+
+## 2026-09-03 — Iteration 400: v2.59.0
+
+The tutorial's runner flags, the eighth act, the stdlib page's
+opening (and the crash fuzzer's cyclic case from 396). CI and
+Pages green on 399 (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.59.0 (80th tag). Four
+hundred iterations.

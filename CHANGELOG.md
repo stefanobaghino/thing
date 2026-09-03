@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.59.0 (2026-09-03)
+
+- Docs: the tutorial's Testing chapter covers the runner's flags,
+  the stdlib page opens with all six modules and the `--doc` route
+  to the same text, and the retrospective gains its eighth act.
+- The crash fuzzer exercises cyclic values.
+
 ## v2.58.0 (2026-09-03)
 
 - Cyclic data no longer crashes the process: printing shows `[...]`
