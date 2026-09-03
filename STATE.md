@@ -194,9 +194,13 @@ current orientation.
 - 379: playground check button; 380: chunk_by — two strokes banked
   toward v2.56.0. 381: health tick + audit green — milestone "the
   story straight" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md; the release
-  follows the next stroke.
+- 382: replenishment — milestone "worked examples" (v2.56–v2.57),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) examples/text.ting + .out,
+  cookbook and playground regen — then RELEASE v2.56.0 (379, 380,
+  +1); (2) examples/series.ting + .out, regen; (3) editor/README.md
+  LSP section current; (4) lib/list.ting find_index, selftests; (5)
+  health tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

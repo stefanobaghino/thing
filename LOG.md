@@ -6100,3 +6100,35 @@ is a probe error, not an outage — the nine-resource list stands.
 Nothing to fix. The "the story straight" milestone is complete;
 two strokes (379, 380) are banked toward v2.56.0. Backlog empty:
 next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 382: replenishment — milestone "worked examples"
+
+CI green on 381 (API verdict). Sixteen milestones since the
+restart, seventy-six tags. A survey of examples/ against the
+stdlib: none of the fourteen examples uses chunk_by, mode, slug,
+extent, percentile, wrap or levenshtein — a dozen helpers landed
+in the last eight milestones with selftests and a doc row each,
+and no program anyone can read shows them doing work. The
+cookbook and the playground dropdown are generated from examples/,
+so an example is three surfaces at once. Five strokes:
+
+1. examples/text.ting: a text-processing program — words,
+   frequencies, slug, wrap, levenshtein for a "did you mean" —
+   with its .out; cookbook and playground regenerated (the sync
+   guards insist). Then release v2.56.0 (379, 380, +1).
+2. examples/series.ting: a numeric series — extent, mode,
+   percentile, window for a moving average, chunk_by for runs —
+   with its .out; regenerated.
+3. editor/README.md: the "Live diagnostics" section says what the
+   server provides now (the twelve capabilities, the three
+   warnings, the broken-import diagnostic), not just diagnostics.
+4. lib/list.ting find_index(xs, pred): the first index whose
+   element satisfies pred, nil when none — the predicate form of
+   the find builtin. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: an eighth retrospective act (the seventh is three
+milestones old; the cadence is six), a stdlib "examples" line in
+every doc row (the cookbook is that, generated and guarded).
