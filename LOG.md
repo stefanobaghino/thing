@@ -6970,3 +6970,34 @@ same import correctly; :load should behave like the script runner.
 First candidate for the next milestone. The "editor, again"
 milestone is complete; two strokes (423, 424) are banked toward
 v2.64.0. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 426: replenishment — milestone "load and import"
+
+CI green on 425 (API verdict). Twenty-two milestones since the
+restart, eighty-four tags. The 425 probe found `:load` resolving a
+loaded file's relative imports against the REPL's working
+directory and naming "repl" in its diagnostics — a file that runs
+with `ting FILE` fails under `:load`. A second probe shows :load
+is also silent about what it did: a loaded file that defines
+nothing prints nothing, and one that defines ten bindings prints
+nothing either. And an import that cannot be found says only "No
+such file or directory", not where it looked. Five strokes:
+
+1. `:load FILE` pushes the file's directory as the import base for
+   the duration of the load and renders errors against the file's
+   own path. io test with a loaded file that imports a sibling.
+   Then release v2.64.0 (423, 424, +1).
+2. `:load` reports "(loaded FILE: N new binding(s))" from the
+   session's bindings before and after. io test.
+3. A failed import says where it looked: the resolved path it
+   tried relative to the importing file, and that no embedded
+   module matched. io test.
+4. lib/list.ting transpose(xss): rows to columns for a rectangular
+   list of lists; ragged input fails. Selftests.
+5. Health tick + distribution audit.
+
+Rejected: an import search path (one base directory per file is
+the rule that keeps imports predictable), reloading on file change
+(a watcher is a service).
