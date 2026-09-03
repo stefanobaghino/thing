@@ -34,7 +34,8 @@ fn main() -> ExitCode {
                  \x20   [--slow N]                list the N slowest files after the summary\n\
                  \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
                  \x20 ting --doc [NAME]           explain a builtin or stdlib function;\n\
-                 \x20                             a module lists its members, no name lists all\n\
+                 \x20                             a module or a .ting file lists its members,\n\
+                 \x20                             no name lists all\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
@@ -63,13 +64,20 @@ fn main() -> ExitCode {
     if args.peek().map(String::as_str) == Some("--doc") {
         args.next();
         return match args.next() {
-            Some(name) => match repl::doc_text(&name).or_else(|| repl::doc_index(Some(&name))) {
+            Some(name) => match repl::doc_text(&name)
+                .or_else(|| repl::doc_index(Some(&name)))
+                .or_else(|| {
+                    // A .ting file of the user's own: its functions.
+                    (name.ends_with(".ting") && std::path::Path::new(&name).is_file())
+                        .then(|| repl::doc_file(&name))
+                        .flatten()
+                }) {
                 Some(text) => {
                     repl::say(&text);
                     ExitCode::SUCCESS
                 }
                 None => {
-                    eprintln!("ting: no builtin, stdlib function or module named {name}");
+                    eprintln!("ting: no builtin, stdlib function, module or file named {name}");
                     ExitCode::FAILURE
                 }
             },

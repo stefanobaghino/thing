@@ -183,20 +183,37 @@ pub fn doc_index(module: Option<&str>) -> Option<String> {
             if p != path {
                 continue;
             }
-            // The first sentence of the comment keeps the list one line per name.
-            let first = match comment.find(". ") {
-                Some(i) => &comment[..=i],
-                None => comment.as_str(),
-            };
-            if first.is_empty() {
-                out.push(format!("  {sig}"));
-            } else {
-                out.push(format!("  {sig}  {first}"));
-            }
+            out.push(member_line(sig, comment));
         }
     }
     if !found {
         return None;
+    }
+    Some(out.join("\n"))
+}
+
+/// One index line: the signature, then the first sentence of the
+/// comment (keeps the list one line per name).
+fn member_line(sig: &str, comment: &str) -> String {
+    let first = match comment.find(". ") {
+        Some(i) => &comment[..=i],
+        None => comment,
+    };
+    if first.is_empty() {
+        format!("  {sig}")
+    } else {
+        format!("  {sig}  {first}")
+    }
+}
+
+/// `--doc FILE.ting` — the file's own top-level functions, one line
+/// each, the way a stdlib module is listed. None when the file cannot
+/// be read.
+pub fn doc_file(path: &str) -> Option<String> {
+    let source = std::fs::read_to_string(path).ok()?;
+    let mut out = vec![format!("{path}:")];
+    for (_, sig, comment) in crate::lsp::source_functions(&source) {
+        out.push(member_line(&sig, &comment));
     }
     Some(out.join("\n"))
 }

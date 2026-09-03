@@ -284,8 +284,10 @@ The `ting` binary is the whole toolchain — no separate installs:
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
   signature and doc line, or a stdlib function's signature, module
   and comment. A module name (`list` or `lib/list.ting`) lists that
-  module's members, one line each; no name at all lists every
-  builtin and every stdlib function. Exit 1 for an unknown name.
+  module's members, one line each, and so does the path of one of
+  your own `.ting` files (its top-level functions with the `#`
+  comments above them); no name at all lists every builtin and every
+  stdlib function. Exit 1 for an unknown name.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings

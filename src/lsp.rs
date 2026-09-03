@@ -840,21 +840,33 @@ pub fn imported_stdlib_functions(src: &str) -> Vec<(&'static str, String, String
         if !src.contains(path) {
             continue;
         }
-        let mut comment: Vec<&str> = Vec::new();
-        for line in source.lines() {
-            if let Some(text) = line.strip_prefix('#') {
-                comment.push(text.trim());
-                continue;
-            }
-            if let Some(rest) = line.strip_prefix("fn ")
-                && let Some(close) = rest.find(')')
-            {
-                let sig = &rest[..=close];
-                let name = &sig[..sig.find('(').unwrap_or(sig.len())];
-                out.push((*path, name.to_string(), sig.to_string(), comment.join(" ")));
-            }
-            comment.clear();
+        for (name, sig, comment) in source_functions(source) {
+            out.push((*path, name, sig, comment));
         }
+    }
+    out
+}
+
+/// The top-level `fn name(params)` declarations of a source with the
+/// `#` comment lines directly above each: (name, signature, comment
+/// joined by spaces). Line-based, so it works on any ting file —
+/// stdlib modules and the user's own.
+pub fn source_functions(source: &str) -> Vec<(String, String, String)> {
+    let mut out = Vec::new();
+    let mut comment: Vec<&str> = Vec::new();
+    for line in source.lines() {
+        if let Some(text) = line.strip_prefix('#') {
+            comment.push(text.trim());
+            continue;
+        }
+        if let Some(rest) = line.strip_prefix("fn ")
+            && let Some(close) = rest.find(')')
+        {
+            let sig = &rest[..=close];
+            let name = &sig[..sig.find('(').unwrap_or(sig.len())];
+            out.push((name.to_string(), sig.to_string(), comment.join(" ")));
+        }
+        comment.clear();
     }
     out
 }
