@@ -107,6 +107,48 @@ print(sort_by(words, len));
 ["fig", "kiwi", "banana"]
 ```
 
+## Closures as objects
+
+Several closures over the same variables behave like an object: the
+variables are its private state, the closures its methods. Return
+them in a map and you have an interface without any new syntax:
+
+```ting
+fn make_account(balance) {
+  let history = [];
+  fn deposit(n) {
+    balance = balance + n;
+    push(history, "+" + str(n));
+    return balance;
+  }
+  fn withdraw(n) {
+    if n > balance { fail("insufficient funds"); }
+    balance = balance - n;
+    push(history, "-" + str(n));
+    return balance;
+  }
+  fn statement() { return join(history, " "); }
+  return {"deposit": deposit, "withdraw": withdraw, "statement": statement};
+}
+
+let acct = make_account(10);
+acct["deposit"](5);
+acct["withdraw"](12);
+print(acct["statement"]());
+let r = try(fn() { return acct["withdraw"](100); });
+print(r["err"]);
+```
+
+```text
++5 -12
+insufficient funds
+```
+
+Each call to `make_account` makes a fresh `balance` and `history`, so
+two accounts never share state — the same rule as the counter above.
+The cookbook's `machine` example takes this to a full state machine:
+a transition table in a map and a `send` closure that walks it.
+
 ## Lists and maps share, copies are explicit
 
 Lists and maps have reference semantics, like Python or JavaScript.
