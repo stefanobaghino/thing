@@ -6783,3 +6783,11 @@ tutorial's REPL bullet gained the two commands; the changelog head
 names the static musl binaries. io test for :doc alone and :doc
 math. Full gate green (226 tests). Three strokes banked (413,
 414, 415) — v2.62.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 416: v2.62.0
+
+The REPL's transcript, :history, :save and :doc alone. CI and Pages
+green on 415 (API verdicts). Full gate green, stdlib selftests pass
+on both engines. Tagging v2.62.0 (83rd tag).

@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.62.0 (2026-09-03)
+
+- REPL: a session transcript — `:history` lists every chunk that
+  ran without error, `:save FILE` writes them as a runnable script,
+  `:clear` empties them — and `:doc` alone lists everything like
+  `--doc`.
+
 ## v2.61.0 (2026-09-03)
 
 - LSP completion offers the file's own functions with their

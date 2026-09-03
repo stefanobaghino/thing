@@ -66,12 +66,12 @@ holds only the current milestone and the standing rules.
   milestone "the loop's own house" complete.
 - 412: replenishment — milestone "the session" (v2.62–v2.63),
   reasoning in LOG.md.
-- 413: REPL transcript + :history; 414: :save; 415: :doc alone and
-  the docs — three strokes banked; RELEASE v2.62.0 next tick if
-  quiet.
+- v2.62.0 TAGGED (83rd tag; strokes 413, 414, 415): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (:history and :save over stdin, selftests).
 - Backlog after the release (in order): (4) lib/map.ting merge_with,
   selftests; (5) health tick + audit; then replenish.
-- Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
+- Tags: 83 (v2.62.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
