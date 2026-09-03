@@ -175,9 +175,9 @@ current orientation.
   toward v2.52.0; 359: health tick + audit green.
 - 360: replenishment — milestone "where it happened" (v2.52–v2.53),
   reasoning in LOG.md.
-- 361: module runtime errors render against the module's file (and
-  the renderer no longer panics on a foreign span) — three strokes
-  banked (357, 358, 361); RELEASE v2.52.0 next tick if quiet.
+- v2.52.0 TAGGED (73rd tag; strokes 357, 358, 361): verify next
+  tick — six assets, glibc guard, cold-execute an aarch64 archive
+  here (module error location, embedded-module error, mode).
 - Backlog after the release (in order): (2) `note: called from`
   line, io test; (3) --check follows local imports, io test; (4)
   lib/string.ting slug, selftests; (5) health tick + audit.

@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.52.0 (2026-09-03)
+
+- Runtime errors raised inside an imported module's function are
+  reported against the module's file and line (both engines); an
+  error from an embedded stdlib module no longer panics the
+  diagnostic renderer.
+- lib/list.ting: `mode(xs)`, the most frequent element.
+- Retrospective: seventh act, "second opinions".
+
 ## v2.51.0 (2026-09-03)
 
 - `ting --doc` with no name lists every builtin and stdlib function;

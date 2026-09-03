@@ -5686,3 +5686,12 @@ under Errors. io test covers a file module on both engines and the
 embedded case (path, message, no panic). Full gate green (214
 tests). Three strokes banked (357, 358, 361) — v2.52.0 next tick
 if quiet.
+
+---
+
+## 2026-09-03 — Iteration 362: v2.52.0
+
+Retrospective act seven, mode, module-origin errors and the
+renderer clamp. CI and Pages green on 361 (API verdicts). Full
+gate green, stdlib selftests pass on both engines. Tagging v2.52.0
+(73rd tag).
