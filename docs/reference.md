@@ -318,7 +318,7 @@ The `ting` binary is the whole toolchain — no separate installs:
   stdlib function. Several names are allowed (`ting --doc len median
   slug`): the entries are printed in the order asked, separated by a
   blank line. Exit 1 for an unknown name — the others are still
-  printed.
+  printed, and a name close to a documented one is suggested.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings

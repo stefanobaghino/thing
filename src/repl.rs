@@ -114,9 +114,17 @@ pub fn say(text: &str) {
 fn print_doc(name: &str) {
     match doc_text(name).or_else(|| doc_index(Some(name))) {
         Some(text) => say(&text),
-        None => say(&format!(
-            "(no builtin, stdlib function or module named {name})"
-        )),
+        None => {
+            let names = doc_names();
+            match crate::diag::nearest(name, names.iter().map(String::as_str)) {
+                Some(near) => say(&format!(
+                    "(no builtin, stdlib function or module named {name}; did you mean {near}?)"
+                )),
+                None => say(&format!(
+                    "(no builtin, stdlib function or module named {name})"
+                )),
+            }
+        }
     }
 }
 
@@ -176,6 +184,34 @@ pub fn doc_text(name: &str) -> Option<String> {
         out.extend(wrap_indented(&comment, 2));
     }
     Some(out.join("\n"))
+}
+
+/// Every name `--doc` and `:doc` answer to: the builtins, the stdlib
+/// functions, and each module under both its short name and its path.
+/// The candidate list for a suggestion when a name is not one of them.
+pub fn doc_names() -> Vec<String> {
+    let mut out: Vec<String> = crate::value::Builtin::ALL
+        .iter()
+        .map(|b| b.name().to_string())
+        .collect();
+    let everything: String = crate::eval::embedded_stdlib()
+        .iter()
+        .map(|(path, _)| format!("import(\"{path}\");\n"))
+        .collect();
+    out.extend(
+        crate::lsp::imported_stdlib_functions(&everything)
+            .into_iter()
+            .map(|(_, name, _, _)| name),
+    );
+    for (path, _) in crate::eval::embedded_stdlib() {
+        out.push((*path).to_string());
+        out.push(
+            path.trim_start_matches("lib/")
+                .trim_end_matches(".ting")
+                .to_string(),
+        );
+    }
+    out
 }
 
 /// `--doc` with no name (a table of contents: every builtin, then

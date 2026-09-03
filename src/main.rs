@@ -86,7 +86,16 @@ fn main() -> ExitCode {
                     printed += 1;
                 }
                 None => {
-                    eprintln!("ting: no builtin, stdlib function, module or file named {name}");
+                    let names = repl::doc_names();
+                    let near = ting::diag::nearest(name, names.iter().map(String::as_str));
+                    match near {
+                        Some(n) => eprintln!(
+                            "ting: no builtin, stdlib function, module or file named {name} (did you mean {n}?)"
+                        ),
+                        None => eprintln!(
+                            "ting: no builtin, stdlib function, module or file named {name}"
+                        ),
+                    }
                     missing = true;
                 }
             }

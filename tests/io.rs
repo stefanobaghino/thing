@@ -1284,6 +1284,38 @@ fn doc_flag_lists_everything_or_a_module() {
 }
 
 #[test]
+fn doc_flag_suggests_the_nearest_documented_name() {
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "medain"])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains(
+            "no builtin, stdlib function, module or file named medain (did you mean median?)"
+        ),
+        "{stderr}"
+    );
+
+    // Module names count as documented names too.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "strng"])
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("(did you mean string?)"), "{stderr}");
+
+    // Nothing near it, nothing added.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "zqxjw"])
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("did you mean"), "{stderr}");
+}
+
+#[test]
 fn unknown_members_suggest_the_nearest_one() {
     let dir = std::env::temp_dir().join("ting-suggest-member");
     std::fs::create_dir_all(&dir).expect("mkdir");
