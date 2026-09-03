@@ -7216,3 +7216,17 @@ CRLF kept by the formatter, the unused-local warning, and the docs
 for both. CI and Pages green on 437 (API verdicts). Full gate
 green, stdlib selftests pass on both engines. Tagging v2.66.0
 (87th tag).
+
+---
+
+## 2026-09-03 — Iteration 438b: v2.66.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.66.0; a CRLF file passes --fmt-check on both binaries; a stale
+local `let` draws the new warning on both; `--test selftest`
+passes 11/11 on each. CI (fetched again after the watch captured
+it mid-run) and Pages green on the release commit. Eighty-seven
+tags, eighty-six verified. Next: the math stroke — trunc is
+already `int()` (the module's own floor comment says so), so it
+becomes hypot.
