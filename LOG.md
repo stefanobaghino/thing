@@ -7708,3 +7708,19 @@ lists the third file, --fmt reformats it and exits 1, and --check
 over a missing file and the broken one reports both. Full gate
 green (239 tests). Two strokes banked toward v2.71.0 (461, 464).
 Next: the formatter's summary line, then the release.
+
+---
+
+## 2026-09-03 — Iteration 465: the formatter's summary line
+
+CI green on 464 (API verdict). Milestone stroke 2: a --fmt,
+--fmt-check or --fmt --diff run over more than one file ends with
+"N reformatted, M unchanged, K failed" (check and diff say "would
+change"), the way a test run ends with its totals; a single file's
+own line is its summary and gets none, so `--fmt -` and every
+single-file use are unchanged. The 464 io test asserts the
+summaries for the three-file directory in both modes, a clean
+two-file check, and the absence for one file (the first edit
+script missed a rustfmt-reflowed anchor and stopped before any
+commit). Full gate green (239 tests). Three strokes banked (461,
+464, 465) — v2.71.0 next tick if quiet.

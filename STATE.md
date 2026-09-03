@@ -118,11 +118,11 @@ holds only the current milestone and the standing rules.
   --fmt over a directory stops at the first file that fails to lex.
 - 463: replenishment — milestone "every file, every time"
   (v2.71–v2.72), reasoning in LOG.md.
-- 464: --fmt and --check process every file — two strokes banked
-  toward v2.71.0 (461, 464).
-- Backlog (one per tick, in order): (2) --fmt summary line, io test
-  — then RELEASE v2.71.0; (3) reference and tutorial; (4)
-  lib/string.ting plural, selftests; (5) health tick + audit.
+- 464: --fmt and --check process every file; 465: --fmt summary —
+  three strokes banked (461, 464, 465); RELEASE v2.71.0 next tick
+  if quiet.
+- Backlog after the release (in order): (3) reference and tutorial;
+  (4) lib/string.ting plural, selftests; (5) health tick + audit.
 - Tags: 91 (v2.70.0), 90 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
