@@ -3973,3 +3973,12 @@ caught it. Closing section's count moves to fifty-three tags.
 Markdown guard and full gate green. Third stroke banked (with
 268b's ordering fix and 269's warning) — v2.32.0 next tick if
 quiet; the 264 milestone is then complete.
+
+---
+
+## 2026-09-03 — Iteration 271: v2.32.0
+
+LSP unknown-member warning, --test ordering fix, retrospective act
+five. CI and Pages green on 270 (API verdicts). Full gate green,
+stdlib selftests pass on the reference engine. Tagging v2.32.0
+(54th tag); the 264 milestone is complete with it.

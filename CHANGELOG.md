@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.32.0 (2026-09-03)
+
+- LSP: a warning when an imported stdlib module is indexed with a
+  name it does not export.
+- `ting --test` lists a directory's own files before descending
+  into subdirectories.
+- Retrospective: a fifth act on the glibc episode.
+
 ## v2.31.0 (2026-09-03)
 
 - `ting --test` accepts directories (recursive, sorted), so
