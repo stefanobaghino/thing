@@ -2818,3 +2818,17 @@ ting's character-indexed strings, so multibyte text (héllo → olléh)
 is correct without extra work, which the selftests pin. Four
 assertions, two stdlib.md rows. Full gate green on both engines.
 Second stroke toward v2.17.0.
+
+---
+
+## 2026-09-03 — Iteration 202: health tick
+
+CI green on 201 (API verdict). Bench on this aarch64 Linux host
+(BASELINE.md was recorded on an arm64 Mac, so absolute times are not
+comparable): all four checksums match the baseline, and the vm/eval
+ratios hold (fib -36%, lists -32%, maps +4%, strings -7% versus the
+baseline's -45/-43/+2/-11) — same shape, slower machine. Baseline
+left untouched, as its header requires like-for-like machines.
+Fuzz sweep: 20000 differential cases on seed 20260903, engines agree
+on every one. Nothing to fix. One feature stroke left before
+v2.17.0.

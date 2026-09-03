@@ -45,9 +45,12 @@ current orientation.
   since this host is aarch64 Linux (no matching asset yet).
 - 200: aarch64 Linux in CI + release matrices (CI arm job green);
   201: string chars/reverse — two strokes toward v2.17.0.
-- Backlog (one per tick): health tick (bench vs BASELINE.md, big
-  fuzz sweep); one more feature stroke; then release v2.17.0 and
-  execute its aarch64-linux asset cold on this host.
+- 202: health tick green (checksums match, ratios hold, 20k fuzz
+  cases agree).
+- Backlog (one per tick): one more feature stroke (candidates:
+  lib/map.ting has_all/filter_map, lib/math.ting min_max/abs_diff);
+  then release v2.17.0 and execute its aarch64-linux asset cold on
+  this host.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
