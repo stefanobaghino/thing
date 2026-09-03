@@ -38,7 +38,7 @@ current orientation.
   green on CI.
 - v2.13.0 RELEASED and verified (33rd); darwin-arm64 cold-tested.
 - v2.14.0 RELEASED and verified (34th); darwin-arm64 cold-tested.
-- Next: small strokes toward v2.15.0; periodic health ticks when
+- Toward v2.15.0: list median banked. Periodic health ticks when
   quiet.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
