@@ -3564,3 +3564,14 @@ top(counts, 3), printing count and word from each pair — the
 hand-rolled sort_by with a negated key is gone. Same golden output
 (top's stable tie order matches the previous key order). Tutorial
 test and full gate green. First stroke toward v2.28.0.
+
+---
+
+## 2026-09-03 — Iteration 252: product and mean_by
+
+CI and Pages green on 251 (API verdicts). lib/list.ting gains
+product(xs) (reduce with 1, so the empty product is the identity)
+and mean_by(xs, f) (mean over map, inheriting mean's float result
+and empty-list failure). Two one-liners, one stroke: aggregations.
+Five assertions, two stdlib.md rows. Full gate green on both
+engines. Second stroke toward v2.28.0.

@@ -86,10 +86,12 @@ current orientation.
   executed cold on this host, both engines.
 - v2.27.0 RELEASED and verified (47th); aarch64-linux asset
   executed cold on this host, both engines.
-- 250: distribution audit green. 251: tutorial tally via
-  frequencies/top — first stroke toward v2.28.0.
-- Backlog (one per tick): lib/list.ting product; lib/math.ting
-  mean_by (or lib/list.ting); release after ~3 strokes.
+- 251: tutorial tally via frequencies/top; 252: product/mean_by —
+  two strokes toward v2.28.0.
+- Backlog (one per tick): one more feature stroke (candidates:
+  lib/string.ting is_blank(s), lib/list.ting compact(xs) = drop
+  nils); release after ~3 strokes; then backlog replenishment tick
+  (design the next milestone beyond stdlib one-liners).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
