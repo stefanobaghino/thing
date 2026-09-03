@@ -3531,3 +3531,14 @@ Third stroke banked — v2.27.0 next tick if quiet.
 indent, top, tutorial closing chapter. CI green on 248 (API
 verdict). Full gate green, stdlib selftests pass on the reference
 engine. Tagging v2.27.0 (47th release).
+
+---
+
+## 2026-09-03 — Iteration 249b: v2.27.0 verified
+
+Release, CI and Pages runs all green on the tag commit (API
+verdicts). Four archives published. Cold test on this aarch64 Linux
+host: `ting 2.27.0`, indent and top print identically on both
+engines. Site: all resources 200, changelog shows 2.27.0, tutorial
+page carries the refreshed closing chapter. 47 releases, all
+verified.
