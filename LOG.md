@@ -6737,3 +6737,17 @@ Rejected: line editing or up-arrow history (needs the terminal in
 raw mode; not zero-dependency — rlwrap stays the answer),
 persisting the transcript between sessions (a file the user did
 not ask for; :save is the explicit form).
+
+---
+
+## 2026-09-03 — Iteration 413: REPL transcript and :history
+
+CI green on 412 (API verdict). Milestone stroke 1: the REPL keeps
+every chunk that evaluated without error — a definition, a
+statement, an echoed expression — and `:history` prints them
+numbered, continuation lines indented under the number; a chunk
+that raised is left out, and `:clear` empties the transcript with
+the session. The banner and `:help` mention it. io test drives a
+session with a binding, a two-line function, a failing name, a
+call, then `:history`, `:clear` and `:history` again. Full gate
+green (224 tests). One stroke banked toward v2.62.0. Next: :save.

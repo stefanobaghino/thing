@@ -66,10 +66,11 @@ holds only the current milestone and the standing rules.
   milestone "the loop's own house" complete.
 - 412: replenishment — milestone "the session" (v2.62–v2.63),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) REPL transcript + :history,
-  io test; (2) :save FILE, io test; (3) :doc alone / :doc MODULE +
-  reference REPL paragraph + changelog head — then RELEASE v2.62.0;
-  (4) lib/map.ting merge_with, selftests; (5) health tick + audit.
+- 413: REPL transcript + :history — one stroke banked toward v2.62.0.
+- Backlog (one per tick, in order): (2) :save FILE, io test; (3)
+  :doc alone / :doc MODULE + reference REPL paragraph + changelog
+  head — then RELEASE v2.62.0; (4) lib/map.ting merge_with,
+  selftests; (5) health tick + audit.
 - Tags: 82 (v2.61.0), 81 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
