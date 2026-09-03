@@ -49,11 +49,11 @@ current orientation.
   cases agree).
 - v2.17.0 RELEASED and verified (37th); aarch64-linux asset
   executed cold on this host, both engines.
-- 205: quiet exit on broken pipe (print + REPL) — first stroke
-  toward v2.18.0.
-- Backlog (one per tick): `--fmt`/`--fmt-check`/`--check` accept `-`
-  for stdin; lib/math.ting abs_diff/lcm; tutorial mention of
-  group_by/partition; distribution audit incl. arm64.
+- 205: quiet exit on broken pipe; 206: tool flags accept `-` for
+  stdin — two strokes toward v2.18.0.
+- Backlog (one per tick): lib/math.ting abs_diff/lcm; tutorial
+  mention of group_by/partition; then release v2.18.0; distribution
+  audit incl. arm64 after it.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

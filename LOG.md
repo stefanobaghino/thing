@@ -2887,3 +2887,18 @@ deliberately closed read end and asserts exit 0 and empty stderr —
 verified to fail on the old code (exit 1) before landing. Reference
 Tooling section gains the shell-citizen sentence. Full gate green.
 First stroke toward v2.18.0.
+
+---
+
+## 2026-09-03 — Iteration 206: tool flags read stdin
+
+CI green on 205 across all five jobs, Windows included (API
+verdict), so the broken-pipe test holds on every platform. Second
+rough edge from the cold test: `--fmt`, `--fmt-check` and `--check`
+now accept `-` for stdin through one shared reader in main.rs, the
+same convention read_file("-") already follows in scripts. `--fmt -`
+cannot rewrite in place, so it is a filter: the formatted source
+always goes to stdout, even when unchanged, which is what an editor
+integration needs. Help text and the reference Tooling list updated;
+one io test covers all five combinations. Full gate green. Second
+stroke toward v2.18.0.
