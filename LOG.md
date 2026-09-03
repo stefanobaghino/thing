@@ -3339,3 +3339,19 @@ host: `ting 2.24.0`; scan, strip_prefix and strip_suffix print
 identically on both engines. Site: all resources 200, changelog
 shows 2.24.0, retrospective page carries the fourth act. 44
 releases, all verified.
+
+---
+
+## 2026-09-03 — Iteration 237: fuzz generator audit
+
+CI green on 236b (API verdict). Audit: of the 44 builtins, the
+differential generator had never emitted starts_with, ends_with,
+replace, split, trim, lower, max, type, filter or reduce (the
+remaining absentees are I/O or non-deterministic — args, env, exit,
+input, read_file, write_file, time_ms, import — and stay out by
+design). Ten new expression arms cover them, each wrapped so that
+some inputs are well-typed and others produce type errors the two
+engines must report identically; filter and reduce take closure
+literals, exercising nested functions inside expressions for the
+first time. Default run and a 20000-case sweep on seed 237 agree
+on every program. Full gate green. First stroke toward v2.25.0.
