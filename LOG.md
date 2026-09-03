@@ -4921,3 +4921,18 @@ has drifted three milestones behind the house. Five strokes:
 Deferred: a playground "load example" dropdown (needs build.sh and
 JavaScript work — a milestone of its own if the site ever warrants
 it).
+
+---
+
+## 2026-09-03 — Iteration 323: README refresh
+
+CI green on 322 (API verdict). Milestone stroke 1: the README's
+status paragraph no longer describes a two-command REPL; a new
+toolchain paragraph names what ships today — seven meta-commands,
+the runner with directories, --filter and --tap, the directory-
+aware checker and formatter with stdin, the member warning, --doc,
+and the language server's eleven capabilities — as prose with a
+link to the reference's Tooling section rather than a list that
+drifts again; the docs links gain the stdlib page and the cookbook,
+and the test count reads 200+. Markdown guard and full gate green.
+First stroke toward v2.44.0.
