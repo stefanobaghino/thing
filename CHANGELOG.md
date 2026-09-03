@@ -4,6 +4,10 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.47.0 (2026-09-03)
+
+- LSP: rename applies across every open document.
+
 ## v2.46.0 (2026-09-03)
 
 - `ting --test -j N` runs up to N files at once, output kept in

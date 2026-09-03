@@ -5176,3 +5176,11 @@ Distribution: 67 releases with the expected asset counts (36 × 3,
 site resources answer 200 and the reference mentions rename across
 open files. Nothing to fix. The 330 milestone's strokes are done;
 v2.47.0 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 337: v2.47.0
+
+Workspace-wide rename — the tail of the 330 milestone. CI green on
+336 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.47.0 (68th tag).
