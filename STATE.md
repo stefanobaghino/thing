@@ -84,10 +84,11 @@ current orientation.
   executed cold on this host, both engines.
 - v2.26.0 RELEASED and verified (46th); aarch64-linux asset
   executed cold on this host, both engines.
-- 246: tutorial closing chapter; 247: indent — two strokes toward
-  v2.27.0.
-- Backlog (one per tick): lib/map.ting top(m, n); distribution
-  audit; release after ~3 strokes.
+- 246: tutorial closing chapter; 247: indent; 248: map top — three
+  strokes banked; RELEASE v2.27.0 next tick if quiet.
+- Backlog after the release: distribution audit; tutorial word-
+  frequency script via top(frequencies(words(...)), 3); candidates:
+  lib/list.ting product, lib/math.ting mean_by.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

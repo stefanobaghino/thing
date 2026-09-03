@@ -3511,3 +3511,15 @@ lines stay empty (so a blank line never carries trailing spaces),
 and because split/join round-trip the separators a trailing newline
 survives. Four assertions, stdlib.md row. Full gate green on both
 engines. Second stroke toward v2.27.0.
+
+---
+
+## 2026-09-03 — Iteration 248: top
+
+CI green on 247 (API verdict). lib/map.ting gains top(m, n): the n
+largest-valued entries as [key, value] pairs, built on items() and
+sort_by with a negated key; sort_by is stable (checked before
+writing), so ties come out in key order and the selftest pins it.
+The word-frequency idiom becomes top(frequencies(words(text)), 3).
+Five assertions, stdlib.md row. Full gate green on both engines.
+Third stroke banked — v2.27.0 next tick if quiet.
