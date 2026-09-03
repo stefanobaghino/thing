@@ -5294,3 +5294,18 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 answers. Site: all resources 200 including the generated
 examples.js, changelog shows 2.48.0, stdlib page lists percentile.
 69 tags, 68 verified.
+
+---
+
+## 2026-09-03 — Iteration 343: --test --slow N
+
+CI green on 342b (API verdict). Milestone stroke 4: `--slow N`
+appends the N slowest files with their milliseconds after the
+summary — opt-in, so the default output is byte-identical to before
+and the -j comparison test still holds; in --tap mode the block is
+a comment so the stream stays clean. The per-file timings the
+runner already measured now have a reader. io test covers both
+modes; help and reference updated. Clippy asked for sort_by_key
+with Reverse; a sed with pipe delimiters tripped over the closure
+and Python did the edit. Full gate green. First stroke toward
+v2.49.0; the 338 milestone's building strokes are done.
