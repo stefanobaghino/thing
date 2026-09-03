@@ -5007,3 +5007,14 @@ this aarch64 Linux host, the musl archive: statically linked, `ting
 answers initialize after a garbage frame — 325b's fix in the
 shipped binary. Site: all resources 200, changelog shows 2.44.0,
 stdlib page lists stddev. 65 tags, 64 verified.
+
+---
+
+## 2026-09-03 — Iteration 327: tutorial mentions --doc
+
+CI green on 326b (API verdict). Milestone stroke 4: the modules
+chapter's closing sentence now tells readers about `ting --doc
+NAME`, the REPL's `:doc`, and that an editor's hover shows the
+same text — three ways to read one stdlib function without opening
+the module. Prose only; the tutorial test still runs every snippet.
+Markdown guard and full gate green. First stroke toward v2.45.0.
