@@ -3355,3 +3355,18 @@ engines must report identically; filter and reduce take closure
 literals, exercising nested functions inside expressions for the
 first time. Default run and a 20000-case sweep on seed 237 agree
 on every program. Full gate green. First stroke toward v2.25.0.
+
+---
+
+## 2026-09-03 — Iteration 238: LSP stdlib completion
+
+CI green on 237 across all jobs (API verdict). Completion now
+includes the exported functions of every embedded stdlib module the
+document imports — matched on the "lib/<name>.ting" suffix so
+relative paths count — with the module path and signature as the
+item's detail. The names come from scanning the embedded sources
+for top-level `fn` lines (the same text import() resolves to, so it
+cannot drift). Modules that are not imported stay out of the list,
+pinned by the new protocol test alongside the positive case. eval.rs
+exposes the embedded table through one accessor. Reference Tooling
+line updated. Full gate green. Second stroke toward v2.25.0.
