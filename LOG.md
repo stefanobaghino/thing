@@ -3830,3 +3830,39 @@ exits 0 into a closed pipe. Site: all resources 200, changelog
 shows 2.30.0. 52 releases (51 verified, one marked broken). The
 milestone from 255 is complete plus the glibc follow-through; next
 tick replenishes.
+
+---
+
+## 2026-09-03 — Iteration 264: replenishment — milestone "the runner and the operator"
+
+CI green on 263b (API verdict). The 255 milestone landed in eight
+ticks (five strokes, two releases, one incident with its fix). What
+it taught: the --test runner is the most "program-shaped" thing the
+project has, and the glibc episode showed that operating ting —
+running it, shipping it, editing it — is where the remaining rough
+edges live. Candidates weighed, in the order they will be built:
+
+1. `--test` accepts directories: recurse, collect *.ting sorted, so
+   `ting --test selftest` is the whole suite. io test with a nested
+   temp dir.
+2. CI dogfoods the runner: a workflow step runs the built binary's
+   own --test over selftest/ on every push (alongside the Rust
+   selftest harness, which stays as the stricter "silent" check).
+   Proves the runner on all five CI platforms continuously.
+3. lib/string.ting table(rows): a list of rows (lists of strings)
+   padded into aligned columns, joined with two spaces — the CLI
+   output helper every script re-invents; dogfooded by the stats or
+   logs example.
+4. LSP diagnostic for an unknown stdlib member: when a document
+   binds `let m = import("lib/x.ting")` and later indexes m with a
+   string key that is not a function of that module, publish a
+   warning at the key. First diagnostic that is not a parse error;
+   protocol test for both the hit and a correct name.
+5. Retrospective act five, short: the glibc episode and what
+   "zero dependencies" turned out to mean.
+
+Rejected: a `--watch` mode (needs a file-watching loop — polling is
+fine but it is an operated process, and the value is thin without
+an editor integration that already exists via the LSP); package
+manager or remote imports (a hosted service in disguise, against
+the charter). Release rhythm unchanged.

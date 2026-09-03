@@ -98,12 +98,15 @@ current orientation.
   step green, aarch64 asset executed cold here.
 - v2.30.0 RELEASED and verified (52nd tag; six assets; both aarch64
   Linux archives executed cold here, musl fully static).
-- NEXT: replenishment tick per LOOP.md — the 255 milestone is done.
-  Candidates to weigh: (a) `--test` discovers directories; (b)
-  string module `format_table`/column alignment for CLI output; (c)
-  LSP: diagnostics for unknown stdlib function names in m["..."];
-  (d) a second retrospective act five (glibc episode); (e) selftest
-  for every example via --test in CI (dogfood the runner).
+- 264: replenishment — milestone "the runner and the operator"
+  (v2.31–v2.33), reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) `--test` accepts
+  directories (recursive, sorted), io test; (2) CI step runs the
+  built binary's `--test selftest` on every platform; (3)
+  lib/string.ting table(rows) column alignment, dogfooded in an
+  example; (4) LSP warning for an unknown stdlib member in
+  m["..."] when m is bound to an import, protocol test; (5)
+  retrospective act five (glibc episode). Release after ~3.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
