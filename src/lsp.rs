@@ -313,6 +313,30 @@ fn document_links(src: &str, uri: &str) -> Value {
         return Value::list(vec![]);
     };
     let mut links = Vec::new();
+    for (span, target) in import_targets(&tokens, &dir) {
+        links.push(obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, span.start)),
+                    ("end", position(src, span.end)),
+                ]),
+            ),
+            ("target", s(&path_to_uri(&target))),
+        ]));
+    }
+    Value::list(links)
+}
+
+/// Every `import("path")` in a token stream whose path, resolved
+/// against `dir` with `.` and `..` normalised lexically, is a file on
+/// disk: the string's span and the file. Embedded stdlib modules with
+/// no file are skipped.
+pub fn import_targets(
+    tokens: &[lexer::Token],
+    dir: &std::path::Path,
+) -> Vec<(lexer::Span, std::path::PathBuf)> {
+    let mut out = Vec::new();
     for w in tokens.windows(3) {
         let (lexer::TokenKind::Ident(name), lexer::TokenKind::LParen, lexer::TokenKind::Str(path)) =
             (&w[0].kind, &w[1].kind, &w[2].kind)
@@ -332,21 +356,11 @@ fn document_links(src: &str, uri: &str) -> Value {
                 other => target.push(other),
             }
         }
-        if !target.is_file() {
-            continue;
+        if target.is_file() {
+            out.push((w[2].span, target));
         }
-        links.push(obj(vec![
-            (
-                "range",
-                obj(vec![
-                    ("start", position(src, w[2].span.start)),
-                    ("end", position(src, w[2].span.end)),
-                ]),
-            ),
-            ("target", s(&path_to_uri(&target))),
-        ]));
     }
-    Value::list(links)
+    out
 }
 
 /// Folding ranges: every `{ ... }` pair that spans more than one line,

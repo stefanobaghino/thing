@@ -41,6 +41,23 @@ pub fn run_source<W: Write>(
 
 /// Lex, parse, and compile without running: everything that can be
 /// diagnosed statically. Returns the rendered diagnostic on failure.
+/// The files a source imports, resolved relative to its own directory
+/// (`.` and `..` normalised lexically); only paths that exist on disk,
+/// so embedded stdlib modules are not among them.
+pub fn local_imports(path: &str, src: &str) -> Vec<std::path::PathBuf> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let dir = std::path::Path::new(path)
+        .parent()
+        .map(|d| d.to_path_buf())
+        .unwrap_or_default();
+    lsp::import_targets(&tokens, &dir)
+        .into_iter()
+        .map(|(_, target)| target)
+        .collect()
+}
+
 pub fn check_source(path: &str, src: &str) -> Result<(), String> {
     let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
     let tokens = lexer::lex(src).map_err(|e| render(&e.message, e.span))?;

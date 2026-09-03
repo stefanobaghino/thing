@@ -175,21 +175,34 @@ fn run_check(args: Vec<String>) -> ExitCode {
         return ExitCode::FAILURE;
     }
     let mut failed = false;
-    for f in &files {
-        let src = match read_tool_source(f) {
+    // Files a checked file imports are checked too, each once, under
+    // their own path; stdin (`-`) has no directory to resolve against.
+    let mut queue: std::collections::VecDeque<String> = files.into_iter().collect();
+    let mut seen = std::collections::HashSet::new();
+    while let Some(f) = queue.pop_front() {
+        let key = std::fs::canonicalize(&f).unwrap_or_else(|_| std::path::PathBuf::from(&f));
+        if !seen.insert(key) {
+            continue;
+        }
+        let src = match read_tool_source(&f) {
             Ok(src) => src,
             Err(code) => return code,
         };
-        match ting::check_source(f, &src) {
+        match ting::check_source(&f, &src) {
             Err(diagnostic) => {
                 eprintln!("{diagnostic}");
                 failed = true;
             }
             // Warnings never change the exit status; they are advice.
             Ok(()) => {
-                for w in ting::check_warnings(f, &src) {
+                for w in ting::check_warnings(&f, &src) {
                     eprintln!("{w}");
                 }
+            }
+        }
+        if f != "-" {
+            for target in ting::local_imports(&f, &src) {
+                queue.push_back(target.display().to_string());
             }
         }
     }

@@ -328,6 +328,39 @@ fn module_runtime_errors_point_into_the_module() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// `--check` follows local imports: a broken module reached through
+/// `import("./...")` is reported under its own path, once, and fails
+/// the check; embedded stdlib imports are not files and are skipped.
+#[test]
+fn check_flag_follows_local_imports() {
+    let dir = std::env::temp_dir().join(format!("ting-check-imports-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    std::fs::write(
+        dir.join("main.ting"),
+        "let l = import(\"lib/list.ting\");\nlet a = import(\"./sub/a.ting\");\nlet b = import(\"./sub/b.ting\");\nprint(l, a, b);\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("sub/a.ting"),
+        "let b = import(\"../sub/b.ting\");\n",
+    )
+    .unwrap();
+    std::fs::write(dir.join("sub/b.ting"), "fn broken( {\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", dir.join("main.ting").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("b.ting:1:12: error:"), "{stderr}");
+    assert_eq!(stderr.matches("b.ting:1:12").count(), 1, "{stderr}");
+    assert!(
+        !stderr.contains("main.ting:") && !stderr.contains("a.ting:"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

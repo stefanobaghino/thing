@@ -261,7 +261,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   idempotent and never alters program meaning.
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
-  Directories recurse.
+  Directories recurse, and files reached through `import("...")` of a
+  local path are checked too, each once under its own path.
   Clean files may still get warnings (an imported stdlib module
   indexed with a name it does not export; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
