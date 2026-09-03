@@ -1,0 +1,23 @@
+# JSON churn: build a document, round-trip it through json_str and
+# json_parse, then navigate and rewrite it with lib/json.ting.
+let j = import("../lib/json.ting");
+
+let users = [];
+for i in range(10000) {
+  push(users, {"id": i, "name": "user" + str(i), "tags": ["t" + str(i % 7), "x"], "score": i * 3 % 101});
+}
+let doc = {"users": users, "meta": {"count": len(users), "version": 3}};
+
+let text = json_str(doc);
+let back = json_parse(text);
+let pretty_len = len(json_str(back, 2));
+
+let total = 0;
+for i in range(len(users)) {
+  total = total + j["get_in"](back, ["users", i, "score"]);
+}
+let patched = j["set_in"](back, ["meta", "version"], 4);
+let merged = j["merge_in"](patched, {"meta": {"stamp": "now"}, "extra": [1, 2]});
+let leaves = len(j["paths"](merged["meta"]));
+
+print(len(text), pretty_len, total, merged["meta"]["version"], leaves);
