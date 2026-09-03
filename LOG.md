@@ -8257,3 +8257,27 @@ already gives) and about a call whose argument count cannot match a
 function defined in the same file; the LSP publishes both; the
 corpus scan stays at its one expected warning, which is the test
 that the scope walk has no false positives.
+
+---
+
+## 2026-09-03 — Iteration 495: bound nowhere
+
+CI green on 494 (API verdict). Milestone stroke 1: `--check` (and
+the LSP, which shares warnings()) reports a name that is bound
+nowhere it can see, with the nearest name in scope — "`totl` is
+bound nowhere (did you mean `total`?)". The walk goes over the AST
+with a stack of scopes seeded from the builtins: parameters bind in
+a function's body, a `for` variable in the loop's, and every `let`
+of a block binds for the whole block rather than from its line
+down, since a function defined late is routinely called from one
+defined early. That slackening is deliberate and one-directional —
+it can miss a use-before-definition, never invent one — and the
+corpus is the proof: the scan over lib, selftest, examples and
+bench reports exactly two warnings, both meant, edge.ting shadowing
+`len` and errors.ting reading `totl` to test the runtime's own
+suggestion. That is a change to a standing rule: the expected count
+is now two, and STATE.md says which. io test covers the bare
+report, the suggestion, an assignment to an unbound name, and a
+file of forward references, loop variables and closures that must
+stay silent. Full gate green (249 tests). One stroke banked toward
+v2.77.0. Next: the LSP's own tests for it.

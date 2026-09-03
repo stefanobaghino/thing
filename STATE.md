@@ -17,11 +17,11 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 248 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 249 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, five warnings, --strict), --doc (names, module, file, or
+  imports, six warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
@@ -148,9 +148,10 @@ holds only the current milestone and the standing rules.
   complete.
 - 494: replenishment — milestone "before it runs" (v2.77-v2.78),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) --check warns about a name
-  bound nowhere, with the suggestion; (2) the same in the LSP, plus
-  tests over the corpus — then RELEASE v2.77.0; (3) --check warns
+- 495: bound nowhere (--check and the LSP) — one stroke banked
+  toward v2.77.0.
+- Backlog (one per tick, in order): (1) LSP tests for the new
+  diagnostic — then RELEASE v2.77.0; (2) --check warns
   about a call whose argument count cannot match a function in the
   same file; (4) docs + selftests, then RELEASE v2.78.0; (5) health
   tick + audit.
@@ -175,7 +176,8 @@ Standing rules (each from a slip; the LOG entry named has the story):
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  one warning: selftest/edge.ting shadows `len` on purpose (451).
+  two warnings, both on purpose: selftest/edge.ting shadows `len`
+  (451) and selftest/errors.ting reads the unbound `totl` (495).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
