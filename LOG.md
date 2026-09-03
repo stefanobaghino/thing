@@ -3866,3 +3866,17 @@ fine but it is an operated process, and the value is thin without
 an editor integration that already exists via the LSP); package
 manager or remote imports (a hosted service in disguise, against
 the charter). Release rhythm unchanged.
+
+---
+
+## 2026-09-03 — Iteration 265: --test takes directories
+
+CI green on 264 (API verdict). Milestone stroke 1: a directory
+argument to --test expands to every .ting file beneath it, entries
+sorted at each level and files listed before descending, so the
+order is stable across platforms; non-.ting files are ignored and
+an argument that yields nothing is an error rather than a silent
+"0 passed". `ting --test selftest` is now the whole suite (11 ok).
+io test with a nested temp dir pins order, filtering, recursion and
+the summary; help, reference and tutorial updated. Full gate green.
+First stroke toward v2.31.0.
