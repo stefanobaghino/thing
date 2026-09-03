@@ -228,6 +228,26 @@ fn window(xs, n) {
   return out;
 }
 
+# Consecutive elements with the same key(x) grouped into runs, in
+# order: [[a, a], [b], [a]] for keys a a b a. Any key type (compared
+# structurally). Empty list gives [].
+fn chunk_by(xs, key) {
+  let out = [];
+  let run = [];
+  let last = nil;
+  for x in xs {
+    let k = key(x);
+    if len(run) > 0 && k != last {
+      push(out, run);
+      run = [];
+    }
+    push(run, x);
+    last = k;
+  }
+  if len(run) > 0 { push(out, run); }
+  return out;
+}
+
 # Map from key(x) (a string) to how many elements share that key.
 fn count_by(xs, key) {
   let out = {};

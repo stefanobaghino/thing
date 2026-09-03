@@ -121,6 +121,10 @@ assert(has(try(fn() { return l["median"]([]); }), "err"), "median empty fails");
 assert(l["group_by"](["ab", "c", "de"], fn(w) { return str(len(w)); }) == {"1": ["c"], "2": ["ab", "de"]}, "group_by");
 assert(l["group_by"]([], fn(x) { return x; }) == {}, "group_by empty");
 assert(has(try(fn() { return l["group_by"]([1], fn(x) { return x; }); }), "err"), "group_by non-string key fails");
+assert(l["chunk_by"]([1, 1, 2, 1], fn(x) { return x; }) == [[1, 1], [2], [1]], "chunk_by");
+assert(l["chunk_by"](["a", "bb", "cc", "d"], fn(w) { return len(w); }) == [["a"], ["bb", "cc"], ["d"]], "chunk_by by length");
+assert(l["chunk_by"]([[1], [1], [2]], fn(x) { return x; }) == [[[1], [1]], [[2]]], "chunk_by structural keys");
+assert(l["chunk_by"]([], fn(x) { return x; }) == [], "chunk_by empty");
 
 assert(l["take"]([1, 2, 3], 2) == [1, 2], "take");
 assert(l["take"]([1, 2], 5) == [1, 2], "take past end");

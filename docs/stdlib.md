@@ -47,6 +47,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `mean_by(xs, f)` | mean of `f(x)` as a float; empty list fails |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 | `group_by(xs, key)` | map from `key(x)` (a string) to the elements with that key, in input order |
+| `chunk_by(xs, key)` | consecutive elements with the same `key(x)` grouped into runs, in order |
 | `count_by(xs, key)` | map from `key(x)` (a string) to how many elements share it |
 | `frequencies(xs)` | map from each string element to its number of occurrences |
 | `mode(xs)` | most frequent element (any type); first to reach the top count wins ties; `nil` on empty |
