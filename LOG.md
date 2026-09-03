@@ -7592,3 +7592,14 @@ binding passes plain and fails strict, a clean file passes strict.
 Help line added. Full gate green (238 tests). Two strokes banked
 toward v2.70.0 (457, 458). Next: the docs mentions, then the
 release.
+
+---
+
+## 2026-09-03 — Iteration 459: the small print for --strict
+
+CI green on 458 (API verdict). Milestone stroke 3: the reference's
+warnings paragraph ends with the --strict rule, the tutorial's
+closing chapter suggests it for a pre-commit hook and its Testing
+chapter names check_type beside check_err, and the README's
+checker sentence carries the flag. Tutorial and docs guards green.
+Three strokes banked (457, 458, 459) — v2.70.0 next tick if quiet.

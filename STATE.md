@@ -21,7 +21,7 @@ current orientation.
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, five warnings), --doc (name, module, file, or everything), --test (dirs,
+  imports, five warnings, --strict), --doc (name, module, file, or everything), --test (dirs,
   --filter, --tap, -j, --slow, --fail-fast), --lsp (thirteen
   capabilities). Module errors point at the module's line with a
   call-site note; cyclic data prints, compares and json-fails cleanly.
@@ -111,11 +111,10 @@ holds only the current milestone and the standing rules.
   milestone "the ninth act" complete.
 - 456: replenishment — milestone "counted and guarded" (v2.70–v2.71),
   reasoning in LOG.md.
-- 457: stdlib docs guard; 458: --check --strict — two strokes banked
-  toward v2.70.0.
-- Backlog (one per tick, in order): (3) docs mention --strict and
-  check_type — then RELEASE v2.70.0; (4) lib/map.ting key_of,
-  selftests; (5) health tick + audit.
+- 457: stdlib docs guard; 458: --check --strict; 459: the docs —
+  three strokes banked; RELEASE v2.70.0 next tick if quiet.
+- Backlog after the release (in order): (4) lib/map.ting key_of,
+  selftests; (5) health tick + audit; then replenish.
 - Tags: 90 (v2.69.0), 89 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
