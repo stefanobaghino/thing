@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.55.0 (2026-09-03)
+
+- `ting --test --fail-fast` stops after the first failing file; the
+  rest count as skipped (TAP `# SKIP` lines).
+- `ting --doc path/to/file.ting` lists a file's top-level functions
+  with the comments above them.
+- docs/vm.md opens with the VM's current status.
+
 ## v2.54.0 (2026-09-03)
 
 - LSP: an `import` of a local file that fails to lex, parse or

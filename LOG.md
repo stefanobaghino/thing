@@ -6023,3 +6023,11 @@ unknown-name assertions, no user-file test. This tick: the two
 assertions updated to the new message, the user-file test added,
 the full gate green (218 tests). `--doc list` shows sum without a
 comment because the module has none above it — not a regression.
+
+---
+
+## 2026-09-03 — Iteration 378: v2.55.0
+
+--test --fail-fast, the vm.md status section, --doc FILE.ting. CI
+and Pages green on 377b (API verdicts). Full gate green, stdlib
+selftests pass on both engines. Tagging v2.55.0 (76th tag).
