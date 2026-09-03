@@ -889,11 +889,20 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
         };
         format!("```ting\n{sig}\n```\n\n{about}")
     } else if let Some(params) = user_fn_params(src, &word) {
-        // A top-level fn (or let bound to a fn literal) in this document.
-        format!(
-            "```ting\nfn {word}({})\n```\n\ndefined in this file",
-            params.join(", ")
-        )
+        // A top-level fn (or let bound to a fn literal) in this document,
+        // with the `#` comment above it when there is one — the user's
+        // own code documents itself the way the stdlib does.
+        let comment = source_functions(src)
+            .into_iter()
+            .find(|(name, _, _)| *name == word)
+            .map(|(_, _, comment)| comment)
+            .unwrap_or_default();
+        let about = if comment.is_empty() {
+            "defined in this file".to_string()
+        } else {
+            format!("{comment}\n\n(defined in this file)")
+        };
+        format!("```ting\nfn {word}({})\n```\n\n{about}", params.join(", "))
     } else {
         return Value::Nil;
     };

@@ -205,22 +205,24 @@ fn completion_offers_imported_stdlib_functions() {
     // document; a plain variable still gets nothing.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":9},"contentChanges":[{"text":"fn area(w, h) { return w * h; }\nlet side = 3;\nprint(area(side, 2));\n"}]}}"#,
+        r##"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":9},"contentChanges":[{"text":"# Area of a rectangle.\nfn area(w, h) { return w * h; }\nlet side = 3;\nprint(area(side, 2));\n"}]}}"##,
     );
     let _ = recv(&mut reader);
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":30,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":7}}}"#,
+        r#"{"jsonrpc":"2.0","id":30,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":3,"character":7}}}"#,
     );
     let hov = recv(&mut reader);
     assert!(
-        hov.contains("fn area(w, h)") && hov.contains("defined in this file"),
+        hov.contains("fn area(w, h)")
+            && hov.contains("Area of a rectangle.")
+            && hov.contains("defined in this file"),
         "{hov}"
     );
     // Signature help inside area(...) comes from the same binding.
     send(
         &mut stdin,
-        r#"{"jsonrpc":"2.0","id":32,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":2,"character":11}}}"#,
+        r#"{"jsonrpc":"2.0","id":32,"method":"textDocument/signatureHelp","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":3,"character":11}}}"#,
     );
     let sig = recv(&mut reader);
     assert!(sig.contains("\"label\":\"area(w, h)\""), "{sig}");

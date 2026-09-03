@@ -294,7 +294,7 @@ The `ting` binary is the whole toolchain — no separate installs:
   for an imported stdlib module indexed with a name it does not
   export and for unused top-level bindings and parameters),
   hover docs for every builtin (and for imported stdlib functions,
-  and the signature of the file's own functions),
+  and the file's own functions with the `#` comment above them),
   completion
   (builtins, keywords, the document's own names, and the functions of
   any stdlib module it imports),
