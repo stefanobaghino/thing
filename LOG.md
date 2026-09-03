@@ -4546,3 +4546,19 @@ path reading as nil, built on paths and get_in so it stays a dozen
 lines. Two scalars diff as one triple at the empty path. Four
 assertions, stdlib.md row. Full gate green on both engines. First
 stroke toward v2.39.0.
+
+---
+
+## 2026-09-03 — Iteration 302: machine example
+
+CI green on 301 (API verdict). Milestone stroke 5, and the first
+example whose point is closures holding state: examples/machine.ting
+builds a turnstile from a transition table (state → event → [next,
+action]) and a make_machine function whose inner closures share the
+captured state and trace — send() mutates them, current() and
+history() read them, and the three are returned in a map as the
+machine's interface. The trace prints as a table(), the actions are
+tallied with frequencies(), and an unknown event's failure is
+caught with try(). Golden output identical on both engines;
+thirteenth example; cookbook regenerated. Full gate green. Second
+stroke toward v2.39.0; the 296 milestone's five strokes are done.
