@@ -2967,3 +2967,15 @@ the sliding companion to chunk: every run of n consecutive
 elements, empty when the list is shorter, loud failure on a
 non-positive size. Five assertions, stdlib.md row. Full gate green
 on both engines. Second stroke toward v2.19.0.
+
+---
+
+## 2026-09-03 — Iteration 212: center
+
+CI green on 211 (API verdict). lib/string.ting gains center(s,
+width, fill), completing the pad_left/pad_right family: the odd
+extra character goes on the right (Python's convention), a wider
+input passes through unchanged, and a fill that is not exactly one
+character fails loudly since the width arithmetic assumes it. Five
+assertions, stdlib.md row. Full gate green on both engines. Third
+stroke banked — v2.19.0 next tick if quiet.
