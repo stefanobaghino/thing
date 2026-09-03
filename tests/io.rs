@@ -654,6 +654,39 @@ fn repl_load_uses_the_files_directory_and_name() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A failed import names the path it resolved to (relative to the
+/// importing file) and says no embedded module matched, on both
+/// engines.
+#[test]
+fn failed_import_says_where_it_looked() {
+    let dir = std::env::temp_dir().join(format!("ting-import-miss-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    std::fs::write(
+        dir.join("sub/main.ting"),
+        "let m = import(\"../nowhere.ting\");\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(dir.join("sub/main.ting"))
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1), "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains("cannot import \"../nowhere.ting\": no file at "),
+            "{engine}: {stderr}"
+        );
+        assert!(stderr.contains("nowhere.ting ("), "{engine}: {stderr}");
+        assert!(
+            stderr.contains("and no embedded module of that name"),
+            "{engine}: {stderr}"
+        );
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

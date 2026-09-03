@@ -1259,7 +1259,16 @@ impl<W: Write> Interpreter<W> {
                     .iter()
                     .find(|(name, _)| key == *name || key.ends_with(&format!("/{name}")));
                 let Some((name, embedded)) = hit else {
-                    return Err(error(format!("cannot import {path:?}: {e}"), span));
+                    // Say where the lookup went: the path it resolved to
+                    // relative to the importing file, and that no embedded
+                    // module has that name either.
+                    return Err(error(
+                        format!(
+                            "cannot import {path:?}: no file at {} ({e}), and no embedded module of that name",
+                            resolved.display()
+                        ),
+                        span,
+                    ));
                 };
                 resolved = std::path::PathBuf::from(format!("<embedded>/{name}"));
                 if let Some(cached) = self.import_cache.get(&resolved) {
