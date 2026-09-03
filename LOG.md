@@ -3171,3 +3171,14 @@ the thing split(s, " ") cannot do, and what the tutorial's word
 frequency script had to work around with a continue. Seven
 assertions, two stdlib.md rows. Full gate green on both engines.
 First stroke toward v2.22.0.
+
+---
+
+## 2026-09-03 — Iteration 225: tutorial tally via words/count_by
+
+CI green on 224 (API verdict). The tutorial's closing word-frequency
+script drops its eight-line manual tally (split on a single space,
+skip empties, has/else counting) for one line of stdlib:
+count_by(words(lower(text)), identity). Same golden output, and the
+chapter intro now names the two helpers. The tutorial test runs the
+snippet. Full gate green. Second stroke toward v2.22.0.

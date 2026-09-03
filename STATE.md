@@ -70,11 +70,11 @@ current orientation.
   executed cold on this host, both engines.
 - 223: Pages deploy for v2.21.0 recovered via workflow_dispatch;
   site current.
-- 224: sum_by/words — first stroke toward v2.22.0.
-- Backlog (one per tick): tutorial word-frequency script uses
-  words(); quiet-machine bench re-measure; one more feature stroke
-  (candidates: lib/map.ting update(m, k, f), lib/list.ting
-  index_of); release after ~3 strokes.
+- 224: sum_by/words; 225: tutorial tally via words/count_by — two
+  strokes toward v2.22.0.
+- Backlog (one per tick): one more feature stroke (candidates:
+  lib/map.ting update(m, k, f), lib/list.ting index_of); quiet-
+  machine bench re-measure; release after ~3 strokes.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.
