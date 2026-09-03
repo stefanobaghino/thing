@@ -6437,3 +6437,17 @@ Five strokes:
 Rejected: a "deep nesting" limit (the 396 probe ran 100000 levels
 clean), a numeric-claims guard for the docs (the sync guards cover
 what is generated; prose counts are a replenishment survey's job).
+
+---
+
+## 2026-09-03 — Iteration 398: retrospective act eight
+
+CI green on 397 (API verdict). Milestone stroke 1: "The eighth act:
+where it happened" in docs/retrospective.md, covering tags 73 to
+79 — the module-origin bug and the renderer panic under it, the
+call-site note, the checker and editor following imports, the two
+story-straightening milestones and the worked examples, the four
+cycle crashes and their fixes, and the two chain slips with the
+rule each produced. "Where it stands" now says seventy-nine tags.
+Docs guard green. Two strokes banked toward v2.59.0 (395, 398).
+Next: the stdlib page's opening, then the release.
