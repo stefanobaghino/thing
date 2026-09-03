@@ -6791,3 +6791,16 @@ math. Full gate green (226 tests). Three strokes banked (413,
 The REPL's transcript, :history, :save and :doc alone. CI and Pages
 green on 415 (API verdicts). Full gate green, stdlib selftests pass
 on both engines. Tagging v2.62.0 (83rd tag).
+
+---
+
+## 2026-09-03 — Iteration 416b: v2.62.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.62.0; a session piped into the musl binary's REPL (a binding, a
+failing name, a print) listed two chunks under :history and saved
+them, the gnu binary replayed the saved script to the same 6,
+`:doc` alone prints the table of contents, and `--test selftest`
+passes 11/11 on each. CI and Pages green on the release commit.
+Eighty-three tags, eighty-two verified. Next: merge_with.
