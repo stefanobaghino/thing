@@ -186,11 +186,13 @@ holds only the current milestone and the standing rules.
 - 519: the whole way back — every call an error unwinds through
   leaves a named frame; deep traces elide the middle. 520: arity
   errors count in English and name the function called.
+- v2.83.0 VERIFIED (104th tag; strokes 519, 520; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.83.0 (strokes 519, 520); (2) try() hands the trace
-  back, and lib/test.ting says where the error was raised; (3) the
-  docs read the trace; (4) RELEASE v2.84.0; (5) health tick + audit.
-- Tags: 103 (v2.82.0), 102 verified; v2.29.0 is publicly marked broken
+  (1) try() hands the trace back, and lib/test.ting says where the
+  error was raised; (2) the docs read the trace; (3) RELEASE
+  v2.84.0; (4) health tick + audit.
+- Tags: 104 (v2.83.0), 103 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

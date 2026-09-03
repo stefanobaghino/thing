@@ -8766,3 +8766,18 @@ five deliberate warnings. Full gate green (257 tests, corpus at 546
 checks), plus 20000 differential cases (seed 20260904520), 5000
 formatter cases and the crash fuzzer. Two strokes banked (519,
 520). Next: release v2.83.0.
+
+---
+
+## 2026-09-04 — Iteration 521: release v2.83.0
+
+CI green on 520 (API verdict). Cut v2.83.0 with the call trace
+(519) and the arity wording (520). The release workflow is green
+with all six archives; CI and Pages green on the release commit
+(API verdicts). Cold-verified here: both aarch64 Linux archives
+downloaded fresh, unpacked and run — `-V` reports 2.83.0, a
+two-deep failure prints "note: in inner, called from ...:2:22" and
+"note: in outer, called from ...:3:1" in that order, and a call
+through a parameter says "two expects 2 arguments, got 1", naming
+a function the call site never mentions. 104th tag. Next: try()
+hands the trace back to ting programs.
