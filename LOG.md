@@ -2623,3 +2623,11 @@ Stdlib-and-fuzz release: pick/omit, count in string+list, fuzzer
 grammar covering find and stepped range. Full gate green, stdlib
 selftests pass on the reference engine. Tagging v2.13.0 (33rd
 release).
+
+---
+
+## 2026-09-03 — Iteration 186b: v2.13.0 verified
+
+Three archives published; darwin-arm64 cold test: ting 2.13.0,
+pick and count correct from the bundled modules. 33 releases, all
+verified.
