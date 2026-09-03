@@ -277,7 +277,10 @@ Keys of a map are always strings, so `group_by`'s key function must
 return one — `str(...)` is the idiom.
 
 The [stdlib page](stdlib.html) documents all six
-(list/map/string/math/json/test).
+(list/map/string/math/json/test), and you never have to open a
+module's source to read about one function: `ting --doc median` in
+a shell, or `:doc median` in the REPL, prints its signature, module
+and comment — the same text an LSP-capable editor shows on hover.
 
 ## Working with JSON
 
