@@ -361,8 +361,29 @@ false
 `get_in` answers `nil` for anything missing, `set_in` returns a fresh
 document (the original is untouched), and `merge_in` folds maps
 together recursively. The cookbook's `config` example layers
-defaults, a file and environment overrides that way and reports the
-differences with `diff`.
+defaults, a file and environment overrides that way.
+
+Two more views help when documents change hands: `diff` lists every
+leaf path where two documents disagree, and `flatten` turns a nested
+document into one map from dotted paths to leaves — the shape that
+diffing tools, environment variables and log lines like:
+
+```ting
+let j = import("lib/json.ting");
+let before = {"port": 8080, "log": {"level": "info"}};
+let after = {"port": 9090, "log": {"level": "info", "file": "app.log"}};
+for d in j["diff"](before, after) { print(d); }
+print(j["flatten"](after));
+```
+
+```text
+[["port"], 8080, 9090]
+[["log", "file"], nil, "app.log"]
+{"log.file": "app.log", "log.level": "info", "port": 9090}
+```
+
+Each difference is a `[path, left, right]` triple, with `nil` standing
+in for a side that has no such leaf.
 
 ## A real script: word frequency
 
