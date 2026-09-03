@@ -242,6 +242,49 @@ fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Val
     Value::list(locations)
 }
 
+/// Document highlights: every occurrence of the identifier under the
+/// cursor in this document, a binding site (`let name`, `fn name`) as
+/// Write (3) and any other as Read (2) — what an editor lights up on
+/// every cursor move. Same token-level scan as references.
+fn highlight_result(src: &str, line: usize, character: usize) -> Value {
+    let Some(name) = ident_at(src, line, character) else {
+        return Value::Nil;
+    };
+    let Ok(tokens) = lexer::lex(src) else {
+        return Value::Nil;
+    };
+    let mut out = Vec::new();
+    for (i, tok) in tokens.iter().enumerate() {
+        let lexer::TokenKind::Ident(n) = &tok.kind else {
+            continue;
+        };
+        if n != &name {
+            continue;
+        }
+        let binding = i > 0
+            && matches!(
+                tokens[i - 1].kind,
+                lexer::TokenKind::Let | lexer::TokenKind::Fn
+            );
+        out.push(obj(vec![
+            (
+                "range",
+                obj(vec![
+                    ("start", position(src, tok.span.start)),
+                    ("end", position(src, tok.span.end)),
+                ]),
+            ),
+            ("kind", Value::Int(if binding { 3 } else { 2 })),
+        ]));
+    }
+    if out.is_empty() {
+        // The cursor was on a number or something else that is not a
+        // name in this document.
+        return Value::Nil;
+    }
+    Value::list(out)
+}
+
 /// Rename every occurrence of the identifier at (line, character):
 /// a WorkspaceEdit with one TextEdit per token, same scan as
 /// references (token-level, shadowing not resolved).
@@ -1096,6 +1139,7 @@ pub fn run() -> i32 {
                             ("documentSymbolProvider", Value::Bool(true)),
                             ("definitionProvider", Value::Bool(true)),
                             ("referencesProvider", Value::Bool(true)),
+                            ("documentHighlightProvider", Value::Bool(true)),
                             ("renameProvider", Value::Bool(true)),
                             ("codeActionProvider", Value::Bool(true)),
                             ("foldingRangeProvider", Value::Bool(true)),
@@ -1235,6 +1279,31 @@ pub fn run() -> i32 {
                         .map(|src| {
                             references_result(src, &uri, l.max(0) as usize, c.max(0) as usize)
                         })
+                        .unwrap_or(Value::Nil),
+                    _ => Value::Nil,
+                };
+                write_message(
+                    &mut output,
+                    &obj(vec![
+                        ("jsonrpc", s("2.0")),
+                        ("id", id.unwrap_or(Value::Nil)),
+                        ("result", result),
+                    ]),
+                );
+            }
+            "textDocument/documentHighlight" => {
+                let params = get(&msg, "params");
+                let uri = params
+                    .as_ref()
+                    .and_then(|p| get(p, "textDocument"))
+                    .and_then(|d| get_str(&d, "uri"));
+                let pos = params.as_ref().and_then(|p| get(p, "position"));
+                let line = pos.as_ref().and_then(|p| get(p, "line"));
+                let character = pos.as_ref().and_then(|p| get(p, "character"));
+                let result = match (uri, line, character) {
+                    (Some(uri), Some(Value::Int(l)), Some(Value::Int(c))) => docs
+                        .get(&uri)
+                        .map(|src| highlight_result(src, l.max(0) as usize, c.max(0) as usize))
                         .unwrap_or(Value::Nil),
                     _ => Value::Nil,
                 };

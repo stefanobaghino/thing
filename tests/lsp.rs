@@ -724,6 +724,49 @@ fn definition_jumps_to_top_level_binding() {
 }
 
 #[test]
+fn document_highlight_marks_binding_sites_as_writes() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let init = recv(&mut reader);
+    assert!(
+        init.contains("\"documentHighlightProvider\":true"),
+        "{init}"
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///h.ting","text":"let count = 1;\ncount = count + 1;\nprint(count);\nfn count() { return 0; }\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/documentHighlight","params":{"textDocument":{"uri":"file:///h.ting"},"position":{"line":2,"character":8}}}"#,
+    );
+    let hl = recv(&mut reader);
+    // Five occurrences: the let and the fn are writes, the rest reads.
+    assert_eq!(hl.matches("\"kind\":3").count(), 2, "{hl}");
+    assert_eq!(hl.matches("\"kind\":2").count(), 3, "{hl}");
+    assert!(hl.contains(r#""start":{"character":4,"line":0}"#), "{hl}");
+    assert!(!hl.contains("\"uri\""), "{hl}");
+    // No identifier under the cursor: null.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/documentHighlight","params":{"textDocument":{"uri":"file:///h.ting"},"position":{"line":0,"character":12}}}"#,
+    );
+    let none = recv(&mut reader);
+    assert!(none.contains("\"result\":null"), "{none}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn references_list_every_occurrence() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 
