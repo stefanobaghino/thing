@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.80.0 (2026-09-03)
+
+- A file's `--check` warnings are printed in line order, whatever
+  pass found them.
+- Docs: the retrospective's tenth act; the tutorial and reference
+  list every warning the checker gives.
+
 ## v2.79.0 (2026-09-03)
 
 - `ting --check` and the LSP warn about a map literal that gives the
