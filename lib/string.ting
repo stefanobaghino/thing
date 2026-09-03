@@ -229,3 +229,22 @@ fn levenshtein(a, b) {
   }
   return prev[len(cb)];
 }
+
+# The common leading whitespace of all non-blank lines removed from
+# every line; blank lines become empty. Tabs and spaces count as
+# characters, so mixed indentation dedents by the shared prefix only.
+fn dedent(s) {
+  let lines = split(s, "\n");
+  let common = nil;
+  for line in lines {
+    if is_blank(line) { continue; }
+    let n = len(line) - len(trim_start(line));
+    if common == nil || n < common { common = n; }
+  }
+  if common == nil { common = 0; }
+  let out = [];
+  for line in lines {
+    if is_blank(line) { push(out, ""); } else { push(out, slice(line, common, len(line))); }
+  }
+  return join(out, "\n");
+}

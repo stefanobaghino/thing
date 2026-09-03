@@ -338,3 +338,9 @@ assert(ma["variance"]([2, 4, 4, 4, 5, 5, 7, 9]) == 4.0, "variance");
 assert(ma["stddev"]([2, 4, 4, 4, 5, 5, 7, 9]) == 2.0, "stddev");
 assert(ma["variance"]([3]) == 0.0, "variance single");
 assert(has(try(fn() { return ma["variance"]([]); }), "err"), "variance empty fails");
+
+assert(s["dedent"]("    a\n      b\n    c") == "a\n  b\nc", "dedent common prefix");
+assert(s["dedent"]("  a\n\n  b\n") == "a\n\nb\n", "dedent keeps blank lines empty");
+assert(s["dedent"]("a\n  b") == "a\n  b", "dedent nothing shared");
+assert(s["dedent"]("") == "", "dedent empty");
+assert(s["dedent"]("\tx\n\t\ty") == "x\n\ty", "dedent tabs");

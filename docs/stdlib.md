@@ -65,6 +65,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `center(s, width, fill)` | `s` centred in `width` with `fill` on both sides (odd gap: extra on the right) |
 | `truncate(s, width, suffix)` | at most `width` chars, ending in `suffix` when cut |
 | `indent(s, prefix)` | `prefix` before every non-empty line |
+| `dedent(s)` | the common leading whitespace of the non-blank lines removed |
 | `table(rows)` | rows of strings padded into aligned columns, two spaces apart |
 | `wrap(s, width)` | greedy word wrap into lines of at most `width` characters |
 | `levenshtein(a, b)` | edit distance (insert, delete, substitute each cost one) |
