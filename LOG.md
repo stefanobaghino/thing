@@ -6518,3 +6518,26 @@ key order. Four selftests (upper-casing, collision, empty,
 non-string), stdlib.md row. Selftests pass on both engines; full
 gate green (223 tests). Two strokes banked toward v2.60.0 (401,
 402). Next: health tick + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 403: health tick + audit
+
+CI and Pages green on 402 (API verdicts). Bench at load ~7: all
+six checksums match; timings are weather. Fuzz: 50000 differential
+cases (seed 20260903403), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 403) all pass in release.
+Distribution: 80 releases with the expected asset counts (36 × 3,
+14 × 4, 30 × 6), all six v2.59.0 download URLs resolve, all nine
+site resources answer 200, and the site serves the eighth act, the
+six-module opening and map_keys. Nothing to fix in what was
+audited.
+
+Found while surveying: STATE.md's own "Standing shape" section —
+the loop's orientation file — says four-platform archives (six
+since v2.30.0), 25 programs (27), 182 Rust tests (223) and a
+playground with run+fmt (run, fmt and check). The file that every
+tick reads first has drifted the way the README did. The "eighth
+act" milestone is complete; two strokes (401, 402) are banked
+toward v2.60.0. Backlog empty: next tick is replenishment, with
+STATE.md's shape section as the first candidate.

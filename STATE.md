@@ -215,9 +215,12 @@ current orientation.
 - v2.59.0 VERIFIED (80th tag, 79 verified; both aarch64 archives
   executed here).
 - 401: hover shows a user fn's comment; 402: map_keys — two strokes
-  banked toward v2.60.0.
-- Backlog (in order): (5) health tick + audit; then replenish (the
-  release follows the next stroke).
+  banked toward v2.60.0. 403: health tick + audit green — milestone
+  "the eighth act" complete; found this file's Standing shape
+  section stale.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md; the release
+  follows the next stroke.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
