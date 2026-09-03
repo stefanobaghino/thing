@@ -5554,3 +5554,11 @@ range on the parameter — my first assertion had the JSON keys in
 the wrong order, the server sorts them). Reference updated in both
 places. Full gate green (213 tests). Three strokes banked (351,
 354, 355) — v2.51.0 next tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 356: v2.51.0
+
+extent, --doc listing, unused parameter warning. CI and Pages
+green on 355 (API verdicts). Full gate green, stdlib selftests pass
+on both engines. Tagging v2.51.0 (72nd tag).

@@ -4,6 +4,14 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.51.0 (2026-09-03)
+
+- `ting --doc` with no name lists every builtin and stdlib function;
+  `--doc MODULE` lists one module. The REPL's `:doc` does the same.
+- `--check` and the LSP warn about function parameters the body
+  never names (underscore-prefixed names are exempt).
+- lib/list.ting: `extent(xs)` returns `[smallest, largest]`.
+
 ## v2.50.0 (2026-09-03)
 
 - `--check` and the LSP warn about unused top-level bindings
