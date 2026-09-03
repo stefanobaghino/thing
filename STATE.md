@@ -147,9 +147,15 @@ current orientation.
   reasoning in LOG.md.
 - v2.44.0 RELEASED and verified (65th tag); aarch64 musl archive
   executed cold here, LSP survives a garbage frame.
-- v2.45.0 TAGGED (66th tag; completes the 322 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64
-  glibc archive here. Then replenish.
+- v2.45.0 RELEASED and verified (66th tag); aarch64 glibc archive
+  executed cold here. The 322 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  lib/string.ting split_lines-aware `dedent(s)`; (b) `--test`
+  parallelism (run N children at once); (c) LSP: rename across open
+  documents (workspace-wide); (d) json module `pretty(v)` alias of
+  json_str(v, 2) — too thin; (e) a `ting --version --json`? no; (f)
+  tutorial: a "shell scripting" chapter (args, env, read_file("-"),
+  exit codes) — the tooling exists, the chapter does not.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

@@ -5044,3 +5044,14 @@ tick, then replenish.
 The tutorial's --doc sentence — the tail of the 322 milestone. CI
 green on 328 (API verdict). Full gate green, stdlib selftests pass
 on the reference engine. Tagging v2.45.0 (66th tag).
+
+---
+
+## 2026-09-03 — Iteration 329b: v2.45.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host: `ting 2.45.0`, `--doc variance` answers,
+variance agrees on both engines. Site: all resources 200, changelog
+shows 2.45.0. 66 tags, 65 verified. The 322 milestone is complete;
+next tick replenishes.
