@@ -78,6 +78,8 @@ Imports return a map, so functions are reached with `["name"]`.
 | `filter_map(m, pred)` | a fresh map with only the entries where `pred(key, value)` holds |
 | `has_all(m, ks)` | true if every listed key is present |
 | `invert(m)` | keys and values swapped (values must be strings; last key wins on duplicates) |
+| `with(m, k, v)` | a fresh map with `k` set to `v` |
+| `update(m, k, f)` | a fresh map with `f` applied to the value at `k` (must exist) |
 
 ## lib/math.ting
 

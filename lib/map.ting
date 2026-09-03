@@ -85,3 +85,16 @@ fn invert(m) {
   }
   return out;
 }
+
+# A fresh map with k set to v (the input is untouched).
+fn with(m, k, v) {
+  let out = merge(m, {});
+  out[k] = v;
+  return out;
+}
+
+# A fresh map with f applied to the value at k; the key must exist.
+fn update(m, k, f) {
+  if !has(m, k) { fail("update: missing key " + k); }
+  return with(m, k, f(m[k]));
+}

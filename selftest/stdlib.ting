@@ -193,3 +193,10 @@ assert(s["words"]("  the\tquick\n brown  fox ") == ["the", "quick", "brown", "fo
 assert(s["words"]("") == [], "words empty");
 assert(s["words"]("   ") == [], "words only spaces");
 assert(s["words"]("one") == ["one"], "words single");
+
+let base = {"a": 1};
+assert(m["with"](base, "b", 2) == {"a": 1, "b": 2}, "with adds");
+assert(m["with"](base, "a", 9) == {"a": 9}, "with replaces");
+assert(base == {"a": 1}, "with leaves the input untouched");
+assert(m["update"]({"n": 1}, "n", fn(v) { return v + 10; }) == {"n": 11}, "update");
+assert(has(try(fn() { return m["update"]({}, "n", fn(v) { return v; }); }), "err"), "update missing key fails");
