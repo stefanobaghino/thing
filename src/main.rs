@@ -501,11 +501,14 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
     // is reported and the run goes on to the next one; the exit
     // status says at the end whether anything failed.
     let mut failed = false;
+    // Counts for the summary a multi-file run ends with.
+    let (mut changed, mut unchanged, mut failures) = (0usize, 0usize, 0usize);
     for f in &files {
         let src = match read_tool_source(f) {
             Ok(src) => src,
             Err(_) => {
                 failed = true;
+                failures += 1;
                 continue;
             }
         };
@@ -526,22 +529,37 @@ fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
                 if diff {
                     print_line_diff(f, &src, &formatted);
                     dirty = true;
+                    changed += 1;
                 } else if check {
                     println!("would reformat {f}");
                     dirty = true;
+                    changed += 1;
                 } else if let Err(e) = std::fs::write(f, formatted) {
                     eprintln!("ting: cannot write {f}: {e}");
                     failed = true;
+                    failures += 1;
                 } else {
                     println!("reformatted {f}");
+                    changed += 1;
                 }
             }
-            Ok(_) => {}
+            Ok(_) => unchanged += 1,
             Err(e) => {
                 eprintln!("{}", ting::diag::render(f, &src, &e.message, e.span));
                 failed = true;
+                failures += 1;
             }
         }
+    }
+    // A run over more than one file ends with a summary, the way a
+    // test run does; a single file's line already says everything.
+    if files.len() > 1 {
+        let verb = if check || diff {
+            "would change"
+        } else {
+            "reformatted"
+        };
+        println!("{changed} {verb}, {unchanged} unchanged, {failures} failed");
     }
     if failed || ((check || diff) && dirty) {
         ExitCode::FAILURE

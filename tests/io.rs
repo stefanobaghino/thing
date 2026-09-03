@@ -824,6 +824,10 @@ fn fmt_and_check_process_every_file_before_failing() {
         stdout.contains("would reformat") && stdout.contains("c.ting"),
         "{stdout}"
     );
+    assert!(
+        stdout.ends_with("2 would change, 0 unchanged, 1 failed\n"),
+        "{stdout}"
+    );
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--fmt", dir.to_str().unwrap()])
         .output()
@@ -834,6 +838,30 @@ fn fmt_and_check_process_every_file_before_failing() {
         std::fs::read_to_string(dir.join("c.ting")).unwrap(),
         "let c = 3;\n"
     );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.ends_with("2 reformatted, 0 unchanged, 1 failed\n"),
+        "{stdout}"
+    );
+    // A second pass finds nothing to do and says so; a single file
+    // gets no summary line.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args([
+            "--fmt-check",
+            dir.join("a.ting").to_str().unwrap(),
+            dir.join("c.ting").to_str().unwrap(),
+        ])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "0 would change, 2 unchanged, 0 failed\n"
+    );
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt-check", dir.join("a.ting").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "");
     // --check: a missing file is reported and the next one still runs.
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args([
