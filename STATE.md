@@ -110,9 +110,10 @@ current orientation.
   reasoning in LOG.md.
 - v2.33.0 RELEASED and verified (55th tag); aarch64 glibc archive
   executed cold here with the bundled json module.
-- Backlog after the release (in order): (4) `--test --filter
-  SUBSTR`, io test; (5) health tick (bench, both fuzzers,
-  distribution audit); then replenish.
+- 277: --test --filter — milestone stroke 4; first toward v2.34.0.
+- Backlog (one per tick, in order): (5) health tick (bench, both
+  fuzzers, distribution audit); then replenish (the 272 milestone
+  is complete after it).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

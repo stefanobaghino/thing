@@ -4103,3 +4103,16 @@ engines, and --check prints the member warning with a caret and
 exit 0. Site: all resources 200, changelog shows 2.33.0, stdlib
 page has the json section, cookbook has the pipeline example. 55
 tags, 54 verified.
+
+---
+
+## 2026-09-03 — Iteration 277: --test --filter
+
+CI green on 276b (API verdict). Milestone stroke 4: `--filter
+SUBSTR`, accepted anywhere among --test's arguments, keeps only the
+files whose path contains the substring after directory expansion —
+the "just this one test" loop in a big tree. A filter that matches
+nothing is an error naming the filter, never a silent "0 passed";
+a missing value after --filter is a usage error. io test extended
+for both; help and reference updated. Full gate green. First
+stroke toward v2.34.0.
