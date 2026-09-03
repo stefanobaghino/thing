@@ -22,10 +22,10 @@ fn main() -> ExitCode {
                  \x20 ting <script> [args...]     run a script (argv reaches args())\n\
                  \x20 ting --eval <script>        run on the reference tree-walker\n\
                  \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
-                 \x20 ting --fmt <files...>       reformat files in place (- filters stdin to stdout)\n\
-                 \x20 ting --fmt-check <files...> exit 1 if any file needs reformatting\n\
-                 \x20 ting --check <files...>     report syntax errors without running\n\
-                 \x20                             (tool flags accept - for stdin)\n\
+                 \x20 ting --fmt <paths...>       reformat files in place (- filters stdin to stdout)\n\
+                 \x20 ting --fmt-check <paths...> exit 1 if any file needs reformatting\n\
+                 \x20 ting --check <paths...>     report syntax errors without running\n\
+                 \x20                             (tool flags accept - for stdin; dirs recurse)\n\
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
                  \x20 ting --lsp                  language server on stdio\n\
@@ -121,9 +121,28 @@ fn read_tool_source(f: &str) -> Result<String, ExitCode> {
     })
 }
 
-fn run_check(files: Vec<String>) -> ExitCode {
+/// Directory arguments expand to every .ting file beneath them (files
+/// first, then subdirectories, sorted); other arguments pass through.
+fn expand_paths(args: &[String]) -> Vec<String> {
+    let mut files = Vec::new();
+    for a in args {
+        if std::path::Path::new(a).is_dir() {
+            collect_ting_files(std::path::Path::new(a), &mut files);
+        } else {
+            files.push(a.clone());
+        }
+    }
+    files
+}
+
+fn run_check(args: Vec<String>) -> ExitCode {
+    if args.is_empty() {
+        eprintln!("usage: ting --check <files or directories...>");
+        return ExitCode::FAILURE;
+    }
+    let files = expand_paths(&args);
     if files.is_empty() {
-        eprintln!("usage: ting --check <files...>");
+        eprintln!("ting: no .ting files found under {}", args.join(" "));
         return ExitCode::FAILURE;
     }
     let mut failed = false;
@@ -181,14 +200,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     }
     // Directories expand to every .ting file beneath them, sorted, so
     // `ting --test selftest` is the whole suite in a stable order.
-    let mut files = Vec::new();
-    for a in &paths {
-        if std::path::Path::new(a).is_dir() {
-            collect_ting_files(std::path::Path::new(a), &mut files);
-        } else {
-            files.push(a.clone());
-        }
-    }
+    let mut files = expand_paths(&paths);
     if let Some(f) = &filter {
         files.retain(|p| p.contains(f.as_str()));
     }
@@ -269,9 +281,16 @@ fn engine_name() -> &'static str {
     }
 }
 
-fn run_fmt(check: bool, files: Vec<String>) -> ExitCode {
+fn run_fmt(check: bool, args: Vec<String>) -> ExitCode {
+    if args.is_empty() {
+        eprintln!(
+            "usage: ting --fmt <files or directories...> | ting --fmt-check <files or directories...>"
+        );
+        return ExitCode::FAILURE;
+    }
+    let files = expand_paths(&args);
     if files.is_empty() {
-        eprintln!("usage: ting --fmt <files...> | ting --fmt-check <files...>");
+        eprintln!("ting: no .ting files found under {}", args.join(" "));
         return ExitCode::FAILURE;
     }
     let mut dirty = false;

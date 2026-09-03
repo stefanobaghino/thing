@@ -105,6 +105,47 @@ fn check_flag_reports_without_running() {
 /// imported stdlib module indexed with a name it lacks — without
 /// changing the exit status.
 #[test]
+fn check_and_fmt_flags_expand_directories() {
+    let root = std::env::temp_dir().join(format!("ting-check-dir-{}", std::process::id()));
+    let nested = root.join("sub");
+    std::fs::create_dir_all(&nested).unwrap();
+    std::fs::write(root.join("ok.ting"), "let x = 1;\n").unwrap();
+    std::fs::write(nested.join("bad.ting"), "let = 3;\n").unwrap();
+    std::fs::write(nested.join("ugly.ting"), "let   y=2;\n").unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("bad.ting") && stderr.contains("expected variable name"),
+        "{stderr}"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt-check", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    // bad.ting lexes, so the batch reaches ugly.ting and reports it.
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(
+        stdout.contains("would reformat") && stdout.contains("ugly.ting"),
+        "{stdout}"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", root.join("empty-nowhere").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(1));
+
+    let _ = std::fs::remove_dir_all(&root);
+}
+
+#[test]
 fn check_flag_prints_stdlib_member_warnings() {
     let path = std::env::temp_dir().join(format!("ting-check-warn-{}.ting", std::process::id()));
     std::fs::write(
