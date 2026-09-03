@@ -3982,3 +3982,17 @@ LSP unknown-member warning, --test ordering fix, retrospective act
 five. CI and Pages green on 270 (API verdicts). Full gate green,
 stdlib selftests pass on the reference engine. Tagging v2.32.0
 (54th tag); the 264 milestone is complete with it.
+
+---
+
+## 2026-09-03 — Iteration 271b: v2.32.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive this time: statically
+linked, `ting 2.32.0`, `--test` over a tree whose subdirectory
+sorts before its file lists the file first — 268b's fix, observed
+in the shipped binary — on both engines. Site: all resources 200,
+changelog shows 2.32.0, retrospective carries the fifth act. 54
+tags, 53 verified. The 264 milestone is complete; next tick
+replenishes.

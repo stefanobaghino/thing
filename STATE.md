@@ -103,10 +103,14 @@ current orientation.
 - v2.31.0 RELEASED and verified (53rd tag); aarch64 glibc archive
   executed cold here. 268b: --test lists files before descending
   (correction, unreleased).
-- v2.32.0 TAGGED (54th tag; completes the 264 milestone): verify
-  next tick — six assets, glibc guard, cold-execute the aarch64 musl
-  archive here this time.
-- After verification: replenishment tick.
+- v2.32.0 RELEASED and verified (54th tag; musl archive executed
+  cold here). The 264 milestone is complete.
+- NEXT: replenishment tick per LOOP.md. Candidates to weigh: (a)
+  `--test` filtering by name substring; (b) LSP: rename/references
+  for stdlib member keys; (c) a `lib/json.ting` helper module
+  (pretty paths, get_in/set_in); (d) examples: a small
+  data-pipeline example reading stdin; (e) health tick (bench on the
+  rebased baseline, big fuzz sweep on both fuzzers).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
