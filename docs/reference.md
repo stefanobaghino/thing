@@ -261,7 +261,11 @@ The `ting` binary is the whole toolchain — no separate installs:
   if anything would change (use it in CI); `--fmt --diff` prints the
   changed lines instead of writing. Directories recurse. The formatter is
   idempotent, never alters program meaning, and keeps the file's line
-  endings (a CRLF file stays CRLF).
+  endings (a CRLF file stays CRLF). Over several files every one is
+  processed — a file that cannot be read, does not lex or cannot be
+  written is reported and the run goes on — and the run ends with a
+  summary line (reformatted / unchanged / failed, or "would change"
+  under `--fmt-check`); exit 1 if anything failed or would change.
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a

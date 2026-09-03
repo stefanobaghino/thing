@@ -514,9 +514,11 @@ Everything else ships in the same binary:
 - `ting --test tests/` runs every `.ting` file under a directory
   and prints `ok` or `FAIL` per file plus a summary — a test runner
   with no setup (the [Testing](#testing) chapter has its flags).
-- `ting --fmt *.ting` reformats in place; CI can enforce it with
-  `--fmt-check`, `--fmt --diff` shows what would change, and
-  `ting --fmt -` filters stdin to stdout for editor integrations.
+- `ting --fmt *.ting` reformats in place and ends with a summary of
+  what it did; CI can enforce it with `--fmt-check`, `--fmt --diff`
+  shows what would change, and `ting --fmt -` filters stdin to stdout
+  for editor integrations. A file that does not lex is reported and
+  the others are still handled.
 - `ting --doc` prints the table of contents — every builtin and
   stdlib function — and `ting --doc list`, `ting --doc median` or
   `ting --doc myfile.ting` narrow it to a module, a function, or the
