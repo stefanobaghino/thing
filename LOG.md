@@ -6132,3 +6132,22 @@ so an example is three surfaces at once. Five strokes:
 Rejected: an eighth retrospective act (the seventh is three
 milestones old; the cadence is six), a stdlib "examples" line in
 every doc row (the cookbook is that, generated and guarded).
+
+---
+
+## 2026-09-03 — Iteration 383: examples/text.ting
+
+CI green on 382 (API verdict). Milestone stroke 1: a
+text-processing example — words and frequencies over a list of
+titles ranked with the sort_by builtin, a slug per title, a blurb
+wrapped at 36 columns, and a "did you mean" that picks the known
+word with the smallest levenshtein distance via min_by. Two
+pre-commit corrections: the first draft reached for sort_by
+through the list module, which does not have it (it is a builtin),
+and the second was laid out in a way --fmt-check rejected, so it
+was run through --fmt like any other file. The .out is the
+binary's output and the reference engine's output is
+byte-identical (diffed before commit); --check is clean on it.
+Cookbook and playground list regenerated with the tools, both
+guards green. Full gate green (219 tests). Three strokes banked
+(379, 380, 383) — v2.56.0 next tick if quiet.
