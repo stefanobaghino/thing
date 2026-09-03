@@ -6188,3 +6188,16 @@ reference engine's output is byte-identical (diffed before
 commit); --check clean. Cookbook and playground list regenerated,
 guards green. Full gate green (219 tests). One stroke banked
 toward v2.57.0. Next: the editor README's LSP section.
+
+---
+
+## 2026-09-03 — Iteration 386: editor README LSP section
+
+CI and Pages green on 385 (API verdicts). Milestone stroke 3: the
+editor README's language-server section, which still described a
+server that "pushes lex/parse/compile diagnostics", now says what
+the server does — the three warnings, the broken-import
+diagnostic, and the twelve capabilities by name — before the
+Neovim, VS Code and Zed pointers, which were already right. Docs
+guard green. Two strokes banked toward v2.57.0 (385, 386). Next:
+find_index.
