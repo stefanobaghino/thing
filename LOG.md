@@ -8526,3 +8526,20 @@ verdicts). Cold-verified here: both aarch64 Linux archives
 downloaded fresh, unpacked and run — `-V` reports 2.80.0, and a
 file holding three different mistakes lists them in line order,
 from three different passes. 101st tag. Next: health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 509: health tick + audit
+
+CI green on the v2.80.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline and every row came
+out at or ahead of eval this round, fib and lists by their usual
+wide margins. Fuzz: 50000 differential cases (seed 20260903509),
+20000 formatter cases (seed 509, LF and CRLF) and the crash fuzzer
+with its cyclic case all pass in release. Distribution: 101
+releases with the expected asset counts (36 x 3, 14 x 4, 51 x 6)
+and all six v2.80.0 download URLs resolve. Site: all nine resources
+answer 200, the changelog leads with v2.80.0, and the retrospective
+serves the tenth act and its "a hundred tags" closing. Nothing to
+fix. The "tenth act" milestone is complete. Backlog empty: next
+tick is replenishment.

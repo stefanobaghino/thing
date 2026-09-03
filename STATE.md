@@ -166,8 +166,9 @@ holds only the current milestone and the standing rules.
   the rule restated).
 - v2.80.0 VERIFIED (101st tag; strokes 506, 507; both aarch64
   archives executed here).
-- Backlog (one per tick, in order): (1) health tick + audit — then
-  replenishment.
+- 509: health tick + audit green — milestone "the tenth act"
+  complete.
+- Backlog: empty — next tick is replenishment.
 - Tags: 101 (v2.80.0), 100 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
