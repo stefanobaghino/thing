@@ -5326,3 +5326,11 @@ Distribution: 69 releases with the expected asset counts (36 × 3,
 site resources answer 200 (examples.js now among them) and the
 reference mentions --slow. Nothing to fix. The 338 milestone's
 strokes are done; v2.49.0 next tick, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 345: v2.49.0
+
+--test --slow — the tail of the 338 milestone. CI green on 344 (API
+verdict). Full gate green, stdlib selftests pass on the reference
+engine. Tagging v2.49.0 (70th tag).

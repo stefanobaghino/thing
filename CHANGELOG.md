@@ -4,6 +4,10 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.49.0 (2026-09-03)
+
+- `ting --test --slow N` lists the N slowest files after the summary.
+
 ## v2.48.0 (2026-09-03)
 
 - Playground: the example dropdown is generated from `examples/`

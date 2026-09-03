@@ -159,9 +159,9 @@ current orientation.
   (v2.48–v2.50), reasoning in LOG.md.
 - v2.48.0 RELEASED and verified (69th tag); aarch64 musl archive
   executed cold here.
-- 343: --test --slow N; 344: health tick green — the 338
-  milestone's strokes are done; RELEASE v2.49.0 next tick if quiet,
-  then replenish.
+- v2.49.0 TAGGED (70th tag; completes the 338 milestone): verify
+  next tick — six assets, glibc guard, cold-execute the aarch64
+  glibc archive here. Then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
