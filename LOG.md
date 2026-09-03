@@ -7368,3 +7368,21 @@ the binary's own output, captured on both engines before the
 prose was written (the 370 rule). Tutorial and docs guards green.
 Two strokes banked toward v2.68.0 (445, 446). Next: health tick +
 audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 447: health tick + audit
+
+CI and Pages green on 446 (API verdicts). Bench at load ~4: all
+six checksums match; ratios in the band. Fuzz: 50000 differential
+cases (seed 20260903447), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 447, LF and CRLF) all pass in
+release. Distribution: 88 releases with the expected asset counts
+(36 × 3, 14 × 4, 38 × 6), all six v2.67.0 download URLs resolve,
+all nine site resources answer 200, and the site serves check_type
+and flatten. Nothing to fix. The "tests and json" milestone — the
+twenty-fifth since the restart — is complete; two strokes (445,
+446) are banked toward v2.68.0. The eighth retrospective act was
+written during the nineteenth milestone and the cadence is six, so
+the ninth falls due in the next. Backlog empty: next tick is
+replenishment.

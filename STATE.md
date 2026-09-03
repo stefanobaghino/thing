@@ -99,9 +99,13 @@ holds only the current milestone and the standing rules.
 - v2.67.0 VERIFIED (88th tag; strokes 439, 442, 443; both aarch64
   archives executed here).
 - 445: formatting edit ends at the last position; 446: diff and
-  flatten in the tutorial — two strokes banked toward v2.68.0.
-- Backlog (in order): (5) health tick + audit; then replenish (the
-  release follows the next stroke).
+  flatten in the tutorial — two strokes banked toward v2.68.0. 447:
+  health tick + audit green — milestone "tests and json" (the
+  25th) complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md; the ninth
+  retrospective act is due in it; the release follows the next
+  stroke.
 - Tags: 88 (v2.67.0), 87 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
