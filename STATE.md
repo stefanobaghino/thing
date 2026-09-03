@@ -143,9 +143,10 @@ holds only the current milestone and the standing rules.
 - v2.75.0 VERIFIED (96th tag; strokes 486, 487, 488; both aarch64
   archives executed here).
 - 490: the option you meant (Damerau distance; no suggestion under
-  three characters) — one stroke banked toward v2.76.0.
-- Backlog (one per tick, in order): (1) docs + selftests for the
-  suggestions — then RELEASE v2.76.0; (2) health tick + audit.
+  three characters); 491: selftests and tutorial for the suggestions
+  — two strokes banked toward v2.76.0.
+- Backlog (one per tick, in order): (1) RELEASE v2.76.0 (strokes 490,
+  491); (2) health tick + audit.
 - Tags: 96 (v2.75.0), 95 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -8181,3 +8181,21 @@ covers three typos, a name with nothing near it and the
 one-letter case; the reference says both rules. Full gate green
 (248 tests). One stroke banked toward v2.76.0. Next: docs and
 selftests for the suggestions, then the release.
+
+---
+
+## 2026-09-03 — Iteration 491: ting tests the suggestions
+
+CI green on 490 (API verdict). Milestone stroke 2 toward v2.76.0:
+selftest/errors.ting now checks the suggestions from inside ting —
+a caught undefined variable carries "did you mean 'total'?", a
+missing key names the near one, and a key with nothing near it says
+nothing extra. The first draft asked for 'count' and got 'cond',
+which errors.ting binds two lines earlier: both are one edit from
+'cont', and the longer shared start decided it. The rule worked;
+the test was wrong, and now uses names that cannot be confused.
+The tutorial's error section explains the parenthesis and points at
+the other three places it appears. Both engines run the file
+identically; the corpus scan still shows its one expected warning.
+Full gate green (248 tests). Two strokes banked (490, 491). Next:
+release v2.76.0.
