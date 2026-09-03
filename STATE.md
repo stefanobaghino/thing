@@ -61,9 +61,11 @@ current orientation.
 - 216: health tick — checksums match, 30k fuzz cases agree; bench
   times contended by other workloads (load 5.5), re-measure when
   quiet.
-- Backlog (one per tick): one more feature stroke (candidates:
-  lib/string.ting is_digit/is_alpha, lib/list.ting first/last);
-  then release v2.20.0.
+- 217: first/last — three strokes banked (with :fmt and
+  count_by/invert); RELEASE v2.20.0 next tick if quiet.
+- Backlog after the release: lib/string.ting is_digit/is_alpha;
+  quiet-machine bench re-measure; examples/ dogfood of window or
+  count_by.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
   when quiet.

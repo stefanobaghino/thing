@@ -3038,3 +3038,14 @@ regression; no action, re-measure on a quiet tick before drawing
 conclusions. Fuzz sweep: 30000 differential cases on seed
 20260903215, engines agree on every one. Nothing to fix. One
 feature stroke left before v2.20.0.
+
+---
+
+## 2026-09-03 — Iteration 217: first/last
+
+CI green on 216 (API verdict). lib/list.ting gains first(xs) and
+last(xs): nil on an empty list, matching min_by/max_by rather than
+the loud index error of xs[0], since "maybe empty" is exactly when
+these are reached for. Five assertions, two stdlib.md rows. Full
+gate green on both engines. Third stroke banked — v2.20.0 next tick
+if quiet.
