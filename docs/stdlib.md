@@ -23,6 +23,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `reverse(xs)` | a fresh list in reverse order |
 | `rotate(xs, n)` | a fresh list rotated left by `n` (negative rotates right) |
 | `zip(a, b)` | list of `[a[i], b[i]]` pairs, trimmed to the shorter input |
+| `interleave(a, b)` | elements alternated starting with `a`; the longer tail follows |
 | `enumerate(xs)` | list of `[index, value]` pairs |
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
 | `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |

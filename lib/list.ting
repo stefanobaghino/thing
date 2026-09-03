@@ -278,3 +278,16 @@ fn scan(xs, init, f) {
   }
   return out;
 }
+
+# Elements of a and b alternated, starting with a; the longer tail
+# is appended once the shorter runs out.
+fn interleave(a, b) {
+  let out = [];
+  let n = len(a);
+  if len(b) > n { n = len(b); }
+  for i in range(n) {
+    if i < len(a) { push(out, a[i]); }
+    if i < len(b) { push(out, b[i]); }
+  }
+  return out;
+}
