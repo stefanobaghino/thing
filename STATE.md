@@ -84,8 +84,12 @@ holds only the current milestone and the standing rules.
 - v2.64.0 VERIFIED (85th tag; strokes 423, 424, 427; both aarch64
   archives executed here).
 - v2.65.0 VERIFIED (86th tag; strokes 429, 430, 431; both aarch64
-  archives executed here).
-- Backlog after the release: (5) health tick + audit; then replenish.
+  archives executed here). 433: health tick + audit green —
+  milestone "load and import" complete. Found: CRLF files fail
+  --fmt-check and get rewritten to LF; unused locals in function
+  bodies are not warned about.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Tags: 86 (v2.65.0), 85 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

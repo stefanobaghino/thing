@@ -7104,3 +7104,27 @@ on the musl VM and the gnu reference engine, and `--test selftest`
 passes 11/11 on each. CI and Pages green on the release commit.
 Eighty-six tags, eighty-five verified. Next: health tick + audit,
 then replenish.
+
+---
+
+## 2026-09-03 — Iteration 433: health tick + audit
+
+CI green on 432b (API verdict). Bench at load ~10, the heaviest
+of the day: the fib VM ratio read -1% against -37% an hour earlier
+with no engine change — weather; all six checksums match. Fuzz:
+50000 differential cases (seed 20260903433), the crash fuzzer
+with its cyclic case, and 20000 formatter cases (seed 433) all
+pass in release. Distribution: 86 releases with the expected asset
+counts (36 × 3, 14 × 4, 36 × 6), all six v2.65.0 download URLs
+resolve, all nine site resources answer 200, and the site serves
+transpose and the v2.65.0 changelog. Nothing to fix in what was
+audited.
+
+Two probes for the next replenishment: a file with CRLF line
+endings runs and checks clean, but `--fmt-check` reports it as
+needing reformatting and `--fmt` rewrites every line ending to LF
+— on a Windows checkout with autocrlf, every file is "unformatted"
+and the formatter fights the editor; and an unused binding inside
+a function body gets no warning, since the unused-binding check is
+top-level only. The "load and import" milestone is complete.
+Backlog empty: next tick is replenishment.
