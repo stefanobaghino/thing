@@ -457,6 +457,30 @@ fn cyclic_values_print_with_a_marker() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// Comparing cyclic containers terminates on both engines: two cycles
+/// of the same shape are equal, a cycle with a different element is
+/// not, and a container equals itself.
+#[test]
+fn cyclic_values_compare_without_overflowing() {
+    let path = std::env::temp_dir().join(format!("ting-cyclic-eq-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let a = [1];\npush(a, a);\nlet b = [1];\npush(b, b);\nlet c = [2];\npush(c, c);\nprint(a == b, a == c, a == a, a != b);\nlet m = {\"k\": 1};\nm[\"me\"] = m;\nlet n = {\"k\": 1};\nn[\"me\"] = n;\nprint(m == n);\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(out.status.code(), Some(0), "{engine}: {stdout}");
+        assert_eq!(stdout, "true false true false\ntrue\n", "{engine}");
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn repl_help_lists_builtins() {
     use std::io::Write as _;

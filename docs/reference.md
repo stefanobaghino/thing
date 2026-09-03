@@ -329,4 +329,5 @@ tests.
 - Integers: i64 range; overflow raises an error rather than wrapping.
 - Map keys: strings only.
 - Cyclic data (`xs[0] = xs;`) prints with `[...]` / `{...}` at the point
-  of recursion; comparing it does not terminate — don't.
+  of recursion, and `==` compares it by the parts that are finite (two
+  cycles that agree everywhere they can be inspected are equal).

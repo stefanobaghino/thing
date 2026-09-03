@@ -328,8 +328,22 @@ impl PartialEq for Value {
             (Value::Str(a), Value::Str(b)) => a == b,
             (Value::Bool(a), Value::Bool(b)) => a == b,
             (Value::Nil, Value::Nil) => true,
-            (Value::List(a), Value::List(b)) => Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow(),
-            (Value::Map(a), Value::Map(b)) => Rc::ptr_eq(a, b) || *a.borrow() == *b.borrow(),
+            (Value::List(a), Value::List(b)) => {
+                Rc::ptr_eq(a, b)
+                    || with_comparing(
+                        Rc::as_ptr(a) as *const (),
+                        Rc::as_ptr(b) as *const (),
+                        || *a.borrow() == *b.borrow(),
+                    )
+            }
+            (Value::Map(a), Value::Map(b)) => {
+                Rc::ptr_eq(a, b)
+                    || with_comparing(
+                        Rc::as_ptr(a) as *const (),
+                        Rc::as_ptr(b) as *const (),
+                        || *a.borrow() == *b.borrow(),
+                    )
+            }
             (Value::Fn(a), Value::Fn(b)) => Rc::ptr_eq(a, b),
             (Value::Builtin(a), Value::Builtin(b)) => a == b,
             _ => false,
@@ -351,6 +365,37 @@ impl Value {
             Value::Fn(_) | Value::Builtin(_) => "function",
         }
     }
+}
+
+thread_local! {
+    /// The (left, right) container pairs currently being compared. A
+    /// pair met again while it is still being compared is taken as
+    /// equal: two structures that agree everywhere they are finite are
+    /// equal, and the comparison terminates on cycles instead of
+    /// overflowing the stack. Pointers only; never dereferenced.
+    static COMPARING: RefCell<Vec<(*const (), *const ())>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Compare with the pair marked as in progress; true at once when the
+/// same pair is already being compared further up the stack.
+fn with_comparing(a: *const (), b: *const (), body: impl FnOnce() -> bool) -> bool {
+    let entered = COMPARING.with(|c| {
+        let mut c = c.borrow_mut();
+        if c.contains(&(a, b)) {
+            false
+        } else {
+            c.push((a, b));
+            true
+        }
+    });
+    if !entered {
+        return true;
+    }
+    let out = body();
+    COMPARING.with(|c| {
+        c.borrow_mut().pop();
+    });
+    out
 }
 
 thread_local! {
