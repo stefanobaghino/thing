@@ -5228,3 +5228,20 @@ otherwise refuses to keep. Five strokes:
 
 Rejected: shuffle/sample (no random builtin, and adding one would
 break the engines' byte-identical differential guarantee).
+
+---
+
+## 2026-09-03 — Iteration 339: playground examples generated
+
+CI green on 338 (API verdict). Milestone stroke 1:
+tools/playground_examples.py emits playground/examples.js — a JSON
+object of every examples/*.ting that a browser can run (the two
+that read stdin or arguments are skipped), with "../lib/" imports
+rewritten to "lib/" so the embedded stdlib resolves them in wasm —
+and index.html loads it and merges in its one hand-written
+"diagnostics" demo. The dropdown grows from six stale entries to
+twelve live ones. A guard in tests/docs.rs checks each runnable
+example's stem and first code line appear in the file and the
+entry count matches, naming the regeneration command on failure,
+like the cookbook's. Full gate green (207 tests). The Pages deploy
+of this commit is the live proof. First stroke toward v2.48.0.
