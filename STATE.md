@@ -16,8 +16,8 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
-  (list/map/string/math/json/test, 120 functions, guarded); 27 ting programs
-  (11 selftest files, 16 examples with .out); 223 Rust tests in 11
+  (list/map/string/math/json/test, 120 functions, guarded); 28 ting programs
+  (11 selftest files, 17 examples with .out); 223 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -133,11 +133,11 @@ holds only the current milestone and the standing rules.
   milestone "the front door's handle" complete.
 - 478: replenishment — milestone "reading width" (v2.74–v2.75),
   reasoning in LOG.md.
-- 479: --doc within 78 columns — one stroke banked toward v2.74.0.
-- Backlog (one per tick, in order): (2) examples/inventory.ting +
-  regen; (3) --doc with several names, io test — then RELEASE
-  v2.74.0; (4) lib/string.ting ordinal, selftests; (5) health tick
-  + audit.
+- 479: --doc within 78 columns; 480: examples/inventory.ting — two
+  strokes banked toward v2.74.0.
+- Backlog (one per tick, in order): (3) --doc with several names, io
+  test — then RELEASE v2.74.0; (4) lib/string.ting ordinal,
+  selftests; (5) health tick + audit.
 - Tags: 94 (v2.73.0), 93 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

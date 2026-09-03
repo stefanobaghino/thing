@@ -7984,3 +7984,18 @@ that expected median's sentence beside its name was relaxed, since
 that line is exactly the kind that now wraps. Full gate green
 (242 tests). One stroke banked toward v2.74.0. Next: the
 inventory example.
+
+---
+
+## 2026-09-03 — Iteration 480: examples/inventory.ting
+
+CI green on 479 (API verdict). Milestone stroke 2: a stock-list
+example — key_of as the inverse lookup (and its nil), take_while
+and drop_while splitting a count-sorted list at the out-of-stock
+run, flatten turning a nested warehouse record into dotted
+settings, and plural making the summary read right. Formatted with
+--fmt before its .out was generated; the reference engine's output
+is byte-identical; --check clean. Cookbook and playground list
+regenerated, guards green. Full gate green (242 tests). Two
+strokes banked toward v2.74.0 (479, 480). Next: --doc with several
+names, then the release.
