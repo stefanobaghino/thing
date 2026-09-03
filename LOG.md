@@ -5895,3 +5895,17 @@ README refresh, tutorial section on module errors, LSP diagnostic
 on a broken import. CI and Pages green on 371 (API verdicts). Full
 gate green, stdlib selftests pass on both engines. Tagging v2.54.0
 (75th tag).
+
+---
+
+## 2026-09-03 — Iteration 372b: v2.54.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.54.0; a raw JSON-RPC session against the release binary's --lsp
+(initialize, didOpen of a file importing a broken module,
+shutdown, exit) published the severity-1 diagnostic with the
+module's position; `--doc string` lists slug; `--test selftest`
+passes 11/11 on each binary. CI and Pages green on the release
+commit. Seventy-five tags, seventy-four verified. Next: --test
+--fail-fast.

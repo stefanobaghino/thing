@@ -182,9 +182,8 @@ current orientation.
   milestone "where it happened" complete.
 - 368: replenishment — milestone "front door, again" (v2.54–v2.55),
   reasoning in LOG.md.
-- v2.54.0 TAGGED (75th tag; strokes 369, 370, 371): verify next
-  tick — six assets, glibc guard, cold-execute an aarch64 archive
-  here (LSP import diagnostic via a didOpen, --doc, selftests).
+- v2.54.0 VERIFIED (75th tag, 74 verified; both aarch64 archives
+  executed here, LSP driven over raw JSON-RPC).
 - Backlog after the release (in order): (4) `--test --fail-fast`, io
   test; (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
