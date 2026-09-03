@@ -5831,3 +5831,18 @@ Rejected: lib/test.ting check_contains (check with a contains()
 argument is the same line), a JSON diagnostics format (the LSP is
 the machine interface), an eighth retrospective act (the seventh
 is two milestones old).
+
+---
+
+## 2026-09-03 — Iteration 369: README refresh
+
+CI green on 368 (API verdict). Milestone stroke 1: the README's
+opening now says twelve-capability language server, and the
+toolchain paragraph describes what ships — the runner's -j,
+--filter, --slow and --tap; the formatter's --diff; the checker
+following local imports and its three warnings; --doc with a name,
+a module, or nothing; the twelve editor capabilities including
+document links and cross-file rename; and module errors pointing
+at the module's line with the call-site note. Still prose with
+links, per the 322 rule. Docs guard green. One stroke banked
+toward v2.54.0. Next: the tutorial's modules chapter.
