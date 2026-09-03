@@ -5988,3 +5988,20 @@ origins one change for both engines, and where the numbers live
 body and the two measured-outcome sections stay as the record.
 Docs guard green. Two strokes banked toward v2.55.0 (373, 376).
 Next: --doc FILE.ting.
+
+---
+
+## 2026-09-03 — Iteration 377: --doc FILE.ting
+
+CI and Pages green on 376 (API verdicts). Milestone stroke 2:
+`ting --doc path/to/file.ting` lists the file's top-level
+functions with the `#` comment above each, one line per name, the
+way a stdlib module is listed. The line-based scanner that fed
+hover and `--doc MODULE` is now source_functions, shared by the
+stdlib listing and the user-file listing, and the index line
+formatting is one helper. Lookup order for a --doc argument:
+builtin or stdlib function, then module, then an existing .ting
+file; the unknown-name message says "file" now too. io test with a
+commented function, a bare one and a non-function binding. Help
+and reference updated. Full gate green (218 tests). Three strokes
+banked (373, 376, 377) — v2.55.0 next tick if quiet.
