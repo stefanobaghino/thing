@@ -6159,3 +6159,15 @@ guards green. Full gate green (219 tests). Three strokes banked
 The playground check button, chunk_by, the text example. CI and
 Pages green on 383 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.56.0 (77th tag).
+
+---
+
+## 2026-09-03 — Iteration 384b: v2.56.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.56.0, the text example's output byte-identical to its committed
+.out on the musl VM and the gnu reference engine, chunk_by returns
+the runs on both, and `--test selftest` passes 11/11 on each. CI
+and Pages green on the release commit. Seventy-seven tags,
+seventy-six verified. Next: examples/series.ting.
