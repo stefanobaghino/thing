@@ -6473,3 +6473,16 @@ opening (and the crash fuzzer's cyclic case from 396). CI and
 Pages green on 399 (API verdicts). Full gate green, stdlib
 selftests pass on both engines. Tagging v2.59.0 (80th tag). Four
 hundred iterations.
+
+---
+
+## 2026-09-03 — Iteration 400b: v2.59.0 verified
+
+Release run green: six assets, glibc floor 2.34 on gnu, static
+musl. Both aarch64 archives downloaded and executed here: version
+2.59.0, `--doc` lists six module sections and the list module
+shows find_index, chunk_by and mode, the cyclic print and equality
+programs run to their results on the musl VM and the gnu reference
+engine, and `--test selftest` passes 11/11 on each. CI and Pages
+green on the release commit. Eighty tags, seventy-nine verified.
+Next: hover shows a user function's comment.
