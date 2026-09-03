@@ -5260,3 +5260,16 @@ stroke were refused by a transient tool-classifier outage before
 any command ran; the tree was verified clean and the stroke guarded
 against a partial run before retrying. Full gate green on both
 engines. Second stroke toward v2.48.0.
+
+---
+
+## 2026-09-03 — Iteration 341: hover on user-defined functions
+
+CI green on 340 (API verdict). Milestone stroke 3: hover's third
+branch parses the document and, for a name bound at top level to a
+fn literal (fn sugar included), shows `fn name(params)` from the AST
+with "defined in this file" — so hover now covers builtins, stdlib
+functions and the user's own code; plain variables still get
+nothing, which the protocol test pins alongside the positive case.
+Reference line updated. Full gate green (207 tests). Third stroke
+banked — v2.48.0 next tick if quiet.
