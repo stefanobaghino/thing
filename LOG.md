@@ -5282,3 +5282,15 @@ Generated playground examples, percentile, hover on user
 functions. CI and Pages green on 341 (API verdicts). Full gate
 green, stdlib selftests pass on the reference engine. Tagging
 v2.48.0 (69th tag).
+
+---
+
+## 2026-09-03 — Iteration 342b: v2.48.0 verified
+
+Release (six jobs, guard GLIBC_2.34 / static), CI and Pages all
+green on the tag (API verdicts). Six assets published. Cold test on
+this aarch64 Linux host, the musl archive: statically linked, `ting
+2.48.0`, percentile agrees on both engines, `--doc percentile`
+answers. Site: all resources 200 including the generated
+examples.js, changelog shows 2.48.0, stdlib page lists percentile.
+69 tags, 68 verified.
