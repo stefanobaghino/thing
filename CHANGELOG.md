@@ -4,6 +4,13 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.28.0 (2026-09-03)
+
+- `lib/list.ting`: `product`, `mean_by`, `compact`.
+- `lib/string.ting`: `is_blank`.
+- Tutorial: the word-frequency script tallies with `frequencies` and
+  `top`.
+
 ## v2.27.0 (2026-09-03)
 
 - `lib/string.ting`: `indent`.

@@ -86,8 +86,8 @@ current orientation.
   executed cold on this host, both engines.
 - v2.27.0 RELEASED and verified (47th); aarch64-linux asset
   executed cold on this host, both engines.
-- 251: tutorial tally; 252: product/mean_by; 253: compact/is_blank
-  — three strokes banked; RELEASE v2.28.0 next tick if quiet.
+- v2.28.0 TAGGED (48th release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run succeeded.
 - After verification: REPLENISHMENT tick per LOOP.md — design the
   next milestone beyond stdlib one-liners (candidates to weigh:
   string interpolation-free `format` extensions, a `sort` with

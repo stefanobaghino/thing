@@ -3587,3 +3587,11 @@ trim_start's emptiness test. Four assertions, two stdlib.md rows.
 Full gate green on both engines. Third stroke banked — v2.28.0 next
 tick if quiet, then a replenishment tick to design the next
 milestone.
+
+---
+
+## 2026-09-03 — Iteration 254: v2.28.0
+
+product, mean_by, compact, is_blank, tutorial tally. CI green on
+253 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.28.0 (48th release).
