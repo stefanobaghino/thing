@@ -19,17 +19,29 @@ The language is complete: ints/floats/strings/bools/nil, lists and
 maps, functions and closures, control flow, modules via `import()`
 plus six embedded stdlib modules (list/map/string/math/json/test),
 44 builtins (file and stdin I/O, JSON with pretty printing, sorting,
-map/filter/reduce, try/fail error recovery, string formatting), an
-interactive REPL with `:help` and `:load`, and rustc-style caret
-diagnostics. Binaries for Linux (x86-64 and arm64, glibc and fully
-static musl), macOS and Windows are attached to every
+map/filter/reduce, try/fail error recovery, string formatting), and
+rustc-style caret diagnostics. Binaries for Linux (x86-64 and arm64,
+glibc and fully static musl), macOS and Windows are attached to every
 [release](https://github.com/stefanobaghino/thing/releases). **Try it
 in your browser at the
 [playground](http://www.baghino.me/thing/)** — the interpreter
 compiled to WebAssembly, running entirely on your machine. Start with
 the [tutorial](docs/tutorial.md) — every snippet in it is run by CI —
-then the [language reference](docs/reference.md),
-[examples/](examples/), and the [changelog](CHANGELOG.md).
+then the [language reference](docs/reference.md), the
+[stdlib page](docs/stdlib.md), the [cookbook](docs/cookbook.md) of
+runnable examples, and the [changelog](CHANGELOG.md).
+
+The whole toolchain is the one binary. A REPL with meta-commands
+(`:help`, `:doc NAME`, `:vars`, `:load`, `:time`, `:fmt`, `:clear`);
+`ting --test` running every file under a directory in its own process
+with `--filter` and Test Anything Protocol output (`--tap`);
+`--check` and `--fmt` over files or directories (stdin with `-`),
+the checker also warning about misspelt stdlib members; `--doc NAME`
+for any builtin or stdlib function; and `--lsp`, a language server
+with diagnostics, hover, completion, signature help, formatting,
+symbols and workspace symbols, definition, references, rename,
+folding, and a quickfix for those misspellings. The
+[reference](docs/reference.md#tooling) has the details.
 
 Two execution engines share one semantics: the bytecode VM (default —
 11-35% faster on function-heavy work) and the reference tree-walking
@@ -65,7 +77,7 @@ cargo build --release
 Requires only a Rust toolchain — zero dependencies. `cargo test` runs
 the full suite: unit tests, golden-file examples, the self-hosted
 selftest/ programs (ting testing ting), differential engine tests,
-and fuzz tests — 180+ in all.
+and fuzz tests (engines and formatter) — 200+ in all.
 
 ## License
 
