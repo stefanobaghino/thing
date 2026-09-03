@@ -182,6 +182,24 @@ fn mutated_examples_never_panic() {
 }
 
 #[test]
+fn cyclic_values_never_panic() {
+    // The generator never builds a cycle, so print, str, ==, json_str
+    // and the pretty encoder get one on purpose: each must return a
+    // value or an error, never unwind or overflow.
+    let srcs = [
+        "let a = [1]; push(a, a); print(a); print(str(a));",
+        "let a = [1]; push(a, a); let b = [1]; push(b, b); print(a == b, a != b, a == [1]);",
+        "let a = [1]; push(a, a); print(try(fn() { return json_str(a); }));",
+        "let m = {\"k\": 1}; m[\"me\"] = m; print(m); print(try(fn() { return json_str(m, 2); }));",
+        "let a = [1]; push(a, a); print(contains([a], a), find([0, a], a));",
+    ];
+    for src in srcs {
+        let outcome = catch_unwind(AssertUnwindSafe(|| exercise(src)));
+        assert!(outcome.is_ok(), "panicked on {src}");
+    }
+}
+
+#[test]
 fn deep_nesting_parses_or_errors_cleanly() {
     // Nested expressions recurse in the parser and evaluator; under the
     // test stack (RUST_MIN_STACK) a depth of 1000 must hold.
