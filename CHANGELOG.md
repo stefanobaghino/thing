@@ -4,6 +4,15 @@ All notable changes to ting. Versions are git tags; binaries for
 Linux (x86-64, arm64), macOS and Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.25.0 (2026-09-03)
+
+- LSP: completion offers the functions of every stdlib module the
+  document imports, with module and signature as detail.
+- `lib/list.ting`: `interleave`.
+- The differential fuzz generator now emits ten more builtins
+  (string predicates, `replace`, `split`, `trim`, `lower`, `max`,
+  `type`, `filter`, `reduce`).
+
 ## v2.24.0 (2026-09-03)
 
 - `lib/list.ting`: `scan`.

@@ -3395,3 +3395,11 @@ append whichever tail remains — the counterpart to zip that keeps
 every element instead of trimming. Four assertions, stdlib.md row.
 Full gate green on both engines. Third stroke banked — v2.25.0 next
 tick if quiet.
+
+---
+
+## 2026-09-03 — Iteration 240: v2.25.0
+
+LSP stdlib completion, interleave, wider fuzz grammar. CI green on
+239 (API verdict). Full gate green, stdlib selftests pass on the
+reference engine. Tagging v2.25.0 (45th release).

@@ -80,10 +80,9 @@ current orientation.
   executed cold on this host, both engines.
 - v2.24.0 RELEASED and verified (44th); aarch64-linux asset
   executed cold on this host, both engines.
-- 237: fuzz generator +10 builtins; 238: LSP stdlib completion;
-  239: interleave — three strokes banked; RELEASE v2.25.0 next tick
-  if quiet.
-- Backlog after the release: health tick; LSP hover on m["name"]
+- v2.25.0 TAGGED (45th release): verify next tick by executing the
+  aarch64-linux asset cold here; confirm the Pages run succeeded.
+- Backlog after verification: health tick; LSP hover on m["name"]
   for stdlib functions; lib/test.ting check_err(name, thunk).
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.
 - Periodic health ticks (bench vs BASELINE.md, big fuzz sweeps)
