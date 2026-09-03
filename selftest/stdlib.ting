@@ -294,3 +294,12 @@ assert(has(try(fn() { return j["set_in"]([1], [3], 0); }), "err"), "set_in out-o
 assert(j["paths"]({"a": [1, {"b": 2}], "c": 3}) == [["a", 0], ["a", 1, "b"], ["c"]], "paths");
 assert(j["paths"](7) == [[]], "paths of a leaf is the empty path");
 assert(j["paths"]({}) == [], "paths of an empty map");
+
+let base = {"srv": {"host": "a", "port": 1}, "tags": [1], "n": 1};
+let over = {"srv": {"port": 2}, "tags": [2, 3], "extra": true};
+let merged = j["merge_in"](base, over);
+assert(merged == {"srv": {"host": "a", "port": 2}, "tags": [2, 3], "n": 1, "extra": true}, "merge_in deep");
+assert(base["srv"]["port"] == 1 && !has(base, "extra"), "merge_in leaves inputs untouched");
+assert(j["merge_in"]({"a": 1}, {"a": {"b": 2}}) == {"a": {"b": 2}}, "merge_in map replaces scalar");
+assert(j["merge_in"](5, {"a": 1}) == {"a": 1}, "merge_in non-map left is replaced");
+assert(j["merge_in"]({}, {}) == {}, "merge_in empty");

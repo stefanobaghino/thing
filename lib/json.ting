@@ -66,3 +66,16 @@ fn paths_into(v, prefix, out) {
     push(out, prefix);
   }
 }
+
+# Deep merge: where both a and b hold maps the merge recurses; any
+# other value in b replaces a's (lists are replaced, not appended).
+# Returns a fresh value; neither input is modified.
+fn merge_in(a, b) {
+  if type(a) != "map" || type(b) != "map" { return b; }
+  let out = {};
+  for k in a { out[k] = a[k]; }
+  for k in b {
+    if has(out, k) { out[k] = merge_in(out[k], b[k]); } else { out[k] = b[k]; }
+  }
+  return out;
+}
