@@ -4659,3 +4659,15 @@ withdrawal caught by try(). Prose points at the cookbook's machine
 example for the full state machine. The tutorial test runs the
 snippet. Markdown guard and full gate green. Second stroke toward
 v2.40.0.
+
+---
+
+## 2026-09-03 — Iteration 308: binary_search
+
+CI and Pages green on 307 (API verdicts). Milestone stroke 3:
+lib/list.ting gains binary_search(xs, x), iterative over an
+ascending list, nil on a miss, any index for duplicates; it uses
+only == and <, so it works for strings as well as numbers. Six
+assertions including both ends and a 334-element stepped range.
+stdlib.md row. Full gate green on both engines. Third stroke
+banked — v2.40.0 next tick if quiet.
