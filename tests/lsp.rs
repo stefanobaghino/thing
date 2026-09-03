@@ -164,6 +164,53 @@ fn lsp_session_lifecycle_and_diagnostics() {
 }
 
 #[test]
+fn completion_offers_imported_stdlib_functions() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+
+    // No import: stdlib names stay out of the list.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///c.ting","text":"print(1);\n"}}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/completion","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":0,"character":0}}}"#,
+    );
+    let comp = recv(&mut reader);
+    assert!(!comp.contains("\"label\":\"median\""), "{comp}");
+
+    // Importing a module (by any relative path) exposes its functions
+    // with the module and signature as detail; other modules stay out.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///c.ting","version":2},"contentChanges":[{"text":"let l = import(\"../lib/list.ting\");\n"}]}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/completion","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":1,"character":0}}}"#,
+    );
+    let comp = recv(&mut reader);
+    assert!(comp.contains("\"label\":\"median\""), "{comp}");
+    assert!(comp.contains("lib/list.ting: median(xs)"), "{comp}");
+    assert!(!comp.contains("\"label\":\"pad_left\""), "{comp}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":4,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+}
+
+#[test]
 fn document_symbols_list_top_level_lets() {
     let (mut child, mut stdin, mut reader) = spawn_server();
 

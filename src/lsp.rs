@@ -374,6 +374,29 @@ fn completion_result(src: &str) -> Value {
     for w in seen {
         items.push(obj(vec![("label", s(&w)), ("kind", Value::Int(6))])); // Variable
     }
+    // Exported functions of every stdlib module the document imports
+    // (matched by the "lib/<name>.ting" suffix, so "../lib/list.ting"
+    // counts too): the names users reach for through m["name"].
+    for (path, source) in crate::eval::embedded_stdlib() {
+        if !src.contains(path) {
+            continue;
+        }
+        for line in source.lines() {
+            let Some(rest) = line.strip_prefix("fn ") else {
+                continue;
+            };
+            let Some(close) = rest.find(')') else {
+                continue;
+            };
+            let sig = &rest[..=close];
+            let name = &sig[..sig.find('(').unwrap_or(sig.len())];
+            items.push(obj(vec![
+                ("label", s(name)),
+                ("kind", Value::Int(3)), // Function
+                ("detail", s(&format!("{path}: {sig}"))),
+            ]));
+        }
+    }
     Value::list(items)
 }
 

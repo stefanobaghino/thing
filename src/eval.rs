@@ -117,6 +117,12 @@ const EMBEDDED_STDLIB: &[(&str, &str)] = &[
     ("lib/test.ting", include_str!("../lib/test.ting")),
 ];
 
+/// The embedded stdlib as (path, source) pairs, for tooling that wants
+/// to know what `import("lib/...")` will resolve to.
+pub fn embedded_stdlib() -> &'static [(&'static str, &'static str)] {
+    EMBEDDED_STDLIB
+}
+
 fn global_env() -> Rc<RefCell<Env>> {
     let mut globals = HashMap::new();
     for b in Builtin::ALL {
