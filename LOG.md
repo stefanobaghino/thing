@@ -8030,3 +8030,18 @@ aarch64 Linux archives downloaded fresh, unpacked and run —
 entries, a small program gives the same answer on both engines, and
 an unknown name still exits 1. 95th tag. Next: ordinal in
 lib/string.ting.
+
+---
+
+## 2026-09-03 — Iteration 483: ordinal
+
+CI green on the v2.74.0 verification commit (API verdict). Milestone
+stroke 1 toward v2.75.0: `ordinal(n)` in lib/string.ting turns an
+integer into its English ordinal. The teens are the special case —
+11, 12 and 13 take "th" whatever their last digit, so the last two
+digits decide before the last one does; negative counts keep their
+sign and a non-integer fails with a named error. Thirteen selftest
+assertions cover the units, the teens, the twenties, a hundred and
+eleven, zero, the sign and the failure. Stdlib page row and count
+updated (121 functions), guard green. Full gate green (243 tests).
+One stroke banked toward v2.75.0. Next: health tick + audit.
