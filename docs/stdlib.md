@@ -29,6 +29,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `chunk(xs, n)` | sublists of `n` elements, last may be shorter |
 | `insert_at(xs, i, v)` | fresh list with `v` inserted before index `i` |
 | `remove_at(xs, i)` | fresh list without the element at index `i` |
+| `count(xs, v)` | elements structurally equal to `v` |
 | `flatten(xs)` | one level of nesting removed; non-lists pass through |
 
 ## lib/string.ting
@@ -43,6 +44,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `split_once(s, sep)` | `[before, after]` around the first `sep`, or `nil` |
 | `trim_start(s)` | leading whitespace removed |
 | `trim_end(s)` | trailing whitespace removed |
+| `count(s, sub)` | non-overlapping occurrences of `sub` |
 
 ## lib/map.ting
 

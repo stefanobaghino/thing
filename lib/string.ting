@@ -51,3 +51,17 @@ fn trim_end(s) {
   while i > 0 && contains(" \t\n\r", s[i - 1]) { i = i - 1; }
   return slice(s, 0, i);
 }
+
+# Non-overlapping occurrences of sub in s; sub must be non-empty.
+fn count(s, sub) {
+  if len(sub) == 0 { fail("count: empty substring"); }
+  let n = 0;
+  let rest = s;
+  while true {
+    let i = find(rest, sub);
+    if i == nil { break; }
+    n = n + 1;
+    rest = slice(rest, i + len(sub), len(rest));
+  }
+  return n;
+}

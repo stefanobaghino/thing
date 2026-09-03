@@ -138,3 +138,12 @@ fn remove_at(xs, i) {
   }
   return out;
 }
+
+# Elements structurally equal to v.
+fn count(xs, v) {
+  let n = 0;
+  for x in xs {
+    if x == v { n = n + 1; }
+  }
+  return n;
+}

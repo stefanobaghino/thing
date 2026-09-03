@@ -2605,3 +2605,12 @@ lib/map.ting gains pick(m, ks) (missing keys skipped) and
 omit(m, ks), both fresh maps. Four selftest assertions; stdlib.md
 rows. Full gate (fmt + clippy + 14/14 suites) before push, per the
 freshly written rule. Second stroke toward v2.13.0.
+
+---
+
+## 2026-09-03 — Iteration 185: count in string and list modules
+
+count(s, sub) — non-overlapping, empty substring fails — and
+count(xs, v) with structural equality. Seven selftest assertions;
+stdlib.md rows. Full gate green. Third stroke banked — v2.13.0
+next tick if quiet.

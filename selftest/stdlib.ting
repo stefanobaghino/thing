@@ -94,3 +94,11 @@ assert(m["pick"]({"a": 1, "b": 2, "c": 3}, ["a", "c", "zz"]) == {"a": 1, "c": 3}
 assert(m["pick"]({"a": 1}, []) == {}, "pick nothing");
 assert(m["omit"]({"a": 1, "b": 2, "c": 3}, ["b"]) == {"a": 1, "c": 3}, "omit");
 assert(m["omit"]({}, ["x"]) == {}, "omit from empty");
+
+assert(s["count"]("banana", "an") == 2, "string count");
+assert(s["count"]("aaaa", "aa") == 2, "count non-overlapping");
+assert(s["count"]("abc", "z") == 0, "count miss");
+assert(has(try(fn() { return s["count"]("x", ""); }), "err"), "count empty sub fails");
+assert(l["count"]([1, 2, 1, [3]], 1) == 2, "list count");
+assert(l["count"]([[3], [3]], [3]) == 2, "list count structural");
+assert(l["count"]([], 9) == 0, "list count empty");
