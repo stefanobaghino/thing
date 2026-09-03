@@ -113,8 +113,11 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - v2.70.0 VERIFIED (91st tag; strokes 457, 458, 459; both aarch64
   archives executed here).
-- 461: key_of — one stroke banked toward v2.71.0.
-- Backlog (in order): (5) health tick + audit; then replenish.
+- 461: key_of — one stroke banked toward v2.71.0. 462: health tick
+  + audit green — milestone "counted and guarded" complete. Found:
+  --fmt over a directory stops at the first file that fails to lex.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Tags: 91 (v2.70.0), 90 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

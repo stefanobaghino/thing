@@ -7635,3 +7635,27 @@ stdlib.md row, and the page's count moved to 117 — the guard from
 457 insisted, which is what it is for. Selftests pass on both
 engines; full gate green (238 tests). One stroke banked toward
 v2.71.0. Next: health tick + audit, then replenish.
+
+---
+
+## 2026-09-03 — Iteration 462: health tick + audit
+
+CI and Pages green on 461 (API verdicts). Bench at load ~3: all
+six checksums match; ratios in the band. Fuzz: 50000 differential
+cases (seed 20260903462), the crash fuzzer with its cyclic case,
+and 20000 formatter cases (seed 462, LF and CRLF) all pass in
+release. Distribution: 91 releases with the expected asset counts
+(36 × 3, 14 × 4, 41 × 6), all six v2.70.0 download URLs resolve,
+all nine site resources answer 200, and the site serves the
+--strict rule and the guarded count. Nothing to fix in what was
+audited.
+
+Found by a probe: `ting --fmt DIR` with one file that does not
+lex reformats the files before it, prints the diagnostic, and
+stops — the files after it are left as they were, and the exit
+status is the same 1 a fully processed run with one bad file would
+give, so nothing says the run was cut short. --fmt-check and
+--diff share the loop. First candidate for the next milestone.
+The "counted and guarded" milestone is complete; one stroke (461)
+is banked toward v2.71.0. Backlog empty: next tick is
+replenishment.
