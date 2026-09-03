@@ -21,8 +21,8 @@ plus five embedded stdlib modules (list/map/string/math/test),
 44 builtins (file and stdin I/O, JSON with pretty printing, sorting,
 map/filter/reduce, try/fail error recovery, string formatting), an
 interactive REPL with `:help` and `:load`, and rustc-style caret
-diagnostics. Binaries for Linux (x86-64 and arm64), macOS and Windows
-are attached to every
+diagnostics. Binaries for Linux (x86-64 and arm64, glibc and fully
+static musl), macOS and Windows are attached to every
 [release](https://github.com/stefanobaghino/thing/releases). **Try it
 in your browser at the
 [playground](http://www.baghino.me/thing/)** — the interpreter

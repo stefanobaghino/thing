@@ -33,6 +33,12 @@ jobs:
             target: x86_64-unknown-linux-gnu
           - os: ubuntu-22.04-arm
             target: aarch64-unknown-linux-gnu
+          # Fully static builds: no C library dependency at all, for
+          # hosts older than the glibc floor (or without glibc).
+          - os: ubuntu-22.04
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-22.04-arm
+            target: aarch64-unknown-linux-musl
           - os: macos-latest
             target: aarch64-apple-darwin
           - os: windows-latest
@@ -41,15 +47,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Rust toolchain
-        run: rustup update stable && rustup default stable
+        run: rustup update stable && rustup default stable && rustup target add ${{ matrix.target }}
       - name: Build
-        run: cargo build --release
+        run: cargo build --release --target ${{ matrix.target }}
       - name: Check glibc floor (linux)
         if: runner.os == 'Linux'
         run: |
-          need=$(objdump -T target/release/ting | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)
-          echo "highest glibc symbol version: $need"
-          if [ "$(printf '%s\n' "$need" GLIBC_2.35 | sort -V | tail -1)" != GLIBC_2.35 ]; then
+          need=$(objdump -T target/${{ matrix.target }}/release/ting | grep -o 'GLIBC_[0-9.]*' | sort -uV | tail -1)
+          echo "highest glibc symbol version: ${need:-none (static)}"
+          if [ -n "$need" ] && [ "$(printf '%s\n' "$need" GLIBC_2.35 | sort -V | tail -1)" != GLIBC_2.35 ]; then
             echo "::error::binary requires $need; the floor is GLIBC_2.35"
             exit 1
           fi
@@ -57,14 +63,14 @@ jobs:
         if: runner.os != 'Windows'
         run: |
           mkdir -p dist
-          cp target/release/ting dist/
+          cp target/${{ matrix.target }}/release/ting dist/
           cp -r lib dist/lib
           tar -czf "ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C dist ting lib
       - name: Package (windows)
         if: runner.os == 'Windows'
         run: |
           New-Item -ItemType Directory -Force -Path dist | Out-Null
-          Copy-Item target/release/ting.exe dist/
+          Copy-Item target/${{ matrix.target }}/release/ting.exe dist/
           Copy-Item -Recurse lib dist/lib
           Compress-Archive -Path dist/ting.exe, dist/lib -DestinationPath "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
       - name: Upload
