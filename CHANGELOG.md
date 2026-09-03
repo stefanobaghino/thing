@@ -5,6 +5,12 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.82.0 (2026-09-03)
+
+- Every `lib/test.ting` helper counts as a check, so files built on
+  the framework report their totals under `ting --test` too.
+- Docs: the tutorial and the stdlib page explain the counts.
+
 ## v2.81.0 (2026-09-03)
 
 - `ting --test` says how much each file verified: `ok FILE (12
