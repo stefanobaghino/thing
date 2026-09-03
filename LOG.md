@@ -6636,3 +6636,16 @@ server whose list matches the twelve capabilities, including the
 comment shown when hovering the user's own function. Tutorial and
 docs guards green. One stroke banked toward v2.61.0. Next: LSP
 completion offers user functions.
+
+---
+
+## 2026-09-03 — Iteration 408: completion offers the file's own functions
+
+CI and Pages green on 407 (API verdicts). Milestone stroke 3: a
+top-level function of the open file completes as a function
+(kind 3) with `fn name(params)` as its detail and the `#` comment
+above it as its documentation — the same shape stdlib members
+have — instead of as a bare identifier gathered by the word scan,
+which now skips those names. Protocol test on the commented
+`area` document. Full gate green (223 tests). Two strokes banked
+toward v2.61.0 (407, 408). Next: flatten_deep.
