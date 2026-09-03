@@ -210,10 +210,13 @@ current orientation.
 - 395: tutorial runner flags — one stroke banked toward v2.59.0.
   396: health tick + audit green, crash fuzzer taught a cycle —
   milestone "cycles" complete.
-- Backlog EMPTY: next tick is replenishment — design the next
-  milestone ("No idle" rule), reasoning in LOG.md. The eighth
-  retrospective act falls due around the next milestone (acts every
-  six; the seventh was at the 13th).
+- 397: replenishment — milestone "the eighth act" (v2.59–v2.60),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order): (1) retrospective act eight; (2)
+  docs/stdlib.md opening (six modules, count, --doc) — then RELEASE
+  v2.59.0 (395, +2); (3) LSP hover shows a user fn's comment,
+  protocol test; (4) lib/map.ting map_keys, selftests; (5) health
+  tick + audit.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

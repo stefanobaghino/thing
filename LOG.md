@@ -6402,3 +6402,38 @@ drop, print, equality and json_str — ran clean on the release
 binary, so it is not a crash class here. Nothing to fix. The
 "cycles" milestone is complete; one stroke (395) is banked toward
 v2.59.0. Backlog empty: next tick is replenishment.
+
+---
+
+## 2026-09-03 — Iteration 397: replenishment — milestone "the eighth act"
+
+CI green on 396 (API verdict). Eighteen milestones since the
+restart, seventy-nine tags. The retrospective's cadence is an act
+every six milestones and the seventh covered up to the thirteenth,
+so the eighth falls due. The survey behind it found the stdlib
+page opening with "Three modules" (there are six, with 105
+functions), hover on a user's own function showing "defined in
+this file" while the --doc scanner can already read the comment
+above it, and the map module able to rename values but not keys.
+Five strokes:
+
+1. Retrospective act eight, covering tags 73 to 79: "where it
+   happened" (module error locations and the call-site note, the
+   renderer clamp), the two front-door refreshes, the worked
+   examples, the cycle fixes, and the two process slips (358, 377)
+   with the rule that came out of them.
+2. docs/stdlib.md opening: six modules, the function count, and
+   `--doc` as the way to read them; the retrospective's early
+   "43 builtins" left as the history it is. Then release v2.59.0
+   (395 + two).
+3. LSP hover on a user-defined function shows the `#` comment
+   above it (source_functions already reads it), so the user's own
+   code documents itself the way the stdlib does. Protocol test.
+4. lib/map.ting map_keys(m, f): a fresh map with each key passed
+   through f (must return a string; collisions keep the last).
+   Selftests.
+5. Health tick + distribution audit.
+
+Rejected: a "deep nesting" limit (the 396 probe ran 100000 levels
+clean), a numeric-claims guard for the docs (the sync guards cover
+what is generated; prose counts are a replenishment survey's job).
