@@ -184,8 +184,8 @@ current orientation.
   reasoning in LOG.md.
 - v2.54.0 VERIFIED (75th tag, 74 verified; both aarch64 archives
   executed here, LSP driven over raw JSON-RPC).
-- Backlog after the release (in order): (4) `--test --fail-fast`, io
-  test; (5) health tick + audit; then replenish.
+- 373: --test --fail-fast — one stroke banked toward v2.55.0.
+- Backlog (in order): (5) health tick + audit; then replenish.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

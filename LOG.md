@@ -5909,3 +5909,21 @@ module's position; `--doc string` lists slug; `--test selftest`
 passes 11/11 on each binary. CI and Pages green on the release
 commit. Seventy-five tags, seventy-four verified. Next: --test
 --fail-fast.
+
+---
+
+## 2026-09-03 — Iteration 373: --test --fail-fast
+
+CI green on 372b (API verdict). Milestone stroke 4: `--test
+--fail-fast` stops after the first failing file. Sequentially the
+remaining files are never started; with -j an atomic stop flag
+keeps workers from picking up new files while running ones finish.
+Skipped files are None in the results, reported as `# SKIP
+fail-fast` lines in TAP mode so the plan still adds up, and counted
+in a summary that gains a third number only when something was
+skipped — default output is unchanged. io test: three files where
+the middle one fails and the last would write a marker; the marker
+never appears, the summary reads 1 passed, 1 failed, 1 skipped, and
+the TAP run has the skip line. Help and reference updated. Full
+gate green (217 tests). One stroke banked toward v2.55.0. Next:
+health tick + audit.
