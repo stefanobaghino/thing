@@ -135,10 +135,9 @@ current orientation.
   reasoning in LOG.md.
 - v2.40.0 RELEASED and verified (61st tag); aarch64 musl archive
   executed cold here.
-- 310: levenshtein; 311: retrospective act six — milestone strokes
-  4–5 done; two toward v2.41.0.
-- Backlog (one per tick, in order): health tick + distribution
-  audit; release v2.41.0; replenish.
+- 310: levenshtein; 311: retrospective act six; 312: health tick
+  green — RELEASE v2.41.0 next tick if quiet (completes the 305
+  milestone), then replenish.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain note: rustc 1.98 locally; rustfmt+clippy reinstalled 196.

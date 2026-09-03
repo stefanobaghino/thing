@@ -4717,3 +4717,18 @@ post-log guard with the strict grep, glibc floor, Pages dispatch).
 Closing section's count moves to sixty-one tags. Markdown guard and
 full gate green. Second stroke toward v2.41.0; the 305 milestone's
 five strokes are done.
+
+---
+
+## 2026-09-03 — Iteration 312: health tick + audit
+
+CI and Pages green on 311 (API verdicts). Bench at load ~5–7: all
+six checksums match; ratios in the contended band (stdlib vm +21%
+this time, -8% last time — the same workload, the same code, a
+different load), so no engine conclusion. Fuzz: 50000 differential
+cases (seed 20260903312), the crash fuzzer, and 20000 formatter
+cases (seed 312) all pass in release. Distribution: 61 releases
+with the expected asset counts (36 × 3, 14 × 4, 11 × 6), all six
+v2.40.0 download URLs resolve, all eight site resources answer 200
+and the retrospective page carries the sixth act. Nothing to fix.
+v2.41.0 next tick, then replenish.
