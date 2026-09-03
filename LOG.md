@@ -8569,3 +8569,18 @@ the interpreter counts checks and reports them on request; --test
 prints per-file and total counts and names the files that checked
 nothing; lib/test.ting's helpers count too; docs and selftests
 follow.
+
+---
+
+## 2026-09-03 — Iteration 511: counting the checks
+
+CI green on 510 (API verdict). Milestone stroke 1: the interpreter
+counts every `assert` call — a process-wide atomic bumped before
+the condition is judged, so a check that fails is still a check
+that ran — and prints "ting-checks: N" on stderr at the end of a
+run when TING_TEST_REPORT is set. Nothing else reads it and nothing
+is printed without it, so the only behaviour change for an ordinary
+run is none. Both engines share the builtin, so both count the
+same; the io test asserts that, plus the failing case, the silent
+case and a file that checks nothing. Full gate green (255 tests).
+One stroke banked toward v2.81.0. Next: --test prints the counts.

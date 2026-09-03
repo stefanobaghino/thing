@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 254 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 255 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -170,8 +170,9 @@ holds only the current milestone and the standing rules.
   complete.
 - 510: replenishment — milestone "how much it checked" (v2.81-v2.82),
   reasoning in LOG.md.
-- Backlog (one per tick, in order): (1) the interpreter counts assert
-  calls and reports them under an env var; (2) --test prints per-file
+- 511: counting the checks (TING_TEST_REPORT) — one stroke banked
+  toward v2.81.0.
+- Backlog (one per tick, in order): (1) --test prints per-file
   and total counts, names files with none — then RELEASE v2.81.0;
   (3) lib/test.ting's helpers count too, selftests; (4) docs, then
   RELEASE v2.82.0; (5) health tick + audit.
