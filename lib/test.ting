@@ -5,12 +5,14 @@
 #   t["check_eq"]("name", got, want);
 #   t["check_err"]("name", fn() { fail("boom"); }, "boom");
 #   t["check_approx"]("name", got, want, 0.001);
+#   t["check_type"]("name", value, "list");
 #   t["summary"]();   # prints results; exits 1 if anything failed
 #
 # The `state` map is exported too, for tools that want the counters.
 
 let state = {"passed": 0, "failed": 0, "failures": []};
 
+# Records a pass when cond is true, otherwise a failure under name.
 fn check(name, cond) {
   if cond {
     state["passed"] = state["passed"] + 1;
@@ -20,6 +22,8 @@ fn check(name, cond) {
   }
 }
 
+# Passes when got == want (structural equality); the failure message
+# shows both values.
 fn check_eq(name, got, want) {
   if got == want {
     state["passed"] = state["passed"] + 1;
@@ -54,6 +58,21 @@ fn check_approx(name, got, want, eps) {
   }
 }
 
+# Passes when type(v) is type_name ("int", "float", "string", "bool",
+# "nil", "list", "map" or "function"); the failure names the actual
+# type.
+fn check_type(name, v, type_name) {
+  if type(v) == type_name {
+    state["passed"] = state["passed"] + 1;
+  } else {
+    state["failed"] = state["failed"] + 1;
+    push(state["failures"], format("{}: got a {}, want a {}", name, type(v), type_name));
+  }
+}
+
+# Prints every failure as a FAIL: line and the pass/fail totals, then
+# exits 1 if anything failed — so a test file's exit status is its
+# verdict under `ting --test`.
 fn summary() {
   for f in state["failures"] { print("FAIL:", f); }
   print(format("{} passed, {} failed", state["passed"], state["failed"]));

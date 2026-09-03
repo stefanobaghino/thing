@@ -25,3 +25,9 @@ assert(t["state"]["passed"] == 4, "approx pass counted");
 t["check_approx"]("approx meant to fail", 1.0, 1.5, 0.1);
 assert(t["state"]["failed"] == 5, "approx failure counted");
 assert(contains(t["state"]["failures"][4], "off by 0.5"), "approx diff shape");
+
+t["check_type"]("type passes", [1], "list");
+assert(t["state"]["passed"] == 5, "type pass counted");
+t["check_type"]("type meant to fail", "x", "int");
+assert(t["state"]["failed"] == 6, "type failure counted");
+assert(contains(t["state"]["failures"][5], "got a string, want a int"), "type failure shape");

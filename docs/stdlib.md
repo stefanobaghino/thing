@@ -168,6 +168,7 @@ t["summary"]();   # prints failures + totals; exits 1 if any failed
 | `check_eq(name, got, want)` | like `check`, recording got/want on failure |
 | `check_err(name, f, want)` | passes if `f()` fails with a message containing `want` |
 | `check_approx(name, got, want, eps)` | passes if `got` is within `eps` of `want` |
+| `check_type(name, v, type_name)` | passes if `type(v)` is `type_name`; the failure names the actual type |
 | `summary()` | prints `FAIL:` lines and totals; `exit(1)` on any failure |
 | `state` | the counters map (`passed`, `failed`, `failures`) for tooling |
 
