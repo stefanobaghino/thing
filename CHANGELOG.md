@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.81.0 (2026-09-03)
+
+- `ting --test` says how much each file verified: `ok FILE (12
+  checks)`, a total in the summary, `# 12 checks` in the TAP
+  stream.
+- A file that passes while checking nothing is named as such, in its
+  own line and in the summary.
+
 ## v2.80.0 (2026-09-03)
 
 - A file's `--check` warnings are printed in line order, whatever
