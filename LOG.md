@@ -5927,3 +5927,18 @@ never appears, the summary reads 1 passed, 1 failed, 1 skipped, and
 the TAP run has the skip line. Help and reference updated. Full
 gate green (217 tests). One stroke banked toward v2.55.0. Next:
 health tick + audit.
+
+---
+
+## 2026-09-03 — Iteration 374: health tick + audit
+
+CI and Pages green on 373 (API verdicts). Bench at load ~3: all six
+checksums match; ratios in the usual band. Fuzz: 50000 differential
+cases (seed 20260903374), the crash fuzzer, and 20000 formatter
+cases (seed 374) all pass in release. Distribution: 75 releases
+with the expected asset counts (36 × 3, 14 × 4, 25 × 6), all six
+v2.54.0 download URLs resolve, all nine site resources answer 200,
+and the site serves the --fail-fast bullet and the corrected
+tutorial block. Nothing to fix. The "front door, again" milestone
+is complete; one stroke (373) is banked toward v2.55.0. Backlog
+empty: next tick is replenishment.

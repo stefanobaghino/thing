@@ -184,8 +184,11 @@ current orientation.
   reasoning in LOG.md.
 - v2.54.0 VERIFIED (75th tag, 74 verified; both aarch64 archives
   executed here, LSP driven over raw JSON-RPC).
-- 373: --test --fail-fast — one stroke banked toward v2.55.0.
-- Backlog (in order): (5) health tick + audit; then replenish.
+- 373: --test --fail-fast — one stroke banked toward v2.55.0. 374:
+  health tick + audit green — milestone "front door, again"
+  complete.
+- Backlog EMPTY: next tick is replenishment — design the next
+  milestone ("No idle" rule), reasoning in LOG.md.
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
