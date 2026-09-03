@@ -3681,3 +3681,20 @@ lib/test.ting's summary calls on failure — would otherwise end the
 runner mid-run. Dogfooded on selftest/ (11 ok). io test covers the
 passing/failing/summary/exit-code contract; reference and tutorial
 gained a bullet each. Full gate green. Second stroke toward v2.29.0.
+
+---
+
+## 2026-09-03 — Iteration 258: cookbook page
+
+CI green on 257 across all jobs, Windows included (API verdict), so
+the child-process runner is portable. Milestone stroke 3:
+tools/cookbook.py renders every examples/*.ting (its leading comment
+block as the intro, the source in a ting fence, the golden .out in a
+text fence) into docs/cookbook.md — eleven sections. The page is
+committed, and a Rust guard keeps it honest without reimplementing
+the generator: every example's source and output must appear in it
+verbatim and the section count must match, so a stale page fails
+CI with a message naming the fix. Site: nav link in md2html.py and
+the playground, pages.yml renders it and now also triggers on
+examples/**. Full gate green. Third stroke banked — v2.29.0 next
+tick if quiet.
