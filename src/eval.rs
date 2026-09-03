@@ -16,6 +16,18 @@ pub struct RuntimeError {
     /// function defined in an imported file; None means the span is
     /// in the source being run.
     pub origin: Option<Rc<Origin>>,
+    /// Where the importer called into the module the error came from:
+    /// the call's span and the caller's own origin (None for the
+    /// source being run). Set once, at the first crossing.
+    pub called_from: Option<(Span, Option<Rc<Origin>>)>,
+}
+
+fn same_origin(a: &Option<Rc<Origin>>, b: &Option<Rc<Origin>>) -> bool {
+    match (a, b) {
+        (None, None) => true,
+        (Some(x), Some(y)) => Rc::ptr_eq(x, y),
+        _ => false,
+    }
 }
 
 /// A file a function was defined in: what an error raised inside it
@@ -31,10 +43,19 @@ impl RuntimeError {
     /// error came out of an imported module and against `path`/`src`
     /// otherwise.
     pub fn render(&self, path: &str, src: &str) -> String {
-        match &self.origin {
+        let mut text = match &self.origin {
             Some(o) => crate::diag::render(&o.path, &o.src, &self.message, self.span),
             None => crate::diag::render(path, src, &self.message, self.span),
+        };
+        if let Some((span, caller)) = &self.called_from {
+            let (p, s): (&str, &str) = match caller {
+                Some(o) => (&o.path, &o.src),
+                None => (path, src),
+            };
+            let (line, col) = span.line_col(s);
+            text.push_str(&format!("\nnote: called from {p}:{line}:{col}"));
         }
+        text
     }
 }
 
@@ -43,6 +64,7 @@ pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
         message: message.into(),
         span,
         origin: None,
+        called_from: None,
     }
 }
 
@@ -133,6 +155,9 @@ pub struct Interpreter<W: Write> {
     importing: Vec<std::path::PathBuf>,
     /// The module whose top level is currently running, if any.
     origin_stack: Vec<Rc<Origin>>,
+    /// The origin of each function on the call stack (None for one
+    /// defined in the source being run), innermost last.
+    call_origins: Vec<Option<Rc<Origin>>>,
 }
 
 /// The standard library, baked into the binary at build time (always
@@ -175,6 +200,7 @@ impl<W: Write> Interpreter<W> {
             import_cache: HashMap::new(),
             importing: Vec::new(),
             origin_stack: Vec::new(),
+            call_origins: Vec::new(),
         }
     }
 
@@ -1366,6 +1392,11 @@ impl<W: Write> Interpreter<W> {
         };
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
+        let caller = match self.call_origins.last() {
+            Some(o) => o.clone(),
+            None => self.current_origin(),
+        };
+        self.call_origins.push(func.origin.clone());
         let result = match &func.body {
             FnBody::Ast(stmts) => self.run_block(stmts).map(ControlOrValue::Control),
             // Compiled bodies cannot leak break/continue (the compiler
@@ -1374,14 +1405,19 @@ impl<W: Write> Interpreter<W> {
                 crate::vm::run_chunk_with(self, chunk, &mut locals).map(ControlOrValue::Value)
             }
         };
+        self.call_origins.pop();
         self.depth -= 1;
         self.env = saved;
         crate::vm::give_buf(locals);
         // An error leaving a module's function is located in that
-        // module's file; the first such crossing wins.
+        // module's file; the first call site in a *different* file is
+        // where the importer reached in, noted once.
         let result = result.map_err(|mut e| {
             if e.origin.is_none() {
                 e.origin = func.origin.clone();
+            }
+            if e.called_from.is_none() && !same_origin(&caller, &e.origin) {
+                e.called_from = Some((span, caller.clone()));
             }
             e
         });

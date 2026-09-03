@@ -291,7 +291,16 @@ fn module_runtime_errors_point_into_the_module() {
             "{engine}: {stderr}"
         );
         assert!(stderr.contains("return nosuch + 1;"), "{engine}: {stderr}");
-        assert!(!stderr.contains("main.ting:"), "{engine}: {stderr}");
+        // The importer's call site follows as a note, and nowhere else.
+        assert!(
+            stderr.contains("note: called from") && stderr.contains("main.ting:3:"),
+            "{engine}: {stderr}"
+        );
+        assert_eq!(
+            stderr.matches("main.ting:").count(),
+            1,
+            "{engine}: {stderr}"
+        );
     }
     // The same for a function from an embedded stdlib module: the
     // path is the module's, and the foreign offset never panics the
@@ -309,6 +318,10 @@ fn module_runtime_errors_point_into_the_module() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
         stderr.contains("lib/list.ting:") && stderr.contains("error: mean:"),
+        "{stderr}"
+    );
+    assert!(
+        stderr.contains("note: called from") && stderr.contains("emb.ting:2:"),
         "{stderr}"
     );
     assert!(!stderr.contains("panicked"), "{stderr}");
