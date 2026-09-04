@@ -10405,3 +10405,12 @@ without testing an algorithm against itself.
 Gate green: fmt, clippy, 281 Rust tests, 683 selftest checks (13
 files now), corpus at exactly five warnings. Eight stdlib modules,
 147 functions.
+
+## 2026-09-04 — Iteration 587: v2.97.0
+
+CI green on 586 (both workflows, verdict pinned to the sha). Tagged
+v2.97.0, the hundred and eighteenth tag: `sleep_ms` and the eighth
+stdlib module. Half of "the clock and the dice" — the clock half,
+which turned out to be smaller than the survey claimed because the
+clock itself was already there. Six archives; unverified until both
+aarch64 archives have been downloaded cold and run here, next tick.

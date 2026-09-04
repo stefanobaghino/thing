@@ -318,8 +318,10 @@ holds only the current milestone and the standing rules.
   the backlog below is the corrected one.
 - 586: lib/time.ting — fourteen functions, UTC only and saying so,
   Hinnant's conversions with floor division for pre-epoch instants.
+- 587: v2.97.0 tagged (118th tag; strokes 585, 586) — UNVERIFIED
+  until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.97.0;
+  (1) verify the v2.97.0 release (cold download, both aarch64);
   (2) random() in [0, 1), random_int(lo, hi) half-open like range,
   and seed(n) for reproducibility; none of them in any fuzzer
   alphabet, since the differential test runs the same source twice,
