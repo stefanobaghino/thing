@@ -10686,3 +10686,17 @@ The 120th tag, and the six hundredth iteration. Four strokes:
 `run` (595), `eprint` and `cwd` (596), `lib/sh.ting` (598), the
 tutorial subsection (599) — plus one red CI caught and fixed on the
 way (597). Verification next tick, cold, both aarch64 archives.
+
+## 2026-09-05 — Iteration 601: v2.99.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that uses the whole milestone: a
+PATH lookup that misses, one that finds a shell, `ok` on a happy and
+an unhappy child, `lines`, `check`'s failure carrying both the code
+and the child's stderr, `run`'s raw map with output on both streams,
+the refusal of a program that is not there, an `eprint` to the other
+stream and a `cwd` that is a directory. Identical on gnu and musl,
+both reporting 2.99.0.
+
+Milestone "driving other programs" is complete: ting can now be
+called by a shell and can call one back.

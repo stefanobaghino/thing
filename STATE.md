@@ -352,11 +352,12 @@ holds only the current milestone and the standing rules.
   executed on every CI platform and no program exists on all three,
   so the happy path is written behind a which() guard — the idiom the
   section teaches anyway.
-- 600: v2.99.0 tagged (120th tag; strokes 595, 596, 598, 599) —
-  UNVERIFIED until both aarch64 archives run here.
+- v2.99.0 VERIFIED (120th tag; strokes 595, 596, 598, 599; both
+  aarch64 archives executed here on the whole milestone). Milestone
+  "driving other programs" is complete.
 - Backlog (one per tick, in order):
-  (1) verify the v2.99.0 release (cold download, both aarch64);
-  (2) health tick + audit.
+  (1) health tick + audit; (2) replenishment tick: the regex engine
+  deferred in 594 is the standing candidate.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
@@ -373,7 +374,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 119 (v2.98.0), 119 verified; v2.29.0 is publicly marked broken
+- Tags: 120 (v2.99.0), 120 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
