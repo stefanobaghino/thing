@@ -9672,3 +9672,15 @@ embedded module resolves from a directory with no lib/ in it.
 Fifty builtins; 133 stdlib functions across seven modules; the
 selftest corpus is 591 checks; corpus warnings hold at five. 266
 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 557: v2.91.0
+
+CI green on 556 (API verdict). Tagged v2.91.0, the hundred and
+twelfth tag: the measured call-depth cap and the two removal
+builtins with `remove_tree` above them. Six archives; unverified
+until both aarch64 archives have been downloaded cold and run here,
+next tick — and this one has something specific to check, since the
+release build is where the cap is four thousand rather than five
+hundred.

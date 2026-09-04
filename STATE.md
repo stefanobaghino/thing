@@ -253,8 +253,11 @@ holds only the current milestone and the standing rules.
   the old 200.
   556: remove_file and remove_dir (demands; remove_dir wants an empty
   directory), with the recursive remove_tree written in ting.
+- 557: v2.91.0 tagged (112th tag; strokes 555, 556) — verification
+  pending.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.91.0; (2) \u escapes in string literals
+  (1) verify v2.91.0 (cold download, both aarch64 archives run
+  here; check the release cap is the larger one); (2) \u escapes in string literals
   (the lexer's escape set is guarded against
   editor/ting.tmLanguage.json by tests/grammar.rs) and a pair of
   builtins for code points; (3) the docs read the limits;
@@ -263,7 +266,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 111 (v2.90.0), 111 verified; v2.29.0 is publicly marked broken
+- Tags: 112 (v2.91.0), 111 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
