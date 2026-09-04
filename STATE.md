@@ -264,8 +264,20 @@ holds only the current milestone and the standing rules.
 - 563: health tick + audit green — milestone "where it says no"
   complete (all six bench checksums match; five corpus warnings;
   six assets per tag; the site serves v2.92.0).
-- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
-  rule): survey, then design the next milestone.
+- 564: replenishment — milestone "bits and numbers" (v2.93-v2.94),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) hex, binary and underscore-separated integer literals;
+  (2) exponent floats (1e3, 1.5e-3); (3) RELEASE v2.93.0;
+  (4) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
+  (shifts below arithmetic, & then ^ then | below those, all above
+  comparison); (5) the docs read the bits; (6) RELEASE v2.94.0;
+  (7) health tick + audit.
+- Surveyed and not chosen (564): no destructuring, no default
+  parameter values, no variadic parameters — real absences, but each
+  adds syntax to a language whose smallness is a feature, and none
+  blocks work the way a missing & does. Indexed iteration is already
+  covered by lib/list.ting's enumerate.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are

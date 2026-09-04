@@ -9828,3 +9828,43 @@ guesswork, `remove_file`/`remove_dir` with `remove_tree` above them,
 `\uXXXX` escapes with `ord` and `chr`, and docs that explain which
 refusals were kept and why. Two tags, both cold-verified. The
 backlog is empty, so the next tick is a replenishment.
+
+---
+
+## 2026-09-04 — Iteration 564: replenishment — milestone "bits and numbers"
+
+Thirty-nine milestones since the restart, a hundred and thirteen
+tags, the backlog empty. Last milestone gave the language `ord` and
+`chr`, which is what made this survey's finding obvious: ting can
+now turn a character into a number, and then has almost nothing to
+do with it.
+
+There are no bitwise operators. `5 & 3` does not parse — the lexer
+reads a single `&` and asks for `&&` — and the same for `|`, while
+`^`, `<<` and `>>` are not characters the language knows at all. A
+scripting language with file I/O, JSON, and code points, but no way
+to mask a byte, set a flag or shift a value, is missing its whole
+low-level layer. Hashing, packing, encoding, checksums, permissions:
+none of them can be written.
+
+Nor is there any way to write a number the way that work wants it
+written. `0xFF`, `0b1010`, `1_000_000` and `1e3` are all parse
+errors — the lexer takes the digits and then meets an identifier.
+Decimal integers and plain decimal floats are the whole numeric
+surface. Hex especially belongs next to bit operations: a mask
+written `255` instead of `0xFF` hides what it is.
+
+Surveyed and not chosen: there is no destructuring (`let [a, b] =
+xs`), no default parameter values, and no variadic parameters. All
+three are real absences, but each adds syntax to a language whose
+smallness is a feature, and none of them blocks work the way a
+missing `&` does. Indexed iteration turned out to be covered
+already — lib/list.ting has `enumerate`, along with forty-odd
+others.
+
+Milestone "bits and numbers" (v2.93-v2.94): the literal forms
+first, then the operators, then the docs. Precedence will follow
+Rust's rather than C's — shifts below the arithmetic, `&` then `^`
+then `|` below those, and all of them above comparison — because
+C's ordering is the one that makes `a & b == c` mean the wrong
+thing.
