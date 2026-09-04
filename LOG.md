@@ -9317,3 +9317,39 @@ check over one shared poll; `ting -` for a script from a pipe; the
 reference, tutorial and README reading the terminal; two tags, both
 cold-verified here. The backlog is now empty, so the next tick is a
 replenishment.
+
+---
+
+## 2026-09-04 — Iteration 544: replenishment — milestone "the working directory"
+
+Thirty-seven milestones since the restart, a hundred and nine tags,
+the backlog empty. This survey went looking for what a ting script
+still cannot do that the ting binary plainly can, and the answer was
+immediate: the filesystem. There are forty-four builtins and exactly
+two of them touch files — `read_file` and `write_file`. A script
+cannot ask what is in a directory, whether a path exists, or whether
+it is a file or a directory. Meanwhile `--test`, `--check` and
+`--fmt` all recurse through directories, `--watch` re-expands them
+five times a second, and none of that is reachable from the language
+those tools run. A shell citizen that cannot list a directory is
+only half a citizen; the very first script anyone writes after
+`ting -` lands is "run over every file in here".
+
+The paired annoyance is that `write_file("nodir/x.txt", "a")` fails
+with the OS error and no way to fix it from inside the language,
+because there is no way to make a directory either.
+
+Two more findings, recorded rather than acted on. Recursion is
+capped at a call depth of 200 (eval.rs MAX_DEPTH) — shallow for a
+language with first-class closures, since a recursive walk of a
+five-hundred-node structure simply cannot be written. Raising it is
+not a one-line change: the limit is what keeps the tree-walker off
+the end of the host stack, and the wasm build has no thread of its
+own to size, so it wants measuring per engine before it is moved.
+And string literals have no `\u` escape, though `json_parse` handles
+`\u` perfectly well — an inconsistency between the two ways a
+program can spell a character. Both are milestone material later.
+
+Milestone "the working directory" (v2.89-v2.90): the builtins that
+let a script see the filesystem, then a `fs` module that does path
+handling and recursive walking in ting on top of them, then the docs.

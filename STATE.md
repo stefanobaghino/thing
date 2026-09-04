@@ -227,8 +227,19 @@ holds only the current milestone and the standing rules.
 - 543: health tick + audit green — milestone "at the terminal"
   complete (all six bench checksums match; five corpus warnings;
   six assets per tag; the site serves v2.88.0).
-- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
-  rule): survey, then design the next milestone.
+- 544: replenishment — milestone "the working directory"
+  (v2.89-v2.90), reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) list_dir(path): the entries of a directory, sorted;
+  (2) exists(path), is_dir(path), make_dir(path) (parents too);
+  (3) RELEASE v2.89.0; (4) lib/fs.ting: base, dir, ext, join and a
+  recursive walk, in ting on top of the builtins; (5) the docs read
+  the filesystem (reference table, tutorial, stdlib page and its
+  count); (6) RELEASE v2.90.0; (7) health tick + audit.
+- Found, not yet acted on: recursion is capped at call depth 200
+  (eval.rs MAX_DEPTH) and moving it wants per-engine stack
+  measurement, the wasm build having no thread of its own to size;
+  string literals have no \u escape though json_parse handles one.
 - Tags: 109 (v2.88.0), 109 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
