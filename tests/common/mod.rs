@@ -40,7 +40,8 @@ impl Gen {
         let mut out = String::from(
             "let a = 3; let b = -2; let s = \"ab\"; let xs = [1, 2, 3];\n\
              fn h(v) { return v + 1; }\n\
-             fn g(v) { return str(v) + \"!\"; }\n",
+             fn g(v) { return str(v) + \"!\"; }\n\
+             fn d(v, w = 1, u = w + 1) { return v + w + u; }\n",
         );
         let n = 2 + self.rng.below(5);
         for _ in 0..n {
@@ -104,7 +105,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(28) {
+        match self.rng.below(32) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -150,6 +151,17 @@ impl Gen {
             ),
             26 => format!(
                 "reduce([1, {}], 0, fn(p, q) {{ return p + 1; }})",
+                self.expr(depth - 1)
+            ),
+            // Optional arguments: the same call with each count, so a
+            // default that misbehaves on one engine shows up as a
+            // difference on the next line.
+            27 => format!("d({})", self.expr(depth - 1)),
+            28 => format!("d({}, 2)", self.expr(depth - 1)),
+            29 => format!("d({}, 2, 3)", self.expr(depth - 1)),
+            30 => format!(
+                "(fn(p, q = {}) {{ return [p, q]; }})({})",
+                self.expr(depth - 1),
                 self.expr(depth - 1)
             ),
             _ => format!("-({})", self.expr(depth - 1)),

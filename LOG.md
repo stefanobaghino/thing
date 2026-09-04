@@ -11203,3 +11203,19 @@ the reader typed is worse than no signature.
 Two unit tests in src/lsp.rs, which had none: the module's behaviour
 was covered end to end through the JSON-RPC session tests, and these
 two are about the text of a message rather than the protocol.
+
+## 2026-09-05 — Iteration 623: the formatter and the fuzzers
+
+The formatter needed nothing. It spaces `=` in a parameter list the
+way it spaces any assignment — `fn f(a,b=1,c = 2+3)` becomes
+`fn f(a, b = 1, c = 2 + 3)` — because it works from tokens and its
+rule for `=` never cared where it appeared. A test now pins that, so
+the behaviour is a decision rather than an accident.
+
+The shared generator behind the differential and formatter fuzzers
+learned defaults: a three-parameter function with two of them
+optional, called at each of its three lengths, plus an immediately
+called literal whose default is itself a generated expression. 20000
+differential and 10000 formatter cases at seed 622 found nothing —
+which, given how new the call path is, is the reassurance worth
+having.

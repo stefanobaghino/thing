@@ -314,6 +314,18 @@ mod tests {
     }
 
     #[test]
+    fn a_default_is_spaced_like_an_assignment() {
+        assert_eq!(
+            format("fn f(a,b=1,c = 2+3,d=[1,2]) { return a; }").unwrap(),
+            "fn f(a, b = 1, c = 2 + 3, d = [1, 2]) { return a; }\n"
+        );
+        assert_eq!(
+            format("let g = fn(x=nil){return x;};").unwrap(),
+            "let g = fn(x = nil) { return x; };\n"
+        );
+    }
+
+    #[test]
     fn idempotent_on_samples() {
         for src in [
             "let x=1;# c\nif x==1 {\nprint(x);\n}\n",
