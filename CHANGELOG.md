@@ -5,6 +5,16 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.85.0 (2026-09-04)
+
+- New `ting --profile` runs a script and then reports, on stderr,
+  how often each function ran, the time it spent in its own body
+  (self time, so recursion is counted once), and where it was
+  defined — slowest first.
+- Fix: a closure created inside an imported module's function now
+  belongs to that module's file, so it is reported under the file
+  it was written in.
+
 ## v2.84.0 (2026-09-04)
 
 - `try` hands a caught failure back whole: `"err"` is the message,
