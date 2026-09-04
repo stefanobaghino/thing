@@ -49,6 +49,29 @@ fn args_and_stdin_reach_the_script() {
 }
 
 #[test]
+fn sleep_ms_waits_at_least_that_long() {
+    let script = std::env::temp_dir().join("ting-sleep.ting");
+    // A lower bound only: a loaded runner can make any pause longer,
+    // and none can make it shorter.
+    std::fs::write(
+        &script,
+        "let t = time_ms();\n\
+         sleep_ms(50);\n\
+         let waited = time_ms() - t;\n\
+         assert(waited >= 40, \"waited \" + str(waited));\n\
+         print(sleep_ms(0));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(String::from_utf8_lossy(&out.stderr), "");
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "nil\n");
+    let _ = std::fs::remove_file(&script);
+}
+
+#[test]
 fn env_exit_and_time_reach_the_process() {
     let script = std::env::temp_dir().join("ting-proc-integration.ting");
     std::fs::write(

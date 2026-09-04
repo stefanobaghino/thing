@@ -286,6 +286,7 @@ scope).
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |
+| `sleep_ms(ms)` | pauses for that many milliseconds, flushing output first; a negative count, or anything but an int, errors |
 
 ### Files and directories
 

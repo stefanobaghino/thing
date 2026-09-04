@@ -82,10 +82,11 @@ pub enum Builtin {
     Env,
     Exit,
     TimeMs,
+    SleepMs,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 54] = [
+    pub const ALL: [Builtin; 55] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -140,6 +141,7 @@ impl Builtin {
         Builtin::Env,
         Builtin::Exit,
         Builtin::TimeMs,
+        Builtin::SleepMs,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -313,6 +315,10 @@ impl Builtin {
                 "Ends the program with that status (default 0); not catchable.",
             ),
             Builtin::TimeMs => ("time_ms()", "Milliseconds since the Unix epoch, as an int."),
+            Builtin::SleepMs => (
+                "sleep_ms(ms)",
+                "Pauses for that many milliseconds; a negative count errors.",
+            ),
         }
     }
 
@@ -372,6 +378,7 @@ impl Builtin {
             Builtin::Env => "env",
             Builtin::Exit => "exit",
             Builtin::TimeMs => "time_ms",
+            Builtin::SleepMs => "sleep_ms",
         }
     }
 }

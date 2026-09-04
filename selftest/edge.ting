@@ -90,3 +90,11 @@ fn after_return() {
   print("unreachable");
 }
 assert(after_return() == "left", "return leaves at once");
+
+# A pause is a pause: it costs at least what it asks for, never less.
+let before = time_ms();
+sleep_ms(10);
+assert(time_ms() - before >= 5, "sleep_ms waits");
+assert(sleep_ms(0) == nil, "and returns nil");
+let slept = try(fn() { return sleep_ms(-1); });
+assert(contains(slept["err"], "negative"), "a negative pause is an error");

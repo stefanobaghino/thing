@@ -1786,6 +1786,31 @@ impl<W: Write> Interpreter<W> {
                     .as_millis();
                 Ok(Value::Int(ms as i64))
             }
+            Builtin::SleepMs => {
+                arity(1, 1)?;
+                let ms = match &args[0] {
+                    Value::Int(n) => *n,
+                    v => {
+                        return Err(error(
+                            format!("sleep_ms expects an int, got {}", v.type_name()),
+                            span,
+                        ));
+                    }
+                };
+                if ms < 0 {
+                    return Err(error(format!("sleep_ms: {ms} is negative"), span));
+                }
+                if cfg!(target_arch = "wasm32") {
+                    // Blocking the wasm instance would freeze the page.
+                    return Err(error("sleep_ms is not available in this environment", span));
+                }
+                // Output written before a pause should be visible during it.
+                self.out
+                    .flush()
+                    .map_err(|e| error(format!("sleep_ms: flush failed: {e}"), span))?;
+                std::thread::sleep(std::time::Duration::from_millis(ms as u64));
+                Ok(Value::Nil)
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {

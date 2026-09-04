@@ -10341,3 +10341,36 @@ arithmetic is self-contained, testable and exactly the kind of thing
 the stdlib should carry rather than the binary.
 
 Milestone "the clock and the dice" (v2.97-v2.98).
+
+## 2026-09-04 — Iteration 585: sleep_ms, and a correction to yesterday's survey
+
+Correction first. The replenishment in 584 said ting "cannot ask the
+world what time it is". That is false: `time_ms()` has been a builtin
+since long before this milestone, and the survey missed it because I
+read the `--doc` listing in two pieces and the line fell in the gap.
+The absence is narrower than claimed — no way to *wait*, and no
+randomness — and the backlog is corrected to match. A survey that
+overstates a gap is worse than one that misses it, because it invites
+building something that exists.
+
+`sleep_ms(ms)` takes an int of milliseconds, to match `time_ms`
+rather than introduce a second unit for time, and returns nil. A
+negative count is an error; a float is a type error, since rounding
+someone's `sleep_ms(1.5)` silently is the sort of helpfulness that
+hides a bug. Output is flushed before the pause, because a script
+that prints "waiting..." and then sleeps should show the message
+during the wait, not after it. Under wasm it refuses, next to `exit`
+and `time_ms`, since blocking there freezes the page.
+
+A monotonic clock was surveyed and not chosen. `time_ms` already
+answers "how long did that take" to the precision a script cares
+about, and a second clock would need its own name, its own docs and
+its own explanation of when to prefer it.
+
+The test asserts a lower bound only — `sleep_ms(50)` waits at least
+40 ms — because a loaded runner can stretch any pause and none can
+shorten it. That is the 533b rule applied before it had a chance to
+bite.
+
+Gate green: fmt, clippy, 281 Rust tests, 648 selftest checks, corpus
+at exactly five warnings. 55 builtins.

@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 54 builtins; seven embedded stdlib modules
+- 55 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 280 Rust tests
+  programs (12 selftest files, 17 examples with .out); 281 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -312,18 +312,21 @@ holds only the current milestone and the standing rules.
   warnings; six assets per tag; the site serves v2.96.0).
 - 584: replenishment — milestone "the clock and the dice"
   (v2.97-v2.98), reasoning in LOG.md.
+- 585: sleep_ms(ms), int milliseconds to match time_ms, flushing
+  before the pause; wasm refuses it. Correction: 584's survey said
+  ting had no clock — time_ms() has existed for many versions, and
+  the backlog below is the corrected one.
 - Backlog (one per tick, in order):
-  (1) now() (epoch seconds, float), monotonic() and sleep(secs) —
-  none of them in any fuzzer alphabet, since the differential test
-  runs the same source twice;
-  (2) lib/time.ting: epoch seconds to civil date and ISO 8601, pure
+  (1) lib/time.ting: epoch millis to civil date and ISO 8601, pure
   ting, leap years included;
-  (3) RELEASE v2.97.0;
-  (4) random() in [0, 1), random_int(lo, hi) half-open like range,
-  and seed(n) for reproducibility; tests assert the property (same
-  seed, same sequence), never a pinned constant;
-  (5) the docs read the clock and the dice; (6) RELEASE v2.98.0;
-  (7) health tick + audit.
+  (2) RELEASE v2.97.0;
+  (3) random() in [0, 1), random_int(lo, hi) half-open like range,
+  and seed(n) for reproducibility; none of them in any fuzzer
+  alphabet, since the differential test runs the same source twice,
+  and tests assert the property (same seed, same sequence) rather
+  than a pinned constant;
+  (4) the docs read the clock and the dice; (5) RELEASE v2.98.0;
+  (6) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
