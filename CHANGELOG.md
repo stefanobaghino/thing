@@ -11,6 +11,8 @@ Windows are attached to each
   spec, with the `--help` text built from the same spec.
 - New stdlib module `lib/err.ting`: `message`, `failed`, `value`,
   `wrap`, `site` and `trace` over `try`.
+- New stdlib module `lib/csv.ting`: delimited text both directions,
+  quotes and embedded line breaks included.
 
 ## v2.100.0 (2026-09-05)
 

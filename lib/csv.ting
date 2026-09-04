@@ -1,0 +1,119 @@
+# Delimited text, both directions, written in ting.
+# Use it via
+#   let csv = import("lib/csv.ting");
+#
+# The dialect is the usual one: fields separated by a comma, a field
+# wrapped in double quotes when it holds a comma, a quote, or a line
+# break, and a quote inside such a field written twice. CRLF is read
+# as a line break and written as a bare newline, since a script that
+# reads Windows output should not have to say so.
+#
+# An empty line is a row with one empty field, which is what a reader
+# that counts columns expects. Text ending in a line break does not
+# make a final empty row.
+
+# A field, quoted if it needs to be. Leading or trailing spaces are
+# quoted too: they survive a round trip that way, and a reader that
+# trims them can still do so.
+fn quote(field, sep) {
+  let needs = contains(field, sep) || contains(field, "\"")
+  || contains(field, "\n") || contains(field, "\r")
+  || starts_with(field, " ") || ends_with(field, " ");
+  if !needs { return field; }
+  return "\"" + replace(field, "\"", "\"\"") + "\"";
+}
+
+# Rows of fields from delimited text, with any single-character
+# separator.
+fn parse_with(text, sep) {
+  let rows = [];
+  let row = [];
+  let field = "";
+  let quoted = false;
+  # A quote seen inside a quoted field: the next character says
+  # whether it was an escaped quote or the end of the field.
+  let pending = false;
+  let started = false;
+  let dirty = false;
+  for c in text {
+    if pending {
+      pending = false;
+      if c == "\"" { field = field + "\""; continue; }
+      quoted = false;
+    }
+    if quoted {
+      if c == "\"" { pending = true; continue; }
+      field = field + c;
+      continue;
+    }
+    if c == "\"" && field == "" && !started {
+      quoted = true;
+      started = true;
+      dirty = true;
+      continue;
+    }
+    if c == sep {
+      push(row, field);
+      field = "";
+      started = false;
+      dirty = true;
+      continue;
+    }
+    if c == "\r" { continue; }
+    if c == "\n" {
+      push(row, field);
+      push(rows, row);
+      row = [];
+      field = "";
+      started = false;
+      dirty = false;
+      continue;
+    }
+    field = field + c;
+    dirty = true;
+  }
+  if dirty || len(row) > 0 {
+    push(row, field);
+    push(rows, row);
+  }
+  return rows;
+}
+
+# Rows of fields from comma-separated text.
+fn parse(text) { return parse_with(text, ","); }
+
+# Delimited text from rows of fields, with any single-character
+# separator. The text ends in a line break, as a text file's last
+# line does.
+fn text_with(rows, sep) {
+  let lines = [];
+  for row in rows {
+    let fields = [];
+    for field in row { push(fields, quote(str(field), sep)); }
+    push(lines, join(fields, sep));
+  }
+  if len(lines) == 0 { return ""; }
+  return join(lines, "\n") + "\n";
+}
+
+# Comma-separated text from rows of fields.
+fn text(rows) { return text_with(rows, ","); }
+
+# The first row read as a header, the rest as maps from column name to
+# field. A row shorter than the header leaves those columns nil; extra
+# fields have no name and are dropped.
+fn maps(rows) {
+  if len(rows) == 0 { return []; }
+  let header = rows[0];
+  let out = [];
+  for i in range(1, len(rows)) {
+    let row = rows[i];
+    let entry = {};
+    for c in range(0, len(header)) {
+      if c < len(row) { entry[header[c]] = row[c]; }
+      else { entry[header[c]] = nil; }
+    }
+    push(out, entry);
+  }
+  return out;
+}

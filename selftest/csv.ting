@@ -1,0 +1,41 @@
+# ting testing ting: delimited text, both directions.
+
+let csv = import("lib/csv.ting");
+
+# The plain case, with and without a trailing line break.
+assert(csv["parse"]("a,b\n1,2\n") == [["a", "b"], ["1", "2"]], "rows and fields");
+assert(csv["parse"]("a,b\n1,2") == [["a", "b"], ["1", "2"]], "a last line need not end");
+assert(csv["parse"]("") == [], "no text, no rows");
+assert(csv["parse"]("a,,\n") == [["a", "", ""]], "empty fields are fields");
+assert(csv["parse"]("\n") == [[""]], "an empty line is a row of one empty field");
+
+# Quoting: separators, quotes and line breaks inside a field.
+assert(csv["parse"]("\"Smith, J\",x\n") == [["Smith, J", "x"]], "a comma inside quotes");
+assert(csv["parse"]("\"said \"\"hi\"\"\"\n") == [["said \"hi\""]], "a doubled quote is one quote");
+assert(csv["parse"]("a,\"two\nlines\"\n") == [["a", "two\nlines"]], "a line break inside quotes");
+
+# CRLF is read, and not written back.
+assert(csv["parse"]("a,b\r\nc,d\r\n") == [["a", "b"], ["c", "d"]], "CRLF reads as a line break");
+assert(!contains(csv["text"]([["a"]]), "\r"), "and is not written back");
+
+# Writing quotes only what needs it, spaces included.
+assert(csv["text"]([["a", "b,c"]]) == "a,\"b,c\"\n", "a separator forces quotes");
+assert(csv["text"]([["d\"e"]]) == "\"d\"\"e\"\n", "so does a quote, doubled");
+assert(csv["text"]([[" f "]]) == "\" f \"\n", "a space at either end survives");
+assert(csv["text"]([["plain"]]) == "plain\n", "and nothing else is quoted");
+assert(csv["text"]([]) == "", "no rows, no text");
+assert(csv["text"]([[1, 2.5, nil]]) == "1,2.5,nil\n", "fields are written as strings");
+
+# The round trip, which is the property the two halves owe each other.
+let hard = [["x", "a,b"], ["say \"hi\"", "two\nlines"], ["", " padded "]];
+assert(csv["parse"](csv["text"](hard)) == hard, "text and parse are inverses");
+
+# Another separator, and a header read as names.
+assert(csv["parse_with"]("a\tb\n", "\t") == [["a", "b"]], "tabs work as well as commas");
+assert(csv["text_with"]([["a", "b"]], ";") == "a;b\n", "and on the way out");
+let records = csv["maps"](csv["parse"]("id,name\n1,ann\n2\n"));
+assert(len(records) == 2, "one map per row after the header");
+assert(records[0]["name"] == "ann", "columns take their names from the header");
+assert(records[1]["name"] == nil, "a short row leaves the rest nil");
+assert(csv["maps"]([]) == [], "no rows, no records");
+assert(csv["maps"]([["only", "header"]]) == [], "a header alone is no records");

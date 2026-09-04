@@ -11021,3 +11021,32 @@ Then the point of the exercise: the five selftests that each opened
 with their own copy of the helper now import it, and so does the new
 one from 613. The copy-paste that justified the module is gone, which
 is the only honest way to finish this kind of change.
+
+## 2026-09-05 — Iteration 615: lib/csv.ting
+
+The twelfth module: delimited text in both directions, in ting.
+
+The parser is a state machine over characters rather than an index
+walk, because `text[i]` on a ting string counts characters from the
+start and a loop of those would make parsing quadratic. `for c in
+text` walks once.
+
+Quoting inside a quoted field is handled without lookahead: a quote
+sets a pending flag, and the next character decides whether it was an
+escaped quote or the end of the field. That is the whole trick, and
+it means the reader never needs to see two characters at once.
+
+What the dialect commits to, all of it testable: CRLF is read as a
+line break and written as a bare newline, since a script reading
+Windows output should not have to say so; an empty line is a row with
+one empty field, which is what a reader counting columns expects;
+text ending in a line break does not make a final empty row; a field
+with a space at either end is quoted, so the space survives the round
+trip.
+
+The round trip is the property the two halves owe each other, and the
+selftest asserts it on the hardest row it can build — a comma, a
+quoted quote, an embedded newline and a padded empty field.
+
+The docs count line said 173 and lib/ had 172; the guard caught it
+before the push, which is what it is for.

@@ -1,7 +1,7 @@
 # The ting standard library
 
-Eleven modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args and err, 166 functions between them — living in `lib/` and also
+Twelve modules written in ting itself — list, map, string, math,
+json, fs, test, time, sh, args, err and csv, 172 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -218,6 +218,22 @@ introduces around values is not worth the characters it saves.
 | `flag_of(spec, name)` | the flag with that long or short name, or nil |
 | `option_of(spec, name)` | the option with that long or short name, or nil |
 | `pad(text, width)` | a string padded with spaces, for the help columns |
+
+## lib/csv.ting
+
+Delimited text, both directions. The usual dialect: a field is quoted
+when it holds the separator, a quote or a line break, and a quote
+inside such a field is written twice. CRLF is read as a line break
+and written as a bare newline.
+
+| Function | Does |
+|----------|------|
+| `parse(text)` | rows of fields from comma-separated text |
+| `text(rows)` | comma-separated text from rows of fields, ending in a line break |
+| `parse_with(text, sep)` / `text_with(rows, sep)` | the same with any single-character separator |
+| `text_with(rows, sep)` | see `parse_with` |
+| `maps(rows)` | the first row read as a header, the rest as maps; a short row leaves those columns nil |
+| `quote(field, sep)` | a field, quoted if it needs to be — spaces at either end included, so they survive a round trip |
 
 ## lib/err.ting
 
