@@ -9947,3 +9947,19 @@ running into a letter. Half of milestone "bits and numbers"; the
 operators that these literals exist for come next. Six archives;
 unverified until both aarch64 archives have been downloaded cold and
 run here, next tick.
+
+## 2026-09-04 — Iteration 568: v2.93.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script written entirely in the new
+literal forms — a hex mask, a separated binary byte, a separated
+decimal, three exponents and a hex literal at the top of the int
+range. `255 170 1000000 1000.0 0.0015 200.0 true float`, identical
+on gnu and musl, both reporting 2.93.0. The two refusals were
+checked in the shipped binaries too: `0b12` and `1e400` are errors
+there, with the same wording the tests pin. The darwin archive
+cannot execute on this host, as always.
+
+Half of "bits and numbers" is done, and it is the half that only
+makes sense because of the other half: hex exists to be masked with.
+The operators come next.

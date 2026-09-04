@@ -272,10 +272,9 @@ holds only the current milestone and the standing rules.
 - 566: exponent floats (1e3, 1.5e-3, 2E+2); an exponent always makes
   a float, a half-written one is reported against the letter, and a
   literal that parses to infinity is an error.
-- 567: v2.93.0 tagged (114th tag; strokes 565, 566) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.93.0 VERIFIED (114th tag; strokes 565, 566; both aarch64
+  archives executed here, the shipped refusals checked too).
 - Backlog (one per tick, in order):
-  (1) verify the v2.93.0 release (cold download, both aarch64);
   (2) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
   (shifts below arithmetic, & then ^ then | below those, all above
   comparison); (3) the docs read the bits; (4) RELEASE v2.94.0;
@@ -293,7 +292,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 113 (v2.92.0), 113 verified; v2.29.0 is publicly marked broken
+- Tags: 114 (v2.93.0), 114 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
