@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 45 builtins; six embedded stdlib modules
+- 48 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 263 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 264 Rust tests in 11
   suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -231,12 +231,13 @@ holds only the current milestone and the standing rules.
   (v2.89-v2.90), reasoning in LOG.md.
 - 545: list_dir — the names in a directory, sorted; not a readable
   directory, or a name that is not UTF-8, errors.
+  546: exists, is_dir (questions, so false rather than an error) and
+  make_dir (parents included, already there is fine).
 - Backlog (one per tick, in order):
-  (1) exists(path), is_dir(path), make_dir(path) (parents too);
-  (2) RELEASE v2.89.0; (3) lib/fs.ting: base, dir, ext, join and a
-  recursive walk, in ting on top of the builtins; (4) the docs read
+  (1) RELEASE v2.89.0; (2) lib/fs.ting: base, dir, ext, join and a
+  recursive walk, in ting on top of the builtins; (3) the docs read
   the filesystem (reference table, tutorial, stdlib page and its
-  count); (5) RELEASE v2.90.0; (6) health tick + audit.
+  count); (4) RELEASE v2.90.0; (5) health tick + audit.
 - Found, not yet acted on: recursion is capped at call depth 200
   (eval.rs MAX_DEPTH) and moving it wants per-engine stack
   measurement, the wasm build having no thread of its own to size;

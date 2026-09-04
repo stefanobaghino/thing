@@ -55,6 +55,9 @@ pub enum Builtin {
     ReadFile,
     WriteFile,
     ListDir,
+    Exists,
+    IsDir,
+    MakeDir,
     Sort,
     SortBy,
     Try,
@@ -76,7 +79,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 45] = [
+    pub const ALL: [Builtin; 48] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -104,6 +107,9 @@ impl Builtin {
         Builtin::ReadFile,
         Builtin::WriteFile,
         Builtin::ListDir,
+        Builtin::Exists,
+        Builtin::IsDir,
+        Builtin::MakeDir,
         Builtin::Sort,
         Builtin::SortBy,
         Builtin::Try,
@@ -202,6 +208,18 @@ impl Builtin {
                 "list_dir(path)",
                 "The names in a directory, sorted; not a directory, or unreadable, errors.",
             ),
+            Builtin::Exists => (
+                "exists(path)",
+                "Whether anything is at that path — a file, a directory, or something else.",
+            ),
+            Builtin::IsDir => (
+                "is_dir(path)",
+                "Whether the path is a directory; false if it is anything else or absent.",
+            ),
+            Builtin::MakeDir => (
+                "make_dir(path)",
+                "Creates the directory and any missing parents; already a directory is fine. Returns nil.",
+            ),
             Builtin::Sort => (
                 "sort(xs)",
                 "A fresh sorted list; all numbers or all strings, else error.",
@@ -291,6 +309,9 @@ impl Builtin {
             Builtin::ReadFile => "read_file",
             Builtin::WriteFile => "write_file",
             Builtin::ListDir => "list_dir",
+            Builtin::Exists => "exists",
+            Builtin::IsDir => "is_dir",
+            Builtin::MakeDir => "make_dir",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
             Builtin::Try => "try",

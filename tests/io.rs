@@ -2604,3 +2604,46 @@ fn list_dir_names_a_directory() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// `exists` and `is_dir` are questions — an absent or unreadable path
+/// is `false`, not an error — and `make_dir` creates parents and
+/// forgives a directory that is already there, so `write_file` into a
+/// fresh tree works from inside the language.
+#[test]
+fn exists_is_dir_and_make_dir() {
+    let root = std::env::temp_dir().join(format!("ting-makedir-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let deep = root.join("a").join("b");
+    let file = deep.join("x.txt");
+
+    let script = root.join("run.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "print(exists({deep:?}), is_dir({deep:?}));\n\
+             make_dir({deep:?});\n\
+             make_dir({deep:?});\n\
+             write_file({file:?}, \"ok\");\n\
+             print(exists({file:?}), is_dir({file:?}), read_file({file:?}));\n",
+            deep = deep.to_str().unwrap(),
+            file = file.to_str().unwrap()
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "false false\ntrue false ok\n"
+    );
+    assert!(file.exists(), "make_dir did not create the tree");
+    let _ = std::fs::remove_dir_all(&root);
+}

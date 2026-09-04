@@ -9382,3 +9382,31 @@ editor/ting.tmLanguage.json, guarded by tests/grammar.rs since a
 builtin the editor grammar lacks renders unhighlighted. The
 reference table and the README's count came with it; the fuller docs
 stroke is still to come. 263 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 546: is it there, and make it so
+
+CI green on 545 (API verdict). Three builtins, forty-five to
+forty-eight: `exists(path)`, `is_dir(path)`, `make_dir(path)`.
+
+The first two are questions, so they answer `false` rather than
+raising when the path is absent or unreadable — "is it there?"
+already has "no" as a legitimate answer, and a predicate that can
+throw is a predicate nobody can use in an `if` without wrapping it
+in `try`. That is the opposite of `list_dir`'s choice last tick, and
+deliberately so: asking what is inside a directory that is not there
+is a mistake, while asking whether it is there is the point.
+
+`make_dir` creates missing parents and treats an existing directory
+as success, because the useful postcondition is "the directory is
+there now", not "I was the one who made it". That closes the paired
+annoyance the survey found: `write_file("nodir/x.txt", "a")` failed
+with an OS error and no way to fix it from inside the language;
+`make_dir` then `write_file` now works, and the test proves exactly
+that sequence.
+
+`exists` and `is_dir` share one arm — they differ by a single
+`Path` method — while `make_dir` keeps its own, since it is the one
+that can fail. Grammar, reference table and README count updated
+with them. 264 Rust tests, green on both engines.

@@ -1243,6 +1243,46 @@ impl<W: Write> Interpreter<W> {
                 });
                 Ok(Value::List(Rc::new(RefCell::new(names))))
             }
+            // A question about the filesystem, not a demand of it:
+            // exists and is_dir answer false rather than raising when
+            // the path is absent or unreadable, since "is it there?"
+            // already covers "no".
+            Builtin::Exists | Builtin::IsDir => {
+                arity(1, 1)?;
+                let Value::Str(path) = &args[0] else {
+                    return Err(error(
+                        format!(
+                            "{} expects a string path, got {}",
+                            b.name(),
+                            args[0].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                let path = std::path::Path::new(&**path);
+                Ok(Value::Bool(match b {
+                    Builtin::IsDir => path.is_dir(),
+                    _ => path.exists(),
+                }))
+            }
+            Builtin::MakeDir => {
+                arity(1, 1)?;
+                let Value::Str(path) = &args[0] else {
+                    return Err(error(
+                        format!(
+                            "make_dir expects a string path, got {}",
+                            args[0].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                // Parents included, and an existing directory is not
+                // an error: the point is that the directory is there
+                // afterwards, which is what write_file needs.
+                std::fs::create_dir_all(std::path::Path::new(&**path))
+                    .map_err(|e| error(format!("cannot create {path:?}: {e}"), span))?;
+                Ok(Value::Nil)
+            }
             Builtin::Sort => {
                 arity(1, 1)?;
                 match &args[0] {
