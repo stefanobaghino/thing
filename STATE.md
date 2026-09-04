@@ -195,7 +195,15 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 525: health tick + audit green — milestone "the way back"
   complete.
-- Backlog: empty — next tick is replenishment.
+- 526: replenishment — milestone "where the time went"
+  (v2.85-v2.86), reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) counting the calls: --profile prints how often each function
+  ran, with the file and line it was defined at; (2) and how long
+  they took: self time per function, sorted, the table's order;
+  (3) RELEASE v2.85.0; (4) builtins in the table, and a cap on its
+  rows; (5) the docs read the profile; (6) RELEASE v2.86.0;
+  (7) health tick + audit.
 - Tags: 105 (v2.84.0), 104 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

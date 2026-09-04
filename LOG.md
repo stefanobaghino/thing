@@ -8869,3 +8869,31 @@ with v2.84.0, the tutorial serves the elision line and the
 reference the naming rule for anonymous functions. Nothing to fix.
 The "the way back" milestone is complete. Backlog empty: next tick
 is replenishment.
+
+---
+
+## 2026-09-04 — Iteration 526: replenishment — milestone "where the time went"
+
+CI green on 525 (API verdict). Thirty-five milestones since the
+restart, a hundred and five tags. This survey read the toolchain as
+a set of questions a programmer asks. What does this do? `--doc`.
+Is it well formed? `--check`. Is it tidy? `--fmt`. Does it pass?
+`--test`. What went wrong, and how did the program get there? The
+error, and now the trace. There is one question the binary cannot
+answer at all: where does the time go. For a scripting language
+whose own standard library is written in itself, that is the gap
+worth closing next, and the machinery for it was built last
+milestone — every call already funnels through `Interpreter::call`,
+which now knows the name of the function it is entering. A
+`--profile` flag can hang a counter off that one place: count the
+calls, accumulate the time, print a table when the program ends,
+and cost nothing when the flag is absent (a branch on an Option).
+Self time rather than inclusive time is the honest measure for a
+language with recursion — a function that calls itself two hundred
+deep would otherwise be credited with the same span two hundred
+times — and it needs the same subtraction bookkeeping either way.
+Functions need to know where they were defined for the report to
+name a line, which is one more field on `Function` alongside the
+name. Milestone "where the time went" (v2.85-v2.86): `--profile`
+counts calls per function; then it times them; builtins join the
+table and the report can be capped; docs follow.
