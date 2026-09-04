@@ -9286,3 +9286,34 @@ and a script that can arrive on a pipe (v2.88.0). Next tick is the
 health tick that closes it — bench checksums against the baseline,
 the differential, crash and formatter fuzzers in release, and the
 distribution and site audits.
+
+---
+
+## 2026-09-04 — Iteration 543: health tick — milestone "at the terminal" complete
+
+Everything green.
+
+The full suite in release with the enlarged budgets: 50000
+differential cases, 20000 formatter cases over LF and CRLF, the
+crash fuzzer including cyclic values, and both engines. All six
+bench checksums match bench/BASELINE.md exactly — `317811`,
+`586934 1256961 499950 4 3`, `100000 0`, `100000 4999950000`,
+`10006 10 500 w0 18974763`, `60000 588890` — which is the part that
+decides; the timings wandered as they do on a shared Pi (fib on the
+tree-walker read 701 ms against a 601 ms baseline, maps came in
+faster than the baseline on both engines) and are weather, not
+signal.
+
+Audits: six assets each on v2.86.0, v2.87.0 and v2.88.0, matching
+the post-2.30.0 expectation. All nine site paths answer 200 and the
+published changelog already reads v2.88.0, so the Pages deploy for
+this release went through unaided. The corpus scan over lib,
+selftest, examples and bench reports exactly five warnings, the five
+deliberate ones the test has guarded since 499.
+
+Milestone "at the terminal" (the thirty-seventh since the restart)
+is closed: `--watch` for the tests, the checker and the formatter's
+check over one shared poll; `ting -` for a script from a pipe; the
+reference, tutorial and README reading the terminal; two tags, both
+cold-verified here. The backlog is now empty, so the next tick is a
+replenishment.

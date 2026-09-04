@@ -224,8 +224,11 @@ holds only the current milestone and the standing rules.
 - 540: the docs read the terminal (reference, tutorial, README).
 - v2.88.0 VERIFIED (109th tag; strokes 539, 540; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  (1) health tick + audit (closes milestone "at the terminal").
+- 543: health tick + audit green — milestone "at the terminal"
+  complete (all six bench checksums match; five corpus warnings;
+  six assets per tag; the site serves v2.88.0).
+- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
+  rule): survey, then design the next milestone.
 - Tags: 109 (v2.88.0), 109 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
