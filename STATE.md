@@ -296,8 +296,10 @@ holds only the current milestone and the standing rules.
   float("inf"), float("nan") and json_parse("1e999") are errors, and
   int() of a non-finite or out-of-range float names the value instead
   of saturating.
+- 577: v2.95.0 tagged (116th tag; strokes 575, 576) — UNVERIFIED
+  until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.95.0;
+  (1) verify the v2.95.0 release (cold download, both aarch64);
   (2) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
   way in; int(s) accepts the prefixed forms it prints;
   (3) the docs read the numbers; (4) RELEASE v2.96.0;

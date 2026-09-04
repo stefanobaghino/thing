@@ -10167,3 +10167,14 @@ next to the refusals.
 
 Gate green: fmt, clippy, 278 Rust tests, 637 selftest checks, corpus
 at exactly five warnings.
+
+## 2026-09-04 — Iteration 577: v2.95.0
+
+CI green on 576 (both workflows, API verdict, checked against the
+right commit — the first monitor answered for the previous head and
+was re-armed pinned to the sha, which is the kind of near-miss the
+"verdicts from the API" rule exists to catch). Tagged v2.95.0, the
+hundred and sixteenth tag: floats that print in a form that reads
+back, and conversions that refuse what a literal refuses. Six
+archives; unverified until both aarch64 archives have been
+downloaded cold and run here, next tick.
