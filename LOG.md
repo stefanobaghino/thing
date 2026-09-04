@@ -11105,3 +11105,51 @@ the corpus scans to exactly five deliberate warnings; six assets on
 the tag; the site answers 200 and already carries the report example
 in its cookbook and lib/csv.ting on its stdlib page. Working tree
 clean.
+
+## 2026-09-05 — Iteration 620: replenishment — arguments that can be left out
+
+Backlog empty. The evidence this time came from writing three modules
+in a row and hitting the same wall in each.
+
+`lib/csv.ting` has `parse` and `parse_with`, `text` and `text_with`.
+`lib/list.ting` has `sort_with` and `zip_with`; `lib/map.ting` has
+`merge_with`. Every one of those pairs exists because a ting function
+takes exactly the arguments it declares: there is no way to say "this
+one has a sensible value unless you say otherwise", so the sensible
+value becomes a second function that calls the first. Meanwhile the
+builtins have had optional arguments all along — `exit()`, `range`,
+`json_str(v, indent)`, `assert(cond, msg)` — so the language already
+expects the idea; only user functions are shut out of it.
+
+Next milestone: **arguments that can be left out** (v2.102.0,
+v2.103.0). `fn f(a, b = 1)`, with defaults after the required
+parameters.
+
+Decisions to make now.
+
+Defaults are evaluated at each call, in the callee's own scope, left
+to right, so a later default may name an earlier parameter. That also
+means `fn f(xs = [])` gives a fresh list every call: the mutable
+default trap that catches every Python programmer once cannot exist
+here, and it costs nothing to close it now.
+
+No new keyword and no new token: `=` inside a parameter list is a
+syntax error today, so nothing that parses now changes meaning.
+Additive, as 2.x requires.
+
+The strokes:
+1. Lexer and parser: defaults in a parameter list, required
+   parameters first, with the error when they are not.
+2. The tree-walker fills missing arguments; arity messages become a
+   range.
+3. The VM does the same, byte-identical, with differential lines —
+   the calling convention is the risky part of this milestone and the
+   differential test is what makes the risk cheap.
+4. `--check`'s arity warning and the LSP's hover learn the range.
+5. The formatter, and the grammar fuzzer's alphabet.
+6. Docs and selftests.
+7. RELEASE v2.102.0, verify, health tick.
+
+The existing `*_with` pairs stay: removing them would break programs,
+and the 2.x promise is additive only. They stop being the pattern new
+code has to follow, which is the point.
