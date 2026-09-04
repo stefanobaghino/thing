@@ -17,11 +17,11 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 260 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 261 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, nine warnings, --strict), --doc (names, module, file, or
+  imports, nine warnings, --strict, --watch), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast, --watch, per-file check counts), --profile (calls and self
   time per function and builtin, top twenty), --lsp (thirteen
@@ -213,12 +213,13 @@ holds only the current milestone and the standing rules.
   reasoning in LOG.md.
 - 535: --test --watch — an mtime-and-length poll re-runs the files
   whenever one changes, is added or goes away, a rule line per run
-  naming the cause.
+  naming the cause. 536: --check and --fmt-check watch too, over one
+  shared loop; --fmt --watch is refused (it would answer its own
+  rewrites).
 - Backlog (one per tick, in order):
-  (1) --watch for --check and --fmt-check, new files
-  included; (2) RELEASE v2.87.0; (3) a script can arrive on stdin
-  (ting -), with args and an honest word about input(); (4) the
-  docs read the terminal; (5) RELEASE v2.88.0; (6) health tick +
+  (1) RELEASE v2.87.0; (2) a script can arrive on stdin
+  (ting -), with args and an honest word about input(); (3) the
+  docs read the terminal; (4) RELEASE v2.88.0; (5) health tick +
   audit.
 - Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).

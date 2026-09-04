@@ -2334,73 +2334,101 @@ fn test_flag_expands_directories() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
-/// `--test --watch` runs the files, then runs them again whenever one
-/// of them changes on disk — a rule line naming the run and its cause
-/// separating one run from the next. Nothing here waits on a
-/// stopwatch: each step polls the child's output until what it is
-/// waiting for arrives, or a generous deadline runs out.
-#[test]
-fn test_flag_watch_runs_again_when_a_file_changes() {
-    let root = std::env::temp_dir().join(format!("ting-watch-{}", std::process::id()));
-    let _ = std::fs::remove_dir_all(&root);
-    std::fs::create_dir_all(&root).unwrap();
-    let a = root.join("a.ting");
-    std::fs::write(&a, "assert(1 == 1, \"one\");\n").unwrap();
+/// A watching child and the output it has produced so far.
+/// `--watch` never exits on its own, so its stdout is drained by a
+/// thread into a buffer the test polls, and the child is killed when
+/// the test is done with it. Nothing here waits on a stopwatch: every
+/// step polls until what it expects arrives, or a generous deadline
+/// runs out.
+struct Watcher {
+    child: std::process::Child,
+    seen: std::sync::Arc<std::sync::Mutex<String>>,
+}
 
-    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
-        .args(["--test", "--watch", root.to_str().unwrap()])
-        .stdout(Stdio::piped())
-        .stderr(Stdio::null())
-        .spawn()
-        .expect("failed to run ting");
-
-    // The child never exits on its own, so its output is drained by a
-    // thread and read from a shared buffer as it arrives.
-    let seen = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
-    let sink = std::sync::Arc::clone(&seen);
-    let mut out = child.stdout.take().unwrap();
-    std::thread::spawn(move || {
-        let mut buf = [0u8; 4096];
-        while let Ok(n) = std::io::Read::read(&mut out, &mut buf) {
-            if n == 0 {
-                break;
-            }
-            sink.lock()
-                .unwrap()
-                .push_str(&String::from_utf8_lossy(&buf[..n]));
+impl Watcher {
+    fn spawn(args: &[&str]) -> Watcher {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("failed to run ting");
+        let seen = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
+        // Warnings go to stderr and results to stdout; a watcher's
+        // reader wants both, in one buffer.
+        for stream in [
+            Box::new(child.stdout.take().unwrap()) as Box<dyn std::io::Read + Send>,
+            Box::new(child.stderr.take().unwrap()),
+        ] {
+            let sink = std::sync::Arc::clone(&seen);
+            let mut stream = stream;
+            std::thread::spawn(move || {
+                let mut buf = [0u8; 4096];
+                while let Ok(n) = stream.read(&mut buf) {
+                    if n == 0 {
+                        break;
+                    }
+                    sink.lock()
+                        .unwrap()
+                        .push_str(&String::from_utf8_lossy(&buf[..n]));
+                }
+            });
         }
-    });
-    let wait_for = |needle: &str| -> bool {
+        Watcher { child, seen }
+    }
+
+    fn wait_for(&self, needle: &str) -> bool {
         let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
         while std::time::Instant::now() < deadline {
-            if seen.lock().unwrap().contains(needle) {
+            if self.seen().contains(needle) {
                 return true;
             }
             std::thread::sleep(std::time::Duration::from_millis(50));
         }
         false
-    };
+    }
 
-    let first = wait_for("-- run 1 ");
-    let ran = first && wait_for("1 passed, 0 failed");
+    fn seen(&self) -> String {
+        self.seen.lock().unwrap().clone()
+    }
+}
+
+impl Drop for Watcher {
+    fn drop(&mut self) {
+        let _ = self.child.kill();
+        let _ = self.child.wait();
+    }
+}
+
+/// `--test --watch` runs the files, then runs them again whenever one
+/// of them changes on disk — a rule line naming the run and its cause
+/// separating one run from the next.
+#[test]
+fn test_flag_watch_runs_again_when_a_file_changes() {
+    let root = std::env::temp_dir().join(format!("ting-watch-test-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let a = root.join("a.ting");
+    std::fs::write(&a, "assert(1 == 1, \"one\");\n").unwrap();
+
+    let w = Watcher::spawn(&["--test", "--watch", root.to_str().unwrap()]);
+    let first = w.wait_for("-- run 1 ") && w.wait_for("1 passed, 0 failed");
     // A file added to a watched directory joins the next run.
     std::fs::write(root.join("b.ting"), "assert(2 == 2, \"two\");\n").unwrap();
-    let added = ran && wait_for("-- run 2: ") && wait_for("2 passed, 0 failed");
+    let added = first && w.wait_for("-- run 2: ") && w.wait_for("2 passed, 0 failed");
     // An edit to a file already watched sets off another run.
     std::fs::write(
         &a,
         "assert(3 == 3, \"three\");\nassert(4 == 4, \"four\");\n",
     )
     .unwrap();
-    let changed = added && wait_for("-- run 3: ");
+    let changed = added && w.wait_for("-- run 3: ");
 
-    let _ = child.kill();
-    let _ = child.wait();
-    let seen = seen.lock().unwrap().clone();
+    let seen = w.seen();
+    drop(w);
     let _ = std::fs::remove_dir_all(&root);
 
     assert!(first, "no first run:\n{seen}");
-    assert!(ran, "first run did not finish:\n{seen}");
     assert!(added, "a new file did not set off a run:\n{seen}");
     assert!(changed, "an edit did not set off a run:\n{seen}");
     assert!(seen.contains("b.ting added"), "{seen}");
@@ -2412,4 +2440,46 @@ fn test_flag_watch_runs_again_when_a_file_changes() {
         .find(|l| l.starts_with("-- run 1 "))
         .expect("no rule line");
     assert_eq!(rule.chars().count(), 80, "{rule:?}");
+}
+
+/// `--check --watch` and `--fmt-check --watch` re-run the same way,
+/// and `--fmt --watch` — which would answer its own rewrites — is a
+/// usage error naming the two modes that write nothing.
+#[test]
+fn check_and_fmt_check_watch_too() {
+    let root = std::env::temp_dir().join(format!("ting-watch-check-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let a = root.join("a.ting");
+    std::fs::write(&a, "let x = 1;\nprint(x);\n").unwrap();
+
+    let w = Watcher::spawn(&["--check", "--watch", root.to_str().unwrap()]);
+    let first = w.wait_for("-- run 1 ");
+    std::fs::write(&a, "let x = 1;\nprint(nope);\n").unwrap();
+    let checked = first && w.wait_for("-- run 2: ") && w.wait_for("`nope` is bound nowhere");
+    let seen = w.seen();
+    drop(w);
+    assert!(first, "no first check:\n{seen}");
+    assert!(checked, "the edited file was not checked again:\n{seen}");
+
+    std::fs::write(&a, "let x = 1;\nprint(x);\n").unwrap();
+    let w = Watcher::spawn(&["--fmt-check", "--watch", root.to_str().unwrap()]);
+    let first = w.wait_for("-- run 1 ");
+    std::fs::write(&a, "let x   =  1;\nprint( x );\n").unwrap();
+    let noticed = first && w.wait_for("would reformat") && w.wait_for("-- run 2: ");
+    let seen = w.seen();
+    drop(w);
+    assert!(first, "no first fmt check:\n{seen}");
+    assert!(noticed, "the edited file was not re-checked:\n{seen}");
+
+    // Rewriting in place under a watch would trigger the watch.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--fmt", "--watch", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("--fmt-check or --fmt --diff"), "{stderr}");
+
+    let _ = std::fs::remove_dir_all(&root);
 }

@@ -9139,3 +9139,32 @@ its own. Nothing in it asserts an order that timings could invert:
 it waits for run 1, adds a file, waits for run 2, edits a file,
 waits for run 3, and checks the causes by name. 260 Rust tests, all
 green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 536: the checker and the formatter watch too
+
+CI green on 535 (API verdict). `--watch` now belongs to `--check` and
+`--fmt-check` as well as `--test`, which took generalising the loop
+rather than repeating it: `watch(paths, tap, pass)` takes the pass as
+a closure, so the three modes share the snapshot, the poll, the rule
+line and the causes, and each mode keeps its own argument parsing.
+`run_check` split into the parse and a `check_pass` the same way
+`run_tests` split last tick; `run_fmt` now takes a slice, so a watch
+can call it again without cloning its arguments.
+
+One mode is refused. `ting --fmt --watch` would rewrite a file, see
+the modification time it had just written, and run again forever —
+the watcher answering its own writes. So `--watch` is accepted only
+where the pass writes nothing: `--fmt-check`, and `--fmt --diff`.
+Anything else exits 2 with a line naming those two. The same reason
+is why nothing here debounces: a poll that only ever observes other
+people's edits does not need to.
+
+The two tests share a `Watcher` that spawns the binary, drains
+stdout and stderr into one buffer from a thread, polls it for what
+it is waiting for against a sixty-second deadline, and kills the
+child on drop. Both streams, because a checker's warnings arrive on
+stderr while its rule lines arrive on stdout, and a test that
+watched only one of them would be watching half the output. 261 Rust
+tests, green on both engines.

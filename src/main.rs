@@ -27,6 +27,8 @@ fn main() -> ExitCode {
                  \x20 ting --fmt-check <paths...> exit 1 if any file needs reformatting\n\
                  \x20 ting --check <paths...>     report syntax errors without running\n\
                  \x20   [--strict]                warnings fail the check too\n\
+                 \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
+                 \x20                             (--fmt-check and --fmt --diff take --watch too)\n\
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
                  \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
@@ -59,10 +61,24 @@ fn main() -> ExitCode {
         // `--diff`: show what --fmt would change, touch nothing.
         let diff = rest.iter().any(|a| a == "--diff");
         rest.retain(|a| a != "--diff");
+        let watching = rest.iter().any(|a| a == "--watch");
+        rest.retain(|a| a != "--watch");
         if let Some(a) = rest.iter().find(|a| is_option(a)) {
             return unknown_option(a);
         }
-        return run_fmt(check, diff, rest);
+        // Watching a formatter that rewrites in place would answer
+        // its own writes forever, so `--watch` is for the two modes
+        // that touch nothing: `--fmt-check` and `--fmt --diff`.
+        if watching && !check && !diff {
+            eprintln!(
+                "ting: --watch needs a mode that writes nothing: --fmt-check or --fmt --diff"
+            );
+            return ExitCode::from(2);
+        }
+        if watching {
+            return watch(&rest, false, || run_fmt(check, diff, &rest));
+        }
+        return run_fmt(check, diff, &rest);
     }
     if args.peek().map(String::as_str) == Some("--check") {
         args.next();
@@ -279,14 +295,25 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
     // check too, for hooks and CI that want them enforced.
     let strict = args.iter().any(|a| a == "--strict");
     args.retain(|a| a != "--strict");
+    let watching = args.iter().any(|a| a == "--watch");
+    args.retain(|a| a != "--watch");
     if let Some(a) = args.iter().find(|a| is_option(a)) {
         return unknown_option(a);
     }
     if args.is_empty() {
-        eprintln!("usage: ting --check [--strict] <files or directories...>");
+        eprintln!("usage: ting --check [--strict] [--watch] <files or directories...>");
         return ExitCode::from(2);
     }
-    let files = expand_paths(&args);
+    if watching {
+        return watch(&args, false, || check_pass(&args, strict));
+    }
+    check_pass(&args, strict)
+}
+
+/// One pass of the checker: what plain `--check` does start to
+/// finish, and what `--watch` repeats.
+fn check_pass(args: &[String], strict: bool) -> ExitCode {
+    let files = expand_paths(args);
     if files.is_empty() {
         eprintln!("ting: no .ting files found under {}", args.join(" "));
         return ExitCode::from(2);
@@ -362,14 +389,14 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     let mut fail_fast = false;
     let mut jobs = 1usize;
     let mut slow = 0usize;
-    let mut watch = false;
+    let mut watching = false;
     let mut paths = Vec::new();
     let mut it = args.into_iter();
     while let Some(a) = it.next() {
         if a == "--tap" {
             tap = true;
         } else if a == "--watch" {
-            watch = true;
+            watching = true;
         } else if a == "--fail-fast" {
             fail_fast = true;
         } else if a == "--slow" {
@@ -413,25 +440,26 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         jobs,
         slow,
     };
-    if watch {
-        return watch_tests(&paths, &opts);
+    if watching {
+        return watch(&paths, opts.tap, || test_pass(&paths, &opts));
     }
     test_pass(&paths, &opts)
 }
 
-/// `--watch`: run the files, then run them again every time one of
-/// them changes. The paths named on the command line are expanded
-/// afresh each time, so a file added to a watched directory joins the
-/// next run. Nothing but Ctrl-C ends it.
-fn watch_tests(paths: &[String], opts: &TestRun) -> ExitCode {
+/// `--watch`: run the pass, then run it again every time one of the
+/// watched files changes. The paths named on the command line are
+/// expanded afresh each time, so a file added to a watched directory
+/// joins the next run. Nothing but Ctrl-C ends it, so the exit code
+/// the pass returns is never anyone's answer.
+fn watch(paths: &[String], tap: bool, mut pass: impl FnMut() -> ExitCode) -> ExitCode {
     let mut run = 1usize;
     let mut cause = String::new();
     loop {
         // Snapshot before the run, not after: an edit made while the
-        // tests are running is a change too, and must not be lost.
+        // pass is running is a change too, and must not be lost.
         let before = stamps(paths);
-        rule(opts.tap, run, &cause);
-        let _ = test_pass(paths, opts);
+        rule(tap, run, &cause);
+        let _ = pass();
         cause = wait_for_change(&before, paths);
         run += 1;
     }
@@ -732,14 +760,14 @@ fn engine_name() -> &'static str {
     }
 }
 
-fn run_fmt(check: bool, diff: bool, args: Vec<String>) -> ExitCode {
+fn run_fmt(check: bool, diff: bool, args: &[String]) -> ExitCode {
     if args.is_empty() {
         eprintln!(
-            "usage: ting --fmt [--diff] <files or directories...> | ting --fmt-check <files or directories...>"
+            "usage: ting --fmt [--diff] [--watch] <files or directories...> | ting --fmt-check [--watch] <files or directories...>"
         );
         return ExitCode::from(2);
     }
-    let files = expand_paths(&args);
+    let files = expand_paths(args);
     if files.is_empty() {
         eprintln!("ting: no .ting files found under {}", args.join(" "));
         return ExitCode::from(2);
