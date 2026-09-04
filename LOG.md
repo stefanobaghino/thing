@@ -9532,3 +9532,33 @@ script see the filesystem (v2.89.0), the module that makes them
 comfortable and the docs that explain why they disagree with each
 other (v2.90.0), both tags cold-verified. Next tick is the health
 tick that closes it.
+
+---
+
+## 2026-09-04 — Iteration 553: health tick — milestone "the working directory" complete
+
+Everything green.
+
+The full suite in release with the enlarged budgets: 50000
+differential cases, 20000 formatter cases over LF and CRLF, the
+crash fuzzer including cyclic values, and both engines. All six
+bench checksums match bench/BASELINE.md exactly. The timings were
+noisier than usual on this shared Pi — fib on the tree-walker read
+847 ms against a 601 ms baseline, json 353 against 156, while lists
+came in slower on the VM than on eval — which is exactly the kind
+of reading the standing rule exists for: the checksums decide, the
+timings are weather.
+
+Audits: six assets each on v2.88.0, v2.89.0 and v2.90.0. All nine
+site paths answer 200, the published changelog reads v2.90.0, and
+the stdlib page already says "Seven modules", so the Pages deploy
+carried the new module's documentation without help. The corpus scan
+reports exactly five warnings, the deliberate ones. No open pull
+requests; the tree is clean.
+
+Milestone "the working directory" (the thirty-eighth since the
+restart) is closed: `list_dir`, `exists`, `is_dir` and `make_dir`;
+`lib/fs.ting` with eleven functions for paths and walking; the docs
+that explain why the builtins disagree with one another; two tags,
+both cold-verified here. The backlog is empty, so the next tick is a
+replenishment.

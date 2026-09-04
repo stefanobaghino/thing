@@ -236,13 +236,16 @@ holds only the current milestone and the standing rules.
   549: lib/fs.ting — eleven functions, paths split on both separators
   and joined with "/", plus entries/walk/walk_ext.
   550: the docs read the filesystem (reference, tutorial, README).
-- v2.90.0 VERIFIED (111th tag; strokes 549, 550; both aarch64
-  archives executed here).
 - v2.89.0 VERIFIED (110th tag; strokes 545, 546; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  (1) health tick + audit (closes milestone "the working
-  directory").
+- v2.90.0 VERIFIED (111th tag; strokes 549, 550; both aarch64
+  archives executed here).
+- 553: health tick + audit green — milestone "the working
+  directory" complete (all six bench checksums match; five corpus
+  warnings; six assets per tag; the site serves v2.90.0 and seven
+  modules).
+- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
+  rule): survey, then design the next milestone.
 - Found, not yet acted on: make_dir has no counterpart — a script
   can create a directory but not remove a file or directory, so a
   ting test that builds a tree cannot tidy up after itself (549).
