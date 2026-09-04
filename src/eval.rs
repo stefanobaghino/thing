@@ -283,6 +283,7 @@ const EMBEDDED_STDLIB: &[(&str, &str)] = &[
     ("lib/math.ting", include_str!("../lib/math.ting")),
     ("lib/string.ting", include_str!("../lib/string.ting")),
     ("lib/test.ting", include_str!("../lib/test.ting")),
+    ("lib/time.ting", include_str!("../lib/time.ting")),
 ];
 
 /// The embedded stdlib as (path, source) pairs, for tooling that wants

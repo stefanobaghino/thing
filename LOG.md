@@ -10374,3 +10374,34 @@ bite.
 
 Gate green: fmt, clippy, 281 Rust tests, 648 selftest checks, corpus
 at exactly five warnings. 55 builtins.
+
+## 2026-09-04 — Iteration 586: lib/time.ting
+
+Fourteen functions in pure ting turn `time_ms()` into civil dates and
+back. `iso(ms)` gives `2026-09-04T20:33:12Z`, `date` and `clock` give
+its halves, `parts` gives every field including the weekday, and
+`from_parts` is the inverse. `span(ms)` reads a duration as
+`1h 2m 3s`, which is what a script wants after subtracting two
+`time_ms()` readings.
+
+Everything is UTC and there is no time zone anywhere in it. A zone is
+a database — a compiled one, updated several times a year — and this
+is a zero-dependency module in a scripting language. Saying so in the
+module comment is better than pretending the question does not exist.
+
+The conversions are Hinnant's `days_from_civil` and `civil_from_days`,
+which are exact over the whole range an i64 of milliseconds can reach.
+They rely on truncating division, which is what ting's `/` does, but
+the millisecond-to-day step needs the *floor* — so the module carries
+`fdiv` and `fmod` and uses them wherever a value can be negative. That
+is why `iso(-1)` is `1969-12-31T23:59:59Z` rather than a date in 1970
+with a negative time of day; the selftest pins nine instants either
+side of the epoch and round-trips each.
+
+Also pinned: the year lengths across 1970, 1999, 2000, 2001, 2024,
+2100 and 2400, which is the shortest way to test the century rules
+without testing an algorithm against itself.
+
+Gate green: fmt, clippy, 281 Rust tests, 683 selftest checks (13
+files now), corpus at exactly five warnings. Eight stdlib modules,
+147 functions.

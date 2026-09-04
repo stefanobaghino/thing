@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 55 builtins; seven embedded stdlib modules
-  (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 281 Rust tests
+- 55 builtins; eight embedded stdlib modules
+  (list/map/string/math/json/fs/test/time, 147 functions, guarded); 29 ting
+  programs (13 selftest files, 17 examples with .out); 281 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -316,17 +316,17 @@ holds only the current milestone and the standing rules.
   before the pause; wasm refuses it. Correction: 584's survey said
   ting had no clock — time_ms() has existed for many versions, and
   the backlog below is the corrected one.
+- 586: lib/time.ting — fourteen functions, UTC only and saying so,
+  Hinnant's conversions with floor division for pre-epoch instants.
 - Backlog (one per tick, in order):
-  (1) lib/time.ting: epoch millis to civil date and ISO 8601, pure
-  ting, leap years included;
-  (2) RELEASE v2.97.0;
-  (3) random() in [0, 1), random_int(lo, hi) half-open like range,
+  (1) RELEASE v2.97.0;
+  (2) random() in [0, 1), random_int(lo, hi) half-open like range,
   and seed(n) for reproducibility; none of them in any fuzzer
   alphabet, since the differential test runs the same source twice,
   and tests assert the property (same seed, same sequence) rather
   than a pinned constant;
-  (4) the docs read the clock and the dice; (5) RELEASE v2.98.0;
-  (6) health tick + audit.
+  (3) the docs read the clock and the dice; (4) RELEASE v2.98.0;
+  (5) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

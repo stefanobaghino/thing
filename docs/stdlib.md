@@ -1,7 +1,7 @@
 # The ting standard library
 
-Seven modules written in ting itself — list, map, string, math, json,
-fs and test, 133 functions between them — living in `lib/` and also
+Eight modules written in ting itself — list, map, string, math, json,
+fs, test and time, 147 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -180,6 +180,28 @@ binary runs on accepts.
 | `walk(d)` | every file at or below a directory, sorted, directories themselves left out |
 | `walk_ext(d, e)` | the files `walk` finds whose extension is `e` |
 | `remove_tree(p)` | every file and directory at or below `p`, gone; a path that is not there is not an error |
+
+## lib/time.ting
+
+Milliseconds since the Unix epoch, UTC throughout: there is no time
+zone here, because a zone is a database and this is a module.
+
+| Function | Does |
+|----------|------|
+| `parts(ms)` | every field of an instant: `year`, `month`, `day`, `hour`, `minute`, `second`, `ms`, `weekday` (0 is Sunday) |
+| `from_parts(y, mo, d, h, mi, s)` | the milliseconds for a civil date and time |
+| `iso(ms)` | ISO 8601 in UTC: `2026-09-04T20:33:12Z` |
+| `date(ms)` | the date as `YYYY-MM-DD` |
+| `clock(ms)` | the time of day as `HH:MM:SS` |
+| `span(ms)` | a duration as `1h 2m 3s`, or milliseconds under a second; negatives keep the sign |
+| `is_leap(y)` | whether the year has a February 29th |
+| `days_in_month(y, m)` | length of that month; a month outside 1-12 errors |
+| `days_from_civil(y, m, d)` | days since 1970-01-01 for a civil date |
+| `civil_from_days(z)` | the `{"year", "month", "day"}` for a day count |
+| `weekday_name(n)` | the name of a weekday number, 0 being Sunday; outside 0-6 errors |
+| `fdiv(a, b)` / `fmod(a, b)` | floor division and its remainder, which `/` and `%` do not do for negatives |
+| `fmod(a, b)` | see `fdiv` |
+| `pad(n, width)` | a number left-padded with zeros |
 
 ## lib/test.ting
 
