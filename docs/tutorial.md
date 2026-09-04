@@ -562,6 +562,50 @@ steps behave; `ting script.ting | head` exits quietly when the reader
 goes away, like any well-behaved filter. The cookbook's `pipeline`
 example is a complete stdin-to-report script.
 
+### Driving other programs
+
+The other direction: `run(cmd)` and `run(cmd, argv)` start a program,
+wait for it, and hand back a map of `code`, `out` and `err`. The
+arguments are a list, never a shell string — there is no quoting to
+get wrong, no word splitting to be surprised by, and nothing for a
+filename with a space in it to inject. A script that genuinely wants
+a shell asks for one by name, `run("sh", ["-c", ...])`, and then it
+is visibly the script's decision.
+
+A program that is not there is an error, not an exit code, because
+"not installed" and "ran and failed" are different facts:
+
+```ting
+let missing = try(fn() { return run("no-such-program-anywhere-xyz"); });
+print(starts_with(missing["err"], "run: cannot start "));
+```
+
+```text
+true
+```
+
+`lib/sh.ting` covers what most scripts do with that map: `ok` for
+whether it exited zero, `check` for the output while insisting it
+did, and `lines` for the output split up. `which` asks whether a
+program is there before you need it, which is the guard worth
+writing:
+
+```ting
+let sh = import("lib/sh.ting");
+let git = sh["which"]("git");
+if git == nil {
+  eprint("git is not installed; skipping the version check");
+} else {
+  print(len(trim(sh["check"](git, ["--version"]))) > 0);
+}
+```
+
+That snippet uses the last two pieces. `eprint(...)` is `print` to
+stderr, after flushing stdout so a note can never overtake the data
+it is about — which is what lets a ting script be a filter that also
+talks. And `cwd()` says which directory the process is standing in,
+for the scripts that care.
+
 ## Files and directories
 
 Four builtins let a script see the tree it is running in, and

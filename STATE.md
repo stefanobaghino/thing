@@ -348,10 +348,12 @@ holds only the current milestone and the standing rules.
 - 594: replenishment tick. New milestone "driving other programs"
   (v2.99.0, v2.100.0): ting is a good shell citizen but cannot call
   anything, has no stderr of its own and no cwd.
+- 599: tutorial subsection "Driving other programs". Its snippets are
+  executed on every CI platform and no program exists on all three,
+  so the happy path is written behind a which() guard — the idiom the
+  section teaches anyway.
 - Backlog (one per tick, in order):
-  (1) the docs learn to drive (reference rows, second half of the
-  tutorial's shell section);
-  (2) RELEASE v2.99.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.99.0; (2) verify; (3) health tick.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as

@@ -10659,3 +10659,23 @@ so Windows runs the refusals and Unix runs the whole thing. Its last
 check is the one that matters most: arguments with spaces arrive
 exactly as written, because there is no shell in between to re-split
 them.
+
+## 2026-09-05 — Iteration 599: the docs learn to drive
+
+A "Driving other programs" subsection under the tutorial's shell
+chapter, which until now only explained ting as something a shell
+calls. It carries the argv-not-a-shell-string argument, the
+missing-program-is-an-error rule as an executed snippet, `lib/sh.ting`
+behind a `which` guard, and the two smaller builtins.
+
+Writing portable snippets for this was the constraint that shaped the
+section, and it shaped it for the better. The tutorial's blocks are
+executed on every CI platform, and there is no program that Linux,
+macOS and Windows all have — `echo` on Windows is a shell builtin,
+not a file. So the happy path is written the way a careful script
+would write it anyway: ask `which` first, say something on stderr and
+carry on when the answer is nil. The guard is not a workaround here;
+it is the lesson.
+
+The reference rows landed with the builtins in 595 and 596, the
+module table in 598, so the docs are now whole for this milestone.
