@@ -10021,3 +10021,14 @@ bullet joins it.
 Gate green: fmt, clippy, 274 Rust tests, tutorial snippets executed,
 42 corpus files formatted. Milestone "bits and numbers" is code- and
 docs-complete; v2.94.0 is next.
+
+## 2026-09-04 — Iteration 571: v2.94.0
+
+CI green on 570 (API verdict). Tagged v2.94.0, the hundred and
+fifteenth tag: the bit operators, their two refusals, and the docs
+that place them. With v2.93.0 that closes milestone "bits and
+numbers" — the literals and the operations they exist for shipped
+one tag apart, which is the right order only because the literals
+were useless alone and the operators would have been unreadable
+without them. Six archives; unverified until both aarch64 archives
+have been downloaded cold and run here, next tick.

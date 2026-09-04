@@ -281,8 +281,11 @@ holds only the current milestone and the standing rules.
 - 570: the docs read the bits (reference operator table and prose,
   a tutorial section); the stale "Call depth: 200" bullet in Limits
   corrected — the prose had been fixed in 560, the bullet had not.
+- 571: v2.94.0 tagged (115th tag; strokes 569, 570) — UNVERIFIED
+  until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.94.0; (2) health tick + audit.
+  (1) verify the v2.94.0 release (cold download, both aarch64);
+  (2) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
