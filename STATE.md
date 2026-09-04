@@ -431,8 +431,13 @@ holds only the current milestone and the standing rules.
   now, and a name a sibling default reads counts as used.
 - v2.102.0 VERIFIED (123rd tag; strokes 621-624; both aarch64
   archives executed here on defaults, both engines hashing alike).
+- 627: health tick green — six bench checksums match baseline, 50000
+  differential + 20000 formatter + 2000000 pattern cases at seed 627,
+  corpus at five warnings, six assets, site serving v2.102.0 and both
+  new docs passages. Milestone "arguments that can be left out" is
+  complete.
 - Backlog (one per tick, in order):
-  (1) health tick.
+  (1) replenishment tick — the backlog is empty.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.

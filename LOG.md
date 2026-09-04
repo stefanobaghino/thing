@@ -11268,3 +11268,24 @@ workflow name alone and fired on v2.101.0's run, which had been
 sitting completed for hours. The SHA pin is not decoration — a
 workflow name repeats every tag. Re-armed on the run id and the
 verdict came from the API, as the rule already says.
+
+## 2026-09-05 — Iteration 627: health tick, and the milestone closes
+
+All six bench checksums match bench/BASELINE.md (fib, json, lists,
+maps, stdlib, strings); timings drift the way a shared host drifts and
+decide nothing. 50000 differential, 20000 formatter and 2000000
+pattern cases at seed 627, all clean — the pattern fuzzer got ten
+times its usual budget because 200000 cases now finish in under half
+a second, and a check that cheap should be bought in bulk. The corpus
+scan is at exactly the five deliberate warnings. The site answers 200
+on all nine paths, its changelog names v2.102.0, and the reference and
+tutorial carry the new passages on optional arguments.
+
+Milestone "arguments that can be left out" is complete: the feature
+landed in one shared Interpreter::call (so the engines agree by
+construction), the checker and hover learned the range, the formatter
+needed nothing and now says so in a test, the fuzz generator emits
+defaults at every call length, and the docs and a selftest pin what
+the feature promises. Two bugs it found on the way in: the compiler's
+capture analysis did not walk parameter defaults, and the checker read
+every identifier between the parentheses as a parameter.
