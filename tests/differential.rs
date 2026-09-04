@@ -71,6 +71,12 @@ fn expressions_match_across_engines() {
         "print(pop([]));",
         "print(min([1, \"a\"]));",
         "print(upper(\"héllo\"), slice(\"hello\", 1, -1), abs(-4));",
+        // defaults: filled at the call, seeing earlier parameters
+        "fn f(a, b = a * 2) { return [a, b]; } print(f(3), f(3, 9));",
+        "fn f(x, xs = []) { push(xs, x); return xs; } print(f(1), f(2));",
+        "fn f(a, b = 1) { return a; } print(f());",
+        "fn outer(n = 2) { let g = fn(m = n + 1) { return m; }; return g(); } print(outer(), outer(10));",
+        "fn f(a = fail(\"no\")) { return a; } print(f());",
         // patterns: the map a match returns, a scan, and a refusal
         "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
         "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",

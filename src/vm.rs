@@ -232,6 +232,7 @@ fn exec<W: Write>(
                     name: proto.name.as_deref().map(|n| n.into()),
                     def: proto.def,
                     params: proto.params.iter().map(|p| p.as_str().into()).collect(),
+                    defaults: std::rc::Rc::clone(&proto.defaults),
                     body: eval::FnBody::Chunk(std::rc::Rc::clone(&proto.chunk)),
                     env: interp.env_handle(),
                     origin: interp.defining_origin(),

@@ -11153,3 +11153,36 @@ The strokes:
 The existing `*_with` pairs stay: removing them would break programs,
 and the 2.x promise is additive only. They stop being the pattern new
 code has to follow, which is the point.
+
+## 2026-09-05 — Iteration 621: parameters with defaults
+
+`fn f(a, b = 1)` parses, and both engines fill what the caller left
+out. Three planned strokes collapsed into one, for a reason worth
+recording: user calls go through a single `Interpreter::call`, so the
+filling happens once and both engines get it by construction rather
+than by agreement.
+
+The AST grew a `Param` — a name and an optional expression — which
+touched fourteen places that had been passing `Vec<String>` around.
+Mechanical, except where it was not.
+
+Defaults are evaluated at the call, in a scratch scope holding the
+arguments bound so far, so `fn f(a, b = a * 2)` works and
+`fn f(xs = [])` hands back a fresh list every time. The mutable
+default trap does not exist here, and it cost nothing to close.
+
+The one real bug, caught by running both engines side by side before
+committing: a nested closure whose default named an enclosing
+function's parameter said "undefined variable" on the VM and worked
+on the tree-walker. The compiler's capture analysis walks a nested
+fn's body but had never needed to walk its parameter list; a default
+is code in the parameter list, evaluated later against the closure's
+env, so anything it names has to be captured rather than left in a
+slot. Five lines in `walk_expr`, and the two engines agree again.
+
+Arity messages become a range only when there is one: `f expects 1 to
+2 arguments, got 0`, while a function with no defaults reads exactly
+as it did before.
+
+Five differential corpus lines cover it, including the failing
+default and the nested-closure case that caught the bug.

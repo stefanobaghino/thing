@@ -820,7 +820,7 @@ fn collect_rebindings(
     fn expr(e: &crate::ast::Expr, out: &mut std::collections::HashSet<String>) {
         match &e.kind {
             E::Fn(params, body) => {
-                out.extend(params.iter().cloned());
+                out.extend(params.iter().map(|p| p.name.clone()));
                 collect_rebindings(body, false, out);
             }
             E::List(items) => items.iter().for_each(|i| expr(i, out)),
@@ -1099,7 +1099,7 @@ fn walk_expr(
             walk_expr(idx, tokens, scopes, out);
         }
         E::Fn(params, body) => {
-            scopes.push(params.iter().cloned().collect());
+            scopes.push(params.iter().map(|p| p.name.clone()).collect());
             walk_block(body, tokens, scopes, out);
             scopes.pop();
         }
@@ -1681,7 +1681,9 @@ fn user_fn_params(src: &str, name: &str) -> Option<Vec<String>> {
     let program = crate::parser::parse_program(&tokens).ok()?;
     program.iter().find_map(|stmt| match &stmt.kind {
         crate::ast::StmtKind::Let(n, expr) if n == name => match &expr.kind {
-            crate::ast::ExprKind::Fn(params, _) => Some(params.clone()),
+            crate::ast::ExprKind::Fn(params, _) => {
+                Some(params.iter().map(|p| p.name.clone()).collect())
+            }
             _ => None,
         },
         _ => None,

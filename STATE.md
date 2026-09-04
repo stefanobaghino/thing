@@ -358,6 +358,11 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 621: defaults land in the language. One Interpreter::call fills
+  missing arguments, so both engines agree by construction. The
+  compiler's capture analysis now walks parameter defaults too — a
+  nested default naming an enclosing parameter was a VM-only
+  "undefined variable" until it did.
 - 620: replenishment tick. New milestone "arguments that can be left
   out" (v2.102.0, v2.103.0), chosen from evidence: csv, list and map
   all carry *_with twins that exist only because user functions
@@ -415,16 +420,10 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) lexer/parser: fn f(a, b = expr), required parameters first,
-  with the error when they are not;
-  (2) the tree-walker fills missing arguments; arity messages become
-  a range;
-  (3) the VM does the same, byte-identical, plus differential lines
-  (the calling convention is this milestone's risky part);
-  (4) --check's arity warning and the LSP hover learn the range;
-  (5) the formatter, and the grammar fuzzer's alphabet;
-  (6) docs and selftests;
-  (7) RELEASE v2.102.0; (8) verify; (9) health tick.
+  (1) --check's arity warning and the LSP hover learn the range;
+  (2) the formatter, and the grammar fuzzer's alphabet;
+  (3) docs and selftests;
+  (4) RELEASE v2.102.0; (5) verify; (6) health tick.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.

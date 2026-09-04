@@ -37,7 +37,7 @@ struct Parser<'a> {
 }
 
 /// (params, body, byte offset just past the closing brace)
-type FnParts = (Vec<String>, Rc<Vec<Stmt>>, usize);
+type FnParts = (Vec<crate::ast::Param>, Rc<Vec<Stmt>>, usize);
 
 impl<'a> Parser<'a> {
     fn peek(&self) -> &TokenKind {
@@ -268,11 +268,28 @@ impl<'a> Parser<'a> {
             loop {
                 match self.peek().clone() {
                     TokenKind::Ident(name) => {
-                        if params.contains(&name) {
+                        if params.iter().any(|p: &crate::ast::Param| p.name == name) {
                             return Err(self.error(format!("duplicate parameter '{name}'")));
                         }
                         self.advance();
-                        params.push(name);
+                        // `name = expr` gives the parameter a value for
+                        // the calls that leave it out.
+                        let default = if self.peek() == &TokenKind::Eq {
+                            self.advance();
+                            Some(self.expr_bp(0)?)
+                        } else {
+                            None
+                        };
+                        if default.is_none()
+                            && params
+                                .iter()
+                                .any(|p: &crate::ast::Param| p.default.is_some())
+                        {
+                            return Err(self.error(format!(
+                                "parameter '{name}' has no default but follows one that does"
+                            )));
+                        }
+                        params.push(crate::ast::Param { name, default });
                     }
                     k => {
                         return Err(
@@ -816,6 +833,18 @@ mod tests {
     #[test]
     fn duplicate_parameter_is_an_error() {
         assert_eq!(program_err("fn f(a, a) { }"), "duplicate parameter 'a'");
+    }
+
+    #[test]
+    fn parameters_may_carry_defaults() {
+        assert_eq!(
+            sexpr("fn(a, b = 1, c = b + 1) { return a; }"),
+            "(fn (a (b 1) (c (+ b 1))) (return a))"
+        );
+        assert_eq!(
+            program_err("fn f(a = 1, b) { return a; }"),
+            "parameter 'b' has no default but follows one that does"
+        );
     }
 
     #[test]

@@ -66,6 +66,25 @@ pub struct Expr {
     pub span: Span,
 }
 
+/// One parameter: a name, and the expression standing in for it when
+/// the caller leaves it out. A default is evaluated at each call, in
+/// the callee's own scope, so a later one may name an earlier
+/// parameter and `fn f(xs = [])` gets a fresh list every time.
+#[derive(Debug, Clone, PartialEq)]
+pub struct Param {
+    pub name: String,
+    pub default: Option<Expr>,
+}
+
+impl std::fmt::Display for Param {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match &self.default {
+            Some(e) => write!(f, "({} {e})", self.name),
+            None => f.write_str(&self.name),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExprKind {
     Int(i64),
@@ -83,7 +102,7 @@ pub enum ExprKind {
     Index(Box<Expr>, Box<Expr>),
     /// `fn(a, b) { ... }` — body is Rc-shared with the closures created
     /// from it, so evaluating the same literal twice doesn't clone it.
-    Fn(Vec<String>, Rc<Vec<Stmt>>),
+    Fn(Vec<Param>, Rc<Vec<Stmt>>),
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -185,6 +204,7 @@ impl fmt::Display for Expr {
             }
             ExprKind::Index(base, idx) => write!(f, "(index {base} {idx})"),
             ExprKind::Fn(params, body) => {
+                let params: Vec<String> = params.iter().map(|p| p.to_string()).collect();
                 write!(f, "(fn ({})", params.join(" "))?;
                 for s in body.iter() {
                     write!(f, " {s}")?;

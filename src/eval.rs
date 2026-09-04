@@ -151,6 +151,9 @@ pub struct Function {
     /// Where it was defined, for a profile to point at a line.
     pub def: Span,
     pub params: Vec<Rc<str>>,
+    /// One entry per parameter: the expression standing in for it when
+    /// the caller leaves it out, evaluated at each call.
+    pub defaults: Rc<Vec<Option<crate::ast::Expr>>>,
     pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
     /// The imported file this function was defined in, if any.
@@ -913,7 +916,7 @@ impl<W: Write> Interpreter<W> {
     /// bound to a name and anonymous otherwise.
     pub(crate) fn make_fn(
         &self,
-        params: &[String],
+        params: &[crate::ast::Param],
         body: &Rc<Vec<Stmt>>,
         name: Option<&str>,
         def: Span,
@@ -921,7 +924,8 @@ impl<W: Write> Interpreter<W> {
         Value::Fn(Rc::new(Function {
             name: name.map(Rc::from),
             def,
-            params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
+            params: params.iter().map(|p| Rc::from(p.name.as_str())).collect(),
+            defaults: Rc::new(params.iter().map(|p| p.default.clone()).collect()),
             body: FnBody::Ast(Rc::clone(body)),
             env: Rc::clone(&self.env),
             origin: self.defining_origin(),
@@ -2355,21 +2359,65 @@ impl<W: Write> Interpreter<W> {
         args: Vec<Value>,
         span: Span,
     ) -> Result<Value, RuntimeError> {
-        if args.len() != func.params.len() {
+        // Parameters with a default may be left out; the rest may not.
+        let required = func
+            .defaults
+            .iter()
+            .position(|d| d.is_some())
+            .unwrap_or(func.params.len());
+        let mut args = args;
+        if args.len() < required || args.len() > func.params.len() {
             // Named after the function it was defined as, the same way
             // a trace frame is; a literal has no name to give.
             let who = match &func.name {
                 Some(name) => name.to_string(),
                 None => "an anonymous function".to_string(),
             };
+            let wanted = if required == func.params.len() {
+                crate::diag::plural(func.params.len(), "argument")
+            } else {
+                format!("{required} to {} arguments", func.params.len())
+            };
             return Err(error(
-                format!(
-                    "{who} expects {}, got {}",
-                    crate::diag::plural(func.params.len(), "argument"),
-                    args.len()
-                ),
+                format!("{who} expects {wanted}, got {}", args.len()),
                 span,
             ));
+        }
+        if args.len() < func.params.len() {
+            // Defaults are evaluated here, at the call, in a scope that
+            // already holds the arguments bound so far — so a later
+            // default may name an earlier parameter, and `fn f(xs = [])`
+            // hands back a fresh list every time rather than sharing one.
+            let mut vars: HashMap<Rc<str>, Value> = HashMap::new();
+            for (p, a) in func.params.iter().zip(&args) {
+                vars.insert(Rc::clone(p), a.clone());
+            }
+            let scratch = Rc::new(RefCell::new(Env {
+                vars,
+                parent: Some(Rc::clone(&func.env)),
+            }));
+            let saved = std::mem::replace(&mut self.env, scratch);
+            let mut filled = Ok(());
+            for i in args.len()..func.params.len() {
+                let default = func.defaults[i]
+                    .as_ref()
+                    .expect("a parameter past the required ones has a default");
+                match self.eval(default) {
+                    Ok(v) => {
+                        self.env
+                            .borrow_mut()
+                            .vars
+                            .insert(Rc::clone(&func.params[i]), v.clone());
+                        args.push(v);
+                    }
+                    Err(e) => {
+                        filled = Err(e);
+                        break;
+                    }
+                }
+            }
+            self.env = saved;
+            filled?;
         }
         if self.depth >= self.max_depth {
             return Err(error(
@@ -3634,6 +3682,52 @@ mod tests {
         assert_eq!(
             program_err("re_replace(\"a\", \"a\", \"$3\");"),
             "re_replace: the pattern has no group 3"
+        );
+    }
+
+    #[test]
+    fn a_parameter_with_a_default_may_be_left_out() {
+        assert_eq!(
+            output("fn f(a, b = 2) { return a + b; } print(f(1), f(1, 10));"),
+            "3 11\n"
+        );
+        // A default is evaluated at the call, in the callee's scope, so
+        // it may name an earlier parameter...
+        assert_eq!(
+            output("fn f(a, b = a * 2) { return b; } print(f(3), f(3, 1));"),
+            "6 1\n"
+        );
+        // ...and a fresh list every time, which is the trap this
+        // language will not have.
+        assert_eq!(
+            output("fn f(x, xs = []) { push(xs, x); return xs; } print(f(1), f(2));"),
+            "[1] [2]\n"
+        );
+        // A failing default fails the call.
+        assert_eq!(
+            program_err("fn f(a = fail(\"no\")) { return a; } f();"),
+            "no"
+        );
+    }
+
+    #[test]
+    fn arity_errors_name_the_range_when_there_is_one() {
+        assert_eq!(
+            program_err("fn f(a, b = 1) { return a; } f();"),
+            "f expects 1 to 2 arguments, got 0"
+        );
+        assert_eq!(
+            program_err("fn f(a, b = 1) { return a; } f(1, 2, 3);"),
+            "f expects 1 to 2 arguments, got 3"
+        );
+        // A let-bound literal is named after the binding, as before.
+        assert_eq!(
+            program_err("fn f(a, b) { return a; } f(1);"),
+            "f expects 2 arguments, got 1"
+        );
+        assert_eq!(
+            program_err("let g = fn(a = 1) { return a; }; g(1, 2);"),
+            "g expects 0 to 1 arguments, got 2"
         );
     }
 

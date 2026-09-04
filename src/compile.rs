@@ -90,6 +90,9 @@ pub struct FnProto {
     /// Where the literal starts, for a profile to name a line.
     pub def: Span,
     pub params: Vec<String>,
+    /// The default for each parameter, carried so a compiled function
+    /// fills a missing argument exactly as an interpreted one does.
+    pub defaults: std::rc::Rc<Vec<Option<crate::ast::Expr>>>,
     pub chunk: std::rc::Rc<Chunk>,
 }
 
@@ -118,7 +121,10 @@ struct FnCtx {
     uses_env: bool,
 }
 
-fn compile_stmts(stmts: &[Stmt], func: Option<(&[String], FnCtx)>) -> Result<Chunk, CompileError> {
+fn compile_stmts(
+    stmts: &[Stmt],
+    func: Option<(&[crate::ast::Param], FnCtx)>,
+) -> Result<Chunk, CompileError> {
     let (params, fn_ctx) = match func {
         Some((p, ctx)) => (p.to_vec(), Some(ctx)),
         None => (Vec::new(), None),
@@ -141,7 +147,7 @@ fn compile_stmts(stmts: &[Stmt], func: Option<(&[String], FnCtx)>) -> Result<Chu
     };
     // Parameters are the function's outermost bindings.
     for p in &params {
-        let loc = c.bind(p);
+        let loc = c.bind(&p.name);
         c.chunk.param_locs.push(loc);
     }
     for s in stmts {
@@ -232,7 +238,16 @@ fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
             // Everything inside a nested fn literal is "captured".
             ExprKind::Fn(params, body) => {
                 if in_fn {
-                    out.extend(params.iter().cloned());
+                    out.extend(params.iter().map(|p| p.name.clone()));
+                }
+                // A default is evaluated at the call, against the
+                // closure's env, so whatever it names has to live
+                // there rather than in a slot of the frame that made
+                // the closure.
+                for p in params {
+                    if let Some(d) = &p.default {
+                        walk_expr(d, true, out);
+                    }
                 }
                 body.iter().for_each(|s| walk_stmt(s, true, out));
             }
@@ -634,7 +649,7 @@ impl Compiler {
     /// Compile a fn literal into a proto and emit the MakeFn for it.
     fn closure(
         &mut self,
-        params: &[String],
+        params: &[crate::ast::Param],
         body: &std::rc::Rc<Vec<Stmt>>,
         span: Span,
         name: Option<&str>,
@@ -651,7 +666,8 @@ impl Compiler {
         self.chunk.protos.push(FnProto {
             name: name.map(str::to_string),
             def: span,
-            params: params.to_vec(),
+            params: params.iter().map(|p| p.name.clone()).collect(),
+            defaults: std::rc::Rc::new(params.iter().map(|p| p.default.clone()).collect()),
             chunk: std::rc::Rc::new(chunk),
         });
         let i = (self.chunk.protos.len() - 1) as u32;
