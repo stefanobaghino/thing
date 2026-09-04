@@ -9766,3 +9766,15 @@ checks. The reference already had its rows and paragraph from the
 stroke that added them.
 
 266 Rust tests green, tutorial guard included.
+
+---
+
+## 2026-09-04 — Iteration 561: v2.92.0
+
+CI green on 560 (API verdict). Tagged v2.92.0, the hundred and
+thirteenth tag: the code-point escape, `ord` and `chr`, and the docs
+that read the limits. With v2.91.0 that closes milestone "where it
+says no" — of the three refusals the survey found, two are gone and
+the third, `list_dir` on a path that is not a directory, stays
+because it was earned. Six archives; unverified until both aarch64
+archives have been downloaded cold and run here, next tick.
