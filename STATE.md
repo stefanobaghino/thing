@@ -327,8 +327,12 @@ holds only the current milestone and the standing rules.
 - 590: tutorial section "The clock and the dice". It pins one seeded
   sequence in a doc test, so changing the generator means editing
   docs/tutorial.md; that is the only pinned draw anywhere.
+- 591: v2.98.0 tagged (119th tag; strokes 589, 590) — UNVERIFIED
+  until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.98.0; (2) health tick + audit.
+  (1) verify the v2.98.0 release (cold download, both aarch64);
+  (2) health tick + audit; (3) design the next milestone (the
+  no-idle rule: an empty backlog is a replenishment tick).
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

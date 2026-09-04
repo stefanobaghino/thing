@@ -10476,3 +10476,9 @@ numbers are printed, which pins one sequence of the generator in a
 doc test: changing SplitMix64 now means editing the tutorial. That is
 the price of showing what a seed buys, and it is a fair one, but it
 is deliberate rather than accidental — nowhere else is a draw pinned.
+
+## 2026-09-04 — Iteration 591: release v2.98.0
+
+The 119th tag. Two strokes: the dice (589) and the tutorial section
+that explains them (590). Six assets to build; verification is the
+next tick, cold download of both aarch64 archives as always.
