@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.88.0 (2026-09-04)
+
+- `ting -` runs a script read from standard input: arguments after
+  the dash reach `args()`, diagnostics name the script `-`, and a
+  relative `import` resolves against the working directory. The
+  script is the stream, so `input()` sees end of file.
+- Docs: the reference and tutorial cover watch mode and piped
+  scripts.
+
 ## v2.87.0 (2026-09-04)
 
 - New `--watch` for `--test`, `--check` and `--fmt-check`: the pass
