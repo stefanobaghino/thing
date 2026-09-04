@@ -10932,3 +10932,37 @@ and a generator, and the bench is unmoved — the checksums are
 identical and the timings sit where they have sat for a hundred
 iterations. Growth that does not cost anything is worth recording as
 plainly as growth that does.
+
+## 2026-09-05 — Iteration 612: replenishment — the front door
+
+Backlog empty. This time the survey looked at the project's own code
+rather than at a list of language features, and found two things it
+keeps writing by hand.
+
+Five selftest files open with the same three lines:
+`let err = fn(f) { return try(f)["err"]; };`. When a project copies a
+helper into five files, the library is missing it. And
+`examples/todo.ting` reads `args()` and takes it apart itself, which
+is what every script that takes a flag has to do today.
+
+So: **the script's own front door** (v2.101.0, v2.102.0) — the part
+every script writes before it gets to its actual work.
+
+1. `lib/args.ting`: flags, options with values, positionals, `--`
+   ending the options, and a `--help` generated from the same
+   description the parser is built from, so the two cannot drift.
+2. `lib/err.ting`: the error helpers the project itself keeps
+   rewriting. The five selftests then drop their copies, which is the
+   evidence the module was needed rather than invented.
+3. `lib/csv.ting`: delimited text with quotes and embedded newlines,
+   both directions. The other thing scripts always need and always
+   get subtly wrong.
+4. The docs learn the front door, and an example uses all three
+   together.
+5. RELEASE v2.101.0, verify, health tick.
+
+Not chosen again, with reasons rather than silence. Match
+expressions and any `catch` syntax would need a new keyword, and a
+new keyword breaks a program that used the word as a name — which the
+2.x promise forbids. A set type is a map with `true` in it. Threads
+are still the wrong shape for an interpreter built on Rc.

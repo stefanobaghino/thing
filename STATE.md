@@ -358,6 +358,10 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 612: replenishment tick. New milestone "the script's own front
+  door" (v2.101.0, v2.102.0), chosen from evidence in this repo: five
+  selftests copy the same err helper, and examples/todo.ting takes
+  args() apart by hand.
 - 611: health tick green — bench checksums match, 50000 differential
   + 20000 formatter + 200000 pattern cases at seed 610, corpus at
   five warnings, site serving the patterns reference.
@@ -389,9 +393,18 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  EMPTY. Next tick is a replenishment tick: survey and design the
-  next milestone. Standing candidates, none chosen yet: match
-  expressions, a set type, threads.
+  (1) lib/args.ting: flags, options with values, positionals, "--",
+  and a --help generated from the same description the parser reads,
+  so they cannot drift;
+  (2) lib/err.ting, and the five selftests that hand-roll the same
+  err helper switch to it;
+  (3) lib/csv.ting: quotes and embedded newlines, both directions;
+  (4) the docs learn the front door; an example uses all three;
+  (5) RELEASE v2.101.0; (6) verify; (7) health tick.
+- Not chosen in 612, with reasons: match expressions and catch syntax
+  need a new keyword, and a new keyword breaks a program using that
+  word as a name (the 2.x promise forbids it); a set is a map with
+  true in it; threads are the wrong shape for an Rc interpreter.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
