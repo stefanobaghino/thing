@@ -5,6 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.84.0 (2026-09-04)
+
+- `try` hands a caught failure back whole: `"err"` is the message,
+  `"at"` is the file, line and column it was raised at, and
+  `"trace"` is the calls it came out of, each with the function's
+  name (`nil` when it has none).
+- `lib/test.ting`: a `check_err` whose error carries the wrong
+  message now names the line that raised it.
+- Docs: the tutorial and reference explain traces, how frames are
+  named, and the ten-frame cap.
+
 ## v2.83.0 (2026-09-04)
 
 - A runtime error shows the whole way back: one `note: in NAME,
