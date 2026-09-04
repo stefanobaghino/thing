@@ -291,6 +291,8 @@ scope).
 | `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
 | `seed(n)`      | restarts the generator at `n`; unseeded, it starts from the clock |
 | `run(cmd)` / `run(cmd, args)` | runs a program with that argv (no shell) and waits; a map of `code`, `out` and `err`. A program that cannot be started errors; `code` is `nil` when a signal ended it |
+| `eprint(...)`  | like `print`, but to stderr, after flushing stdout so the two stay in order |
+| `cwd()`        | the working directory, as a string                           |
 
 ### Files and directories
 

@@ -11,6 +11,8 @@ Windows are attached to each
   handing back a map of `code`, `out` and `err`. An argv list, never
   a shell string; a program that cannot be started is an error rather
   than an exit code. Refused on wasm, as `exit` and `sleep_ms` are.
+- New builtins `eprint(...)`, which prints to stderr after flushing
+  stdout so the two stay in order, and `cwd()`.
 
 ## v2.98.0 (2026-09-04)
 

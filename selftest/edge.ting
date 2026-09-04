@@ -111,3 +111,10 @@ assert(err(fn() { return run("echo", "hi"); }) == "run expects a list of argumen
 "argv is a list, not a shell string");
 assert(err(fn() { return run("echo", [1]); }) == "run expects a list of strings, got int in it",
 "argv holds strings");
+
+# cwd() is a path, and a script standing in it can see itself listed.
+assert(len(cwd()) > 0, "the working directory is a string");
+assert(exists(cwd()) && is_dir(cwd()), "and it is a directory that exists");
+assert(err(fn() { return cwd(1); }) == "cwd expects 0 arguments, got 1", "cwd takes nothing");
+# eprint says nothing on stdout, which is what keeps this suite silent.
+assert(eprint() == nil, "eprint returns nil");

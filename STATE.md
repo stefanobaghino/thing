@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 59 builtins; eight embedded stdlib modules
+- 61 builtins; eight embedded stdlib modules
   (list/map/string/math/json/fs/test/time, 147 functions, guarded); 30 ting
-  programs (14 selftest files, 17 examples with .out); 285 Rust tests
+  programs (14 selftest files, 17 examples with .out); 286 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -333,6 +333,9 @@ holds only the current milestone and the standing rules.
 - 593: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 592, corpus at exactly
   five warnings, six assets, site serving v2.98.0.
+- 596: eprint(...) and cwd(). eprint flushes stdout first so notes
+  cannot overtake data; on wasm it writes alongside print, since a
+  page has one stream.
 - 595: run(cmd, args) landed — argv list, spawn failure is an error,
   code nil on a signal. lib/list.ting's chunk_by renamed its local
   `run` to `group` so the corpus stays at five warnings.
@@ -340,12 +343,11 @@ holds only the current milestone and the standing rules.
   (v2.99.0, v2.100.0): ting is a good shell citizen but cannot call
   anything, has no stderr of its own and no cwd.
 - Backlog (one per tick, in order):
-  (1) eprint(...) to stderr and cwd();
-  (2) lib/sh.ting: nonzero-is-a-failure wrapper, output as lines, a
+  (1) lib/sh.ting: nonzero-is-a-failure wrapper, output as lines, a
   PATH lookup written in ting with env and exists;
-  (3) the docs learn to drive (reference rows, second half of the
+  (2) the docs learn to drive (reference rows, second half of the
   tutorial's shell section);
-  (4) RELEASE v2.99.0; (5) verify; (6) health tick.
+  (3) RELEASE v2.99.0; (4) verify; (5) health tick.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as

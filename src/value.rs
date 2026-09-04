@@ -87,10 +87,12 @@ pub enum Builtin {
     RandomInt,
     Seed,
     Run,
+    EPrint,
+    Cwd,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 59] = [
+    pub const ALL: [Builtin; 61] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -150,6 +152,8 @@ impl Builtin {
         Builtin::RandomInt,
         Builtin::Seed,
         Builtin::Run,
+        Builtin::EPrint,
+        Builtin::Cwd,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -340,6 +344,11 @@ impl Builtin {
                 "run(cmd) / run(cmd, args)",
                 "Runs a program and waits: a map of code, out and err.",
             ),
+            Builtin::EPrint => (
+                "eprint(...)",
+                "Prints to stderr, so data and diagnostics can part ways.",
+            ),
+            Builtin::Cwd => ("cwd()", "The working directory, as a string."),
         }
     }
 
@@ -404,6 +413,8 @@ impl Builtin {
             Builtin::RandomInt => "random_int",
             Builtin::Seed => "seed",
             Builtin::Run => "run",
+            Builtin::EPrint => "eprint",
+            Builtin::Cwd => "cwd",
         }
     }
 }

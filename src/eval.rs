@@ -1895,6 +1895,38 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::EPrint => {
+                let parts: Vec<String> = args.iter().map(|v| v.to_string()).collect();
+                // Ordered against print: what was said about the data
+                // must not overtake the data itself.
+                let _ = self.out.flush();
+                if cfg!(target_arch = "wasm32") {
+                    // A page has one stream, so the playground shows
+                    // both together rather than dropping half of them.
+                    if let Err(e) = writeln!(self.out, "{}", parts.join(" ")) {
+                        return Err(error(format!("eprint failed: {e}"), span));
+                    }
+                    return Ok(Value::Nil);
+                }
+                let mut err = std::io::stderr();
+                if let Err(e) = writeln!(err, "{}", parts.join(" ")) {
+                    // Same courtesy print extends to a reader that left.
+                    if e.kind() == std::io::ErrorKind::BrokenPipe {
+                        std::process::exit(0);
+                    }
+                    return Err(error(format!("eprint failed: {e}"), span));
+                }
+                Ok(Value::Nil)
+            }
+            Builtin::Cwd => {
+                arity(0, 0)?;
+                if cfg!(target_arch = "wasm32") {
+                    // A page stands nowhere.
+                    return Err(error("cwd is not available in this environment", span));
+                }
+                let dir = std::env::current_dir().map_err(|e| error(format!("cwd: {e}"), span))?;
+                Ok(Value::Str(dir.to_string_lossy().into_owned()))
+            }
             Builtin::Run => {
                 arity(1, 2)?;
                 let cmd = match &args[0] {

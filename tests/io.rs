@@ -2832,3 +2832,27 @@ fn run_spawns_a_program_and_reports_what_it_did() {
     let _ = std::fs::remove_file(&script);
     let _ = std::fs::remove_file(&child);
 }
+
+/// eprint goes to the other stream, and stays behind the stdout it
+/// was written after.
+#[test]
+fn eprint_writes_to_stderr_and_cwd_reports_the_directory() {
+    let script = std::env::temp_dir().join("ting-io-eprint.ting");
+    std::fs::write(
+        &script,
+        "print(\"data\");\n\
+         eprint(\"note\", 1, [2]);\n\
+         print(cwd() == args()[0]);\n",
+    )
+    .unwrap();
+    let here = std::env::temp_dir().canonicalize().unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .arg(here.to_str().unwrap())
+        .current_dir(&here)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "data\ntrue\n");
+    assert_eq!(String::from_utf8_lossy(&out.stderr), "note 1 [2]\n");
+    let _ = std::fs::remove_file(&script);
+}

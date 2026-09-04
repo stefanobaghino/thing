@@ -10591,3 +10591,24 @@ library. And the selftest covers only the refusals, since which
 programs a machine has is not something a portable test may assume;
 tests/io.rs drives a real child, and the only program it can be sure
 of is the binary under test.
+
+## 2026-09-05 — Iteration 596: eprint and cwd
+
+The two smaller holes in the same wall.
+
+`eprint(...)` formats exactly as `print` does and writes to stderr,
+after flushing stdout. The flush is the whole point: without it a
+note about the data can overtake the data, and a script that says
+"skipping row 12" three lines too early is worse than one that says
+nothing. It extends print's other courtesy too — a reader that walked
+away ends the run quietly rather than reporting a broken pipe.
+
+In the playground there is one stream, so there `eprint` writes
+alongside `print` instead of into a void. That is a visible
+difference between the browser and a terminal, and the honest choice:
+dropping the output would make the playground lie about what a
+program does.
+
+`cwd()` is the directory as a string, and errors rather than guessing
+if the process has none — a deleted working directory is a real state
+on Unix. Refused on wasm, where a page stands nowhere.
