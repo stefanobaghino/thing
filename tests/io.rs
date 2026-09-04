@@ -464,13 +464,15 @@ fn profile_flag_counts_calls_per_function() {
             "{engine}: {stderr}"
         );
         let rows: Vec<&str> = stderr.lines().skip(2).collect();
-        // Slowest first, each row naming how long it spent there
-        // itself and where it came from.
+        // Each row names how often it ran, how long it spent there
+        // itself and where it came from. Which row comes first is a
+        // matter of microseconds on a loaded machine, so nothing here
+        // asserts an order between them.
         assert!(
-            rows[0].contains("177") && rows[0].contains("fib"),
+            rows.iter()
+                .any(|r| r.contains("177") && r.contains("fib") && r.ends_with(".ting:1:1")),
             "{engine}: {stderr}"
         );
-        assert!(rows[0].ends_with(".ting:1:1"), "{engine}: {stderr}");
         assert!(
             rows.iter()
                 .any(|r| r.contains("once") && r.ends_with(".ting:2:1")),
@@ -527,8 +529,9 @@ fn profile_flag_counts_calls_per_function() {
         .expect("failed to run ting");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let rows: Vec<&str> = stderr.lines().skip(2).collect();
+    // A 200000-iteration loop against a single delegating call: this
+    // ordering is not a matter of microseconds.
     let rank = |name: &str| rows.iter().position(|r| r.contains(name));
-    assert!(rows[0].contains("spin"), "{stderr}");
     assert!(rank("spin") < rank("only_calls"), "{stderr}");
     let _ = std::fs::remove_file(&delegating);
     // Without the flag, nothing is counted and nothing is said.

@@ -9057,3 +9057,21 @@ with v2.86.0, the tutorial serves the profile table and the
 reference the self-time explanation. Nothing to fix. The "where the
 time went" milestone is complete. Backlog empty: next tick is
 replenishment.
+
+---
+
+## 2026-09-04 — Iteration 533b: a test that asserted the weather
+
+CI red on 533 (API verdict), on the reference-engine job only: the
+profile test asserted that the first row of the table was `fib`,
+and on a loaded runner the script's single `print` — one write to a
+pipe — took 1.123 ms against fib's 0.744 ms over 177 calls, so the
+builtin sorted first and the assertion failed. The table was right;
+the test was wrong. This project's own rule is that checksums
+decide and timings are weather, and the test had been written to
+depend on the weather. It now looks its rows up by name — that fib
+ran 177 times and points at line 1, that `once` points at line 2,
+that `print` says "a builtin" — and asserts an order only where a
+200000-iteration loop is compared against a single delegating call,
+which no runner can invert. Green on both engines here; recorded as
+a standing rule, next to the one about path separators.

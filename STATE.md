@@ -207,7 +207,8 @@ holds only the current milestone and the standing rules.
 - v2.86.0 VERIFIED (107th tag; strokes 530, 531; both aarch64
   archives executed here).
 - 533: health tick + audit green — milestone "where the time went"
-  complete.
+  complete (533b: the profile test no longer asserts an order two
+  microseconds can swap).
 - Backlog: empty — next tick is replenishment.
 - Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
@@ -217,7 +218,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - Verdicts from the API (`gh run view --json conclusion`), never from
   a watcher's exit code. Tests that read paths out of tool output
   match file names, not separators: Windows prints backslashes
-  (499b). Every release cold-verified by downloading
+  (499b). A test over timings asserts what timings cannot swap:
+  never the order of two rows that a loaded runner can reverse
+  (533b). Every release cold-verified by downloading
   and executing an aarch64 archive on this host (musl and gnu).
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
   line); `set -e` is NOT honoured by the harness (377b); never a bare
