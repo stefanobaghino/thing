@@ -9267,3 +9267,22 @@ closes the two halves of milestone "at the terminal" — watch mode in
 v2.87.0, stdin in v2.88.0 — and leaves the release unverified until
 both aarch64 archives have been downloaded cold and run here, which
 is the next tick.
+
+---
+
+## 2026-09-04 — Iteration 542: v2.88.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here: `--version` answers 2.88.0, the tutorial's own
+piped example prints "hello, world" from a script that never touched
+a file, `input()` on a piped script answers nil as the docs promise,
+and a failing piped script names `-:2:1` with the caret under the
+call. gnu and musl behave identically; the darwin archive cannot
+execute on this host, as always.
+
+Milestone "at the terminal" is done: watch mode for the tests, the
+checker and the formatter's check over one shared poll (v2.87.0),
+and a script that can arrive on a pipe (v2.88.0). Next tick is the
+health tick that closes it — bench checksums against the baseline,
+the differential, crash and formatter fuzzers in release, and the
+distribution and site audits.
