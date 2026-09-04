@@ -10851,3 +10851,27 @@ replacement that means money need not be escaped.
 
 `re_split` keeps leading and trailing empty pieces, because `split`
 already does and two functions that cut strings should not disagree.
+
+## 2026-09-05 — Iteration 607: the pattern fuzzer
+
+Two new tests in tests/fuzz.rs and five pattern lines in the
+differential corpus.
+
+`random_patterns_never_panic_and_never_hang` builds patterns from the
+syntax the engine claims to accept plus enough loose punctuation to
+build ones it must refuse, runs them against random subjects, and
+asserts only that nothing unwinds. Nothing is filtered: a pattern
+that will not compile is a fine outcome. It also holds the whole run
+to a time budget, which is the property the Pike VM exists to
+provide — a backtracking engine would still be inside this test when
+the runner gave up. 200000 cases at seed 606 finish in under a
+second; the default is 20000, tunable with TING_RE_SEED and
+TING_RE_CASES like the other fuzzers.
+
+`the_classic_blowup_is_linear_here` pins the case by name: `(a+)+b`
+against a hundred, a thousand and five thousand a's.
+
+The five builtins joined the crash fuzzer's token alphabet and the
+differential corpus. They belong there, unlike the clock and the
+dice: same input, same answer, on both engines, which is exactly what
+those tests assume.

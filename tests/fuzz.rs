@@ -114,6 +114,12 @@ const TOKENS: &[&str] = &[
     "type",
     "upper",
     "fn(a) { return a; }",
+    "re_test",
+    "re_find",
+    "re_find_all",
+    "re_replace",
+    "re_split",
+    "\"[a-z]+(x|y)?\"",
 ];
 
 fn token_soup(rng: &mut Rng) -> String {
@@ -213,5 +219,91 @@ fn deep_nesting_parses_or_errors_cleanly() {
         let src = format!("let v = {}1{};", open.repeat(1000), close.repeat(1000));
         let outcome = catch_unwind(AssertUnwindSafe(|| exercise(&src)));
         assert!(outcome.is_ok(), "panicked on deep {open}{close} nesting");
+    }
+}
+
+/// The pattern alphabet: the syntax the engine claims to accept, plus
+/// enough punctuation to build patterns it must refuse. Nothing here
+/// is filtered — a pattern that cannot compile is a fine outcome, a
+/// panic or a hang is not.
+const PATTERN_PIECES: &[&str] = &[
+    "a", "b", "z", ".", "|", "*", "+", "?", "(", ")", "(?:", "[", "]", "[^", "-", "^", "$", "\\d",
+    "\\w", "\\s", "\\D", "\\W", "\\S", "\\.", "\\\\", "{2}", "{1,3}", "{0,}", "{", "}", "*?", "+?",
+    "??", "é", "\n",
+];
+
+fn pattern_soup(rng: &mut Rng) -> String {
+    let len = 1 + rng.below(12);
+    let mut out = String::new();
+    for _ in 0..len {
+        out.push_str(PATTERN_PIECES[rng.below(PATTERN_PIECES.len())]);
+    }
+    out
+}
+
+fn subject_soup(rng: &mut Rng) -> String {
+    let alphabet = ["a", "b", "z", "1", " ", "\n", "é", "-", "."];
+    let len = rng.below(40);
+    let mut out = String::new();
+    for _ in 0..len {
+        out.push_str(alphabet[rng.below(alphabet.len())]);
+    }
+    out
+}
+
+/// Random patterns on random subjects: compiling may fail, matching
+/// may find nothing, but nothing may panic — and nothing may take
+/// long, which is the property the Pike VM exists to provide. A
+/// backtracking engine would sit in this test until the runner gave
+/// up.
+#[test]
+fn random_patterns_never_panic_and_never_hang() {
+    let seed: u64 = std::env::var("TING_RE_SEED")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(1);
+    let cases: u64 = std::env::var("TING_RE_CASES")
+        .ok()
+        .and_then(|s| s.parse().ok())
+        .unwrap_or(20_000);
+    let mut rng = Rng(seed.wrapping_mul(0x9E37_79B9_7F4A_7C15) | 1);
+    let started = std::time::Instant::now();
+    for case in 0..cases {
+        let pattern = pattern_soup(&mut rng);
+        let subject = subject_soup(&mut rng);
+        let outcome = catch_unwind(AssertUnwindSafe(|| {
+            if let Ok(re) = ting::regex::Regex::new(&pattern) {
+                let chars: Vec<char> = subject.chars().collect();
+                let _ = re.find_at(&chars, 0);
+            }
+        }));
+        assert!(
+            outcome.is_ok(),
+            "panicked on case {case} of seed {seed}:\n  pattern {pattern:?}\n  subject {subject:?}"
+        );
+    }
+    // Generous by a wide margin: the whole point is that no pattern in
+    // here can take exponential time, so a run that goes long has lost
+    // the property rather than the race.
+    let elapsed = started.elapsed();
+    assert!(
+        elapsed < std::time::Duration::from_secs(60),
+        "{cases} cases took {elapsed:?}, which no linear-time engine should"
+    );
+}
+
+/// The pattern a backtracker dies on, at a size that makes the
+/// difference unmistakable.
+#[test]
+fn the_classic_blowup_is_linear_here() {
+    let re = ting::regex::Regex::new("(a+)+b").unwrap();
+    for n in [100, 1000, 5000] {
+        let text: Vec<char> = "a".repeat(n).chars().collect();
+        let started = std::time::Instant::now();
+        assert_eq!(re.find_at(&text, 0), None);
+        assert!(
+            started.elapsed() < std::time::Duration::from_secs(30),
+            "{n} characters took too long"
+        );
     }
 }

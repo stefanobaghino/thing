@@ -71,6 +71,12 @@ fn expressions_match_across_engines() {
         "print(pop([]));",
         "print(min([1, \"a\"]));",
         "print(upper(\"héllo\"), slice(\"hello\", 1, -1), abs(-4));",
+        // patterns: the map a match returns, a scan, and a refusal
+        "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
+        "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",
+        "print(re_replace(\"a1\", \"(a)(1)\", \"$2$1$$\"));",
+        "print(re_find(\"x\", \"(a\"));",
+        "print(re_replace(\"a\", \"a\", \"$3\"));",
         // callee is not callable
         "print(3(1));",
         // nesting
