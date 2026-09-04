@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.98.0 (2026-09-04)
 
 - New builtins `random()`, `random_int(lo, hi)` and `seed(n)`:
   a float in `[0, 1)`, an int in a half-open span like `range`, and a
