@@ -9592,9 +9592,10 @@ behind it but a missing implementation.
 
 The third is how a program spells a character. String literals take
 `\n \t \r \\ \"` and nothing else, so a non-ASCII character can only
-be typed literally — while `json_parse` handles `A` perfectly
-well. The two ways into the same string disagree. There is also no
-way to ask for a character's code point: `int("A")` is an error, and
+be typed literally — while `json_parse` reads the same escape
+(a backslash, a u, four hex digits) perfectly well. The two ways
+into the same string disagree. There is also no way to ask for a
+character's code point: `int("A")` is an error, and
 nothing converts the other way.
 
 Milestone "where it says no" (v2.91-v2.92): raise the call-depth
