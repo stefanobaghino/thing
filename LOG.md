@@ -9562,3 +9562,44 @@ restart) is closed: `list_dir`, `exists`, `is_dir` and `make_dir`;
 that explain why the builtins disagree with one another; two tags,
 both cold-verified here. The backlog is empty, so the next tick is a
 replenishment.
+
+---
+
+## 2026-09-04 — Iteration 554: replenishment — milestone "where it says no"
+
+Thirty-eight milestones since the restart, a hundred and eleven
+tags, the backlog empty. This survey went looking for the places
+ting refuses, and asked of each whether the refusal is earned.
+
+The sharpest is recursion. `MAX_DEPTH` is 200, and a textbook
+recursive sum over a three-hundred-element list therefore cannot be
+written: `sum(range(0, 300), 0)` is a stack overflow, while the same
+function over 150 elements answers 11175. Two hundred is not a
+number anyone measured — the runner already gives the interpreter
+thread 32 MB of host stack, and the deep-data probes in this survey
+show the engines are not fragile in general: fifty thousand levels
+of nested list parse from JSON, build in a loop, and print, without
+trouble. It is only *call* frames that are capped, and capped low.
+Raising it means measuring what a frame actually costs on each
+engine and leaving the browser build — which has no thread of its
+own to size — a conservative cap.
+
+The second is the one last milestone left behind. A script can
+`make_dir` but cannot remove anything, so a ting program that
+builds a tree can never tidy up; that is why lib/fs.ting's walk is
+tested from Rust rather than from ting. A refusal with nothing
+behind it but a missing implementation.
+
+The third is how a program spells a character. String literals take
+`\n \t \r \\ \"` and nothing else, so a non-ASCII character can only
+be typed literally — while `json_parse` handles `A` perfectly
+well. The two ways into the same string disagree. There is also no
+way to ask for a character's code point: `int("A")` is an error, and
+nothing converts the other way.
+
+Milestone "where it says no" (v2.91-v2.92): raise the call-depth
+limit to what the stack allows, give the filesystem its missing
+half, and let a literal spell any character. Note for the third
+stroke: the lexer's escape set is guarded against
+editor/ting.tmLanguage.json by tests/grammar.rs, so a new escape
+lands in both.

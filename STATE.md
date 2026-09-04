@@ -244,15 +244,21 @@ holds only the current milestone and the standing rules.
   directory" complete (all six bench checksums match; five corpus
   warnings; six assets per tag; the site serves v2.90.0 and seven
   modules).
-- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
-  rule): survey, then design the next milestone.
-- Found, not yet acted on: make_dir has no counterpart — a script
-  can create a directory but not remove a file or directory, so a
-  ting test that builds a tree cannot tidy up after itself (549).
-  Recursion is capped at call depth 200
-  (eval.rs MAX_DEPTH) and moving it wants per-engine stack
-  measurement, the wasm build having no thread of its own to size;
-  string literals have no \u escape though json_parse handles one.
+- 554: replenishment — milestone "where it says no" (v2.91-v2.92),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) raise the call-depth limit to what the host stack allows,
+  measured per engine, the wasm build keeping a conservative cap;
+  (2) remove_file and remove_dir, so a script can tidy what it
+  made; (3) RELEASE v2.91.0; (4) \u escapes in string literals
+  (the lexer's escape set is guarded against
+  editor/ting.tmLanguage.json by tests/grammar.rs) and a pair of
+  builtins for code points; (5) the docs read the limits;
+  (6) RELEASE v2.92.0; (7) health tick + audit.
+- Surveyed and found sound (554): deeply nested data is not
+  fragile — fifty thousand levels of nested list parse from JSON,
+  build in a loop and print without trouble. Only call frames are
+  capped.
 - Tags: 111 (v2.90.0), 111 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
