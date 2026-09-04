@@ -1,0 +1,66 @@
+# ting testing ting: the command line, taken apart.
+
+let cli = import("lib/args.ting");
+let err = fn(f) { return try(f)["err"]; };
+
+let spec = {
+  "name": "demo",
+  "summary": "a spec with one of everything",
+  "flags": [{"long": "verbose", "short": "v", "help": "say more"}],
+  "options": [
+    { "long": "file", "short": "f", "value": "PATH", "help": "where", "default": "d.txt" },
+    { "long": "mode", "help": "how" },
+  ],
+  "positionals": [{"name": "command", "help": "what"}, {"name": "rest", "help": "more", "many": true}],
+};
+
+# The three spellings of an option, and a short flag.
+let a = cli["parse"](spec, ["-v", "--file=x", "--mode", "fast", "go"]);
+assert(a["flags"]["verbose"], "a short flag sets its long name");
+assert(a["options"]["file"] == "x", "--name=value");
+assert(a["options"]["mode"] == "fast", "--name value");
+assert(a["positionals"]["command"] == "go", "the first positional");
+assert(a["positionals"]["rest"] == [], "and nothing left over");
+
+let b = cli["parse"](spec, ["go", "-f", "y", "one", "two"]);
+assert(b["options"]["file"] == "y", "-n value");
+assert(b["positionals"]["rest"] == ["one", "two"], "a many positional takes the rest");
+assert(!b["flags"]["verbose"], "an absent flag is false");
+
+# Defaults, and an option with none.
+let c = cli["parse"](spec, ["go"]);
+assert(c["options"]["file"] == "d.txt", "a default fills in");
+assert(c["options"]["mode"] == nil, "an option with no default is nil");
+
+# "--" ends the options; a bare "-" is a positional, as it is for ting itself.
+let d = cli["parse"](spec, ["--", "--file", "-v"]);
+assert(d["positionals"]["command"] == "--file", "after -- nothing is an option");
+assert(d["positionals"]["rest"] == ["-v"], "not even a flag");
+assert(cli["parse"](spec, ["-"])["positionals"]["command"] == "-", "a lone dash is a name");
+
+# --help is answered even when the command line is otherwise incomplete.
+assert(cli["parse"](spec, ["--help"])["help"], "--help is always understood");
+assert(cli["parse"](spec, ["-h"])["help"], "and so is -h");
+
+# What the parser refuses.
+assert(err(fn() { return cli["parse"](spec, ["--nope", "go"]); }) == "unknown option --nope",
+"an unknown option is an error, not a shrug");
+assert(err(fn() { return cli["parse"](spec, ["go", "--file"]); }) == "--file needs a value",
+"an option at the end with no value");
+assert(err(fn() { return cli["parse"](spec, []); }) == "missing <command>", "a required positional");
+assert(err(fn() { return cli["parse"](spec, ["--verbose=1", "go"]); })
+== "--verbose is a flag and takes no value", "a flag given a value");
+
+# A spec with no options at all still parses, and still has --help.
+let bare = {"name": "bare", "positionals": [{"name": "one", "help": "only"}]};
+assert(cli["parse"](bare, ["x"])["positionals"]["one"] == "x", "a spec may be almost empty");
+assert(err(fn() { return cli["parse"](bare, ["x", "y"]); }) == "unexpected argument y",
+"with nowhere to put a second one");
+
+# The help text is built from the spec, so it says what the parser does.
+let text = cli["help"](spec);
+assert(contains(text, "usage: demo [options] <command> [rest...]"), "the usage line");
+assert(contains(text, "-f, --file PATH"), "an option with its value name");
+assert(contains(text, "(default d.txt)"), "and its default");
+assert(contains(text, "-h, --help"), "help is always offered");
+assert(contains(cli["help"](bare), "usage: bare <one>"), "a spec with no options says so");

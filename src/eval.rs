@@ -388,6 +388,7 @@ fn millis(ns: u128) -> String {
 /// in sync with lib/ by construction). import() falls back to these
 /// when no matching file exists.
 const EMBEDDED_STDLIB: &[(&str, &str)] = &[
+    ("lib/args.ting", include_str!("../lib/args.ting")),
     ("lib/fs.ting", include_str!("../lib/fs.ting")),
     ("lib/json.ting", include_str!("../lib/json.ting")),
     ("lib/list.ting", include_str!("../lib/list.ting")),

@@ -5,6 +5,11 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- New stdlib module `lib/args.ting`: command-line parsing from a
+  spec, with the `--help` text built from the same spec.
+
 ## v2.100.0 (2026-09-05)
 
 - New builtins `re_test(s, pattern)` and `re_find(s, pattern)`, over a

@@ -1,0 +1,207 @@
+# Command-line parsing, written in ting on top of args().
+# Use it via
+#   let cli = import("lib/args.ting");
+#
+# A spec is a map describing the program; the parser and the --help
+# text are both built from it, so the help cannot drift from what the
+# program actually accepts. The spec:
+#
+#   {
+#     "name": "todo",
+#     "summary": "a little task list",
+#     "flags": [{"long": "verbose", "short": "v", "help": "say more"}],
+#     "options": [{"long": "file", "short": "f", "value": "PATH",
+#                  "help": "where the list lives", "default": "todo.txt"}],
+#     "positionals": [{"name": "command", "help": "what to do"},
+#                     {"name": "rest", "help": "the rest", "many": true}]
+#   }
+#
+# Every key but "name" may be left out. A positional is required
+# unless it is "many", which collects whatever is left.
+#
+# Short options are not bundled: -a -b, never -ab. The ambiguity that
+# bundling introduces around values (-f meaning a flag here and an
+# option there) is not worth the four characters it saves.
+
+# The flag with that long or short name, or nil.
+fn flag_of(spec, name) {
+  if !has(spec, "flags") { return nil; }
+  for flag in spec["flags"] {
+    if flag["long"] == name { return flag; }
+    if has(flag, "short") && flag["short"] == name { return flag; }
+  }
+  return nil;
+}
+
+# The option with that long or short name, or nil.
+fn option_of(spec, name) {
+  if !has(spec, "options") { return nil; }
+  for opt in spec["options"] {
+    if opt["long"] == name { return opt; }
+    if has(opt, "short") && opt["short"] == name { return opt; }
+  }
+  return nil;
+}
+
+# A string padded with spaces to that width, for the help columns.
+fn pad(text, width) {
+  let out = text;
+  while len(out) < width { out = out + " "; }
+  return out;
+}
+
+# The --help text, built from the same spec the parser reads.
+fn help(spec) {
+  let lines = [];
+  if has(spec, "summary") {
+    push(lines, spec["name"] + " — " + spec["summary"]);
+    push(lines, "");
+  }
+  let usage = "usage: " + spec["name"];
+  if has(spec, "flags") || has(spec, "options") { usage = usage + " [options]"; }
+  if has(spec, "positionals") {
+    for p in spec["positionals"] {
+      if has(p, "many") && p["many"] { usage = usage + " [" + p["name"] + "...]"; }
+      else { usage = usage + " <" + p["name"] + ">"; }
+    }
+  }
+  push(lines, usage);
+  # Every option and flag on one line each, names in one column.
+  let names = [];
+  let helps = [];
+  if has(spec, "options") {
+    for opt in spec["options"] {
+      let name = "";
+      if has(opt, "short") { name = "-" + opt["short"] + ", "; }
+      name = name + "--" + opt["long"];
+      let value = "VALUE";
+      if has(opt, "value") { value = opt["value"]; }
+      push(names, name + " " + value);
+      let text = "";
+      if has(opt, "help") { text = opt["help"]; }
+      if has(opt, "default") && opt["default"] != nil {
+        text = text + " (default " + str(opt["default"]) + ")";
+      }
+      push(helps, text);
+    }
+  }
+  if has(spec, "flags") {
+    for flag in spec["flags"] {
+      let name = "";
+      if has(flag, "short") { name = "-" + flag["short"] + ", "; }
+      push(names, name + "--" + flag["long"]);
+      let text = "";
+      if has(flag, "help") { text = flag["help"]; }
+      push(helps, text);
+    }
+  }
+  push(names, "-h, --help");
+  push(helps, "show this and leave");
+  let width = 0;
+  for name in names {
+    if len(name) > width { width = len(name); }
+  }
+  push(lines, "");
+  push(lines, "options:");
+  for i in range(0, len(names)) {
+    push(lines, "  " + pad(names[i], width) + "  " + helps[i]);
+  }
+  return join(lines, "\n");
+}
+
+# The command line, taken apart according to the spec: a map of
+# "flags" (name to bool), "options" (name to string or default),
+# "positionals" (name to string, or a list for a "many" one) and
+# "help", true when --help was asked for. Anything the spec does not
+# describe is an error, since a misspelled option that is silently
+# ignored is how a script does the wrong thing quietly.
+fn parse(spec, argv) {
+  let flags = {};
+  let options = {};
+  if has(spec, "flags") {
+    for flag in spec["flags"] { flags[flag["long"]] = false; }
+  }
+  if has(spec, "options") {
+    for opt in spec["options"] {
+      let fallback = nil;
+      if has(opt, "default") { fallback = opt["default"]; }
+      options[opt["long"]] = fallback;
+    }
+  }
+  let loose = [];
+  let wants_help = false;
+  let i = 0;
+  let only_positionals = false;
+  while i < len(argv) {
+    let arg = argv[i];
+    i = i + 1;
+    if only_positionals || arg == "-" || !starts_with(arg, "-") {
+      push(loose, arg);
+      continue;
+    }
+    if arg == "--" { only_positionals = true; continue; }
+    # --name, --name=value or -n.
+    let name = arg;
+    let attached = nil;
+    let cut = find(arg, "=");
+    if starts_with(arg, "--") && cut != nil {
+      name = slice(arg, 0, cut);
+      attached = slice(arg, cut + 1, len(arg));
+    }
+    let bare = name;
+    if starts_with(bare, "--") { bare = slice(bare, 2, len(bare)); }
+    else { bare = slice(bare, 1, len(bare)); }
+    if bare == "help" || bare == "h" { wants_help = true; continue; }
+    let flag = flag_of(spec, bare);
+    if flag != nil {
+      if attached != nil { fail(name + " is a flag and takes no value"); }
+      flags[flag["long"]] = true;
+      continue;
+    }
+    let opt = option_of(spec, bare);
+    if opt == nil { fail("unknown option " + name); }
+    if attached != nil { options[opt["long"]] = attached; continue; }
+    if i >= len(argv) { fail(name + " needs a value"); }
+    options[opt["long"]] = argv[i];
+    i = i + 1;
+  }
+  # What is left goes to the positionals, in order, with a "many" one
+  # taking everything that remains.
+  let positionals = {};
+  let at = 0;
+  if has(spec, "positionals") {
+    for p in spec["positionals"] {
+      if has(p, "many") && p["many"] {
+        positionals[p["name"]] = slice(loose, at, len(loose));
+        at = len(loose);
+        continue;
+      }
+      if at >= len(loose) {
+        if wants_help { positionals[p["name"]] = nil; continue; }
+        fail("missing <" + p["name"] + ">");
+      }
+      positionals[p["name"]] = loose[at];
+      at = at + 1;
+    }
+  }
+  if at < len(loose) && !wants_help { fail("unexpected argument " + loose[at]); }
+  return {"flags": flags, "options": options, "positionals": positionals, "help": wants_help};
+}
+
+# parse(), with the two things a command-line program does around it:
+# --help prints the help and leaves happy, a bad command line prints
+# the trouble and the help to stderr and leaves with status 2.
+fn main(spec, argv) {
+  let done = try(fn() { return parse(spec, argv); });
+  if has(done, "err") {
+    eprint(spec["name"] + ": " + done["err"]);
+    eprint("");
+    eprint(help(spec));
+    exit(2);
+  }
+  if done["ok"]["help"] {
+    print(help(spec));
+    exit(0);
+  }
+  return done["ok"];
+}

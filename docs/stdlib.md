@@ -1,7 +1,7 @@
 # The ting standard library
 
-Nine modules written in ting itself — list, map, string, math, json,
-fs, test, time and sh, 154 functions between them — living in `lib/` and also
+Ten modules written in ting itself — list, map, string, math, json,
+fs, test, time, sh and args, 160 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -202,6 +202,22 @@ zone here, because a zone is a database and this is a module.
 | `fdiv(a, b)` / `fmod(a, b)` | floor division and its remainder, which `/` and `%` do not do for negatives |
 | `fmod(a, b)` | see `fdiv` |
 | `pad(n, width)` | a number left-padded with zeros |
+
+## lib/args.ting
+
+The command line, taken apart according to a spec — and the `--help`
+text, built from that same spec, so the two cannot drift. Short
+options are not bundled (`-a -b`, never `-ab`): the ambiguity that
+introduces around values is not worth the characters it saves.
+
+| Function | Does |
+|----------|------|
+| `parse(spec, argv)` | the command line as `{"flags", "options", "positionals", "help"}`; anything the spec does not describe is an error |
+| `main(spec, argv)` | `parse`, plus what a program does around it: `--help` prints the help and exits 0, a bad command line prints the trouble and the help to stderr and exits 2 |
+| `help(spec)` | the usage text |
+| `flag_of(spec, name)` | the flag with that long or short name, or nil |
+| `option_of(spec, name)` | the option with that long or short name, or nil |
+| `pad(text, width)` | a string padded with spaces, for the help columns |
 
 ## lib/sh.ting
 

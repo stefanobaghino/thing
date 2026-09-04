@@ -10966,3 +10966,35 @@ expressions and any `catch` syntax would need a new keyword, and a
 new keyword breaks a program that used the word as a name — which the
 2.x promise forbids. A set type is a map with `true` in it. Threads
 are still the wrong shape for an interpreter built on Rc.
+
+## 2026-09-05 — Iteration 613: lib/args.ting
+
+The tenth module: a command line taken apart according to a spec, and
+a `--help` built from that same spec. One description, two uses,
+which is the point — help that is written separately is help that
+goes stale.
+
+Decisions worth the ink.
+
+An unknown option is an error, not something to ignore. A misspelled
+flag that is silently dropped is how a script quietly does the wrong
+thing, and a run that stops is cheaper than a run that lies.
+
+Short options are not bundled: `-a -b`, never `-ab`. Bundling reads
+well until one of the letters takes a value, and then the rule has to
+be explained; four saved characters do not pay for that.
+
+`--help` is understood even when the rest of the command line is
+incomplete, so `demo --help` answers instead of complaining about a
+missing positional. Someone asking what a program wants has not been
+told yet.
+
+A bare `-` is a positional, matching what ting itself does with it.
+
+`main` is the wrapper around `parse` that every command-line program
+writes: help prints and leaves happy, a bad line prints the trouble
+and the help to stderr and leaves with status 2. It is three lines of
+this module using `eprint` and `exit` from the last milestone.
+
+Selftest: 24 checks, both engines, covering the three spellings of an
+option, defaults, `--`, and every refusal.
