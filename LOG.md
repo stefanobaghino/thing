@@ -10906,3 +10906,15 @@ The 121st tag, and the first three-digit minor. Five strokes: the
 engine (604), re_test and re_find (605, with 605b's clippy lesson),
 the three scanning builtins (606), the pattern fuzzer (607), the docs
 and selftest (608). Verification next tick.
+
+## 2026-09-05 — Iteration 610: v2.100.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that uses the milestone end to end:
+a match with its groups and offsets, a scan, a split, a date
+reordered by `$3/$2/$1`, the agreement between `re_find` and `find`
+on an accented string, an unused group coming back nil, the refusal
+of an unclosed group, and `(a+)+b` answering nil in under a
+millisecond. Identical on gnu and musl, both reporting 2.100.0.
+
+Milestone "patterns" is complete.

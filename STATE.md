@@ -358,8 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
-- 609: v2.100.0 tagged (121st tag; strokes 604-608) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.100.0 VERIFIED (121st tag; strokes 604-608; both aarch64
+  archives executed here on the whole milestone). Milestone
+  "patterns" is complete.
 - 608: reference section (syntax table, semantics, the omissions and
   why), tutorial section, selftest/regex.ting (33 checks). README's
   builtin count was stale at 52; now 66.
@@ -385,8 +386,7 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) verify the v2.100.0 release (cold download, both aarch64);
-  (2) health tick + audit.
+  (1) health tick + audit; (2) replenishment tick.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
@@ -403,7 +403,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 120 (v2.99.0), 120 verified; v2.29.0 is publicly marked broken
+- Tags: 121 (v2.100.0), 121 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
