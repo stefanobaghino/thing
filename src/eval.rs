@@ -298,6 +298,68 @@ fn match_value(chars: &[char], caps: &[Option<usize>], groups: usize) -> Value {
     Value::map(m)
 }
 
+/// A replacement string with its `$` references filled in: `$0` is
+/// the whole match, `$1` to `$9` its groups, `$$` a literal dollar. A
+/// reference to a group the pattern does not have is an error rather
+/// than an empty string, since it can only be a mistake.
+fn expand(
+    repl: &str,
+    chars: &[char],
+    caps: &[Option<usize>],
+    groups: usize,
+    span: Span,
+) -> Result<String, RuntimeError> {
+    let mut out = String::new();
+    let mut rest = repl.chars().peekable();
+    while let Some(c) = rest.next() {
+        if c != '$' {
+            out.push(c);
+            continue;
+        }
+        match rest.peek() {
+            Some('$') => {
+                rest.next();
+                out.push('$');
+            }
+            Some(d) if d.is_ascii_digit() => {
+                let n = d.to_digit(10).unwrap() as usize;
+                rest.next();
+                if n > groups {
+                    return Err(error(
+                        format!("re_replace: the pattern has no group {n}"),
+                        span,
+                    ));
+                }
+                if let (Some(lo), Some(hi)) = (
+                    caps.get(n * 2).copied().flatten(),
+                    caps.get(n * 2 + 1).copied().flatten(),
+                ) {
+                    out.extend(&chars[lo..hi]);
+                }
+            }
+            _ => out.push('$'),
+        }
+    }
+    Ok(out)
+}
+
+/// Every non-overlapping match, left to right. An empty match cannot
+/// advance the search on its own, so the scan steps past it by one
+/// character: without that, `re_find_all(s, "x*")` would never end.
+fn all_matches(re: &crate::regex::Regex, chars: &[char]) -> Vec<Vec<Option<usize>>> {
+    let mut out = Vec::new();
+    let mut from = 0;
+    while from <= chars.len() {
+        let Some(caps) = re.find_at(chars, from) else {
+            break;
+        };
+        let (start, end) = (caps[0].unwrap_or(from), caps[1].unwrap_or(from));
+        out.push(caps);
+        from = if end > start { end } else { start + 1 };
+    }
+    out
+}
+
 /// One row of a profile: a function, and how much it did.
 #[derive(Debug)]
 struct Counted {
@@ -2017,6 +2079,60 @@ impl<W: Write> Interpreter<W> {
                     Some(caps) => Ok(match_value(&chars, &caps, re.groups())),
                 }
             }
+            Builtin::ReFindAll => {
+                arity(2, 2)?;
+                let (text, pattern) = Self::subject_and_pattern(b, &args, span)?;
+                let re = self.pattern(b, &pattern, span)?;
+                let chars: Vec<char> = text.chars().collect();
+                let found = all_matches(&re, &chars)
+                    .iter()
+                    .map(|caps| match_value(&chars, caps, re.groups()))
+                    .collect();
+                Ok(Value::list(found))
+            }
+            Builtin::ReReplace => {
+                arity(3, 3)?;
+                let (text, pattern) = Self::subject_and_pattern(b, &args, span)?;
+                let repl = match &args[2] {
+                    Value::Str(s) => s.clone(),
+                    v => {
+                        return Err(error(
+                            format!(
+                                "re_replace expects a string to put in, got {}",
+                                v.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                };
+                let re = self.pattern(b, &pattern, span)?;
+                let chars: Vec<char> = text.chars().collect();
+                let mut out = String::new();
+                let mut at = 0;
+                for caps in all_matches(&re, &chars) {
+                    let (start, end) = (caps[0].unwrap_or(0), caps[1].unwrap_or(0));
+                    out.extend(&chars[at..start]);
+                    out.push_str(&expand(&repl, &chars, &caps, re.groups(), span)?);
+                    at = end;
+                }
+                out.extend(&chars[at..]);
+                Ok(Value::Str(out))
+            }
+            Builtin::ReSplit => {
+                arity(2, 2)?;
+                let (text, pattern) = Self::subject_and_pattern(b, &args, span)?;
+                let re = self.pattern(b, &pattern, span)?;
+                let chars: Vec<char> = text.chars().collect();
+                let mut pieces = Vec::new();
+                let mut at = 0;
+                for caps in all_matches(&re, &chars) {
+                    let (start, end) = (caps[0].unwrap_or(0), caps[1].unwrap_or(0));
+                    pieces.push(Value::Str(chars[at..start].iter().collect()));
+                    at = end;
+                }
+                pieces.push(Value::Str(chars[at..].iter().collect()));
+                Ok(Value::list(pieces))
+            }
             Builtin::Run => {
                 arity(1, 2)?;
                 let cmd = match &args[0] {
@@ -3488,6 +3604,33 @@ mod tests {
         assert_eq!(
             program_err("re_test(1, \"a\");"),
             "re_test expects two strings, got int and string"
+        );
+    }
+
+    #[test]
+    fn patterns_scan_replace_and_split() {
+        assert_eq!(
+            output("print(len(re_find_all(\"a1 b2 c3\", \"\\\\w\\\\d\")));"),
+            "3\n"
+        );
+        assert_eq!(
+            output("print(json_str(re_split(\"a1b22c\", \"\\\\d+\")));"),
+            "[\"a\",\"b\",\"c\"]\n"
+        );
+        assert_eq!(
+            output("print(re_replace(\"a1 b2\", \"([a-z])(\\\\d)\", \"$2$1\"));"),
+            "1a 2b\n"
+        );
+        assert_eq!(output("print(re_replace(\"x\", \"x\", \"$$\"));"), "$\n");
+        // An empty match cannot advance the scan on its own.
+        assert_eq!(output("print(len(re_find_all(\"abc\", \"x*\")));"), "4\n");
+        assert_eq!(
+            output("print(json_str(re_split(\"abc\", \"\")));"),
+            "[\"\",\"a\",\"b\",\"c\",\"\"]\n"
+        );
+        assert_eq!(
+            program_err("re_replace(\"a\", \"a\", \"$3\");"),
+            "re_replace: the pattern has no group 3"
         );
     }
 

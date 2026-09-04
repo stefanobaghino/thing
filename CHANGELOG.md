@@ -11,6 +11,8 @@ Windows are attached to each
   new regular expression engine (`src/regex.rs`): a Pike VM, so
   matching is linear in the input and no pattern can be made to hang.
   Positions count characters, as `find` and `slice` do.
+- New builtins `re_find_all(s, pattern)`, `re_replace(s, pattern,
+  repl)` with `$1` group references, and `re_split(s, pattern)`.
 
 ## v2.99.0 (2026-09-05)
 

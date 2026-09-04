@@ -295,6 +295,9 @@ scope).
 | `cwd()`        | the working directory, as a string                           |
 | `re_test(s, pattern)` | whether the pattern matches anywhere in the string |
 | `re_find(s, pattern)` | the leftmost match as a map of `start`, `end`, `text` and `groups` (a list, `nil` where a group took no part), or `nil`. Positions count characters, as `find` and `slice` do |
+| `re_find_all(s, pattern)` | every non-overlapping match, left to right, as a list of those maps |
+| `re_replace(s, pattern, repl)` | every match replaced; `$0` is the whole match, `$1` to `$9` its groups, `$$` a literal `$`. A reference to a group the pattern does not have errors |
+| `re_split(s, pattern)` | the string cut at every match; leading and trailing empty pieces are kept, as `split` keeps them |
 
 ### Files and directories
 

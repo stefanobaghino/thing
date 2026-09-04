@@ -91,10 +91,13 @@ pub enum Builtin {
     Cwd,
     ReTest,
     ReFind,
+    ReFindAll,
+    ReReplace,
+    ReSplit,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 63] = [
+    pub const ALL: [Builtin; 66] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -158,6 +161,9 @@ impl Builtin {
         Builtin::Cwd,
         Builtin::ReTest,
         Builtin::ReFind,
+        Builtin::ReFindAll,
+        Builtin::ReReplace,
+        Builtin::ReSplit,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -361,6 +367,18 @@ impl Builtin {
                 "re_find(s, pattern)",
                 "The leftmost match as a map, or nil; groups included.",
             ),
+            Builtin::ReFindAll => (
+                "re_find_all(s, pattern)",
+                "Every non-overlapping match, left to right, as a list.",
+            ),
+            Builtin::ReReplace => (
+                "re_replace(s, pattern, repl)",
+                "Every match replaced; $1 to $9 name groups, $$ is a $.",
+            ),
+            Builtin::ReSplit => (
+                "re_split(s, pattern)",
+                "The string cut at every match, as a list of pieces.",
+            ),
         }
     }
 
@@ -429,6 +447,9 @@ impl Builtin {
             Builtin::Cwd => "cwd",
             Builtin::ReTest => "re_test",
             Builtin::ReFind => "re_find",
+            Builtin::ReFindAll => "re_find_all",
+            Builtin::ReReplace => "re_replace",
+            Builtin::ReSplit => "re_split",
         }
     }
 }

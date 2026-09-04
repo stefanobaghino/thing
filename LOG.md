@@ -10831,3 +10831,23 @@ gate. The chain now ends in a comparison, not a count.
 
 Both were `.into()` on a String that was already a String, in the
 match-to-value helper. Removed; clippy is silent again.
+
+## 2026-09-05 — Iteration 606: re_find_all, re_replace, re_split
+
+The three that scan rather than ask once. All of them share one
+helper, which is where the only interesting decision lives: an empty
+match cannot advance a scan by itself, so the helper steps one
+character past it. Without that, `re_find_all(s, "x*")` would never
+return. With it, that call gives one empty match at every position
+including the end — four for a three-character string — which is what
+every engine before this one gives, and what makes `re_split(s, "")`
+cut a string into its characters.
+
+`re_replace` fills `$0` to `$9` from the match and reads `$$` as a
+dollar. A reference to a group the pattern does not have is an
+error: it can only be a mistake, and silently inserting nothing would
+hide it. A `$` in front of anything else stays a `$`, so a
+replacement that means money need not be escaped.
+
+`re_split` keeps leading and trailing empty pieces, because `split`
+already does and two functions that cut strings should not disagree.

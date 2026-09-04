@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 63 builtins; nine embedded stdlib modules
+- 66 builtins; nine embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh, 154 functions, guarded);
-  31 ting programs (15 selftest files, 17 examples with .out); 298 Rust tests
+  31 ting programs (15 selftest files, 17 examples with .out); 299 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -358,6 +358,10 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 606: re_find_all, re_replace ($0-$9, $$; an unknown group errors)
+  and re_split. One shared scan helper steps past an empty match by
+  one character, which is what makes re_split(s, "") split into
+  characters instead of hanging.
 - 605b: two clippy warnings shipped in 8c0376c because the tick
   PRINTED the warning count instead of gating on it. Gate on a
   comparison (`test -z`, `grep -c ... = 0`), never on a printed
@@ -373,12 +377,11 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) re_find_all, re_replace with $1 references, re_split;
-  (2) a pattern fuzzer: random patterns on random subjects never
+  (1) a pattern fuzzer: random patterns on random subjects never
   panic and never hang; unlike the dice these are pure, so they DO
   belong in the fuzzer alphabets;
-  (3) the docs learn patterns; selftest/regex.ting;
-  (4) RELEASE v2.100.0; (5) verify; (6) health tick.
+  (2) the docs learn patterns; selftest/regex.ting;
+  (3) RELEASE v2.100.0; (4) verify; (5) health tick.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
