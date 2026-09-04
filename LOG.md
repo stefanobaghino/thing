@@ -9733,5 +9733,5 @@ that holds that class and the lexer to the same set (it now lexes a
 plain escape, a four-digit one and a surrogate pair), and the
 builtin alternation.
 
-Fifty-two builtins; the selftest corpus is 600 checks; corpus
+Fifty-two builtins; the selftest corpus is 601 checks; corpus
 warnings hold at five. 266 Rust tests, green on both engines.
