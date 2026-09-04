@@ -301,9 +301,12 @@ holds only the current milestone and the standing rules.
 - 579: hex(n) and bin(n) write the literal forms (sign kept, not
   wrapped), and int(s) reads a string the way the lexer reads a
   literal, so int(hex(n)) == n for every int. 54 builtins.
+- 580: the docs read the numbers (reference prose on printing and on
+  the conversions, a Limits bullet saying infinity is reachable by
+  arithmetic and by nothing else; a tutorial snippet for hex/bin/int
+  and a paragraph on 0.1 + 0.2).
 - Backlog (one per tick, in order):
-  (1) the docs read the numbers; (2) RELEASE v2.96.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.96.0; (2) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

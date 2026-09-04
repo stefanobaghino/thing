@@ -10223,3 +10223,25 @@ rows, the editor grammar alternation. 54 builtins now.
 
 Gate green: fmt, clippy, 280 Rust tests, 645 selftest checks, corpus
 at exactly five warnings.
+
+## 2026-09-04 — Iteration 580: the docs read the numbers
+
+The reference's Values section gained two paragraphs: one saying that
+anything `print`, `str` or `json_str` writes can be read back, with
+the rule that produces it, and one saying that the conversions refuse
+exactly what a literal refuses — with `int(hex(n)) == n` as the
+sentence that ties the milestone together. The Limits section gained
+a float bullet: infinity and NaN exist, arithmetic can reach them, but
+no literal and no conversion produces one and `json_str` will not
+encode one. That distinction was implicit in four refusals and written
+down nowhere.
+
+The tutorial's bits section gained a second half — `hex`, `bin`, `int`
+and printing, in one executed snippet — and a paragraph about
+`0.1 + 0.2`. That output is the one thing a reader will meet and
+mistrust, and the honest answer is that shortest-round-trip printing
+is what lets them see it at all.
+
+Gate green: fmt, clippy, 280 Rust tests, tutorial snippets executed,
+42 corpus files formatted. Milestone "numbers that read back" is code-
+and docs-complete; v2.96.0 is next.

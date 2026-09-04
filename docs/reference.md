@@ -94,6 +94,23 @@ least one digit — so `1e` is an error rather than a number followed by
 a name. A literal too large for a double (`1e400`) is an error; one too
 small (`1e-400`) is zero, as it is in JSON.
 
+A number printed by `print`, `str` or `json_str` is written so it can
+be read back. A float takes the shortest spelling that round-trips to
+the same double, with an exponent outside the range 1e-4 to 1e17 —
+`1e23` rather than twenty-three digits of expansion — and keeps a `.0`
+when it is integral, so `1.0` stays visibly a float. Every form is
+both a ting literal and valid JSON.
+
+The conversions refuse exactly what a literal refuses. `float(s)` fails
+on a string that would be infinite or is not a number at all, including
+the words `inf` and `nan`; `json_parse` fails on a number out of range
+for a double (`1e999`) rather than decoding it as infinity, which is
+what `json_str` has always refused to encode. `int(x)` on a float
+truncates toward zero, and fails rather than saturating when the value
+is non-finite or outside i64. `int(s)` reads a string the way the lexer
+reads a literal — sign, `0x`/`0b` prefix, `_` between digits — so
+`int(hex(n))` and `int(bin(n))` give back `n`.
+
 A string literal spells a character outside the escape set either
 directly (source is UTF-8, so `"café"` is fine) or as `\uXXXX` —
 four hex digits, a high surrogate followed by a low one for anything
@@ -528,6 +545,9 @@ tests.
   (see Functions); the `ting` binary allows a few thousand frames.
 - Integers: i64 range; overflow raises an error rather than wrapping.
 - Shift counts: 0 to 63.
+- Floats: IEEE 754 doubles. `1.0 / 0.0` is infinity and `0.0 / 0.0` is
+  NaN, as the arithmetic says, but no literal or conversion produces
+  either, and `json_str` refuses to encode one.
 - Map keys: strings only.
 - Cyclic data (`xs[0] = xs;`) prints with `[...]` / `{...}` at the point
   of recursion, `==` compares it by the parts that are finite (two

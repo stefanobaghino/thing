@@ -100,6 +100,31 @@ more (or a negative one) is an error naming the range, instead of a
 number the hardware would have to invent. `>>` keeps the sign, so
 `-16 >> 2` is `-4`.
 
+Numbers come back out the way they went in. `hex` and `bin` write the
+literal forms, `int` reads them, and a float prints as the shortest
+text that means the same double — with an exponent when the plain
+digits would be a wall of them:
+
+```ting
+let mode = 6;
+print(hex(255), bin(mode), int("0xff") == 255);
+print(1e23, 1.0, 0.1 + 0.2);
+print(json_str({"big": 1e23, "one": 1.0}));
+```
+
+```text
+0xff 0b110 true
+1e23 1.0 0.30000000000000004
+{"big":1e23,"one":1.0}
+```
+
+`0.1 + 0.2` is not a bug in ting: it is what binary floating point
+does, and printing the shortest round-tripping form is how you get to
+see it rather than have it hidden by rounding. Anything the printer
+writes can be pasted back into source, which is also why `float("inf")`
+and `json_parse("1e999")` are errors — there is no literal for
+infinity, so nothing should be able to produce one behind your back.
+
 ## Loops
 
 `while` and `for` need braces and take no parentheses. `for` iterates
