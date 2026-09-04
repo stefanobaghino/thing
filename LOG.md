@@ -10273,3 +10273,30 @@ in iteration 566 — a large float printed as a wall of digits — and
 the survey turned that one wart into four, all at the same boundary.
 Two tags, both cold-verified. Next tick is the health tick that
 closes the milestone.
+
+## 2026-09-04 — Iteration 583: health tick — milestone "numbers that read back" complete
+
+Everything green.
+
+The full suite in release with the enlarged budgets: 50000
+differential cases, 20000 formatter cases over LF and CRLF, the
+crash fuzzer including cyclic values, and both engines — 280 tests,
+no failures. All six bench checksums match bench/BASELINE.md, twice
+over: the bench was run twice this tick and the checksums are
+identical in both, which is the property that matters when a
+milestone changes how every number is printed. The timings came in
+below the baseline on a quiet host (fib 512 ms on the tree-walker
+against 601, 318 on the VM against 335) and mean nothing beyond
+that.
+
+Audits: six assets each on v2.94.0, v2.95.0 and v2.96.0. Every site
+path answers 200 and the published changelog reads v2.96.0. The
+corpus scan reports exactly five warnings; 645 selftest checks pass
+on the release binary. No open pull requests; the tree is clean.
+
+Milestone "numbers that read back" (the forty-first since the
+restart) is closed: float printing that round-trips, conversions
+that refuse what a literal refuses, `int` that no longer saturates,
+and `hex`/`bin` with an `int` that reads them. Two tags, both
+cold-verified. The backlog is empty, so the next tick is a
+replenishment.

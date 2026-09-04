@@ -307,8 +307,10 @@ holds only the current milestone and the standing rules.
   and a paragraph on 0.1 + 0.2).
 - v2.96.0 VERIFIED (117th tag; strokes 579, 580; both aarch64
   archives executed here, the round trip checked to i64::MIN).
-- Backlog (one per tick, in order):
-  (1) health tick + audit — closes "numbers that read back".
+- 583: health tick + audit green — milestone "numbers that read
+  back" complete (all six bench checksums match, twice; five corpus
+  warnings; six assets per tag; the site serves v2.96.0). Backlog
+  empty: the next tick is a replenishment.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
