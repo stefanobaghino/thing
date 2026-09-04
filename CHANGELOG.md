@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.102.0 (2026-09-05)
 
 - Function parameters may carry defaults (`fn f(a, b = 1)`), so a
   call can leave the tail off. Defaults are expressions evaluated at
