@@ -650,6 +650,74 @@ A é 😀
 65 é 9731
 ```
 
+## The clock and the dice
+
+Two things a script reaches for that the language cannot compute on
+its own: what time it is, and a number nobody can predict.
+
+`time_ms()` is milliseconds since the Unix epoch, and `sleep_ms(ms)`
+pauses for that many, flushing anything already printed so it is
+visible during the wait. Together they measure and they wait:
+
+```ting
+let started = time_ms();
+sleep_ms(20);
+let took = time_ms() - started;
+print(took >= 20);
+```
+
+```text
+true
+```
+
+A count of milliseconds is not a date, though, and turning one into
+the other is arithmetic nobody should write twice. `lib/time.ting`
+has it, in UTC:
+
+```ting
+let time = import("lib/time.ting");
+print(time["iso"](951825296000));
+print(time["date"](951825296000), time["clock"](951825296000));
+print(time["weekday_name"](time["parts"](951825296000)["weekday"]));
+print(time["span"](3723000));
+```
+
+```text
+2000-02-29T11:54:56Z
+2000-02-29 11:54:56
+Tuesday
+1h 2m 3s
+```
+
+The module stops at UTC on purpose: a zone is a database, and a
+zero-dependency binary has no room to carry one.
+
+The dice are `random()`, a float in `[0, 1)`, and `random_int(lo,
+hi)`, an int in a half-open span the way `range` is half-open — so
+`random_int(0, 6)` is a die roll counted from zero, and `lo` equal to
+`hi` is an error rather than a lie about an empty span:
+
+```ting
+seed(1789);
+let rolls = [];
+for i in range(0, 6) { push(rolls, random_int(1, 7)); }
+print(rolls);
+print(random() < 1.0);
+```
+
+```text
+[1, 4, 2, 2, 4, 5]
+true
+```
+
+That snippet prints the same six numbers every time it runs, because
+`seed(n)` restarts the generator at a known point. That is what makes
+a shuffle debuggable: seed it while you are working out why the third
+hand is wrong, drop the seed when you ship. Left unseeded, the
+generator starts from the clock instead, so two runs differ. (In the
+browser playground there is no clock to start from, so an unseeded
+program repeats itself until it calls `seed`.)
+
 ## Testing
 
 `lib/test.ting` is a test framework in forty lines of ting: record

@@ -10458,3 +10458,21 @@ it. Same in selftest/random.ting, the fourteenth selftest, which the
 differential test runs on both engines.
 
 None of the three go anywhere near a fuzzer alphabet.
+
+## 2026-09-04 — Iteration 590: the docs read the clock and the dice
+
+A tutorial section between "Spelling a character" and "Testing":
+measuring with `time_ms` around a `sleep_ms`, `lib/time.ting` turning
+milliseconds into a date, a clock, a weekday and a span, and the dice
+with the reproducibility argument attached — seed it while you are
+working out why the third hand is wrong, drop the seed when you ship.
+The reference rows landed with the builtins in 589.
+
+Two things the writing forced. `weekday_name` takes a weekday number,
+not milliseconds, so the snippet reads it out of `parts` — the first
+draft called it on a timestamp and the module refused, which is the
+error message doing its job on its own documentation. And the rolled
+numbers are printed, which pins one sequence of the generator in a
+doc test: changing SplitMix64 now means editing the tutorial. That is
+the price of showing what a seed buys, and it is a fair one, but it
+is deliberate rather than accidental — nowhere else is a draw pinned.

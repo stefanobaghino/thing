@@ -324,10 +324,11 @@ holds only the current milestone and the standing rules.
   in Interpreter, so both engines draw the same stream; unseeded it
   starts from the clock (wasm has none, and says so in the docs).
   None of the three is in any fuzzer alphabet.
+- 590: tutorial section "The clock and the dice". It pins one seeded
+  sequence in a doc test, so changing the generator means editing
+  docs/tutorial.md; that is the only pinned draw anywhere.
 - Backlog (one per tick, in order):
-  (1) the docs read the clock and the dice (tutorial section, and
-  the reference already carries the rows); (2) RELEASE v2.98.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.98.0; (2) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
