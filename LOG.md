@@ -10482,3 +10482,16 @@ is deliberate rather than accidental — nowhere else is a draw pinned.
 The 119th tag. Two strokes: the dice (589) and the tutorial section
 that explains them (590). Six assets to build; verification is the
 next tick, cold download of both aarch64 archives as always.
+
+## 2026-09-04 — Iteration 592: v2.98.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that seeds the generator twice and
+compares the two runs, draws a float, reads back the refusal of an
+empty span, and measures a pause. Identical on gnu and musl, both
+reporting 2.98.0.
+
+The Pages run on the release commit was cancelled by the run for the
+commit right behind it, which then deployed successfully — the
+concurrency group working as intended, not a failure needing the
+manual dispatch.

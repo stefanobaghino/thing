@@ -327,11 +327,11 @@ holds only the current milestone and the standing rules.
 - 590: tutorial section "The clock and the dice". It pins one seeded
   sequence in a doc test, so changing the generator means editing
   docs/tutorial.md; that is the only pinned draw anywhere.
-- 591: v2.98.0 tagged (119th tag; strokes 589, 590) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.98.0 VERIFIED (119th tag; strokes 589, 590; both aarch64
+  archives executed here, seeded replay and a measured pause).
+  Milestone "the clock and the dice" is complete.
 - Backlog (one per tick, in order):
-  (1) verify the v2.98.0 release (cold download, both aarch64);
-  (2) health tick + audit; (3) design the next milestone (the
+  (1) health tick + audit; (2) design the next milestone (the
   no-idle rule: an empty backlog is a replenishment tick).
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
@@ -347,7 +347,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 118 (v2.97.0), 118 verified; v2.29.0 is publicly marked broken
+- Tags: 119 (v2.98.0), 119 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
