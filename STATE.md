@@ -358,6 +358,8 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 622: --check's arity warning and the LSP hover learned the range;
+  a default is shown from its source span, not the AST's s-expression.
 - 621: defaults land in the language. One Interpreter::call fills
   missing arguments, so both engines agree by construction. The
   compiler's capture analysis now walks parameter defaults too — a
@@ -420,10 +422,9 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) --check's arity warning and the LSP hover learn the range;
-  (2) the formatter, and the grammar fuzzer's alphabet;
-  (3) docs and selftests;
-  (4) RELEASE v2.102.0; (5) verify; (6) health tick.
+  (1) the formatter, and the grammar fuzzer's alphabet;
+  (2) docs and selftests;
+  (3) RELEASE v2.102.0; (4) verify; (5) health tick.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.

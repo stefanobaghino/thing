@@ -782,14 +782,20 @@ pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
         return Vec::new();
     };
     use crate::ast::{ExprKind as E, StmtKind as S};
-    // Top-level `let name = fn(...)`, with the arity it was given.
-    let mut arities: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    // Top-level `let name = fn(...)`, with the arity it was given:
+    // how many arguments it needs, and how many it can take.
+    let mut arities: std::collections::HashMap<String, (usize, usize)> =
+        std::collections::HashMap::new();
     let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for stmt in &program {
         if let S::Let(name, value) = &stmt.kind {
             *seen.entry(name.clone()).or_insert(0) += 1;
             if let E::Fn(params, _) = &value.kind {
-                arities.insert(name.clone(), params.len());
+                let required = params
+                    .iter()
+                    .position(|p| p.default.is_some())
+                    .unwrap_or(params.len());
+                arities.insert(name.clone(), (required, params.len()));
             }
         }
     }
@@ -887,29 +893,32 @@ fn collect_rebindings(
 
 fn check_calls(
     stmts: &[crate::ast::Stmt],
-    arities: &std::collections::HashMap<String, usize>,
+    arities: &std::collections::HashMap<String, (usize, usize)>,
     out: &mut Vec<(usize, usize, String)>,
 ) {
     use crate::ast::{ExprKind as E, StmtKind as S};
     fn expr(
         e: &crate::ast::Expr,
-        arities: &std::collections::HashMap<String, usize>,
+        arities: &std::collections::HashMap<String, (usize, usize)>,
         out: &mut Vec<(usize, usize, String)>,
     ) {
         match &e.kind {
             E::Call(callee, args) => {
                 if let E::Var(name) = &callee.kind
-                    && let Some(want) = arities.get(name)
-                    && *want != args.len()
+                    && let Some((required, most)) = arities.get(name).copied()
+                    && (args.len() < required || args.len() > most)
                 {
+                    // A range only when there is one: a function with no
+                    // defaults reads exactly as it did before.
+                    let takes = if required == most {
+                        crate::diag::plural(most, "argument")
+                    } else {
+                        format!("{required} to {most} arguments")
+                    };
                     out.push((
                         callee.span.start,
                         callee.span.end,
-                        format!(
-                            "`{name}` takes {}, called with {}",
-                            crate::diag::plural(*want, "argument"),
-                            args.len()
-                        ),
+                        format!("`{name}` takes {takes}, called with {}", args.len()),
                     ));
                 }
                 expr(callee, arities, out);
@@ -1674,16 +1683,31 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
     )])
 }
 
-/// The parameter names of a top-level function bound to `name` in
-/// `src`, if the document parses and such a binding exists.
+/// The parameters of a top-level function bound to `name` in `src`,
+/// if the document parses and such a binding exists. A parameter with
+/// a default is shown the way it was written, so a hover says which
+/// arguments may be left out.
 fn user_fn_params(src: &str, name: &str) -> Option<Vec<String>> {
     let tokens = lexer::lex(src).ok()?;
     let program = crate::parser::parse_program(&tokens).ok()?;
     program.iter().find_map(|stmt| match &stmt.kind {
         crate::ast::StmtKind::Let(n, expr) if n == name => match &expr.kind {
-            crate::ast::ExprKind::Fn(params, _) => {
-                Some(params.iter().map(|p| p.name.clone()).collect())
-            }
+            crate::ast::ExprKind::Fn(params, _) => Some(
+                params
+                    .iter()
+                    // The default as it was written, read back out of
+                    // the source: the AST prints s-expressions, which
+                    // is not what anyone typed.
+                    .map(|p| match &p.default {
+                        Some(d) => format!(
+                            "{} = {}",
+                            p.name,
+                            src.get(d.span.start..d.span.end).unwrap_or("...")
+                        ),
+                        None => p.name.clone(),
+                    })
+                    .collect(),
+            ),
             _ => None,
         },
         _ => None,
@@ -2299,4 +2323,42 @@ pub fn run() -> i32 {
         }
     }
     0
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// A hover over a function with defaults says which arguments may
+    /// be left out, spelled the way they were written rather than as
+    /// the AST prints them.
+    #[test]
+    fn hover_shows_a_default_as_written() {
+        let src = "fn greet(who, greeting = \"hi\", n = 1 + 1) { return who; }\ngreet(\"a\");\n";
+        let hover = hover_result(src, 1, 0).to_string();
+        assert!(
+            hover.contains("greet(who, greeting = \\\"hi\\\", n = 1 + 1)"),
+            "hover was:\n{hover}"
+        );
+    }
+
+    /// The arity warning grows a range only when a function has one.
+    #[test]
+    fn arity_warnings_use_a_range_only_where_there_is_one() {
+        let src =
+            "let f = fn(a, b = 1) { return a; };\nlet g = fn(a, b) { return a; };\nf();\ng(1);\n";
+        let messages: Vec<String> = arity_mismatches(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(
+            messages,
+            vec![
+                "`f` takes 1 to 2 arguments, called with 0".to_string(),
+                "`g` takes 2 arguments, called with 1".to_string(),
+            ]
+        );
+        // A call inside the range says nothing at all.
+        assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
 }

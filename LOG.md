@@ -11186,3 +11186,20 @@ as it did before.
 
 Five differential corpus lines cover it, including the failing
 default and the nested-closure case that caught the bug.
+
+## 2026-09-05 — Iteration 622: the checker and the hover learn the range
+
+`--check`'s arity warning now carries how many arguments a function
+needs and how many it can take, and says a range only when there is
+one: `f takes 1 to 2 arguments, called with 0`, while a function with
+no defaults reads exactly as it always did. A call inside the range
+says nothing at all, which is the whole point of the feature.
+
+The hover shows a default the way it was written — read back out of
+the source by span, not printed from the AST, which would have shown
+`n = (+ 1 1)` for `n = 1 + 1`. A signature that does not match what
+the reader typed is worse than no signature.
+
+Two unit tests in src/lsp.rs, which had none: the module's behaviour
+was covered end to end through the JSON-RPC session tests, and these
+two are about the text of a message rather than the protocol.
