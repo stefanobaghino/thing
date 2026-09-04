@@ -10899,3 +10899,10 @@ and that `(a+)+b` answers instead of hanging.
 
 The README said 52 builtins. It has said that for a while; it says 66
 now, and mentions the three capabilities added since.
+
+## 2026-09-05 — Iteration 609: release v2.100.0
+
+The 121st tag, and the first three-digit minor. Five strokes: the
+engine (604), re_test and re_find (605, with 605b's clippy lesson),
+the three scanning builtins (606), the pattern fuzzer (607), the docs
+and selftest (608). Verification next tick.

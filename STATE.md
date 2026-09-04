@@ -358,6 +358,8 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 609: v2.100.0 tagged (121st tag; strokes 604-608) — UNVERIFIED
+  until both aarch64 archives run here.
 - 608: reference section (syntax table, semantics, the omissions and
   why), tutorial section, selftest/regex.ting (33 checks). README's
   builtin count was stale at 52; now 66.
@@ -383,7 +385,8 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.100.0; (2) verify; (3) health tick.
+  (1) verify the v2.100.0 release (cold download, both aarch64);
+  (2) health tick + audit.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
