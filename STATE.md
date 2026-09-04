@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 66 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 172
-  functions, guarded); 36 ting programs (19 selftest files, 18 examples with .out); 301 Rust tests
+  functions, guarded); 38 ting programs (20 selftest files, 18 examples with .out); 308 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -424,9 +424,13 @@ holds only the current milestone and the standing rules.
   v2.101.0): a Pike-VM regex engine — linear time, leftmost-first, no
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
+- 624: the docs and selftest for optional arguments. The selftest
+  found a checker bug: `unused_params` read every identifier between
+  the parentheses as a parameter, so a default that called a function
+  reported that function as an unused parameter. Name position only
+  now, and a name a sibling default reads counts as used.
 - Backlog (one per tick, in order):
-  (1) docs and selftests;
-  (2) RELEASE v2.102.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.102.0; (2) verify; (3) health tick.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.

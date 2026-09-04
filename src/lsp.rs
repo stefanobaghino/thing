@@ -1213,12 +1213,29 @@ pub fn unused_params(src: &str) -> Vec<(usize, usize, String)> {
             i += 1;
             continue;
         }
+        // A parameter is an identifier in name position: right after
+        // the `(` or after a comma at depth zero. Everything else in
+        // the list belongs to a default expression, which names
+        // things rather than binding them.
         let mut params: Vec<(usize, usize, &str)> = Vec::new();
+        let mut in_defaults: Vec<&str> = Vec::new();
         j += 1;
+        let mut naming = true;
+        let mut depth = 0usize;
         while let Some(t) = tokens.get(j) {
             match &t.kind {
-                lexer::TokenKind::Ident(n) => params.push((t.span.start, t.span.end, n)),
-                lexer::TokenKind::RParen => break,
+                lexer::TokenKind::LParen
+                | lexer::TokenKind::LBrace
+                | lexer::TokenKind::LBracket => depth += 1,
+                lexer::TokenKind::RBrace | lexer::TokenKind::RBracket => depth -= 1,
+                lexer::TokenKind::RParen if depth == 0 => break,
+                lexer::TokenKind::RParen => depth -= 1,
+                lexer::TokenKind::Comma if depth == 0 => naming = true,
+                lexer::TokenKind::Ident(n) if naming && depth == 0 => {
+                    params.push((t.span.start, t.span.end, n));
+                    naming = false;
+                }
+                lexer::TokenKind::Ident(n) => in_defaults.push(n),
                 _ => {}
             }
             j += 1;
@@ -1251,9 +1268,10 @@ pub fn unused_params(src: &str) -> Vec<(usize, usize, String)> {
             if name.starts_with('_') {
                 continue;
             }
-            let used = body
-                .iter()
-                .any(|t| matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name));
+            let used = in_defaults.contains(&name)
+                || body
+                    .iter()
+                    .any(|t| matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name));
             if !used {
                 out.push((start, end, format!("parameter `{name}` is never used")));
             }
@@ -2360,5 +2378,24 @@ mod tests {
         );
         // A call inside the range says nothing at all.
         assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
+
+    /// What a default names is a use, not a binding: the names inside
+    /// it are neither parameters of their own nor unused ones, and a
+    /// parameter another default reads is used even if the body never
+    /// touches it.
+    #[test]
+    fn a_default_expression_binds_nothing() {
+        let src = "fn twice(x) { return x * 2; }\n\
+                   fn scale(x, by = twice(3)) { return x * by; }\n\
+                   fn span(from, to = from + 1) { return to; }\n";
+        let messages: Vec<String> = unused_params(src).into_iter().map(|(_, _, m)| m).collect();
+        assert_eq!(messages, Vec::<String>::new());
+        // A parameter nothing reads is still reported.
+        let messages: Vec<String> = unused_params("fn f(a, b = 1) { return b; }\n")
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(messages, vec!["parameter `a` is never used".to_string()]);
     }
 }

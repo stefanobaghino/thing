@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- Function parameters may carry defaults (`fn f(a, b = 1)`), so a
+  call can leave the tail off. Defaults are expressions evaluated at
+  each call in the callee's scope, left to right, and arity errors
+  name a range. Both engines, the checker, the formatter and the
+  language server understand them.
+
 ## v2.101.0 (2026-09-05)
 
 - New stdlib module `lib/args.ting`: command-line parsing from a

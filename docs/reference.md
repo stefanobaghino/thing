@@ -220,8 +220,26 @@ let c = make_counter();
 print(c(), c());   # 1 2
 ```
 
-Calls check arity exactly. Falling off the end of a function returns
-nil. Recursion is capped, and the cap is derived from the host stack
+A parameter may carry a default: `fn greet(name, greeting = "hello")`
+can be called with one argument or two. Parameters with defaults come
+last — a plain parameter after one that has a default is a parse
+error, since there would be no way to reach it.
+
+```ting
+fn span(from, to = from + 10, size = to - from) { return [from, to, size]; }
+print(span(1));      # [1, 11, 10]
+print(span(1, 4));   # [1, 4, 3]
+```
+
+A default is an expression, not a stored value: it is evaluated at
+every call that leaves the parameter out, in the callee's own scope
+and left to right, so a later default can name an earlier parameter
+(whether that one was passed in or defaulted too) and `fn f(xs = [])`
+gets a fresh list each time rather than one shared list.
+
+Calls check arity: exactly, or against a range when there are
+defaults (`f expects 1 to 3 arguments, got 4`). Falling off the end of
+a function returns nil. Recursion is capped, and the cap is derived from the host stack
 the interpreter was given rather than fixed: the `ting` binary hands
 its interpreter 32 MB and allows a few thousand frames from it
 (fewer in an unoptimized build, where a frame costs several times as

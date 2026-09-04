@@ -176,6 +176,54 @@ print(sort_by(words, len));
 ["fig", "kiwi", "banana"]
 ```
 
+### Arguments you can leave out
+
+A parameter can name what to use when the caller says nothing:
+
+```ting
+fn greet(name, greeting = "hello") { return greeting + ", " + name; }
+print(greet("ting"));
+print(greet("ting", "welcome"));
+
+fn line(text, width = 20, fill = "-") {
+  while len(text) < width { text = text + fill; }
+  return text;
+}
+print(line("chapter"));
+print(line("chapter", 12, "."));
+```
+
+```text
+hello, ting
+welcome, ting
+chapter-------------
+chapter.....
+```
+
+Parameters with defaults go last, and each default is re-evaluated at
+every call that omits it — in the function's own scope, left to
+right. So a default can be written in terms of the parameters before
+it, and one that builds a value builds a new one every time:
+
+```ting
+fn window(from, to = from + 3, label = str(from) + ".." + str(to)) {
+  return label;
+}
+print(window(1), window(1, 2));
+
+fn collect(x, into = []) { push(into, x); return into; }
+print(collect(1), collect(2));
+```
+
+```text
+1..4 1..2
+[1] [2]
+```
+
+That last one is worth a second look: `into` is a fresh list on each
+call, so the two `collect` calls do not share one. Pass a list in and
+it is used as given.
+
 ## Closures as objects
 
 Several closures over the same variables behave like an object: the

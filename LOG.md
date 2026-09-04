@@ -11219,3 +11219,29 @@ called literal whose default is itself a generated expression. 20000
 differential and 10000 formatter cases at seed 622 found nothing —
 which, given how new the call path is, is the reassurance worth
 having.
+
+## 2026-09-05 — Iteration 624: the docs and the selftest, and one checker bug
+
+Optional arguments are now written down: a passage in the reference
+under Functions, a tutorial subsection after "Functions are values",
+and selftest/defaults.ting — twenty-odd checks that run on both
+engines and cover what the feature actually promises rather than
+what it merely permits. Defaults last, re-evaluated at each call,
+left to right so a later one may read an earlier parameter, a fresh
+value each time so `fn f(xs = [])` never leaks a list between calls,
+carried into closures, and the arity error naming a range.
+
+The selftest found a checker bug the Rust tests had not. `unused_params`
+walks tokens and took *every* identifier between the parentheses for a
+parameter, so `fn scale(x, by = twice(3))` reported "parameter `twice`
+is never used". A default is an expression: it names things, it binds
+nothing. The scan now takes an identifier as a parameter only in name
+position — after the `(` or after a comma at depth zero — and counts a
+name read by a sibling's default as a use, so `fn span(from, to = from + 1)`
+does not flag `from`.
+
+Writing the selftest also cost the corpus its five-warning shape
+twice over: the deliberate wrong-arity calls tripped the checker,
+which is exactly what the checker is for. They go through a
+binding now, so the runtime error is still exercised and the
+corpus scan stays at the five deliberate warnings.
