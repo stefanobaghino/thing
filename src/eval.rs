@@ -302,6 +302,7 @@ const EMBEDDED_STDLIB: &[(&str, &str)] = &[
     ("lib/list.ting", include_str!("../lib/list.ting")),
     ("lib/map.ting", include_str!("../lib/map.ting")),
     ("lib/math.ting", include_str!("../lib/math.ting")),
+    ("lib/sh.ting", include_str!("../lib/sh.ting")),
     ("lib/string.ting", include_str!("../lib/string.ting")),
     ("lib/test.ting", include_str!("../lib/test.ting")),
     ("lib/time.ting", include_str!("../lib/time.ting")),

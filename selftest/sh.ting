@@ -1,0 +1,43 @@
+# ting testing ting: driving other programs. Which programs a machine
+# has is not something a portable suite may assume, so the checks that
+# need a child ask which() first and stand down when there is none.
+
+let sh = import("lib/sh.ting");
+let err = fn(f) { return try(f)["err"]; };
+
+assert(type(sh["windows"]()) == "bool", "the platform question has a yes or no answer");
+assert(sh["dir_sep"]() == "/" || sh["dir_sep"]() == "\\", "a separator is one of two things");
+
+# PATH is a list of non-empty directory names.
+let dirs = sh["path_dirs"]();
+assert(type(dirs) == "list", "PATH splits into a list");
+for dir in dirs { assert(dir != "", "no empty entry survives the split"); }
+
+# A name nothing could answer to is nil, not a guess.
+assert(sh["which"]("ting-definitely-no-such-program-xyz") == nil, "which misses cleanly");
+
+# A missing program is an error from run(), through every wrapper.
+assert(starts_with(err(fn() { return sh["check"]("ting-no-such-program-xyz", []); }),
+"run: cannot start "), "check reports a missing program as run does");
+assert(starts_with(err(fn() { return sh["ok"]("ting-no-such-program-xyz", []); }),
+"run: cannot start "), "so does ok");
+
+# Where there is a shell, drive it.
+let shell = sh["which"]("sh");
+if shell != nil {
+  assert(sh["ok"](shell, ["-c", "exit 0"]), "a happy program is ok");
+  assert(!sh["ok"](shell, ["-c", "exit 1"]), "an unhappy one is not");
+  assert(sh["check"](shell, ["-c", "printf hello"]) == "hello", "check hands back stdout");
+  assert(sh["lines"](shell, ["-c", "printf 'a\nb\n'"]) == ["a", "b"],
+  "the trailing newline leaves no empty line behind");
+  assert(sh["lines"](shell, ["-c", "printf ''"]) == [], "no output is no lines");
+  let bad = err(fn() { return sh["check"](shell, ["-c", "echo why 1>&2; exit 4"]); });
+  assert(contains(bad, "exited 4") && contains(bad, "why"),
+  "a nonzero code fails with the code and the reason");
+  let quiet = err(fn() { return sh["check"](shell, ["-c", "exit 7"]); });
+  assert(contains(quiet, "no output on stderr"), "and says so when there is no reason given");
+  # Arguments arrive as written, spaces and all, because there is no
+  # shell between the list and the program.
+  assert(sh["lines"](shell, ["-c", "printf '%s\n' \"$0\" \"$1\"", "a b", "c"]) == ["a b", "c"],
+  "argv is not re-split by anyone");
+}

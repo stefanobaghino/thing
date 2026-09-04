@@ -10628,3 +10628,34 @@ third outing (499b, and again here). The test now runs the child in a
 directory it creates by name and asserts `ends_with(cwd(), name)`
 plus `is_dir(cwd())`: what `cwd` promises, without an opinion on how
 an operating system spells a path.
+
+## 2026-09-05 — Iteration 598: lib/sh.ting
+
+Seven functions on top of `run()`, the ninth stdlib module.
+
+`run` stays blunt on purpose — a map, and the caller decides what a
+nonzero code means — so the module supplies the three answers scripts
+actually want: `ok` (did it exit zero), `check` (the stdout, failing
+on anything else) and `lines` (that, split, without the empty string
+a trailing newline leaves behind). `check`'s failure carries the code
+*and* the child's stderr, because a message on stderr is usually the
+only explanation a program gives.
+
+`which` is the other half: a script can ask whether a program exists
+before it needs one. It reads PATH, drops empty entries — an empty
+PATH element means the working directory on some shells, which is not
+a decision a library should make quietly — and on Windows tries every
+PATHEXT suffix in the order that variable lists them, which is the
+order the shell would. Windows is detected by having a PATHEXT at
+all, which is a fact about the platform rather than a string compared
+against a name.
+
+The parameter is `argv`, not `args`: the checker pointed out that
+`args` shadows the builtin, and it was right — inside `sh`, `args`
+would have meant two different lists in one file.
+
+The selftest asks `which("sh")` and stands down where there is none,
+so Windows runs the refusals and Unix runs the whole thing. Its last
+check is the one that matters most: arguments with spaces arrive
+exactly as written, because there is no shell in between to re-split
+them.

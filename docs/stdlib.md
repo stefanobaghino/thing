@@ -1,7 +1,7 @@
 # The ting standard library
 
-Eight modules written in ting itself — list, map, string, math, json,
-fs, test and time, 147 functions between them — living in `lib/` and also
+Nine modules written in ting itself — list, map, string, math, json,
+fs, test, time and sh, 154 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -202,6 +202,24 @@ zone here, because a zone is a database and this is a module.
 | `fdiv(a, b)` / `fmod(a, b)` | floor division and its remainder, which `/` and `%` do not do for negatives |
 | `fmod(a, b)` | see `fdiv` |
 | `pad(n, width)` | a number left-padded with zeros |
+
+## lib/sh.ting
+
+Driving other programs, on top of `run()`. `run` is deliberately
+blunt — a map, and the caller decides what a nonzero code means —
+and these are the three answers most scripts want, plus a PATH
+lookup so a script can ask whether a program is there before it
+needs it.
+
+| Function | Does |
+|----------|------|
+| `ok(cmd, argv)` | whether the program ran and exited zero |
+| `check(cmd, argv)` | the program's stdout, failing on a nonzero code with the code and its stderr |
+| `lines(cmd, argv)` | `check` split into lines, without the empty one a trailing newline leaves |
+| `which(name)` | where the program would be found on PATH, or nil; on Windows every PATHEXT suffix is tried in order |
+| `path_dirs()` | PATH as a list of directories, empty entries dropped |
+| `dir_sep()` | the separator between directories in a path |
+| `windows()` | whether this is Windows, which is the platform with a PATHEXT |
 
 ## lib/test.ting
 

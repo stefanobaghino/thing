@@ -1,0 +1,78 @@
+# Driving other programs, written in ting on top of run().
+# Use them via
+#   let sh = import("lib/sh.ting");
+#
+# run() is deliberately blunt: it hands back a map and lets the caller
+# decide what a nonzero code means. These are the three answers most
+# scripts want — ignore it, insist on zero, or read the output as
+# lines — plus a PATH lookup, so a script can ask whether a program is
+# there before it needs it.
+
+# Windows is the platform with a PATHEXT; every other one this binary
+# builds for uses a colon and a forward slash.
+fn windows() { return env("PATHEXT") != nil; }
+
+# The separator between directories inside a path.
+fn dir_sep() {
+  if windows() { return "\\"; }
+  return "/";
+}
+
+# PATH, split into the directories it names. Empty entries are
+# dropped: an empty PATH element means the working directory on some
+# shells, which is a security decision no library should make quietly.
+fn path_dirs() {
+  let raw = env("PATH");
+  if raw == nil { return []; }
+  let sep = ":";
+  if windows() { sep = ";"; }
+  let out = [];
+  for part in split(raw, sep) {
+    if part != "" { push(out, part); }
+  }
+  return out;
+}
+
+# Where a program would be found, or nil. On Windows every suffix in
+# PATHEXT is tried, in the order that variable lists them, which is
+# the order the shell itself would try.
+fn which(name) {
+  let suffixes = [""];
+  if windows() {
+    for ext in split(env("PATHEXT"), ";") {
+      if ext != "" { push(suffixes, lower(ext)); }
+    }
+  }
+  for dir in path_dirs() {
+    for suffix in suffixes {
+      let candidate = dir + dir_sep() + name + suffix;
+      if exists(candidate) && !is_dir(candidate) { return candidate; }
+    }
+  }
+  return nil;
+}
+
+# Whether the program ran and said it was happy.
+fn ok(cmd, argv) { return run(cmd, argv)["code"] == 0; }
+
+# The program's stdout, insisting on a zero exit code. A nonzero one
+# fails with the code and whatever the program said about it, since a
+# message on stderr is usually the only explanation there is.
+fn check(cmd, argv) {
+  let done = run(cmd, argv);
+  if done["code"] != 0 {
+    let why = trim(done["err"]);
+    if why == "" { why = "no output on stderr"; }
+    fail(cmd + " exited " + str(done["code"]) + ": " + why);
+  }
+  return done["out"];
+}
+
+# check(), split into lines, without the empty one a trailing newline
+# would otherwise leave behind.
+fn lines(cmd, argv) {
+  let text = check(cmd, argv);
+  let out = split(replace(text, "\r\n", "\n"), "\n");
+  if len(out) > 0 && out[len(out) - 1] == "" { pop(out); }
+  return out;
+}

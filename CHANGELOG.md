@@ -13,6 +13,8 @@ Windows are attached to each
   than an exit code. Refused on wasm, as `exit` and `sleep_ms` are.
 - New builtins `eprint(...)`, which prints to stderr after flushing
   stdout so the two stay in order, and `cwd()`.
+- New stdlib module `lib/sh.ting`: `ok`, `check` and `lines` over
+  `run`, plus `which` and the PATH handling under it.
 
 ## v2.98.0 (2026-09-04)
 

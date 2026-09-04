@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 61 builtins; eight embedded stdlib modules
-  (list/map/string/math/json/fs/test/time, 147 functions, guarded); 30 ting
-  programs (14 selftest files, 17 examples with .out); 286 Rust tests
+- 61 builtins; nine embedded stdlib modules
+  (list/map/string/math/json/fs/test/time/sh, 154 functions, guarded);
+  31 ting programs (15 selftest files, 17 examples with .out); 286 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -333,6 +333,9 @@ holds only the current milestone and the standing rules.
 - 593: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 592, corpus at exactly
   five warnings, six assets, site serving v2.98.0.
+- 598: lib/sh.ting (ok, check, lines, which, path_dirs, dir_sep,
+  windows) — the ninth module. Its selftest asks which("sh") and
+  stands down where there is none, so Windows runs the refusals.
 - 597: fixed a Windows-only red — a test compared cwd() with a
   canonicalized path. Paths in tests: match names, never separators
   or prefixes (third time; see 499b).
@@ -346,11 +349,9 @@ holds only the current milestone and the standing rules.
   (v2.99.0, v2.100.0): ting is a good shell citizen but cannot call
   anything, has no stderr of its own and no cwd.
 - Backlog (one per tick, in order):
-  (1) lib/sh.ting: nonzero-is-a-failure wrapper, output as lines, a
-  PATH lookup written in ting with env and exists;
-  (2) the docs learn to drive (reference rows, second half of the
+  (1) the docs learn to drive (reference rows, second half of the
   tutorial's shell section);
-  (3) RELEASE v2.99.0; (4) verify; (5) health tick.
+  (2) RELEASE v2.99.0; (3) verify; (4) health tick.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
