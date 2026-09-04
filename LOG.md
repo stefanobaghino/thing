@@ -9226,3 +9226,33 @@ stdin is at EOF and `input()` returns nil immediately. That is not a
 bug to fix — there is one stdin and the script consumed it — but it
 is the first thing a shell user will try, so the usage line says so
 where they will read it. 262 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 540: the docs read the terminal
+
+CI green on 539 (API verdict). The reference gains `-` and
+`--test --watch` in its running block, a paragraph on scripts from
+standard input under it, and a `--watch` bullet next to the three
+modes that take it — with the mechanism said plainly, since a poll
+is not what a reader assumes a watcher is: modification times and
+lengths, a fifth of a second apart, no dependency and no
+platform-specific API, paths re-expanded each poll, Ctrl-C the only
+way out, and therefore no exit status worth reading. The `--fmt`,
+`--check` and `--test` bullets each point at it, and the `--fmt`
+one says why it is the exception.
+
+The tutorial gets two sections instead: "Leaving it running" and
+"Scripts from a pipe", both written the way the rest of that page
+is — a command, the output it actually produces, and the one thing
+that will surprise you. The transcripts were taken from the binary,
+not written from memory; the rules are eighty columns and the pages
+are narrower, so both places say the example is trimmed rather than
+quietly printing a rule that is not the one you will see. The
+input()-at-EOF caveat appears in both pages, since it is the first
+thing a shell user will try.
+
+README: `--watch` in the paragraph that lists the toolchain, and a
+piped script in the build block's example lines. 262 Rust tests
+green, docs guard included; the tutorial's own runnable blocks are
+checked by tests/tutorial.rs, which stayed green.

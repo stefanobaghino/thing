@@ -536,6 +536,54 @@ three slowest files after the summary; and `--tap` switches to Test
 Anything Protocol output for CI systems that consume it. The
 project's own suite under `selftest/` runs exactly that way in CI.
 
+## Leaving it running
+
+Editing and re-running by hand is the loop the tooling exists to
+remove, so `--test`, `--check` and `--fmt-check` take `--watch`:
+
+```sh
+ting --test --watch tests/
+```
+
+The suite runs, and then runs again every time a watched file
+changes, appears or disappears. A rule line separates one run from
+the next and says what set it off:
+
+```
+-- run 1 ------------------------------------------------------------
+ok   tests/list.ting (2 checks)
+1 passed, 0 failed, 2 checks
+-- run 2: tests/map.ting added --------------------------------------
+ok   tests/list.ting (2 checks)
+ok   tests/map.ting (1 check)
+2 passed, 0 failed, 3 checks
+```
+
+(Eighty columns of rule, trimmed above to fit the page.) The
+directory is looked at afresh each time, so the file you have just
+written joins the next run without restarting anything. Ctrl-C ends
+it. `ting --check --watch src/` does the same for the checker, and
+`ting --fmt-check --watch src/` for the formatter's verdict —
+though not `ting --fmt --watch`, which would rewrite a file, notice
+its own write, and run forever; that one is a usage error pointing
+at the two modes that write nothing.
+
+## Scripts from a pipe
+
+A script does not need a file. `-` in place of the path reads the
+program from standard input, which is how a generated script, a
+heredoc, or the output of another tool gets run:
+
+```sh
+echo 'print("hello, " + args()[0]);' | ting - world
+```
+
+Arguments after the dash reach `args()` as usual and errors name the
+script `-`. One caveat, worth knowing before you meet it: the script
+*is* what was piped in, so stdin is at end of file by the time it
+runs and `input()` returns `nil` straight away. Pipe a script or
+pipe it data — not both.
+
 ## Beyond scripts
 
 Everything else ships in the same binary:

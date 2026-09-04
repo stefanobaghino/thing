@@ -36,7 +36,9 @@ The whole toolchain is the one binary. A REPL with meta-commands
 `:clear`);
 `ting --test` running every file under a directory in its own process,
 in parallel with `-j`, with `--filter`, `--slow` and Test Anything
-Protocol output (`--tap`); `--check` and `--fmt` over files or
+Protocol output (`--tap`); `--watch` on the tests, the checker and
+`--fmt-check`, re-running the pass whenever a watched file changes;
+`--check` and `--fmt` over files or
 directories (stdin with `-`), the formatter showing its changes with
 `--diff` and keeping a file's line endings, the checker following
 local imports and warning about misspelt stdlib members, unused
@@ -81,6 +83,7 @@ fail loudly with a caret pointing at the source.
 ```sh
 cargo build --release
 ./target/release/ting script.ting   # run a script
+echo 'print(1);' | ./target/release/ting -   # or one from stdin
 ./target/release/ting               # start the REPL
 ./target/release/ting -h            # everything else
 ```

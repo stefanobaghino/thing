@@ -8,15 +8,26 @@ sitting.
 
 ```sh
 ting script.ting [args...]   # run a file; extra args go to args()
+ting - [args...]             # run a script read from stdin
 ting                         # interactive REPL (ctrl-d exits)
 ting --check files...        # report errors and warnings without running
 ting --fmt files...          # reformat in place (--fmt-check to verify)
 ting --test dirs...          # run every .ting file as a test
+ting --test --watch dirs...  # and again on every change (--check too)
 ting --doc [NAMES...]        # explain functions, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
 ting --help | -h             # every option
 ```
+
+A script may be a path or `-`, which reads it from standard input, so
+a generated or piped program runs without a file to put it in:
+`echo 'print(41 + 1);' | ting -`. Arguments after the dash reach
+`args()` as usual, diagnostics name the script `-`, and a relative
+`import` resolves against the working directory, a piped script
+having no directory of its own. The script is the stream, so by the
+time it runs stdin is at end of file and `input()` returns `nil`
+immediately — pipe a script or pipe it data, not both.
 
 Scripts run on the bytecode VM by default; `--eval` (or
 `TING_ENGINE=eval`) selects the reference tree-walking interpreter —
@@ -298,6 +309,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   written is reported and the run goes on — and the run ends with a
   summary line (reformatted / unchanged / failed, or "would change"
   under `--fmt-check`); exit 1 if anything failed or would change.
+  `--fmt-check` and `--fmt --diff` take `--watch` (below); `--fmt`
+  itself does not, since rewriting a file would set the watch off.
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a
@@ -319,7 +332,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   its body never names, same opt-out; a binding or parameter named
   after a builtin, which hides it); warnings never change the exit
   status unless `--strict` is given, which makes any warning exit 1
-  for hooks and CI that want them enforced.
+  for hooks and CI that want them enforced. `--watch` (below) checks
+  again on every change.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
   emits Test Anything Protocol output for CI consumers; `-j N` runs
@@ -333,6 +347,32 @@ The `ting` binary is the whole toolchain — no separate installs:
   the file verified — `ok tests/list.ting (12 checks)`, one check
   per `assert` — the summary totals them, and a file that passed
   while checking nothing is named there, since it proves nothing.
+  `--watch` (below) re-runs the suite on every change.
+- `--watch` turns `--test`, `--check` and `--fmt-check` into
+  something that stays open: the pass runs, and then runs again
+  every time one of the watched files changes, is added or is
+  deleted. A rule line separates the runs and names the cause:
+
+  ```
+  -- run 1 ------------------------------------------------------------
+  ok   tests/list.ting (2 checks)
+  1 passed, 0 failed, 2 checks
+  -- run 2: tests/map.ting added --------------------------------------
+  ok   tests/list.ting (2 checks)
+  ok   tests/map.ting (1 check)
+  2 passed, 0 failed, 3 checks
+  ```
+
+  (The rules are eighty columns wide, trimmed here to fit the page;
+  a cause longer than that keeps its name and runs past.)
+
+  The paths named on the command line are expanded again before
+  every poll, so a file added to a watched directory joins the next
+  run and one deleted leaves it. Watching is a poll of modification
+  times and lengths, a fifth of a second apart — no dependency, no
+  platform-specific API. Only Ctrl-C ends it, so the exit status of
+  a watched run is nobody's answer; under `--tap` the rule is a
+  comment, so the plan still parses.
 - `ting --profile SCRIPT` runs the script and then prints, on
   stderr so the program's own output is untouched, how much each
   function did: the number of calls, the time spent in its own body,

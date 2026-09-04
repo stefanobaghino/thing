@@ -221,9 +221,9 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - 539: ting - runs a script from stdin (args, diagnostics named -,
   imports against the cwd; input() then sees EOF).
+- 540: the docs read the terminal (reference, tutorial, README).
 - Backlog (one per tick, in order):
-  (1) the docs read the terminal; (2) RELEASE v2.88.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.88.0; (2) health tick + audit.
 - Tags: 108 (v2.87.0), 108 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
