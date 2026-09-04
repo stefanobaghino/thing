@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 66 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 172
-  functions, guarded); 35 ting programs (19 selftest files, 17 examples with .out); 301 Rust tests
+  functions, guarded); 36 ting programs (19 selftest files, 18 examples with .out); 301 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -358,6 +358,8 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 616: tutorial section "The front door" and examples/report.ting
+  (args + csv + err together); cookbook and playground regenerated.
 - 615: lib/csv.ting (parse, text, parse_with, text_with, maps,
   quote), the twelfth module. Parsed with a for-loop state machine,
   since string indexing counts characters and would be quadratic.
@@ -402,8 +404,7 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) the docs learn the front door; an example uses all three;
-  (2) RELEASE v2.101.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.101.0; (2) verify; (3) health tick.
 - Not chosen in 612, with reasons: match expressions and catch syntax
   need a new keyword, and a new keyword breaks a program using that
   word as a name (the 2.x promise forbids it); a set is a map with

@@ -1,0 +1,22 @@
+report — totals by column from a CSV
+
+usage: report [options] <file>
+
+options:
+  -b, --by COLUMN  column to group by (default region)
+  -q, --quiet      no header line
+  -h, --help       show this and leave
+
+grouping by region, reading sales.csv
+
+region,total
+north,215
+south,550
+
+Smith, J
+Okafor
+O"Neill
+Tanaka
+
+unknown option --nope
+missing <file>

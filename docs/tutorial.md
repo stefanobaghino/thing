@@ -762,6 +762,92 @@ generator starts from the clock instead, so two runs differ. (In the
 browser playground there is no clock to start from, so an unseeded
 program repeats itself until it calls `seed`.)
 
+## The front door
+
+Most scripts start the same way: work out what the command line
+asked for, read something in, and have a plan for when either goes
+wrong. Three modules cover it.
+
+`lib/args.ting` takes a spec — the program's name, its flags, its
+options, its positionals — and both parses the command line and
+writes the `--help` from it, so the two cannot disagree:
+
+```ting
+let cli = import("lib/args.ting");
+let spec = {
+  "name": "greet",
+  "summary": "say hello",
+  "flags": [{"long": "loud", "short": "l", "help": "shout it"}],
+  "options": [{"long": "times", "short": "n", "value": "N", "help": "how often", "default": "1"}],
+  "positionals": [{"name": "who", "help": "who to greet"}],
+};
+let got = cli["parse"](spec, ["-l", "--times", "2", "world"]);
+print(got["flags"]["loud"], got["options"]["times"], got["positionals"]["who"]);
+print(cli["help"](spec));
+```
+
+```text
+true 2 world
+greet — say hello
+
+usage: greet [options] <who>
+
+options:
+  -n, --times N  how often (default 1)
+  -l, --loud     shout it
+  -h, --help     show this and leave
+```
+
+In a real script the argument list comes from `args()`, and `main`
+does the two things a program does around parsing — `--help` prints
+the help and leaves, a bad command line prints the trouble and the
+help to stderr and leaves with status 2:
+
+```sh
+let got = cli["main"](spec, args());
+```
+
+An unknown option is an error rather than something ignored: a
+misspelled flag that is silently dropped is how a script quietly does
+the wrong thing.
+
+`lib/csv.ting` reads and writes delimited text, quotes and embedded
+line breaks included, and `maps` reads the first row as column names:
+
+```ting
+let csv = import("lib/csv.ting");
+let rows = csv["parse"]("name,note\n\"Smith, J\",\"said \"\"hi\"\"\"\n");
+print(json_str(rows));
+for record in csv["maps"](rows) { print(record["name"], "-", record["note"]); }
+print(csv["text"]([["a", "b,c"]]));
+```
+
+```text
+[["name","note"],["Smith, J","said \"hi\""]]
+Smith, J - said "hi"
+a,"b,c"
+
+```
+
+`lib/err.ting` is the third: `try` hands back a map, and these are
+the questions programs actually ask of it — did it fail, what did it
+say, use this instead, and add some context on the way out:
+
+```ting
+let err = import("lib/err.ting");
+print(err["message"](fn() { fail("boom"); }));
+print(err["value"](fn() { return int("nope"); }, 0));
+print(err["message"](fn() { return err["wrap"](fn() { fail("no such file"); }, "reading the config"); }));
+```
+
+```text
+boom
+0
+reading the config: no such file
+```
+
+The cookbook's `report` example puts all three together.
+
 ## Patterns
 
 `contains`, `find` and `split` handle fixed text. When the shape

@@ -548,6 +548,92 @@ south   1        80     80.0
 most records: ann
 ```
 
+## report
+
+A small report, using the three modules a script reaches for first: a command line, delimited input, and something to say when it goes wrong. The command line is written out here instead of taken from args(), so the example prints the same thing every time.
+
+```ting
+# A small report, using the three modules a script reaches for first:
+# a command line, delimited input, and something to say when it goes
+# wrong. The command line is written out here instead of taken from
+# args(), so the example prints the same thing every time.
+
+let cli = import("../lib/args.ting");
+let csv = import("../lib/csv.ting");
+let err = import("../lib/err.ting");
+
+let spec = {
+  "name": "report",
+  "summary": "totals by column from a CSV",
+  "flags": [{"long": "quiet", "short": "q", "help": "no header line"}],
+  "options": [{"long": "by", "short": "b", "value": "COLUMN", "help": "column to group by", "default": "region"}],
+  "positionals": [{"name": "file", "help": "the CSV to read"}],
+};
+
+print(cli["help"](spec));
+print("");
+
+let opts = cli["parse"](spec, ["--by", "region", "sales.csv"]);
+print("grouping by " + opts["options"]["by"] + ", reading " + opts["positionals"]["file"]);
+print("");
+
+let data = "region,rep,amount\n" +
+"north,\"Smith, J\",120\n" +
+"south,Okafor,340\n" +
+"north,\"O\"\"Neill\",95\n" +
+"south,Tanaka,210\n";
+
+let rows = csv["maps"](csv["parse"](data));
+let column = opts["options"]["by"];
+let totals = {};
+for row in rows {
+  let key = row[column];
+  if !has(totals, key) { totals[key] = 0; }
+  totals[key] = totals[key] + int(row["amount"]);
+}
+
+# The output is CSV too, written by the same module that read it.
+let out = [];
+if !opts["flags"]["quiet"] { push(out, [column, "total"]); }
+for key in sort(keys(totals)) { push(out, [key, totals[key]]); }
+print(trim(csv["text"](out)));
+print("");
+
+# A field with a comma and a field with a quote both came back whole.
+for row in rows { print(row["rep"]); }
+print("");
+
+# What the front door does when the command line is wrong: the parser
+# fails with a message the program can print, rather than guessing.
+print(err["message"](fn() { return cli["parse"](spec, ["--nope", "x"]); }));
+print(err["message"](fn() { return cli["parse"](spec, []); }));
+```
+
+```text
+report — totals by column from a CSV
+
+usage: report [options] <file>
+
+options:
+  -b, --by COLUMN  column to group by (default region)
+  -q, --quiet      no header line
+  -h, --help       show this and leave
+
+grouping by region, reading sales.csv
+
+region,total
+north,215
+south,550
+
+Smith, J
+Okafor
+O"Neill
+Tanaka
+
+unknown option --nope
+missing <file>
+```
+
 ## series
 
 A numeric series: two weeks of daily temperatures summarised with extent, mean, median, mode and a percentile, smoothed with a three-day moving average, and split into warm and cool runs.
