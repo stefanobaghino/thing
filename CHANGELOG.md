@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.89.0 (2026-09-04)
+
+- Four builtins let a script see the filesystem the toolchain
+  already walks: `list_dir(path)` (the names in a directory,
+  sorted), `exists(path)` and `is_dir(path)` (questions, so an
+  absent path is `false`, never an error), and `make_dir(path)`
+  (missing parents included; a directory already there is fine).
+
 ## v2.88.0 (2026-09-04)
 
 - `ting -` runs a script read from standard input: arguments after
