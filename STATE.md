@@ -275,10 +275,10 @@ holds only the current milestone and the standing rules.
 - v2.93.0 VERIFIED (114th tag; strokes 565, 566; both aarch64
   archives executed here, the shipped refusals checked too).
 - Backlog (one per tick, in order):
-  (2) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
+  (1) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
   (shifts below arithmetic, & then ^ then | below those, all above
-  comparison); (3) the docs read the bits; (4) RELEASE v2.94.0;
-  (5) health tick + audit.
+  comparison); (2) the docs read the bits; (3) RELEASE v2.94.0;
+  (4) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
