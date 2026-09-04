@@ -10300,3 +10300,44 @@ that refuse what a literal refuses, `int` that no longer saturates,
 and `hex`/`bin` with an `int` that reads them. Two tags, both
 cold-verified. The backlog is empty, so the next tick is a
 replenishment.
+
+## 2026-09-04 — Iteration 584: replenishment — milestone "the clock and the dice"
+
+The survey went looking for what a script reaches for that ting does
+not have. The toolchain side is well covered — `args`, `env`, `input`,
+`exit`, `format`, files, directories, JSON — and the language side had
+its literals and operators finished last milestone. Two absences are
+left, and they are the same absence twice: ting cannot ask the world
+what time it is, and cannot produce a number it did not compute.
+
+No clock. `now`, `clock` and `monotonic` are all undefined variables.
+A script cannot timestamp a log line, measure how long something took,
+or wait a second before retrying. Every shell script that does real
+work does at least one of those.
+
+No randomness. `random` is undefined. No sampling, no shuffling, no
+jittered retry, no test fixture that needs an arbitrary value.
+
+Both are impure, which is why they are worth doing carefully rather
+than quickly. The differential fuzzer compares two engines by running
+the same source twice; a builtin that answers differently each call
+would make every generated program a false failure. So neither goes
+into the fuzzer's alphabet, and the seeded generator gives the tests
+a way to be exact: same seed, same sequence, checked as a property
+rather than against a pinned constant, so the algorithm stays free to
+change within 2.x.
+
+Design decided here. `now()` is epoch seconds as a float — one
+function, sub-second precision, and a double holds today's epoch to
+about a microsecond. `monotonic()` is seconds from an unspecified
+origin, for measuring rather than telling. `sleep(secs)` takes the
+same unit and refuses a negative or non-finite argument. `random()`
+is a float in [0, 1); `random_int(lo, hi)` is half-open like `range`,
+because two conventions in one language is one too many; `seed(n)`
+makes the sequence reproducible, and an unseeded generator seeds
+itself from the clock. Above them, `lib/time.ting` turns epoch
+seconds into civil dates and ISO 8601 text in pure ting — the days
+arithmetic is self-contained, testable and exactly the kind of thing
+the stdlib should carry rather than the binary.
+
+Milestone "the clock and the dice" (v2.97-v2.98).

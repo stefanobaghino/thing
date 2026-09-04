@@ -309,8 +309,21 @@ holds only the current milestone and the standing rules.
   archives executed here, the round trip checked to i64::MIN).
 - 583: health tick + audit green — milestone "numbers that read
   back" complete (all six bench checksums match, twice; five corpus
-  warnings; six assets per tag; the site serves v2.96.0). Backlog
-  empty: the next tick is a replenishment.
+  warnings; six assets per tag; the site serves v2.96.0).
+- 584: replenishment — milestone "the clock and the dice"
+  (v2.97-v2.98), reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) now() (epoch seconds, float), monotonic() and sleep(secs) —
+  none of them in any fuzzer alphabet, since the differential test
+  runs the same source twice;
+  (2) lib/time.ting: epoch seconds to civil date and ISO 8601, pure
+  ting, leap years included;
+  (3) RELEASE v2.97.0;
+  (4) random() in [0, 1), random_int(lo, hi) half-open like range,
+  and seed(n) for reproducibility; tests assert the property (same
+  seed, same sequence), never a pinned constant;
+  (5) the docs read the clock and the dice; (6) RELEASE v2.98.0;
+  (7) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
