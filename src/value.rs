@@ -60,6 +60,8 @@ pub enum Builtin {
     MakeDir,
     RemoveFile,
     RemoveDir,
+    Ord,
+    Chr,
     Sort,
     SortBy,
     Try,
@@ -81,7 +83,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 50] = [
+    pub const ALL: [Builtin; 52] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -114,6 +116,8 @@ impl Builtin {
         Builtin::MakeDir,
         Builtin::RemoveFile,
         Builtin::RemoveDir,
+        Builtin::Ord,
+        Builtin::Chr,
         Builtin::Sort,
         Builtin::SortBy,
         Builtin::Try,
@@ -232,6 +236,14 @@ impl Builtin {
                 "remove_dir(path)",
                 "Deletes an empty directory; one with anything in it errors. Returns nil.",
             ),
+            Builtin::Ord => (
+                "ord(s)",
+                "The code point of a one-character string; any other length errors.",
+            ),
+            Builtin::Chr => (
+                "chr(n)",
+                "The one-character string at that code point; not a code point errors.",
+            ),
             Builtin::Sort => (
                 "sort(xs)",
                 "A fresh sorted list; all numbers or all strings, else error.",
@@ -326,6 +338,8 @@ impl Builtin {
             Builtin::MakeDir => "make_dir",
             Builtin::RemoveFile => "remove_file",
             Builtin::RemoveDir => "remove_dir",
+            Builtin::Ord => "ord",
+            Builtin::Chr => "chr",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
             Builtin::Try => "try",

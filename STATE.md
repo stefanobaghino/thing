@@ -15,7 +15,7 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 50 builtins; seven embedded stdlib modules
+- 52 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
   programs (12 selftest files, 17 examples with .out); 266 Rust tests
   in 11 suites.
@@ -255,12 +255,11 @@ holds only the current milestone and the standing rules.
   directory), with the recursive remove_tree written in ting.
 - v2.91.0 VERIFIED (112th tag; strokes 555, 556; both aarch64
   archives executed here; the shipped cap reads 4096).
+- 559: \uXXXX escapes in string literals, spelled as JSON spells
+  them (surrogate pairs included), plus ord and chr.
 - Backlog (one per tick, in order):
-  (1) \u escapes in string literals
-  (the lexer's escape set is guarded against
-  editor/ting.tmLanguage.json by tests/grammar.rs) and a pair of
-  builtins for code points; (2) the docs read the limits;
-  (3) RELEASE v2.92.0; (4) health tick + audit.
+  (1) the docs read the limits; (2) RELEASE v2.92.0;
+  (3) health tick + audit.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are

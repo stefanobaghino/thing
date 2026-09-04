@@ -71,7 +71,7 @@ both.
 |------------|------------------------------|----------------------------------------|
 | `int`      | `42`, `-7`                   | 64-bit signed; overflow is an error    |
 | `float`    | `2.5`, `0.125`               | IEEE 754 double                        |
-| `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\r` `\\` `\"` |
+| `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\r` `\\` `\"` `\uXXXX` |
 | `bool`     | `true`, `false`              | no truthiness — conditions demand bool |
 | `nil`      | `nil`                        | the absence of a value                 |
 | `list`     | `[1, "two", [3]]`            | mutable, reference semantics           |
@@ -79,6 +79,14 @@ both.
 | `function` | `fn(x) { return x; }`, `len` | first-class; compared by identity      |
 
 `1.` is not a float literal (it lexes as `1` then `.`); `1.0` is.
+
+A string literal spells a character outside the escape set either
+directly (source is UTF-8, so `"café"` is fine) or as `\uXXXX` —
+four hex digits, a high surrogate followed by a low one for anything
+past U+FFFF, exactly as JSON spells it. That is deliberate: a string
+copied out of a JSON document means the same thing in a literal as it
+does through `json_parse`. `ord` and `chr` convert between a
+one-character string and its code point.
 
 ### Reference semantics
 
@@ -204,6 +212,7 @@ scope).
 | `replace(s, from, to)` | all occurrences replaced; empty `from` errors    |
 | `starts_with(s, p)` / `ends_with(s, p)` | prefix / suffix test           |
 | `upper(s)` / `lower(s)` | Unicode-aware case conversion                  |
+| `ord(s)` / `chr(n)` | a one-character string to its code point, and back; `ord` of anything but one character, and `chr` of a number that is not a code point, error |
 | `slice(x, lo, hi)` | sub-string (by chars) or fresh sub-list, half-open; negatives count from the end, out-of-range clamps |
 | `args()`       | the command-line arguments after the script path, as a list of strings |
 | `input()`      | one line from stdin without the newline; `nil` at end of input |

@@ -1349,6 +1349,45 @@ impl<W: Write> Interpreter<W> {
                 done.map_err(|e| error(format!("cannot remove {path:?}: {e}"), span))?;
                 Ok(Value::Nil)
             }
+            // The two directions between a character and its number.
+            // ord takes exactly one character, not a prefix: a string
+            // of several characters has several code points, and
+            // silently picking the first would be a guess.
+            Builtin::Ord => {
+                arity(1, 1)?;
+                let Value::Str(s) = &args[0] else {
+                    return Err(error(
+                        format!("ord expects a string, got {}", args[0].type_name()),
+                        span,
+                    ));
+                };
+                let mut chars = s.chars();
+                match (chars.next(), chars.next()) {
+                    (Some(c), None) => Ok(Value::Int(c as u32 as i64)),
+                    _ => Err(error(
+                        format!(
+                            "ord expects a one-character string, got {}",
+                            crate::diag::plural(s.chars().count(), "character")
+                        ),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Chr => {
+                arity(1, 1)?;
+                let Value::Int(n) = &args[0] else {
+                    return Err(error(
+                        format!("chr expects an int, got {}", args[0].type_name()),
+                        span,
+                    ));
+                };
+                // Surrogates and anything past the last code point are
+                // not characters; say so rather than substituting one.
+                match u32::try_from(*n).ok().and_then(char::from_u32) {
+                    Some(c) => Ok(Value::Str(c.to_string())),
+                    None => Err(error(format!("chr: {n} is not a code point"), span)),
+                }
+            }
             Builtin::Sort => {
                 arity(1, 1)?;
                 match &args[0] {

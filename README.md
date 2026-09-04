@@ -18,7 +18,7 @@ and a thirteen-capability language server (`--lsp`).
 The language is complete: ints/floats/strings/bools/nil, lists and
 maps, functions and closures, control flow, modules via `import()`
 plus seven embedded stdlib modules (list/map/string/math/json/fs/test),
-50 builtins (file and stdin I/O, listing, making and removing directories, JSON with pretty printing, sorting,
+52 builtins (file and stdin I/O, listing, making and removing directories, JSON with pretty printing, sorting,
 map/filter/reduce, try/fail error recovery, string formatting), and
 rustc-style caret diagnostics. Binaries for Linux (x86-64 and arm64,
 glibc and fully static musl), macOS and Windows are attached to every

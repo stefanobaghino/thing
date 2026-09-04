@@ -9703,3 +9703,35 @@ identical; darwin cannot execute on this host.
 That is the first half of milestone "where it says no". The second
 is the one refusal left: a string literal that cannot spell a
 character `json_parse` can.
+
+---
+
+## 2026-09-04 — Iteration 559: the character a literal could not spell
+
+CI green on 558 (API verdict). A string literal can now name any
+character by code point, spelled exactly as JSON spells it: four hex
+digits after a backslash-u, and a high surrogate followed by a low
+one for anything past U+FFFF. That last part is not the prettier
+design — Rust's braced form would avoid surrogates entirely — but
+prettiness was not the complaint. The complaint was that the two
+ways into the same string disagreed, and a string copied out of a
+JSON document now means the same thing in a literal as it does
+through `json_parse`. A third spelling would have made the
+inconsistency worse, not better.
+
+With it come `ord` and `chr`, the fifty-first and fifty-second
+builtins. `ord` takes exactly one character, not a prefix: a longer
+string has several code points and silently picking the first would
+be a guess, so it counts what it got and says so. `chr` refuses
+surrogates and anything past the last code point rather than
+substituting a replacement character.
+
+The formatter needed nothing: it copies literal text verbatim from
+the source, so an escape survives formatting as written. Three
+guards moved together — the editor grammar's escape class, the test
+that holds that class and the lexer to the same set (it now lexes a
+plain escape, a four-digit one and a surrogate pair), and the
+builtin alternation.
+
+Fifty-two builtins; the selftest corpus is 600 checks; corpus
+warnings hold at five. 266 Rust tests, green on both engines.

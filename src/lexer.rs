@@ -223,6 +223,44 @@ impl<'a> Lexer<'a> {
         }
     }
 
+    /// The character behind a `\uXXXX`, having just consumed the `u`:
+    /// four hex digits, and a second escape when the first names a
+    /// high surrogate, as in JSON.
+    fn unicode_escape(&mut self) -> Result<char, LexError> {
+        let hi = self.hex4()?;
+        let code = if (0xD800..0xDC00).contains(&hi) {
+            let at = self.pos;
+            if self.bump() != Some(b'\\') || self.bump() != Some(b'u') {
+                return Err(self.error("missing low surrogate", at));
+            }
+            let lo = self.hex4()?;
+            if !(0xDC00..0xE000).contains(&lo) {
+                return Err(self.error("invalid low surrogate", at));
+            }
+            0x10000 + ((hi - 0xD800) << 10) + (lo - 0xDC00)
+        } else {
+            hi
+        };
+        char::from_u32(code).ok_or_else(|| self.error("invalid unicode escape", self.pos - 4))
+    }
+
+    /// Four hex digits, consumed.
+    fn hex4(&mut self) -> Result<u32, LexError> {
+        let at = self.pos;
+        let end = self.pos + 4;
+        let digits = self
+            .src
+            .as_bytes()
+            .get(self.pos..end)
+            .ok_or_else(|| self.error("unfinished unicode escape", at))?;
+        let text =
+            std::str::from_utf8(digits).map_err(|_| self.error("invalid unicode escape", at))?;
+        let v =
+            u32::from_str_radix(text, 16).map_err(|_| self.error("invalid unicode escape", at))?;
+        self.pos = end;
+        Ok(v)
+    }
+
     fn string(&mut self, start: usize) -> Result<TokenKind, LexError> {
         let mut out = String::new();
         loop {
@@ -237,6 +275,11 @@ impl<'a> Lexer<'a> {
                     Some(b'r') => out.push('\r'),
                     Some(b'\\') => out.push('\\'),
                     Some(b'"') => out.push('"'),
+                    // Spelled exactly as JSON spells it, surrogate
+                    // pairs and all, so a string copied out of a JSON
+                    // document means the same thing in a literal as it
+                    // does through json_parse.
+                    Some(b'u') => out.push(self.unicode_escape()?),
                     _ => return Err(self.error("invalid escape sequence", self.pos - 1)),
                 },
                 Some(b) if b < 0x80 => out.push(b as char),

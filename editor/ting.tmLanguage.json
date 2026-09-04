@@ -27,7 +27,7 @@
       "patterns": [
         {
           "name": "constant.character.escape.ting",
-          "match": "\\\\[ntr\\\\\"]"
+          "match": "\\\\(u[0-9a-fA-F]{4}|[ntr\\\\\"])"
         },
         {
           "name": "invalid.illegal.escape.ting",
@@ -57,7 +57,7 @@
     },
     "builtins": {
       "name": "support.function.builtin.ting",
-      "match": "\\b(print|len|push|pop|keys|has|str|int|float|type|range|split|join|trim|contains|find|replace|starts_with|ends_with|upper|lower|slice|args|input|read_file|write_file|list_dir|exists|is_dir|make_dir|remove_file|remove_dir|sort|sort_by|try|fail|map|filter|reduce|min|max|abs|assert|import|format|json_parse|json_str|env|exit|time_ms)\\b(?=\\s*\\()"
+      "match": "\\b(print|len|push|pop|keys|has|str|int|float|type|range|split|join|trim|contains|find|replace|starts_with|ends_with|upper|lower|slice|args|input|read_file|write_file|list_dir|exists|is_dir|make_dir|remove_file|remove_dir|ord|chr|sort|sort_by|try|fail|map|filter|reduce|min|max|abs|assert|import|format|json_parse|json_str|env|exit|time_ms)\\b(?=\\s*\\()"
     },
     "function-definitions": {
       "match": "\\b(fn)\\s+([A-Za-z_][A-Za-z0-9_]*)",

@@ -27,12 +27,21 @@ fn grammar_escape_class_matches_lexer() {
         std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("editor/ting.tmLanguage.json"),
     )
     .expect("grammar missing");
-    // One char class covers all valid escapes: n, t, r, backslash, quote.
+    // One alternation covers every valid escape: a four-hex-digit \u,
+    // or one of n, t, r, backslash, quote.
     assert!(
-        grammar.contains(r#"\\\\[ntr\\\\\"]"#),
+        grammar.contains(r#"\\\\(u[0-9a-fA-F]{4}|[ntr\\\\\"])"#),
         "grammar escape class out of sync with the lexer"
     );
-    for src in ["\"\\n\"", "\"\\t\"", "\"\\r\"", "\"\\\\\"", "\"\\\"\""] {
+    for src in [
+        r#""\n""#,
+        r#""\t""#,
+        r#""\r""#,
+        r#""\\""#,
+        r#""\"""#,
+        r#""\u0041""#,
+        r#""\ud83d\ude00""#,
+    ] {
         assert!(
             ting::lexer::lex(src).is_ok(),
             "lexer rejects {src} that the grammar marks valid"
