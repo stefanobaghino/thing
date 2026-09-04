@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.97.0 (2026-09-04)
+
+- New builtin `sleep_ms(ms)` pauses for that many milliseconds,
+  flushing output first; a negative count or a non-int errors, and
+  wasm refuses it as it does `exit` and `time_ms`.
+- New stdlib module `lib/time.ting`: `iso`, `date`, `clock`, `parts`,
+  `from_parts`, `span` and the civil-date arithmetic under them. UTC
+  throughout, exact either side of the epoch.
+
 ## v2.96.0 (2026-09-04)
 
 - New builtins `hex(n)` and `bin(n)` write the literal forms
