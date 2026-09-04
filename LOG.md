@@ -9168,3 +9168,15 @@ child on drop. Both streams, because a checker's warnings arrive on
 stderr while its rule lines arrive on stdout, and a test that
 watched only one of them would be watching half the output. 261 Rust
 tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 537: v2.87.0
+
+CI green on 536 (API verdict). Tagged v2.87.0, the hundred and
+eighth tag, carrying the two watch strokes: `--watch` for `--test`,
+`--check` and `--fmt-check`, one shared poll behind all three, and
+the one mode refused because it would answer its own writes. Six
+archives per the usual matrix; the release is not recorded as
+verified until both aarch64 archives have been downloaded cold and
+executed on this host, which is the next tick's first job.
