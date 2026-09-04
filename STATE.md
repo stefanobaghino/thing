@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 48 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 132 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 265 Rust tests
+  programs (12 selftest files, 17 examples with .out); 266 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -246,15 +246,18 @@ holds only the current milestone and the standing rules.
   modules).
 - 554: replenishment — milestone "where it says no" (v2.91-v2.92),
   reasoning in LOG.md.
+- 555: the call-depth cap is derived from the stack the process
+  declares (measured: 1.6/2.6 KB a frame optimized, 12.6/28 KB not),
+  so the runner and REPL allow 4096 frames in release and 512 in
+  debug; an embedder or the wasm build that declares nothing keeps
+  the old 200.
 - Backlog (one per tick, in order):
-  (1) raise the call-depth limit to what the host stack allows,
-  measured per engine, the wasm build keeping a conservative cap;
-  (2) remove_file and remove_dir, so a script can tidy what it
-  made; (3) RELEASE v2.91.0; (4) \u escapes in string literals
+  (1) remove_file and remove_dir, so a script can tidy what it
+  made; (2) RELEASE v2.91.0; (3) \u escapes in string literals
   (the lexer's escape set is guarded against
   editor/ting.tmLanguage.json by tests/grammar.rs) and a pair of
-  builtins for code points; (5) the docs read the limits;
-  (6) RELEASE v2.92.0; (7) health tick + audit.
+  builtins for code points; (4) the docs read the limits;
+  (5) RELEASE v2.92.0; (6) health tick + audit.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are

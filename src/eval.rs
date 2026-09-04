@@ -176,15 +176,54 @@ enum Control {
     Continue(Span),
 }
 
-/// Call-depth cap; ting recursion consumes the host stack, so trap it
-/// before Rust's stack overflows. 200 fits comfortably in a 2MB thread
-/// stack even in debug builds (tests run on such threads).
-const MAX_DEPTH: usize = 200;
+/// What one ting call costs in host stack, measured on this project's
+/// own engines by reading the address of a frame-local at successive
+/// depths: about 1.6 KB on the VM and 2.6 KB on the tree-walker in
+/// release, and roughly eleven times that unoptimized. The budget
+/// below rounds the worse engine up, so both engines get the same cap
+/// and stay byte-identical about where they refuse.
+const FRAME_COST: usize = if cfg!(debug_assertions) {
+    32 * 1024
+} else {
+    4 * 1024
+};
+
+/// The cap when nobody has said how much stack there is: an embedder
+/// on an unknown thread, or the wasm build, which has no thread of its
+/// own to size. Deliberately small — it is the number that has to be
+/// safe everywhere.
+const DEFAULT_MAX_DEPTH: usize = 200;
+
+/// The stack the interpreter has been told it may use, in bytes; 0
+/// means nobody said. A process that gives the interpreter a thread of
+/// a known size (the runner and the REPL both spawn one) says so here,
+/// and every Interpreter made afterwards derives its call-depth cap
+/// from it.
+static STACK_BUDGET: std::sync::atomic::AtomicUsize = std::sync::atomic::AtomicUsize::new(0);
+
+/// Declare the host stack the interpreter may use. Call before making
+/// an Interpreter; half the budget is left for everything that is not
+/// call frames.
+pub fn set_stack_budget(bytes: usize) {
+    STACK_BUDGET.store(bytes, std::sync::atomic::Ordering::Relaxed);
+}
+
+/// The call-depth cap this process allows: derived from the declared
+/// stack, never below the default.
+pub fn max_depth() -> usize {
+    match STACK_BUDGET.load(std::sync::atomic::Ordering::Relaxed) {
+        0 => DEFAULT_MAX_DEPTH,
+        bytes => (bytes / 2 / FRAME_COST).max(DEFAULT_MAX_DEPTH),
+    }
+}
 
 pub struct Interpreter<W: Write> {
     env: Rc<RefCell<Env>>,
     out: W,
     depth: usize,
+    /// This interpreter's cap, fixed when it was made, so a running
+    /// program cannot have the limit moved under it.
+    max_depth: usize,
     script_args: Vec<String>,
     /// Directory import paths resolve against; the top is the directory
     /// of the file currently executing (script, or module mid-import).
@@ -283,6 +322,7 @@ impl<W: Write> Interpreter<W> {
             env: global_env(),
             out,
             depth: 0,
+            max_depth: max_depth(),
             script_args: Vec::new(),
             dir_stack: vec![std::path::PathBuf::new()],
             import_cache: HashMap::new(),
@@ -1804,9 +1844,9 @@ impl<W: Write> Interpreter<W> {
                 span,
             ));
         }
-        if self.depth >= MAX_DEPTH {
+        if self.depth >= self.max_depth {
             return Err(error(
-                format!("stack overflow (max call depth {MAX_DEPTH})"),
+                format!("stack overflow (max call depth {})", self.max_depth),
                 span,
             ));
         }

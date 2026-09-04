@@ -82,9 +82,13 @@ fn render(v: &Value) -> String {
 }
 
 pub fn run() -> ExitCode {
-    // Same big-stack thread as script execution (deep ting recursion).
+    // Same big-stack thread as script execution (deep ting recursion),
+    // and the same declaration, so a REPL session and a script refuse
+    // to recurse at exactly the same depth.
+    const STACK: usize = 32 * 1024 * 1024;
+    crate::eval::set_stack_budget(STACK);
     std::thread::Builder::new()
-        .stack_size(32 * 1024 * 1024)
+        .stack_size(STACK)
         .spawn(run_inner)
         .expect("failed to spawn REPL thread")
         .join()

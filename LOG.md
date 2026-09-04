@@ -9604,3 +9604,41 @@ half, and let a literal spell any character. Note for the third
 stroke: the lexer's escape set is guarded against
 editor/ting.tmLanguage.json by tests/grammar.rs, so a new escape
 lands in both.
+
+---
+
+## 2026-09-04 — Iteration 555: as deep as the stack allows
+
+The call-depth cap was 200 and nobody had measured it; the comment
+above it claimed 200 fitted "comfortably in a 2MB thread stack even
+in debug builds", which turns out to be false by a factor of five.
+So the first thing this tick did was measure: a temporary probe that
+prints the address of a frame-local at each depth, differenced. A
+ting call costs 1600 bytes of host stack on the VM and 2640 on the
+tree-walker in release, and 12640 and 28016 unoptimized — eleven
+times as much, which is why a guess made in debug and a guess made
+in release cannot both be right.
+
+The cap is now derived rather than chosen. `set_stack_budget(bytes)`
+is what a process that owns its interpreter thread calls; the cap is
+half that budget divided by `FRAME_COST`, which rounds the worse
+engine up and differs between profiles (4 KB optimized, 32 KB not).
+The runner and the REPL both declare the 32 MB thread they already
+spawned, so a script gets 4096 frames in a release build and 512 in
+a debug one, against 200 before. Anyone who declares nothing — an
+embedder on an unknown thread, and the wasm build, which has no
+thread of its own to size — keeps the old conservative 200. Both
+engines read the same budget, so they still refuse at exactly the
+same depth, which the differential tests require.
+
+Checked, not assumed: recursion to two frames below the cap
+completes on both engines in both profiles. The wall is the
+interpreter's, not the host's.
+
+`sum(range(0, 300), 0)` — the plain recursive fold that could not be
+written last tick — answers 44850. The reference no longer states a
+number it cannot know; it says where the cap comes from. One test
+had to change with it: the trace test hard-coded "192 more frames",
+which was the old cap less the eight frames a trace shows, so it now
+reads the cap out of the diagnostic and asserts the arithmetic
+instead of the constant. 266 Rust tests, green on both engines.

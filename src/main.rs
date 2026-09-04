@@ -202,12 +202,18 @@ fn unknown_option(a: &str) -> ExitCode {
     ExitCode::from(2)
 }
 
+/// The stack the interpreter thread gets, and the number the
+/// call-depth cap is derived from (see eval::max_depth).
+const INTERPRETER_STACK: usize = 32 * 1024 * 1024;
+
 fn run_file(engine: Engine, path: String, script_args: Vec<String>, profile: bool) -> ExitCode {
     // The AST holds Rc (not Send), so the whole pipeline runs on one
     // dedicated thread, sized generously because deep ting recursion
-    // consumes host stack.
+    // consumes host stack. Telling the interpreter how much it has is
+    // what lifts the call-depth cap above the default.
+    ting::eval::set_stack_budget(INTERPRETER_STACK);
     std::thread::Builder::new()
-        .stack_size(32 * 1024 * 1024)
+        .stack_size(INTERPRETER_STACK)
         .spawn(move || run_file_inner(engine, &path, script_args, profile))
         .expect("failed to spawn interpreter thread")
         .join()

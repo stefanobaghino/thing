@@ -393,8 +393,11 @@ fn errors_show_the_whole_way_back() {
         "{stderr}"
     );
 
-    // 200 frames deep, the trace keeps four at each end and counts
-    // the rest.
+    // However deep the cap allows, the trace keeps four frames at
+    // each end and counts the rest — so the elided count is the cap
+    // less the eight that are shown, whatever the cap is (it comes
+    // from the stack the runner declares, so it differs between an
+    // optimized build and an unoptimized one).
     let deep = dir.join("deep.ting");
     std::fs::write(&deep, "fn r(n) { return r(n + 1); }\nr(0);\n").unwrap();
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
@@ -405,7 +408,16 @@ fn errors_show_the_whole_way_back() {
     assert!(stderr.contains("error: stack overflow"), "{stderr}");
     let notes = stderr.lines().filter(|l| l.starts_with("note:")).count();
     assert_eq!(notes, 9, "{stderr}");
-    assert!(stderr.contains("note: ... 192 more frames"), "{stderr}");
+    let cap: usize = stderr
+        .split("max call depth ")
+        .nth(1)
+        .and_then(|rest| rest.split(')').next())
+        .and_then(|n| n.parse().ok())
+        .unwrap_or_else(|| panic!("no cap in the diagnostic:\n{stderr}"));
+    assert!(
+        stderr.contains(&format!("note: ... {} more frames", cap - 8)),
+        "{stderr}"
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -2699,4 +2711,58 @@ fn fs_module_walks_a_tree() {
         "[\"a.ting\", \"b.txt\", \"deep\"]\n3\n4 true\n3\ntrue\n"
     );
     let _ = std::fs::remove_dir_all(&root);
+}
+
+/// The call-depth cap is derived from the stack the runner gives its
+/// interpreter thread, not from a number someone guessed: a plain
+/// recursive fold over three hundred elements — impossible under the
+/// old cap of 200 — now runs, and the refusal, when it comes, names
+/// the cap it enforced. The number itself depends on the build
+/// profile (an unoptimized frame costs several times an optimized
+/// one), so the test asserts the floor, not the value.
+#[test]
+fn recursion_goes_as_deep_as_the_stack_allows() {
+    let deep = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .and_then(|mut c| {
+            c.stdin
+                .take()
+                .unwrap()
+                .write_all(b"fn sum(xs, i) { if i >= len(xs) { return 0; } return xs[i] + sum(xs, i + 1); }\nprint(sum(range(0, 300), 0));\n")?;
+            c.wait_with_output()
+        })
+        .expect("failed to run ting");
+    assert!(
+        deep.status.success(),
+        "300-deep recursion failed:\n{}",
+        String::from_utf8_lossy(&deep.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&deep.stdout), "44850\n");
+
+    let over = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .and_then(|mut c| {
+            c.stdin.take().unwrap().write_all(
+                b"fn f(n) { if n == 0 { return 0; } return f(n - 1) + 1; }\nprint(f(1000000));\n",
+            )?;
+            c.wait_with_output()
+        })
+        .expect("failed to run ting");
+    assert_eq!(over.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&over.stderr);
+    let cap: usize = stderr
+        .split("max call depth ")
+        .nth(1)
+        .and_then(|rest| rest.split(')').next())
+        .and_then(|n| n.parse().ok())
+        .unwrap_or_else(|| panic!("no cap in the diagnostic:\n{stderr}"));
+    assert!(cap >= 512, "cap did not move above the old 200: {cap}");
 }

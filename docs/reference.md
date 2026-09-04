@@ -169,8 +169,13 @@ print(c(), c());   # 1 2
 ```
 
 Calls check arity exactly. Falling off the end of a function returns
-nil. Recursion is fine up to a call depth of 200, after which the
-interpreter raises `stack overflow` rather than crashing.
+nil. Recursion is capped, and the cap is derived from the host stack
+the interpreter was given rather than fixed: the `ting` binary hands
+its interpreter 32 MB and allows a few thousand frames from it
+(fewer in an unoptimized build, where a frame costs several times as
+much); an embedder that says nothing gets a conservative default.
+Past the cap the interpreter raises `stack overflow (max call depth
+N)`, naming the N it enforced, rather than crashing.
 
 ## Builtins
 
