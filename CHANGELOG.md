@@ -5,6 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.94.0 (2026-09-04)
+
+- Bitwise operators: `&`, `|`, `^`, `~`, `<<` and `>>`, on ints only.
+  They bind tighter than every comparison, so `flags & MASK == MASK`
+  applies the mask first — Rust's ordering, not C's.
+- `>>` keeps the sign; a shift count outside 0 to 63 is an error, and
+  a float operand is a type error rather than a promotion.
+- Docs: the reference operator table and a tutorial section cover the
+  bits and the literal forms; the Limits section no longer claims a
+  fixed call depth of 200.
+
 ## v2.93.0 (2026-09-04)
 
 - Integers can be written in hex (`0xff`) or binary (`0b1010`), and
