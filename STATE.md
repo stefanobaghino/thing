@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 52 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 266 Rust tests
+  programs (12 selftest files, 17 examples with .out); 270 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -266,13 +266,15 @@ holds only the current milestone and the standing rules.
   six assets per tag; the site serves v2.92.0).
 - 564: replenishment — milestone "bits and numbers" (v2.93-v2.94),
   reasoning in LOG.md.
+- 565: hex and binary literals with a lowercase prefix, and `_`
+  between digits in any radix; a literal that runs into a letter or
+  a foreign digit is an error naming the offender.
 - Backlog (one per tick, in order):
-  (1) hex, binary and underscore-separated integer literals;
-  (2) exponent floats (1e3, 1.5e-3); (3) RELEASE v2.93.0;
-  (4) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
+  (1) exponent floats (1e3, 1.5e-3); (2) RELEASE v2.93.0;
+  (3) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
   (shifts below arithmetic, & then ^ then | below those, all above
-  comparison); (5) the docs read the bits; (6) RELEASE v2.94.0;
-  (7) health tick + audit.
+  comparison); (4) the docs read the bits; (5) RELEASE v2.94.0;
+  (6) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
