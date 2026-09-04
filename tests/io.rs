@@ -2789,3 +2789,46 @@ fn recursion_goes_as_deep_as_the_stack_allows() {
         .unwrap_or_else(|| panic!("no cap in the diagnostic:\n{stderr}"));
     assert!(cap >= 512, "cap did not move above the old 200: {cap}");
 }
+
+/// `run` against the one program every machine building this is
+/// guaranteed to have: the binary under test. Exit code, both
+/// streams, and the argv going through untouched.
+#[test]
+fn run_spawns_a_program_and_reports_what_it_did() {
+    let exe = env!("CARGO_BIN_EXE_ting").replace('\\', "/");
+    let script = std::env::temp_dir().join("ting-io-run.ting");
+    let child = std::env::temp_dir().join("ting-io-run-child.ting");
+    let child_path = child.to_str().unwrap().replace('\\', "/");
+    std::fs::write(
+        &child,
+        "print(join(args(), \"|\"));\nfail(\"from the child\");\n",
+    )
+    .unwrap();
+    std::fs::write(
+        &script,
+        format!(
+            "let ok = run(\"{exe}\", [\"--version\"]);\n\
+             print(ok[\"code\"], starts_with(ok[\"out\"], \"ting \"), ok[\"err\"] == \"\");\n\
+             let bad = run(\"{exe}\", [\"{child_path}\", \"a b\", \"c\"]);\n\
+             print(bad[\"code\"], trim(bad[\"out\"]), contains(bad[\"err\"], \"from the child\"));\n\
+             print(try(fn() {{ return run(\"ting-no-such-program-xyz\"); }})[\"err\"]);\n"
+        ),
+    )
+    .unwrap();
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    assert_eq!(lines.next().unwrap(), "0 true true");
+    // The child's own failure is its exit code, not an error here.
+    assert_eq!(lines.next().unwrap(), "1 a b|c true");
+    assert!(
+        lines.next().unwrap().starts_with("run: cannot start "),
+        "unexpected spawn error:\n{text}"
+    );
+    let _ = std::fs::remove_file(&script);
+    let _ = std::fs::remove_file(&child);
+}

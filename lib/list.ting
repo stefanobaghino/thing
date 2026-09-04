@@ -319,18 +319,18 @@ fn window(xs, n) {
 # structurally). Empty list gives [].
 fn chunk_by(xs, key) {
   let out = [];
-  let run = [];
+  let group = [];
   let last = nil;
   for x in xs {
     let k = key(x);
-    if len(run) > 0 && k != last {
-      push(out, run);
-      run = [];
+    if len(group) > 0 && k != last {
+      push(out, group);
+      group = [];
     }
-    push(run, x);
+    push(group, x);
     last = k;
   }
-  if len(run) > 0 { push(out, run); }
+  if len(group) > 0 { push(out, group); }
   return out;
 }
 

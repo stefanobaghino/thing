@@ -290,6 +290,7 @@ scope).
 | `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |
 | `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
 | `seed(n)`      | restarts the generator at `n`; unseeded, it starts from the clock |
+| `run(cmd)` / `run(cmd, args)` | runs a program with that argv (no shell) and waits; a map of `code`, `out` and `err`. A program that cannot be started errors; `code` is `nil` when a signal ended it |
 
 ### Files and directories
 

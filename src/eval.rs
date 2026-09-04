@@ -1895,6 +1895,83 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Run => {
+                arity(1, 2)?;
+                let cmd = match &args[0] {
+                    Value::Str(s) => s.clone(),
+                    v => {
+                        return Err(error(
+                            format!("run expects a program name, got {}", v.type_name()),
+                            span,
+                        ));
+                    }
+                };
+                // An argv list, never a shell string: there are no
+                // quoting rules to get wrong and nothing to inject.
+                let mut argv: Vec<String> = Vec::new();
+                if let Some(v) = args.get(1) {
+                    match v {
+                        Value::List(items) => {
+                            for item in items.borrow().iter() {
+                                match item {
+                                    Value::Str(s) => argv.push(s.to_string()),
+                                    other => {
+                                        return Err(error(
+                                            format!(
+                                                "run expects a list of strings, got {} in it",
+                                                other.type_name()
+                                            ),
+                                            span,
+                                        ));
+                                    }
+                                }
+                            }
+                        }
+                        other => {
+                            return Err(error(
+                                format!(
+                                    "run expects a list of arguments, got {}",
+                                    other.type_name()
+                                ),
+                                span,
+                            ));
+                        }
+                    }
+                }
+                if cfg!(target_arch = "wasm32") {
+                    // There is nothing to spawn inside a page.
+                    return Err(error("run is not available in this environment", span));
+                }
+                // Anything already printed belongs before whatever the
+                // child says about itself.
+                self.out
+                    .flush()
+                    .map_err(|e| error(format!("run: flush failed: {e}"), span))?;
+                let done = std::process::Command::new(&*cmd).args(&argv).output();
+                // A program that is not there is an error, not an exit
+                // code: "not installed" must never read as "ran and
+                // failed".
+                let done =
+                    done.map_err(|e| error(format!("run: cannot start {cmd}: {e}"), span))?;
+                let mut m = std::collections::BTreeMap::new();
+                m.insert(
+                    "code".to_string(),
+                    // No code at all means a signal killed it.
+                    match done.status.code() {
+                        Some(c) => Value::Int(c as i64),
+                        None => Value::Nil,
+                    },
+                );
+                m.insert(
+                    "out".to_string(),
+                    Value::Str(String::from_utf8_lossy(&done.stdout).into_owned()),
+                );
+                m.insert(
+                    "err".to_string(),
+                    Value::Str(String::from_utf8_lossy(&done.stderr).into_owned()),
+                );
+                Ok(Value::map(m))
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {

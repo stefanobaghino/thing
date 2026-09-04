@@ -86,10 +86,11 @@ pub enum Builtin {
     Random,
     RandomInt,
     Seed,
+    Run,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 58] = [
+    pub const ALL: [Builtin; 59] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -148,6 +149,7 @@ impl Builtin {
         Builtin::Random,
         Builtin::RandomInt,
         Builtin::Seed,
+        Builtin::Run,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -334,6 +336,10 @@ impl Builtin {
                 "seed(n)",
                 "Restarts the generator at n, so a run repeats exactly.",
             ),
+            Builtin::Run => (
+                "run(cmd) / run(cmd, args)",
+                "Runs a program and waits: a map of code, out and err.",
+            ),
         }
     }
 
@@ -397,6 +403,7 @@ impl Builtin {
             Builtin::Random => "random",
             Builtin::RandomInt => "random_int",
             Builtin::Seed => "seed",
+            Builtin::Run => "run",
         }
     }
 }

@@ -98,3 +98,16 @@ assert(time_ms() - before >= 5, "sleep_ms waits");
 assert(sleep_ms(0) == nil, "and returns nil");
 let slept = try(fn() { return sleep_ms(-1); });
 assert(contains(slept["err"], "negative"), "a negative pause is an error");
+
+let err = fn(f) { return try(f)["err"]; };
+
+# run() refuses what it cannot make sense of. Which programs exist is
+# a property of the machine, so the selftest checks only the refusals;
+# tests/io.rs drives a real child.
+assert(starts_with(err(fn() { return run("ting-no-such-program-xyz"); }), "run: cannot start "),
+"a missing program is an error, not an exit code");
+assert(err(fn() { return run(1); }) == "run expects a program name, got int", "the program is a string");
+assert(err(fn() { return run("echo", "hi"); }) == "run expects a list of arguments, got string",
+"argv is a list, not a shell string");
+assert(err(fn() { return run("echo", [1]); }) == "run expects a list of strings, got int in it",
+"argv holds strings");

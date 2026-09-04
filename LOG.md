@@ -10557,3 +10557,37 @@ checker and LSP change all at once, and the language is deliberately
 small. A set type — maps with `true` values already are one. Threads
 — a scripting language that shells out does not need them, and they
 would put a lock around every `Rc` in the interpreter.
+
+## 2026-09-05 — Iteration 595: run()
+
+`run(cmd)` and `run(cmd, args)`: spawn, wait, and hand back a map of
+`code`, `out` and `err`.
+
+Four decisions.
+
+An argv list, never a shell string. There is no quoting to get wrong,
+no word splitting to be surprised by, and nothing for a filename with
+a space in it to inject. A script that truly wants a shell can ask for
+one by name — `run("sh", ["-c", ...])` — and then it is visibly the
+script's decision, not the language's default.
+
+A program that cannot be started is an error, not an exit code.
+"Not installed" and "ran and failed" are different facts, and a map
+with a code in it would have blurred them.
+
+`code` is nil when a signal ended the child, because on that path
+there is no exit status to report and inventing one (137, say) would
+be a guess dressed as data.
+
+Output comes back through from_utf8_lossy: a child that emits bytes
+that are not UTF-8 gives replacement characters rather than an error,
+which keeps `run` usable for the messy programs it exists to drive.
+
+Two side effects worth noting. `lib/list.ting`'s `chunk_by` had a
+local named `run`, which the checker immediately flagged as shadowing
+the new builtin; renamed to `group`, and the corpus is back to
+exactly five deliberate warnings — the checker caught its own
+library. And the selftest covers only the refusals, since which
+programs a machine has is not something a portable test may assume;
+tests/io.rs drives a real child, and the only program it can be sure
+of is the binary under test.
