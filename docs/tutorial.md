@@ -261,7 +261,8 @@ note: in line, called from report.ting:3:7
 
 Runaway recursion would otherwise print one note per frame, so a
 trace longer than ten keeps four at each end and says how many it
-left out (`note: ... 192 more frames`).
+left out — for a recursion that ran to the depth limit described
+below, that is the limit less the eight frames shown.
 
 A program can read the same three things. `try` returns the message
 under `"err"`, where it was raised under `"at"`, and the calls it
@@ -529,9 +530,56 @@ that does not exist yet.
 answers `false` rather than raising — they can be used in an `if`
 without wrapping. `list_dir` is a demand, and errors when the path
 is not a readable directory, because asking what is inside
-something that is not there is a mistake worth hearing about. There
-is no way to delete anything: ting can create a tree and read it,
-not remove it.
+something that is not there is a mistake worth hearing about.
+`remove_file` and `remove_dir` are demands too, and `remove_dir`
+takes only an empty directory — the recursive version is
+`fs["remove_tree"]`, written in ting rather than hidden in a
+builtin, so you can read what it will touch before you call it.
+
+## How deep recursion goes
+
+Recursion costs host stack, so there is a limit, and the interpreter
+stops at it with a diagnostic instead of letting the process die:
+
+```ting
+fn depth(n) { if n == 0 { return 0; } return depth(n - 1) + 1; }
+print(depth(300));
+print(type(try(fn() { return depth(-1); })["err"]));
+```
+
+```text
+300
+string
+```
+
+Three hundred frames is nothing special; the limit is not a fixed
+number but is worked out from the host stack the interpreter was
+given, so a released binary allows a few thousand and an
+unoptimized build fewer (a frame there costs several times as
+much). When you reach it the message names the figure it enforced —
+`stack overflow (max call depth 4096)` from a release build — and
+`try` catches it like any other error, which is what the second
+line above shows. Deep *data* is not limited this way: tens of thousands
+of levels of nested list parse, build and print without trouble.
+
+## Spelling a character
+
+Source is UTF-8, so `"café"` and `"中"` are ordinary literals. When
+you would rather write the number, `\uXXXX` takes four hex digits, a
+high surrogate followed by a low one past U+FFFF — the same
+spelling JSON uses, so a string pasted out of a JSON document means
+the same thing either way. `ord` and `chr` convert between a
+one-character string and its code point:
+
+```ting
+print("\u0041", "\u00e9", "\ud83d\ude00");
+print(ord("A"), chr(233), ord(chr(9731)));
+```
+
+```text
+A é 😀
+65 é 9731
+```
 
 ## Testing
 

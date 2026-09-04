@@ -9735,3 +9735,34 @@ builtin alternation.
 
 Fifty-two builtins; the selftest corpus is 601 checks; corpus
 warnings hold at five. 266 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 560: the docs read the limits
+
+CI green on 559 (API verdict). Two things in the tutorial had gone
+false and needed correcting before anything was added. It still said
+"there is no way to delete anything: ting can create a tree and read
+it, not remove it", four ticks after that stopped being true. And
+its call-trace passage quoted `note: ... 192 more frames`, a number
+that was the old cap of 200 less the eight a trace shows — the kind
+of example that is right until a constant moves and then quietly
+lies. It now states the arithmetic instead of a figure, which is the
+same lesson the trace test learned in 555.
+
+Two new sections. "How deep recursion goes" says what the limit is
+for, that it is derived from the host stack rather than fixed, that
+the message names the figure it enforced, and that `try` catches it
+like any other error — with a snippet that recurses three hundred
+deep, chosen because it must pass under the tutorial guard, which
+runs an unoptimized binary with a smaller cap than a release. The
+prose says plainly that three hundred is not the limit, so the
+example does not read as one. It also records what the survey
+established: deep *data* is not limited this way.
+
+"Spelling a character" gives the escape, why it is JSON's spelling
+rather than a prettier one, and `ord`/`chr`, with output the guard
+checks. The reference already had its rows and paragraph from the
+stroke that added them.
+
+266 Rust tests green, tutorial guard included.

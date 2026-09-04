@@ -257,9 +257,10 @@ holds only the current milestone and the standing rules.
   archives executed here; the shipped cap reads 4096).
 - 559: \uXXXX escapes in string literals, spelled as JSON spells
   them (surrogate pairs included), plus ord and chr.
+  560: the docs read the limits (two stale tutorial passages
+  corrected; sections on recursion depth and spelling a character).
 - Backlog (one per tick, in order):
-  (1) the docs read the limits; (2) RELEASE v2.92.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.92.0; (2) health tick + audit.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
