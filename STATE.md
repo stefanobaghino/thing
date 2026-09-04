@@ -358,6 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 611: health tick green — bench checksums match, 50000 differential
+  + 20000 formatter + 200000 pattern cases at seed 610, corpus at
+  five warnings, site serving the patterns reference.
 - v2.100.0 VERIFIED (121st tag; strokes 604-608; both aarch64
   archives executed here on the whole milestone). Milestone
   "patterns" is complete.
@@ -386,7 +389,9 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) health tick + audit; (2) replenishment tick.
+  EMPTY. Next tick is a replenishment tick: survey and design the
+  next milestone. Standing candidates, none chosen yet: match
+  expressions, a set type, threads.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as

@@ -10918,3 +10918,17 @@ of an unclosed group, and `(a+)+b` answering nil in under a
 millisecond. Identical on gnu and musl, both reporting 2.100.0.
 
 Milestone "patterns" is complete.
+
+## 2026-09-05 — Iteration 611: health tick
+
+Green. Six bench checksums match the baseline; 50000 differential,
+20000 formatter and 200000 pattern cases at seed 610 found nothing;
+the corpus scans to exactly five deliberate warnings; six assets on
+the tag; the site answers 200 and its reference page already lists
+re_find_all. Working tree clean.
+
+The binary now carries a regex engine, a subprocess runner, a clock
+and a generator, and the bench is unmoved — the checksums are
+identical and the timings sit where they have sat for a hundred
+iterations. Growth that does not cost anything is worth recording as
+plainly as growth that does.
