@@ -2647,3 +2647,56 @@ fn exists_is_dir_and_make_dir() {
     assert!(file.exists(), "make_dir did not create the tree");
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// lib/fs.ting's `entries`, `walk` and `walk_ext` over a real tree —
+/// the part of that module the selftest cannot cover, since a ting
+/// script can make a directory but not remove one.
+#[test]
+fn fs_module_walks_a_tree() {
+    let root = std::env::temp_dir().join(format!("ting-fswalk-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    let tree = root.join("tree");
+    std::fs::create_dir_all(tree.join("deep").join("deeper")).unwrap();
+    for (path, _) in [
+        (tree.join("a.ting"), ()),
+        (tree.join("b.txt"), ()),
+        (tree.join("deep").join("c.ting"), ()),
+        (tree.join("deep").join("deeper").join("d.ting"), ()),
+    ] {
+        std::fs::write(path, "").unwrap();
+    }
+
+    let script = root.join("walk.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "let fs = import(\"lib/fs.ting\");\n\
+             let root = {tree:?};\n\
+             print(list_dir(root));\n\
+             print(len(fs[\"entries\"](root)));\n\
+             let found = fs[\"walk\"](root);\n\
+             print(len(found), found[0] == fs[\"join_path\"]([root, \"a.ting\"]));\n\
+             print(len(fs[\"walk_ext\"](root, \"ting\")));\n\
+             print(fs[\"walk\"](fs[\"join_path\"]([root, \"b.txt\"])) == [fs[\"join_path\"]([root, \"b.txt\"])]);\n",
+            tree = tree.to_str().unwrap()
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        // names sorted; three direct children; four files with no
+        // directories among them; three of them .ting; and a file
+        // walks to itself.
+        "[\"a.ting\", \"b.txt\", \"deep\"]\n3\n4 true\n3\ntrue\n"
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}

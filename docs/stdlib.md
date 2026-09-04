@@ -1,7 +1,7 @@
 # The ting standard library
 
-Six modules written in ting itself — list, map, string, math, json
-and test, 121 functions between them — living in `lib/` and also
+Seven modules written in ting itself — list, map, string, math, json,
+fs and test, 132 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -158,6 +158,27 @@ index lists.
 | `flatten(v)` | map from each leaf's dotted path (`"a.b.0"`) to its value |
 | `merge_in(a, b)` | deep merge: maps recurse, anything else in `b` replaces `a`'s value |
 | `diff(a, b)` | `[path, left, right]` for every leaf path where the two differ (absent reads as `nil`) |
+
+## lib/fs.ting
+
+Path handling and directory walking on top of the filesystem
+builtins. Paths are split on both `/` and `\`, so one that came from
+a Windows tool parses, and joined with `/`, which every platform the
+binary runs on accepts.
+
+| Function | Does |
+|----------|------|
+| `normal(p)` | the path with backslashes turned into forward slashes |
+| `parts(p)` | the pieces of a path, empty ones dropped: `"a//b/"` is `["a", "b"]` |
+| `base(p)` | the last component: `base("a/b/c.ting")` is `"c.ting"` |
+| `dir(p)` | everything before the last component; `"."` when there is none, and an absolute path keeps its leading `/` |
+| `ext(p)` | the extension without its dot; `""` for a name with no dot or one that only starts with a dot |
+| `stem(p)` | the last component without its extension |
+| `join_path(pieces)` | the pieces joined with `/`, each one's separators tidied away |
+| `with_ext(p, e)` | the path with a different extension; an empty `e` removes it |
+| `entries(d)` | the direct children of a directory as paths, sorted |
+| `walk(d)` | every file at or below a directory, sorted, directories themselves left out |
+| `walk_ext(d, e)` | the files `walk` finds whose extension is `e` |
 
 ## lib/test.ting
 

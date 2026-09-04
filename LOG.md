@@ -9436,3 +9436,40 @@ execute on this host, as always.
 That is the pair of strokes that gives a ting script eyes on the
 filesystem. Next comes the module that turns them into something
 comfortable: paths split and joined, and a walk that recurses.
+
+---
+
+## 2026-09-04 — Iteration 549: paths, in ting
+
+`lib/fs.ting` is the seventh embedded module and the first one that
+exists because of builtins added three ticks ago: eleven functions,
+all of them either pure string work on paths or a walk built out of
+`list_dir` and `is_dir`. `base`, `dir`, `ext`, `stem`, `parts`,
+`normal`, `join_path`, `with_ext` split and reassemble a path;
+`entries` turns `list_dir`'s names into paths; `walk` recurses to
+every file at or below a directory, leaving the directories
+themselves out because the list a tool wants is the files; and
+`walk_ext` filters that by extension, which is the whole of "run
+over every .ting file in here".
+
+Paths are split on both `/` and `\` and joined with `/`. A path that
+came out of a Windows tool therefore parses, and the result is
+something every platform the binary runs on accepts — the honest
+middle ground for a module that cannot ask the host which it is on.
+
+Two names came from constraints rather than taste. `join_path`, not
+`join`, because `join` is a builtin and shadowing one is a checker
+warning — the corpus is guarded at exactly five deliberate warnings,
+so a stdlib module that raised a sixth would fail its own suite.
+And `ext(".bashrc")` is `""`: a leading dot names the file, it does
+not introduce an extension.
+
+The selftest is pure path assertions (21 checks), and `walk`,
+`entries` and `walk_ext` are exercised in tests/io.rs instead —
+because a ting script can now make a directory but cannot remove
+one, so a selftest that built a tree would litter the repository
+with no way to tidy up. That asymmetry is worth recording:
+`make_dir` has no counterpart.
+
+265 Rust tests; the selftest corpus is 576 checks over twelve files;
+the corpus warning count holds at exactly five.

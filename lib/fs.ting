@@ -1,0 +1,121 @@
+# Paths and directory walking, written in ting on top of the
+# filesystem builtins. Use them via
+#   let fs = import("lib/fs.ting");
+#
+# Paths are split on both "/" and "\", so a path that came from a
+# Windows tool parses here, and joined with "/", which every platform
+# the binary runs on accepts.
+
+# The path with backslashes turned into forward slashes.
+fn normal(p) { return replace(p, "\\", "/"); }
+
+# The pieces of a path, with empty ones dropped: "a//b/" is ["a", "b"].
+fn parts(p) {
+  let out = [];
+  for piece in split(normal(p), "/") {
+    if piece != "" { push(out, piece); }
+  }
+  return out;
+}
+
+# The last component of a path: base("a/b/c.ting") is "c.ting".
+# A path with nothing in it answers "".
+fn base(p) {
+  let ps = parts(p);
+  if len(ps) == 0 { return ""; }
+  return ps[-1];
+}
+
+# Everything before the last component: dir("a/b/c") is "a/b",
+# dir("c") is ".", and an absolute path keeps its leading "/".
+fn dir(p) {
+  let ps = parts(p);
+  let rooted = starts_with(normal(p), "/");
+  if len(ps) <= 1 {
+    if rooted { return "/"; }
+    return ".";
+  }
+  let head = join(slice(ps, 0, len(ps) - 1), "/");
+  if rooted { return "/" + head; }
+  return head;
+}
+
+# The extension of a path without its dot: ext("a/b.ting") is "ting".
+# A name with no dot, or one that only starts with a dot (".bashrc"),
+# has no extension and answers "".
+fn ext(p) {
+  let name = base(p);
+  let cut = -1;
+  let i = 0;
+  while i < len(name) {
+    if name[i] == "." { cut = i; }
+    i = i + 1;
+  }
+  if cut <= 0 { return ""; }
+  return slice(name, cut + 1, len(name));
+}
+
+# The last component without its extension: stem("a/b.ting") is "b".
+fn stem(p) {
+  let name = base(p);
+  let e = ext(p);
+  if e == "" { return name; }
+  return slice(name, 0, len(name) - len(e) - 1);
+}
+
+# The pieces joined with "/", each one's own separators tidied away:
+# join_path(["a/", "b", "c.ting"]) is "a/b/c.ting". An absolute first
+# piece keeps its leading "/".
+fn join_path(pieces) {
+  let all = [];
+  for piece in pieces {
+    for one in parts(piece) { push(all, one); }
+  }
+  let out = join(all, "/");
+  if len(pieces) > 0 && starts_with(normal(pieces[0]), "/") { return "/" + out; }
+  return out;
+}
+
+# The path with a different extension: with_ext("a/b.ting", "md") is
+# "a/b.md". An empty extension removes the dot as well.
+fn with_ext(p, e) {
+  let head = dir(p);
+  let name = stem(p);
+  if e != "" { name = name + "." + e; }
+  if head == "." && !starts_with(normal(p), "./") { return name; }
+  return join_path([head, name]);
+}
+
+# The direct children of a directory as paths, sorted — what list_dir
+# says, each prefixed with the directory it came from.
+fn entries(d) {
+  let out = [];
+  for name in list_dir(d) { push(out, join_path([d, name])); }
+  return out;
+}
+
+# Every file at or below a directory, sorted, directories themselves
+# left out — the list a tool that runs over a tree wants. A path that
+# is not a directory answers just that path.
+fn walk(d) {
+  if !is_dir(d) { return [d]; }
+  let out = [];
+  for child in entries(d) {
+    if is_dir(child) {
+      for deeper in walk(child) { push(out, deeper); }
+    } else {
+      push(out, child);
+    }
+  }
+  return out;
+}
+
+# Every file at or below a directory whose extension is e, sorted:
+# walk_ext("src", "ting") is every ting file in the tree.
+fn walk_ext(d, e) {
+  let out = [];
+  for path in walk(d) {
+    if ext(path) == e { push(out, path); }
+  }
+  return out;
+}

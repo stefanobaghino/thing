@@ -1,0 +1,34 @@
+# ting testing ting: the fs module's path handling.
+
+let fs = import("../lib/fs.ting");
+
+assert(fs["base"]("a/b/c.ting") == "c.ting", "base takes the last piece");
+assert(fs["base"]("c") == "c", "base of a bare name");
+assert(fs["base"]("") == "", "base of nothing");
+assert(fs["base"]("a\\b\\c.ting") == "c.ting", "backslashes split too");
+
+assert(fs["dir"]("a/b/c") == "a/b", "dir drops the last piece");
+assert(fs["dir"]("c") == ".", "dir of a bare name is here");
+assert(fs["dir"]("/a/b") == "/a", "an absolute path keeps its root");
+assert(fs["dir"]("/a") == "/", "the root itself");
+
+assert(fs["ext"]("a/b.ting") == "ting", "ext without the dot");
+assert(fs["ext"]("noext") == "", "no dot, no extension");
+assert(fs["ext"](".bashrc") == "", "a leading dot is not an extension");
+assert(fs["ext"]("a.b.c") == "c", "the last dot wins");
+
+assert(fs["stem"]("a/b.ting") == "b", "stem drops the extension");
+assert(fs["stem"](".bashrc") == ".bashrc", "a dotfile is all stem");
+
+assert(fs["parts"]("a//b/") == ["a", "b"], "empty pieces dropped");
+assert(fs["join_path"](["a/", "b", "c.ting"]) == "a/b/c.ting", "joined with one slash");
+assert(fs["join_path"](["/a", "b"]) == "/a/b", "an absolute first piece stays absolute");
+assert(fs["join_path"]([]) == "", "nothing joins to nothing");
+
+assert(fs["with_ext"]("a/b.ting", "md") == "a/b.md", "extension replaced");
+assert(fs["with_ext"]("b.ting", "md") == "b.md", "no directory added");
+assert(fs["with_ext"]("a/b.ting", "") == "a/b", "an empty extension removes it");
+
+# walk and entries touch the real filesystem, so they are exercised
+# where a test can clean up after itself (tests/io.rs); what belongs
+# here is the path handling, which is pure.

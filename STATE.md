@@ -15,10 +15,10 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 48 builtins; six embedded stdlib modules
-  (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 264 Rust tests in 11
-  suites.
+- 48 builtins; seven embedded stdlib modules
+  (list/map/string/math/json/fs/test, 132 functions, guarded); 29 ting
+  programs (12 selftest files, 17 examples with .out); 265 Rust tests
+  in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -233,14 +233,18 @@ holds only the current milestone and the standing rules.
   directory, or a name that is not UTF-8, errors.
   546: exists, is_dir (questions, so false rather than an error) and
   make_dir (parents included, already there is fine).
+  549: lib/fs.ting — eleven functions, paths split on both separators
+  and joined with "/", plus entries/walk/walk_ext.
 - v2.89.0 VERIFIED (110th tag; strokes 545, 546; both aarch64
   archives executed here).
 - Backlog (one per tick, in order):
-  (1) lib/fs.ting: base, dir, ext, join and a
-  recursive walk, in ting on top of the builtins; (2) the docs read
-  the filesystem (reference table, tutorial, stdlib page and its
-  count); (3) RELEASE v2.90.0; (4) health tick + audit.
-- Found, not yet acted on: recursion is capped at call depth 200
+  (1) the docs read the filesystem (reference table, tutorial;
+  the stdlib page landed with the module); (2) RELEASE v2.90.0;
+  (3) health tick + audit.
+- Found, not yet acted on: make_dir has no counterpart — a script
+  can create a directory but not remove a file or directory, so a
+  ting test that builds a tree cannot tidy up after itself (549).
+  Recursion is capped at call depth 200
   (eval.rs MAX_DEPTH) and moving it wants per-engine stack
   measurement, the wasm build having no thread of its own to size;
   string literals have no \u escape though json_parse handles one.
