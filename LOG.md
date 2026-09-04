@@ -10032,3 +10032,20 @@ one tag apart, which is the right order only because the literals
 were useless alone and the operators would have been unreadable
 without them. Six archives; unverified until both aarch64 archives
 have been downloaded cold and run here, next tick.
+
+## 2026-09-04 — Iteration 572: v2.94.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a flags script — three constants built with
+`<<`, combined with `|`, tested with `&` against an unparenthesised
+`==`, then complemented, shifted right and xored. `6 true false` and
+`1 -4 240`, identical on gnu and musl, both reporting 2.94.0, and
+both refusing `1 << 64` and `1.5 & 2` with the wording the tests
+pin. The darwin archive cannot execute on this host, as always.
+
+Milestone "bits and numbers" is done. The survey in 564 said the
+language had file I/O, JSON and code points but no way to mask a
+byte; two tags later it has the literals to write a mask and the
+operators to apply one, and the ordering question that the design
+turned on — `a & b == c` — is settled the way it should have been in
+1972. Next tick is the health tick that closes the milestone.

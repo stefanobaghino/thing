@@ -281,11 +281,10 @@ holds only the current milestone and the standing rules.
 - 570: the docs read the bits (reference operator table and prose,
   a tutorial section); the stale "Call depth: 200" bullet in Limits
   corrected — the prose had been fixed in 560, the bullet had not.
-- 571: v2.94.0 tagged (115th tag; strokes 569, 570) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.94.0 VERIFIED (115th tag; strokes 569, 570; both aarch64
+  archives executed here, the shipped refusals checked too).
 - Backlog (one per tick, in order):
-  (1) verify the v2.94.0 release (cold download, both aarch64);
-  (2) health tick + audit.
+  (1) health tick + audit — closes milestone "bits and numbers".
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
@@ -299,7 +298,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 114 (v2.93.0), 114 verified; v2.29.0 is publicly marked broken
+- Tags: 115 (v2.94.0), 115 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
