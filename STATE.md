@@ -352,8 +352,11 @@ holds only the current milestone and the standing rules.
   executed on every CI platform and no program exists on all three,
   so the happy path is written behind a which() guard — the idiom the
   section teaches anyway.
+- 600: v2.99.0 tagged (120th tag; strokes 595, 596, 598, 599) —
+  UNVERIFIED until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.99.0; (2) verify; (3) health tick.
+  (1) verify the v2.99.0 release (cold download, both aarch64);
+  (2) health tick + audit.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as

@@ -10679,3 +10679,10 @@ it is the lesson.
 
 The reference rows landed with the builtins in 595 and 596, the
 module table in 598, so the docs are now whole for this milestone.
+
+## 2026-09-05 — Iteration 600: release v2.99.0
+
+The 120th tag, and the six hundredth iteration. Four strokes:
+`run` (595), `eprint` and `cwd` (596), `lib/sh.ting` (598), the
+tutorial subsection (599) — plus one red CI caught and fixed on the
+way (597). Verification next tick, cold, both aarch64 archives.
