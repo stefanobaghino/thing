@@ -10256,3 +10256,20 @@ four faults the survey found were all at the boundary between a
 number and its text, and they are all closed from both directions
 now. Six archives; unverified until both aarch64 archives have been
 downloaded cold and run here, next tick.
+
+## 2026-09-04 — Iteration 582: v2.96.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that writes both bases, reads them
+back, takes the round trip all the way to i64::MIN, and prints the
+extremes as JSON. `0xff 0b1010 -0xff -0b101`, `255 -5 1000 255`,
+`-9223372036854775808`, `1e23 1.0 {"big":1e23}` — identical on gnu
+and musl, both reporting 2.96.0, and `--doc hex` answers in the
+shipped binary. The darwin archive cannot execute on this host, as
+always.
+
+Milestone "numbers that read back" is done. It started from an aside
+in iteration 566 — a large float printed as a wall of digits — and
+the survey turned that one wart into four, all at the same boundary.
+Two tags, both cold-verified. Next tick is the health tick that
+closes the milestone.

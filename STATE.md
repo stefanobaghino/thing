@@ -305,11 +305,10 @@ holds only the current milestone and the standing rules.
   the conversions, a Limits bullet saying infinity is reachable by
   arithmetic and by nothing else; a tutorial snippet for hex/bin/int
   and a paragraph on 0.1 + 0.2).
-- 581: v2.96.0 tagged (117th tag; strokes 579, 580) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.96.0 VERIFIED (117th tag; strokes 579, 580; both aarch64
+  archives executed here, the round trip checked to i64::MIN).
 - Backlog (one per tick, in order):
-  (1) verify the v2.96.0 release (cold download, both aarch64);
-  (2) health tick + audit — closes "numbers that read back".
+  (1) health tick + audit — closes "numbers that read back".
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
@@ -324,7 +323,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 116 (v2.95.0), 116 verified; v2.29.0 is publicly marked broken
+- Tags: 117 (v2.96.0), 117 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
