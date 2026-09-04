@@ -5,6 +5,16 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.96.0 (2026-09-04)
+
+- New builtins `hex(n)` and `bin(n)` write the literal forms
+  (`0xff`, `0b1010`), keeping the sign rather than wrapping:
+  `hex(-255)` is `-0xff`.
+- `int(s)` reads a string the way the lexer reads a literal — sign,
+  `0x`/`0b` prefix, `_` between digits — so `int(hex(n))` is `n`.
+- Docs: the reference and tutorial cover how numbers print and
+  convert, and the Limits section says where infinity can come from.
+
 ## v2.95.0 (2026-09-04)
 
 - Floats print in a form that reads back: an exponent outside the
