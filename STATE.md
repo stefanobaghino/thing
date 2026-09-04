@@ -305,8 +305,11 @@ holds only the current milestone and the standing rules.
   the conversions, a Limits bullet saying infinity is reachable by
   arithmetic and by nothing else; a tutorial snippet for hex/bin/int
   and a paragraph on 0.1 + 0.2).
+- 581: v2.96.0 tagged (117th tag; strokes 579, 580) — UNVERIFIED
+  until both aarch64 archives run here.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.96.0; (2) health tick + audit.
+  (1) verify the v2.96.0 release (cold download, both aarch64);
+  (2) health tick + audit — closes "numbers that read back".
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

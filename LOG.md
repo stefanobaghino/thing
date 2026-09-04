@@ -10245,3 +10245,14 @@ is what lets them see it at all.
 Gate green: fmt, clippy, 280 Rust tests, tutorial snippets executed,
 42 corpus files formatted. Milestone "numbers that read back" is code-
 and docs-complete; v2.96.0 is next.
+
+## 2026-09-04 — Iteration 581: v2.96.0
+
+CI green on 580 (both workflows, verdict pinned to the sha). Tagged
+v2.96.0, the hundred and seventeenth tag: `hex` and `bin`, an `int`
+that reads what they write, and the docs that place the whole
+milestone. With v2.95.0 that closes "numbers that read back" — the
+four faults the survey found were all at the boundary between a
+number and its text, and they are all closed from both directions
+now. Six archives; unverified until both aarch64 archives have been
+downloaded cold and run here, next tick.
