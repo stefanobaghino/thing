@@ -1,7 +1,7 @@
 # The ting standard library
 
 Seven modules written in ting itself — list, map, string, math, json,
-fs and test, 132 functions between them — living in `lib/` and also
+fs and test, 133 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -179,6 +179,7 @@ binary runs on accepts.
 | `entries(d)` | the direct children of a directory as paths, sorted |
 | `walk(d)` | every file at or below a directory, sorted, directories themselves left out |
 | `walk_ext(d, e)` | the files `walk` finds whose extension is `e` |
+| `remove_tree(p)` | every file and directory at or below `p`, gone; a path that is not there is not an error |
 
 ## lib/test.ting
 

@@ -9642,3 +9642,33 @@ had to change with it: the trace test hard-coded "192 more frames",
 which was the old cap less the eight frames a trace shows, so it now
 reads the cap out of the diagnostic and asserts the arithmetic
 instead of the constant. 266 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 556: and taking it away
+
+CI green on 555 (API verdict). `remove_file` and `remove_dir` are
+the forty-ninth and fiftieth builtins, and they are demands like
+`list_dir`: removing something that is not there is a mistake, not a
+no-op, so it errors. `remove_dir` takes only an empty directory and
+says `Directory not empty` otherwise.
+
+The recursive version is deliberately not a builtin.
+`lib/fs.ting`'s `remove_tree` walks a tree, removing files and then
+each directory once it is empty — six readable lines of ting rather
+than one word that hides what it does. It is also the one operation
+here that can destroy a lot of work at once, and this way anyone
+can read exactly what it will touch before calling it. Unlike the
+primitives it is forgiving of a path that is not there, since
+"make sure this is gone" is its whole purpose.
+
+That closes the asymmetry recorded three ticks ago. selftest/fs.ting
+now builds a tree, walks it, removes a file, proves a full directory
+will not go quietly, and takes the whole thing away — 36 checks, and
+the working tree is as clean afterwards as before, which is the
+point. The Rust test stays, because it is the one that proves the
+embedded module resolves from a directory with no lib/ in it.
+
+Fifty builtins; 133 stdlib functions across seven modules; the
+selftest corpus is 591 checks; corpus warnings hold at five. 266
+Rust tests, green on both engines.

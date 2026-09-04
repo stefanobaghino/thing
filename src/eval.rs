@@ -1324,6 +1324,31 @@ impl<W: Write> Interpreter<W> {
                     .map_err(|e| error(format!("cannot create {path:?}: {e}"), span))?;
                 Ok(Value::Nil)
             }
+            // Demands, like list_dir: removing something that is not
+            // there is a mistake worth hearing about, and remove_dir
+            // takes only an empty directory — a recursive delete is
+            // composed in ting (lib/fs.ting's remove_tree), where it
+            // is readable, rather than hidden behind one builtin.
+            Builtin::RemoveFile | Builtin::RemoveDir => {
+                arity(1, 1)?;
+                let Value::Str(path) = &args[0] else {
+                    return Err(error(
+                        format!(
+                            "{} expects a string path, got {}",
+                            b.name(),
+                            args[0].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                let p = std::path::Path::new(&**path);
+                let done = match b {
+                    Builtin::RemoveDir => std::fs::remove_dir(p),
+                    _ => std::fs::remove_file(p),
+                };
+                done.map_err(|e| error(format!("cannot remove {path:?}: {e}"), span))?;
+                Ok(Value::Nil)
+            }
             Builtin::Sort => {
                 arity(1, 1)?;
                 match &args[0] {

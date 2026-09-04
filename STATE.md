@@ -15,8 +15,8 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 48 builtins; seven embedded stdlib modules
-  (list/map/string/math/json/fs/test, 132 functions, guarded); 29 ting
+- 50 builtins; seven embedded stdlib modules
+  (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
   programs (12 selftest files, 17 examples with .out); 266 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
@@ -251,13 +251,14 @@ holds only the current milestone and the standing rules.
   so the runner and REPL allow 4096 frames in release and 512 in
   debug; an embedder or the wasm build that declares nothing keeps
   the old 200.
+  556: remove_file and remove_dir (demands; remove_dir wants an empty
+  directory), with the recursive remove_tree written in ting.
 - Backlog (one per tick, in order):
-  (1) remove_file and remove_dir, so a script can tidy what it
-  made; (2) RELEASE v2.91.0; (3) \u escapes in string literals
+  (1) RELEASE v2.91.0; (2) \u escapes in string literals
   (the lexer's escape set is guarded against
   editor/ting.tmLanguage.json by tests/grammar.rs) and a pair of
-  builtins for code points; (4) the docs read the limits;
-  (5) RELEASE v2.92.0; (6) health tick + audit.
+  builtins for code points; (3) the docs read the limits;
+  (4) RELEASE v2.92.0; (5) health tick + audit.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are

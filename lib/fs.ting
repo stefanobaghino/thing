@@ -119,3 +119,18 @@ fn walk_ext(d, e) {
   }
   return out;
 }
+
+# Every file and directory at or below a path, gone. Files first, then
+# each directory once it is empty, deepest first — which is what
+# remove_dir needs, and why this is written here in ting rather than
+# hidden behind a builtin: a recursive delete should be readable.
+fn remove_tree(p) {
+  if !exists(p) { return nil; }
+  if !is_dir(p) {
+    remove_file(p);
+    return nil;
+  }
+  for child in entries(p) { remove_tree(child); }
+  remove_dir(p);
+  return nil;
+}

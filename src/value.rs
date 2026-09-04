@@ -58,6 +58,8 @@ pub enum Builtin {
     Exists,
     IsDir,
     MakeDir,
+    RemoveFile,
+    RemoveDir,
     Sort,
     SortBy,
     Try,
@@ -79,7 +81,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 48] = [
+    pub const ALL: [Builtin; 50] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -110,6 +112,8 @@ impl Builtin {
         Builtin::Exists,
         Builtin::IsDir,
         Builtin::MakeDir,
+        Builtin::RemoveFile,
+        Builtin::RemoveDir,
         Builtin::Sort,
         Builtin::SortBy,
         Builtin::Try,
@@ -220,6 +224,14 @@ impl Builtin {
                 "make_dir(path)",
                 "Creates the directory and any missing parents; already a directory is fine. Returns nil.",
             ),
+            Builtin::RemoveFile => (
+                "remove_file(path)",
+                "Deletes the file; a path that is absent or is a directory errors. Returns nil.",
+            ),
+            Builtin::RemoveDir => (
+                "remove_dir(path)",
+                "Deletes an empty directory; one with anything in it errors. Returns nil.",
+            ),
             Builtin::Sort => (
                 "sort(xs)",
                 "A fresh sorted list; all numbers or all strings, else error.",
@@ -312,6 +324,8 @@ impl Builtin {
             Builtin::Exists => "exists",
             Builtin::IsDir => "is_dir",
             Builtin::MakeDir => "make_dir",
+            Builtin::RemoveFile => "remove_file",
+            Builtin::RemoveDir => "remove_dir",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
             Builtin::Try => "try",

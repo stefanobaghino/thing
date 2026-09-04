@@ -29,6 +29,37 @@ assert(fs["with_ext"]("a/b.ting", "md") == "a/b.md", "extension replaced");
 assert(fs["with_ext"]("b.ting", "md") == "b.md", "no directory added");
 assert(fs["with_ext"]("a/b.ting", "") == "a/b", "an empty extension removes it");
 
-# walk and entries touch the real filesystem, so they are exercised
-# where a test can clean up after itself (tests/io.rs); what belongs
-# here is the path handling, which is pure.
+# A tree this file builds, walks, and removes. It can tidy up after
+# itself now that remove_file and remove_dir exist, which is why this
+# lives here rather than only in the Rust tests.
+let root = "selftest-fs-tree";
+fs["remove_tree"](root);
+make_dir(root + "/deep/deeper");
+write_file(root + "/a.ting", "");
+write_file(root + "/b.txt", "");
+write_file(root + "/deep/c.ting", "");
+write_file(root + "/deep/deeper/d.ting", "");
+
+assert(list_dir(root) == ["a.ting", "b.txt", "deep"], "names, sorted");
+assert(fs["entries"](root)[0] == root + "/a.ting", "entries are paths");
+assert(exists(root + "/a.ting"), "the file is there");
+assert(is_dir(root + "/deep"), "the directory is a directory");
+assert(!exists(root + "/nope"), "and what is not there is not");
+
+let found = fs["walk"](root);
+assert(len(found) == 4, "every file, no directories");
+assert(found[0] == root + "/a.ting", "sorted, files before subdirectories");
+assert(contains(found, root + "/deep/deeper/d.ting"), "the deepest one too");
+assert(len(fs["walk_ext"](root, "ting")) == 3, "only the ting files");
+assert(fs["walk"](root + "/a.ting") == [root + "/a.ting"], "a file walks to itself");
+
+# Removal: a file, then an empty directory, then the whole tree.
+remove_file(root + "/b.txt");
+assert(!exists(root + "/b.txt"), "the file is gone");
+assert(try(fn() { return remove_dir(root); })["err"] != nil, "a full directory is not removable");
+assert(try(fn() { return remove_file(root + "/nope"); })["err"] != nil, "removing nothing errors");
+
+fs["remove_tree"](root);
+assert(!exists(root), "the tree is gone");
+fs["remove_tree"](root);
+assert(!exists(root), "and removing it again is quiet");

@@ -213,6 +213,8 @@ scope).
 | `exists(path)` | whether anything is at that path; `is_dir(path)` whether that thing is a directory. Questions, so an absent or unreadable path is `false`, never an error |
 | `is_dir(path)` | see `exists` |
 | `make_dir(path)` | creates the directory and any missing parents; a directory that is already there is not an error |
+| `remove_file(path)` | deletes the file; absent, or a directory, errors |
+| `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `try(f)`       | calls `f()`; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
@@ -255,8 +257,12 @@ directory is `lib/fs.ting`'s `entries`, which is also where `walk`
 (every file at or below a directory), path splitting and extension
 handling live.
 
-Nothing deletes. A ting script can create a tree, fill it and read
-it back, but not remove a file or a directory.
+`remove_file` and `remove_dir` are demands too, and `remove_dir`
+takes only an empty directory. The recursive version is not a
+builtin: `lib/fs.ting`'s `remove_tree` walks a tree, removing files
+and then each directory once it is empty, so the one operation that
+can destroy a lot of work at once is readable ting rather than a
+word that hides it.
 
 ### Modules
 
