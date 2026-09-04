@@ -8851,3 +8851,21 @@ line and nil, which is the whole of what this milestone added,
 read from inside a ting program on a binary built somewhere else.
 105th tag. The "the way back" milestone is complete. Next: health
 tick + audit.
+
+---
+
+## 2026-09-04 — Iteration 525: health tick + audit
+
+CI green on the v2.84.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline, with fib and lists
+at their usual wide vm margins and json and maps a couple of
+percent the other way — weather, not signal. Fuzz: 50000
+differential cases (seed 20260904525), 20000 formatter cases (seed
+525, LF and CRLF) and the crash fuzzer with its cyclic case all
+pass in release. Distribution: 105 releases with the expected asset
+counts (36 x 3, 14 x 4, 55 x 6) and all six v2.84.0 download URLs
+resolve. Site: all nine resources answer 200, the changelog leads
+with v2.84.0, the tutorial serves the elision line and the
+reference the naming rule for anonymous functions. Nothing to fix.
+The "the way back" milestone is complete. Backlog empty: next tick
+is replenishment.

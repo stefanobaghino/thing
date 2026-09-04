@@ -193,8 +193,9 @@ holds only the current milestone and the standing rules.
   reference, stdlib).
 - v2.84.0 VERIFIED (105th tag; strokes 522, 523; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  (1) health tick + audit.
+- 525: health tick + audit green — milestone "the way back"
+  complete.
+- Backlog: empty — next tick is replenishment.
 - Tags: 105 (v2.84.0), 104 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
