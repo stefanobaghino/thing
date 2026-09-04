@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.87.0 (2026-09-04)
+
+- New `--watch` for `--test`, `--check` and `--fmt-check`: the pass
+  runs again whenever a watched file changes, is added or is
+  deleted, with a rule line naming the run and its cause. The
+  paths named on the command line are expanded before every poll,
+  so new files join the next run. `--fmt --watch` is a usage error
+  (it would answer its own rewrites); `--fmt --diff --watch` works.
+
 ## v2.86.0 (2026-09-04)
 
 - `--profile` counts builtins too, marked `a builtin` where a ting
