@@ -10713,3 +10713,51 @@ One process note, third occurrence: the bench writes nothing useful
 when it runs in the background of this loop. Run it in the
 foreground, or redirect it and read the file afterwards — never both
 at once.
+
+## 2026-09-05 — Iteration 603: replenishment — patterns
+
+Backlog empty; the candidate deferred in 594 comes off the shelf.
+
+Next milestone: **patterns** (v2.100.0, v2.101.0). A regular
+expression engine, zero dependencies, written for this project's
+constraints rather than borrowed in spirit from a general-purpose
+library.
+
+The decisions that shape it, made now rather than during the coding.
+
+A Pike VM, not a backtracker. The engine simulates all alternatives
+in lockstep, so matching is linear in the input times the program
+size and `(a+)+b` cannot blow up. Scripts run over text nobody
+audited; an engine whose worst case is exponential is a trap laid for
+its own users. This costs a little on easy patterns and buys the
+absence of a whole class of hangs.
+
+Leftmost-first, not POSIX leftmost-longest: alternation prefers its
+earlier branch, the way Perl and Python behave and the way anyone
+writing `foo|foobar` expects.
+
+No backreferences. They cannot be simulated in lockstep and would
+drag the backtracker back in. A documented omission, not an oversight.
+
+Char offsets, not byte offsets. `len`, `slice` and `find` already
+count characters, and a regex that disagreed with them would be a
+trap of a different kind.
+
+Compiled patterns are cached in the interpreter, keyed by the pattern
+text, so a match inside a loop compiles once.
+
+The strokes:
+1. `src/regex.rs`: the syntax subset (literals, `.`, classes,
+   escapes, anchors, groups, alternation, greedy and lazy
+   quantifiers) parsed to a program, plus the VM, with unit tests.
+2. `re_test(s, pat)` and `re_find(s, pat)` — nil or a map of start,
+   end, text and groups.
+3. `re_find_all`, `re_replace` with `$1` references, `re_split`.
+4. A pattern fuzzer: random patterns against random subjects, which
+   must never panic and never hang.
+5. The docs learn patterns; `selftest/regex.ting`.
+6. RELEASE, verify, health tick.
+
+Unlike the clock and the dice, these are pure functions: same input,
+same answer, so they belong in the fuzzer alphabets rather than
+outside them.

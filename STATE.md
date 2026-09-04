@@ -358,10 +358,24 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
-- Backlog: EMPTY. Next tick is a replenishment tick; the regex engine
-  deferred in 594 is the standing candidate.
-- Still on the list, not chosen in 594: a regex engine (a milestone
-  of its own), match expressions, a set type, threads.
+- 603: replenishment tick. New milestone "patterns" (v2.100.0,
+  v2.101.0): a Pike-VM regex engine — linear time, leftmost-first, no
+  backreferences, char offsets to agree with len/slice/find, compiled
+  patterns cached in the interpreter.
+- Backlog (one per tick, in order):
+  (1) src/regex.rs: syntax subset (literals, ., classes, escapes,
+  anchors, groups, alternation, greedy and lazy quantifiers) parsed
+  to a program, plus the VM, with unit tests;
+  (2) re_test(s, pat) and re_find(s, pat) -> nil or a map of start,
+  end, text, groups;
+  (3) re_find_all, re_replace with $1 references, re_split;
+  (4) a pattern fuzzer: random patterns on random subjects never
+  panic and never hang; unlike the dice these are pure, so they DO
+  belong in the fuzzer alphabets;
+  (5) the docs learn patterns; selftest/regex.ting;
+  (6) RELEASE v2.100.0; (7) verify; (8) health tick.
+- Still on the list, not chosen: match expressions, a set type,
+  threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
