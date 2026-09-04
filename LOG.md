@@ -10612,3 +10612,19 @@ program does.
 `cwd()` is the directory as a string, and errors rather than guessing
 if the process has none — a deleted working directory is a real state
 on Unix. Refused on wasm, where a page stands nowhere.
+
+## 2026-09-05 — Iteration 597: the Windows run went red
+
+`eprint_writes_to_stderr_and_cwd_reports_the_directory` compared
+`cwd()` against a canonicalized temp path and failed on
+windows-latest alone: the canonical form there carries a verbatim
+prefix and backslashes, so two names for one directory compared
+unequal. The other four jobs passed, which is exactly how this
+mistake hides.
+
+The rule already in STATE covers it — a test that reads a path out of
+tool output matches file names, not separators — and this is its
+third outing (499b, and again here). The test now runs the child in a
+directory it creates by name and asserts `ends_with(cwd(), name)`
+plus `is_dir(cwd())`: what `cwd` promises, without an opinion on how
+an operating system spells a path.

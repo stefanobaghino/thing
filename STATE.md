@@ -333,6 +333,9 @@ holds only the current milestone and the standing rules.
 - 593: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 592, corpus at exactly
   five warnings, six assets, site serving v2.98.0.
+- 597: fixed a Windows-only red — a test compared cwd() with a
+  canonicalized path. Paths in tests: match names, never separators
+  or prefixes (third time; see 499b).
 - 596: eprint(...) and cwd(). eprint flushes stdout first so notes
   cannot overtake data; on wasm it writes alongside print, since a
   page has one stream.

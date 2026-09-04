@@ -2840,19 +2840,25 @@ fn eprint_writes_to_stderr_and_cwd_reports_the_directory() {
     let script = std::env::temp_dir().join("ting-io-eprint.ting");
     std::fs::write(
         &script,
+        // The leaf, not the whole path: Windows hands back a
+        // canonical form with its own prefix and separators, and this
+        // test is about cwd() naming where the process stands, not
+        // about how an OS spells it.
         "print(\"data\");\n\
          eprint(\"note\", 1, [2]);\n\
-         print(cwd() == args()[0]);\n",
+         print(ends_with(cwd(), args()[0]), is_dir(cwd()));\n",
     )
     .unwrap();
-    let here = std::env::temp_dir().canonicalize().unwrap();
+    let here = std::env::temp_dir().join("ting-io-cwd-dir");
+    std::fs::create_dir_all(&here).unwrap();
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg(&script)
-        .arg(here.to_str().unwrap())
+        .arg("ting-io-cwd-dir")
         .current_dir(&here)
         .output()
         .expect("failed to run ting");
-    assert_eq!(String::from_utf8_lossy(&out.stdout), "data\ntrue\n");
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "data\ntrue true\n");
     assert_eq!(String::from_utf8_lossy(&out.stderr), "note 1 [2]\n");
     let _ = std::fs::remove_file(&script);
+    let _ = std::fs::remove_dir(&here);
 }
