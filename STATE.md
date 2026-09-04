@@ -204,9 +204,11 @@ holds only the current milestone and the standing rules.
   rest. 531: the docs read the profile.
 - v2.85.0 VERIFIED (106th tag; strokes 527, 528; both aarch64
   archives executed here).
+- v2.86.0 VERIFIED (107th tag; strokes 530, 531; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.86.0 (strokes 530, 531); (2) health tick + audit.
-- Tags: 106 (v2.85.0), 105 verified; v2.29.0 is publicly marked broken
+  (1) health tick + audit.
+- Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

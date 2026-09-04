@@ -9023,3 +9023,18 @@ compares stdout exactly, so the table is quoted as text and the
 numbers are illustration rather than a promise. Full gate green
 (259 tests, tutorial and docs guards included). Two strokes banked
 (530, 531). Next: release v2.86.0.
+
+---
+
+## 2026-09-04 — Iteration 532: release v2.86.0
+
+CI green on 531 (API verdict). Cut v2.86.0 with builtins in the
+profile and the twenty-row cap (530) and the pages that explain
+them (531). The release workflow is green with all six archives; CI
+and Pages green on the release commit (API verdicts).
+Cold-verified here: both aarch64 Linux archives downloaded fresh,
+unpacked and run — `-V` reports 2.86.0, and the slug program from
+the tutorial profiles the same way on both, `slug` first, the
+delegating `slugs` second with only its loop, and push, replace,
+trim and lower named as builtins below them. 107th tag. The "where
+the time went" milestone is complete. Next: health tick + audit.
