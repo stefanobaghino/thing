@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 52 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 270 Rust tests
+  programs (12 selftest files, 17 examples with .out); 272 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -269,17 +269,24 @@ holds only the current milestone and the standing rules.
 - 565: hex and binary literals with a lowercase prefix, and `_`
   between digits in any radix; a literal that runs into a letter or
   a foreign digit is an error naming the offender.
+- 566: exponent floats (1e3, 1.5e-3, 2E+2); an exponent always makes
+  a float, a half-written one is reported against the letter, and a
+  literal that parses to infinity is an error.
 - Backlog (one per tick, in order):
-  (1) exponent floats (1e3, 1.5e-3); (2) RELEASE v2.93.0;
-  (3) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
+  (1) RELEASE v2.93.0;
+  (2) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
   (shifts below arithmetic, & then ^ then | below those, all above
-  comparison); (4) the docs read the bits; (5) RELEASE v2.94.0;
-  (6) health tick + audit.
+  comparison); (3) the docs read the bits; (4) RELEASE v2.94.0;
+  (5) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
   blocks work the way a missing & does. Indexed iteration is already
   covered by lib/list.ting's enumerate.
+- Open question (566): a large float prints in full — 6.02e23 comes
+  back as 601999999999999995805696.0, the exact double. Honest and
+  reversible; whether printing should shorten is a later milestone's
+  question.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
