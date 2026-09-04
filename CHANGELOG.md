@@ -5,6 +5,18 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.91.0 (2026-09-04)
+
+- The call-depth cap is derived from the host stack the process
+  declares rather than fixed at 200: the runner and the REPL hand
+  their interpreter 32 MB and allow a few thousand frames from it
+  (fewer unoptimized, where a frame costs several times as much).
+  An embedder that declares nothing keeps the old conservative cap.
+  The diagnostic names the cap it enforced.
+- New builtins `remove_file(path)` and `remove_dir(path)`; the
+  latter takes only an empty directory. `lib/fs.ting` gains
+  `remove_tree`, the recursive version, written in ting.
+
 ## v2.90.0 (2026-09-04)
 
 - New stdlib module `lib/fs.ting`, the seventh: `base`, `dir`,
