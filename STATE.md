@@ -261,8 +261,11 @@ holds only the current milestone and the standing rules.
   corrected; sections on recursion depth and spelling a character).
 - v2.92.0 VERIFIED (113th tag; strokes 559, 560; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  (1) health tick + audit (closes milestone "where it says no").
+- 563: health tick + audit green — milestone "where it says no"
+  complete (all six bench checksums match; five corpus warnings;
+  six assets per tag; the site serves v2.92.0).
+- Backlog: EMPTY. Next tick is a replenishment (LOOP.md's no-idle
+  rule): survey, then design the next milestone.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are

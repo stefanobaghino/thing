@@ -9800,3 +9800,31 @@ that remain — `list_dir` on a path that is not a directory,
 of more than one character — are the ones with a reason behind
 them, and the reason is now written down next to each. Next tick is
 the health tick that closes the milestone.
+
+---
+
+## 2026-09-04 — Iteration 563: health tick — milestone "where it says no" complete
+
+Everything green.
+
+The full suite in release with the enlarged budgets: 50000
+differential cases, 20000 formatter cases over LF and CRLF, the
+crash fuzzer including cyclic values, and both engines. All six
+bench checksums match bench/BASELINE.md. The host was quiet this
+time and the timings landed near the baseline — fib 567 ms on the
+tree-walker against 601, 334 on the VM against 335 — which is worth
+one sentence only because this milestone put a field read on the
+call path where a constant used to be: no cost that this bench can
+see. The checksums are still what decides.
+
+Audits: six assets each on v2.90.0, v2.91.0 and v2.92.0. All nine
+site paths answer 200 and the published changelog reads v2.92.0.
+The corpus scan reports exactly five warnings. No open pull
+requests; the tree is clean.
+
+Milestone "where it says no" (the thirty-ninth since the restart)
+is closed: a call-depth cap derived from measurement instead of
+guesswork, `remove_file`/`remove_dir` with `remove_tree` above them,
+`\uXXXX` escapes with `ord` and `chr`, and docs that explain which
+refusals were kept and why. Two tags, both cold-verified. The
+backlog is empty, so the next tick is a replenishment.
