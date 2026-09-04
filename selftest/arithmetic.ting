@@ -23,6 +23,18 @@ assert(1.5e-3 == 0.0015, "negative exponent");
 assert(2E+2 == 200.0, "capital E and an explicit plus");
 assert(type(1e3) == "float", "an exponent makes a float");
 
+let err = fn(f) { return try(f)["err"]; };
+
+# hex and bin write what the literals read.
+assert(hex(255) == "0xff", "hex");
+assert(bin(10) == "0b1010", "bin");
+assert(hex(-255) == "-0xff" && bin(-5) == "-0b101", "the sign is kept, not wrapped");
+assert(int(hex(255)) == 255 && int(bin(-5)) == -5, "int reads them back");
+assert(int(hex(-9223372036854775807 - 1)) == -9223372036854775807 - 1, "including the far end");
+assert(int("1_000") == 1000 && int(" 0xFF ") == 255, "int reads separators and prefixes");
+assert(contains(err(fn() { return int("0x"); }), "cannot convert"), "a prefix with no digits is not a number");
+assert(contains(err(fn() { return hex(1.5); }), "needs an int"), "hex is int-only");
+
 # Floats print in a form that reads back.
 assert(str(1e23) == "1e23", "a big float keeps its exponent");
 assert(str(1e-7) == "1e-7", "so does a small one");
@@ -32,7 +44,6 @@ assert(json_str([1e23, 1.0]) == "[1e23,1.0]", "json spells them the same way");
 assert(json_parse(json_str([1e23, 1e-7])) == [1e23, 1e-7], "and reads them back");
 
 # Conversions refuse what a literal would refuse.
-let err = fn(f) { return try(f)["err"]; };
 assert(contains(err(fn() { return float("1e400"); }), "cannot convert"), "float() refuses an overflow");
 assert(contains(err(fn() { return float("inf"); }), "cannot convert"), "and refuses infinity by name");
 assert(contains(err(fn() { return json_parse("1e999"); }), "out of range"), "json_parse refuses one too");

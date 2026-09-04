@@ -227,8 +227,9 @@ scope).
 | `keys(m)`      | the map's keys as a sorted list                             |
 | `has(m, k)`    | whether string key `k` is present                           |
 | `str(v)`       | the value rendered as a string                              |
-| `int(v)`       | from int/float (truncates)/numeric string; else error       |
-| `float(v)`     | from int/float/numeric string; else error                   |
+| `int(v)`       | from int/float (truncates)/numeric string; a string is read the way a literal is (`0xff`, `0b1010`, `1_000`, a leading sign); else error |
+| `float(v)`     | from int/float/numeric string; a string that would be infinite or is not a number errors |
+| `hex(n)` / `bin(n)` | an int as a `0x` or `0b` literal, sign kept (`hex(-255)` is `-0xff`); `int` reads them back |
 | `type(v)`      | the type name as a string, e.g. `"list"`                    |
 | `range(hi)` / `range(lo, hi)` / `range(lo, hi, step)` | list of ints, half-open; `step` may be negative, never 0 |
 | `split(s, sep)` | list of pieces; `split(s, "")` splits into characters |

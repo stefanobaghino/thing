@@ -10193,3 +10193,33 @@ Half of "numbers that read back" is done: the values that leave the
 language and come back now agree with the ones written into it. What
 is left is the other direction — a way to write a number out in the
 base it was read in.
+
+## 2026-09-04 — Iteration 579: hex, bin, and an int() that reads what they write
+
+Two builtins and one rewritten parser, all so that `int(hex(n)) == n`
+for every int. `hex(255)` is `"0xff"` and `bin(10)` is `"0b1010"` —
+the literal forms the lexer gained in v2.93.0, so what comes out can
+go straight back into source.
+
+Negatives keep their sign: `hex(-255)` is `-0xff`, not the
+two's-complement `0xffffffffffffff01` that Rust's `{:#x}` produces.
+The unit test caught the difference on its first run, which is the
+argument for the choice: a sign-and-magnitude spelling round-trips
+through `int` and a wrapped one does not, and round-tripping is what
+this milestone is about. i64::MIN works because the magnitude is
+taken with `unsigned_abs` and the sign is put back as text.
+
+`int(s)` now reads a string the way the lexer reads a literal: an
+optional sign, an optional `0x`/`0b` prefix, and `_` only between two
+digits. So `int("1_000")`, `int(" 0xFF ")` and `int("0b1010")` all
+work, while `int("0x")`, `int("1_")` and `int("0b12")` are the same
+refusals the lexer makes. Before this, the only accepted spelling was
+plain decimal, which meant `hex` would have had no inverse.
+
+Guards: two unit tests (a round trip through the interpreter for both
+bases including i64::MIN, and a table of ten strings that must not
+convert), eight selftest checks (637 → 645), the reference table
+rows, the editor grammar alternation. 54 builtins now.
+
+Gate green: fmt, clippy, 280 Rust tests, 645 selftest checks, corpus
+at exactly five warnings.

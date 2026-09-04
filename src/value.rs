@@ -37,6 +37,8 @@ pub enum Builtin {
     Str,
     Int,
     Float,
+    Hex,
+    Bin,
     Type,
     Range,
     Split,
@@ -83,7 +85,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 52] = [
+    pub const ALL: [Builtin; 54] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -93,6 +95,8 @@ impl Builtin {
         Builtin::Str,
         Builtin::Int,
         Builtin::Float,
+        Builtin::Hex,
+        Builtin::Bin,
         Builtin::Type,
         Builtin::Range,
         Builtin::Split,
@@ -157,6 +161,14 @@ impl Builtin {
             Builtin::Int => (
                 "int(v)",
                 "Converts int/float (truncates)/numeric string to int; else errors.",
+            ),
+            Builtin::Hex => (
+                "hex(n)",
+                "An int as a hex literal, e.g. 0xff; negatives keep the sign.",
+            ),
+            Builtin::Bin => (
+                "bin(n)",
+                "An int as a binary literal, e.g. 0b1010; negatives keep the sign.",
             ),
             Builtin::Float => (
                 "float(v)",
@@ -315,6 +327,8 @@ impl Builtin {
             Builtin::Str => "str",
             Builtin::Int => "int",
             Builtin::Float => "float",
+            Builtin::Hex => "hex",
+            Builtin::Bin => "bin",
             Builtin::Type => "type",
             Builtin::Range => "range",
             Builtin::Split => "split",

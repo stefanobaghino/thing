@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 52 builtins; seven embedded stdlib modules
+- 54 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 278 Rust tests
+  programs (12 selftest files, 17 examples with .out); 280 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -298,11 +298,12 @@ holds only the current milestone and the standing rules.
   of saturating.
 - v2.95.0 VERIFIED (116th tag; strokes 575, 576; both aarch64
   archives executed here, the shipped refusals checked too).
+- 579: hex(n) and bin(n) write the literal forms (sign kept, not
+  wrapped), and int(s) reads a string the way the lexer reads a
+  literal, so int(hex(n)) == n for every int. 54 builtins.
 - Backlog (one per tick, in order):
-  (1) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
-  way in; int(s) accepts the prefixed forms it prints;
-  (2) the docs read the numbers; (3) RELEASE v2.96.0;
-  (4) health tick + audit.
+  (1) the docs read the numbers; (2) RELEASE v2.96.0;
+  (3) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

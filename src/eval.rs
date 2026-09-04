@@ -918,11 +918,12 @@ impl<W: Write> Interpreter<W> {
                             ))
                         }
                     }
-                    Value::Str(s) => s
-                        .trim()
-                        .parse::<i64>()
+                    // A string is read the way a literal is: the same
+                    // radix prefixes, the same separator rule. int(hex(n))
+                    // is n for every int.
+                    Value::Str(s) => int_from_text(s)
                         .map(Value::Int)
-                        .map_err(|_| error(format!("cannot convert {s:?} to int"), span)),
+                        .ok_or_else(|| error(format!("cannot convert {s:?} to int"), span)),
                     v => Err(error(
                         format!("cannot convert {} to int", v.type_name()),
                         span,
@@ -946,6 +947,23 @@ impl<W: Write> Interpreter<W> {
                         .ok_or_else(|| error(format!("cannot convert {s:?} to float"), span)),
                     v => Err(error(
                         format!("cannot convert {} to float", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Hex | Builtin::Bin => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Int(n) => {
+                        let sign = if *n < 0 { "-" } else { "" };
+                        let magnitude = n.unsigned_abs();
+                        Ok(Value::Str(match b {
+                            Builtin::Hex => format!("{sign}0x{magnitude:x}"),
+                            _ => format!("{sign}0b{magnitude:b}"),
+                        }))
+                    }
+                    v => Err(error(
+                        format!("{} needs an int, got {}", b.name(), v.type_name()),
                         span,
                     )),
                 }
@@ -2127,6 +2145,44 @@ pub(crate) fn as_bool(v: Value, span: Span) -> Result<bool, RuntimeError> {
     }
 }
 
+/// Read an int the way the lexer reads a literal: an optional sign,
+/// an optional `0x`/`0b` prefix, and `_` only between two digits.
+fn int_from_text(text: &str) -> Option<i64> {
+    let text = text.trim();
+    let (sign, rest) = match text.strip_prefix('-') {
+        Some(rest) => ("-", rest),
+        None => ("", text.strip_prefix('+').unwrap_or(text)),
+    };
+    let (radix, digits) = match rest.strip_prefix("0x") {
+        Some(digits) => (16, digits),
+        None => match rest.strip_prefix("0b") {
+            Some(digits) => (2, digits),
+            None => (10, rest),
+        },
+    };
+    let mut clean = String::with_capacity(digits.len());
+    let bytes = digits.as_bytes();
+    for (i, &b) in bytes.iter().enumerate() {
+        if b == b'_' {
+            let between = i > 0
+                && bytes
+                    .get(i + 1)
+                    .is_some_and(|next| (*next as char).is_digit(radix));
+            if !between {
+                return None;
+            }
+        } else if (b as char).is_digit(radix) {
+            clean.push(b as char);
+        } else {
+            return None;
+        }
+    }
+    if clean.is_empty() {
+        return None;
+    }
+    i64::from_str_radix(&format!("{sign}{clean}"), radix).ok()
+}
+
 pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeError> {
     match (op, v) {
         (UnaryOp::Neg, Value::Int(n)) => n
@@ -3031,6 +3087,38 @@ mod tests {
             program_err("write_file(\"x\", 1);"),
             "write_file expects two strings, got string and int"
         );
+    }
+
+    #[test]
+    fn int_reads_back_every_hex_and_bin_it_writes() {
+        for n in [
+            "0",
+            "1",
+            "-1",
+            "255",
+            "-255",
+            "1000000",
+            "9223372036854775807",
+        ] {
+            for call in ["hex", "bin"] {
+                let src = format!("int({call}({n}))");
+                assert_eq!(run(&src), Value::Int(n.parse().unwrap()), "{src}");
+            }
+        }
+        // The far end, which cannot be written as a positive literal.
+        assert_eq!(
+            run("int(hex(-9223372036854775807 - 1))"),
+            Value::Int(i64::MIN)
+        );
+    }
+
+    #[test]
+    fn a_separator_or_prefix_without_digits_is_not_a_number() {
+        for text in [
+            "0x", "0b", "1_", "_1", "1__0", "0b12", "", " ", "0xg", "--1",
+        ] {
+            assert_eq!(int_from_text(text), None, "{text:?} should not convert");
+        }
     }
 
     #[test]
