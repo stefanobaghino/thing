@@ -5,8 +5,8 @@ A tiny, zero-dependency scripting language. A thing, minus the h.
 `ting` is implemented in Rust with no third-party dependencies. One
 binary contains everything: two execution engines (a bytecode VM and a
 reference tree-walking interpreter), a REPL, a canonical formatter
-(`--fmt`), a static checker (`--check`), and a thirteen-capability
-language server (`--lsp`).
+(`--fmt`), a static checker (`--check`), a profiler (`--profile`),
+and a thirteen-capability language server (`--lsp`).
 
 > This project is being built autonomously by Claude Code as an experiment;
 > see [BOOTSTRAP.md](BOOTSTRAP.md) for the charter, [LOOP.md](LOOP.md) for
@@ -41,7 +41,8 @@ directories (stdin with `-`), the formatter showing its changes with
 `--diff` and keeping a file's line endings, the checker following
 local imports and warning about misspelt stdlib members, unused
 bindings (top-level or local), unused parameters and names that
-shadow a builtin (`--strict` makes them fail the check); `--doc NAME`
+shadow a builtin (`--strict` makes them fail the check); `--profile SCRIPT`
+reporting calls and self time per function and builtin; `--doc NAME`
 for any builtin or stdlib function, `--doc
 MODULE` for a module's members and `--doc` alone for the whole table
 of contents; and `--lsp`, a language server with diagnostics (the

@@ -9000,3 +9000,26 @@ with a thirty-function program. Full gate green (259 tests, corpus
 at 555 checks), plus 20000 differential cases (seed 20260904530),
 5000 formatter cases and the crash fuzzer. One stroke banked toward
 v2.86.0. Next: the docs read the profile.
+
+---
+
+## 2026-09-04 — Iteration 531: the docs read the profile
+
+CI green on 530 (API verdict). Milestone stroke 4: the pages
+explain the profiler. The reference's tooling list gained a
+`--profile` entry covering what the columns mean, why the measure
+is self time and not total, that builtins are in the table under "a
+builtin" rather than a file, the twenty-row cap, the stable tie
+order, and that a failed run still reports. The tutorial's
+toolchain list shows a real table — produced by running the binary
+on a twenty-thousand-line slug program written for the purpose,
+not composed by hand — where the point makes itself: `slug` and the
+four string builtins it calls hold the time, while `slugs`, which
+does nothing but loop and delegate, is charged only its own loop.
+The README names the profiler in the sentence that lists what the
+one binary contains. No snippet in the tutorial runs the profiler
+itself: its output is timings on stderr, and the tutorial guard
+compares stdout exactly, so the table is quoted as text and the
+numbers are illustration rather than a promise. Full gate green
+(259 tests, tutorial and docs guards included). Two strokes banked
+(530, 531). Next: release v2.86.0.

@@ -567,6 +567,27 @@ Everything else ships in the same binary:
   shows what would change, and `ting --fmt -` filters stdin to stdout
   for editor integrations. A file that does not lex is reported and
   the others are still handled.
+- `ting --profile myscript.ting` runs it and then says where the
+  time went — every function and builtin, how often it ran and how
+  long it spent in its own body, slowest first, on stderr:
+
+```text
+profile: 8 functions, 120003 calls, 43.209ms in them
+     calls        self  function                  where
+     20000    16.223ms  slug                      report.ting:1:1
+         1    13.089ms  slugs                     report.ting:2:1
+     40000     5.218ms  push                      a builtin
+     20000     3.383ms  replace                   a builtin
+     20000     2.434ms  trim                      a builtin
+     20000     2.353ms  lower                     a builtin
+         1     0.469ms  len                       a builtin
+         1     0.040ms  print                     a builtin
+```
+
+  The time is self time, so `slugs` — which does nothing but loop
+  and call `slug` — is charged only its own loop, and the work it
+  asked for shows up under the function that did it. Twenty rows at
+  most; the rest are counted at the end.
 - `ting --doc` prints the table of contents — every builtin and
   stdlib function — and `ting --doc list`, `ting --doc median` or
   `ting --doc myfile.ting` narrow it to a module, a function, or the

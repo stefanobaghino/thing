@@ -333,6 +333,21 @@ The `ting` binary is the whole toolchain — no separate installs:
   the file verified — `ok tests/list.ting (12 checks)`, one check
   per `assert` — the summary totals them, and a file that passed
   while checking nothing is named there, since it proves nothing.
+- `ting --profile SCRIPT` runs the script and then prints, on
+  stderr so the program's own output is untouched, how much each
+  function did: the number of calls, the time spent in its own body,
+  and where it came from. The measure is self time, not total — the
+  callees' time is subtracted — so a recursive function is credited
+  once rather than once per level, and a function that only
+  delegates ranks by what it kept for itself. Builtins are in the
+  table too, marked `a builtin` instead of a file and line, since a
+  program can spend its time inside `sort` as easily as inside its
+  own loops. Rows are slowest first, ties broken by call count and
+  then by position, so the same program reports the same way twice;
+  only the busiest twenty are printed, and a longer table ends with
+  `... N more functions`. Both engines count the same, and a run
+  that fails still reports what it managed. Without the flag nothing
+  is measured and nothing is printed.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
