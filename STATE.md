@@ -330,9 +330,11 @@ holds only the current milestone and the standing rules.
 - v2.98.0 VERIFIED (119th tag; strokes 589, 590; both aarch64
   archives executed here, seeded replay and a measured pause).
   Milestone "the clock and the dice" is complete.
-- Backlog (one per tick, in order):
-  (1) health tick + audit; (2) design the next milestone (the
-  no-idle rule: an empty backlog is a replenishment tick).
+- 593: health tick green — six bench checksums match baseline, 50000
+  differential + 20000 formatter cases at seed 592, corpus at exactly
+  five warnings, six assets, site serving v2.98.0.
+- Backlog: EMPTY. Next tick is a replenishment tick under the no-idle
+  rule: survey the language and design the next milestone.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

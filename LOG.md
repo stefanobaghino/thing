@@ -10495,3 +10495,22 @@ The Pages run on the release commit was cancelled by the run for the
 commit right behind it, which then deployed successfully — the
 concurrency group working as intended, not a failure needing the
 manual dispatch.
+
+## 2026-09-04 — Iteration 593: health tick
+
+Green everywhere it counts.
+
+All six bench checksums match the baseline exactly — fib, json,
+lists, maps, stdlib, strings — with the release binary rebuilt from
+this commit. Timings drifted a few percent either way, which is
+weather, not signal.
+
+50000 differential cases at seed 592, 20000 formatter cases at the
+same seed, the crash fuzzer at its default count: no divergence, no
+panic. The corpus scans to exactly five warnings, the deliberate
+ones. Six assets on the tag, sizes in their usual band. The site
+answers 200 and its changelog page already lists v2.98.0, so the
+Pages deploy that superseded the cancelled one carried the release.
+Working tree clean, no open pull requests.
+
+Nothing to fix, which is the point of looking.
