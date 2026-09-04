@@ -463,7 +463,8 @@ fn profile_flag_counts_calls_per_function() {
             "{engine}: {stderr}"
         );
         let rows: Vec<&str> = stderr.lines().skip(2).collect();
-        // Busiest first, each row naming where it was defined.
+        // Slowest first, each row naming how long it spent there
+        // itself and where it was defined.
         assert!(
             rows[0].contains("177") && rows[0].contains("fib"),
             "{engine}: {stderr}"
@@ -473,7 +474,29 @@ fn profile_flag_counts_calls_per_function() {
             rows[1].contains("once") && rows[1].ends_with(".ting:2:1"),
             "{engine}: {stderr}"
         );
+        for row in &rows {
+            assert!(row.contains("ms  "), "{engine}: {stderr}");
+        }
     }
+
+    // Self time, not total: a function that only delegates keeps
+    // almost none of the time its callee spends.
+    let delegating = std::env::temp_dir().join(format!("ting-self-{}.ting", std::process::id()));
+    std::fs::write(
+        &delegating,
+        "fn spin(n) { let s = 0; let i = 0; while i < n { s = s + i; i = i + 1; } return s; }\nfn only_calls(n) { return spin(n); }\nprint(only_calls(200000));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--profile")
+        .arg(&delegating)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let rows: Vec<&str> = stderr.lines().skip(2).collect();
+    assert!(rows[0].contains("spin"), "{stderr}");
+    assert!(rows[1].contains("only_calls"), "{stderr}");
+    let _ = std::fs::remove_file(&delegating);
     // Without the flag, nothing is counted and nothing is said.
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg(&path)

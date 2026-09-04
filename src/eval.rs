@@ -204,6 +204,9 @@ pub struct Interpreter<W: Write> {
     /// is one entry per `fn` in the program however many closures it
     /// makes.
     profile: Option<HashMap<(usize, usize), Counted>>,
+    /// Time charged to the callees of each active call, innermost
+    /// last: what a frame subtracts from its own elapsed time.
+    child_ns: Vec<u128>,
 }
 
 /// One row of a profile: a function, and how much it did.
@@ -213,6 +216,16 @@ struct Counted {
     origin: Option<Rc<Origin>>,
     def: Span,
     calls: u64,
+    /// Nanoseconds spent inside this function and not inside anything
+    /// it called. Self time rather than total, so a recursive
+    /// function is not credited with the same span once per level.
+    self_ns: u128,
+}
+
+/// Nanoseconds as milliseconds, three decimals: one unit for the
+/// whole table, so a column can be compared by eye.
+fn millis(ns: u128) -> String {
+    format!("{:.3}ms", ns as f64 / 1_000_000.0)
 }
 
 /// The standard library, baked into the binary at build time (always
@@ -272,6 +285,7 @@ impl<W: Write> Interpreter<W> {
             call_origins: Vec::new(),
             source: None,
             profile: None,
+            child_ns: Vec::new(),
         }
     }
 
@@ -312,12 +326,32 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
-    /// One more call of `func`, in the profile being collected.
-    fn count_call(&mut self, func: &Rc<Function>) {
-        let key = (
+    /// A function's row in the profile: its defining file and where
+    /// in it the definition starts, which is one row per `fn` however
+    /// many closures it makes.
+    fn profile_key(func: &Rc<Function>) -> (usize, usize) {
+        (
             func.origin.as_ref().map_or(0, |o| Rc::as_ptr(o) as usize),
             func.def.start,
-        );
+        )
+    }
+
+    /// Charge `elapsed` minus what its callees took to `func`, and the
+    /// whole of it to whoever called `func`.
+    fn charge(&mut self, func: &Rc<Function>, elapsed: u128) {
+        let children = self.child_ns.pop().unwrap_or(0);
+        if let Some(parent) = self.child_ns.last_mut() {
+            *parent += elapsed;
+        }
+        let key = Self::profile_key(func);
+        if let Some(row) = self.profile.as_mut().and_then(|p| p.get_mut(&key)) {
+            row.self_ns += elapsed.saturating_sub(children);
+        }
+    }
+
+    /// One more call of `func`, in the profile being collected.
+    fn count_call(&mut self, func: &Rc<Function>) {
+        let key = Self::profile_key(func);
         let counts = self.profile.as_mut().expect("profiling is on");
         counts
             .entry(key)
@@ -326,6 +360,7 @@ impl<W: Write> Interpreter<W> {
                 origin: func.origin.clone(),
                 def: func.def,
                 calls: 0,
+                self_ns: 0,
             })
             .calls += 1;
     }
@@ -342,20 +377,26 @@ impl<W: Write> Interpreter<W> {
     pub fn profile_report(&self) -> Option<String> {
         let counts = self.profile.as_ref()?;
         let mut rows: Vec<&Counted> = counts.values().collect();
+        // Slowest first: the reason to read a profile at all. Ties go
+        // to the busier function, then to where it sits, so running a
+        // program twice reports it the same way twice.
         rows.sort_by(|a, b| {
-            b.calls
-                .cmp(&a.calls)
+            b.self_ns
+                .cmp(&a.self_ns)
+                .then_with(|| b.calls.cmp(&a.calls))
                 .then_with(|| self.where_defined(a).cmp(&self.where_defined(b)))
         });
         let calls: u64 = rows.iter().map(|r| r.calls).sum();
+        let total: u128 = rows.iter().map(|r| r.self_ns).sum();
         let mut out = format!(
-            "profile: {}, {}\n",
+            "profile: {}, {}, {} in them\n",
             crate::diag::plural(rows.len(), "function"),
-            crate::diag::plural(calls as usize, "call")
+            crate::diag::plural(calls as usize, "call"),
+            millis(total)
         );
         out.push_str(&format!(
-            "{:>10}  {:<24}  {}\n",
-            "calls", "function", "defined at"
+            "{:>10}  {:>10}  {:<24}  {}\n",
+            "calls", "self", "function", "defined at"
         ));
         for r in rows {
             let name = match &r.name {
@@ -363,8 +404,9 @@ impl<W: Write> Interpreter<W> {
                 None => "an anonymous function".to_string(),
             };
             out.push_str(&format!(
-                "{:>10}  {:<24}  {}\n",
+                "{:>10}  {:>10}  {:<24}  {}\n",
                 r.calls,
+                millis(r.self_ns),
                 name,
                 self.where_defined(r)
             ));
@@ -1664,9 +1706,13 @@ impl<W: Write> Interpreter<W> {
                 (frame, locals)
             }
         };
-        if self.profile.is_some() {
+        let clock = if self.profile.is_some() {
             self.count_call(func);
-        }
+            self.child_ns.push(0);
+            Some(std::time::Instant::now())
+        } else {
+            None
+        };
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
         let caller = self.defining_origin();
@@ -1683,6 +1729,9 @@ impl<W: Write> Interpreter<W> {
         self.depth -= 1;
         self.env = saved;
         crate::vm::give_buf(locals);
+        if let Some(started) = clock {
+            self.charge(func, started.elapsed().as_nanos());
+        }
         // An error leaving a module's function is located in that
         // module's file; every call it unwinds through leaves a frame,
         // so the diagnostic can show the whole way back.

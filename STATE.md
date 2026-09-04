@@ -23,8 +23,8 @@ current orientation.
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
-  --fail-fast, per-file check counts), --profile (calls per
-  function), --lsp (thirteen capabilities). A runtime error points at the line that raised it
+  --fail-fast, per-file check counts), --profile (calls and self
+  time per function), --lsp (thirteen capabilities). A runtime error points at the line that raised it
   and carries a note per call it unwound through (named, capped at
   ten with the middle elided), which try() also hands back as "at"
   and "trace"; module errors point into the module's own file; cyclic data prints, compares and json-fails cleanly.
@@ -198,12 +198,12 @@ holds only the current milestone and the standing rules.
 - 526: replenishment — milestone "where the time went"
   (v2.85-v2.86), reasoning in LOG.md.
 - 527: counting the calls (--profile), and closures now belong to
-  the file that defined them.
+  the file that defined them. 528: self time per function, slowest
+  first.
 - Backlog (one per tick, in order):
-  (1) and how long they took: self time per function, sorted, the
-  table's order; (2) RELEASE v2.85.0; (3) builtins in the table, and
-  a cap on its rows; (4) the docs read the profile; (5) RELEASE
-  v2.86.0; (6) health tick + audit.
+  (1) RELEASE v2.85.0 (strokes 527, 528); (2) builtins in the table,
+  and a cap on its rows; (3) the docs read the profile; (4) RELEASE
+  v2.86.0; (5) health tick + audit.
 - Tags: 105 (v2.84.0), 104 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -8927,3 +8927,31 @@ without the flag stderr stays empty. Full gate green (259 tests),
 plus 20000 differential cases (seed 20260904527), 5000 formatter
 cases, the crash fuzzer and the corpus at 555 checks. One stroke
 banked toward v2.85.0. Next: self time per function.
+
+---
+
+## 2026-09-04 — Iteration 528: and how long they took
+
+CI green on 527 (API verdict). Milestone stroke 2: the profile now
+carries time, and the column it sorts by is self time — the
+nanoseconds a function spent in its own body, with everything its
+callees took subtracted out. Total time would be the easier
+measurement and the wrong one: a function that recurses two hundred
+deep would be credited with the same span two hundred times over,
+and a program's top-level entry point would always come first
+having done nothing itself. The bookkeeping is a stack of
+per-frame child totals: on entry a frame pushes a zero, on exit it
+takes its elapsed time, subtracts what its children charged to it,
+credits the difference to its own row and charges the whole
+elapsed span to its caller's slot. The table gained a self column
+in milliseconds to three decimals — one unit for the whole table so
+a column can be read by eye — and the header now says how much time
+was inside functions at all. Ties break on call count and then on
+where the function sits, so the same program profiled twice reports
+in the same order. The io test pins the shape and one behaviour
+that timing cannot flake on: a function that only delegates ranks
+below the loop it delegates to. An unprofiled run pays what it did
+before (fib's median is 310.8 ms against a 335.4 ms baseline). Full
+gate green (259 tests), plus 20000 differential cases (seed
+20260904528), 5000 formatter cases and the crash fuzzer. Two
+strokes banked (527, 528). Next: release v2.85.0.
