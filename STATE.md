@@ -429,8 +429,10 @@ holds only the current milestone and the standing rules.
   the parentheses as a parameter, so a default that called a function
   reported that function as an unused parameter. Name position only
   now, and a name a sibling default reads counts as used.
+- 625: v2.102.0 released (123rd tag; strokes 621-624) — awaiting
+  cold verification.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.102.0; (2) verify; (3) health tick.
+  (1) verify v2.102.0; (2) health tick.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.
@@ -454,7 +456,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 122 (v2.101.0), 122 verified; v2.29.0 is publicly marked broken
+- Tags: 123 (v2.102.0), 122 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

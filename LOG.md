@@ -11245,3 +11245,11 @@ twice over: the deliberate wrong-arity calls tripped the checker,
 which is exactly what the checker is for. They go through a
 binding now, so the runtime error is still exercised and the
 corpus scan stays at the five deliberate warnings.
+
+## 2026-09-05 — Iteration 625: v2.102.0
+
+Cut on 83dc500's green CI: strokes 621, 622, 623 and 624 — optional
+parameters through the language, the checker, the hover, the
+formatter's tests, the fuzz generator, the docs and a selftest. The
+tag is the 123rd; verification (both aarch64 archives downloaded and
+run here) is the next tick.
