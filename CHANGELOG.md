@@ -5,6 +5,16 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.92.0 (2026-09-04)
+
+- String literals take `\uXXXX`, four hex digits with a surrogate
+  pair past U+FFFF — the spelling JSON uses, so a string copied out
+  of a JSON document means the same thing either way.
+- New builtins `ord(s)` and `chr(n)` convert between a
+  one-character string and its code point.
+- Docs: the reference and tutorial cover the recursion limit, the
+  removal builtins and how to spell a character.
+
 ## v2.91.0 (2026-09-04)
 
 - The call-depth cap is derived from the host stack the process
