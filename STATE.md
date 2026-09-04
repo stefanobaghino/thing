@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 55 builtins; eight embedded stdlib modules
-  (list/map/string/math/json/fs/test/time, 147 functions, guarded); 29 ting
-  programs (13 selftest files, 17 examples with .out); 281 Rust tests
+- 58 builtins; eight embedded stdlib modules
+  (list/map/string/math/json/fs/test/time, 147 functions, guarded); 30 ting
+  programs (14 selftest files, 17 examples with .out); 284 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -320,14 +320,14 @@ holds only the current milestone and the standing rules.
   Hinnant's conversions with floor division for pre-epoch instants.
 - v2.97.0 VERIFIED (118th tag; strokes 585, 586; both aarch64
   archives executed here, module import and pause included).
+- 589: random(), random_int(lo, hi) and seed(n) landed — SplitMix64
+  in Interpreter, so both engines draw the same stream; unseeded it
+  starts from the clock (wasm has none, and says so in the docs).
+  None of the three is in any fuzzer alphabet.
 - Backlog (one per tick, in order):
-  (1) random() in [0, 1), random_int(lo, hi) half-open like range,
-  and seed(n) for reproducibility; none of them in any fuzzer
-  alphabet, since the differential test runs the same source twice,
-  and tests assert the property (same seed, same sequence) rather
-  than a pinned constant;
-  (2) the docs read the clock and the dice; (3) RELEASE v2.98.0;
-  (4) health tick + audit.
+  (1) the docs read the clock and the dice (tutorial section, and
+  the reference already carries the rows); (2) RELEASE v2.98.0;
+  (3) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

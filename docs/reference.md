@@ -287,6 +287,9 @@ scope).
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |
 | `sleep_ms(ms)` | pauses for that many milliseconds, flushing output first; a negative count, or anything but an int, errors |
+| `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |
+| `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
+| `seed(n)`      | restarts the generator at `n`; unseeded, it starts from the clock |
 
 ### Files and directories
 

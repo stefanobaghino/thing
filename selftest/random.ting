@@ -1,0 +1,62 @@
+# ting testing ting: the dice. Every check is a property — a seed
+# repeats, a value lands in its span — because a pinned number would
+# freeze the generator instead of testing it.
+
+let err = fn(f) { return try(f)["err"]; };
+
+# A seed replays exactly, on either engine.
+let roll = fn(n) {
+  let out = [];
+  for i in range(0, n) { push(out, random_int(-5, 5)); }
+  return out;
+};
+seed(7);
+let a = roll(200);
+seed(7);
+assert(a == roll(200), "the same seed replays the same sequence");
+seed(8);
+assert(a != roll(200), "a different seed does not");
+
+# random() stays inside [0, 1) and does not stand still.
+seed(11);
+let same = 0;
+let last = random();
+for i in range(0, 500) {
+  let x = random();
+  assert(x >= 0.0 && x < 1.0, "random() is in [0, 1)");
+  if x == last { same = same + 1; }
+  last = x;
+}
+assert(same == 0, "500 draws with no repeat");
+
+# random_int is half-open, like range.
+seed(12);
+let seen = {};
+for i in range(0, 1000) {
+  let n = random_int(-3, 4);
+  assert(n >= -3 && n < 4, "random_int stays in its span");
+  seen[str(n)] = true;
+}
+assert(len(keys(seen)) == 7, "all seven values of [-3, 4) turn up");
+
+# A span of one has one answer, and the rejection loop still ends.
+seed(13);
+for i in range(0, 20) { assert(random_int(9, 10) == 9, "a span of one"); }
+
+# The whole int range is a single span, not two halves.
+seed(14);
+let big = random_int(-9223372036854775807 - 1, 9223372036854775807);
+assert(type(big) == "int", "the widest span still gives an int");
+
+# What the dice refuse.
+assert(err(fn() { return random_int(5, 5); }) == "random_int: 5 to 5 is empty", "empty span");
+assert(err(fn() { return random_int(2, 1); }) == "random_int: 2 to 1 is empty", "reversed span");
+assert(err(fn() { return random_int(0, 1.5); }) == "random_int expects two ints, got int and float", "floats are not ends");
+assert(err(fn() { return seed("x"); }) == "seed expects an int, got string", "seed wants an int");
+assert(seed(1) == nil, "seed returns nil");
+
+# Seeding mid-run resets the stream rather than perturbing it.
+seed(21);
+let first = random();
+seed(21);
+assert(random() == first, "seed restarts, it does not stir");

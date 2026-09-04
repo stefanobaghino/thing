@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- New builtins `random()`, `random_int(lo, hi)` and `seed(n)`:
+  a float in `[0, 1)`, an int in a half-open span like `range`, and a
+  restart point that makes a run repeat. Unseeded, the generator
+  starts from the clock. See docs/reference.md.
+
 ## v2.97.0 (2026-09-04)
 
 - New builtin `sleep_ms(ms)` pauses for that many milliseconds,

@@ -246,6 +246,27 @@ pub struct Interpreter<W: Write> {
     /// Time charged to the callees of each active call, innermost
     /// last: what a frame subtracts from its own elapsed time.
     child_ns: Vec<u128>,
+    /// The random generator's state, None until something asks for a
+    /// number: a program that never rolls a die never reads the clock,
+    /// and one that calls seed() first is reproducible.
+    rng: Option<u64>,
+}
+
+/// Where an unseeded generator starts. The clock is the only entropy
+/// a zero-dependency binary has; wasm has no clock, so a page reloads
+/// into the same sequence unless the program calls seed().
+fn default_seed() -> u64 {
+    #[cfg(target_arch = "wasm32")]
+    {
+        0x853C_49E6_748F_EA9B
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .map(|d| d.as_nanos() as u64)
+            .unwrap_or(0x853C_49E6_748F_EA9B)
+    }
 }
 
 /// One row of a profile: a function, and how much it did.
@@ -333,7 +354,21 @@ impl<W: Write> Interpreter<W> {
             source: None,
             profile: None,
             child_ns: Vec::new(),
+            rng: None,
         }
+    }
+
+    /// SplitMix64: one multiply-xor-shift finalizer over a counter.
+    /// Small enough to read, good enough that a program cannot see
+    /// the pattern, and identical on both engines because both call
+    /// this.
+    fn next_u64(&mut self) -> u64 {
+        let state = self.rng.get_or_insert_with(default_seed);
+        *state = state.wrapping_add(0x9E37_79B9_7F4A_7C15);
+        let mut z = *state;
+        z = (z ^ (z >> 30)).wrapping_mul(0xBF58_476D_1CE4_E5B9);
+        z = (z ^ (z >> 27)).wrapping_mul(0x94D0_49BB_1331_11EB);
+        z ^ (z >> 31)
     }
 
     /// Command-line arguments exposed to the script via `args()`.
@@ -1812,6 +1847,54 @@ impl<W: Write> Interpreter<W> {
                 std::thread::sleep(std::time::Duration::from_millis(ms as u64));
                 Ok(Value::Nil)
             }
+            Builtin::Random => {
+                arity(0, 0)?;
+                // The top 53 bits are exactly a double's mantissa, so
+                // every value is representable and none is favoured.
+                let bits = self.next_u64() >> 11;
+                Ok(Value::Float(bits as f64 * (1.0 / (1u64 << 53) as f64)))
+            }
+            Builtin::RandomInt => {
+                arity(2, 2)?;
+                let (lo, hi) = match (&args[0], &args[1]) {
+                    (Value::Int(lo), Value::Int(hi)) => (*lo, *hi),
+                    (l, r) => {
+                        return Err(error(
+                            format!(
+                                "random_int expects two ints, got {} and {}",
+                                l.type_name(),
+                                r.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                };
+                if lo >= hi {
+                    return Err(error(format!("random_int: {lo} to {hi} is empty"), span));
+                }
+                // Width as unsigned, so the whole int range is one span.
+                let width = (hi as u64).wrapping_sub(lo as u64);
+                // Reject the short tail so every value is equally likely.
+                let tail = width.wrapping_neg() % width;
+                let mut x = self.next_u64();
+                while x < tail {
+                    x = self.next_u64();
+                }
+                Ok(Value::Int(lo.wrapping_add((x % width) as i64)))
+            }
+            Builtin::Seed => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Int(n) => {
+                        self.rng = Some(*n as u64);
+                        Ok(Value::Nil)
+                    }
+                    v => Err(error(
+                        format!("seed expects an int, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
             Builtin::Import => {
                 arity(1, 1)?;
                 match &args[0] {
@@ -3112,6 +3195,63 @@ mod tests {
         assert_eq!(
             program_err("write_file(\"x\", 1);"),
             "write_file expects two strings, got string and int"
+        );
+    }
+
+    /// The dice are a property, not a table of numbers: a pinned
+    /// constant would freeze the generator, and the promise is only
+    /// that a seed repeats and that values stay in their span.
+    #[test]
+    fn the_same_seed_replays_the_same_sequence() {
+        let roll = "seed(7); let a = []; let i = 0; \
+                    while (i < 200) { push(a, random_int(-5, 5)); i = i + 1; } \
+                    seed(7); let b = []; i = 0; \
+                    while (i < 200) { push(b, random_int(-5, 5)); i = i + 1; }";
+        assert_eq!(output(&(roll.to_string() + " print(a == b);")), "true\n");
+        let again = "seed(8); i = 0; let c = []; \
+                     while (i < 200) { push(c, random_int(-5, 5)); i = i + 1; } \
+                     print(a == c);";
+        assert_eq!(output(&(roll.to_string() + " " + again)), "false\n");
+    }
+
+    #[test]
+    fn every_roll_lands_inside_its_span() {
+        assert_eq!(
+            output(
+                "seed(3); let i = 0; let ok = true; \
+                 while (i < 1000) { let x = random(); \
+                   if (x < 0.0 || x >= 1.0) { ok = false; } \
+                   let n = random_int(-3, 4); \
+                   if (n < -3 || n >= 4) { ok = false; } i = i + 1; } print(ok);"
+            ),
+            "true\n"
+        );
+        // A span of one has exactly one answer, and no rejection loop
+        // may spin forever reaching it.
+        assert_eq!(output("seed(1); print(random_int(9, 10));"), "9\n");
+    }
+
+    #[test]
+    fn an_empty_span_and_a_wrong_type_are_refused() {
+        assert_eq!(
+            program_err("random_int(5, 5);"),
+            "random_int: 5 to 5 is empty"
+        );
+        assert_eq!(
+            program_err("random_int(2, 1);"),
+            "random_int: 2 to 1 is empty"
+        );
+        assert_eq!(
+            program_err("random_int(0, 1.5);"),
+            "random_int expects two ints, got int and float"
+        );
+        assert_eq!(
+            program_err("seed(\"x\");"),
+            "seed expects an int, got string"
+        );
+        assert_eq!(
+            program_err("random(1);"),
+            "random expects 0 arguments, got 1"
         );
     }
 

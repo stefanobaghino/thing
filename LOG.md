@@ -10426,3 +10426,35 @@ reporting 2.97.0. The darwin archive cannot execute on this host, as
 always.
 
 The dice half is what remains.
+
+## 2026-09-04 — Iteration 589: the dice
+
+`random()`, `random_int(lo, hi)` and `seed(n)`, all three in
+`Interpreter` so both engines draw from the same stream by
+construction. SplitMix64 over a u64 counter: one add and two
+multiply-xor-shifts, small enough to read in the file that holds it.
+
+Three decisions worth the ink.
+
+The state starts as None and is seeded from the clock on first use,
+so a program that never rolls a die never reads the clock, and one
+that calls `seed` first is reproducible from its first draw. On wasm
+there is no clock, so an unseeded page reloads into the same
+sequence; that is documented rather than papered over.
+
+`random()` takes the top 53 bits, which is exactly a double's
+mantissa: every value it can return is representable and none is
+favoured. `random_int` is half-open like `range`, computes its width
+in u64 so the whole int range is one span rather than two halves, and
+rejects the short tail so no value is more likely than another. An
+empty span errors — there is no int to return, and returning `lo`
+would be a lie about the span.
+
+The tests assert properties, not numbers: a seed replays, a different
+seed does not, every draw lands inside its span, all seven values of
+[-3, 4) turn up in a thousand tries, the widest span still ends. A
+pinned constant would have frozen the generator instead of testing
+it. Same in selftest/random.ting, the fourteenth selftest, which the
+differential test runs on both engines.
+
+None of the three go anywhere near a fuzzer alphabet.

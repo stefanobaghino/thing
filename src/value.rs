@@ -83,10 +83,13 @@ pub enum Builtin {
     Exit,
     TimeMs,
     SleepMs,
+    Random,
+    RandomInt,
+    Seed,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 55] = [
+    pub const ALL: [Builtin; 58] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -142,6 +145,9 @@ impl Builtin {
         Builtin::Exit,
         Builtin::TimeMs,
         Builtin::SleepMs,
+        Builtin::Random,
+        Builtin::RandomInt,
+        Builtin::Seed,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -319,6 +325,15 @@ impl Builtin {
                 "sleep_ms(ms)",
                 "Pauses for that many milliseconds; a negative count errors.",
             ),
+            Builtin::Random => ("random()", "A float in [0, 1)."),
+            Builtin::RandomInt => (
+                "random_int(lo, hi)",
+                "An int in [lo, hi), like range; an empty span errors.",
+            ),
+            Builtin::Seed => (
+                "seed(n)",
+                "Restarts the generator at n, so a run repeats exactly.",
+            ),
         }
     }
 
@@ -379,6 +394,9 @@ impl Builtin {
             Builtin::Exit => "exit",
             Builtin::TimeMs => "time_ms",
             Builtin::SleepMs => "sleep_ms",
+            Builtin::Random => "random",
+            Builtin::RandomInt => "random_int",
+            Builtin::Seed => "seed",
         }
     }
 }
