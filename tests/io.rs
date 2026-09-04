@@ -2333,3 +2333,83 @@ fn test_flag_expands_directories() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// `--test --watch` runs the files, then runs them again whenever one
+/// of them changes on disk — a rule line naming the run and its cause
+/// separating one run from the next. Nothing here waits on a
+/// stopwatch: each step polls the child's output until what it is
+/// waiting for arrives, or a generous deadline runs out.
+#[test]
+fn test_flag_watch_runs_again_when_a_file_changes() {
+    let root = std::env::temp_dir().join(format!("ting-watch-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let a = root.join("a.ting");
+    std::fs::write(&a, "assert(1 == 1, \"one\");\n").unwrap();
+
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", "--watch", root.to_str().unwrap()])
+        .stdout(Stdio::piped())
+        .stderr(Stdio::null())
+        .spawn()
+        .expect("failed to run ting");
+
+    // The child never exits on its own, so its output is drained by a
+    // thread and read from a shared buffer as it arrives.
+    let seen = std::sync::Arc::new(std::sync::Mutex::new(String::new()));
+    let sink = std::sync::Arc::clone(&seen);
+    let mut out = child.stdout.take().unwrap();
+    std::thread::spawn(move || {
+        let mut buf = [0u8; 4096];
+        while let Ok(n) = std::io::Read::read(&mut out, &mut buf) {
+            if n == 0 {
+                break;
+            }
+            sink.lock()
+                .unwrap()
+                .push_str(&String::from_utf8_lossy(&buf[..n]));
+        }
+    });
+    let wait_for = |needle: &str| -> bool {
+        let deadline = std::time::Instant::now() + std::time::Duration::from_secs(60);
+        while std::time::Instant::now() < deadline {
+            if seen.lock().unwrap().contains(needle) {
+                return true;
+            }
+            std::thread::sleep(std::time::Duration::from_millis(50));
+        }
+        false
+    };
+
+    let first = wait_for("-- run 1 ");
+    let ran = first && wait_for("1 passed, 0 failed");
+    // A file added to a watched directory joins the next run.
+    std::fs::write(root.join("b.ting"), "assert(2 == 2, \"two\");\n").unwrap();
+    let added = ran && wait_for("-- run 2: ") && wait_for("2 passed, 0 failed");
+    // An edit to a file already watched sets off another run.
+    std::fs::write(
+        &a,
+        "assert(3 == 3, \"three\");\nassert(4 == 4, \"four\");\n",
+    )
+    .unwrap();
+    let changed = added && wait_for("-- run 3: ");
+
+    let _ = child.kill();
+    let _ = child.wait();
+    let seen = seen.lock().unwrap().clone();
+    let _ = std::fs::remove_dir_all(&root);
+
+    assert!(first, "no first run:\n{seen}");
+    assert!(ran, "first run did not finish:\n{seen}");
+    assert!(added, "a new file did not set off a run:\n{seen}");
+    assert!(changed, "an edit did not set off a run:\n{seen}");
+    assert!(seen.contains("b.ting added"), "{seen}");
+    assert!(seen.contains("a.ting changed"), "{seen}");
+    // The rule reaches eighty columns, so runs are told apart at a
+    // glance in a scrollback.
+    let rule = seen
+        .lines()
+        .find(|l| l.starts_with("-- run 1 "))
+        .expect("no rule line");
+    assert_eq!(rule.chars().count(), 80, "{rule:?}");
+}

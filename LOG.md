@@ -9101,3 +9101,41 @@ three-way comparator, plus min_by, max_by, group_by and the rest.
 Milestone "at the terminal" (v2.87-v2.88): `--watch` re-runs the
 tests when a file changes, then the checker and the formatter's
 check; a script can arrive on stdin; docs follow.
+
+---
+
+## 2026-09-04 — Iteration 535: the tests run themselves again
+
+`ting --test --watch <paths>` runs the files, then runs them again
+every time one of them changes. The mechanism is a poll: modification
+time and length of every watched file, sampled a fifth of a second
+apart, compared against a snapshot taken *before* the run started so
+that an edit landing while the tests are running is not lost. Both
+halves of the stamp matter — a filesystem with a coarse clock can
+rewrite a file inside one tick of its own mtime, and a length that
+moved says so regardless. There is no dependency and no platform
+API, which is the only kind of watcher this project can have.
+
+The paths named on the command line are expanded afresh before every
+poll, so a `.ting` file added to a watched directory joins the next
+run and one deleted leaves it; the rule line says which — `a.ting
+changed`, `b.ting added`, `c.ting gone`. That rule is the visible
+half of the feature: eighty columns of dashes carrying the run's
+number and its cause, so a scrollback of six runs reads as six runs
+rather than one long smear. Under `--tap` it is a comment, so the
+plan still parses.
+
+Parsing the flags once and running the pass many times meant
+splitting `run_tests` in three: the argument parse, a `TestRun` of
+the settings that outlive a pass, and `test_pass`, which is exactly
+what plain `--test` already did. The four copies of the usage line
+became one `TEST_USAGE` constant on the way past, since a fifth flag
+was about to make them drift.
+
+The test spawns the binary, drains its stdout from a thread, and
+polls the buffer for what it is waiting for with a sixty-second
+deadline, killing the child at the end — a watcher never exits on
+its own. Nothing in it asserts an order that timings could invert:
+it waits for run 1, adds a file, waits for run 2, edits a file,
+waits for run 3, and checks the causes by name. 260 Rust tests, all
+green on both engines.

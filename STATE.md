@@ -17,13 +17,13 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 259 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 260 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
-  --fail-fast, per-file check counts), --profile (calls and self
+  --fail-fast, --watch, per-file check counts), --profile (calls and self
   time per function and builtin, top twenty), --lsp (thirteen
   capabilities). A runtime error points at the line that raised it
   and carries a note per call it unwound through (named, capped at
@@ -211,12 +211,14 @@ holds only the current milestone and the standing rules.
   microseconds can swap).
 - 534: replenishment — milestone "at the terminal" (v2.87-v2.88),
   reasoning in LOG.md.
+- 535: --test --watch — an mtime-and-length poll re-runs the files
+  whenever one changes, is added or goes away, a rule line per run
+  naming the cause.
 - Backlog (one per tick, in order):
-  (1) --test --watch: re-run when a watched file changes, a rule
-  line per run; (2) --watch for --check and --fmt-check, new files
-  included; (3) RELEASE v2.87.0; (4) a script can arrive on stdin
-  (ting -), with args and an honest word about input(); (5) the
-  docs read the terminal; (6) RELEASE v2.88.0; (7) health tick +
+  (1) --watch for --check and --fmt-check, new files
+  included; (2) RELEASE v2.87.0; (3) a script can arrive on stdin
+  (ting -), with args and an honest word about input(); (4) the
+  docs read the terminal; (5) RELEASE v2.88.0; (6) health tick +
   audit.
 - Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).

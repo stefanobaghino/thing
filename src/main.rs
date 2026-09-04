@@ -34,6 +34,7 @@ fn main() -> ExitCode {
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
                  \x20   [--slow N]                list the N slowest files after the summary\n\
                  \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
+                 \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
                  \x20 ting --doc [NAMES...]       explain builtins or stdlib functions;\n\
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
@@ -149,7 +150,7 @@ fn is_option(a: &str) -> bool {
 
 /// Every option any mode accepts, for suggesting the one that was
 /// meant. Keep in step with the dispatch above and the usage text.
-const OPTIONS: [&str; 20] = [
+const OPTIONS: [&str; 21] = [
     "--check",
     "--diff",
     "--doc",
@@ -167,6 +168,7 @@ const OPTIONS: [&str; 20] = [
     "--test",
     "--version",
     "--vm",
+    "--watch",
     "-V",
     "-h",
     "-j",
@@ -339,6 +341,19 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
 /// exit() or a failed assert cannot take the runner down), and the
 /// verdict is its exit status. stdout is discarded; stderr is shown
 /// under a FAIL line so the diagnostic stays next to its file.
+/// What every `--test` mode prints when its arguments make no sense.
+const TEST_USAGE: &str = "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] [--watch] <files or directories...>";
+
+/// The `--test` flags that outlive one pass: in `--watch` mode every
+/// run is made the same way, so they are parsed once and carried.
+struct TestRun {
+    filter: Option<String>,
+    tap: bool,
+    fail_fast: bool,
+    jobs: usize,
+    slow: usize,
+}
+
 fn run_tests(args: Vec<String>) -> ExitCode {
     // `--filter SUBSTR` (anywhere among the arguments) keeps only the
     // files whose path contains the substring.
@@ -347,20 +362,21 @@ fn run_tests(args: Vec<String>) -> ExitCode {
     let mut fail_fast = false;
     let mut jobs = 1usize;
     let mut slow = 0usize;
+    let mut watch = false;
     let mut paths = Vec::new();
     let mut it = args.into_iter();
     while let Some(a) = it.next() {
         if a == "--tap" {
             tap = true;
+        } else if a == "--watch" {
+            watch = true;
         } else if a == "--fail-fast" {
             fail_fast = true;
         } else if a == "--slow" {
             match it.next().and_then(|n| n.parse::<usize>().ok()) {
                 Some(n) => slow = n,
                 None => {
-                    eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
-                    );
+                    eprintln!("{TEST_USAGE}");
                     return ExitCode::from(2);
                 }
             }
@@ -368,9 +384,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             match it.next().and_then(|n| n.parse::<usize>().ok()) {
                 Some(n) if n >= 1 => jobs = n,
                 _ => {
-                    eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
-                    );
+                    eprintln!("{TEST_USAGE}");
                     return ExitCode::from(2);
                 }
             }
@@ -378,9 +392,7 @@ fn run_tests(args: Vec<String>) -> ExitCode {
             match it.next() {
                 Some(f) => filter = Some(f),
                 None => {
-                    eprintln!(
-                        "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
-                    );
+                    eprintln!("{TEST_USAGE}");
                     return ExitCode::from(2);
                 }
             }
@@ -391,19 +403,115 @@ fn run_tests(args: Vec<String>) -> ExitCode {
         }
     }
     if paths.is_empty() {
-        eprintln!(
-            "usage: ting --test [-j N] [--filter SUBSTR] [--tap] [--slow N] [--fail-fast] <files or directories...>"
-        );
+        eprintln!("{TEST_USAGE}");
         return ExitCode::from(2);
     }
+    let opts = TestRun {
+        filter,
+        tap,
+        fail_fast,
+        jobs,
+        slow,
+    };
+    if watch {
+        return watch_tests(&paths, &opts);
+    }
+    test_pass(&paths, &opts)
+}
+
+/// `--watch`: run the files, then run them again every time one of
+/// them changes. The paths named on the command line are expanded
+/// afresh each time, so a file added to a watched directory joins the
+/// next run. Nothing but Ctrl-C ends it.
+fn watch_tests(paths: &[String], opts: &TestRun) -> ExitCode {
+    let mut run = 1usize;
+    let mut cause = String::new();
+    loop {
+        // Snapshot before the run, not after: an edit made while the
+        // tests are running is a change too, and must not be lost.
+        let before = stamps(paths);
+        rule(opts.tap, run, &cause);
+        let _ = test_pass(paths, opts);
+        cause = wait_for_change(&before, paths);
+        run += 1;
+    }
+}
+
+/// A rule between runs, so a scrollback of repeated runs reads as
+/// separate ones: the run's number, what set it off, and dashes out
+/// to eighty columns (a TAP comment under `--tap`).
+fn rule(tap: bool, run: usize, cause: &str) {
+    let prefix = if tap { "# " } else { "" };
+    let head = if cause.is_empty() {
+        format!("{prefix}-- run {run} ")
+    } else {
+        format!("{prefix}-- run {run}: {cause} ")
+    };
+    let pad = 80usize.saturating_sub(head.chars().count());
+    println!("{head}{}", "-".repeat(pad));
+}
+
+/// Modification time and length of every watched file. Both, because
+/// a filesystem with a coarse clock can rewrite a file within one
+/// tick of its own mtime, and a length that moved says so anyway.
+fn stamps(
+    paths: &[String],
+) -> std::collections::BTreeMap<String, (Option<std::time::SystemTime>, u64)> {
+    expand_paths(paths)
+        .into_iter()
+        .map(|f| {
+            let stamp = match std::fs::metadata(&f) {
+                Ok(m) => (m.modified().ok(), m.len()),
+                Err(_) => (None, 0),
+            };
+            (f, stamp)
+        })
+        .collect()
+}
+
+/// Block until a watched file changes, appears or goes away, and name
+/// it. Polling is the whole mechanism: no dependency, no platform
+/// API, and a fifth of a second is far below what anyone notices
+/// between saving a file and reading the run it caused.
+fn wait_for_change(
+    before: &std::collections::BTreeMap<String, (Option<std::time::SystemTime>, u64)>,
+    paths: &[String],
+) -> String {
+    loop {
+        std::thread::sleep(std::time::Duration::from_millis(200));
+        let after = stamps(paths);
+        for (f, stamp) in &after {
+            match before.get(f) {
+                None => return format!("{f} added"),
+                Some(was) if was != stamp => return format!("{f} changed"),
+                _ => {}
+            }
+        }
+        if let Some(f) = before.keys().find(|f| !after.contains_key(*f)) {
+            return format!("{f} gone");
+        }
+    }
+}
+
+/// One pass over the files: what plain `--test` does start to finish,
+/// and what `--watch` repeats.
+fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
+    let TestRun {
+        filter,
+        tap,
+        fail_fast,
+        jobs,
+        slow,
+    } = opts;
+    let (tap, fail_fast, jobs, slow) = (*tap, *fail_fast, *jobs, *slow);
     // Directories expand to every .ting file beneath them, sorted, so
     // `ting --test selftest` is the whole suite in a stable order.
-    let mut files = expand_paths(&paths);
-    if let Some(f) = &filter {
+    let mut files = expand_paths(paths);
+    if let Some(f) = filter {
         files.retain(|p| p.contains(f.as_str()));
     }
     if files.is_empty() {
-        match &filter {
+        match filter {
             Some(f) => eprintln!(
                 "ting: no .ting files matching \"{f}\" under {}",
                 paths.join(" ")
