@@ -10049,3 +10049,28 @@ byte; two tags later it has the literals to write a mask and the
 operators to apply one, and the ordering question that the design
 turned on — `a & b == c` — is settled the way it should have been in
 1972. Next tick is the health tick that closes the milestone.
+
+## 2026-09-04 — Iteration 573: health tick — milestone "bits and numbers" complete
+
+Everything green.
+
+The full suite in release with the enlarged budgets: 50000
+differential cases, 20000 formatter cases over LF and CRLF, the
+crash fuzzer including cyclic values, and both engines — 274 tests,
+no failures. All six bench checksums match bench/BASELINE.md. The
+timings landed within the usual weather (fib 552 ms on the
+tree-walker against a 601 ms baseline, 336 on the VM against 335);
+the checksums are what decide, and this milestone added five binary
+operators to the shared evaluator without moving any of them.
+
+Audits: six assets each on v2.92.0, v2.93.0 and v2.94.0. Every site
+path answers 200 — index, ting.wasm, examples.js and the six
+rendered documents — and the published changelog reads v2.94.0. The
+corpus scan reports exactly five warnings; 625 selftest checks pass
+on the release binary. No open pull requests; the tree is clean.
+
+Milestone "bits and numbers" (the fortieth since the restart) is
+closed: hex, binary and separated integer literals, exponent floats,
+the six bit operators with Rust's precedence, and the docs that
+place them. Two tags, both cold-verified. The backlog is empty, so
+the next tick is a replenishment.

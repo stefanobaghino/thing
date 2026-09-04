@@ -283,8 +283,10 @@ holds only the current milestone and the standing rules.
   corrected — the prose had been fixed in 560, the bullet had not.
 - v2.94.0 VERIFIED (115th tag; strokes 569, 570; both aarch64
   archives executed here, the shipped refusals checked too).
-- Backlog (one per tick, in order):
-  (1) health tick + audit — closes milestone "bits and numbers".
+- 573: health tick + audit green — milestone "bits and numbers"
+  complete (all six bench checksums match; five corpus warnings;
+  six assets per tag; the site serves v2.94.0). Backlog empty: the
+  next tick is a replenishment.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
