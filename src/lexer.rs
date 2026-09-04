@@ -322,17 +322,25 @@ impl<'a> Lexer<'a> {
             // handled the same way everywhere.
             self.pos = start;
             let mut text = self.digits(10)?;
-            let is_float =
+            let mut is_float =
                 self.peek() == Some(b'.') && self.peek2().is_some_and(|b| b.is_ascii_digit());
             if is_float {
                 self.pos += 1;
                 text.push('.');
                 text.push_str(&self.digits(10)?);
             }
+            if let Some(exponent) = self.exponent()? {
+                text.push_str(&exponent);
+                is_float = true;
+            }
             if is_float {
-                text.parse::<f64>()
-                    .map(TokenKind::Float)
-                    .map_err(|_| self.error("invalid float literal", start))?
+                let n = text
+                    .parse::<f64>()
+                    .map_err(|_| self.error("invalid float literal", start))?;
+                if !n.is_finite() {
+                    return Err(self.error("float literal out of range", start));
+                }
+                TokenKind::Float(n)
             } else {
                 text.parse::<i64>()
                     .map(TokenKind::Int)
@@ -352,6 +360,28 @@ impl<'a> Lexer<'a> {
             return Err(self.error(&message, self.pos));
         }
         Ok(token)
+    }
+
+    /// An exponent, but only when it is spelled out in full: `e` or
+    /// `E`, an optional sign, then at least one digit. Anything less
+    /// is left where it sits, so `1e` is reported against the letter
+    /// rather than read as a number with an empty exponent.
+    fn exponent(&mut self) -> Result<Option<String>, LexError> {
+        if !matches!(self.peek(), Some(b'e' | b'E')) {
+            return Ok(None);
+        }
+        let mut out = String::from("e");
+        let mut after = self.pos + 1;
+        if let Some(sign @ (b'+' | b'-')) = self.bytes.get(after).copied() {
+            out.push(sign as char);
+            after += 1;
+        }
+        if !self.bytes.get(after).is_some_and(|b| b.is_ascii_digit()) {
+            return Ok(None);
+        }
+        self.pos = after;
+        out.push_str(&self.digits(10)?);
+        Ok(Some(out))
     }
 
     /// Digits of one radix, with `_` allowed only where it separates
@@ -446,6 +476,35 @@ mod tests {
                 TokenKind::Float(10.5),
                 TokenKind::Eof
             ]
+        );
+    }
+
+    #[test]
+    fn exponents_are_floats() {
+        assert_eq!(
+            kinds("1e3 1.5e-3 2E+2 1e1_0"),
+            vec![
+                TokenKind::Float(1000.0),
+                TokenKind::Float(0.0015),
+                TokenKind::Float(200.0),
+                TokenKind::Float(1e10),
+                TokenKind::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn a_half_written_exponent_is_reported_against_the_letter() {
+        for src in ["1e", "1e+", "1.5efoo"] {
+            assert_eq!(
+                lex(src).unwrap_err().message,
+                "'e' is not a decimal digit",
+                "{src} should not lex"
+            );
+        }
+        assert_eq!(
+            lex("1e400").unwrap_err().message,
+            "float literal out of range"
         );
     }
 

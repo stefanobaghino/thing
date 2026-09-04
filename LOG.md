@@ -9904,3 +9904,36 @@ value table and its prose describe the forms and the rule.
 
 Gate green: fmt, clippy, 270 Rust tests, 608 selftest checks, corpus
 at exactly five warnings.
+
+## 2026-09-04 — Iteration 566: exponent floats
+
+`1e3`, `1.5e-3` and `2E+2` are numbers now. The decimal path in the
+lexer gained one call to a new `exponent` helper, which reads the
+letter, an optional sign and at least one digit — and reads nothing at
+all unless all three are there. That last part is what keeps `1e` from
+becoming a number with an empty exponent: the helper declines, the
+cursor stays on the `e`, and yesterday's trailing check reports it as
+`'e' is not a decimal digit`. Two features that were written a tick
+apart cover each other's edge without either knowing about the other.
+
+An exponent makes a float whether or not a point is written, so `1e3`
+is `1000.0` and not `1000`. That is the rule every language with the
+syntax uses, and the alternative — an integer when the exponent is
+positive — would make `1e3` and `1e-3` different types.
+
+Range: a literal that parses to infinity is now an error, "float
+literal out of range", because `1e400` silently becoming `inf` is a
+typo shipped rather than caught. Underflow is not symmetrical: `1e-400`
+is zero, the way JSON reads it, since a number rounding to zero is
+ordinary rather than wrong. The reference says both.
+
+Noted while smoke-testing, not fixed: ting prints a large float in
+full — `6.02e23` comes back as `601999999999999995805696.0`, the exact
+value of the double. That is honest and reversible, but exponent
+literals make it much easier to hit. A worthwhile question for a later
+milestone: whether printing should shorten.
+
+Guards: the grammar's numeric pattern and its test grew an exponent
+group; two lexer unit tests cover the forms and the two refusals; four
+selftest checks (608 → 612). Gate green: fmt, clippy, 272 Rust tests,
+612 selftest checks, corpus at exactly five warnings.

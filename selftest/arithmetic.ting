@@ -18,6 +18,10 @@ assert(0b1_0 == 2, "binary separator");
 assert(1_000_000 == 1000000, "decimal separator");
 assert(1_0.5 == 10.5, "separator in a float");
 assert(0x7fffffffffffffff == 9223372036854775807, "hex reaches the top of the range");
+assert(1e3 == 1000.0, "exponent literal");
+assert(1.5e-3 == 0.0015, "negative exponent");
+assert(2E+2 == 200.0, "capital E and an explicit plus");
+assert(type(1e3) == "float", "an exponent makes a float");
 
 assert(1 == 1.0, "numeric equality crosses int/float");
 assert(1 != 2, "inequality");

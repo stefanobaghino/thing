@@ -70,7 +70,7 @@ both.
 | Type       | Literals / examples          | Notes                                  |
 |------------|------------------------------|----------------------------------------|
 | `int`      | `42`, `-7`, `0xff`, `0b1010` | 64-bit signed; overflow is an error    |
-| `float`    | `2.5`, `0.125`               | IEEE 754 double                        |
+| `float`    | `2.5`, `0.125`, `1.5e-3`     | IEEE 754 double                        |
 | `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\r` `\\` `\"` `\uXXXX` |
 | `bool`     | `true`, `false`              | no truthiness — conditions demand bool |
 | `nil`      | `nil`                        | the absence of a value                 |
@@ -86,6 +86,13 @@ broken up with `_` for legibility: `1_000_000`, `0xFF_FF`, `0b1010_1010`.
 A separator has to sit between two digits, so `1_`, `_1` and `1__0` are
 not numbers, and a literal cannot run into a name or a digit outside its
 radix: `0b12` and `12abc` are errors rather than two tokens.
+
+A decimal number carrying an exponent is a float whether or not it has
+a point: `1e3` is `1000.0`, and `1.5e-3`, `2E+2` and `6e23` all read.
+The exponent has to be complete — the letter, an optional sign, then at
+least one digit — so `1e` is an error rather than a number followed by
+a name. A literal too large for a double (`1e400`) is an error; one too
+small (`1e-400`) is zero, as it is in JSON.
 
 A string literal spells a character outside the escape set either
 directly (source is UTF-8, so `"café"` is fine) or as `\uXXXX` —

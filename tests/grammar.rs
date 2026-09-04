@@ -60,7 +60,7 @@ fn grammar_number_class_matches_lexer() {
     .expect("grammar missing");
     assert!(
         grammar.contains(
-            r"\\b(0x[0-9a-fA-F][0-9a-fA-F_]*|0b[01][01_]*|[0-9][0-9_]*(\\.[0-9][0-9_]*)?)\\b"
+            r"\\b(0x[0-9a-fA-F][0-9a-fA-F_]*|0b[01][01_]*|[0-9][0-9_]*(\\.[0-9][0-9_]*)?([eE][+-]?[0-9][0-9_]*)?)\\b"
         ),
         "grammar number class out of sync with the lexer"
     );
