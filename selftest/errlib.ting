@@ -1,0 +1,27 @@
+# ting testing ting: what a program does about failure.
+
+let err = import("lib/err.ting");
+
+assert(err["message"](fn() { fail("boom"); }) == "boom", "the message of a failure");
+assert(err["message"](fn() { return 1; }) == nil, "and nil when there was none");
+assert(err["failed"](fn() { fail("x"); }), "failed says so");
+assert(!err["failed"](fn() { return nil; }), "even when the value is nil");
+
+assert(err["value"](fn() { fail("x"); }, 7) == 7, "a fallback stands in");
+assert(err["value"](fn() { return 1; }, 7) == 1, "and steps aside when not needed");
+assert(err["value"](fn() { return nil; }, 7) == nil, "nil is a value, not a failure");
+
+# A runtime error, not just fail(), carries a site and a trace.
+let site = err["site"](fn() { return 1 / 0; });
+assert(site != nil && has(site, "line"), "a failure knows where it happened");
+assert(err["site"](fn() { return 1; }) == nil, "a success has no site");
+assert(len(err["trace"](fn() { return 1; })) == 0, "nor a trace");
+
+fn inner() { fail("deep"); }
+fn outer() { return inner(); }
+assert(len(err["trace"](outer)) > 0, "a failure carries the calls it came out of");
+
+# Context, which is the whole reason to catch and re-fail.
+assert(err["wrap"](fn() { return 2; }, "ctx") == 2, "wrap passes a value through");
+assert(err["message"](fn() { return err["wrap"](fn() { fail("no such file"); }, "reading it"); })
+== "reading it: no such file", "and puts the prefix in front of a failure");

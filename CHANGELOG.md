@@ -9,6 +9,8 @@ Windows are attached to each
 
 - New stdlib module `lib/args.ting`: command-line parsing from a
   spec, with the `--help` text built from the same spec.
+- New stdlib module `lib/err.ting`: `message`, `failed`, `value`,
+  `wrap`, `site` and `trace` over `try`.
 
 ## v2.100.0 (2026-09-05)
 

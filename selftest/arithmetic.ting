@@ -23,7 +23,7 @@ assert(1.5e-3 == 0.0015, "negative exponent");
 assert(2E+2 == 200.0, "capital E and an explicit plus");
 assert(type(1e3) == "float", "an exponent makes a float");
 
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 # hex and bin write what the literals read.
 assert(hex(255) == "0xff", "hex");

@@ -2,7 +2,7 @@
 # repeats, a value lands in its span — because a pinned number would
 # freeze the generator instead of testing it.
 
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 # A seed replays exactly, on either engine.
 let roll = fn(n) {

@@ -1,0 +1,53 @@
+# What a program does about failure, written in ting on top of try().
+# Use it via
+#   let err = import("lib/err.ting");
+#
+# try() hands back a map: {"ok": value} when the call returned, and
+# {"err": message, "at": site, "trace": frames} when it did not. That
+# map is the right shape for a language primitive and the wrong shape
+# for the four things programs actually ask, which are here.
+#
+# Every function here takes a function of no arguments, the way try
+# does, so a call is written fn() { return f(x); }.
+
+# The failure message, or nil when the call returned.
+fn message(f) {
+  let done = try(f);
+  if has(done, "err") { return done["err"]; }
+  return nil;
+}
+
+# Whether the call failed.
+fn failed(f) { return has(try(f), "err"); }
+
+# The call's value, or the fallback if it failed. For the many places
+# where a failure has an obvious answer and no story worth telling.
+fn value(f, fallback) {
+  let done = try(f);
+  if has(done, "err") { return fallback; }
+  return done["ok"];
+}
+
+# Where it failed: the {"file", "line", "column"} try reports, or nil.
+fn site(f) {
+  let done = try(f);
+  if has(done, "at") { return done["at"]; }
+  return nil;
+}
+
+# The calls the failure came out of, innermost first, or [].
+fn trace(f) {
+  let done = try(f);
+  if has(done, "trace") { return done["trace"]; }
+  return [];
+}
+
+# The call's value, or a failure with the prefix in front of the
+# original message. Context is what turns "no such file" into
+# "reading the config: no such file", and the place to add it is the
+# place that knows what it was doing.
+fn wrap(f, prefix) {
+  let done = try(f);
+  if has(done, "err") { fail(prefix + ": " + done["err"]); }
+  return done["ok"];
+}

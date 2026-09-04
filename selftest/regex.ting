@@ -1,7 +1,7 @@
 # ting testing ting: patterns. The engine's own unit tests live in
 # Rust; these are the promises the language makes about them.
 
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 # Literals, classes, shorthands, anchors.
 assert(re_test("hello", "l+o"), "a pattern matches somewhere");

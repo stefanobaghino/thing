@@ -99,7 +99,7 @@ assert(sleep_ms(0) == nil, "and returns nil");
 let slept = try(fn() { return sleep_ms(-1); });
 assert(contains(slept["err"], "negative"), "a negative pause is an error");
 
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 # run() refuses what it cannot make sense of. Which programs exist is
 # a property of the machine, so the selftest checks only the refusals;

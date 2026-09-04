@@ -1,7 +1,7 @@
 # ting testing ting: the command line, taken apart.
 
 let cli = import("lib/args.ting");
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 let spec = {
   "name": "demo",

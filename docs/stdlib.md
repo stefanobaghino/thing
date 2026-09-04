@@ -1,7 +1,7 @@
 # The ting standard library
 
-Ten modules written in ting itself — list, map, string, math, json,
-fs, test, time, sh and args, 160 functions between them — living in `lib/` and also
+Eleven modules written in ting itself — list, map, string, math,
+json, fs, test, time, sh, args and err, 166 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -218,6 +218,22 @@ introduces around values is not worth the characters it saves.
 | `flag_of(spec, name)` | the flag with that long or short name, or nil |
 | `option_of(spec, name)` | the option with that long or short name, or nil |
 | `pad(text, width)` | a string padded with spaces, for the help columns |
+
+## lib/err.ting
+
+What a program does about failure. `try` hands back a map, which is
+the right shape for a primitive and the wrong shape for the questions
+programs actually ask. Every function here takes a function of no
+arguments, as `try` does.
+
+| Function | Does |
+|----------|------|
+| `message(f)` | the failure message, or nil when the call returned |
+| `failed(f)` | whether the call failed |
+| `value(f, fallback)` | the value, or the fallback if it failed |
+| `wrap(f, prefix)` | the value, or a failure with the prefix in front of the message — how "no such file" becomes "reading the config: no such file" |
+| `site(f)` | where it failed: the `{"file", "line", "column"}` `try` reports, or nil |
+| `trace(f)` | the calls the failure came out of, innermost first, or `[]` |
 
 ## lib/sh.ting
 

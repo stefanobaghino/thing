@@ -3,7 +3,7 @@
 # need a child ask which() first and stand down when there is none.
 
 let sh = import("lib/sh.ting");
-let err = fn(f) { return try(f)["err"]; };
+let err = import("lib/err.ting")["message"];
 
 assert(type(sh["windows"]()) == "bool", "the platform question has a yes or no answer");
 assert(sh["dir_sep"]() == "/" || sh["dir_sep"]() == "\\", "a separator is one of two things");

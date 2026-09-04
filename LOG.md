@@ -10998,3 +10998,26 @@ this module using `eprint` and `exit` from the last milestone.
 
 Selftest: 24 checks, both engines, covering the three spellings of an
 option, defaults, `--`, and every refusal.
+
+## 2026-09-05 — Iteration 614: lib/err.ting
+
+The eleventh module, and the one this repository had already written
+five times.
+
+`try` returns a map — `{"ok": v}` or `{"err": m, "at": …, "trace": …}`
+— which is the right shape for a primitive and the wrong shape for
+the questions programs ask. So: `message`, `failed`, `value` with a
+fallback, `site`, `trace`, and `wrap`, which puts a prefix in front
+of a failure and is the only one of the six that is not a projection.
+`wrap` earns its place because context is what turns "no such file"
+into "reading the config: no such file", and the place that knows
+what it was doing is the place that should say so.
+
+`value(fn() { return nil; }, 7)` is nil, not 7. A call that returned
+nil did not fail, and a fallback that fires on a legitimate nil would
+be a bug generator.
+
+Then the point of the exercise: the five selftests that each opened
+with their own copy of the helper now import it, and so does the new
+one from 613. The copy-paste that justified the module is gone, which
+is the only honest way to finish this kind of change.

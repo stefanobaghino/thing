@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 66 builtins; ten embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args, 160 functions,
-  guarded); 33 ting programs (17 selftest files, 17 examples with .out); 301 Rust tests
+- 66 builtins; eleven embedded stdlib modules
+  (list/map/string/math/json/fs/test/time/sh/args/err, 166 functions,
+  guarded); 34 ting programs (18 selftest files, 17 examples with .out); 301 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -358,6 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 614: lib/err.ting (message, failed, value, wrap, site, trace), the
+  eleventh module; all six selftests that hand-rolled the helper now
+  import it. value() treats a returned nil as a value, not a failure.
 - 613: lib/args.ting (parse, main, help + three helpers), the tenth
   module. Unknown options error; short options are not bundled;
   --help answers even when the line is otherwise incomplete.
@@ -396,11 +399,9 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) lib/err.ting, and the five selftests that hand-roll the same
-  err helper switch to it;
-  (2) lib/csv.ting: quotes and embedded newlines, both directions;
-  (3) the docs learn the front door; an example uses all three;
-  (4) RELEASE v2.101.0; (5) verify; (6) health tick.
+  (1) lib/csv.ting: quotes and embedded newlines, both directions;
+  (2) the docs learn the front door; an example uses all three;
+  (3) RELEASE v2.101.0; (4) verify; (5) health tick.
 - Not chosen in 612, with reasons: match expressions and catch syntax
   need a new keyword, and a new keyword breaks a program using that
   word as a name (the 2.x promise forbids it); a set is a map with
