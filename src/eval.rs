@@ -283,14 +283,14 @@ fn match_value(chars: &[char], caps: &[Option<usize>], groups: usize) -> Value {
     let (start, end) = (caps[0].unwrap_or(0), caps[1].unwrap_or(0));
     m.insert("start".to_string(), Value::Int(start as i64));
     m.insert("end".to_string(), Value::Int(end as i64));
-    m.insert("text".to_string(), Value::Str(slice(start, end).into()));
+    m.insert("text".to_string(), Value::Str(slice(start, end)));
     let mut list = Vec::new();
     for g in 1..=groups {
         match (
             caps.get(g * 2).copied().flatten(),
             caps.get(g * 2 + 1).copied().flatten(),
         ) {
-            (Some(lo), Some(hi)) => list.push(Value::Str(slice(lo, hi).into())),
+            (Some(lo), Some(hi)) => list.push(Value::Str(slice(lo, hi))),
             _ => list.push(Value::Nil),
         }
     }

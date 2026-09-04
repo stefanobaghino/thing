@@ -358,6 +358,10 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 605b: two clippy warnings shipped in 8c0376c because the tick
+  PRINTED the warning count instead of gating on it. Gate on a
+  comparison (`test -z`, `grep -c ... = 0`), never on a printed
+  number.
 - 605: re_test and re_find. Compiled patterns cached on the
   interpreter, cleared wholesale past 256 entries.
 - 604: src/regex.rs — parser, compiler and Pike VM, 10 unit tests,

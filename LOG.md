@@ -10820,3 +10820,14 @@ and forgetting everything is the cheapest way to hold that line.
 
 A bad pattern names the builtin that received it, then the engine's
 own message with its position — `re_find: unclosed ( at 2`.
+
+## 2026-09-05 — Iteration 605b: clippy, read this time
+
+Two `useless_conversion` warnings went out with 8c0376c. Clippy was
+run, its count was printed, and the push proceeded anyway — the
+number was on screen and nobody looked at it. The rule since 182 is
+that clippy gates the push; a gate you print and ignore is not a
+gate. The chain now ends in a comparison, not a count.
+
+Both were `.into()` on a String that was already a String, in the
+match-to-value helper. Removed; clippy is silent again.
