@@ -358,6 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 619: health tick green — bench checksums match, 50000 differential
+  + 20000 formatter + 200000 pattern cases at seed 618, corpus at
+  five warnings, site carrying the report example and lib/csv.ting.
 - v2.101.0 VERIFIED (122nd tag; strokes 613-616; both aarch64
   archives executed here on all three modules). Milestone "the
   script's own front door" is complete.
@@ -407,7 +410,7 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) health tick + audit; (2) replenishment tick.
+  EMPTY. Next tick is a replenishment tick.
 - Not chosen in 612, with reasons: match expressions and catch syntax
   need a new keyword, and a new keyword breaks a program using that
   word as a name (the 2.x promise forbids it); a set is a map with
