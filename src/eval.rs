@@ -904,7 +904,20 @@ impl<W: Write> Interpreter<W> {
                 arity(1, 1)?;
                 match &args[0] {
                     Value::Int(n) => Ok(Value::Int(*n)),
-                    Value::Float(x) => Ok(Value::Int(*x as i64)),
+                    // Anything a float can hold that an int cannot is an
+                    // error, not a saturated i64: this language raises on
+                    // integer overflow everywhere else.
+                    Value::Float(x) => {
+                        const LIMIT: f64 = 9_223_372_036_854_775_808.0; // 2^63
+                        if x.is_finite() && (-LIMIT..LIMIT).contains(x) {
+                            Ok(Value::Int(*x as i64))
+                        } else {
+                            Err(error(
+                                format!("cannot convert {} to int", crate::value::float_repr(*x)),
+                                span,
+                            ))
+                        }
+                    }
                     Value::Str(s) => s
                         .trim()
                         .parse::<i64>()
@@ -921,11 +934,16 @@ impl<W: Write> Interpreter<W> {
                 match &args[0] {
                     Value::Int(n) => Ok(Value::Float(*n as f64)),
                     Value::Float(x) => Ok(Value::Float(*x)),
+                    // The lexer refuses a literal that is not finite, so
+                    // the conversion refuses the same text: "1e400",
+                    // "inf" and "nan" are all errors here.
                     Value::Str(s) => s
                         .trim()
                         .parse::<f64>()
+                        .ok()
+                        .filter(|x| x.is_finite())
                         .map(Value::Float)
-                        .map_err(|_| error(format!("cannot convert {s:?} to float"), span)),
+                        .ok_or_else(|| error(format!("cannot convert {s:?} to float"), span)),
                     v => Err(error(
                         format!("cannot convert {} to float", v.type_name()),
                         span,

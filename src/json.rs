@@ -358,17 +358,21 @@ impl<'a> Parser<'a> {
             }
         }
         let text = std::str::from_utf8(&self.bytes[start..self.pos]).unwrap();
-        if is_float {
+        // A float that comes back infinite is out of range, not valid:
+        // json_str refuses to write one, so json_parse will not make one.
+        let as_float = |text: &str| {
             text.parse::<f64>()
+                .ok()
+                .filter(|x: &f64| x.is_finite())
                 .map(Value::Float)
-                .map_err(|_| self.err("invalid number"))
+        };
+        if is_float {
+            as_float(text).ok_or_else(|| self.err("number out of range"))
         } else {
             // Integer syntax; fall back to float if it exceeds i64.
-            text.parse::<i64>().map(Value::Int).or_else(|_| {
-                text.parse::<f64>()
-                    .map(Value::Float)
-                    .map_err(|_| self.err("invalid number"))
-            })
+            text.parse::<i64>()
+                .map(Value::Int)
+                .or_else(|_| as_float(text).ok_or_else(|| self.err("number out of range")))
         }
     }
 }
@@ -392,6 +396,21 @@ mod tests {
             decode("\"h\\u00e9llo\\n\"").unwrap(),
             Value::Str("héllo\n".into())
         );
+    }
+
+    #[test]
+    fn a_number_too_large_for_a_double_is_rejected() {
+        // json_str refuses to write a non-finite float, so json_parse
+        // must not manufacture one.
+        for src in ["1e999", "[1e999]", "-1e999"] {
+            let err = decode(src).unwrap_err();
+            assert!(
+                err.contains("number out of range"),
+                "{src} decoded to {err}"
+            );
+        }
+        // An integer too large for i64 still falls back to a float.
+        assert_eq!(decode("99999999999999999999").unwrap(), Value::Float(1e20));
     }
 
     #[test]

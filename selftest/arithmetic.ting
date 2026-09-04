@@ -31,6 +31,15 @@ assert(str(0.1) == "0.1", "the shortest form that round-trips");
 assert(json_str([1e23, 1.0]) == "[1e23,1.0]", "json spells them the same way");
 assert(json_parse(json_str([1e23, 1e-7])) == [1e23, 1e-7], "and reads them back");
 
+# Conversions refuse what a literal would refuse.
+let err = fn(f) { return try(f)["err"]; };
+assert(contains(err(fn() { return float("1e400"); }), "cannot convert"), "float() refuses an overflow");
+assert(contains(err(fn() { return float("inf"); }), "cannot convert"), "and refuses infinity by name");
+assert(contains(err(fn() { return json_parse("1e999"); }), "out of range"), "json_parse refuses one too");
+assert(contains(err(fn() { return int(1.0 / 0.0); }), "cannot convert inf"), "int() of infinity is an error");
+assert(contains(err(fn() { return int(1e300); }), "cannot convert"), "so is an int that would not fit");
+assert(int(2.9) == 2 && int(-2.9) == -2, "int() still truncates toward zero");
+
 # Bit operations, int-only, Rust's precedence.
 assert(0b1100 & 0b1010 == 0b1000, "and");
 assert(0b1100 | 0b1010 == 0b1110, "or");

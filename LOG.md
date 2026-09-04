@@ -10137,3 +10137,33 @@ Gate green: fmt, clippy, 277 Rust tests, 631 selftest checks, corpus
 at exactly five warnings. No example output or tutorial snippet
 changed, which says the old spelling was only ever reachable at the
 extremes.
+
+## 2026-09-04 — Iteration 576: the conversions agree with the literals
+
+Three doors that were open next to a locked one are now locked too.
+
+`float(s)` parses and then requires the result to be finite, so
+`float("1e400")` is the same error the literal `1e400` has been since
+v2.93.0 — and the same rule, for free, refuses `float("inf")` and
+`float("nan")`, which Rust's parser accepts by name. One check covers
+a magnitude that overflows, a word that names infinity, and a word
+that names no number at all.
+
+`json_parse` refuses a number that reads back infinite, in both the
+float branch and the large-integer fallback, with "number out of
+range". `json_str` has always refused to *write* a non-finite float;
+a decoder that manufactures one leaves the pair asymmetric, and the
+asymmetry was reachable with five characters: `1e999`. An integer too
+large for i64 still becomes a float — that is a precision loss, not
+an impossible value, and the test says so beside the new refusals.
+
+`int(x)` on a float out of i64's range is an error naming the value
+(`cannot convert inf to int`, `cannot convert 1e300 to int`) instead
+of saturating to 9223372036854775807. Saturation is the one behaviour
+this language had promised nowhere: integer overflow raises. The
+error prints the float through the new repr, so the message is short.
+Truncation toward zero is unchanged and now has a test guarding it
+next to the refusals.
+
+Gate green: fmt, clippy, 278 Rust tests, 637 selftest checks, corpus
+at exactly five warnings.
