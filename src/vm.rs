@@ -230,10 +230,11 @@ fn exec<W: Write>(
                 let proto = &chunk.protos[*i as usize];
                 stack.push(Value::Fn(std::rc::Rc::new(eval::Function {
                     name: proto.name.as_deref().map(|n| n.into()),
+                    def: proto.def,
                     params: proto.params.iter().map(|p| p.as_str().into()).collect(),
                     body: eval::FnBody::Chunk(std::rc::Rc::clone(&proto.chunk)),
                     env: interp.env_handle(),
-                    origin: interp.current_origin(),
+                    origin: interp.defining_origin(),
                 })));
             }
             Op::Return => {

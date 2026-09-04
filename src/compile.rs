@@ -87,6 +87,8 @@ pub struct FnProto {
     /// definition rather than an anonymous literal: what a trace calls
     /// the frame.
     pub name: Option<String>,
+    /// Where the literal starts, for a profile to name a line.
+    pub def: Span,
     pub params: Vec<String>,
     pub chunk: std::rc::Rc<Chunk>,
 }
@@ -648,6 +650,7 @@ impl Compiler {
         let chunk = compile_stmts(body, Some((params, ctx)))?;
         self.chunk.protos.push(FnProto {
             name: name.map(str::to_string),
+            def: span,
             params: params.to_vec(),
             chunk: std::rc::Rc::new(chunk),
         });

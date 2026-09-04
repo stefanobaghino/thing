@@ -8897,3 +8897,33 @@ name a line, which is one more field on `Function` alongside the
 name. Milestone "where the time went" (v2.85-v2.86): `--profile`
 counts calls per function; then it times them; builtins join the
 table and the report can be capped; docs follow.
+
+---
+
+## 2026-09-04 — Iteration 527: counting the calls
+
+CI green on 526 (API verdict). Milestone stroke 1: `ting --profile` on a
+script runs the program and then says how often each function
+ran and where it was defined, busiest first, on stderr so a
+profiled run pipes exactly as it did before. The counter hangs off
+`Interpreter::call` behind an Option, so an ordinary run pays one
+branch per call and nothing else; both engines share that path, so
+both count the same. Functions needed to know where they came from
+for the table to name a line — a `def` span on `Function`, filled
+from the fn literal in the tree-walker and from the FnProto in the
+compiler — and a failed run still prints what it managed to count,
+which is when a profile is often most wanted. Writing the table
+turned up a real bug it made visible: a closure created while a
+module's function was running took its origin from the import
+stack, which by then is empty, so it claimed to belong to the
+importing file. Errors raised inside such a closure came out right
+anyway, because the enclosing named function fixed the origin on
+the way out, but the profile pointed at the wrong file, and so
+would a caught error's "at". A closure now takes the origin of the
+function it is defined inside (`defining_origin`), which is what
+the frame bookkeeping already computed for callers. Tested under
+both engines: the counts, the order, the definition sites, and that
+without the flag stderr stays empty. Full gate green (259 tests),
+plus 20000 differential cases (seed 20260904527), 5000 formatter
+cases, the crash fuzzer and the corpus at 555 checks. One stroke
+banked toward v2.85.0. Next: self time per function.

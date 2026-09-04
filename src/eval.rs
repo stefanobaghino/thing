@@ -148,6 +148,8 @@ pub struct Function {
     /// The name it was defined under, for traces; None when the
     /// function is an anonymous literal.
     pub name: Option<Rc<str>>,
+    /// Where it was defined, for a profile to point at a line.
+    pub def: Span,
     pub params: Vec<Rc<str>>,
     pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
@@ -197,6 +199,20 @@ pub struct Interpreter<W: Write> {
     /// The file being run: what a span with no origin is read
     /// against when a program asks where something failed.
     source: Option<(String, Rc<str>)>,
+    /// Per-function counts, when `--profile` asked for them. Keyed by
+    /// the function's defining file and the offset it starts at, which
+    /// is one entry per `fn` in the program however many closures it
+    /// makes.
+    profile: Option<HashMap<(usize, usize), Counted>>,
+}
+
+/// One row of a profile: a function, and how much it did.
+#[derive(Debug)]
+struct Counted {
+    name: Option<Rc<str>>,
+    origin: Option<Rc<Origin>>,
+    def: Span,
+    calls: u64,
 }
 
 /// The standard library, baked into the binary at build time (always
@@ -255,6 +271,7 @@ impl<W: Write> Interpreter<W> {
             origin_stack: Vec::new(),
             call_origins: Vec::new(),
             source: None,
+            profile: None,
         }
     }
 
@@ -282,6 +299,90 @@ impl<W: Write> Interpreter<W> {
     /// reported as line 1 of an unnamed file.
     pub fn set_source(&mut self, path: &str, src: &str) {
         self.source = Some((path.to_string(), Rc::from(src)));
+    }
+
+    /// The origin a closure created right now belongs to: the file of
+    /// the function being executed, or — at a top level — the module
+    /// being imported, if any. A closure made inside a module's
+    /// function belongs to that module, not to whoever called it.
+    pub(crate) fn defining_origin(&self) -> Option<Rc<Origin>> {
+        match self.call_origins.last() {
+            Some(o) => o.clone(),
+            None => self.current_origin(),
+        }
+    }
+
+    /// One more call of `func`, in the profile being collected.
+    fn count_call(&mut self, func: &Rc<Function>) {
+        let key = (
+            func.origin.as_ref().map_or(0, |o| Rc::as_ptr(o) as usize),
+            func.def.start,
+        );
+        let counts = self.profile.as_mut().expect("profiling is on");
+        counts
+            .entry(key)
+            .or_insert_with(|| Counted {
+                name: func.name.clone(),
+                origin: func.origin.clone(),
+                def: func.def,
+                calls: 0,
+            })
+            .calls += 1;
+    }
+
+    /// Count what every function does from here on; the counts come
+    /// back from `profile_report`.
+    pub fn profile(&mut self) {
+        self.profile = Some(HashMap::new());
+    }
+
+    /// The profile as a table, busiest function first: how often each
+    /// ran and where it was defined. None when counting was never
+    /// asked for.
+    pub fn profile_report(&self) -> Option<String> {
+        let counts = self.profile.as_ref()?;
+        let mut rows: Vec<&Counted> = counts.values().collect();
+        rows.sort_by(|a, b| {
+            b.calls
+                .cmp(&a.calls)
+                .then_with(|| self.where_defined(a).cmp(&self.where_defined(b)))
+        });
+        let calls: u64 = rows.iter().map(|r| r.calls).sum();
+        let mut out = format!(
+            "profile: {}, {}\n",
+            crate::diag::plural(rows.len(), "function"),
+            crate::diag::plural(calls as usize, "call")
+        );
+        out.push_str(&format!(
+            "{:>10}  {:<24}  {}\n",
+            "calls", "function", "defined at"
+        ));
+        for r in rows {
+            let name = match &r.name {
+                Some(n) => n.to_string(),
+                None => "an anonymous function".to_string(),
+            };
+            out.push_str(&format!(
+                "{:>10}  {:<24}  {}\n",
+                r.calls,
+                name,
+                self.where_defined(r)
+            ));
+        }
+        Some(out)
+    }
+
+    /// "file.ting:12:1" for a profiled function.
+    fn where_defined(&self, r: &Counted) -> String {
+        let (path, src): (&str, &str) = match &r.origin {
+            Some(o) => (&o.path, &o.src),
+            None => match &self.source {
+                Some((p, s)) => (p, s),
+                None => ("", ""),
+            },
+        };
+        let (line, col) = r.def.line_col(src);
+        format!("{path}:{line}:{col}")
     }
 
     /// A span as the entries of a ting map: the file it belongs to,
@@ -380,7 +481,9 @@ impl<W: Write> Interpreter<W> {
                 // `fn f(..) {..}` parses as a let of a fn literal, so
                 // this is where a function learns its name.
                 let v = match &init.kind {
-                    ExprKind::Fn(params, body) => self.make_fn(params, body, Some(name.as_str())),
+                    ExprKind::Fn(params, body) => {
+                        self.make_fn(params, body, Some(name.as_str()), init.span)
+                    }
                     _ => self.eval(init)?,
                 };
                 self.env
@@ -516,13 +619,15 @@ impl<W: Write> Interpreter<W> {
         params: &[String],
         body: &Rc<Vec<Stmt>>,
         name: Option<&str>,
+        def: Span,
     ) -> Value {
         Value::Fn(Rc::new(Function {
             name: name.map(Rc::from),
+            def,
             params: params.iter().map(|p| Rc::from(p.as_str())).collect(),
             body: FnBody::Ast(Rc::clone(body)),
             env: Rc::clone(&self.env),
-            origin: self.current_origin(),
+            origin: self.defining_origin(),
         }))
     }
 
@@ -1559,12 +1664,12 @@ impl<W: Write> Interpreter<W> {
                 (frame, locals)
             }
         };
+        if self.profile.is_some() {
+            self.count_call(func);
+        }
         let saved = std::mem::replace(&mut self.env, frame);
         self.depth += 1;
-        let caller = match self.call_origins.last() {
-            Some(o) => o.clone(),
-            None => self.current_origin(),
-        };
+        let caller = self.defining_origin();
         self.call_origins.push(func.origin.clone());
         let result = match &func.body {
             FnBody::Ast(stmts) => self.run_block(stmts).map(ControlOrValue::Control),
@@ -1652,7 +1757,7 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
-            ExprKind::Fn(params, body) => Ok(self.make_fn(params, body, None)),
+            ExprKind::Fn(params, body) => Ok(self.make_fn(params, body, None, expr.span)),
             ExprKind::Unary(op, operand) => {
                 let v = self.eval(operand)?;
                 unary(*op, v, expr.span)

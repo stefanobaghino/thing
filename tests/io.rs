@@ -438,6 +438,51 @@ fn try_reports_where_a_failure_happened() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--profile` counts what every function did and prints the table on
+/// stderr, leaving the program's own output alone.
+#[test]
+fn profile_flag_counts_calls_per_function() {
+    let path = std::env::temp_dir().join(format!("ting-profile-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "fn fib(n) { if n < 2 { return n; } return fib(n - 1) + fib(n - 2); }\nfn once(x) { return x; }\nprint(once(fib(10)));\n",
+    )
+    .unwrap();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg("--profile")
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(0), "{engine}");
+        assert_eq!(String::from_utf8_lossy(&out.stdout), "55\n", "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.contains("profile: 2 functions, 178 calls"),
+            "{engine}: {stderr}"
+        );
+        let rows: Vec<&str> = stderr.lines().skip(2).collect();
+        // Busiest first, each row naming where it was defined.
+        assert!(
+            rows[0].contains("177") && rows[0].contains("fib"),
+            "{engine}: {stderr}"
+        );
+        assert!(rows[0].ends_with(".ting:1:1"), "{engine}: {stderr}");
+        assert!(
+            rows[1].contains("once") && rows[1].ends_with(".ting:2:1"),
+            "{engine}: {stderr}"
+        );
+    }
+    // Without the flag, nothing is counted and nothing is said.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&path)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(String::from_utf8_lossy(&out.stderr), "");
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--check` follows local imports: a broken module reached through
 /// `import("./...")` is reported under its own path, once, and fails
 /// the check; embedded stdlib imports are not files and are skipped.

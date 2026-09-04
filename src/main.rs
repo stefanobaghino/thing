@@ -1,5 +1,5 @@
 use std::process::ExitCode;
-use ting::{Engine, repl, run_source_engine};
+use ting::{Engine, repl, run_source_profiled};
 
 fn main() -> ExitCode {
     // The bytecode VM is the default (see docs/vm.md for the numbers);
@@ -37,6 +37,7 @@ fn main() -> ExitCode {
                  \x20 ting --doc [NAMES...]       explain builtins or stdlib functions;\n\
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
+                 \x20 ting --profile <script>     run it, then report how often each function ran\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
@@ -116,16 +117,16 @@ fn main() -> ExitCode {
             _ => ExitCode::FAILURE,
         };
     }
-    match args.peek().map(String::as_str) {
-        Some("--vm") => {
-            engine = Engine::Vm;
-            args.next();
+    // Engine choice and --profile may come in either order.
+    let mut profile = false;
+    loop {
+        match args.peek().map(String::as_str) {
+            Some("--vm") => engine = Engine::Vm,
+            Some("--eval") => engine = Engine::Eval,
+            Some("--profile") => profile = true,
+            _ => break,
         }
-        Some("--eval") => {
-            engine = Engine::Eval;
-            args.next();
-        }
-        _ => {}
+        args.next();
     }
     if let Some(a) = args.peek()
         && is_option(a)
@@ -136,7 +137,7 @@ fn main() -> ExitCode {
         None => repl::run(),
         // Everything after the script path is the script's own argv,
         // exposed via the args() builtin.
-        Some(path) => run_file(engine, path, args.collect()),
+        Some(path) => run_file(engine, path, args.collect(), profile),
     }
 }
 
@@ -148,7 +149,7 @@ fn is_option(a: &str) -> bool {
 
 /// Every option any mode accepts, for suggesting the one that was
 /// meant. Keep in step with the dispatch above and the usage text.
-const OPTIONS: [&str; 19] = [
+const OPTIONS: [&str; 20] = [
     "--check",
     "--diff",
     "--doc",
@@ -159,6 +160,7 @@ const OPTIONS: [&str; 19] = [
     "--fmt-check",
     "--help",
     "--lsp",
+    "--profile",
     "--slow",
     "--strict",
     "--tap",
@@ -181,19 +183,19 @@ fn unknown_option(a: &str) -> ExitCode {
     ExitCode::from(2)
 }
 
-fn run_file(engine: Engine, path: String, script_args: Vec<String>) -> ExitCode {
+fn run_file(engine: Engine, path: String, script_args: Vec<String>, profile: bool) -> ExitCode {
     // The AST holds Rc (not Send), so the whole pipeline runs on one
     // dedicated thread, sized generously because deep ting recursion
     // consumes host stack.
     std::thread::Builder::new()
         .stack_size(32 * 1024 * 1024)
-        .spawn(move || run_file_inner(engine, &path, script_args))
+        .spawn(move || run_file_inner(engine, &path, script_args, profile))
         .expect("failed to spawn interpreter thread")
         .join()
         .expect("interpreter thread panicked")
 }
 
-fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitCode {
+fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>, profile: bool) -> ExitCode {
     let src = match std::fs::read_to_string(path) {
         Ok(src) => src,
         Err(e) => {
@@ -201,14 +203,26 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>) -> ExitC
             return ExitCode::FAILURE;
         }
     };
-    let outcome = match run_source_engine(engine, path, &src, std::io::stdout().lock(), script_args)
-    {
+    let (result, report) = run_source_profiled(
+        engine,
+        path,
+        &src,
+        std::io::stdout().lock(),
+        script_args,
+        profile,
+    );
+    let outcome = match result {
         Ok(()) => ExitCode::SUCCESS,
         Err(diagnostic) => {
             eprintln!("{diagnostic}");
             ExitCode::FAILURE
         }
     };
+    // The table goes to stderr: a profiled run's output is still its
+    // output, pipeable as it was.
+    if let Some(report) = report {
+        eprint!("{report}");
+    }
     // `--test` runs each file as a child of itself and asks it, this
     // way, how many checks it ran.
     if std::env::var_os("TING_TEST_REPORT").is_some() {

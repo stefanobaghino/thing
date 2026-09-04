@@ -88,25 +88,50 @@ pub fn run_source_engine<W: Write>(
     out: W,
     script_args: Vec<String>,
 ) -> Result<(), String> {
+    run_source_profiled(engine, path, src, out, script_args, false).0
+}
+
+/// `run_source_engine`, optionally counting what every function did:
+/// the second half of the answer is the profile table, present only
+/// when `profile` asked for it. The run's own result is unchanged by
+/// it, and a failed run still reports what it managed to do.
+pub fn run_source_profiled<W: Write>(
+    engine: Engine,
+    path: &str,
+    src: &str,
+    out: W,
+    script_args: Vec<String>,
+    profile: bool,
+) -> (Result<(), String>, Option<String>) {
     let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
-    let tokens = lexer::lex(src).map_err(|e| render(&e.message, e.span))?;
-    let program = parser::parse_program(&tokens).map_err(|e| render(&e.message, e.span))?;
+    let tokens = match lexer::lex(src) {
+        Ok(t) => t,
+        Err(e) => return (Err(render(&e.message, e.span)), None),
+    };
+    let program = match parser::parse_program(&tokens) {
+        Ok(p) => p,
+        Err(e) => return (Err(render(&e.message, e.span)), None),
+    };
     let mut interp = eval::Interpreter::new(out);
     interp.set_args(script_args);
     interp.set_source(path, src);
+    if profile {
+        interp.profile();
+    }
     if let Some(dir) = std::path::Path::new(path).parent() {
         interp.set_base_dir(dir.to_path_buf());
     }
-    match engine {
+    let result = match engine {
         Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
-        Engine::Vm => {
-            let chunk =
-                compile::compile_program(&program).map_err(|e| render(&e.message, e.span))?;
-            vm::run_chunk(&mut interp, &chunk)
+        Engine::Vm => match compile::compile_program(&program) {
+            Ok(chunk) => vm::run_chunk(&mut interp, &chunk)
                 .map(|_| ())
-                .map_err(|e| e.render(path, src))
-        }
-    }
+                .map_err(|e| e.render(path, src)),
+            Err(e) => Err(render(&e.message, e.span)),
+        },
+    };
+    let report = interp.profile_report();
+    (result, report)
 }
 
 #[cfg(test)]

@@ -17,14 +17,14 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 258 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 259 Rust tests in 11
   suites.
 - One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
-  --fail-fast, per-file check counts), --lsp (thirteen
-  capabilities). A runtime error points at the line that raised it
+  --fail-fast, per-file check counts), --profile (calls per
+  function), --lsp (thirteen capabilities). A runtime error points at the line that raised it
   and carries a note per call it unwound through (named, capped at
   ten with the middle elided), which try() also hands back as "at"
   and "trace"; module errors point into the module's own file; cyclic data prints, compares and json-fails cleanly.
@@ -197,13 +197,13 @@ holds only the current milestone and the standing rules.
   complete.
 - 526: replenishment — milestone "where the time went"
   (v2.85-v2.86), reasoning in LOG.md.
+- 527: counting the calls (--profile), and closures now belong to
+  the file that defined them.
 - Backlog (one per tick, in order):
-  (1) counting the calls: --profile prints how often each function
-  ran, with the file and line it was defined at; (2) and how long
-  they took: self time per function, sorted, the table's order;
-  (3) RELEASE v2.85.0; (4) builtins in the table, and a cap on its
-  rows; (5) the docs read the profile; (6) RELEASE v2.86.0;
-  (7) health tick + audit.
+  (1) and how long they took: self time per function, sorted, the
+  table's order; (2) RELEASE v2.85.0; (3) builtins in the table, and
+  a cap on its rows; (4) the docs read the profile; (5) RELEASE
+  v2.86.0; (6) health tick + audit.
 - Tags: 105 (v2.84.0), 104 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
