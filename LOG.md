@@ -11253,3 +11253,18 @@ parameters through the language, the checker, the hover, the
 formatter's tests, the fuzz generator, the docs and a selftest. The
 tag is the 123rd; verification (both aarch64 archives downloaded and
 run here) is the next tick.
+
+## 2026-09-05 — Iteration 626: v2.102.0 verified
+
+Both aarch64 Linux archives downloaded cold from the release and run
+here: `ting 2.102.0`, a script exercising defaults (a filled string,
+a fresh list per call, a default reading an earlier parameter, and
+the range arity error) prints the same thing from gnu and musl, the
+`--eval` output hashes identically to the VM's, and `--check` is
+clean on it. Six assets on the tag.
+
+626b: the first monitor armed for this release matched on the
+workflow name alone and fired on v2.101.0's run, which had been
+sitting completed for hours. The SHA pin is not decoration — a
+workflow name repeats every tag. Re-armed on the run id and the
+verdict came from the API, as the rule already says.

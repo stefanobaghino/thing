@@ -429,10 +429,10 @@ holds only the current milestone and the standing rules.
   the parentheses as a parameter, so a default that called a function
   reported that function as an unused parameter. Name position only
   now, and a name a sibling default reads counts as used.
-- 625: v2.102.0 released (123rd tag; strokes 621-624) — awaiting
-  cold verification.
+- v2.102.0 VERIFIED (123rd tag; strokes 621-624; both aarch64
+  archives executed here on defaults, both engines hashing alike).
 - Backlog (one per tick, in order):
-  (1) verify v2.102.0; (2) health tick.
+  (1) health tick.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.
@@ -456,13 +456,15 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 123 (v2.102.0), 122 verified; v2.29.0 is publicly marked broken
+- Tags: 123 (v2.102.0), 123 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
 
 - Verdicts from the API (`gh run view --json conclusion`), never from
-  a watcher's exit code. Tests that read paths out of tool output
+  a watcher's exit code, and every CI monitor pinned to the SHA or
+  the run id: a filter on the workflow name alone matches the
+  previous tag's completed run (626b). Tests that read paths out of tool output
   match file names, not separators: Windows prints backslashes
   (499b). A test over timings asserts what timings cannot swap:
   never the order of two rows that a loaded runner can reverse
