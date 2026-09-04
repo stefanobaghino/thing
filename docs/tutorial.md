@@ -56,6 +56,50 @@ if hour >= 12 && hour < 18 {
 good afternoon
 ```
 
+## Bits and how numbers are written
+
+A number can be written the way the problem writes it. Hex takes an
+`0x` prefix and binary an `0b`, any run of digits can be broken up
+with `_`, and a decimal number with an exponent is a float:
+
+```ting
+let perms = 0b110;          # binary
+let mask = 0xff;            # hex
+let big = 1_000_000;        # separators, anywhere between two digits
+let tiny = 1.5e-3;          # an exponent makes a float
+print(perms, mask, big, tiny);
+```
+
+```text
+6 255 1000000 0.0015
+```
+
+The bit operators are `&`, `|`, `^`, `~`, `<<` and `>>`, and they work
+on ints only. Flags are the usual reason to want them:
+
+```ting
+let EXEC = 1;
+let WRITE = 1 << 1;
+let READ = 1 << 2;
+let mode = READ | WRITE;
+print(mode, mode & READ == READ, mode & EXEC == EXEC, ~mode & 0b111);
+```
+
+```text
+6 true false 1
+```
+
+Notice `mode & READ == READ` needs no parentheses: in ting the bit
+operators bind tighter than `==`, so the mask is applied first. That
+is Rust's ordering rather than C's, where the same line would compare
+first and hand `&` a bool.
+
+Two things are errors rather than surprises. `1.5 & 2` is a type
+error — floats have no bits to speak of here — and a shift of 64 or
+more (or a negative one) is an error naming the range, instead of a
+number the hardware would have to invent. `>>` keeps the sign, so
+`-16 >> 2` is `-4`.
+
 ## Loops
 
 `while` and `for` need braces and take no parentheses. `for` iterates

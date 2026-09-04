@@ -125,9 +125,13 @@ Tightest first; binary operators associate left.
 | Precedence | Operators                    | Operand rules                                 |
 |-----------|-------------------------------|-----------------------------------------------|
 | postfix   | `f(args)`, `x[i]`             | calls and indexing chain freely               |
-| unary     | `-`, `!`                      | `-` on numbers, `!` on bools                  |
+| unary     | `-`, `!`, `~`                 | `-` on numbers, `!` on bools, `~` on ints     |
 | factor    | `*`, `/`, `%`                 | numbers; int `/` truncates; `/ 0` on ints errors |
 | term      | `+`, `-`                      | `+` also concatenates strings and lists       |
+| shift     | `<<`, `>>`                    | ints; count 0 to 63; `>>` keeps the sign      |
+| bit and   | `&`                           | ints                                          |
+| bit xor   | `^`                           | ints                                          |
+| bit or    | `\|`                          | ints                                          |
 | compare   | `<`, `<=`, `>`, `>=`          | numbers (mixed ok) and strings                |
 | equality  | `==`, `!=`                    | any values; `1 == 1.0` is true                |
 | and       | `&&`                          | bools; short-circuits                         |
@@ -136,6 +140,15 @@ Tightest first; binary operators associate left.
 Mixed int/float arithmetic promotes to float. There is no implicit
 conversion anywhere else: `1 + "x"` is a type error, `if 1 { }` is a
 type error.
+
+The bit operators are int-only — `1.5 & 2` is a type error, not a
+rounded promotion — and they bind tighter than every comparison, so
+`flags & MASK == MASK` groups the mask first and means what it looks
+like. (C orders them the other way and has been explaining the
+consequence ever since.) `~` complements: `~0` is `-1`. `>>` is an
+arithmetic shift, so the sign survives: `-16 >> 2` is `-4`. A shift
+count outside 0 to 63 is an error rather than a value the hardware
+would have to invent.
 
 ### Indexing
 
@@ -510,8 +523,10 @@ tests.
 
 ## Limits
 
-- Call depth: 200.
+- Call depth: derived from the interpreter's stack budget, not fixed
+  (see Functions); the `ting` binary allows a few thousand frames.
 - Integers: i64 range; overflow raises an error rather than wrapping.
+- Shift counts: 0 to 63.
 - Map keys: strings only.
 - Cyclic data (`xs[0] = xs;`) prints with `[...]` / `{...}` at the point
   of recursion, `==` compares it by the parts that are finite (two

@@ -278,9 +278,11 @@ holds only the current milestone and the standing rules.
   (every bit operator binds tighter than a comparison); floats and
   a shift of 64 or more are errors; the VM needed no change because
   Op::Binary delegates to the shared evaluator.
+- 570: the docs read the bits (reference operator table and prose,
+  a tutorial section); the stale "Call depth: 200" bullet in Limits
+  corrected — the prose had been fixed in 560, the bullet had not.
 - Backlog (one per tick, in order):
-  (1) the docs read the bits; (2) RELEASE v2.94.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.94.0; (2) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none

@@ -9998,3 +9998,26 @@ on top of the suite.
 
 Gate green: fmt, clippy, 274 Rust tests, 625 selftest checks, corpus
 at exactly five warnings. Docs are the next stroke.
+
+## 2026-09-04 — Iteration 570: the docs read the bits
+
+The reference's operator table gained four rows and a `~` in the unary
+row, in the precedence order the parser actually uses, and a paragraph
+saying the two things the table cannot: that the bit operators are
+int-only, and that they bind tighter than every comparison so
+`flags & MASK == MASK` needs no parentheses. The tutorial gained a
+section between Values and Loops — how a number can be written, then
+flags built with `<<` and read back with `&`, both snippets executed
+by the tutorial guard.
+
+Found and fixed while reading: the Limits section still said "Call
+depth: 200", nine iterations after the cap stopped being a fixed
+number. The prose in Functions had been updated in 560 and the bullet
+had not, which is exactly the failure mode a list of numbers has —
+it looks like a fact and ages like one. It now points at the
+derivation and says what the shipped binary allows, and a shift-count
+bullet joins it.
+
+Gate green: fmt, clippy, 274 Rust tests, tutorial snippets executed,
+42 corpus files formatted. Milestone "bits and numbers" is code- and
+docs-complete; v2.94.0 is next.
