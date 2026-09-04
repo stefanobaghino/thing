@@ -458,26 +458,59 @@ fn profile_flag_counts_calls_per_function() {
         assert_eq!(out.status.code(), Some(0), "{engine}");
         assert_eq!(String::from_utf8_lossy(&out.stdout), "55\n", "{engine}");
         let stderr = String::from_utf8_lossy(&out.stderr);
+        // Two ting functions and the one builtin the script calls.
         assert!(
-            stderr.contains("profile: 2 functions, 178 calls"),
+            stderr.contains("profile: 3 functions, 179 calls"),
             "{engine}: {stderr}"
         );
         let rows: Vec<&str> = stderr.lines().skip(2).collect();
         // Slowest first, each row naming how long it spent there
-        // itself and where it was defined.
+        // itself and where it came from.
         assert!(
             rows[0].contains("177") && rows[0].contains("fib"),
             "{engine}: {stderr}"
         );
         assert!(rows[0].ends_with(".ting:1:1"), "{engine}: {stderr}");
         assert!(
-            rows[1].contains("once") && rows[1].ends_with(".ting:2:1"),
+            rows.iter()
+                .any(|r| r.contains("once") && r.ends_with(".ting:2:1")),
+            "{engine}: {stderr}"
+        );
+        // A builtin is in the table too, and says so instead of
+        // naming a ting file.
+        assert!(
+            rows.iter()
+                .any(|r| r.contains("print") && r.ends_with("a builtin")),
             "{engine}: {stderr}"
         );
         for row in &rows {
             assert!(row.contains("ms  "), "{engine}: {stderr}");
         }
     }
+
+    // Only the busiest rows are printed; the rest are counted.
+    let many = std::env::temp_dir().join(format!("ting-rows-{}.ting", std::process::id()));
+    let mut src = String::new();
+    for i in 0..30 {
+        src.push_str(&format!("fn f{i}() {{ return {i}; }}\n"));
+    }
+    for i in 0..30 {
+        src.push_str(&format!("f{i}();\n"));
+    }
+    std::fs::write(&many, src).unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--profile")
+        .arg(&many)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("profile: 30 functions"), "{stderr}");
+    assert_eq!(stderr.lines().count(), 23, "{stderr}");
+    assert!(
+        stderr.trim_end().ends_with("... 10 more functions"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&many);
 
     // Self time, not total: a function that only delegates keeps
     // almost none of the time its callee spends.
@@ -494,8 +527,9 @@ fn profile_flag_counts_calls_per_function() {
         .expect("failed to run ting");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let rows: Vec<&str> = stderr.lines().skip(2).collect();
+    let rank = |name: &str| rows.iter().position(|r| r.contains(name));
     assert!(rows[0].contains("spin"), "{stderr}");
-    assert!(rows[1].contains("only_calls"), "{stderr}");
+    assert!(rank("spin") < rank("only_calls"), "{stderr}");
     let _ = std::fs::remove_file(&delegating);
     // Without the flag, nothing is counted and nothing is said.
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))

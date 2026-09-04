@@ -215,12 +215,17 @@ struct Counted {
     name: Option<Rc<str>>,
     origin: Option<Rc<Origin>>,
     def: Span,
+    /// A native function, which has no file to point at.
+    builtin: bool,
     calls: u64,
     /// Nanoseconds spent inside this function and not inside anything
     /// it called. Self time rather than total, so a recursive
     /// function is not credited with the same span once per level.
     self_ns: u128,
 }
+
+/// How many rows a profile prints before it starts counting the rest.
+const PROFILE_ROWS: usize = 20;
 
 /// Nanoseconds as milliseconds, three decimals: one unit for the
 /// whole table, so a column can be compared by eye.
@@ -336,17 +341,38 @@ impl<W: Write> Interpreter<W> {
         )
     }
 
-    /// Charge `elapsed` minus what its callees took to `func`, and the
-    /// whole of it to whoever called `func`.
-    fn charge(&mut self, func: &Rc<Function>, elapsed: u128) {
+    /// A builtin's row: keyed apart from every ting function, since
+    /// it has no defining file.
+    fn builtin_key(b: Builtin) -> (usize, usize) {
+        (usize::MAX, b as usize)
+    }
+
+    /// Charge `elapsed` minus what its callees took to the row `key`
+    /// names, and the whole of it to whoever called it.
+    fn charge(&mut self, key: (usize, usize), elapsed: u128) {
         let children = self.child_ns.pop().unwrap_or(0);
         if let Some(parent) = self.child_ns.last_mut() {
             *parent += elapsed;
         }
-        let key = Self::profile_key(func);
         if let Some(row) = self.profile.as_mut().and_then(|p| p.get_mut(&key)) {
             row.self_ns += elapsed.saturating_sub(children);
         }
+    }
+
+    /// One more call of the builtin `b`, in the profile.
+    fn count_builtin(&mut self, b: Builtin) {
+        let counts = self.profile.as_mut().expect("profiling is on");
+        counts
+            .entry(Self::builtin_key(b))
+            .or_insert_with(|| Counted {
+                name: Some(Rc::from(b.name())),
+                origin: None,
+                def: Span::new(0, 0),
+                builtin: true,
+                calls: 0,
+                self_ns: 0,
+            })
+            .calls += 1;
     }
 
     /// One more call of `func`, in the profile being collected.
@@ -359,6 +385,7 @@ impl<W: Write> Interpreter<W> {
                 name: func.name.clone(),
                 origin: func.origin.clone(),
                 def: func.def,
+                builtin: false,
                 calls: 0,
                 self_ns: 0,
             })
@@ -396,9 +423,12 @@ impl<W: Write> Interpreter<W> {
         );
         out.push_str(&format!(
             "{:>10}  {:>10}  {:<24}  {}\n",
-            "calls", "self", "function", "defined at"
+            "calls", "self", "function", "where"
         ));
-        for r in rows {
+        // A long table buries its own headline, so only the busiest
+        // rows are printed and the rest are counted.
+        let hidden = rows.len().saturating_sub(PROFILE_ROWS);
+        for r in rows.into_iter().take(PROFILE_ROWS) {
             let name = match &r.name {
                 Some(n) => n.to_string(),
                 None => "an anonymous function".to_string(),
@@ -411,11 +441,21 @@ impl<W: Write> Interpreter<W> {
                 self.where_defined(r)
             ));
         }
+        if hidden > 0 {
+            out.push_str(&format!(
+                "... {}\n",
+                crate::diag::plural(hidden, "more function")
+            ));
+        }
         Some(out)
     }
 
-    /// "file.ting:12:1" for a profiled function.
+    /// "file.ting:12:1" for a profiled function, and a plain word for
+    /// a builtin, which is defined in Rust rather than in ting.
     fn where_defined(&self, r: &Counted) -> String {
+        if r.builtin {
+            return "a builtin".to_string();
+        }
         let (path, src): (&str, &str) = match &r.origin {
             Some(o) => (&o.path, &o.src),
             None => match &self.source {
@@ -693,7 +733,27 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
+    /// Builtins are in the profile too: a program can spend its time
+    /// inside `json_parse` as easily as inside its own loops. The
+    /// clock only runs when profiling is on.
     fn call_builtin(
+        &mut self,
+        b: Builtin,
+        args: Vec<Value>,
+        span: Span,
+    ) -> Result<Value, RuntimeError> {
+        if self.profile.is_none() {
+            return self.call_builtin_inner(b, args, span);
+        }
+        self.count_builtin(b);
+        self.child_ns.push(0);
+        let started = std::time::Instant::now();
+        let out = self.call_builtin_inner(b, args, span);
+        self.charge(Self::builtin_key(b), started.elapsed().as_nanos());
+        out
+    }
+
+    fn call_builtin_inner(
         &mut self,
         b: Builtin,
         args: Vec<Value>,
@@ -1730,7 +1790,8 @@ impl<W: Write> Interpreter<W> {
         self.env = saved;
         crate::vm::give_buf(locals);
         if let Some(started) = clock {
-            self.charge(func, started.elapsed().as_nanos());
+            let key = Self::profile_key(func);
+            self.charge(key, started.elapsed().as_nanos());
         }
         // An error leaving a module's function is located in that
         // module's file; every call it unwinds through leaves a frame,

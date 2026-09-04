@@ -8971,3 +8971,32 @@ profiles the way it should on both, the loop first with almost all
 the time, fib second with 1973 calls and a millisecond, the
 delegator last with microseconds it kept for itself. 106th tag.
 Next: builtins in the table, and a cap on its rows.
+
+---
+
+## 2026-09-04 — Iteration 530: builtins in the table
+
+CI green on 529 (API verdict). Milestone stroke 3: the profile
+counts native functions too, and stops printing after twenty rows.
+A ting program can spend its time inside `json_parse` or `sort` as
+easily as inside its own loops, and a table that says nothing about
+them sends the reader hunting through their own code for time that
+was never there. Builtins get their own key space in the same map,
+report "a builtin" where a ting function names a file and line, and
+take part in the same self-time bookkeeping — which matters for the
+ones that call back into ting, since `map`'s own time should not
+include the function it was given. The measurement wraps the
+dispatch rather than threading through its arms: `call_builtin` is
+now a thin wrapper that counts, clocks and delegates, and returns
+straight to the old body when no profile is being collected, so an
+unprofiled builtin call pays one Option check (bench spot-check:
+stdlib's median is 784.4 ms against a 820.3 ms baseline). The
+column header became "where", since half its rows are no longer
+files. Twenty rows is the cap; a longer table ends with "... N more
+functions", the same shape the trace's elision uses. The io test
+now looks up rows by name rather than position — with builtins in
+the table, position is not the test's business — and pins the cap
+with a thirty-function program. Full gate green (259 tests, corpus
+at 555 checks), plus 20000 differential cases (seed 20260904530),
+5000 formatter cases and the crash fuzzer. One stroke banked toward
+v2.86.0. Next: the docs read the profile.
