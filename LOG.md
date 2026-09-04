@@ -9410,3 +9410,12 @@ that sequence.
 `Path` method — while `make_dir` keeps its own, since it is the one
 that can fail. Grammar, reference table and README count updated
 with them. 264 Rust tests, green on both engines.
+
+---
+
+## 2026-09-04 — Iteration 547: v2.89.0
+
+CI green on 546 (API verdict). Tagged v2.89.0, the hundred and tenth
+tag: the four filesystem builtins that let a script see what the
+toolchain has always walked. Six archives; unverified until both
+aarch64 archives have been downloaded cold and run here, next tick.

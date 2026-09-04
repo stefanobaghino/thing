@@ -233,8 +233,11 @@ holds only the current milestone and the standing rules.
   directory, or a name that is not UTF-8, errors.
   546: exists, is_dir (questions, so false rather than an error) and
   make_dir (parents included, already there is fine).
+- 547: v2.89.0 tagged (110th tag; strokes 545, 546) — verification
+  pending.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.89.0; (2) lib/fs.ting: base, dir, ext, join and a
+  (1) verify v2.89.0 (cold download, both aarch64 archives run
+  here); (2) lib/fs.ting: base, dir, ext, join and a
   recursive walk, in ting on top of the builtins; (3) the docs read
   the filesystem (reference table, tutorial, stdlib page and its
   count); (4) RELEASE v2.90.0; (5) health tick + audit.
@@ -242,7 +245,7 @@ holds only the current milestone and the standing rules.
   (eval.rs MAX_DEPTH) and moving it wants per-engine stack
   measurement, the wasm build having no thread of its own to size;
   string literals have no \u escape though json_parse handles one.
-- Tags: 109 (v2.88.0), 109 verified; v2.29.0 is publicly marked broken
+- Tags: 110 (v2.89.0), 109 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
