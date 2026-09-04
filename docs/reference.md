@@ -69,7 +69,7 @@ both.
 
 | Type       | Literals / examples          | Notes                                  |
 |------------|------------------------------|----------------------------------------|
-| `int`      | `42`, `-7`                   | 64-bit signed; overflow is an error    |
+| `int`      | `42`, `-7`, `0xff`, `0b1010` | 64-bit signed; overflow is an error    |
 | `float`    | `2.5`, `0.125`               | IEEE 754 double                        |
 | `string`   | `"hi\n"`                     | immutable; escapes: `\n` `\t` `\r` `\\` `\"` `\uXXXX` |
 | `bool`     | `true`, `false`              | no truthiness — conditions demand bool |
@@ -79,6 +79,13 @@ both.
 | `function` | `fn(x) { return x; }`, `len` | first-class; compared by identity      |
 
 `1.` is not a float literal (it lexes as `1` then `.`); `1.0` is.
+
+An integer may be written in hex (`0xff`) or binary (`0b1010`) — the
+prefix is lowercase, the hex digits are not. Any run of digits may be
+broken up with `_` for legibility: `1_000_000`, `0xFF_FF`, `0b1010_1010`.
+A separator has to sit between two digits, so `1_`, `_1` and `1__0` are
+not numbers, and a literal cannot run into a name or a digit outside its
+radix: `0b12` and `12abc` are errors rather than two tokens.
 
 A string literal spells a character outside the escape set either
 directly (source is UTF-8, so `"café"` is fine) or as `\uXXXX` —

@@ -10,6 +10,15 @@ assert(-5 + 3 == -2, "unary minus");
 assert(abs(-42) == 42, "abs int");
 assert(abs(-1.5) == 1.5, "abs float");
 
+# Literals: radix prefixes and digit separators.
+assert(0xff == 255, "hex literal");
+assert(0xFF_FF == 65535, "hex is case-insensitive and separable");
+assert(0b1010 == 10, "binary literal");
+assert(0b1_0 == 2, "binary separator");
+assert(1_000_000 == 1000000, "decimal separator");
+assert(1_0.5 == 10.5, "separator in a float");
+assert(0x7fffffffffffffff == 9223372036854775807, "hex reaches the top of the range");
+
 assert(1 == 1.0, "numeric equality crosses int/float");
 assert(1 != 2, "inequality");
 assert(!(1 == "1"), "no string/number equality");

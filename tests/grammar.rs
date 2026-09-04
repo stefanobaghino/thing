@@ -48,3 +48,35 @@ fn grammar_escape_class_matches_lexer() {
         );
     }
 }
+
+/// The lexer's number forms and the grammar's constant.numeric class
+/// must stay in sync — a literal the grammar lacks renders as plain
+/// text in editors.
+#[test]
+fn grammar_number_class_matches_lexer() {
+    let grammar = std::fs::read_to_string(
+        std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("editor/ting.tmLanguage.json"),
+    )
+    .expect("grammar missing");
+    assert!(
+        grammar.contains(
+            r"\\b(0x[0-9a-fA-F][0-9a-fA-F_]*|0b[01][01_]*|[0-9][0-9_]*(\\.[0-9][0-9_]*)?)\\b"
+        ),
+        "grammar number class out of sync with the lexer"
+    );
+    for src in [
+        "0",
+        "42",
+        "2.5",
+        "1_000_000",
+        "0xff",
+        "0xFF_FF",
+        "0b1010",
+        "0b1_0",
+    ] {
+        assert!(
+            ting::lexer::lex(src).is_ok(),
+            "lexer rejects {src} that the grammar marks numeric"
+        );
+    }
+}

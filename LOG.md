@@ -9868,3 +9868,39 @@ Rust's rather than C's — shifts below the arithmetic, `&` then `^`
 then `|` below those, and all of them above comparison — because
 C's ordering is the one that makes `a & b == c` mean the wrong
 thing.
+
+## 2026-09-04 — Iteration 565: hex, binary and separated literals
+
+The lexer's `number` now reads three forms instead of one. A leading
+`0x` or `0b` names a radix; the digits after it are gathered by a new
+`digits(radix)` helper that also serves the decimal path, so the
+separator rule is written once and holds everywhere. `_` is accepted
+only where it sits between two digits of the radix in hand: `1_000`,
+`0xFF_FF` and `0b1010_1010` read, while `1_`, `1__0` and `0x_ff` are
+errors that say so. The separators are dropped before parsing, so
+overflow and float parsing are unchanged.
+
+Two refusals are new and both are deliberate. `0x` with nothing after
+it is "this number has no digits" rather than zero. And a literal that
+runs straight into a letter or a digit outside its radix is an error
+naming the offender — `0b12` says `'2' is not a binary digit`, `12abc`
+says `'a' is not a decimal digit`. Without that check `0b12` would have
+lexed as `0b1` followed by `2` and then failed somewhere else, in a
+message about a parenthesis. The prefixes are lowercase only; the hex
+digits are either case. `0XFF` is therefore an error too, and says
+`'X' is not a decimal digit`, which is accurate if terse.
+
+The formatter needed nothing: it copies literal text from the source
+span, so `0xff` stays `0xff` and is not silently rewritten to `255`.
+That property is worth naming — a formatter that normalised radix
+would be destroying the reason someone wrote hex.
+
+Guards: `editor/ting.tmLanguage.json`'s numeric pattern grew to cover
+the new forms, and a new test in tests/grammar.rs pins it against
+fixtures the lexer accepts, the same shape as the escape-class guard.
+Four new lexer unit tests cover the forms, the separator rule and the
+two refusals. Seven selftest checks (corpus 601 → 608). The reference
+value table and its prose describe the forms and the rule.
+
+Gate green: fmt, clippy, 270 Rust tests, 608 selftest checks, corpus
+at exactly five warnings.

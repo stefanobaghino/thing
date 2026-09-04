@@ -296,27 +296,90 @@ impl<'a> Lexer<'a> {
     }
 
     fn number(&mut self, start: usize) -> Result<TokenKind, LexError> {
-        while self.peek().is_some_and(|b| b.is_ascii_digit()) {
+        // `0x` and `0b` name a radix. The first digit is already
+        // consumed, so this only fires when that digit was a lone 0.
+        let radix = if self.bytes[start] == b'0' {
+            match self.peek() {
+                Some(b'x') => Some(16),
+                Some(b'b') => Some(2),
+                _ => None,
+            }
+        } else {
+            None
+        };
+        let radix = radix.unwrap_or(10);
+        let token = if radix != 10 {
             self.pos += 1;
-        }
-        let is_float =
-            self.peek() == Some(b'.') && self.peek2().is_some_and(|b| b.is_ascii_digit());
-        if is_float {
-            self.pos += 1; // '.'
-            while self.peek().is_some_and(|b| b.is_ascii_digit()) {
+            let digits = self.digits(radix)?;
+            if digits.is_empty() {
+                return Err(self.error("this number has no digits", start));
+            }
+            i64::from_str_radix(&digits, radix)
+                .map(TokenKind::Int)
+                .map_err(|_| self.error("integer literal too large", start))?
+        } else {
+            // Decimal, re-read from the first digit so separators are
+            // handled the same way everywhere.
+            self.pos = start;
+            let mut text = self.digits(10)?;
+            let is_float =
+                self.peek() == Some(b'.') && self.peek2().is_some_and(|b| b.is_ascii_digit());
+            if is_float {
                 self.pos += 1;
+                text.push('.');
+                text.push_str(&self.digits(10)?);
+            }
+            if is_float {
+                text.parse::<f64>()
+                    .map(TokenKind::Float)
+                    .map_err(|_| self.error("invalid float literal", start))?
+            } else {
+                text.parse::<i64>()
+                    .map(TokenKind::Int)
+                    .map_err(|_| self.error("integer literal too large", start))?
+            }
+        };
+        // `0b12` and `12abc` are typos, not a number beside a name.
+        if let Some(b) = self.peek()
+            && (b.is_ascii_alphanumeric() || b == b'_')
+        {
+            let kind = match radix {
+                2 => "binary",
+                16 => "hex",
+                _ => "decimal",
+            };
+            let message = format!("'{}' is not a {kind} digit", b as char);
+            return Err(self.error(&message, self.pos));
+        }
+        Ok(token)
+    }
+
+    /// Digits of one radix, with `_` allowed only where it separates
+    /// two of them — so `1_000` and `0xFF_FF` read, and `_1`, `1_`
+    /// and `1__0` are told apart from them rather than quietly
+    /// accepted. The digits are returned without the separators.
+    fn digits(&mut self, radix: u32) -> Result<String, LexError> {
+        let mut out = String::new();
+        while let Some(b) = self.peek() {
+            if (b as char).is_digit(radix) {
+                out.push(b as char);
+                self.pos += 1;
+            } else if b == b'_' {
+                if out.is_empty()
+                    || !self
+                        .peek2()
+                        .is_some_and(|next| (next as char).is_digit(radix))
+                {
+                    return Err(
+                        self.error("a '_' in a number must sit between two digits", self.pos)
+                    );
+                }
+                self.pos += 1;
+            } else {
+                break;
             }
         }
-        let text = &self.src[start..self.pos];
-        if is_float {
-            text.parse::<f64>()
-                .map(TokenKind::Float)
-                .map_err(|_| self.error("invalid float literal", start))
-        } else {
-            text.parse::<i64>()
-                .map(TokenKind::Int)
-                .map_err(|_| self.error("integer literal too large", start))
-        }
+        Ok(out)
     }
 
     fn ident(&mut self, start: usize) -> TokenKind {
@@ -369,6 +432,46 @@ mod tests {
                 TokenKind::Eof
             ]
         );
+    }
+
+    #[test]
+    fn radix_prefixes_and_separators() {
+        assert_eq!(
+            kinds("0xff 0xFF_FF 0b1010 1_000_000 1_0.5"),
+            vec![
+                TokenKind::Int(255),
+                TokenKind::Int(65535),
+                TokenKind::Int(10),
+                TokenKind::Int(1_000_000),
+                TokenKind::Float(10.5),
+                TokenKind::Eof
+            ]
+        );
+    }
+
+    #[test]
+    fn a_separator_must_sit_between_digits() {
+        for src in ["1_", "1__0", "0x_ff", "0xff_"] {
+            assert_eq!(
+                lex(src).unwrap_err().message,
+                "a '_' in a number must sit between two digits",
+                "{src} should not lex"
+            );
+        }
+    }
+
+    #[test]
+    fn a_number_cannot_run_into_a_letter_or_stray_digit() {
+        assert_eq!(
+            lex("0b12").unwrap_err().message,
+            "'2' is not a binary digit"
+        );
+        assert_eq!(lex("0xfg").unwrap_err().message, "'g' is not a hex digit");
+        assert_eq!(
+            lex("12abc").unwrap_err().message,
+            "'a' is not a decimal digit"
+        );
+        assert_eq!(lex("0x").unwrap_err().message, "this number has no digits");
     }
 
     #[test]
