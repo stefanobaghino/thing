@@ -10074,3 +10074,38 @@ closed: hex, binary and separated integer literals, exponent floats,
 the six bit operators with Rust's precedence, and the docs that
 place them. Two tags, both cold-verified. The backlog is empty, so
 the next tick is a replenishment.
+
+## 2026-09-04 — Iteration 574: replenishment — milestone "numbers that read back"
+
+The survey started from the open question left in 566 and found four
+related faults, all in the same place: the boundary where a number
+turns into text and back.
+
+Printing. A float is displayed with `{x}`, or `{x:.1}` when it is
+integral, and Rust's Display for f64 never uses exponent notation.
+So `1e23` prints as `99999999999999991611392.0` and `1e300 * 10.0`
+prints three hundred digits of exact binary expansion. It round-trips,
+which is why no test caught it, but nobody can read it, and the source
+that produced it was three characters long.
+
+Conversion disagrees with the lexer. `1e400` is refused as a literal —
+that shipped last milestone — while `float("1e400")` returns `inf`,
+and `float("inf")` and `float("nan")` manufacture the values by name.
+One door is locked and the one beside it is open.
+
+JSON disagrees with itself. `json_str` refuses to encode a non-finite
+float, correctly, since JSON has no spelling for one; `json_parse
+("1e999")` happily produces `inf`. A document ting cannot write is a
+document ting will read.
+
+`int` saturates. `int(1.0 / 0.0)` is 9223372036854775807 — a wrong
+answer with no error, in a language whose whole arithmetic story is
+that overflow raises rather than wraps.
+
+And one absence noticed alongside: having gained `0xff` as a literal,
+there is still no way to produce one. `hex(255)` and `bin(10)` are
+the other half of last milestone.
+
+Milestone "numbers that read back" (v2.95-v2.96): print floats so
+they can be read and re-read, make the three conversion paths agree
+with the literal path, and give the bits a way out as well as in.

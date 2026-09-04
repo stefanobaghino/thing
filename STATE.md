@@ -285,17 +285,32 @@ holds only the current milestone and the standing rules.
   archives executed here, the shipped refusals checked too).
 - 573: health tick + audit green — milestone "bits and numbers"
   complete (all six bench checksums match; five corpus warnings;
-  six assets per tag; the site serves v2.94.0). Backlog empty: the
-  next tick is a replenishment.
+  six assets per tag; the site serves v2.94.0).
+- 574: replenishment — milestone "numbers that read back"
+  (v2.95-v2.96), reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) float printing: shortest form that round-trips, exponent
+  notation outside a readable range, integral floats keep the .0,
+  shared by print/str/json_str;
+  (2) the conversion paths agree with the literal path: float("1e400"),
+  float("inf"), float("nan") and json_parse("1e999") are errors, not
+  infinities; int() of a non-finite or out-of-range float is an error
+  rather than a saturated i64;
+  (3) RELEASE v2.95.0;
+  (4) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
+  way in; int(s) accepts the prefixed forms it prints;
+  (5) the docs read the numbers; (6) RELEASE v2.96.0;
+  (7) health tick + audit.
+- Found in the 574 survey, all at the text boundary: 1e23 prints as
+  99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
+  float("1e400") is inf while the literal is an error; json_str
+  refuses non-finite floats but json_parse("1e999") makes one;
+  int(1.0 / 0.0) saturates to i64::MAX with no error.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none
   blocks work the way a missing & does. Indexed iteration is already
   covered by lib/list.ting's enumerate.
-- Open question (566): a large float prints in full — 6.02e23 comes
-  back as 601999999999999995805696.0, the exact double. Honest and
-  reversible; whether printing should shorten is a later milestone's
-  question.
 - Surveyed and found sound (554): deeply nested data is not
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
