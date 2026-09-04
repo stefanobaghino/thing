@@ -8835,3 +8835,19 @@ holds at least the call `try` itself made. The stdlib page's
 check_err row says a wrong message names the line that raised it.
 Full gate green (258 tests, tutorial and docs guards included).
 Two strokes banked (522, 523). Next: release v2.84.0.
+
+---
+
+## 2026-09-04 — Iteration 524: release v2.84.0
+
+CI green on 523 (API verdict). Cut v2.84.0 with try()'s "at" and
+"trace" (522) and the docs that explain them (523). The release
+workflow is green with all six archives; CI and Pages green on the
+release commit (API verdicts). Cold-verified here: both aarch64
+Linux archives downloaded fresh, unpacked and run — `-V` reports
+2.84.0, and a two-deep failure caught by try() hands back the
+message, the line it was raised on and three frames named total,
+line and nil, which is the whole of what this milestone added,
+read from inside a ting program on a binary built somewhere else.
+105th tag. The "the way back" milestone is complete. Next: health
+tick + audit.
