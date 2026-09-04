@@ -9501,3 +9501,14 @@ output in the page is the output the binary produced.
 Counts: the tutorial and README now say seven modules and name fs
 among them; the stdlib page landed with the module last tick. 265
 Rust tests green, tutorial guard included.
+
+---
+
+## 2026-09-04 — Iteration 551: v2.90.0
+
+CI green on 550 (API verdict). Tagged v2.90.0, the hundred and
+eleventh tag: `lib/fs.ting` and the docs that read the filesystem.
+With v2.89.0's four builtins that closes milestone "the working
+directory" — a ting script can now see and build the tree the
+toolchain has always walked. Six archives; unverified until both
+aarch64 archives have been downloaded cold and run here, next tick.
