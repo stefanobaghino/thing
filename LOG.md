@@ -10178,3 +10178,18 @@ hundred and sixteenth tag: floats that print in a form that reads
 back, and conversions that refuse what a literal refuses. Six
 archives; unverified until both aarch64 archives have been
 downloaded cold and run here, next tick.
+
+## 2026-09-04 — Iteration 578: v2.95.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that prints the extremes, encodes
+them as JSON, reads them back and then asks for the three refusals.
+`1e23 1e301 1e-7 0.1 1.0 2.5`, `{"big":1e23,"one":1.0}`, a `true`
+for the round trip, and the three errors — identical on gnu and
+musl, both reporting 2.95.0. The darwin archive cannot execute on
+this host, as always.
+
+Half of "numbers that read back" is done: the values that leave the
+language and come back now agree with the ones written into it. What
+is left is the other direction — a way to write a number out in the
+base it was read in.

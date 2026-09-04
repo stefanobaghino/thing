@@ -296,14 +296,13 @@ holds only the current milestone and the standing rules.
   float("inf"), float("nan") and json_parse("1e999") are errors, and
   int() of a non-finite or out-of-range float names the value instead
   of saturating.
-- 577: v2.95.0 tagged (116th tag; strokes 575, 576) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.95.0 VERIFIED (116th tag; strokes 575, 576; both aarch64
+  archives executed here, the shipped refusals checked too).
 - Backlog (one per tick, in order):
-  (1) verify the v2.95.0 release (cold download, both aarch64);
-  (2) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
+  (1) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
   way in; int(s) accepts the prefixed forms it prints;
-  (3) the docs read the numbers; (4) RELEASE v2.96.0;
-  (5) health tick + audit.
+  (2) the docs read the numbers; (3) RELEASE v2.96.0;
+  (4) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
@@ -318,7 +317,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 115 (v2.94.0), 115 verified; v2.29.0 is publicly marked broken
+- Tags: 116 (v2.95.0), 116 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
