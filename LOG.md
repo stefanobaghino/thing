@@ -9419,3 +9419,20 @@ CI green on 546 (API verdict). Tagged v2.89.0, the hundred and tenth
 tag: the four filesystem builtins that let a script see what the
 toolchain has always walked. Six archives; unverified until both
 aarch64 archives have been downloaded cold and run here, next tick.
+
+---
+
+## 2026-09-04 — Iteration 548: v2.89.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that uses all four new builtins in
+the order a real one would: `make_dir` a two-level tree that did not
+exist, `write_file` into it, `list_dir` the parent, ask `exists` and
+`is_dir` about what was made and about a path that was not, then
+read the file back. gnu and musl answer identically — the tree appears,
+`["deep"]`, `true true false`, `made it`. The darwin archive cannot
+execute on this host, as always.
+
+That is the pair of strokes that gives a ting script eyes on the
+filesystem. Next comes the module that turns them into something
+comfortable: paths split and joined, and a walk that recurses.
