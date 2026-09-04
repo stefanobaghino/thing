@@ -10514,3 +10514,46 @@ Pages deploy that superseded the cancelled one carried the release.
 Working tree clean, no open pull requests.
 
 Nothing to fix, which is the point of looking.
+
+## 2026-09-04 — Iteration 594: replenishment — the next milestone
+
+Backlog empty, so this tick designs rather than builds.
+
+The survey. ting reads files, walks directories, reads stdin, reads
+the environment, sets an exit code, tells the time and now rolls
+dice. The tutorial's "Shell scripting" section is honest about what
+that adds up to: a ting script is a good *shell citizen*. What it
+cannot do is the other direction — it cannot call anything. No
+subprocess, no stderr of its own (diagnostics and data share one
+stream, so a script cannot be a well-behaved filter that also
+talks), no idea what directory it is standing in. For a language
+whose whole pitch is small scripts, that is the largest hole left.
+
+Next milestone: **driving other programs** (v2.99.0, v2.100.0).
+
+1. `run(cmd, args)` — spawn, wait, and hand back a map of exit code,
+   captured stdout and captured stderr. An argv list, never a shell
+   string: no quoting rules to get wrong and nothing to inject into.
+   A program that cannot be spawned is an error, not an exit code, so
+   "not installed" never reads as "ran and failed". Refused on wasm,
+   like `exit`, `time_ms` and `sleep_ms`.
+2. `eprint(...)` and `cwd()` — the two smaller holes, so a filter can
+   separate what it says from what it emits, and a script can say
+   where it is.
+3. `lib/sh.ting` on top: the nonzero-is-a-failure wrapper, output as
+   lines, and a PATH lookup written in ting with `env` and `exists`.
+4. The docs learn to drive: reference rows, and the tutorial's shell
+   section gaining its other half.
+5. RELEASE, verify, health tick.
+
+None of the three builtins goes into a fuzzer alphabet: all are
+impure, and the differential test runs the same source twice.
+
+Considered and not chosen. A regex engine — the largest single thing
+missing, but it is a milestone of its own and `contains`/`find`/
+`split` cover most scripts; it stays on the list. Match expressions —
+real ergonomics, but a new binding form is a grammar, formatter,
+checker and LSP change all at once, and the language is deliberately
+small. A set type — maps with `true` values already are one. Threads
+— a scripting language that shells out does not need them, and they
+would put a lock around every `Rc` in the interpreter.

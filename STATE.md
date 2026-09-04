@@ -333,8 +333,22 @@ holds only the current milestone and the standing rules.
 - 593: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 592, corpus at exactly
   five warnings, six assets, site serving v2.98.0.
-- Backlog: EMPTY. Next tick is a replenishment tick under the no-idle
-  rule: survey the language and design the next milestone.
+- 594: replenishment tick. New milestone "driving other programs"
+  (v2.99.0, v2.100.0): ting is a good shell citizen but cannot call
+  anything, has no stderr of its own and no cwd.
+- Backlog (one per tick, in order):
+  (1) run(cmd, args) -> {"code", "out", "err"}; an argv list, never a
+  shell string; a program that cannot be spawned errors rather than
+  returning an exit code; refused on wasm like exit/time_ms/sleep_ms;
+  not in any fuzzer alphabet;
+  (2) eprint(...) to stderr and cwd();
+  (3) lib/sh.ting: nonzero-is-a-failure wrapper, output as lines, a
+  PATH lookup written in ting with env and exists;
+  (4) the docs learn to drive (reference rows, second half of the
+  tutorial's shell section);
+  (5) RELEASE v2.99.0; (6) verify; (7) health tick.
+- Still on the list, not chosen in 594: a regex engine (a milestone
+  of its own), match expressions, a set type, threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
