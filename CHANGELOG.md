@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.90.0 (2026-09-04)
+
+- New stdlib module `lib/fs.ting`, the seventh: `base`, `dir`,
+  `ext`, `stem`, `parts`, `normal`, `join_path` and `with_ext` split
+  and reassemble paths (on both `/` and `\`, joining with `/`);
+  `entries`, `walk` and `walk_ext` list and recurse through a tree.
+- Docs: the reference and tutorial cover the filesystem builtins and
+  the module.
+
 ## v2.89.0 (2026-09-04)
 
 - Four builtins let a script see the filesystem the toolchain
