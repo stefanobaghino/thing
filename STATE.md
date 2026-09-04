@@ -355,8 +355,10 @@ holds only the current milestone and the standing rules.
 - v2.99.0 VERIFIED (120th tag; strokes 595, 596, 598, 599; both
   aarch64 archives executed here on the whole milestone). Milestone
   "driving other programs" is complete.
-- Backlog (one per tick, in order):
-  (1) health tick + audit; (2) replenishment tick: the regex engine
+- 602: health tick green — six bench checksums match baseline, 50000
+  differential + 20000 formatter cases at seed 601, corpus at five
+  warnings, six assets, site serving lib/sh.ting.
+- Backlog: EMPTY. Next tick is a replenishment tick; the regex engine
   deferred in 594 is the standing candidate.
 - Still on the list, not chosen in 594: a regex engine (a milestone
   of its own), match expressions, a set type, threads.

@@ -10700,3 +10700,16 @@ both reporting 2.99.0.
 
 Milestone "driving other programs" is complete: ting can now be
 called by a shell and can call one back.
+
+## 2026-09-05 — Iteration 602: health tick
+
+Green. All six bench checksums match the baseline, 50000 differential
+and 20000 formatter cases at seed 601 found nothing, the corpus scans
+to exactly five deliberate warnings, six assets sit on the tag, the
+site answers 200 and its stdlib page already lists lib/sh.ting.
+Working tree clean.
+
+One process note, third occurrence: the bench writes nothing useful
+when it runs in the background of this loop. Run it in the
+foreground, or redirect it and read the file afterwards — never both
+at once.
