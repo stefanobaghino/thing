@@ -236,13 +236,13 @@ holds only the current milestone and the standing rules.
   549: lib/fs.ting — eleven functions, paths split on both separators
   and joined with "/", plus entries/walk/walk_ext.
   550: the docs read the filesystem (reference, tutorial, README).
-- 551: v2.90.0 tagged (111th tag; strokes 549, 550) — verification
-  pending.
+- v2.90.0 VERIFIED (111th tag; strokes 549, 550; both aarch64
+  archives executed here).
 - v2.89.0 VERIFIED (110th tag; strokes 545, 546; both aarch64
   archives executed here).
 - Backlog (one per tick, in order):
-  (1) verify v2.90.0 (cold download, both aarch64 archives run
-  here); (2) health tick + audit.
+  (1) health tick + audit (closes milestone "the working
+  directory").
 - Found, not yet acted on: make_dir has no counterpart — a script
   can create a directory but not remove a file or directory, so a
   ting test that builds a tree cannot tidy up after itself (549).
@@ -250,7 +250,7 @@ holds only the current milestone and the standing rules.
   (eval.rs MAX_DEPTH) and moving it wants per-engine stack
   measurement, the wasm build having no thread of its own to size;
   string literals have no \u escape though json_parse handles one.
-- Tags: 111 (v2.90.0), 110 verified; v2.29.0 is publicly marked broken
+- Tags: 111 (v2.90.0), 111 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

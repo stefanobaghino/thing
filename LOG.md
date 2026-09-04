@@ -9512,3 +9512,23 @@ With v2.89.0's four builtins that closes milestone "the working
 directory" — a ting script can now see and build the tree the
 toolchain has always walked. Six archives; unverified until both
 aarch64 archives have been downloaded cold and run here, next tick.
+
+---
+
+## 2026-09-04 — Iteration 552: v2.90.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that builds a small tree and walks
+it with the embedded module — `import("lib/fs.ting")` resolving from
+a directory with no `lib/` in it, which is the point of embedding.
+Identical on gnu and musl: `["a.ting", "deep", "notes.txt"]`, three
+files found and two of them ting, and the path functions answering
+`y ting a/b`. `ting --doc fs` lists the module from inside the
+binary, so the shipped documentation matches the shipped code. The
+darwin archive cannot execute on this host, as always.
+
+Milestone "the working directory" is done: four builtins that let a
+script see the filesystem (v2.89.0), the module that makes them
+comfortable and the docs that explain why they disagree with each
+other (v2.90.0), both tags cold-verified. Next tick is the health
+tick that closes it.
