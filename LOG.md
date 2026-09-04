@@ -9038,3 +9038,22 @@ the tutorial profiles the same way on both, `slug` first, the
 delegating `slugs` second with only its loop, and push, replace,
 trim and lower named as builtins below them. 107th tag. The "where
 the time went" milestone is complete. Next: health tick + audit.
+
+---
+
+## 2026-09-04 — Iteration 533: health tick + audit
+
+CI green on the v2.86.0 verification commit (API verdict). Bench in
+release: all six checksums match the baseline, fib and lists wide
+for the vm as usual, strings back ahead of eval, json and maps a
+few percent behind it — the same weather they have shown for
+months, and the profiler's Option check is not visible in any of
+them. Fuzz: 50000 differential cases (seed 20260904533), 20000
+formatter cases (seed 533, LF and CRLF) and the crash fuzzer all
+pass in release. Distribution: 107 releases with the expected asset
+counts (36 x 3, 14 x 4, 57 x 6) and all six v2.86.0 download URLs
+resolve. Site: all nine resources answer 200, the changelog leads
+with v2.86.0, the tutorial serves the profile table and the
+reference the self-time explanation. Nothing to fix. The "where the
+time went" milestone is complete. Backlog empty: next tick is
+replenishment.

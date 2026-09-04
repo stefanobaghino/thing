@@ -206,8 +206,9 @@ holds only the current milestone and the standing rules.
   archives executed here).
 - v2.86.0 VERIFIED (107th tag; strokes 530, 531; both aarch64
   archives executed here).
-- Backlog (one per tick, in order):
-  (1) health tick + audit.
+- 533: health tick + audit green — milestone "where the time went"
+  complete.
+- Backlog: empty — next tick is replenishment.
 - Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
