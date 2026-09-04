@@ -9256,3 +9256,14 @@ README: `--watch` in the paragraph that lists the toolchain, and a
 piped script in the build block's example lines. 262 Rust tests
 green, docs guard included; the tutorial's own runnable blocks are
 checked by tests/tutorial.rs, which stayed green.
+
+---
+
+## 2026-09-04 — Iteration 541: v2.88.0
+
+CI green on 540 (API verdict). Tagged v2.88.0, the hundred and ninth
+tag: the piped script and the docs that read the terminal. That
+closes the two halves of milestone "at the terminal" — watch mode in
+v2.87.0, stdin in v2.88.0 — and leaves the release unverified until
+both aarch64 archives have been downloaded cold and run here, which
+is the next tick.

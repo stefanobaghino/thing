@@ -222,9 +222,12 @@ holds only the current milestone and the standing rules.
 - 539: ting - runs a script from stdin (args, diagnostics named -,
   imports against the cwd; input() then sees EOF).
 - 540: the docs read the terminal (reference, tutorial, README).
+- 541: v2.88.0 tagged (109th tag; strokes 539, 540) — verification
+  pending.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.88.0; (2) health tick + audit.
-- Tags: 108 (v2.87.0), 108 verified; v2.29.0 is publicly marked broken
+  (1) verify v2.88.0 (cold download, both aarch64 archives run
+  here); (2) health tick + audit.
+- Tags: 109 (v2.88.0), 108 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
