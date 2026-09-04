@@ -318,17 +318,16 @@ holds only the current milestone and the standing rules.
   the backlog below is the corrected one.
 - 586: lib/time.ting — fourteen functions, UTC only and saying so,
   Hinnant's conversions with floor division for pre-epoch instants.
-- 587: v2.97.0 tagged (118th tag; strokes 585, 586) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.97.0 VERIFIED (118th tag; strokes 585, 586; both aarch64
+  archives executed here, module import and pause included).
 - Backlog (one per tick, in order):
-  (1) verify the v2.97.0 release (cold download, both aarch64);
-  (2) random() in [0, 1), random_int(lo, hi) half-open like range,
+  (1) random() in [0, 1), random_int(lo, hi) half-open like range,
   and seed(n) for reproducibility; none of them in any fuzzer
   alphabet, since the differential test runs the same source twice,
   and tests assert the property (same seed, same sequence) rather
   than a pinned constant;
-  (3) the docs read the clock and the dice; (4) RELEASE v2.98.0;
-  (5) health tick + audit.
+  (2) the docs read the clock and the dice; (3) RELEASE v2.98.0;
+  (4) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str
@@ -343,7 +342,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 117 (v2.96.0), 117 verified; v2.29.0 is publicly marked broken
+- Tags: 118 (v2.97.0), 118 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

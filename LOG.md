@@ -10414,3 +10414,15 @@ stdlib module. Half of "the clock and the dice" — the clock half,
 which turned out to be smaller than the survey claimed because the
 clock itself was already there. Six archives; unverified until both
 aarch64 archives have been downloaded cold and run here, next tick.
+
+## 2026-09-04 — Iteration 588: v2.97.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that imports the new module and
+uses the new builtin: the epoch and the millisecond before it, a leap
+day, a time of day, a span, a weekday name, a measured 60 ms pause
+and the refusal of a negative one. Identical on gnu and musl, both
+reporting 2.97.0. The darwin archive cannot execute on this host, as
+always.
+
+The dice half is what remains.
