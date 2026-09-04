@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- New builtins `re_test(s, pattern)` and `re_find(s, pattern)`, over a
+  new regular expression engine (`src/regex.rs`): a Pike VM, so
+  matching is linear in the input and no pattern can be made to hang.
+  Positions count characters, as `find` and `slice` do.
+
 ## v2.99.0 (2026-09-05)
 
 - New builtin `run(cmd)` / `run(cmd, args)` runs a program and waits,

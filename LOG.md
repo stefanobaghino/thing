@@ -10799,3 +10799,24 @@ The VM keeps a capture vector per thread and cuts the rest of the
 list when a thread matches, which is what makes alternation
 leftmost-first: `foo|foobar` finds `foo`. A group that took no part
 in the match stays unset rather than pointing anywhere.
+
+## 2026-09-05 — Iteration 605: re_test and re_find
+
+The engine reaches the language. `re_test(s, pattern)` answers yes or
+no; `re_find(s, pattern)` hands back the leftmost match as a map of
+`start`, `end`, `text` and `groups`, or nil.
+
+`groups` is a list with one entry per capturing group, holding the
+group's text or nil where the group took no part in the match — so
+`re_find("b", "(a)|(b)")` gives `[nil, "b"]` rather than an empty
+string that would have to be told apart from a group that matched
+nothing.
+
+Compiled patterns live in a map on the interpreter, keyed by the
+pattern text, so a match inside a loop compiles once. The map is
+cleared wholesale past 256 entries: a program that builds patterns
+from data should not be able to grow the interpreter without bound,
+and forgetting everything is the cheapest way to hold that line.
+
+A bad pattern names the builtin that received it, then the engine's
+own message with its position — `re_find: unclosed ( at 2`.

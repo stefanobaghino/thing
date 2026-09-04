@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 61 builtins; nine embedded stdlib modules
+- 63 builtins; nine embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh, 154 functions, guarded);
-  31 ting programs (15 selftest files, 17 examples with .out); 296 Rust tests
+  31 ting programs (15 selftest files, 17 examples with .out); 298 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -358,6 +358,8 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 605: re_test and re_find. Compiled patterns cached on the
+  interpreter, cleared wholesale past 256 entries.
 - 604: src/regex.rs — parser, compiler and Pike VM, 10 unit tests,
   no ting-facing builtins yet. Limits: 1000 copies per count, 100000
   instructions per pattern. `.` stops at a newline; a{b} is literal
@@ -367,14 +369,12 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) re_test(s, pat) and re_find(s, pat) -> nil or a map of start,
-  end, text, groups;
-  (2) re_find_all, re_replace with $1 references, re_split;
-  (3) a pattern fuzzer: random patterns on random subjects never
+  (1) re_find_all, re_replace with $1 references, re_split;
+  (2) a pattern fuzzer: random patterns on random subjects never
   panic and never hang; unlike the dice these are pure, so they DO
   belong in the fuzzer alphabets;
-  (4) the docs learn patterns; selftest/regex.ting;
-  (5) RELEASE v2.100.0; (6) verify; (7) health tick.
+  (3) the docs learn patterns; selftest/regex.ting;
+  (4) RELEASE v2.100.0; (5) verify; (6) health tick.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as

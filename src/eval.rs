@@ -246,6 +246,11 @@ pub struct Interpreter<W: Write> {
     /// Time charged to the callees of each active call, innermost
     /// last: what a frame subtracts from its own elapsed time.
     child_ns: Vec<u128>,
+    /// Patterns already compiled, keyed by their source text: a match
+    /// inside a loop compiles once. Cleared wholesale when it grows
+    /// past its cap, since a program that generates patterns should
+    /// not be able to grow the interpreter without bound.
+    patterns: HashMap<String, Rc<crate::regex::Regex>>,
     /// The random generator's state, None until something asks for a
     /// number: a program that never rolls a die never reads the clock,
     /// and one that calls seed() first is reproducible.
@@ -267,6 +272,30 @@ fn default_seed() -> u64 {
             .map(|d| d.as_nanos() as u64)
             .unwrap_or(0x853C_49E6_748F_EA9B)
     }
+}
+
+/// A match as ting sees it: where it sat, the text it covered, and
+/// one entry per capturing group — the group's text, or nil where the
+/// group took no part in the match.
+fn match_value(chars: &[char], caps: &[Option<usize>], groups: usize) -> Value {
+    let slice = |lo: usize, hi: usize| -> String { chars[lo..hi].iter().collect() };
+    let mut m = std::collections::BTreeMap::new();
+    let (start, end) = (caps[0].unwrap_or(0), caps[1].unwrap_or(0));
+    m.insert("start".to_string(), Value::Int(start as i64));
+    m.insert("end".to_string(), Value::Int(end as i64));
+    m.insert("text".to_string(), Value::Str(slice(start, end).into()));
+    let mut list = Vec::new();
+    for g in 1..=groups {
+        match (
+            caps.get(g * 2).copied().flatten(),
+            caps.get(g * 2 + 1).copied().flatten(),
+        ) {
+            (Some(lo), Some(hi)) => list.push(Value::Str(slice(lo, hi).into())),
+            _ => list.push(Value::Nil),
+        }
+    }
+    m.insert("groups".to_string(), Value::list(list));
+    Value::map(m)
 }
 
 /// One row of a profile: a function, and how much it did.
@@ -355,7 +384,50 @@ impl<W: Write> Interpreter<W> {
             source: None,
             profile: None,
             child_ns: Vec::new(),
+            patterns: HashMap::new(),
             rng: None,
+        }
+    }
+
+    /// The compiled form of a pattern, compiling it if this is the
+    /// first time it has been seen.
+    fn pattern(
+        &mut self,
+        b: Builtin,
+        text: &str,
+        span: Span,
+    ) -> Result<Rc<crate::regex::Regex>, RuntimeError> {
+        if let Some(re) = self.patterns.get(text) {
+            return Ok(re.clone());
+        }
+        let re = crate::regex::Regex::new(text)
+            .map_err(|e| error(format!("{}: {e}", b.name()), span))?;
+        let re = Rc::new(re);
+        const MAX_PATTERNS: usize = 256;
+        if self.patterns.len() >= MAX_PATTERNS {
+            self.patterns.clear();
+        }
+        self.patterns.insert(text.to_string(), re.clone());
+        Ok(re)
+    }
+
+    /// The two string arguments every pattern builtin starts with.
+    fn subject_and_pattern(
+        b: Builtin,
+        args: &[Value],
+        span: Span,
+    ) -> Result<(String, String), RuntimeError> {
+        match (&args[0], &args[1]) {
+            (Value::Str(s), Value::Str(p)) => Ok((s.clone(), p.clone())),
+            (l, r) => Err(error(
+                format!(
+                    "{} expects two strings, got {} and {}",
+                    b.name(),
+                    l.type_name(),
+                    r.type_name()
+                ),
+                span,
+            )),
         }
     }
 
@@ -1928,6 +2000,23 @@ impl<W: Write> Interpreter<W> {
                 let dir = std::env::current_dir().map_err(|e| error(format!("cwd: {e}"), span))?;
                 Ok(Value::Str(dir.to_string_lossy().into_owned()))
             }
+            Builtin::ReTest => {
+                arity(2, 2)?;
+                let (text, pattern) = Self::subject_and_pattern(b, &args, span)?;
+                let re = self.pattern(b, &pattern, span)?;
+                let chars: Vec<char> = text.chars().collect();
+                Ok(Value::Bool(re.find_at(&chars, 0).is_some()))
+            }
+            Builtin::ReFind => {
+                arity(2, 2)?;
+                let (text, pattern) = Self::subject_and_pattern(b, &args, span)?;
+                let re = self.pattern(b, &pattern, span)?;
+                let chars: Vec<char> = text.chars().collect();
+                match re.find_at(&chars, 0) {
+                    None => Ok(Value::Nil),
+                    Some(caps) => Ok(match_value(&chars, &caps, re.groups())),
+                }
+            }
             Builtin::Run => {
                 arity(1, 2)?;
                 let cmd = match &args[0] {
@@ -3362,6 +3451,43 @@ mod tests {
         assert_eq!(
             program_err("random(1);"),
             "random expects 0 arguments, got 1"
+        );
+    }
+
+    #[test]
+    fn patterns_find_and_test() {
+        assert_eq!(output("print(re_test(\"hello\", \"l+o\"));"), "true\n");
+        assert_eq!(output("print(re_test(\"hello\", \"^ello\"));"), "false\n");
+        assert_eq!(
+            output("print(json_str(re_find(\"a x9 b\", \"([a-z])(\\\\d)\")));"),
+            "{\"end\":4,\"groups\":[\"x\",\"9\"],\"start\":2,\"text\":\"x9\"}\n"
+        );
+        assert_eq!(output("print(re_find(\"abc\", \"z\"));"), "nil\n");
+        // Positions count characters, as len and slice do.
+        assert_eq!(
+            output("print(re_find(\"héllo\", \"llo\")[\"start\"]);"),
+            "2\n"
+        );
+        // A group that took no part in the match is nil, not empty.
+        assert_eq!(
+            output("print(json_str(re_find(\"b\", \"(a)|(b)\")[\"groups\"]));"),
+            "[null,\"b\"]\n"
+        );
+    }
+
+    #[test]
+    fn a_bad_pattern_names_the_builtin_and_the_position() {
+        assert_eq!(
+            program_err("re_find(\"x\", \"(a\");"),
+            "re_find: unclosed ( at 2"
+        );
+        assert_eq!(
+            program_err("re_test(\"x\", \"[z-a]\");"),
+            "re_test: a range runs the wrong way at 4"
+        );
+        assert_eq!(
+            program_err("re_test(1, \"a\");"),
+            "re_test expects two strings, got int and string"
         );
     }
 

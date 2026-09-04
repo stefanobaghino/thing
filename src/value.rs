@@ -89,10 +89,12 @@ pub enum Builtin {
     Run,
     EPrint,
     Cwd,
+    ReTest,
+    ReFind,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 61] = [
+    pub const ALL: [Builtin; 63] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -154,6 +156,8 @@ impl Builtin {
         Builtin::Run,
         Builtin::EPrint,
         Builtin::Cwd,
+        Builtin::ReTest,
+        Builtin::ReFind,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -349,6 +353,14 @@ impl Builtin {
                 "Prints to stderr, so data and diagnostics can part ways.",
             ),
             Builtin::Cwd => ("cwd()", "The working directory, as a string."),
+            Builtin::ReTest => (
+                "re_test(s, pattern)",
+                "Whether the pattern matches anywhere in the string.",
+            ),
+            Builtin::ReFind => (
+                "re_find(s, pattern)",
+                "The leftmost match as a map, or nil; groups included.",
+            ),
         }
     }
 
@@ -415,6 +427,8 @@ impl Builtin {
             Builtin::Run => "run",
             Builtin::EPrint => "eprint",
             Builtin::Cwd => "cwd",
+            Builtin::ReTest => "re_test",
+            Builtin::ReFind => "re_find",
         }
     }
 }
