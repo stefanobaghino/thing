@@ -11082,3 +11082,17 @@ writing it.
 The 122nd tag. Four strokes: lib/args.ting (613), lib/err.ting and
 the retirement of its copy-pasted ancestor (614), lib/csv.ting (615),
 the docs and examples/report.ting (616). Verification next tick.
+
+## 2026-09-05 — Iteration 618: v2.101.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script exercising all three new modules
+from the embedded copies: an option in its attached form, a many
+positional, an unknown option refused, the generated help carrying
+its own --help line, a CSV round trip through a comma and a doubled
+quote, a header read into maps with a short row leaving nil, a
+fallback standing in for a failed conversion, and a wrapped failure
+keeping its context. Identical on gnu and musl, both reporting
+2.101.0.
+
+Milestone "the script's own front door" is complete.

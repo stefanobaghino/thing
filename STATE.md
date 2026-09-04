@@ -358,8 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
-- 617: v2.101.0 tagged (122nd tag; strokes 613-616) — UNVERIFIED
-  until both aarch64 archives run here.
+- v2.101.0 VERIFIED (122nd tag; strokes 613-616; both aarch64
+  archives executed here on all three modules). Milestone "the
+  script's own front door" is complete.
 - 616: tutorial section "The front door" and examples/report.ting
   (args + csv + err together); cookbook and playground regenerated.
 - 615: lib/csv.ting (parse, text, parse_with, text_with, maps,
@@ -406,8 +407,7 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) verify the v2.101.0 release (cold download, both aarch64);
-  (2) health tick + audit.
+  (1) health tick + audit; (2) replenishment tick.
 - Not chosen in 612, with reasons: match expressions and catch syntax
   need a new keyword, and a new keyword breaks a program using that
   word as a name (the 2.x promise forbids it); a set is a map with
@@ -428,7 +428,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 121 (v2.100.0), 121 verified; v2.29.0 is publicly marked broken
+- Tags: 122 (v2.101.0), 122 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
