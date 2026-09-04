@@ -5,6 +5,18 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.95.0 (2026-09-04)
+
+- Floats print in a form that reads back: an exponent outside the
+  range 1e-4 to 1e17, the shortest round-tripping form inside it, and
+  a `.0` on integral values. `1e23` printed as a 23-digit expansion
+  before. `json_str` spells them the same way.
+- Conversions refuse what a literal refuses: `float("1e400")`,
+  `float("inf")`, `float("nan")` and `json_parse("1e999")` are errors
+  rather than infinities.
+- `int(x)` on a non-finite or out-of-range float is an error naming
+  the value instead of saturating to `i64::MAX`.
+
 ## v2.94.0 (2026-09-04)
 
 - Bitwise operators: `&`, `|`, `^`, `~`, `<<` and `>>`, on ints only.
