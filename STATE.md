@@ -17,9 +17,10 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 44 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 261 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 262 Rust tests in 11
   suites.
-- One binary is the toolchain: REPL (9 meta-commands), --fmt (dirs,
+- One binary is the toolchain: a script may be a path or `-`
+  (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict, --watch), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
@@ -218,10 +219,11 @@ holds only the current milestone and the standing rules.
   rewrites).
 - v2.87.0 VERIFIED (108th tag; strokes 535, 536; both aarch64
   archives executed here).
+- 539: ting - runs a script from stdin (args, diagnostics named -,
+  imports against the cwd; input() then sees EOF).
 - Backlog (one per tick, in order):
-  (1) a script can arrive on stdin (ting -), with args and
-  an honest word about input(); (2) the docs read the terminal;
-  (3) RELEASE v2.88.0; (4) health tick + audit.
+  (1) the docs read the terminal; (2) RELEASE v2.88.0;
+  (3) health tick + audit.
 - Tags: 108 (v2.87.0), 108 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

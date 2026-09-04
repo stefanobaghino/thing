@@ -9200,3 +9200,29 @@ padding saturates rather than truncating the cause. That is the
 right way round — a rule exists to be seen and the cause is the
 part worth reading — but it is worth knowing that the width is a
 floor, not a promise.
+
+---
+
+## 2026-09-04 — Iteration 539: a script from the pipe
+
+`ting -` runs a script read from stdin. The change is one line —
+`run_file_inner` now reads through `read_tool_source`, the same
+helper every tool flag already used for `-` — but it closes the gap
+the last survey found: a language whose formatter, checker and
+`read_file` all treat `-` as stdin had a runner that answered
+"cannot read -: No such file or directory".
+
+Everything downstream falls out of naming the source `-` the way the
+tool flags do. Diagnostics read `-:2:1: error: boom`. Arguments after
+the dash reach `args()` unchanged, so `ting - one two` works like
+`ting script.ting one two`. `--eval -` and `--profile -` work,
+because both route through the same runner; the profile table names
+`-:1:1` as where a function was defined. A relative `import` resolves
+against the working directory, since a piped script has no directory
+of its own — the only sensible reading, and now tested.
+
+The honest word: the script *is* the stream, so by the time it runs
+stdin is at EOF and `input()` returns nil immediately. That is not a
+bug to fix — there is one stdin and the script consumed it — but it
+is the first thing a shell user will try, so the usage line says so
+where they will read it. 262 Rust tests, green on both engines.

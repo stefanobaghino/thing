@@ -20,6 +20,7 @@ fn main() -> ExitCode {
                  usage:\n\
                  \x20 ting                        start the REPL\n\
                  \x20 ting <script> [args...]     run a script (argv reaches args())\n\
+                 \x20 ting - [args...]            run a script read from stdin (input() then sees EOF)\n\
                  \x20 ting --eval <script>        run on the reference tree-walker\n\
                  \x20 ting --vm <script>          run on the bytecode VM (the default)\n\
                  \x20 ting --fmt <paths...>       reformat files in place (- filters stdin to stdout)\n\
@@ -214,12 +215,13 @@ fn run_file(engine: Engine, path: String, script_args: Vec<String>, profile: boo
 }
 
 fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>, profile: bool) -> ExitCode {
-    let src = match std::fs::read_to_string(path) {
+    // `-` is stdin here as it is for every tool flag, so a generated
+    // or piped script runs without a file to put it in. The script
+    // eats the whole stream, so input() sees EOF straight away —
+    // documented, because a shell user will try it.
+    let src = match read_tool_source(path) {
         Ok(src) => src,
-        Err(e) => {
-            eprintln!("ting: cannot read {path}: {e}");
-            return ExitCode::FAILURE;
-        }
+        Err(code) => return code,
     };
     let (result, report) = run_source_profiled(
         engine,

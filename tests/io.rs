@@ -2483,3 +2483,82 @@ fn check_and_fmt_check_watch_too() {
 
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// A script can arrive on stdin: `ting -` runs it, the arguments
+/// after the dash reach args(), diagnostics name `-` the way every
+/// tool flag does, and a relative import resolves against the
+/// working directory because a piped script has no directory of its
+/// own. input() sees EOF, since the script was the stream.
+#[test]
+fn a_script_can_arrive_on_stdin() {
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["-", "one", "two"])
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"print(args());\nprint(input());\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "[\"one\", \"two\"]\nnil\n"
+    );
+
+    // A failure names `-` as the file, at the right line and column.
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("-")
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"let x = 1;\nfail(\"boom\");\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(out.status.code(), Some(1));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("-:2:1: error: boom"), "{stderr}");
+
+    // A relative import resolves against the working directory.
+    let root = std::env::temp_dir().join(format!("ting-stdin-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(root.join("m.ting"), "let two = 2;\n").unwrap();
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("-")
+        .current_dir(&root)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"let m = import(\"m.ting\");\nprint(m[\"two\"]);\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "2\n");
+    let _ = std::fs::remove_dir_all(&root);
+}
