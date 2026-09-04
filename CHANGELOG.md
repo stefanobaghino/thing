@@ -5,6 +5,18 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.93.0 (2026-09-04)
+
+- Integers can be written in hex (`0xff`) or binary (`0b1010`), and
+  any run of digits can be broken up with `_` (`1_000_000`,
+  `0xFF_FF`). A separator must sit between two digits.
+- Floats take an exponent: `1e3`, `1.5e-3`, `2E+2`. An exponent
+  always makes a float; a literal out of range for a double is an
+  error rather than infinity.
+- A literal that runs into a letter or a digit outside its radix is
+  an error naming the offender (`0b12`, `12abc`), where it used to
+  split into two tokens and fail elsewhere.
+
 ## v2.92.0 (2026-09-04)
 
 - String literals take `\uXXXX`, four hex digits with a surrogate
