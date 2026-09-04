@@ -54,6 +54,7 @@ pub enum Builtin {
     Input,
     ReadFile,
     WriteFile,
+    ListDir,
     Sort,
     SortBy,
     Try,
@@ -75,7 +76,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 44] = [
+    pub const ALL: [Builtin; 45] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -102,6 +103,7 @@ impl Builtin {
         Builtin::Input,
         Builtin::ReadFile,
         Builtin::WriteFile,
+        Builtin::ListDir,
         Builtin::Sort,
         Builtin::SortBy,
         Builtin::Try,
@@ -196,6 +198,10 @@ impl Builtin {
                 "write_file(path, s) / write_file(path, s, \"append\")",
                 "Writes (or overwrites) the file; \"append\" adds to the end. Returns nil.",
             ),
+            Builtin::ListDir => (
+                "list_dir(path)",
+                "The names in a directory, sorted; not a directory, or unreadable, errors.",
+            ),
             Builtin::Sort => (
                 "sort(xs)",
                 "A fresh sorted list; all numbers or all strings, else error.",
@@ -284,6 +290,7 @@ impl Builtin {
             Builtin::Input => "input",
             Builtin::ReadFile => "read_file",
             Builtin::WriteFile => "write_file",
+            Builtin::ListDir => "list_dir",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
             Builtin::Try => "try",

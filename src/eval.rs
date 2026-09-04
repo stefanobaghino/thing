@@ -1201,6 +1201,48 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::ListDir => {
+                arity(1, 1)?;
+                let Value::Str(path) = &args[0] else {
+                    return Err(error(
+                        format!(
+                            "list_dir expects a string path, got {}",
+                            args[0].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                let entries = std::fs::read_dir(std::path::Path::new(&**path))
+                    .map_err(|e| error(format!("cannot list {path:?}: {e}"), span))?;
+                let mut names = Vec::new();
+                for entry in entries {
+                    let entry =
+                        entry.map_err(|e| error(format!("cannot list {path:?}: {e}"), span))?;
+                    // A name that is not UTF-8 cannot become a ting
+                    // string that reopens the same file, and quietly
+                    // dropping it would make a walk lie about what it
+                    // saw, so the whole listing says so instead.
+                    match entry.file_name().into_string() {
+                        Ok(name) => names.push(Value::Str(name)),
+                        Err(bad) => {
+                            return Err(error(
+                                format!(
+                                    "cannot list {path:?}: the name {:?} is not valid UTF-8",
+                                    bad.to_string_lossy()
+                                ),
+                                span,
+                            ));
+                        }
+                    }
+                }
+                // read_dir's order is whatever the filesystem says;
+                // sorted, so a script sees the same list twice.
+                names.sort_by(|a, b| match (a, b) {
+                    (Value::Str(a), Value::Str(b)) => a.cmp(b),
+                    _ => std::cmp::Ordering::Equal,
+                });
+                Ok(Value::List(Rc::new(RefCell::new(names))))
+            }
             Builtin::Sort => {
                 arity(1, 1)?;
                 match &args[0] {

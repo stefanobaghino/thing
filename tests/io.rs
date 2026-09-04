@@ -2562,3 +2562,45 @@ fn a_script_can_arrive_on_stdin() {
     assert_eq!(String::from_utf8_lossy(&out.stdout), "2\n");
     let _ = std::fs::remove_dir_all(&root);
 }
+
+/// `list_dir` answers with the names in a directory, sorted, and says
+/// so when the path is not a readable directory. Names, not paths:
+/// joining is the caller's business.
+#[test]
+fn list_dir_names_a_directory() {
+    let root = std::env::temp_dir().join(format!("ting-listdir-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    let data = root.join("data");
+    std::fs::create_dir_all(data.join("sub")).unwrap();
+    std::fs::write(data.join("b.ting"), "").unwrap();
+    std::fs::write(data.join("a.txt"), "").unwrap();
+
+    let script = root.join("show.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "print(list_dir({:?}));\nprint(try(fn() {{ return list_dir({:?}); }})[\"err\"]);\n",
+            data.to_str().unwrap(),
+            data.join("a.txt").to_str().unwrap()
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    assert!(
+        out.status.success(),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let mut lines = stdout.lines();
+    assert_eq!(lines.next(), Some("[\"a.txt\", \"b.ting\", \"sub\"]"));
+    // A file is not a directory, and the message says which path.
+    let err = lines.next().unwrap_or_default();
+    assert!(err.starts_with("cannot list "), "{err}");
+    assert!(err.contains("a.txt"), "{err}");
+
+    let _ = std::fs::remove_dir_all(&root);
+}

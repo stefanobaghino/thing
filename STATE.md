@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 44 builtins; six embedded stdlib modules
+- 45 builtins; six embedded stdlib modules
   (list/map/string/math/json/test, 121 functions, guarded); 28 ting programs
-  (11 selftest files, 17 examples with .out); 262 Rust tests in 11
+  (11 selftest files, 17 examples with .out); 263 Rust tests in 11
   suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -229,13 +229,14 @@ holds only the current milestone and the standing rules.
   six assets per tag; the site serves v2.88.0).
 - 544: replenishment — milestone "the working directory"
   (v2.89-v2.90), reasoning in LOG.md.
+- 545: list_dir — the names in a directory, sorted; not a readable
+  directory, or a name that is not UTF-8, errors.
 - Backlog (one per tick, in order):
-  (1) list_dir(path): the entries of a directory, sorted;
-  (2) exists(path), is_dir(path), make_dir(path) (parents too);
-  (3) RELEASE v2.89.0; (4) lib/fs.ting: base, dir, ext, join and a
-  recursive walk, in ting on top of the builtins; (5) the docs read
+  (1) exists(path), is_dir(path), make_dir(path) (parents too);
+  (2) RELEASE v2.89.0; (3) lib/fs.ting: base, dir, ext, join and a
+  recursive walk, in ting on top of the builtins; (4) the docs read
   the filesystem (reference table, tutorial, stdlib page and its
-  count); (6) RELEASE v2.90.0; (7) health tick + audit.
+  count); (5) RELEASE v2.90.0; (6) health tick + audit.
 - Found, not yet acted on: recursion is capped at call depth 200
   (eval.rs MAX_DEPTH) and moving it wants per-engine stack
   measurement, the wasm build having no thread of its own to size;

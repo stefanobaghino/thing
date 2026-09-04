@@ -9353,3 +9353,32 @@ program can spell a character. Both are milestone material later.
 Milestone "the working directory" (v2.89-v2.90): the builtins that
 let a script see the filesystem, then a `fs` module that does path
 handling and recursive walking in ting on top of them, then the docs.
+
+---
+
+## 2026-09-04 — Iteration 545: what is in this directory
+
+`list_dir(path)` is the forty-fifth builtin: the names in a
+directory, sorted. Names, not paths — joining is the caller's
+business, and the `fs` module later in this milestone is where that
+belongs. Sorted, because `read_dir` hands back whatever order the
+filesystem feels like and a script that lists a directory twice
+should see the same list twice.
+
+Two decisions worth writing down. A path that is not a readable
+directory errors rather than answering an empty list, so a typo in a
+directory name is caught where it happens instead of quietly
+producing nothing — `cannot list "README.md": Not a directory (os
+error 20)`. And a name that is not valid UTF-8 fails the whole
+listing rather than being dropped or lossily converted: a lossy name
+would not reopen the file it names, and dropping it silently would
+make a directory walk lie about what it saw. Erring is the only
+answer that cannot mislead.
+
+The gate caught the two places a new builtin has to be registered
+beyond the interpreter: `Builtin::ALL`'s length (44 to 45, a compile
+error, which is the right way for that to fail) and
+editor/ting.tmLanguage.json, guarded by tests/grammar.rs since a
+builtin the editor grammar lacks renders unhighlighted. The
+reference table and the README's count came with it; the fuller docs
+stroke is still to come. 263 Rust tests, green on both engines.

@@ -204,6 +204,7 @@ scope).
 | `input()`      | one line from stdin without the newline; `nil` at end of input |
 | `read_file(path)` | the file's entire contents as a string; `"-"` reads stdin to EOF |
 | `write_file(path, s)` / `write_file(path, s, "append")` | writes (or overwrites) the file; `"append"` adds to the end |
+| `list_dir(path)` | the names in the directory, sorted; not the paths, and not recursive; a path that is not a readable directory errors |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `try(f)`       | calls `f()`; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
