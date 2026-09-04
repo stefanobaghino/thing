@@ -9937,3 +9937,13 @@ Guards: the grammar's numeric pattern and its test grew an exponent
 group; two lexer unit tests cover the forms and the two refusals; four
 selftest checks (608 → 612). Gate green: fmt, clippy, 272 Rust tests,
 612 selftest checks, corpus at exactly five warnings.
+
+## 2026-09-04 — Iteration 567: v2.93.0
+
+CI green on 566 (API verdict). Tagged v2.93.0, the hundred and
+fourteenth tag: the numeric literal forms — radix prefixes, digit
+separators and exponents — and the refusal that keeps a literal from
+running into a letter. Half of milestone "bits and numbers"; the
+operators that these literals exist for come next. Six archives;
+unverified until both aarch64 archives have been downloaded cold and
+run here, next tick.
