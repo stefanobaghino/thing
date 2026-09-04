@@ -9473,3 +9473,31 @@ with no way to tidy up. That asymmetry is worth recording:
 
 265 Rust tests; the selftest corpus is 576 checks over twelve files;
 the corpus warning count holds at exactly five.
+
+---
+
+## 2026-09-04 — Iteration 550: the docs read the filesystem
+
+CI green on 549 (API verdict). The reference gains a "Files and
+directories" subsection whose whole job is to explain why the four
+builtins do not agree with each other. `exists` and `is_dir` are
+questions and answer `false` for anything awkward, so they can sit
+in an `if` without a `try`. `list_dir` is a demand and errors, since
+asking what is inside something that is not there is a mistake an
+empty list would hide — and a name that is not UTF-8 fails the whole
+listing rather than being dropped, because a lossy name would not
+reopen the file it came from. `make_dir` treats an existing
+directory as success, the useful postcondition being that the
+directory is there rather than that this call made it. The section
+ends with what is missing: nothing deletes.
+
+The tutorial gets a section of the same name, built the way that
+page works — a runnable snippet whose output the test suite checks,
+here `make_dir` into a fresh tree, `write_file` into it, `list_dir`,
+`walk_ext`, `exists`/`is_dir`, and `stem`/`ext` on the way past. It
+runs under the tutorial guard like every other snippet, so the
+output in the page is the output the binary produced.
+
+Counts: the tutorial and README now say seven modules and name fs
+among them; the stdlib page landed with the module last tick. 265
+Rust tests green, tutorial guard included.

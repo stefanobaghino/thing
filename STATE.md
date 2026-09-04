@@ -235,12 +235,11 @@ holds only the current milestone and the standing rules.
   make_dir (parents included, already there is fine).
   549: lib/fs.ting — eleven functions, paths split on both separators
   and joined with "/", plus entries/walk/walk_ext.
+  550: the docs read the filesystem (reference, tutorial, README).
 - v2.89.0 VERIFIED (110th tag; strokes 545, 546; both aarch64
   archives executed here).
 - Backlog (one per tick, in order):
-  (1) the docs read the filesystem (reference table, tutorial;
-  the stdlib page landed with the module); (2) RELEASE v2.90.0;
-  (3) health tick + audit.
+  (1) RELEASE v2.90.0; (2) health tick + audit.
 - Found, not yet acted on: make_dir has no counterpart — a script
   can create a directory but not remove a file or directory, so a
   ting test that builds a tree cannot tidy up after itself (549).

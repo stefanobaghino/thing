@@ -330,8 +330,8 @@ print(li["take"](words, 2), li["drop"](words, 4));
 Keys of a map are always strings, so `group_by`'s key function must
 return one — `str(...)` is the idiom.
 
-The [stdlib page](stdlib.html) documents all six
-(list/map/string/math/json/test), and you never have to open a
+The [stdlib page](stdlib.html) documents all seven
+(list/map/string/math/json/fs/test), and you never have to open a
 module's source to read about one function: `ting --doc median` in
 a shell, or `:doc median` in the REPL, prints its signature, module
 and comment — the same text an LSP-capable editor shows on hover.
@@ -491,6 +491,47 @@ print a caret diagnostic to stderr and exit 1, so `set -e` and CI
 steps behave; `ting script.ting | head` exits quietly when the reader
 goes away, like any well-behaved filter. The cookbook's `pipeline`
 example is a complete stdin-to-report script.
+
+## Files and directories
+
+Four builtins let a script see the tree it is running in, and
+`lib/fs.ting` turns them into something comfortable:
+
+```ting
+let fs = import("lib/fs.ting");
+
+make_dir("report/data");
+write_file("report/data/one.ting", "print(1);\n");
+write_file("report/data/notes.txt", "hello");
+
+print(list_dir("report/data"));
+print(fs["walk_ext"]("report", "ting"));
+print(exists("report/data"), is_dir("report/nope"));
+print(fs["stem"]("report/data/one.ting"), fs["ext"]("notes.txt"));
+```
+
+```text
+["notes.txt", "one.ting"]
+["report/data/one.ting"]
+true false
+one txt
+```
+
+`list_dir` gives names, sorted; `fs["entries"]` gives the same thing
+as paths, and `fs["walk"]` recurses to every file below a directory
+with the directories left out — `walk_ext` filters that by
+extension, which is most of what a tool that runs over a tree needs.
+`make_dir` creates missing parents and does not mind a directory
+that is already there, so it pairs with `write_file` into a tree
+that does not exist yet.
+
+`exists` and `is_dir` are questions, so an absent or unreadable path
+answers `false` rather than raising — they can be used in an `if`
+without wrapping. `list_dir` is a demand, and errors when the path
+is not a readable directory, because asking what is inside
+something that is not there is a mistake worth hearing about. There
+is no way to delete anything: ting can create a tree and read it,
+not remove it.
 
 ## Testing
 

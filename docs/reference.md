@@ -226,6 +226,33 @@ scope).
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |
 
+### Files and directories
+
+`read_file` and `write_file` handle a file's contents; `list_dir`,
+`exists`, `is_dir` and `make_dir` handle the tree around it. The
+split between them is deliberate:
+
+- `exists` and `is_dir` are **questions**. An absent, unreadable or
+  otherwise awkward path answers `false`; neither ever raises, so
+  they can be used in an `if` without a `try` around them.
+- `list_dir` is a **demand**, and errors when the path is not a
+  readable directory. Asking what is inside something that is not
+  there is a mistake, and an empty list would hide it. A name that
+  is not valid UTF-8 fails the whole listing rather than being
+  dropped or lossily converted, since a lossy name would not reopen
+  the file it came from.
+- `make_dir` creates missing parents, and a directory that already
+  exists is success rather than an error: the useful postcondition
+  is that the directory is there, not that this call made it.
+
+`list_dir` answers with names, not paths — joining them onto the
+directory is `lib/fs.ting`'s `entries`, which is also where `walk`
+(every file at or below a directory), path splitting and extension
+handling live.
+
+Nothing deletes. A ting script can create a tree, fill it and read
+it back, but not remove a file or a directory.
+
 ### Modules
 
 `import(path)` loads another ting file, runs it in a fresh global
