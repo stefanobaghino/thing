@@ -200,11 +200,12 @@ holds only the current milestone and the standing rules.
 - 527: counting the calls (--profile), and closures now belong to
   the file that defined them. 528: self time per function, slowest
   first.
+- v2.85.0 VERIFIED (106th tag; strokes 527, 528; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.85.0 (strokes 527, 528); (2) builtins in the table,
-  and a cap on its rows; (3) the docs read the profile; (4) RELEASE
-  v2.86.0; (5) health tick + audit.
-- Tags: 105 (v2.84.0), 104 verified; v2.29.0 is publicly marked broken
+  (1) builtins in the table, and a cap on its rows; (2) the docs
+  read the profile; (3) RELEASE v2.86.0; (4) health tick + audit.
+- Tags: 106 (v2.85.0), 105 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

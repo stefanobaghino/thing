@@ -8955,3 +8955,19 @@ before (fib's median is 310.8 ms against a 335.4 ms baseline). Full
 gate green (259 tests), plus 20000 differential cases (seed
 20260904528), 5000 formatter cases and the crash fuzzer. Two
 strokes banked (527, 528). Next: release v2.85.0.
+
+---
+
+## 2026-09-04 — Iteration 529: release v2.85.0
+
+CI green on 528 (API verdict). Cut v2.85.0 with the profile: call
+counts (527) and self time (528), plus the closure-origin fix that
+writing the table exposed. The release workflow is green with all
+six archives; CI and Pages green on the release commit (API
+verdicts). Cold-verified here: both aarch64 Linux archives
+downloaded fresh, unpacked and run — `-V` reports 2.85.0, and a
+script with a spinning loop, a delegator and a recursive fib
+profiles the way it should on both, the loop first with almost all
+the time, fib second with 1973 calls and a millisecond, the
+delegator last with microseconds it kept for itself. 106th tag.
+Next: builtins in the table, and a cap on its rows.
