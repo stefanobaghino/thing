@@ -10,6 +10,7 @@ pub mod json;
 pub mod lexer;
 pub mod lsp;
 pub mod parser;
+pub mod regex;
 pub mod repl;
 pub mod value;
 pub mod vm;

@@ -10761,3 +10761,41 @@ The strokes:
 Unlike the clock and the dice, these are pure functions: same input,
 same answer, so they belong in the fuzzer alphabets rather than
 outside them.
+
+## 2026-09-05 — Iteration 604: src/regex.rs
+
+The engine, with no way yet to call it from ting: a pattern parser, a
+compiler to a small instruction set, and the Pike VM that runs it.
+Ten unit tests, one of which is the point of the whole design —
+`(a+)+b` against two thousand a's returns None promptly, where a
+backtracker would still be running.
+
+What the parser accepts: literals, `.`, classes with ranges,
+negation and the `\d \w \s` shorthands (and their negated forms, in
+or out of brackets), the anchors, capturing and `(?:)` groups,
+alternation, `* + ?` and `{n} {n,} {n,m}`, each greedy or lazy.
+
+Decisions the code had to make that the plan did not.
+
+`.` stops at a newline, as it does in the engines people already
+know. `[]a]` reads the first `]` as a literal, and a `-` last in a
+class is a dash, both by the same convention.
+
+`a{b}` is four literal characters, because a brace that opens nothing
+countable is not a quantifier — but `a{2}{3}` is an error, since that
+second brace *does* open a count and has nothing left to count. Two
+readings of `{`, decided by what follows it, which is how every
+engine that came before does it.
+
+Two limits rather than one: a thousand copies per counted repetition,
+and a hundred thousand instructions per pattern. `(a{1000}){1000}`
+passes the first and is refused by the second, which is why one limit
+would not have been enough.
+
+Errors carry the position past the offending character, the way the
+JSON decoder reports an offset.
+
+The VM keeps a capture vector per thread and cuts the rest of the
+list when a thread matches, which is what makes alternation
+leftmost-first: `foo|foobar` finds `foo`. A group that took no part
+in the match stays unset rather than pointing anywhere.
