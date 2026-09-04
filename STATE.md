@@ -209,7 +209,15 @@ holds only the current milestone and the standing rules.
 - 533: health tick + audit green — milestone "where the time went"
   complete (533b: the profile test no longer asserts an order two
   microseconds can swap).
-- Backlog: empty — next tick is replenishment.
+- 534: replenishment — milestone "at the terminal" (v2.87-v2.88),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order):
+  (1) --test --watch: re-run when a watched file changes, a rule
+  line per run; (2) --watch for --check and --fmt-check, new files
+  included; (3) RELEASE v2.87.0; (4) a script can arrive on stdin
+  (ting -), with args and an honest word about input(); (5) the
+  docs read the terminal; (6) RELEASE v2.88.0; (7) health tick +
+  audit.
 - Tags: 107 (v2.86.0), 106 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 

@@ -9075,3 +9075,29 @@ that `print` says "a builtin" — and asserts an order only where a
 200000-iteration loop is compared against a single delegating call,
 which no runner can invert. Green on both engines here; recorded as
 a standing rule, next to the one about path separators.
+
+---
+
+## 2026-09-04 — Iteration 534: replenishment — milestone "at the terminal"
+
+CI green on 533b (API verdict). Thirty-six milestones since the
+restart, a hundred and seven tags. This survey looked at how ting
+behaves in the place it is actually used: a terminal, in a loop,
+with pipes. Two gaps stood out. The first is that every tool flag
+takes `-` for stdin — `ting --fmt -` is a filter, `read_file("-")`
+reads to EOF — but the runner does not: `echo 'print(1);' | ting -`
+answers "cannot read -: No such file or directory". The canonical
+way to run a generated or piped script is missing from a language
+that otherwise goes out of its way to be a shell citizen. The
+second is that the toolchain has no watch mode. `--test`, `--check`
+and `--fmt-check` are exactly the commands a person re-runs after
+every edit, and re-running them by hand is the loop the tooling
+exists to remove; a mtime poll over the paths already expanded by
+`expand_paths` needs no dependency and no platform-specific API,
+which is the only kind of watcher this project can have. The
+sorting gap this survey also looked for turned out not to exist:
+lib/list.ting has had `sort_with`, a stable merge sort over a
+three-way comparator, plus min_by, max_by, group_by and the rest.
+Milestone "at the terminal" (v2.87-v2.88): `--watch` re-runs the
+tests when a file changes, then the checker and the formatter's
+check; a script can arrive on stdin; docs follow.
