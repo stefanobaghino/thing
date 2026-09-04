@@ -358,6 +358,8 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 617: v2.101.0 tagged (122nd tag; strokes 613-616) — UNVERIFIED
+  until both aarch64 archives run here.
 - 616: tutorial section "The front door" and examples/report.ting
   (args + csv + err together); cookbook and playground regenerated.
 - 615: lib/csv.ting (parse, text, parse_with, text_with, maps,
@@ -404,7 +406,8 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.101.0; (2) verify; (3) health tick.
+  (1) verify the v2.101.0 release (cold download, both aarch64);
+  (2) health tick + audit.
 - Not chosen in 612, with reasons: match expressions and catch syntax
   need a new keyword, and a new keyword breaks a program using that
   word as a name (the 2.x promise forbids it); a set is a map with

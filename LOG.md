@@ -11076,3 +11076,9 @@ went through a Python heredoc that ate its backslashes, and the
 tutorial guard caught the broken string immediately. Text about
 escaping is exactly the text most likely to be mangled by the tool
 writing it.
+
+## 2026-09-05 — Iteration 617: release v2.101.0
+
+The 122nd tag. Four strokes: lib/args.ting (613), lib/err.ting and
+the retirement of its copy-pasted ancestor (614), lib/csv.ting (615),
+the docs and examples/report.ting (616). Verification next tick.
