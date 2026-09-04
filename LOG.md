@@ -10875,3 +10875,27 @@ The five builtins joined the crash fuzzer's token alphabet and the
 differential corpus. They belong there, unlike the clock and the
 dice: same input, same answer, on both engines, which is exactly what
 those tests assume.
+
+## 2026-09-05 — Iteration 608: the docs learn patterns
+
+A reference section with the syntax as a table, the semantics as a
+list, and the omissions stated plainly — no backreferences, no
+lookaround, no named groups, no flags — with the reason attached,
+since "not supported" without a reason reads like an unfinished
+feature rather than a design.
+
+A tutorial section that starts from what the reader already has
+(`contains`, `find`, `split` handle fixed text) and adds patterns
+where the shape matters instead. Its snippets run: a log line pulled
+apart by `re_find_all`, a date reordered by `re_replace` with `$3/$2/$1`,
+and the check that `re_find` and `find` agree about where `llo` sits
+in `héllo`.
+
+`selftest/regex.ting`, 33 checks, is the language's own promises
+rather than the engine's internals: what a match hands back, that an
+unused group is nil, that positions agree with `find` and `slice`,
+that alternation prefers its earlier branch, what the refusals say,
+and that `(a+)+b` answers instead of hanging.
+
+The README said 52 builtins. It has said that for a while; it says 66
+now, and mentions the three capabilities added since.

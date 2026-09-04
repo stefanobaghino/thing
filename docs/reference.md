@@ -299,6 +299,53 @@ scope).
 | `re_replace(s, pattern, repl)` | every match replaced; `$0` is the whole match, `$1` to `$9` its groups, `$$` a literal `$`. A reference to a group the pattern does not have errors |
 | `re_split(s, pattern)` | the string cut at every match; leading and trailing empty pieces are kept, as `split` keeps them |
 
+### Patterns
+
+`re_test`, `re_find`, `re_find_all`, `re_replace` and `re_split` take
+a pattern as an ordinary string, so a backslash in a pattern is
+written twice: `"\\d+"` is the pattern `\d+`.
+
+The syntax:
+
+| Piece | Means |
+|-------|-------|
+| `abc` | those characters, in that order |
+| `.` | any character except a newline |
+| `[abc]`, `[a-z]`, `[^a-z]` | a character in the set, a range, or one outside it |
+| `\d` `\w` `\s` | a digit, a word character (letter, digit or `_`), a space; `\D` `\W` `\S` for the opposites, inside brackets or out |
+| `\n` `\t` `\r` `\.` `\\` | a newline, tab, return, and any punctuation as itself |
+| `^` `$` | the start and the end of the string |
+| `(...)` | a capturing group; `(?:...)` groups without capturing |
+| `a\|b` | either side, preferring the left |
+| `*` `+` `?` | none or more, one or more, none or one |
+| `{n}` `{n,}` `{n,m}` | exactly, at least, or between that many |
+| `*?` `+?` `??` `{n,m}?` | the same, preferring the shorter match |
+
+What it deliberately leaves out: backreferences, lookaround, named
+groups, and flags. The engine runs every alternative in lockstep
+rather than backtracking, which is what makes matching linear in the
+length of the string — `(a+)+b` against a long line of `a`s answers
+at once instead of hanging — and backreferences cannot be had that
+way.
+
+The rest of the semantics:
+
+- The search is leftmost, and alternation prefers its earlier branch,
+  so `re_find("foobar", "foo|foobar")` matches `foo`.
+- Positions count characters, not bytes, as `len`, `slice` and `find`
+  do.
+- A group that took no part in the match is `nil`, not `""`.
+- An empty match cannot advance a scan, so `re_find_all` and
+  `re_split` step one character past one: `re_split(s, "")` cuts a
+  string into its characters.
+- A counted repetition may ask for at most 1000 copies, and a pattern
+  may compile to at most 100000 instructions; `(a{1000}){1000}` is
+  refused for the second reason.
+- An invalid pattern errors, naming the builtin and where in the
+  pattern the trouble is: `re_find: unclosed ( at 2`.
+- Compiled patterns are cached, so a match inside a loop compiles
+  once.
+
 ### Files and directories
 
 `read_file` and `write_file` handle a file's contents; `list_dir`,

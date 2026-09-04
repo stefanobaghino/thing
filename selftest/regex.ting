@@ -1,0 +1,71 @@
+# ting testing ting: patterns. The engine's own unit tests live in
+# Rust; these are the promises the language makes about them.
+
+let err = fn(f) { return try(f)["err"]; };
+
+# Literals, classes, shorthands, anchors.
+assert(re_test("hello", "l+o"), "a pattern matches somewhere");
+assert(!re_test("hello", "^ello"), "an anchor holds the start");
+assert(re_test("hello", "o$"), "and the end");
+assert(re_test("a1", "[a-z]\\d"), "ranges and shorthands");
+assert(!re_test("a1", "[^a-z]\\d"), "a negated class excludes");
+assert(re_test("a.b", "a\\.b"), "an escaped dot is a dot");
+assert(!re_test("axb", "a\\.b"), "and only a dot");
+
+# A dot stops at a line end.
+assert(!re_test("a\nb", "a.b"), "a dot does not cross a newline");
+assert(re_test("a\nb", "a\\nb"), "an escaped newline does");
+
+# What a match hands back.
+let m = re_find("mail: me@here!", "(\\w+)@(\\w+)");
+assert(m["text"] == "me@here", "the matched text");
+assert(m["start"] == 6 && m["end"] == 13, "where it sat");
+assert(m["groups"] == ["me", "here"], "and its groups");
+assert(re_find("abc", "z") == nil, "no match is nil");
+
+# A group that took no part is nil, not empty.
+assert(re_find("b", "(a)|(b)")["groups"] == [nil, "b"], "an unused group is nil");
+
+# Positions count characters, agreeing with find and slice.
+let accented = re_find("héllo", "llo");
+assert(accented["start"] == find("héllo", "llo"), "re_find agrees with find");
+assert(slice("héllo", accented["start"], accented["end"]) == "llo", "and with slice");
+
+# Leftmost, and alternation prefers its earlier branch.
+assert(re_find("foobar", "foo|foobar")["text"] == "foo", "the earlier branch wins");
+assert(re_find("foobar", "foobar|foo")["text"] == "foobar", "order is the whole difference");
+assert(re_find("bbaaa", "a+")["start"] == 2, "the search is leftmost");
+
+# Greedy by default, lazy on request.
+assert(re_find("<a><b>", "<.*>")["text"] == "<a><b>", "greedy takes all it can");
+assert(re_find("<a><b>", "<.*?>")["text"] == "<a>", "lazy takes what it must");
+
+# Counted repetition, and the brace that is not one.
+assert(re_find("aaaa", "a{2,3}")["text"] == "aaa", "a counted repetition");
+assert(re_test("a{b}", "a\\{b\\}"), "an escaped brace is a brace");
+
+# Scanning, splitting, replacing.
+assert(len(re_find_all("a1 b2 c3", "\\w\\d")) == 3, "every match, left to right");
+assert(re_split("a1b22c", "\\d+") == ["a", "b", "c"], "split on a pattern");
+assert(re_replace("a1 b2", "([a-z])(\\d)", "$2$1") == "1a 2b", "groups by number");
+assert(re_replace("cost 5", "\\d", "$$") == "cost $", "a doubled dollar is a dollar");
+assert(re_replace("abc", "z", "!") == "abc", "no match, no change");
+
+# An empty match cannot advance a scan; it steps past instead.
+assert(len(re_find_all("abc", "x*")) == 4, "one empty match per position, and the end");
+assert(re_split("abc", "") == ["", "a", "b", "c", ""], "which cuts a string into characters");
+
+# What patterns refuse.
+assert(err(fn() { return re_find("x", "(a"); }) == "re_find: unclosed ( at 2", "an unclosed group");
+assert(err(fn() { return re_test("x", "[z-a]"); }) == "re_test: a range runs the wrong way at 4",
+"a backwards range");
+assert(err(fn() { return re_test("x", "*a"); }) == "re_test: nothing to repeat at 1",
+"a quantifier with nothing before it");
+assert(err(fn() { return re_replace("a", "a", "$3"); }) == "re_replace: the pattern has no group 3",
+"a reference to a group that does not exist");
+assert(err(fn() { return re_test(1, "a"); }) == "re_test expects two strings, got int and string",
+"both arguments are strings");
+
+# The pattern that eats a backtracking engine: here it just answers.
+assert(re_find("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "(a+)+b") == nil,
+"no pattern can be made to hang");

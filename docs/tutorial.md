@@ -762,6 +762,63 @@ generator starts from the clock instead, so two runs differ. (In the
 browser playground there is no clock to start from, so an unseeded
 program repeats itself until it calls `seed`.)
 
+## Patterns
+
+`contains`, `find` and `split` handle fixed text. When the shape
+matters rather than the exact characters, there are patterns.
+`re_test` asks whether one matches, `re_find` says where and what,
+and the pattern is an ordinary string — so a backslash is written
+twice:
+
+```ting
+print(re_test("order 66 shipped", "\\d+"));
+let m = re_find("order 66 shipped", "(\\w+) (\\d+)");
+print(m["text"], m["start"], m["end"]);
+print(m["groups"][0], m["groups"][1]);
+```
+
+```text
+true
+order 66 0 8
+order 66
+```
+
+`re_find_all` returns every match, `re_split` cuts on one, and
+`re_replace` rewrites, with `$1` standing for the first group:
+
+```ting
+let log = "GET /a 200, POST /b 404, GET /c 500";
+for hit in re_find_all(log, "(GET|POST) (\\S+) (\\d{3})") {
+  print(hit["groups"][2], hit["groups"][0], hit["groups"][1]);
+}
+print(re_replace("2026-09-05", "(\\d+)-(\\d+)-(\\d+)", "$3/$2/$1"));
+print(json_str(re_split("a1b22c", "\\d+")));
+```
+
+```text
+200 GET /a
+404 POST /b
+500 GET /c
+05/09/2026
+["a","b","c"]
+```
+
+Two things worth knowing before you write a pattern in anger. The
+engine runs every alternative at once instead of backtracking, so
+matching takes time proportional to the length of the string and no
+pattern can be made to hang on hostile input — the price is that
+there are no backreferences, no lookaround and no flags. And
+positions count characters, not bytes, so `re_find` agrees with
+`slice` and `len` about where things are:
+
+```ting
+print(re_find("héllo", "llo")["start"], find("héllo", "llo"));
+```
+
+```text
+2 2
+```
+
 ## Testing
 
 `lib/test.ting` is a test framework in forty lines of ting: record

@@ -18,8 +18,10 @@ and a thirteen-capability language server (`--lsp`).
 The language is complete: ints/floats/strings/bools/nil, lists and
 maps, functions and closures, control flow, modules via `import()`
 plus nine embedded stdlib modules (list/map/string/math/json/fs/test/time/sh),
-52 builtins (file and stdin I/O, listing, making and removing directories, JSON with pretty printing, sorting,
-map/filter/reduce, try/fail error recovery, string formatting), and
+66 builtins (file and stdin I/O, listing, making and removing
+directories, JSON with pretty printing, sorting, map/filter/reduce,
+try/fail error recovery, string formatting, regular expressions,
+running other programs, the clock and a seeded generator), and
 rustc-style caret diagnostics. Binaries for Linux (x86-64 and arm64,
 glibc and fully static musl), macOS and Windows are attached to every
 [release](https://github.com/stefanobaghino/thing/releases). **Try it

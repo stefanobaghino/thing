@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 66 builtins; nine embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh, 154 functions, guarded);
-  31 ting programs (15 selftest files, 17 examples with .out); 301 Rust tests
+  32 ting programs (16 selftest files, 17 examples with .out); 301 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -358,6 +358,9 @@ holds only the current milestone and the standing rules.
 - 602: health tick green — six bench checksums match baseline, 50000
   differential + 20000 formatter cases at seed 601, corpus at five
   warnings, six assets, site serving lib/sh.ting.
+- 608: reference section (syntax table, semantics, the omissions and
+  why), tutorial section, selftest/regex.ting (33 checks). README's
+  builtin count was stale at 52; now 66.
 - 607: pattern fuzzer (TING_RE_SEED / TING_RE_CASES, default 20000)
   plus a named test for (a+)+b; the five re_* builtins added to the
   crash-fuzzer alphabet and the differential corpus.
@@ -380,8 +383,7 @@ holds only the current milestone and the standing rules.
   backreferences, char offsets to agree with len/slice/find, compiled
   patterns cached in the interpreter.
 - Backlog (one per tick, in order):
-  (1) the docs learn patterns; selftest/regex.ting;
-  (2) RELEASE v2.100.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.100.0; (2) verify; (3) health tick.
 - Still on the list, not chosen: match expressions, a set type,
   threads.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
