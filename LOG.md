@@ -9684,3 +9684,22 @@ until both aarch64 archives have been downloaded cold and run here,
 next tick — and this one has something specific to check, since the
 release build is where the cap is four thousand rather than five
 hundred.
+
+---
+
+## 2026-09-04 — Iteration 558: v2.91.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here — and this release had a claim to check that
+no local debug build can make. A recursive fold over two thousand
+elements answers 1999000, ten times deeper than the old cap allowed
+at all, and the refusal, when it comes, reads `max call depth 4096`:
+the release frame cost, from the 32 MB the runner declares. The
+removal pair works from the shipped binary too — a tree made,
+listed, and taken away with `remove_tree` out of the embedded
+module, leaving `exists` answering false. gnu and musl are
+identical; darwin cannot execute on this host.
+
+That is the first half of milestone "where it says no". The second
+is the one refusal left: a string literal that cannot spell a
+character `json_parse` can.
