@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.99.0 (2026-09-05)
 
 - New builtin `run(cmd)` / `run(cmd, args)` runs a program and waits,
   handing back a map of `code`, `out` and `err`. An argv list, never
