@@ -2117,6 +2117,7 @@ pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeE
             .ok_or_else(|| error("integer overflow", span)),
         (UnaryOp::Neg, Value::Float(x)) => Ok(Value::Float(-x)),
         (UnaryOp::Not, Value::Bool(b)) => Ok(Value::Bool(!b)),
+        (UnaryOp::BitNot, Value::Int(n)) => Ok(Value::Int(!n)),
         (op, v) => Err(error(
             format!("cannot apply '{op}' to {}", v.type_name()),
             span,
@@ -2166,6 +2167,32 @@ pub(crate) fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Val
             (Int(a), Int(b)) => Ok(Int(a.wrapping_rem(b))),
             (l, r) => numeric_or_type_error(op, l, r, span, |a, b| a % b),
         },
+        BitAnd | BitOr | BitXor => match (l, r) {
+            (Int(a), Int(b)) => Ok(Int(match op {
+                BitAnd => a & b,
+                BitOr => a | b,
+                _ => a ^ b,
+            })),
+            (l, r) => Err(type_error(op, l, r, span)),
+        },
+        // Shifting by 64 or more is not a number the hardware agrees
+        // about, so it is an error rather than a silent zero. `>>` keeps
+        // the sign, the way the type does.
+        Shl | Shr => match (l, r) {
+            (Int(a), Int(b)) => {
+                if !(0..64).contains(&b) {
+                    return Err(error(
+                        format!("shift amount {b} out of range (0 to 63)"),
+                        span,
+                    ));
+                }
+                Ok(Int(match op {
+                    Shl => a.wrapping_shl(b as u32),
+                    _ => a.wrapping_shr(b as u32),
+                }))
+            }
+            (l, r) => Err(type_error(op, l, r, span)),
+        },
         Eq => Ok(Bool(values_equal(&l, &r))),
         Ne => Ok(Bool(!values_equal(&l, &r))),
         Lt | Le | Gt | Ge => compare(op, l, r, span),
@@ -2185,15 +2212,22 @@ fn numeric_or_type_error(
         (Value::Int(a), Value::Float(b)) => Ok(Value::Float(f(*a as f64, *b))),
         (Value::Float(a), Value::Int(b)) => Ok(Value::Float(f(*a, *b as f64))),
         (Value::Float(a), Value::Float(b)) => Ok(Value::Float(f(*a, *b))),
-        _ => Err(error(
-            format!(
-                "cannot apply '{op}' to {} and {}",
-                l.type_name(),
-                r.type_name()
-            ),
-            span,
-        )),
+        _ => Err(type_error(op, l, r, span)),
     }
+}
+
+/// The bit operations are int-only: a float has no bits worth talking
+/// about at this level, and promoting one would need a rounding rule
+/// nobody asked for.
+fn type_error(op: BinaryOp, l: Value, r: Value, span: Span) -> RuntimeError {
+    error(
+        format!(
+            "cannot apply '{op}' to {} and {}",
+            l.type_name(),
+            r.type_name()
+        ),
+        span,
+    )
 }
 
 /// == is structural; ints and floats compare numerically (1 == 1.0).

@@ -72,7 +72,7 @@
     },
     "operators": {
       "name": "keyword.operator.ting",
-      "match": "==|!=|<=|>=|&&|\\|\\||[+\\-*/%<>=!]"
+      "match": "==|!=|<=|>=|&&|\\|\\||<<|>>|[+\\-*/%<>=!&|^~]"
     },
     "identifiers": {
       "name": "variable.other.ting",

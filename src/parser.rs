@@ -330,6 +330,7 @@ impl<'a> Parser<'a> {
         let op = match self.peek() {
             TokenKind::Minus => Some(UnaryOp::Neg),
             TokenKind::Bang => Some(UnaryOp::Not),
+            TokenKind::Tilde => Some(UnaryOp::BitNot),
             _ => None,
         };
         if let Some(op) = op {
@@ -480,11 +481,18 @@ fn binop(kind: &TokenKind) -> Option<(BinaryOp, u8, u8)> {
         TokenKind::LtEq => (BinaryOp::Le, 7, 8),
         TokenKind::Gt => (BinaryOp::Gt, 7, 8),
         TokenKind::GtEq => (BinaryOp::Ge, 7, 8),
-        TokenKind::Plus => (BinaryOp::Add, 9, 10),
-        TokenKind::Minus => (BinaryOp::Sub, 9, 10),
-        TokenKind::Star => (BinaryOp::Mul, 11, 12),
-        TokenKind::Slash => (BinaryOp::Div, 11, 12),
-        TokenKind::Percent => (BinaryOp::Rem, 11, 12),
+        // Rust's ordering, not C's: every bitwise operator binds
+        // tighter than a comparison, so `a & b == c` is `(a & b) == c`.
+        TokenKind::Pipe => (BinaryOp::BitOr, 9, 10),
+        TokenKind::Caret => (BinaryOp::BitXor, 11, 12),
+        TokenKind::Amp => (BinaryOp::BitAnd, 13, 14),
+        TokenKind::Shl => (BinaryOp::Shl, 15, 16),
+        TokenKind::Shr => (BinaryOp::Shr, 15, 16),
+        TokenKind::Plus => (BinaryOp::Add, 17, 18),
+        TokenKind::Minus => (BinaryOp::Sub, 17, 18),
+        TokenKind::Star => (BinaryOp::Mul, 19, 20),
+        TokenKind::Slash => (BinaryOp::Div, 19, 20),
+        TokenKind::Percent => (BinaryOp::Rem, 19, 20),
         _ => return None,
     })
 }
@@ -581,6 +589,22 @@ mod tests {
             sexpr("a || b && c == d < e + f"),
             "(|| a (&& b (== c (< d (+ e f)))))"
         );
+    }
+
+    #[test]
+    fn bit_precedence_follows_rust_not_c() {
+        // C puts `&` below `==`, which makes this mean `a & (b == c)`.
+        assert_eq!(sexpr("a & b == c"), "(== (& a b) c)");
+        assert_eq!(sexpr("a | b ^ c & d"), "(| a (^ b (& c d)))");
+        assert_eq!(sexpr("a << b + c"), "(<< a (+ b c))");
+        assert_eq!(sexpr("a && b | c"), "(&& a (| b c))");
+        assert_eq!(sexpr("a >> b >> c"), "(>> (>> a b) c)");
+    }
+
+    #[test]
+    fn complement_is_a_unary_operator() {
+        assert_eq!(sexpr("~a & b"), "(& (~ a) b)");
+        assert_eq!(sexpr("~~a"), "(~ (~ a))");
     }
 
     #[test]

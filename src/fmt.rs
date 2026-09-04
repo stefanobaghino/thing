@@ -99,6 +99,12 @@ fn brace_is_map(prev: Option<&TokenKind>) -> bool {
                 | GtEq
                 | AmpAmp
                 | PipePipe
+                | Amp
+                | Pipe
+                | Caret
+                | Shl
+                | Shr
+                | Tilde
                 | Bang
         )
     )
@@ -110,13 +116,13 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
         Comma | Semi | Colon | RParen | RBracket | Dot => false,
         // `fn(`, `!(`, and unary `-(` stay tight.
         LParen | LBracket => {
-            !(matches!(prev, LParen | LBracket | Fn | Bang)
+            !(matches!(prev, LParen | LBracket | Fn | Bang | Tilde)
                 || (matches!(prev, Minus) && !prev2.map(value_like).unwrap_or(false))
                 || value_like(prev))
         }
         _ => match prev {
             LParen | LBracket | Dot => false,
-            Bang => false,
+            Bang | Tilde => false,
             // Unary minus: previous minus not preceded by a value.
             Minus if !prev2.map(value_like).unwrap_or(false) => false,
             _ => true,

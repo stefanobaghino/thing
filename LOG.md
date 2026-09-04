@@ -9963,3 +9963,38 @@ cannot execute on this host, as always.
 Half of "bits and numbers" is done, and it is the half that only
 makes sense because of the other half: hex exists to be masked with.
 The operators come next.
+
+## 2026-09-04 — Iteration 569: bitwise operators
+
+`& | ^ ~ << >>` are operators now, int-only. Six new tokens (`&` and
+`|` stopped being errors and became `two(b'&', AmpAmp, Amp)`), five
+binary AST nodes and one unary, one arm each in the shared `binary`
+and `unary` in eval.rs — the VM needed nothing, because `Op::Binary`
+has always delegated there. That is the design paying out: a new
+operator is byte-identical across both engines by construction, and
+the differential corpus proves it rather than assuming it.
+
+Precedence is Rust's. Loosest to tightest: `||`, `&&`, comparison,
+`|`, `^`, `&`, shifts, `+ -`, `* / %`, unary. The one that matters is
+that every bit operator binds tighter than a comparison, so
+`0xff & 0x0f == 0x0f` is `(0xff & 0x0f) == 0x0f` and means what it
+looks like. C put `&` below `==` and has been apologising for it ever
+since; a language written in 2026 has no excuse to copy the mistake.
+The parser test says so in its name.
+
+Two refusals, both deliberate. A float has no bits at this level, so
+`1.5 & 2` is `cannot apply '&' to float and int` rather than a
+promotion with an invented rounding rule. And a shift of 64 or more —
+or a negative one — is an error naming the range, because that is the
+case where hardware disagrees with itself and every language that
+returned something had to pick a fiction. `>>` is arithmetic: the sign
+survives, the way the type does.
+
+The formatter learned the new tokens in both places it cares about:
+`{` after one of them opens a map, and `~` hugs its operand like `!`.
+The crash fuzzer's alphabet and the differential corpus both grew the
+operators, and 20000 differential cases and the crash fuzzer are green
+on top of the suite.
+
+Gate green: fmt, clippy, 274 Rust tests, 625 selftest checks, corpus
+at exactly five warnings. Docs are the next stroke.

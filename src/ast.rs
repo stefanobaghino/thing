@@ -90,6 +90,7 @@ pub enum ExprKind {
 pub enum UnaryOp {
     Neg,
     Not,
+    BitNot,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -107,6 +108,11 @@ pub enum BinaryOp {
     Ge,
     And,
     Or,
+    BitAnd,
+    BitOr,
+    BitXor,
+    Shl,
+    Shr,
 }
 
 impl fmt::Display for UnaryOp {
@@ -114,6 +120,7 @@ impl fmt::Display for UnaryOp {
         f.write_str(match self {
             UnaryOp::Neg => "-",
             UnaryOp::Not => "!",
+            UnaryOp::BitNot => "~",
         })
     }
 }
@@ -134,6 +141,11 @@ impl fmt::Display for BinaryOp {
             BinaryOp::Ge => ">=",
             BinaryOp::And => "&&",
             BinaryOp::Or => "||",
+            BinaryOp::BitAnd => "&",
+            BinaryOp::BitOr => "|",
+            BinaryOp::BitXor => "^",
+            BinaryOp::Shl => "<<",
+            BinaryOp::Shr => ">>",
         })
     }
 }

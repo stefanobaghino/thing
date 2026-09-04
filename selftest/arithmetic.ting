@@ -23,6 +23,24 @@ assert(1.5e-3 == 0.0015, "negative exponent");
 assert(2E+2 == 200.0, "capital E and an explicit plus");
 assert(type(1e3) == "float", "an exponent makes a float");
 
+# Bit operations, int-only, Rust's precedence.
+assert(0b1100 & 0b1010 == 0b1000, "and");
+assert(0b1100 | 0b1010 == 0b1110, "or");
+assert(0b1100 ^ 0b1010 == 0b0110, "xor");
+assert(~0 == -1, "complement");
+assert(~5 == -6, "complement of a positive");
+assert(1 << 10 == 1024, "shift left");
+assert(-16 >> 2 == -4, "shift right keeps the sign");
+assert(1 << 2 + 1 == 8, "shifts bind looser than arithmetic");
+assert(7 & 3 | 8 == 11, "and binds tighter than or");
+assert((1 | 2 ^ 3 & 4) == 3, "xor sits between them");
+assert(0xff & 0x0f == 0x0f, "bits bind tighter than comparison");
+
+let shifted = try(fn() { return 1 << 64; });
+assert(contains(shifted["err"], "out of range"), "a shift of 64 is an error");
+let floaty = try(fn() { return 1.5 & 2; });
+assert(contains(floaty["err"], "cannot apply"), "floats have no bits");
+
 assert(1 == 1.0, "numeric equality crosses int/float");
 assert(1 != 2, "inequality");
 assert(!(1 == "1"), "no string/number equality");

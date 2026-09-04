@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 52 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 272 Rust tests
+  programs (12 selftest files, 17 examples with .out); 274 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -274,11 +274,13 @@ holds only the current milestone and the standing rules.
   literal that parses to infinity is an error.
 - v2.93.0 VERIFIED (114th tag; strokes 565, 566; both aarch64
   archives executed here, the shipped refusals checked too).
+- 569: bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
+  (every bit operator binds tighter than a comparison); floats and
+  a shift of 64 or more are errors; the VM needed no change because
+  Op::Binary delegates to the shared evaluator.
 - Backlog (one per tick, in order):
-  (1) bitwise operators & | ^ ~ << >>, int-only, Rust's precedence
-  (shifts below arithmetic, & then ^ then | below those, all above
-  comparison); (2) the docs read the bits; (3) RELEASE v2.94.0;
-  (4) health tick + audit.
+  (1) the docs read the bits; (2) RELEASE v2.94.0;
+  (3) health tick + audit.
 - Surveyed and not chosen (564): no destructuring, no default
   parameter values, no variadic parameters — real absences, but each
   adds syntax to a language whose smallness is a feature, and none

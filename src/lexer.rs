@@ -66,6 +66,12 @@ pub enum TokenKind {
     Bang,
     AmpAmp,
     PipePipe,
+    Amp,
+    Pipe,
+    Caret,
+    Tilde,
+    Shl,
+    Shr,
     LParen,
     RParen,
     LBrace,
@@ -161,24 +167,24 @@ impl<'a> Lexer<'a> {
                 b':' => TokenKind::Colon,
                 b'=' => self.two(b'=', TokenKind::EqEq, TokenKind::Eq),
                 b'!' => self.two(b'=', TokenKind::BangEq, TokenKind::Bang),
-                b'<' => self.two(b'=', TokenKind::LtEq, TokenKind::Lt),
-                b'>' => self.two(b'=', TokenKind::GtEq, TokenKind::Gt),
-                b'&' => {
-                    if self.peek() == Some(b'&') {
+                b'<' => match self.peek() {
+                    Some(b'<') => {
                         self.pos += 1;
-                        TokenKind::AmpAmp
-                    } else {
-                        return Err(self.error("expected '&&'", start));
+                        TokenKind::Shl
                     }
-                }
-                b'|' => {
-                    if self.peek() == Some(b'|') {
+                    _ => self.two(b'=', TokenKind::LtEq, TokenKind::Lt),
+                },
+                b'>' => match self.peek() {
+                    Some(b'>') => {
                         self.pos += 1;
-                        TokenKind::PipePipe
-                    } else {
-                        return Err(self.error("expected '||'", start));
+                        TokenKind::Shr
                     }
-                }
+                    _ => self.two(b'=', TokenKind::GtEq, TokenKind::Gt),
+                },
+                b'^' => TokenKind::Caret,
+                b'~' => TokenKind::Tilde,
+                b'&' => self.two(b'&', TokenKind::AmpAmp, TokenKind::Amp),
+                b'|' => self.two(b'|', TokenKind::PipePipe, TokenKind::Pipe),
                 b'"' => self.string(start)?,
                 b'0'..=b'9' => self.number(start)?,
                 b if b.is_ascii_alphabetic() || b == b'_' => self.ident(start),
@@ -593,7 +599,7 @@ mod tests {
     #[test]
     fn operators_single_and_double() {
         assert_eq!(
-            kinds("= == ! != < <= > >= && ||"),
+            kinds("= == ! != < <= > >= && || & | ^ ~ << >>"),
             vec![
                 TokenKind::Eq,
                 TokenKind::EqEq,
@@ -605,6 +611,12 @@ mod tests {
                 TokenKind::GtEq,
                 TokenKind::AmpAmp,
                 TokenKind::PipePipe,
+                TokenKind::Amp,
+                TokenKind::Pipe,
+                TokenKind::Caret,
+                TokenKind::Tilde,
+                TokenKind::Shl,
+                TokenKind::Shr,
                 TokenKind::Eof
             ]
         );
@@ -644,8 +656,9 @@ mod tests {
     }
 
     #[test]
-    fn lone_ampersand_errors() {
-        assert_eq!(lex("&").unwrap_err().message, "expected '&&'");
+    fn a_lone_ampersand_is_now_an_operator() {
+        assert_eq!(kinds("&"), vec![TokenKind::Amp, TokenKind::Eof]);
+        assert_eq!(kinds("|"), vec![TokenKind::Pipe, TokenKind::Eof]);
     }
 
     #[test]

@@ -40,6 +40,12 @@ fn expressions_match_across_engines() {
         "print([1,2,3][5]);",
         "print({\"a\": 1}[\"z\"]);",
         "print({1: 2});",
+        // bit operations: precedence, sign, and the two refusals
+        "print(0b1100 & 0b1010, 0b1100 | 0b1010, 0b1100 ^ 0b1010, ~0, ~5);",
+        "print(1 << 10, -16 >> 2, 1 << 2 + 1, 7 & 3 | 8, 1 | 2 ^ 3 & 4, 0xff & 0x0f == 0x0f);",
+        "print(1 << 64);",
+        "print(1.5 & 2);",
+        "print(~1.5);",
         // comparisons and equality
         "print(1 < 1.5, \"a\" < \"b\", 1 == 1.0, 1 == \"1\", nil == nil);",
         // strict short-circuit logic
