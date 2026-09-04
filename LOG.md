@@ -9778,3 +9778,25 @@ says no" — of the three refusals the survey found, two are gone and
 the third, `list_dir` on a path that is not a directory, stays
 because it was earned. Six archives; unverified until both aarch64
 archives have been downloaded cold and run here, next tick.
+
+---
+
+## 2026-09-04 — Iteration 562: v2.92.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold,
+unpacked and run here on a script that spells three characters by
+code point — one ASCII, one Latin-1, one astral written as a
+surrogate pair — converts in both directions with `ord` and `chr`,
+and asserts that a literal and `json_parse` agree about the same
+escape. `A é 😀`, `65 é 9731`, `true`, identical on gnu and musl.
+The darwin archive cannot execute on this host, as always.
+
+Milestone "where it says no" is done. Three refusals went into it:
+a recursion cap nobody had measured, a filesystem that could create
+but not remove, and a literal that could not spell what
+`json_parse` could read. Two tags, both cold-verified. The refusals
+that remain — `list_dir` on a path that is not a directory,
+`remove_dir` on a directory with something in it, `ord` on a string
+of more than one character — are the ones with a reason behind
+them, and the reason is now written down next to each. Next tick is
+the health tick that closes the milestone.
