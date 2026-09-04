@@ -10109,3 +10109,31 @@ the other half of last milestone.
 Milestone "numbers that read back" (v2.95-v2.96): print floats so
 they can be read and re-read, make the three conversion paths agree
 with the literal path, and give the bits a way out as well as in.
+
+## 2026-09-04 — Iteration 575: floats print in a form that reads back
+
+One function, `value::float_repr`, now decides how a float becomes
+text, and both the Display impl and the JSON encoder call it. Rust's
+Display for f64 never uses an exponent, which is why `1e23` used to
+print as `99999999999999991611392.0` and `1e300 * 10.0` as three
+hundred digits. Outside the range 1e-4 to 1e17 the repr switches to
+`{:e}`; inside it, the shortest round-tripping form, with a `.0` on
+an integral value so a float stays visibly a float.
+
+The thresholds are chosen so that what a script actually handles
+stays in plain form — money, percentages, millisecond timestamps
+(1.7e12) — and only the values that would print as a wall of digits
+switch. 1e17 is above 2^53, past which consecutive integers are not
+all representable anyway.
+
+Every form the printer emits is both a ting literal and valid JSON,
+which is what makes this a round trip rather than a display trick:
+`json_str` now writes `1e23` instead of a 23-digit expansion, and
+`json_parse` reads it back to the same double. A unit test proves the
+property rather than the spelling — it lexes each printed float and
+compares bit patterns, including f64::MAX and MIN_POSITIVE.
+
+Gate green: fmt, clippy, 277 Rust tests, 631 selftest checks, corpus
+at exactly five warnings. No example output or tutorial snippet
+changed, which says the old spelling was only ever reachable at the
+extremes.

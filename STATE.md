@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 52 builtins; seven embedded stdlib modules
   (list/map/string/math/json/fs/test, 133 functions, guarded); 29 ting
-  programs (12 selftest files, 17 examples with .out); 274 Rust tests
+  programs (12 selftest files, 17 examples with .out); 277 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -288,19 +288,20 @@ holds only the current milestone and the standing rules.
   six assets per tag; the site serves v2.94.0).
 - 574: replenishment — milestone "numbers that read back"
   (v2.95-v2.96), reasoning in LOG.md.
+- 575: float printing goes through one value::float_repr, shared by
+  Display and json_str: exponent form outside 1e-4..1e17, shortest
+  round-tripping form inside, .0 kept on integral values; a test
+  lexes every printed float back and compares bits.
 - Backlog (one per tick, in order):
-  (1) float printing: shortest form that round-trips, exponent
-  notation outside a readable range, integral floats keep the .0,
-  shared by print/str/json_str;
-  (2) the conversion paths agree with the literal path: float("1e400"),
+  (1) the conversion paths agree with the literal path: float("1e400"),
   float("inf"), float("nan") and json_parse("1e999") are errors, not
   infinities; int() of a non-finite or out-of-range float is an error
   rather than a saturated i64;
-  (3) RELEASE v2.95.0;
-  (4) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
+  (2) RELEASE v2.95.0;
+  (3) hex(n) and bin(n) — the way out that 0xff and 0b1010 are the
   way in; int(s) accepts the prefixed forms it prints;
-  (5) the docs read the numbers; (6) RELEASE v2.96.0;
-  (7) health tick + audit.
+  (4) the docs read the numbers; (5) RELEASE v2.96.0;
+  (6) health tick + audit.
 - Found in the 574 survey, all at the text boundary: 1e23 prints as
   99999999999999991611392.0 and 1e300 * 10.0 as three hundred digits;
   float("1e400") is inf while the literal is an error; json_str

@@ -493,17 +493,32 @@ fn write_element(f: &mut fmt::Formatter<'_>, v: &Value) -> fmt::Result {
     }
 }
 
+/// A float as text that can be read back: the shortest form that
+/// round-trips, an exponent where the plain form would be a wall of
+/// digits (1e23 rather than 99999999999999991611392.0), and a `.0` on
+/// an integral value so it stays visibly a float. json_str spells
+/// floats this way too — every form here is also a ting literal and
+/// valid JSON.
+pub fn float_repr(x: f64) -> String {
+    if !x.is_finite() {
+        return x.to_string();
+    }
+    let magnitude = x.abs();
+    if x != 0.0 && !(1e-4..1e17).contains(&magnitude) {
+        return format!("{x:e}");
+    }
+    if x.fract() == 0.0 {
+        format!("{x:.1}")
+    } else {
+        x.to_string()
+    }
+}
+
 impl fmt::Display for Value {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
             Value::Int(n) => write!(f, "{n}"),
-            Value::Float(x) => {
-                if x.fract() == 0.0 && x.is_finite() {
-                    write!(f, "{x:.1}")
-                } else {
-                    write!(f, "{x}")
-                }
-            }
+            Value::Float(x) => f.write_str(&float_repr(*x)),
             Value::Str(s) => f.write_str(s),
             Value::Bool(b) => write!(f, "{b}"),
             Value::Nil => f.write_str("nil"),
@@ -542,6 +557,57 @@ impl fmt::Display for Value {
             }
             Value::Fn(func) => write!(f, "<fn({})>", func.params.join(", ")),
             Value::Builtin(b) => write!(f, "<builtin {}>", b.name()),
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn floats_print_in_a_form_that_reads_back() {
+        for (x, text) in [
+            (1e23, "1e23"),
+            (1e-7, "1e-7"),
+            (0.1, "0.1"),
+            (1.0, "1.0"),
+            (-0.0, "-0.0"),
+            (0.0, "0.0"),
+            (2.5, "2.5"),
+            (1e16, "10000000000000000.0"),
+            (1e17, "1e17"),
+            (1e-4, "0.0001"),
+            (1e-5, "1e-5"),
+            (0.1 + 0.2, "0.30000000000000004"),
+        ] {
+            assert_eq!(float_repr(x), text, "{x} printed wrong");
+        }
+        assert_eq!(float_repr(f64::INFINITY), "inf");
+        assert_eq!(float_repr(f64::NAN), "NaN");
+    }
+
+    #[test]
+    fn every_printed_float_lexes_back_to_itself() {
+        for x in [
+            1e23,
+            1e-7,
+            0.1,
+            1.0,
+            2.5,
+            0.1 + 0.2,
+            f64::MAX,
+            f64::MIN_POSITIVE,
+            1e300 * 10.0,
+        ] {
+            let text = float_repr(x);
+            let tokens = crate::lexer::lex(&text).unwrap_or_else(|e| panic!("{text}: {e:?}"));
+            match tokens[0].kind {
+                crate::lexer::TokenKind::Float(back) => {
+                    assert_eq!(back.to_bits(), x.to_bits(), "{text} read back as {back}")
+                }
+                ref other => panic!("{text} lexed as {other:?}, not a float"),
+            }
         }
     }
 }

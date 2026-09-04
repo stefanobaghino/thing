@@ -23,6 +23,14 @@ assert(1.5e-3 == 0.0015, "negative exponent");
 assert(2E+2 == 200.0, "capital E and an explicit plus");
 assert(type(1e3) == "float", "an exponent makes a float");
 
+# Floats print in a form that reads back.
+assert(str(1e23) == "1e23", "a big float keeps its exponent");
+assert(str(1e-7) == "1e-7", "so does a small one");
+assert(str(1.0) == "1.0", "an integral float keeps its point");
+assert(str(0.1) == "0.1", "the shortest form that round-trips");
+assert(json_str([1e23, 1.0]) == "[1e23,1.0]", "json spells them the same way");
+assert(json_parse(json_str([1e23, 1e-7])) == [1e23, 1e-7], "and reads them back");
+
 # Bit operations, int-only, Rust's precedence.
 assert(0b1100 & 0b1010 == 0b1000, "and");
 assert(0b1100 | 0b1010 == 0b1110, "or");

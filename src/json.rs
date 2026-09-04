@@ -101,12 +101,8 @@ fn encode_into(v: &Value, out: &mut String, path: &mut Path) -> Result<(), Strin
                 return Err("json_str cannot encode a non-finite float".to_string());
             }
             // Keep the float-ness visible so the value round-trips as
-            // a float (matches how ting prints floats).
-            if x.fract() == 0.0 {
-                out.push_str(&format!("{x:.1}"));
-            } else {
-                out.push_str(&x.to_string());
-            }
+            // a float; the spelling is the one ting prints.
+            out.push_str(&crate::value::float_repr(*x));
         }
         Value::Str(s) => encode_string(s, out),
         Value::List(items) => {
@@ -396,6 +392,14 @@ mod tests {
             decode("\"h\\u00e9llo\\n\"").unwrap(),
             Value::Str("héllo\n".into())
         );
+    }
+
+    #[test]
+    fn extreme_floats_encode_as_valid_json_that_reads_back() {
+        assert_eq!(encode(&Value::Float(1e23)).unwrap(), "1e23");
+        assert_eq!(encode(&Value::Float(1e-7)).unwrap(), "1e-7");
+        assert_eq!(encode(&Value::Float(1.0)).unwrap(), "1.0");
+        assert_eq!(decode("1e23").unwrap(), Value::Float(1e23));
     }
 
     #[test]
