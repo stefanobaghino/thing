@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.86.0 (2026-09-04)
+
+- `--profile` counts builtins too, marked `a builtin` where a ting
+  function names its file and line, and prints at most twenty rows
+  before counting the rest.
+- Docs: the reference and tutorial explain the profiler, self time
+  and the table.
+
 ## v2.85.0 (2026-09-04)
 
 - New `ting --profile` runs a script and then reports, on stderr,
