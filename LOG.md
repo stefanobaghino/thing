@@ -9180,3 +9180,23 @@ the one mode refused because it would answer its own writes. Six
 archives per the usual matrix; the release is not recorded as
 verified until both aarch64 archives have been downloaded cold and
 executed on this host, which is the next tick's first job.
+
+---
+
+## 2026-09-04 — Iteration 538: v2.87.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives downloaded cold
+into a scratch directory, unpacked and run on this host: `--version`
+answers 2.87.0, a script runs, `--check --watch` shows the new flag
+in its usage line, and `ting --fmt --watch` exits 2 with the line
+naming the two modes that write nothing. The musl binary was then
+put in a real watch: run 1 over one file, a second file written into
+the directory, run 2 naming it added and testing both. The darwin
+archive cannot execute here, as always.
+
+One thing the live run showed that the test could not: with long
+absolute paths the rule line runs past eighty columns, because the
+padding saturates rather than truncating the cause. That is the
+right way round — a rule exists to be seen and the cause is the
+part worth reading — but it is worth knowing that the width is a
+floor, not a promise.

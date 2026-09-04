@@ -216,14 +216,13 @@ holds only the current milestone and the standing rules.
   naming the cause. 536: --check and --fmt-check watch too, over one
   shared loop; --fmt --watch is refused (it would answer its own
   rewrites).
-- 537: v2.87.0 tagged (108th tag; strokes 535, 536) — verification
-  pending.
+- v2.87.0 VERIFIED (108th tag; strokes 535, 536; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order):
-  (1) verify v2.87.0 (cold download, both aarch64 archives run
-  here); (2) a script can arrive on stdin (ting -), with args and
-  an honest word about input(); (3) the docs read the terminal;
-  (4) RELEASE v2.88.0; (5) health tick + audit.
-- Tags: 108 (v2.87.0), 107 verified; v2.29.0 is publicly marked broken
+  (1) a script can arrive on stdin (ting -), with args and
+  an honest word about input(); (2) the docs read the terminal;
+  (3) RELEASE v2.88.0; (4) health tick + audit.
+- Tags: 108 (v2.87.0), 108 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
