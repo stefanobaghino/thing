@@ -12445,3 +12445,23 @@ not see the bug and the integration test could.
 
 Gate: fmt clean, clippy zero, fourteen suites ok, and the coverage
 report still names lib/test.ting relative here.
+
+## 2026-09-05 — Iteration 677: v2.110.0
+
+Released, the 131st tag, and the close of milestone "the key that
+isn't there". The tag carries lib/err.ting and examples/todo.ting
+reading `try`'s map with `get` (671), the member warning that names a
+builtin instead of guessing at an export (673), and reports that print
+an imported module's path the way the rest of their rows are printed
+(674, repaired for Windows in 675 and 676).
+
+Version bumped, `## Unreleased` cut to `## v2.110.0 (2026-09-05)`, the
+gate green (fmt, clippy at zero, fourteen suites), the corpus at its
+five deliberate warnings, the binary reporting 2.110.0 and 22
+selftests / 2421 checks passing. Tagged and pushed; a monitor is
+pinned to the Release and CI run ids.
+
+The milestone took the `has`-guard measurement of 666 and spent it:
+the builtin, the corpus adoption, the docs, and then the two places
+the change itself created work — a caller left behind by a retired
+module function, and a report naming a file two different ways.

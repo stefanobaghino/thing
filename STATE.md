@@ -659,9 +659,11 @@ holds only the current milestone and the standing rules.
   `lib/test.ting` literally; Windows shortens to `lib\test.ting`, so
   the needle is built from Path::join now. A misplaced doc comment
   from the same tick went back too.
+- 677: v2.110.0 released (131st tag; strokes 671, 673, 674), closing
+  milestone "the key that isn't there".
 - Backlog (one per tick, in order):
-  (1) release v2.110.0 (strokes 671, 673, 674); (2) verify;
-  (3) replenish — "the key that isn't there" ends with the release.
+  (1) verify v2.110.0 by cold asset download; (2) replenish the
+  backlog with a new milestone, measured; (3) health tick.
 - Small strokes available any time: none outstanding (657's coverage
   path closed in 674).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
