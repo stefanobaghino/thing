@@ -16,6 +16,10 @@ Windows are attached to each
   refusal, `lib/list.ting`'s `max_by` replacing its running best,
   `lib/args.ting`'s `main`, and — from processes of their own —
   `lib/test.ting`'s `summary` and `main`'s two exits.
+- Tests for what coverage found untested: `lib/json.ting`'s `set_in`
+  refusal, `lib/list.ting`'s `max_by` replacing its running best,
+  `lib/args.ting`'s `main`, and — from processes of their own —
+  `lib/test.ting`'s `summary` and `main`'s two exits.
 
 ## v2.105.0 (2026-09-05)
 

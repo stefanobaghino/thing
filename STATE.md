@@ -493,9 +493,16 @@ holds only the current milestone and the standing rules.
 - 644: reference and tutorial document `--coverage` (a statement is
   the unit; a `fn` definition is covered when the file runs, its body
   when it is called); the CLI test covers the multi-script form.
+- 645: coverage's findings fixed — set_in's refusal, max_by's replace
+  branch (every case had the largest element first), args main() and
+  test summary(), the last two from Rust because they print and exit.
+  lib/ reads 2203 of 2215; the eleven left are those two exiting paths
+  and sh.ting's Windows-only branch.
+- 645b: the tick's STATE and CHANGELOG edits were a separate command
+  from the gate chain, so a failed assertion in them did not stop the
+  commit. Every edit script belongs in the chain that gates the push.
 - Backlog (one per tick, in order):
-  (3) point it at lib/ and fix what it finds;
-  (4) RELEASE v2.106.0; (5) verify; (6) health tick.
+  (1) RELEASE v2.106.0; (2) verify; (3) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).
@@ -539,6 +546,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - A test that runs the corpus in-process skips the files that touch
   the filesystem or spawn programs: another test already runs those as
   child processes, and selftest/fs.ting's tree has a fixed name (643b).
+- Edit scripts belong inside the gate chain: a heredoc python that
+  failed its assertion left STATE.md unwritten and the commit went out
+  anyway (645b).
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
   line); `set -e` is NOT honoured by the harness (377b); never a bare
   line after the gate (358, 377 pushed green records for red gates).
