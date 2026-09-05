@@ -11289,3 +11289,38 @@ defaults at every call length, and the docs and a selftest pin what
 the feature promises. Two bugs it found on the way in: the compiler's
 capture analysis did not walk parameter defaults, and the checker read
 every identifier between the parentheses as a parameter.
+
+## 2026-09-05 — Iteration 628: replenishment — "as many as you like"
+
+The backlog emptied with v2.102.0 verified, so this tick designs the
+next milestone. The evidence is the same shape as last time, and it
+was left behind by last time: builtins have something user functions
+cannot have. `print`, `format`, `min` and `max` take as many
+arguments as you give them; no function written in ting can. So no
+ting program can wrap `format` — and wrapping `format` is exactly
+what the code here keeps wanting to do. lib/test.ting has five lines
+that are `push(state["failures"], format(...))` with a different
+shape each time, and `fail(format(...))` appears a dozen times across
+the examples. The helper that would collapse them cannot be written.
+
+Milestone "as many as you like" (v2.103.0, v2.104.0): a rest
+parameter, `fn f(a, ...rest)`, which binds a list of whatever is left
+over; and spread at a call, `f(...xs)`, which is what makes
+forwarding possible at all — a rest parameter without a spread can
+receive arguments but never pass them on. Both are additive: `.` is
+lexed but is not part of any expression today, so no program can be
+using `...` as anything.
+
+Rejected again, for the reasons already in this log: match
+expressions and catch syntax need a new keyword, and a new keyword
+breaks a program using that word as a name. Considered and not
+chosen: the two benchmarks where the VM is slower than the
+tree-walker (json +5%, maps +3%) — both are dominated by builtins and
+by string building the engines share, so the gap is dispatch overhead
+on work the VM cannot help with, not a slow path to fix. Also
+considered: destructuring. Only four lambdas in the whole corpus take
+a pair apart, which is not enough pressure to add syntax.
+
+Noted for a later stroke, now that defaults exist: csv's
+`parse`/`parse_with` and `text`/`text_with` are twins that only exist
+because the separator could not be optional.

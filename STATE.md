@@ -436,8 +436,23 @@ holds only the current milestone and the standing rules.
   corpus at five warnings, six assets, site serving v2.102.0 and both
   new docs passages. Milestone "arguments that can be left out" is
   complete.
+- 628: replenishment — milestone "as many as you like"
+  (v2.103.0, v2.104.0), reasoning in LOG.md: builtins take as many
+  arguments as you give them and no ting function can, so no ting
+  program can wrap format().
 - Backlog (one per tick, in order):
-  (1) replenishment tick — the backlog is empty.
+  (1) `...rest` parameters — lexer, parser, AST, fmt, both engines
+  through Interpreter::call, "at least N arguments" in the arity
+  message, checker and hover;
+  (2) spread at a call, `f(...xs)`, without which a rest parameter
+  can receive but never forward;
+  (3) RELEASE v2.103.0; (4) verify;
+  (5) fuzz generator + differential corpus, docs and a selftest;
+  (6) the stdlib uses it (lib/test.ting's five format lines);
+  (7) RELEASE v2.104.0; (8) verify; (9) health tick.
+- Small stroke available any time, now that defaults exist: csv's
+  parse/parse_with and text/text_with are twins only because the
+  separator could not be optional.
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.
