@@ -606,8 +606,21 @@ holds only the current milestone and the standing rules.
   coverage 2286/2298 with only the known misses, six assets on each
   of the last two tags, CI green on HEAD, nine site paths at 200
   serving v2.108.0 and 175 stdlib functions.
+- 666: replenishment — milestone "the key that isn't there"
+  (v2.109-v2.110), reasoning in LOG.md. Measured: 40 `has(m, k)`
+  guards over a read of `m[k]` (13 control-flow, 12 plain presence,
+  15 value-fallback); `lib/map.ting`'s `get` called zero times in the
+  corpus; `m[k] += 1` on a missing key is an error, so v2.107.0's
+  compound assignment does not reach counting.
 - Backlog (one per tick, in order):
-  (1) replenish; (2) health tick.
+  (1) `get(x, k, default)` as a builtin, `lib/map.ting`'s `get`
+  retiring into it (builtins 66->67, stdlib 175->174, both guards
+  moving together); (2) corpus adoption of `get` — the 15
+  value-fallback sites and the seven seeding sites, the five
+  deliberate warnings still five; (3) tests at three levels plus the
+  crash-fuzzer alphabet and `--doc`; (4) docs (reference, tutorial,
+  stdlib, README, cookbook, changelog); (5) release; (6) verify;
+  (7) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is

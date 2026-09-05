@@ -12121,3 +12121,58 @@ Still open, unchanged: the coverage report names lib/test.ting by
 absolute path where every other row is relative, because
 selftest/testlib.ting imports it as "../lib/test.ting" and the report
 prints the path as resolved.
+
+## 2026-09-05 — Iteration 666: replenishment — milestone "the key that isn't there"
+
+Measured the corpus rather than guessing at it, and three of the five
+things I went looking for turned out already to be handled. What is
+left is sharp.
+
+`has(m, k)` guards a read of `m[k]` at 40 sites. Thirteen fall back to
+control flow (return, fail, break) and nothing can replace those;
+twelve are plain presence tests and read fine; fifteen fall back to a
+value, and every one of those names the map twice and the key twice to
+say one thing.
+
+The helper for exactly those fifteen already exists —
+`lib/map.ting`'s `get(m, k, default)`. It is called **zero** times in
+the entire corpus outside its own definition. A helper nobody reaches
+for is not a helper; it costs an import to say what indexing should
+have said.
+
+Seven of the fifteen are the seeding shape, and one of them is the
+word-count in examples/collections.ting:
+
+    if has(counts, w) { counts[w] += 1; } else { counts[w] = 1; }
+
+Five lines wrapped around a `+=` that cannot run on the first word.
+`m[k] += 1` on a missing key is `error: key "a" not found` (checked).
+So the compound assignment shipped in v2.107.0 does not reach the most
+common thing anyone does to a map.
+
+**Milestone "the key that isn't there" (v2.109.0–v2.110.0).** `get(x,
+k, default)` becomes a builtin: maps by key, lists by integer index
+the way indexing already reads them, returning `default` where the key
+or index is absent instead of failing. `lib/map.ting`'s `get` retires
+into it — a module function that shadows a builtin is one of the nine
+warnings, so the two cannot coexist quietly. Builtins 66 to 67, stdlib
+175 to 174; both counts are guarded, so both guards move together.
+Then the corpus adopts it, the tests land at three levels, and the
+docs follow.
+
+Not chosen, with reasons:
+
+- A `--check` warning suggesting `get` where a `has` guard appears.
+  Ruled out by the principle recorded in 649: the nine warnings each
+  claim "this is probably a bug", and a style preference would change
+  what `--strict`'s exit status means.
+- An index-and-element loop form. Zero measured pressure: all ten
+  `for i in range(len(X))` loops in the corpus use `i` for itself, not
+  merely to reach `X[i]`. Nothing to collapse.
+- Suggesting the nearest key on a missing-key error. Already there —
+  `m["nmae"]` on a map holding "name" says `did you mean "name"?`.
+- Auto-seeding `m[k] += 1`. Declined. A missing key is an error on
+  purpose, and silently creating one would hide exactly the typo the
+  nearest-key suggestion exists to catch.
+- `has` for lists and strings (it is map-only today). No pressure: the
+  corpus tests list bounds with `len`, which reads fine.
