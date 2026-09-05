@@ -599,8 +599,15 @@ holds only the current milestone and the standing rules.
   with the caps applied; four runs byte-identical; --check and --fmt
   quiet; the site serves v2.108.0 and counts 175 stdlib functions).
   Milestone "what the values were" complete.
+- 665: health tick + audit green — all six bench checksums matching
+  BASELINE, three fuzzers at seed 665 clean (50000 differential,
+  20000 formatter, 2000000 pattern), the gate green (fmt, clippy at
+  zero, fourteen suites), the corpus at its five deliberate warnings,
+  coverage 2286/2298 with only the known misses, six assets on each
+  of the last two tags, CI green on HEAD, nine site paths at 200
+  serving v2.108.0 and 175 stdlib functions.
 - Backlog (one per tick, in order):
-  (1) health tick; (2) replenish.
+  (1) replenish; (2) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is

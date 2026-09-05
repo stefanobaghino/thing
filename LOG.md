@@ -12090,3 +12090,34 @@ worked example's new line. Nine paths answer 200.
 Milestone "what the values were" is complete: the diagnostic, the
 trace, lib/err.ting's `given`, the caps, the tests at three levels and
 the docs.
+
+## 2026-09-05 — Iteration 665: health tick
+
+Green, top to bottom. `python3 bench/run.py` in the foreground: all six
+checksums match bench/BASELINE.md. Timings sit above the baseline
+(fib.ting vm 356.5 ms against 335.4 ms) — on this shared host that is
+weather, and the frame-arguments milestone's measured +2.9% on fib is
+already in the record from 658.
+
+Three fuzzers at seed 665: 50000 differential cases, 20000 formatter
+cases, 2000000 pattern cases — sixteen tests, no failures. The gate:
+`cargo fmt --check` clean, clippy at zero warnings across all targets,
+fourteen suites reporting `test result: ok`. The corpus scan over
+lib, selftest, examples and bench prints exactly its five deliberate
+warnings.
+
+Coverage over selftest reads 2286 of 2298 lines. The twelve misses are
+the known set and nothing new: lib/test.ting's three, lib/args.ting's
+six, lib/sh.ting's two, selftest/edge.ting's one. The count moved from
+2266/2278 because the last two milestones added lines, not because
+anything stopped being covered.
+
+Audit: v2.108.0 and v2.107.0 each carry six assets; CI is green on
+HEAD (e274d6c). The site answers 200 on all nine published paths, the
+changelog page serves v2.108.0, and the stdlib page counts 175
+functions — matching Cargo.toml and the guard.
+
+Still open, unchanged: the coverage report names lib/test.ting by
+absolute path where every other row is relative, because
+selftest/testlib.ting imports it as "../lib/test.ting" and the report
+prints the path as resolved.
