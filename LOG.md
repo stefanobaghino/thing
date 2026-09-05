@@ -13320,3 +13320,41 @@ paths and the published changelog carries v2.113.0.
 The milestone "the matcher's inner loop" is shipped and verified. One
 tick remains on it: the health tick — bench against BASELINE plus the
 release-mode fuzz sweep — which is what closes a milestone here.
+
+## 2026-09-06 — Iteration 700: health tick closes "the matcher's inner loop"
+
+The milestone's closing tick, and it found nothing wrong with the code
+— but something wrong with how I run the sweep.
+
+Bench first: all eight checksums identical to BASELINE, including
+regex.ting at `24000 5989512 37 109`. Timings are weather and moved a
+few percent either way (fib 515.0 to 524.0 eval, stdlib 866.8 to 863.9,
+regex 235.5/197.8 to 235.6/199.3). No row is rewritten; the checksums
+are what decide, and they agree.
+
+The fuzz sweep in release: 50000 differential cases at seed 699, the
+crash fuzzer, 20000 formatter cases, and 2000000 pattern cases. All
+clean. The full gate is green too — fmt, zero clippy warnings, fifteen
+suites, the corpus at seven deliberate warnings, 22 selftests / 2431
+checks. Maintenance: CI green on HEAD, no open PRs, tree clean.
+
+The finding is a process one. I ran the pattern sweep as
+`cargo test --release --test grammar` with TING_RE_SEED and
+TING_RE_CASES set, and it reported `test result: ok` in 0.00 seconds.
+The pattern fuzzer does not live in tests/grammar.rs — it is in
+tests/fuzz.rs, beside the crash fuzzer — so the environment variables
+were read by nobody and the sweep never ran. Nothing failed; a green
+line simply meant something other than what I read into it. Run
+properly it takes 3.04 seconds against 0.22 for the default case
+count, which is the comparison that shows the variables were honoured.
+
+That is the same shape as the rules already standing here: gate on a
+comparison, never on a printed number. A sweep's own runtime is the
+comparison available for a sweep, and 2000000 cases cannot finish in
+no time. Written down in STATE.md so the next sweep names the right
+target and checks the clock.
+
+Milestone "the matcher's inner loop" is complete: four
+strokes, v2.113.0 shipped and verified, pattern matching about three
+times faster with nothing about what a pattern matches changed. The
+backlog is empty, so the next tick replenishes it.

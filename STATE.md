@@ -837,8 +837,14 @@ holds only the current milestone and the standing rules.
   2431 checks each, and the shipped binary asked the anchoring
   questions the release turns on). Six assets, site audit green on all
   nine paths, published changelog carries the tag.
-- Backlog (one per tick, in order):
-  (1) health tick to close "the matcher's inner loop".
+- 700: health tick + audit green — milestone "the matcher's inner
+  loop" complete. All eight bench checksums identical to BASELINE;
+  50000 differential, crash, 20000 formatter and 2000000 pattern cases
+  clean in release at seed 699. Found: I ran the pattern sweep against
+  tests/grammar.rs, which does not read TING_RE_*, and it reported
+  `test result: ok` in 0.00 seconds having fuzzed nothing.
+- Backlog: EMPTY. The next tick replenishes it (LOOP.md's no-idle
+  rule): pick the next milestone and write the reasoning into LOG.md.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
@@ -947,6 +953,12 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain: rustc 1.98 locally; rustfmt and clippy reinstalled at 196.
+- The fuzzers live where their env vars are read: TING_DIFF_* in
+  tests/differential.rs, TING_FMT_* in tests/fmt.rs, TING_RE_* in
+  tests/fuzz.rs beside the crash fuzzer. Naming any other target
+  passes in no time having fuzzed nothing (700). A sweep's runtime is
+  the comparison a sweep offers — 2000000 pattern cases take about
+  3.0 s against 0.22 s for the default count.
 - Periodic health ticks (bench vs bench/BASELINE.md — recorded on this
   host, eight rows since 696 — plus 50000 differential, crash and 20000 formatter
   fuzz cases in release) close every milestone.
