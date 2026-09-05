@@ -11769,3 +11769,26 @@ a file of compound assignments formats and re-formats unchanged.
 
 So the next tick is only what is actually left: the LSP, which does
 have places that read the statement shape, and a selftest.
+
+## 2026-09-05 — Iteration 651: the LSP follows, and a selftest
+
+selftest/compound.ting, 14 checks on both engines: the five operators,
+strings and floats, the whole right-hand side, list slots and negative
+indices, map keys, the subscript evaluated once, a captured variable
+updated through a closure, and the two failures that are still
+failures. The undefined-name case is not here — it needs a genuinely
+unbound name, which `--check` reports on sight, so it stays in the
+Rust test and the differential corpus where it does not cost the
+corpus its five-warning count.
+
+Then the LSP, probed rather than assumed after 650b. References,
+rename, highlights, diagnostics and symbols were all already right on
+a document full of `+=` — they work from identifier tokens, which a
+compound assignment has like any other statement. One thing was
+wrong, and had been before this milestone: a document highlight
+called a name a write only when `let` or `fn` introduced it, so
+`count = count + 1` reported both occurrences as reads. Writing to a
+name is write access. The check is now "the next token assigns",
+which covers `=` and the five compound spellings at once, and the
+existing test that pinned the old counts says why the new ones are
+right.

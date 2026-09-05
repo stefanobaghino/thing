@@ -530,8 +530,13 @@ holds only the current milestone and the standing rules.
   assignment already counts as a mention — and the formatter needs
   nothing, since it spaces tokens by default and a compound file
   formats unchanged. Only the LSP and a selftest are left.
+- 651: selftest/compound.ting (14 checks, both engines) and the LSP.
+  The LSP was already right on `+=` — it works from identifier
+  tokens — but a document highlight called only `let`/`fn` names
+  writes, so `count = count + 1` read as two reads. It now asks
+  whether the next token assigns, which covers `=` and the five
+  compound spellings.
 - Backlog (one per tick, in order):
-  (1) the LSP follows, plus a selftest;
   (3) `try(f, ...args)`; (4) fuzzers learn the tokens and the corpus
   adopts both; (5) docs; (6) RELEASE v2.107.0; (7) verify;
   (8) health tick.

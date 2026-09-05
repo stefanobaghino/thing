@@ -1,0 +1,79 @@
+# ting testing ting: assignments that name their target once.
+
+let i = 7;
+i += 3;
+assert(i == 10, "plus");
+i -= 2;
+assert(i == 8, "minus");
+i *= 4;
+assert(i == 32, "times");
+i /= 3;
+assert(i == 10, "divide, truncating like /");
+i %= 4;
+assert(i == 2, "remainder");
+
+# The operator is the binary one, so it works on whatever that does.
+let s = "a";
+s += "b";
+assert(s == "ab", "strings concatenate");
+let f = 1.5;
+f *= 2.0;
+assert(f == 3.0, "floats stay floats");
+
+# The right-hand side is a whole expression, not one operand.
+let n = 2;
+n *= 3 + 4;
+assert(n == 14, "the whole right-hand side first");
+
+# Into a list slot, negative indices included.
+let xs = [1, 2, 3];
+xs[0] += 10;
+xs[-1] *= 2;
+assert(xs == [11, 2, 6], "list slots");
+
+# Into a map key.
+let m = {"n": 1};
+m["n"] += 41;
+assert(m["n"] == 42, "map keys");
+
+# The base and the subscript are evaluated once, so a call in either
+# happens once — which is what `m[k()] = m[k()] + 1` cannot promise.
+let calls = 0;
+fn key() {
+  calls += 1;
+  return "n";
+}
+let c = {"n": 0};
+c[key()] += 1;
+assert(calls == 1 && c["n"] == 1, "the subscript runs once");
+
+# A closure's captured variable is the one that changes.
+fn counter() {
+  let seen = 0;
+  return fn() {
+    seen += 1;
+    return seen;
+  };
+}
+let next = counter();
+assert(next() == 1 && next() == 2 && next() == 3, "captured and updated");
+
+# Reading comes first, so a missing name fails the way `=` does. That
+# needs a genuinely unbound name, which --check reports on sight, so
+# it is checked from Rust and in the differential corpus instead.
+
+# A missing key is a read error, not a silent zero.
+let absent = try(fn() {
+  let empty = {};
+  empty["k"] += 1;
+  return empty;
+});
+assert(contains(absent["err"], "not found"), "no key, no update");
+
+# The operator still refuses what it always refused.
+let mixed = try(fn() {
+  let t = "a";
+  t -= 1;
+  return t;
+});
+assert(contains(mixed["err"], "cannot apply '-' to string and int"), "types still checked");

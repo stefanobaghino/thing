@@ -901,9 +901,12 @@ fn document_highlight_marks_binding_sites_as_writes() {
         r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/documentHighlight","params":{"textDocument":{"uri":"file:///h.ting"},"position":{"line":2,"character":8}}}"#,
     );
     let hl = recv(&mut reader);
-    // Five occurrences: the let and the fn are writes, the rest reads.
-    assert_eq!(hl.matches("\"kind\":3").count(), 2, "{hl}");
-    assert_eq!(hl.matches("\"kind\":2").count(), 3, "{hl}");
+    // Five occurrences. Writes are the let, the fn, and the target of
+    // the assignment on line 1 — writing to a name is write access
+    // whether or not a `let` introduces it. The `count` that
+    // assignment reads, and the one print() reads, are the reads.
+    assert_eq!(hl.matches("\"kind\":3").count(), 3, "{hl}");
+    assert_eq!(hl.matches("\"kind\":2").count(), 2, "{hl}");
     assert!(hl.contains(r#""start":{"character":4,"line":0}"#), "{hl}");
     assert!(!hl.contains("\"uri\""), "{hl}");
     // No identifier under the cursor: null.

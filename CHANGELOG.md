@@ -11,6 +11,9 @@ Windows are attached to each
   or an indexed element. The target is named once, and for
   `m[k] op= v` the base and the subscript are evaluated once and used
   for both the read and the write.
+- A document highlight now calls the target of an assignment a write,
+  compound or plain, rather than only the names a `let` or `fn`
+  introduces.
 
 ## v2.106.0 (2026-09-05)
 

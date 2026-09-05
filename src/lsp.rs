@@ -261,11 +261,27 @@ fn highlight_result(src: &str, line: usize, character: usize) -> Value {
         if n != &name {
             continue;
         }
-        let binding = i > 0
+        // Write, in LSP's sense: the name is being bound, or it is the
+        // target of an assignment. A compound assignment reads too,
+        // but there is no kind for both, and the write is the part a
+        // reader is scanning for.
+        let bound_here = i > 0
             && matches!(
                 tokens[i - 1].kind,
                 lexer::TokenKind::Let | lexer::TokenKind::Fn
             );
+        let assigned_here = matches!(
+            tokens.get(i + 1).map(|t| &t.kind),
+            Some(
+                lexer::TokenKind::Eq
+                    | lexer::TokenKind::PlusEq
+                    | lexer::TokenKind::MinusEq
+                    | lexer::TokenKind::StarEq
+                    | lexer::TokenKind::SlashEq
+                    | lexer::TokenKind::PercentEq
+            )
+        );
+        let binding = bound_here || assigned_here;
         out.push(obj(vec![
             (
                 "range",
@@ -2417,6 +2433,29 @@ mod tests {
     fn a_spread_call_is_left_alone() {
         let src = "fn f(a, b) { return a; }\nf(...xs);\nf(1, ...xs);\n";
         assert!(arity_mismatches(src).is_empty());
+    }
+
+    /// A highlight says read or write, and the target of an
+    /// assignment is written — plain or compound. Only a mention that
+    /// assigns nothing is a read.
+    #[test]
+    fn an_assigned_name_highlights_as_a_write() {
+        let src = "let n = 0;\nn = 1;\nn += 2;\nprint(n);\n";
+        let Value::List(hits) = highlight_result(src, 3, 6) else {
+            panic!("expected highlights");
+        };
+        let kinds: Vec<i64> = hits
+            .borrow()
+            .iter()
+            .map(|h| match h {
+                Value::Map(m) => match m.borrow().get("kind") {
+                    Some(Value::Int(k)) => *k,
+                    _ => panic!("no kind"),
+                },
+                _ => panic!("not a map"),
+            })
+            .collect();
+        assert_eq!(kinds, vec![3, 3, 3, 2]);
     }
 
     /// What a default names is a use, not a binding: the names inside
