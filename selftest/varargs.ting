@@ -1,0 +1,51 @@
+# ting testing ting: as many arguments as you like.
+
+fn tail(first, ...rest) { return [first, rest]; }
+assert(tail(1) == [1, []], "nothing left over");
+assert(tail(1, 2, 3) == [1, [2, 3]], "the rest is a list");
+
+fn every(...xs) { return xs; }
+assert(every() == [], "a function that is all rest");
+assert(every(1, "a", [2]) == [1, "a", [2]], "values keep their types");
+
+# The list is built for the call, so it is never shared.
+fn keep(...xs) { push(xs, 0); return xs; }
+assert(keep(1) == [1, 0] && keep(2) == [2, 0], "a fresh list each call");
+
+# Fixed parameters fill first, defaults included.
+fn mix(a, b = 2, ...more) { return [a, b, more]; }
+assert(mix(1) == [1, 2, []], "defaults before leftovers");
+assert(mix(1, 9) == [1, 9, []], "still nothing left over");
+assert(mix(1, 9, 8, 7) == [1, 9, [8, 7]], "then the leftovers");
+
+# Only the fixed parameters can be missing.
+let f = tail;
+let few = try(fn() { return f(); });
+assert(contains(few["err"], "expects at least 1 argument, got 0"), "no upper bound, still a lower one");
+
+# A spread hands a list over as arguments.
+fn add3(a, b, c) { return a + b + c; }
+let three = [1, 2, 3];
+assert(add3(...three) == 6, "a list becomes the arguments");
+assert(add3(1, ...[2, 3]) == 6, "a spread may follow plain arguments");
+assert(every(0, ...three, 4) == [0, 1, 2, 3, 4], "and may sit between them");
+assert(every(...[], ...[]) == [], "spreading nothing adds nothing");
+
+# What a rest parameter collects, a spread passes on.
+fn forward(...xs) { return add3(...xs); }
+assert(forward(1, 2, 3) == 6, "collect then forward");
+fn wrap(pattern, ...parts) { return format(pattern, ...parts); }
+assert(wrap("{} and {}", "a", "b") == "a and b", "a format wrapper, at last");
+
+# Arity is checked against what the list held.
+let short = try(fn() { return add3(...[1, 2]); });
+assert(contains(short["err"], "add3 expects 3 arguments, got 2"), "the count is the list's length");
+
+# Only a list can be spread.
+let bad = try(fn() { return add3(...5); });
+assert(contains(bad["err"], "cannot spread int, expected a list"), "spreading a non-list is refused");
+
+# The list is copied into the call, not aliased.
+let src = [1, 2, 3];
+fn grow(...xs) { push(xs, 4); return len(xs); }
+assert(grow(...src) == 4 && len(src) == 3, "the spread list is left alone");

@@ -224,6 +224,62 @@ That last one is worth a second look: `into` is a fresh list on each
 call, so the two `collect` calls do not share one. Pass a list in and
 it is used as given.
 
+### As many arguments as you like
+
+The other end of the same idea: the last parameter can be written
+`...name`, and it takes everything the fixed ones left over.
+
+```ting
+fn shout(...words) { return upper(join(words, " ")) + "!"; }
+print(shout("hello"));
+print(shout("hello", "there", "ting"));
+print(shout());
+
+fn label(kind, ...rest) { return kind + ": " + str(len(rest)) + " item(s)"; }
+print(label("todo", "a", "b"));
+```
+
+```text
+HELLO!
+HELLO THERE TING!
+!
+todo: 2 item(s)
+```
+
+A list goes the other way with `...` too — `f(...xs)` hands the list
+over as the arguments:
+
+```ting
+fn add(a, b, c) { return a + b + c; }
+let three = [1, 2, 3];
+print(add(...three));
+print(add(1, ...[2, 3]));
+```
+
+```text
+6
+6
+```
+
+Put the two together and a ting function can forward whatever it was
+given, which is the thing you could not write before: a wrapper
+around `format` or `print`.
+
+```ting
+fn note(pattern, ...parts) { print("[note] " + format(pattern, ...parts)); }
+note("{} of {} done", 3, 7);
+note("nothing to do");
+```
+
+```text
+[note] 3 of 7 done
+[note] nothing to do
+```
+
+Spreading anything but a list is an error, and the arity check
+happens after the list is unpacked — `add(...[1, 2])` complains that
+it got two arguments, not that it got one list.
+
 ## Closures as objects
 
 Several closures over the same variables behave like an object: the

@@ -237,8 +237,30 @@ and left to right, so a later default can name an earlier parameter
 (whether that one was passed in or defaulted too) and `fn f(xs = [])`
 gets a fresh list each time rather than one shared list.
 
+The last parameter may instead be written `...rest`, and then it
+binds a list of every argument the fixed parameters did not take —
+an empty list when there were none. A rest parameter takes no
+default, and nothing may follow it.
+
+```ting
+fn log(prefix, ...rest) { print(prefix, ...rest); }
+log("note:", 1, [2]);   # note: 1 [2]
+```
+
+`f(...xs)` goes the other way: the list `xs` is spread into the call
+as arguments. A spread may sit anywhere in an argument list, before
+or after plain arguments and alongside other spreads, and spreading
+anything but a list is an error naming the type. It is an argument
+and nothing else — `...` does not parse outside a call. Together the
+two make forwarding possible: what a rest parameter collects, a
+spread passes on, which is how a ting function can wrap a variadic
+builtin like `format`.
+
 Calls check arity: exactly, or against a range when there are
-defaults (`f expects 1 to 3 arguments, got 4`). Falling off the end of
+defaults (`f expects 1 to 3 arguments, got 4`), or against a floor
+when there is a rest parameter (`f expects at least 1 argument, got
+0`). A spread is counted after the list is unpacked, so the arity
+error names what the list actually held. Falling off the end of
 a function returns nil. Recursion is capped, and the cap is derived from the host stack
 the interpreter was given rather than fixed: the `ting` binary hands
 its interpreter 32 MB and allows a few thousand frames from it

@@ -77,6 +77,17 @@ fn expressions_match_across_engines() {
         "fn f(a, b = 1) { return a; } print(f());",
         "fn outer(n = 2) { let g = fn(m = n + 1) { return m; }; return g(); } print(outer(), outer(10));",
         "fn f(a = fail(\"no\")) { return a; } print(f());",
+        // rest parameters and spreads: what is left over, what is
+        // forwarded, and the two refusals
+        "fn r(a, ...rest) { return [a, rest]; } print(r(1), r(1, 2, 3));",
+        "fn r(...xs) { push(xs, 0); return xs; } print(r(1), r(2));",
+        "fn add(a, b) { return a + b; } fn f(...xs) { return add(...xs); } print(f(1, 2));",
+        "let xs = [1, 2]; print(0, ...xs, 3);",
+        "print(...[]);",
+        "print(...5);",
+        "fn add(a, b) { return a + b; } print(add(...[1]));",
+        "fn r(a, ...rest) { return a; } print(r());",
+        "fn r(a, b = 2, ...rest) { return [a, b, rest]; } print(r(1), r(1, 9, 8, 7));",
         // patterns: the map a match returns, a scan, and a refusal
         "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
         "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",

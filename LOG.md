@@ -11389,3 +11389,24 @@ feature: a variadic `log`, a `format` wrapper, forwarding a rest
 parameter through a spread, and both refusals. gnu and musl print the
 same thing, `--eval` hashes identically to the VM, `--check` is clean
 on it. Six assets on the tag.
+
+## 2026-09-05 — Iteration 633: the fuzzers, the docs and a selftest
+
+The shared generator now defines a variadic `r` and reaches it five
+ways: plain leftovers, a whole call spread from a list, a spread
+between plain arguments, an immediately called variadic literal, and
+a spread of a generated expression that is usually not a list — the
+refusal has to match too. 50000 differential and 20000 formatter
+cases at seed 633 found nothing. `...` joins the crash fuzzer's
+alphabet, where it belongs: it is pure syntax with no runtime effect
+of its own.
+
+selftest/varargs.ting is 20 checks over both halves, including the
+two that are easy to get wrong and cheap to pin: the leftover list is
+built per call, and the list a spread unpacks is copied rather than
+aliased, so a callee that pushes onto its rest parameter does not
+grow the caller's list.
+
+The reference and the tutorial say all of it, including the part
+worth saying plainly — the arity error counts what the list held, not
+that a list was passed.

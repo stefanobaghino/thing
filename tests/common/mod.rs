@@ -41,7 +41,8 @@ impl Gen {
             "let a = 3; let b = -2; let s = \"ab\"; let xs = [1, 2, 3];\n\
              fn h(v) { return v + 1; }\n\
              fn g(v) { return str(v) + \"!\"; }\n\
-             fn d(v, w = 1, u = w + 1) { return v + w + u; }\n",
+             fn d(v, w = 1, u = w + 1) { return v + w + u; }\n\
+             fn r(v, ...rest) { return [v, len(rest), rest]; }\n",
         );
         let n = 2 + self.rng.below(5);
         for _ in 0..n {
@@ -105,7 +106,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(32) {
+        match self.rng.below(37) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -164,6 +165,22 @@ impl Gen {
                 self.expr(depth - 1),
                 self.expr(depth - 1)
             ),
+            // Rest parameters and spreads: the same call reached
+            // directly, through a spread, and through a mix of the two,
+            // so a leftover the engines split differently shows up.
+            31 => format!("r({}, {}, 3)", self.expr(depth - 1), self.expr(depth - 1)),
+            32 => format!("r(...[{}, {}])", self.expr(depth - 1), self.expr(depth - 1)),
+            33 => format!(
+                "r({}, ...xs, {})",
+                self.expr(depth - 1),
+                self.expr(depth - 1)
+            ),
+            34 => format!(
+                "(fn(...p) {{ return len(p); }})({}, ...[{}])",
+                self.expr(depth - 1),
+                self.expr(depth - 1)
+            ),
+            35 => format!("try(fn() {{ return r(...{}); }})", self.expr(depth - 1)),
             _ => format!("-({})", self.expr(depth - 1)),
         }
     }

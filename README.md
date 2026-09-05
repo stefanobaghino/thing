@@ -16,8 +16,9 @@ and a thirteen-capability language server (`--lsp`).
 ## Status
 
 The language is complete: ints/floats/strings/bools/nil, lists and
-maps, functions and closures (parameters may carry
-defaults), control flow, modules via `import()`
+maps, functions and closures (parameters may carry defaults, the
+last may take the rest, and a list spreads into a call), control
+flow, modules via `import()`
 plus twelve embedded stdlib modules
 (list/map/string/math/json/fs/test/time/sh/args/err/csv),
 66 builtins (file and stdin I/O, listing, making and removing
