@@ -702,9 +702,17 @@ holds only the current milestone and the standing rules.
   byte-identical runs across two programs), each printing
   bench/toplevel.ting's baseline checksum and the corpus at seven,
   nine site paths at 200 serving v2.111.0.
+- 685: health tick on a quiet host — all seven checksums match, every
+  timing under the recorded median (weather; the baseline says
+  checksums decide), and the VM still beats eval on toplevel by 40%
+  where before v2.111.0 it lost. Fuzzers at seed 685 (50000
+  differential, 20000 formatter, 2000000 pattern, crash), gate green,
+  coverage unchanged, six assets on the last two tags, nine site paths
+  at 200. Milestone "the top of the file" complete, having shipped
+  v2.111.0 alone: two of its four ticks went to bugs it did not
+  create, which is what touching a resolver costs.
 - Backlog (one per tick, in order):
-  (1) health tick (confirms the new BASELINE on a quiet host);
-  (2) close or extend "the top of the file".
+  (1) replenishment — design the next milestone from measurement.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

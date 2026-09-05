@@ -12719,3 +12719,36 @@ Milestone "the top of the file" has its measured result: the default
 engine no longer loses to the reference one on top-level code. What
 remains for it is a health tick's confirmation on a quiet host, and
 then it can close.
+
+## 2026-09-05 — Iteration 685: health tick — "the top of the file" closes
+
+The host was quiet this time, and the bench says the same thing it said
+on a busy one. All seven checksums match bench/BASELINE.md exactly,
+including toplevel.ting's `1199980 97 200 10 2062`. Every timing came
+in under the recorded median — fib 733.8/354.9 against 701.1/449.4,
+toplevel 441.4/263.8 against 469.4/309.4 — which is weather, not a
+verdict, and the reason the baseline says checksums decide. The shape
+that matters survived the change of host: the VM beats the tree-walker
+on toplevel by 40%, where before v2.111.0 it lost.
+
+Fuzzers at seed 685: 50000 differential cases, 20000 formatter cases,
+2000000 pattern cases, plus the crash fuzzer — all green in release.
+Gate green as one chain: fmt clean, zero clippy warnings, fourteen
+`test result: ok` lines, and the corpus scanning to exactly its seven
+deliberate warnings. Coverage over selftest unchanged, with the same
+four files short of 100% for the same reasons. Six assets on each of
+v2.111.0 and v2.110.0; CI green on HEAD from the API; the nine site
+paths at 200.
+
+Milestone "the top of the file" closes here. It began at 679 with a
+measurement that killed four candidate features and found the real
+pressure in BASELINE.md: the top level was the one scope the VM still
+resolved by name. 680 fixed a divergence that predated the work — the
+VM had never suggested a nearest name for a function's slot-allocated
+local — because the fix had to land before the change that would have
+spread the bug to script scope. 681 gave the top level a resolver of
+its own, and paid for it twice: a nil binding beside each slot so both
+engines see the same scope, and a `!in_function` guard in
+`block_needs_env` so a shadowed builtin still comes back. 682 measured
+it. Two of the four ticks were spent on bugs the milestone did not
+create, which is the ordinary cost of touching a resolver.
