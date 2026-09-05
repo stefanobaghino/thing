@@ -27,8 +27,6 @@ assert(s["lines"]("a\nb\nc") == ["a", "b", "c"], "lines");
 assert(s["title"]("héllo wide  world") == "Héllo Wide  World", "title");
 
 let m = import("../lib/map.ting");
-assert(m["get"]({"a": 1}, "a", 0) == 1, "get hit");
-assert(m["get"]({"a": 1}, "z", 0) == 0, "get default");
 assert(m["key_of"]({"a": 1, "b": 2, "c": 2}, 2) == "b", "key_of first in key order");
 assert(m["key_of"]({"a": [1]}, [1]) == "a", "key_of structural");
 assert(m["key_of"]({"a": 1}, 9) == nil, "key_of missing is nil");

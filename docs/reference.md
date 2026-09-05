@@ -295,6 +295,7 @@ scope).
 | `pop(xs)`      | removes and returns the last element; empty list errors     |
 | `keys(m)`      | the map's keys as a sorted list                             |
 | `has(m, k)`    | whether string key `k` is present                           |
+| `get(x, k, default)` | `x[k]` where it is present, otherwise `default`; reads a map by key and a list or string by index (negatives count from the end), and never errors on absence. Indexing a type that cannot take that key still errors |
 | `str(v)`       | the value rendered as a string                              |
 | `int(v)`       | from int/float (truncates)/numeric string; a string is read the way a literal is (`0xff`, `0b1010`, `1_000`, a leading sign); else error |
 | `float(v)`     | from int/float/numeric string; a string that would be infinite or is not a number errors |

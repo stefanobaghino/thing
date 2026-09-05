@@ -1406,6 +1406,12 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Get => {
+                arity(3, 3)?;
+                // The default is already evaluated, so this reads a key
+                // that may be absent without a branch around it.
+                Ok(index_opt(&args[0], &args[1], span)?.unwrap_or_else(|| args[2].clone()))
+            }
             Builtin::Str => {
                 arity(1, 1)?;
                 Ok(Value::Str(args[0].to_string()))
@@ -3206,53 +3212,69 @@ fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, Runtim
 /// Resolve a possibly negative index against a length; negative indices
 /// count from the end, Python-style.
 pub(crate) fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, RuntimeError> {
-    let len = len as i64;
-    let eff = if i < 0 { i + len } else { i };
-    if eff < 0 || eff >= len {
-        Err(error(format!("index {i} out of bounds (len {len})"), span))
-    } else {
-        Ok(eff as usize)
-    }
+    offset(i, len).ok_or_else(|| error(format!("index {i} out of bounds (len {len})"), span))
 }
 
-pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
+/// A possibly negative index resolved against a length, or None when it
+/// falls outside. Negative counts from the end, the way indexing reads.
+fn offset(i: i64, len: usize) -> Option<usize> {
+    let len = len as i64;
+    let eff = if i < 0 { i + len } else { i };
+    (eff >= 0 && eff < len).then_some(eff as usize)
+}
+
+/// The value at `idx` in `base`, or None when the key or index is
+/// simply absent. A base that cannot be indexed at all, or an index of
+/// the wrong type for it, is still an error: `get(xs, "k", 0)` asks a
+/// list for a string key, which is a bug and not a missing key.
+pub(crate) fn index_opt(
+    base: &Value,
+    idx: &Value,
+    span: Span,
+) -> Result<Option<Value>, RuntimeError> {
     match (base, idx) {
         (Value::List(items), Value::Int(i)) => {
             let items = items.borrow();
-            let eff = effective_index(i, items.len(), span)?;
-            Ok(items[eff].clone())
+            Ok(offset(*i, items.len()).map(|eff| items[eff].clone()))
         }
-        (Value::Map(entries), Value::Str(k)) => {
-            let entries = entries.borrow();
-            match entries.get(&k) {
-                Some(v) => Ok(v.clone()),
-                None => {
-                    // The map's own keys are the candidates: a misspelled
-                    // member of an imported module lands here too.
-                    let near = crate::diag::nearest(&k, entries.keys().map(|k| k.as_ref()));
-                    Err(match near {
-                        Some(n) => {
-                            error(format!("key {k:?} not found (did you mean {n:?}?)"), span)
-                        }
-                        None => error(format!("key {k:?} not found"), span),
-                    })
-                }
-            }
-        }
+        (Value::Map(entries), Value::Str(k)) => Ok(entries.borrow().get(k).cloned()),
         (Value::Str(s), Value::Int(i)) => {
             let chars: Vec<char> = s.chars().collect();
-            let len = chars.len() as i64;
-            let eff = if i < 0 { i + len } else { i };
-            if eff < 0 || eff >= len {
-                Err(error(format!("index {i} out of bounds (len {len})"), span))
-            } else {
-                Ok(Value::Str(chars[eff as usize].to_string()))
-            }
+            Ok(offset(*i, chars.len()).map(|eff| Value::Str(chars[eff].to_string())))
         }
         (base, idx) => Err(error(
             format!("cannot index {} with {}", base.type_name(), idx.type_name()),
             span,
         )),
+    }
+}
+
+pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
+    if let Some(v) = index_opt(&base, &idx, span)? {
+        return Ok(v);
+    }
+    // Absent, and index_opt has already erred on anything unindexable:
+    // all that is left is to say which absence this was.
+    match (base, idx) {
+        (Value::Map(entries), Value::Str(k)) => {
+            let entries = entries.borrow();
+            // The map's own keys are the candidates: a misspelled
+            // member of an imported module lands here too.
+            let near = crate::diag::nearest(&k, entries.keys().map(|k| k.as_ref()));
+            Err(match near {
+                Some(n) => error(format!("key {k:?} not found (did you mean {n:?}?)"), span),
+                None => error(format!("key {k:?} not found"), span),
+            })
+        }
+        (Value::List(items), Value::Int(i)) => {
+            let len = items.borrow().len();
+            Err(error(format!("index {i} out of bounds (len {len})"), span))
+        }
+        (Value::Str(s), Value::Int(i)) => {
+            let len = s.chars().count();
+            Err(error(format!("index {i} out of bounds (len {len})"), span))
+        }
+        _ => unreachable!("index_opt errs on anything that cannot be indexed"),
     }
 }
 
@@ -3436,6 +3458,23 @@ mod tests {
         assert_eq!(run("\"héllo\"[1]"), Value::Str("é".into()));
         assert_eq!(run_err("[1][5]"), "index 5 out of bounds (len 1)");
         assert_eq!(run_err("[1][-2]"), "index -2 out of bounds (len 1)");
+    }
+
+    #[test]
+    fn get_reads_past_an_absence() {
+        assert_eq!(run("get({\"a\": 1}, \"a\", 0)"), Value::Int(1));
+        assert_eq!(run("get({\"a\": 1}, \"z\", 0)"), Value::Int(0));
+        assert_eq!(run("get([10, 20], 1, -1)"), Value::Int(20));
+        assert_eq!(run("get([10, 20], -1, -1)"), Value::Int(20));
+        assert_eq!(run("get([10, 20], 9, -1)"), Value::Int(-1));
+        assert_eq!(run("get(\"abc\", 1, \"?\")"), Value::Str("b".into()));
+        assert_eq!(run("get(\"abc\", 9, \"?\")"), Value::Str("?".into()));
+        // A default only answers an absence. Asking a list for a string
+        // key is a bug, and stays one.
+        assert_eq!(
+            run_err("get([1], \"k\", 0)"),
+            "cannot index list with string"
+        );
     }
 
     #[test]

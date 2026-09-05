@@ -1,12 +1,6 @@
 # Map helpers, written in ting. Use them via
 #   let m = import("lib/map.ting");
 
-# m[k] when the key is present, otherwise default.
-fn get(m, k, default) {
-  if has(m, k) { return m[k]; }
-  return default;
-}
-
 fn merge(a, b) {
   let out = {};
   for k in a { out[k] = a[k]; }

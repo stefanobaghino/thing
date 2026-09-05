@@ -340,7 +340,7 @@ fn count_by(xs, key) {
   for x in xs {
     let k = key(x);
     if type(k) != "string" { fail("count_by: key must return a string, got " + type(k)); }
-    if has(out, k) { out[k] = out[k] + 1; } else { out[k] = 1; }
+    out[k] = get(out, k, 0) + 1;
   }
   return out;
 }

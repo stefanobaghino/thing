@@ -24,6 +24,11 @@ assert(len(m) == 2 && m["a"] == 1, "map basics");
 m["c"] = 3;
 assert(keys(m) == ["a", "b", "c"], "keys sorted");
 assert(has(m, "a") && !has(m, "z"), "has");
+assert(get(m, "a", 0) == 1 && get(m, "z", 0) == 0, "get on a map");
+assert(get([10, 20], 1, -1) == 20 && get([10, 20], 9, -1) == -1, "get on a list");
+assert(get([10, 20], -1, -1) == 20, "get counts back from the end");
+assert(get("abc", 1, "?") == "b" && get("abc", 9, "?") == "?", "get on a string");
+assert(has(try(get, [1], "k", 0), "err"), "get still errs on an unindexable pair");
 let missing = try(fn() { return m["z"]; });
 assert(has(missing, "err"), "missing key errors");
 

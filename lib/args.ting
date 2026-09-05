@@ -28,7 +28,7 @@ fn flag_of(spec, name) {
   if !has(spec, "flags") { return nil; }
   for flag in spec["flags"] {
     if flag["long"] == name { return flag; }
-    if has(flag, "short") && flag["short"] == name { return flag; }
+    if get(flag, "short", nil) == name { return flag; }
   }
   return nil;
 }
@@ -38,7 +38,7 @@ fn option_of(spec, name) {
   if !has(spec, "options") { return nil; }
   for opt in spec["options"] {
     if opt["long"] == name { return opt; }
-    if has(opt, "short") && opt["short"] == name { return opt; }
+    if get(opt, "short", nil) == name { return opt; }
   }
   return nil;
 }
@@ -61,7 +61,7 @@ fn help(spec) {
   if has(spec, "flags") || has(spec, "options") { usage = usage + " [options]"; }
   if has(spec, "positionals") {
     for p in spec["positionals"] {
-      if has(p, "many") && p["many"] { usage = usage + " [" + p["name"] + "...]"; }
+      if get(p, "many", false) { usage = usage + " [" + p["name"] + "...]"; }
       else { usage = usage + " <" + p["name"] + ">"; }
     }
   }
@@ -74,14 +74,11 @@ fn help(spec) {
       let name = "";
       if has(opt, "short") { name = "-" + opt["short"] + ", "; }
       name += "--" + opt["long"];
-      let value = "VALUE";
-      if has(opt, "value") { value = opt["value"]; }
+      let value = get(opt, "value", "VALUE");
       push(names, name + " " + value);
-      let text = "";
-      if has(opt, "help") { text = opt["help"]; }
-      if has(opt, "default") && opt["default"] != nil {
-        text += " (default " + str(opt["default"]) + ")";
-      }
+      let text = get(opt, "help", "");
+      let fallback = get(opt, "default", nil);
+      if fallback != nil { text += " (default " + str(fallback) + ")"; }
       push(helps, text);
     }
   }
@@ -90,8 +87,7 @@ fn help(spec) {
       let name = "";
       if has(flag, "short") { name = "-" + flag["short"] + ", "; }
       push(names, name + "--" + flag["long"]);
-      let text = "";
-      if has(flag, "help") { text = flag["help"]; }
+      let text = get(flag, "help", "");
       push(helps, text);
     }
   }
@@ -123,9 +119,7 @@ fn parse(spec, argv) {
   }
   if has(spec, "options") {
     for opt in spec["options"] {
-      let fallback = nil;
-      if has(opt, "default") { fallback = opt["default"]; }
-      options[opt["long"]] = fallback;
+      options[opt["long"]] = get(opt, "default", nil);
     }
   }
   let loose = [];
@@ -171,7 +165,7 @@ fn parse(spec, argv) {
   let at = 0;
   if has(spec, "positionals") {
     for p in spec["positionals"] {
-      if has(p, "many") && p["many"] {
+      if get(p, "many", false) {
         positionals[p["name"]] = slice(loose, at, len(loose));
         at = len(loose);
         continue;

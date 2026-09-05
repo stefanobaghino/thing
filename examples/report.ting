@@ -33,8 +33,7 @@ let column = opts["options"]["by"];
 let totals = {};
 for row in rows {
   let key = row[column];
-  if !has(totals, key) { totals[key] = 0; }
-  totals[key] += int(row["amount"]);
+  totals[key] = get(totals, key, 0) + int(row["amount"]);
 }
 
 # The output is CSV too, written by the same module that read it.

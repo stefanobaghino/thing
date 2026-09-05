@@ -33,8 +33,7 @@ fn set_in(v, path, x) {
     if type(base) != "map" { fail("set_in: expected a map before key " + k); }
     let out = {};
     for key in base { out[key] = base[key]; }
-    let child = nil;
-    if has(base, k) { child = base[k]; }
+    let child = get(base, k, nil);
     out[k] = set_in(child, rest, x);
     return out;
   }

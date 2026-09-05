@@ -168,11 +168,7 @@ let words = split("the cat sat on the mat the end", " ");
 
 let counts = {};
 for w in words {
-  if has(counts, w) {
-    counts[w] += 1;
-  } else {
-    counts[w] = 1;
-  }
+  counts[w] = get(counts, w, 0) + 1;
 }
 
 # Map iteration visits keys in sorted order, so this is deterministic.
@@ -588,8 +584,7 @@ let column = opts["options"]["by"];
 let totals = {};
 for row in rows {
   let key = row[column];
-  if !has(totals, key) { totals[key] = 0; }
-  totals[key] += int(row["amount"]);
+  totals[key] = get(totals, key, 0) + int(row["amount"]);
 }
 
 # The output is CSV too, written by the same module that read it.

@@ -12176,3 +12176,55 @@ Not chosen, with reasons:
   nearest-key suggestion exists to catch.
 - `has` for lists and strings (it is map-only today). No pressure: the
   corpus tests list bounds with `len`, which reads fine.
+
+## 2026-09-05 — Iteration 667: get(x, k, default)
+
+The builtin exists. `get(x, k, default)` reads a map by key, a list or
+a string by index (negatives counting from the end, the way indexing
+already reads), and hands back `default` where the key or index is
+absent. A base that cannot take that key at all still errors:
+`get([1], "k", 0)` is `cannot index list with string`, because a
+default answers an absence, not a bug.
+
+It is one shared lookup, not a second one. `index_opt` does the
+reading and returns `None` for a plain absence; `index` calls it and,
+on `None`, says which absence it was — so the nearest-key suggestion
+and the out-of-bounds wording are still written once, in one place.
+`effective_index` now sits on a small `offset` helper that resolves a
+possibly-negative index or gives back `None`.
+
+`lib/map.ting`'s `get` retired into it. The two could not coexist
+quietly: a module function shadowing a builtin is one of the nine
+warnings, and `--check lib` said so the moment the builtin landed.
+Builtins 66 to 67, stdlib 175 to 174.
+
+A correction to 666. I wrote there that `map.get` was called zero
+times in the corpus. It was called twice, in selftest/stdlib.ting,
+written `m["get"](...)` — a subscript call, which my grep for `get(`
+did not match. The checker found them for me: removing the function
+turned them into two `lib/map.ting has no get` warnings. The reading
+that drove the milestone still stands (both call sites were its own
+tests, and no real code reached for it) but the number was wrong.
+
+Adoption, and where I stopped. The word-count in
+examples/collections.ting is now one line instead of five;
+examples/report.ting seeds and adds in one; `count_by` in
+lib/list.ting, `set_in` in lib/json.ting, and eight sites in
+lib/args.ting read a default without a branch. I left the ones that
+`get` does not actually improve: `group_by`'s seed would name the map
+and key twice either way and add a write-back for nothing;
+`merge_with` and `merge_in` fold with a function that has no identity;
+lib/test.ting's `has(r, "err") && contains(...)` would change meaning
+for an absent key. Thirteen control-flow guards stay as they are, as
+666 predicted.
+
+Tests at three levels: `get_reads_past_an_absence` in src/eval.rs, five
+lines in the differential corpus, five assertions beside `has` in
+selftest/collections.ting, and `"get"` in the crash fuzzer's alphabet.
+The editor grammar lists every builtin and a test says so, which is
+how I learned this one was missing from it.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus back at
+its five deliberate warnings, 50000 differential and 20000 formatter
+cases at seed 667 green, 22 selftests (2421 checks) and all 18 example
+outputs matching.

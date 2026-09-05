@@ -34,6 +34,7 @@ pub enum Builtin {
     Pop,
     Keys,
     Has,
+    Get,
     Str,
     Int,
     Float,
@@ -97,13 +98,14 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 66] = [
+    pub const ALL: [Builtin; 67] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
         Builtin::Pop,
         Builtin::Keys,
         Builtin::Has,
+        Builtin::Get,
         Builtin::Str,
         Builtin::Int,
         Builtin::Float,
@@ -181,6 +183,10 @@ impl Builtin {
             ),
             Builtin::Keys => ("keys(m)", "The map's keys as a sorted list."),
             Builtin::Has => ("has(m, k)", "Whether string key k is present in the map."),
+            Builtin::Get => (
+                "get(x, k, default)",
+                "x[k] where it is present, otherwise default; never errors on absence.",
+            ),
             Builtin::Str => ("str(v)", "The value rendered as a string."),
             Builtin::Int => (
                 "int(v)",
@@ -390,6 +396,7 @@ impl Builtin {
             Builtin::Pop => "pop",
             Builtin::Keys => "keys",
             Builtin::Has => "has",
+            Builtin::Get => "get",
             Builtin::Str => "str",
             Builtin::Int => "int",
             Builtin::Float => "float",

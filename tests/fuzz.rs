@@ -101,6 +101,7 @@ const TOKENS: &[&str] = &[
     "float",
     "format",
     "has",
+    "get",
     "int",
     "json_parse",
     "json_str",

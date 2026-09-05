@@ -15,8 +15,8 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 66 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 175
+- 67 builtins; twelve embedded stdlib modules
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 316 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
@@ -612,15 +612,17 @@ holds only the current milestone and the standing rules.
   15 value-fallback); `lib/map.ting`'s `get` called zero times in the
   corpus; `m[k] += 1` on a missing key is an error, so v2.107.0's
   compound assignment does not reach counting.
+- 667: `get(x, k, default)` as a builtin, sharing one lookup with
+  indexing via `index_opt`; `lib/map.ting`'s `get` retired into it
+  (builtins 66->67, stdlib 175->174). Adopted where it reads better
+  and left where it does not (reasoning in LOG.md). Tests at three
+  levels, the crash-fuzzer alphabet, the editor grammar, reference
+  and stdlib docs. Corrects 666's "zero calls": map.get had two, as
+  `m["get"](...)`, which the grep for `get(` missed.
 - Backlog (one per tick, in order):
-  (1) `get(x, k, default)` as a builtin, `lib/map.ting`'s `get`
-  retiring into it (builtins 66->67, stdlib 175->174, both guards
-  moving together); (2) corpus adoption of `get` — the 15
-  value-fallback sites and the seven seeding sites, the five
-  deliberate warnings still five; (3) tests at three levels plus the
-  crash-fuzzer alphabet and `--doc`; (4) docs (reference, tutorial,
-  stdlib, README, cookbook, changelog); (5) release; (6) verify;
-  (7) health tick.
+  (1) docs — the tutorial's map section and a cookbook entry, plus
+  the changelog heading for v2.109.0; (2) release v2.109.0;
+  (3) verify; (4) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
