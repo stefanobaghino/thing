@@ -88,6 +88,17 @@ fn expressions_match_across_engines() {
         "fn add(a, b) { return a + b; } print(add(...[1]));",
         "fn r(a, ...rest) { return a; } print(r());",
         "fn r(a, b = 2, ...rest) { return [a, b, rest]; } print(r(1), r(1, 9, 8, 7));",
+        // compound assignment: the arithmetic, the write into a
+        // container, and the failures on either half.
+        "let i = 7; i += 3; i -= 2; i *= 4; i /= 3; i %= 4; print(i);",
+        "let s = \"a\"; s += \"b\"; print(s);",
+        "let xs = [1, 2]; xs[0] += 10; xs[-1] *= 3; print(xs);",
+        "fn k() { print(\"k\"); return \"n\"; } let m = {\"n\": 1}; m[k()] += 1; print(m);",
+        "fn f() { let n = 0; n += 1; return n; } print(f(), f());",
+        "nope += 1;",
+        "let m = {}; m[\"k\"] += 1;",
+        "let s = \"a\"; s -= 1;",
+        "let xs = [1]; xs[9] += 1;",
         // patterns: the map a match returns, a scan, and a refusal
         "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
         "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",

@@ -14,10 +14,14 @@ pub struct Stmt {
 pub enum StmtKind {
     /// `let name = expr;` — defines (or shadows) in the current scope.
     Let(String, Expr),
-    /// `name = expr;` — rebinds an existing variable.
-    Assign(String, Expr),
+    /// `name = expr;` — rebinds an existing variable. With an operator
+    /// it is the compound form, `name op= expr`, which reads the
+    /// variable, applies the operator and writes the result back.
+    Assign(String, Option<BinaryOp>, Expr),
     /// `base[index] = expr;` — writes into a list slot or map key.
-    IndexAssign(Expr, Expr, Expr),
+    /// With an operator, `base[index] op= expr`: base and index are
+    /// evaluated once and used for both the read and the write.
+    IndexAssign(Expr, Expr, Option<BinaryOp>, Expr),
     /// Bare expression followed by `;`.
     Expr(Expr),
     /// `{ ... }` — introduces a scope.
@@ -38,8 +42,12 @@ impl fmt::Display for Stmt {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
             StmtKind::Let(name, e) => write!(f, "(let {name} {e})"),
-            StmtKind::Assign(name, e) => write!(f, "(= {name} {e})"),
-            StmtKind::IndexAssign(base, idx, e) => write!(f, "(=[] {base} {idx} {e})"),
+            StmtKind::Assign(name, None, e) => write!(f, "(= {name} {e})"),
+            StmtKind::Assign(name, Some(op), e) => write!(f, "({op}= {name} {e})"),
+            StmtKind::IndexAssign(base, idx, None, e) => write!(f, "(=[] {base} {idx} {e})"),
+            StmtKind::IndexAssign(base, idx, Some(op), e) => {
+                write!(f, "({op}=[] {base} {idx} {e})")
+            }
             StmtKind::Expr(e) => write!(f, "{e}"),
             StmtKind::Block(stmts) => {
                 f.write_str("(block")?;

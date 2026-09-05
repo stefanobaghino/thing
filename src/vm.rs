@@ -73,6 +73,13 @@ fn exec<W: Write>(
                     None => return Err(interp.undefined(name, span)),
                 }
             }
+            Op::GetVarToUpdate(i) => {
+                let name = &chunk.names[*i as usize];
+                match interp.lookup(name) {
+                    Some(v) => stack.push(v),
+                    None => return Err(interp.undefined_assign(name, span)),
+                }
+            }
             Op::Define(i) => {
                 let v = stack.pop().expect("stack underflow");
                 interp.define(&chunk.names[*i as usize], v);
@@ -118,6 +125,12 @@ fn exec<W: Write>(
             Op::Index => {
                 let idx = stack.pop().expect("stack underflow");
                 let base = stack.pop().expect("stack underflow");
+                stack.push(eval::index(base, idx, span)?);
+            }
+            Op::IndexKeep => {
+                let n = stack.len();
+                let idx = stack[n - 1].clone();
+                let base = stack[n - 2].clone();
                 stack.push(eval::index(base, idx, span)?);
             }
             Op::IndexSet => {

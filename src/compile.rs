@@ -18,6 +18,10 @@ pub enum Op {
     Define(u32),
     /// Rebind names[i] from the top of stack.
     SetVar(u32),
+    /// Push names[i], the read half of a compound assignment. Unlike
+    /// GetVar, a missing name reports the assignment error, so
+    /// `x += 1` and `x = x + 1` fail the same way `x = 1` does.
+    GetVarToUpdate(u32),
     Unary(UnaryOp),
     Binary(BinaryOp),
     /// Pop n items into a fresh list.
@@ -26,6 +30,10 @@ pub enum Op {
     MakeMap(u32),
     /// stack: [base, idx] -> [base[idx]]
     Index,
+    /// stack: [base, idx] -> [base, idx, base[idx]] — the read half of
+    /// a compound index assignment, which must not evaluate either
+    /// operand a second time.
+    IndexKeep,
     /// stack: [base, idx, value] -> []
     IndexSet,
     /// stack: [callee, arg0..argn-1] -> [result]; the span names the
@@ -191,13 +199,13 @@ fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
                 }
                 walk_expr(e, in_fn, out);
             }
-            StmtKind::Assign(n, e) => {
+            StmtKind::Assign(n, _, e) => {
                 if in_fn {
                     out.insert(n.clone());
                 }
                 walk_expr(e, in_fn, out);
             }
-            StmtKind::IndexAssign(a, b, c) => {
+            StmtKind::IndexAssign(a, b, _, c) => {
                 walk_expr(a, in_fn, out);
                 walk_expr(b, in_fn, out);
                 walk_expr(c, in_fn, out);
@@ -410,9 +418,22 @@ impl Compiler {
                     }
                 }
             }
-            StmtKind::Assign(name, value) => {
-                self.expr(value)?;
-                match self.resolve(name) {
+            StmtKind::Assign(name, op, value) => {
+                let slot = self.resolve(name);
+                if let Some(op) = op {
+                    match slot {
+                        Some(slot) => self.emit(Op::GetSlot(slot), s.span),
+                        None => {
+                            let i = self.name(name);
+                            self.emit(Op::GetVarToUpdate(i), s.span);
+                        }
+                    }
+                    self.expr(value)?;
+                    self.emit(Op::Binary(*op), s.span);
+                } else {
+                    self.expr(value)?;
+                }
+                match slot {
                     Some(slot) => self.emit(Op::SetSlot(slot), s.span),
                     None => {
                         let i = self.name(name);
@@ -420,10 +441,18 @@ impl Compiler {
                     }
                 }
             }
-            StmtKind::IndexAssign(base, idx, value) => {
+            StmtKind::IndexAssign(base, idx, op, value) => {
                 self.expr(base)?;
                 self.expr(idx)?;
-                self.expr(value)?;
+                if let Some(op) = op {
+                    // IndexKeep leaves base and index where they are,
+                    // so the write below uses the ones already read.
+                    self.emit(Op::IndexKeep, s.span);
+                    self.expr(value)?;
+                    self.emit(Op::Binary(*op), s.span);
+                } else {
+                    self.expr(value)?;
+                }
                 self.emit(Op::IndexSet, s.span);
             }
             StmtKind::Expr(e) => {

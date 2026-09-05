@@ -743,8 +743,8 @@ fn visit_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)
     }
     for stmt in stmts {
         match &stmt.kind {
-            S::Let(_, e) | S::Assign(_, e) | S::Expr(e) | S::Return(Some(e)) => expr(e, f),
-            S::IndexAssign(base, idx, value) => {
+            S::Let(_, e) | S::Assign(_, _, e) | S::Expr(e) | S::Return(Some(e)) => expr(e, f),
+            S::IndexAssign(base, idx, _, value) => {
                 expr(base, f);
                 expr(idx, f);
                 expr(value, f);
@@ -865,11 +865,11 @@ fn collect_rebindings(
                 }
                 expr(value, out);
             }
-            S::Assign(name, value) => {
+            S::Assign(name, _, value) => {
                 out.insert(name.clone());
                 expr(value, out);
             }
-            S::IndexAssign(base, idx, value) => {
+            S::IndexAssign(base, idx, _, value) => {
                 expr(base, out);
                 expr(idx, out);
                 expr(value, out);
@@ -956,10 +956,10 @@ fn check_calls(
     }
     for stmt in stmts {
         match &stmt.kind {
-            S::Let(_, e) | S::Assign(_, e) | S::Expr(e) | S::Return(Some(e)) => {
+            S::Let(_, e) | S::Assign(_, _, e) | S::Expr(e) | S::Return(Some(e)) => {
                 expr(e, arities, out)
             }
-            S::IndexAssign(base, idx, value) => {
+            S::IndexAssign(base, idx, _, value) => {
                 expr(base, arities, out);
                 expr(idx, arities, out);
                 expr(value, arities, out);
@@ -1045,13 +1045,13 @@ fn walk_stmt(
     use crate::ast::StmtKind as S;
     match &stmt.kind {
         S::Let(_, e) => walk_expr(e, tokens, scopes, out),
-        S::Assign(name, e) => {
+        S::Assign(name, _, e) => {
             if !bound(scopes, name) {
                 report(name, stmt.span.start, tokens, scopes, out);
             }
             walk_expr(e, tokens, scopes, out);
         }
-        S::IndexAssign(base, idx, value) => {
+        S::IndexAssign(base, idx, _, value) => {
             walk_expr(base, tokens, scopes, out);
             walk_expr(idx, tokens, scopes, out);
             walk_expr(value, tokens, scopes, out);

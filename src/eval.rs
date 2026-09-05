@@ -154,8 +154,8 @@ fn statement_offsets(stmts: &[Stmt], out: &mut std::collections::HashSet<usize>)
     for s in stmts {
         out.insert(s.span.start);
         match &s.kind {
-            StmtKind::Let(_, e) | StmtKind::Assign(_, e) | StmtKind::Expr(e) => expr(e, out),
-            StmtKind::IndexAssign(a, b, c) => {
+            StmtKind::Let(_, e) | StmtKind::Assign(_, _, e) | StmtKind::Expr(e) => expr(e, out),
+            StmtKind::IndexAssign(a, b, _, c) => {
                 expr(a, out);
                 expr(b, out);
                 expr(c, out);
@@ -1060,18 +1060,38 @@ impl<W: Write> Interpreter<W> {
                     .insert(Rc::from(name.as_str()), v);
                 Ok(Control::Normal)
             }
-            StmtKind::Assign(name, value) => {
-                let v = self.eval(value)?;
+            StmtKind::Assign(name, op, value) => {
+                let v = match op {
+                    None => self.eval(value)?,
+                    // The compound form reads first, so an undefined
+                    // name is caught before the right-hand side runs.
+                    Some(op) => {
+                        let Some(old) = Env::get(&self.env, name) else {
+                            return Err(self.undefined_assign(name, stmt.span));
+                        };
+                        let r = self.eval(value)?;
+                        binary(*op, old, r, stmt.span)?
+                    }
+                };
                 if Env::assign(&self.env, name, v) {
                     Ok(Control::Normal)
                 } else {
                     Err(self.undefined_assign(name, stmt.span))
                 }
             }
-            StmtKind::IndexAssign(base, idx, value) => {
+            StmtKind::IndexAssign(base, idx, op, value) => {
+                // Base and index are evaluated once, whether or not an
+                // operator folds in, so `m[f()] op= x` calls f once.
                 let b = self.eval(base)?;
                 let i = self.eval(idx)?;
-                let v = self.eval(value)?;
+                let v = match op {
+                    None => self.eval(value)?,
+                    Some(op) => {
+                        let old = index(b.clone(), i.clone(), stmt.span)?;
+                        let r = self.eval(value)?;
+                        binary(*op, old, r, stmt.span)?
+                    }
+                };
                 match (b, i) {
                     (Value::List(items), Value::Int(n)) => {
                         let mut items = items.borrow_mut();
@@ -4340,6 +4360,41 @@ mod tests {
         assert_eq!(
             program_err("x = 1;"),
             "cannot assign to undefined variable 'x'"
+        );
+    }
+
+    #[test]
+    fn a_compound_assignment_names_its_target_once() {
+        assert_eq!(
+            output("let i = 7; i += 3; i -= 2; i *= 4; i /= 3; i %= 4; print(i);"),
+            "2\n"
+        );
+        assert_eq!(output("let s = \"a\"; s += \"b\"; print(s);"), "ab\n");
+        assert_eq!(
+            output("let xs = [1, 2]; xs[0] += 10; xs[-1] *= 3; print(xs);"),
+            "[11, 6]\n"
+        );
+        // The subscript is evaluated once, so a call in it happens once.
+        assert_eq!(
+            output(
+                "fn k() { print(\"k\"); return \"n\"; }\n\
+                 let m = {\"n\": 1}; m[k()] += 1; print(m[\"n\"]);"
+            ),
+            "k\n2\n"
+        );
+        // Reading comes first, and a name that is not there fails the
+        // way `=` does rather than the way a bare mention would.
+        assert_eq!(
+            program_err("x += 1;"),
+            "cannot assign to undefined variable 'x'"
+        );
+        assert_eq!(
+            program_err("let m = {}; m[\"k\"] += 1;"),
+            "key \"k\" not found"
+        );
+        assert_eq!(
+            program_err("let s = \"a\"; s -= 1;"),
+            "cannot apply '-' to string and int"
         );
     }
 

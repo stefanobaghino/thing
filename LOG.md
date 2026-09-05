@@ -11736,3 +11736,23 @@ Also not chosen: a `--check` warning suggesting the compound form.
 The nine warnings are each "this is probably a bug"; a style
 preference is a different kind of claim, and mixing them would make
 the exit status under `--strict` mean something new.
+
+## 2026-09-05 — Iteration 650: compound assignment
+
+`+=`, `-=`, `*=`, `/=` and `%=`, through the lexer, the AST, the
+parser and both engines. `StmtKind::Assign` and `IndexAssign` carry an
+`Option<BinaryOp>` rather than desugaring in the parser, because the
+index form must not desugar: `m[k] op= v` evaluates base and subscript
+once and uses them for both halves, which `m[k] = m[k] + v` cannot do.
+A test calls a function in the subscript and counts the prints.
+
+The VM needed one new op each way. `IndexKeep` reads `base[idx]` while
+leaving both operands on the stack, so `IndexSet` writes through the
+same two values. `GetVarToUpdate` exists only for its error message:
+the first run had the two engines disagreeing on `nope += 1`, the VM
+saying "undefined variable" from the read and the tree-walker "cannot
+assign to undefined variable" from the write. The write's message is
+the right one — a compound assignment is an assignment, and `x += 1`
+should fail the way `x = 1` does — so the compiler emits the variant
+that says so. Nine differential corpus lines cover the arithmetic, the
+container write, the once-only subscript and the four failures.

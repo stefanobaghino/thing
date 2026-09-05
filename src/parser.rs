@@ -230,15 +230,17 @@ impl<'a> Parser<'a> {
             _ => {
                 let expr = self.expr_bp(0)?;
                 // Assignment targets: a bare variable or an index expression.
-                if self.peek() == &TokenKind::Eq {
+                // `=` writes; `+=` and its four siblings read, apply the
+                // operator and write back.
+                if let Some(op) = assign_op(self.peek()) {
                     let kind = match expr.kind {
                         ExprKind::Var(name) => {
                             self.advance();
-                            StmtKind::Assign(name, self.expr_bp(0)?)
+                            StmtKind::Assign(name, op, self.expr_bp(0)?)
                         }
                         ExprKind::Index(base, idx) => {
                             self.advance();
-                            StmtKind::IndexAssign(*base, *idx, self.expr_bp(0)?)
+                            StmtKind::IndexAssign(*base, *idx, op, self.expr_bp(0)?)
                         }
                         _ => return Err(self.error("invalid assignment target")),
                     };
@@ -532,6 +534,20 @@ impl<'a> Parser<'a> {
 }
 
 /// (operator, left binding power, right binding power); left-assoc: rbp = lbp + 1.
+/// The token that opens an assignment, and the operator it folds in.
+/// `Some(None)` is a plain `=`; anything else is not an assignment.
+fn assign_op(kind: &TokenKind) -> Option<Option<BinaryOp>> {
+    match kind {
+        TokenKind::Eq => Some(None),
+        TokenKind::PlusEq => Some(Some(BinaryOp::Add)),
+        TokenKind::MinusEq => Some(Some(BinaryOp::Sub)),
+        TokenKind::StarEq => Some(Some(BinaryOp::Mul)),
+        TokenKind::SlashEq => Some(Some(BinaryOp::Div)),
+        TokenKind::PercentEq => Some(Some(BinaryOp::Rem)),
+        _ => None,
+    }
+}
+
 fn binop(kind: &TokenKind) -> Option<(BinaryOp, u8, u8)> {
     Some(match kind {
         TokenKind::PipePipe => (BinaryOp::Or, 1, 2),
@@ -585,6 +601,11 @@ fn describe(kind: &TokenKind) -> String {
                 TokenKind::Star => "*",
                 TokenKind::Slash => "/",
                 TokenKind::Percent => "%",
+                TokenKind::PlusEq => "+=",
+                TokenKind::MinusEq => "-=",
+                TokenKind::StarEq => "*=",
+                TokenKind::SlashEq => "/=",
+                TokenKind::PercentEq => "%=",
                 TokenKind::Eq => "=",
                 TokenKind::EqEq => "==",
                 TokenKind::BangEq => "!=",
@@ -924,6 +945,17 @@ mod tests {
             program_err("print([...xs]);"),
             "expected expression, found '...'"
         );
+    }
+
+    #[test]
+    fn a_compound_assignment_carries_its_operator() {
+        assert_eq!(program("x += 1;"), "(+= x 1)");
+        assert_eq!(program("x %= 2;"), "(%= x 2)");
+        assert_eq!(program("m[k] -= 1;"), "(-=[] m k 1)");
+        // The right-hand side is a whole expression, not one operand.
+        assert_eq!(program("x *= a + b;"), "(*= x (+ a b))");
+        // The target rules are the ones plain assignment has.
+        assert_eq!(program_err("f() += 1;"), "invalid assignment target");
     }
 
     #[test]

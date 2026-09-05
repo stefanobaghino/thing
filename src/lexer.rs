@@ -56,6 +56,13 @@ pub enum TokenKind {
     Star,
     Slash,
     Percent,
+    /// The compound assignments. Each reads the target, applies the
+    /// operator and writes back, naming the target once.
+    PlusEq,
+    MinusEq,
+    StarEq,
+    SlashEq,
+    PercentEq,
     Eq,
     EqEq,
     BangEq,
@@ -151,11 +158,11 @@ impl<'a> Lexer<'a> {
                 return Ok(tokens);
             };
             let kind = match b {
-                b'+' => TokenKind::Plus,
-                b'-' => TokenKind::Minus,
-                b'*' => TokenKind::Star,
-                b'/' => TokenKind::Slash,
-                b'%' => TokenKind::Percent,
+                b'+' => self.two(b'=', TokenKind::PlusEq, TokenKind::Plus),
+                b'-' => self.two(b'=', TokenKind::MinusEq, TokenKind::Minus),
+                b'*' => self.two(b'=', TokenKind::StarEq, TokenKind::Star),
+                b'/' => self.two(b'=', TokenKind::SlashEq, TokenKind::Slash),
+                b'%' => self.two(b'=', TokenKind::PercentEq, TokenKind::Percent),
                 b'(' => TokenKind::LParen,
                 b')' => TokenKind::RParen,
                 b'{' => TokenKind::LBrace,

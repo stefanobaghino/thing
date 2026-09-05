@@ -520,10 +520,17 @@ holds only the current milestone and the standing rules.
   80 try() wrappers, 33 around a single call with arguments.
   Milestone "saying it once" (v2.107.0, v2.108.0): compound
   assignment and `try(f, ...args)`.
+- 650: compound assignment landed. Assign/IndexAssign carry an
+  `Option<BinaryOp>`; two new ops, `IndexKeep` (reads base[idx]
+  leaving both operands for IndexSet) and `GetVarToUpdate` (a read
+  that reports the assignment error, so `x += 1` fails the way
+  `x = 1` does — the engines disagreed here on the first run).
+- Open for the next tick: the checker counts a *read*, and `x += 1`
+  reads x. `unused_top_level_lets` and `unused_local_lets` see only
+  the right-hand side today, so `let x = 0; x += 1;` would warn that
+  x is never used. Must be fixed before the corpus adopts `+=`.
 - Backlog (one per tick, in order):
-  (1) compound assignment `+= -= *= /= %=` in lexer, parser, AST and
-  both engines, evaluating an indexed target's subscript once;
-  (2) formatter, checker and LSP follow, plus a selftest;
+  (1) formatter, checker and LSP follow, plus a selftest;
   (3) `try(f, ...args)`; (4) fuzzers learn the tokens and the corpus
   adopts both; (5) docs; (6) RELEASE v2.107.0; (7) verify;
   (8) health tick.

@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- Compound assignment: `+=`, `-=`, `*=`, `/=` and `%=` on a variable
+  or an indexed element. The target is named once, and for
+  `m[k] op= v` the base and the subscript are evaluated once and used
+  for both the read and the write.
+
 ## v2.106.0 (2026-09-05)
 
 - `--coverage` takes several paths (directories recurse, as every
