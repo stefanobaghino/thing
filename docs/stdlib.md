@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 172 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 174 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -228,10 +228,10 @@ and written as a bare newline.
 
 | Function | Does |
 |----------|------|
-| `parse(text)` | rows of fields from comma-separated text |
-| `text(rows)` | comma-separated text from rows of fields, ending in a line break |
-| `parse_with(text, sep)` / `text_with(rows, sep)` | the same with any single-character separator |
-| `text_with(rows, sep)` | see `parse_with` |
+| `parse(text, sep = ",")` | rows of fields from delimited text; a comma unless another single character is given |
+| `text(rows, sep = ",")` | delimited text from rows of fields, ending in a line break |
+| `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
+| `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |
 | `maps(rows)` | the first row read as a header, the rest as maps; a short row leaves those columns nil |
 | `quote(field, sep)` | a field, quoted if it needs to be — spaces at either end included, so they survive a round trip |
 
@@ -288,6 +288,8 @@ t["summary"]();   # prints failures + totals; exits 1 if any failed
 | `check_approx(name, got, want, eps)` | passes if `got` is within `eps` of `want` |
 | `check_type(name, v, type_name)` | passes if `type(v)` is `type_name`; the failure names the actual type |
 | `summary()` | prints `FAIL:` lines and totals; `exit(1)` on any failure |
+| `pass()` | records a pass, for a check of your own |
+| `fail_with(pattern, ...parts)` | records a failure, its message built the way `format` builds one |
 | `state` | the counters map (`passed`, `failed`, `failures`) for tooling |
 
 Every helper counts as one check under `ting --test`, which reports

@@ -11410,3 +11410,21 @@ grow the caller's list.
 The reference and the tutorial say all of it, including the part
 worth saying plainly — the arity error counts what the list held, not
 that a list was passed.
+
+## 2026-09-05 — Iteration 634: the stdlib uses what it asked for
+
+lib/test.ting's five checks each ended in the same two lines: bump a
+counter, push a formatted message. `fail_with(pattern, ...parts)` is
+the helper that could not be written before this milestone, and
+`pass()` is its other half. The five call sites lose a line each, and
+a reader writing a check of their own now has the same tools the
+built-in checks use rather than the counters map.
+
+lib/csv.ting's twins were the evidence quoted when this milestone was
+chosen, so they go too: `parse(text, sep = ",")` and
+`text(rows, sep = ",")` carry the separator as a default, and
+`parse_with`/`text_with` stay as one-line spellings of the same
+thing. Additive, so the 2.x promise holds and nothing that imports
+them notices.
+
+Two functions more in lib/, so docs/stdlib.md counts 174.

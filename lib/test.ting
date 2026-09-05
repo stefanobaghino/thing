@@ -15,14 +15,25 @@
 
 let state = {"passed": 0, "failed": 0, "failures": []};
 
+# Records a pass. Custom checks call it directly.
+fn pass() {
+  state["passed"] = state["passed"] + 1;
+}
+
+# Records a failure whose message is built the way format() builds
+# one, so a custom check reads like the ones here.
+fn fail_with(pattern, ...parts) {
+  state["failed"] = state["failed"] + 1;
+  push(state["failures"], format(pattern, ...parts));
+}
+
 # Records a pass when cond is true, otherwise a failure under name.
 fn check(name, cond) {
   assert(true);
   if cond {
-    state["passed"] = state["passed"] + 1;
+    pass();
   } else {
-    state["failed"] = state["failed"] + 1;
-    push(state["failures"], name);
+    fail_with("{}", name);
   }
 }
 
@@ -31,10 +42,9 @@ fn check(name, cond) {
 fn check_eq(name, got, want) {
   assert(true);
   if got == want {
-    state["passed"] = state["passed"] + 1;
+    pass();
   } else {
-    state["failed"] = state["failed"] + 1;
-    push(state["failures"], format("{}: got {}, want {}", name, got, want));
+    fail_with("{}: got {}, want {}", name, got, want);
   }
 }
 
@@ -43,17 +53,15 @@ fn check_err(name, f, want) {
   assert(true);
   let r = try(f);
   if has(r, "err") && contains(r["err"], want) {
-    state["passed"] = state["passed"] + 1;
+    pass();
   } else if has(r, "err") {
-    state["failed"] = state["failed"] + 1;
     # try() says where the failure happened; a wrong message is much
     # easier to chase with the line that raised it.
     let at = r["at"];
-    push(state["failures"], format("{}: error {} raised at {}:{}:{} lacks {}",
-    name, r["err"], at["file"], at["line"], at["col"], want));
+    fail_with("{}: error {} raised at {}:{}:{} lacks {}",
+    name, r["err"], at["file"], at["line"], at["col"], want);
   } else {
-    state["failed"] = state["failed"] + 1;
-    push(state["failures"], format("{}: expected an error, got {}", name, r["ok"]));
+    fail_with("{}: expected an error, got {}", name, r["ok"]);
   }
 }
 
@@ -62,10 +70,9 @@ fn check_err(name, f, want) {
 fn check_approx(name, got, want, eps) {
   assert(true);
   if abs(got - want) <= eps {
-    state["passed"] = state["passed"] + 1;
+    pass();
   } else {
-    state["failed"] = state["failed"] + 1;
-    push(state["failures"], format("{}: got {}, want {} (off by {})", name, got, want, abs(got - want)));
+    fail_with("{}: got {}, want {} (off by {})", name, got, want, abs(got - want));
   }
 }
 
@@ -75,10 +82,9 @@ fn check_approx(name, got, want, eps) {
 fn check_type(name, v, type_name) {
   assert(true);
   if type(v) == type_name {
-    state["passed"] = state["passed"] + 1;
+    pass();
   } else {
-    state["failed"] = state["failed"] + 1;
-    push(state["failures"], format("{}: got a {}, want a {}", name, type(v), type_name));
+    fail_with("{}: got a {}, want a {}", name, type(v), type_name);
   }
 }
 

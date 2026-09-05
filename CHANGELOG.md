@@ -11,6 +11,11 @@ Windows are attached to each
   selftest/varargs.ting exercises them on both engines. The
   differential generator emits variadic calls; the crash fuzzer's
   alphabet has `...`.
+- `lib/test.ting` gains `pass()` and `fail_with(pattern, ...parts)`,
+  which its five checks now go through and a check of your own can
+  too.
+- `lib/csv.ting`'s `parse` and `text` take an optional separator;
+  `parse_with` and `text_with` remain as the older spelling.
 
 ## v2.103.0 (2026-09-05)
 

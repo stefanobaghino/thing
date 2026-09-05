@@ -23,9 +23,9 @@ fn quote(field, sep) {
   return "\"" + replace(field, "\"", "\"\"") + "\"";
 }
 
-# Rows of fields from delimited text, with any single-character
-# separator.
-fn parse_with(text, sep) {
+# Rows of fields from delimited text. The separator is a comma unless
+# another single character is given.
+fn parse(text, sep = ",") {
   let rows = [];
   let row = [];
   let field = "";
@@ -79,13 +79,14 @@ fn parse_with(text, sep) {
   return rows;
 }
 
-# Rows of fields from comma-separated text.
-fn parse(text) { return parse_with(text, ","); }
+# The older spelling of `parse` with an explicit separator, kept for
+# the programs that use it.
+fn parse_with(text, sep) { return parse(text, sep); }
 
-# Delimited text from rows of fields, with any single-character
-# separator. The text ends in a line break, as a text file's last
-# line does.
-fn text_with(rows, sep) {
+# Delimited text from rows of fields; the separator is a comma unless
+# another single character is given. The text ends in a line break, as
+# a text file's last line does.
+fn text(rows, sep = ",") {
   let lines = [];
   for row in rows {
     let fields = [];
@@ -96,8 +97,8 @@ fn text_with(rows, sep) {
   return join(lines, "\n") + "\n";
 }
 
-# Comma-separated text from rows of fields.
-fn text(rows) { return text_with(rows, ","); }
+# The older spelling of `text` with an explicit separator.
+fn text_with(rows, sep) { return text(rows, sep); }
 
 # The first row read as a header, the rest as maps from column name to
 # field. A row shorter than the header leaves those columns nil; extra

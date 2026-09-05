@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 66 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 172
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 316 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
@@ -455,9 +455,12 @@ holds only the current milestone and the standing rules.
 - 633: fuzz generator reaches variadic calls five ways, `...` in the
   crash alphabet, selftest/varargs.ting (20 checks), reference and
   tutorial sections.
+- 634: lib/test.ting's five checks go through pass()/fail_with()
+  (variadic, so it could not exist before); lib/csv.ting's parse and
+  text take an optional separator, the _with twins kept as the older
+  spelling. 174 stdlib functions.
 - Backlog (one per tick, in order):
-  (1) the stdlib uses it (lib/test.ting's five format lines);
-  (2) RELEASE v2.104.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.104.0; (2) verify; (3) health tick.
 - Small stroke available any time, now that defaults exist: csv's
   parse/parse_with and text/text_with are twins only because the
   separator could not be optional.
