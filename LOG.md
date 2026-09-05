@@ -11550,3 +11550,13 @@ whole stderr, not just the summary line.
 
 Cut on 5983f57's green CI: strokes 639 and 640, the recording and the
 report. The 126th tag; verification next.
+
+## 2026-09-05 — Iteration 642: v2.105.0 verified
+
+Both aarch64 Linux archives downloaded cold and run from their own
+directory, so the lib/ they imported was the shipped one. Four runs —
+two archives, two engines — printed the same coverage table byte for
+byte: the branch not taken and the body of the function never called
+are the two missed lines in the script, and lib/list.ting reads
+47/298 for a program that calls one of its functions. Six assets on
+the tag.

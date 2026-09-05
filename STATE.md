@@ -479,15 +479,14 @@ holds only the current milestone and the standing rules.
   (twelve named, the rest counted), on stderr like the profile. What
   could run comes from the AST (statement walk at parse time), so the
   denominator matches for both engines by construction.
-- 641: v2.105.0 released (126th tag; strokes 639, 640) — awaiting
-  cold verification.
+- v2.105.0 VERIFIED (126th tag; strokes 639, 640; both aarch64
+  archives, both engines, the same coverage table byte for byte).
 - Backlog (one per tick, in order):
-  (1) verify v2.105.0;
-  (3) several scripts in one run, plus a differential test that the
+  (1) several scripts in one run, plus a differential test that the
   two engines report the same lines;
-  (4) docs and a selftest;
-  (5) point it at lib/ and fix what it finds;
-  (6) RELEASE v2.106.0; (7) verify; (8) health tick.
+  (2) docs and a selftest;
+  (3) point it at lib/ and fix what it finds;
+  (4) RELEASE v2.106.0; (5) verify; (6) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).
@@ -514,7 +513,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 126 (v2.105.0), 125 verified; v2.29.0 is publicly marked broken
+- Tags: 126 (v2.105.0), 126 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
