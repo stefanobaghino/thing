@@ -787,10 +787,17 @@ holds only the current milestone and the standing rules.
   Thompson NFA (24 a's vs `^(a+)+$` under 1 ms), so no semantics are
   at risk, and the guard exists already (selftest/regex.ting plus the
   2000000-case pattern fuzzer).
+- 694: `find_at` reuses two thread lists and a `Scratch` (the `seen`
+  vector and `add`'s closure stack) instead of allocating a list, a
+  seen vector and a stack per character position. Per match 4.65 us to
+  2.75 us, the per-step cost ~330 ns to ~173 ns, the 693 probe 320 ms
+  to 195 ms. Semantics unchanged: 36 regex checks, the pattern fuzzer
+  clean at seed 694 over 2000000 cases, full suite green.
 - Backlog (one per tick, in order):
-  (1) reuse the thread lists and `seen` across positions in
-  `find_at`; (2) stop cloning capture slots per thread per step;
-  (3) bench and guard the result; (4) release v2.113.0.
+  (1) stop cloning capture slots per thread per step (the other half
+  of the per-step cost, plus the fresh capture vector allocated at
+  every position for the leftmost restart); (2) bench and guard the
+  result; (3) release v2.113.0.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

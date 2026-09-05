@@ -509,6 +509,14 @@ impl Compiler {
 /// A thread: where it is in the program, and what it has captured.
 type Thread = (usize, Vec<Option<usize>>);
 
+/// What a search reuses at every position: which instructions this
+/// step has already reached, and the stack `add` walks the epsilon
+/// closure with. Both are cleared per use rather than reallocated.
+struct Scratch {
+    seen: Vec<bool>,
+    stack: Vec<Thread>,
+}
+
 impl Regex {
     pub fn new(pattern: &str) -> Result<Regex, String> {
         let src: Vec<char> = pattern.chars().collect();
@@ -545,14 +553,24 @@ impl Regex {
     /// group that took no part in the match is None.
     pub fn find_at(&self, text: &[char], from: usize) -> Option<Vec<Option<usize>>> {
         let slots = self.groups * 2 + 2;
+        // Two thread lists and one scratch, reused at every position.
+        // Advancing one character used to allocate a list, a seen
+        // vector and a stack; the search is the same, the allocation
+        // is not per character any more.
         let mut clist: Vec<Thread> = Vec::new();
-        let mut seen = vec![false; self.prog.len()];
-        self.add(&mut clist, &mut seen, 0, from, text, vec![None; slots]);
+        let mut nlist: Vec<Thread> = Vec::new();
+        let mut scratch = Scratch {
+            seen: vec![false; self.prog.len()],
+            stack: Vec::new(),
+        };
+        self.add(&mut clist, &mut scratch, 0, from, text, vec![None; slots]);
         let mut matched: Option<Vec<Option<usize>>> = None;
         let mut pos = from;
         loop {
-            let mut nlist: Vec<Thread> = Vec::new();
-            let mut nseen = vec![false; self.prog.len()];
+            nlist.clear();
+            // `seen` belongs to the list being built, and from here on
+            // that is nlist: what it recorded for clist is spent.
+            scratch.seen.fill(false);
             for thread in &clist {
                 let (pc, caps) = thread.clone();
                 let step = match &self.prog[pc] {
@@ -570,20 +588,27 @@ impl Regex {
                     _ => unreachable!("epsilon instruction left in a thread list"),
                 };
                 if step {
-                    self.add(&mut nlist, &mut nseen, pc + 1, pos + 1, text, caps);
+                    self.add(&mut nlist, &mut scratch, pc + 1, pos + 1, text, caps);
                 }
             }
             // A fresh start at the next position, at lowest priority,
             // and only while nothing has matched: that is what makes
             // the search leftmost.
             if matched.is_none() && pos < text.len() {
-                self.add(&mut nlist, &mut nseen, 0, pos + 1, text, vec![None; slots]);
+                self.add(
+                    &mut nlist,
+                    &mut scratch,
+                    0,
+                    pos + 1,
+                    text,
+                    vec![None; slots],
+                );
             }
             if pos >= text.len() {
                 break;
             }
             pos += 1;
-            clist = nlist;
+            std::mem::swap(&mut clist, &mut nlist);
             if clist.is_empty() {
                 break;
             }
@@ -597,13 +622,15 @@ impl Regex {
     fn add(
         &self,
         list: &mut Vec<Thread>,
-        seen: &mut [bool],
+        scratch: &mut Scratch,
         pc: usize,
         pos: usize,
         text: &[char],
         caps: Vec<Option<usize>>,
     ) {
-        let mut stack = vec![(pc, caps)];
+        let Scratch { seen, stack } = scratch;
+        stack.clear();
+        stack.push((pc, caps));
         while let Some((pc, caps)) = stack.pop() {
             if seen[pc] {
                 continue;

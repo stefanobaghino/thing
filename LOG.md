@@ -13102,3 +13102,39 @@ millisecond, so there is no ReDoS to fix and, more usefully, no
 semantics at risk — this is a constant-factor job. And the safety net
 is already built: selftest/regex.ting guards behaviour, and the health
 tick already runs the pattern fuzzer at 2000000 cases.
+
+## 2026-09-05 — Iteration 694: the search stops allocating per character
+
+The first stroke of the milestone, and the cheaper half of what 693
+measured. `find_at` allocated a thread list and a `seen` vector for
+every character position, and `add` allocated its stack on every call —
+which is once per surviving thread per position. All three are now
+reused: two thread lists swapped rather than moved, and a `Scratch`
+holding the `seen` vector and the closure stack, each cleared per use
+instead of rebuilt.
+
+The measurement, 20000 calls each, against 693's numbers:
+
+| probe | before | after |
+|-------|-------:|------:|
+| short (11 ch), no groups | 93 ms | 55 ms |
+| long (352 ch), no groups | 105 ms | 65 ms |
+| short, three groups | 104 ms | 61 ms |
+| long, three groups | 127 ms | 74 ms |
+| fails on the first char | 20 ms | 17 ms |
+
+Per match, 4.65 us to 2.75 us; the probe from 693 that is 99.7%
+`re_test` goes 320 ms to 195 ms. Reading it the way 693 did — a match
+that fails immediately costs the fixed floor, so the difference over
+eleven characters is the per-step cost — the step is about 173 ns,
+down from about 330 ns. Half the cost of advancing one character was
+those two allocations.
+
+The other half is still there, and it is the next stroke: `caps` is
+cloned per thread per step, and a fresh capture vector is allocated at
+every position for the leftmost restart.
+
+Nothing about what the matcher accepts changed, which is the claim
+worth checking rather than asserting: selftest/regex.ting's 36 checks
+pass, the pattern fuzzer is clean at seed 694 over 2000000 cases, and
+the full suite is green.
