@@ -506,8 +506,12 @@ holds only the current milestone and the standing rules.
   with `^warning:` when a checker warning starts with
   `file:line:col:` — it read zero where five were printed, so the
   gate could only fail open. It matches `: warning:` now.
+- v2.106.0 VERIFIED (127th tag; strokes 641-645; both aarch64
+  archives executed here, defaults, rest, spread, imports and both
+  engines byte-identical; --coverage, --check, --fmt and stdin all
+  behaved; the site serves v2.106.0).
 - Backlog (one per tick, in order):
-  (1) verify v2.106.0; (2) health tick; (3) replenish.
+  (1) health tick; (2) replenish.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).

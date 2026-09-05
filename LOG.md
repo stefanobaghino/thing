@@ -11657,3 +11657,17 @@ checker warning starts with `file:line:col:`. A gate that can only
 fail open is worse than no gate, and this one had been passing on the
 wrong thing; it now matches `: warning:`, which is what the output
 says.
+
+## 2026-09-05 — Iteration 647: v2.106.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives came down cold and
+ran here: defaults, a rest parameter, a spread call, two lib/list
+functions and time_ms, on both engines, byte-identical across all four
+runs. `--coverage` reported 8 of 8 on the script, `--check` was quiet,
+`--fmt --diff` was empty, stdin ran. The site serves v2.106.0.
+
+The script needed two corrections before it ran, and both came from
+the binary being right: `sorted` is not in lib/list.ting, and the
+clock builtin is `time_ms`. The checker named the second one before
+the run did, with the right suggestion — which is the tool doing its
+job on the first outside program it had seen.
