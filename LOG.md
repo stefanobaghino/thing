@@ -12971,3 +12971,41 @@ Cut from a HEAD with CI and Pages green, gate green at the tag: fmt,
 zero clippy warnings, fourteen suites, the corpus at seven deliberate
 warnings, and 22 selftests / 2423 checks against the release binary
 that reports 2.112.0.
+
+## 2026-09-05 — Iteration 691: v2.112.0 verified
+
+Six assets on the tag; Release, CI and Pages green from the API. Both
+aarch64 Linux archives came down cold and ran here on what the release
+is about.
+
+A script importing the embedded stdlib and a module of its own, run
+four ways — two archives, two engines — is byte-identical:
+
+    6 [3, 2, 1]
+    21 3
+
+The `21 3` is the part that had to be got right: a module's top level
+still binds by name, so `scale` survives as an export and the function
+that closes over it still reads 3.
+
+And the accepted divergence reproduces exactly as docs/vm.md now
+describes it. A module that prints and then returns at top level:
+
+    --eval   side effect
+             error in module "m/loud.ting" at 2:1: return outside function
+    vm       error in module "m/loud.ting" at 2:1: return outside function
+
+Same message, same span, and the print only where the module was
+allowed to start running.
+
+The speedup is in the shipped artifact and not only in a local build:
+the release binary runs bench/stdlib.ting at 913 ms on the tree-walker
+against 505 ms on the VM. Each archive also runs the corpus to its
+seven deliberate warnings, 22 selftests / 2423 checks, and prints the
+baseline checksums for stdlib.ting and toplevel.ting.
+
+Nine site paths at 200, the changelog page carrying v2.112.0, the
+stdlib page still counting 174.
+
+What remains for "the code you imported" is a health tick, and then it
+can close.

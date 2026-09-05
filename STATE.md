@@ -752,9 +752,16 @@ holds only the current milestone and the standing rules.
   (tree-walker by design), so --test/--profile/--coverage all get
   compiled imports from the two entry points 688 wired.
 - 690: v2.112.0 released (133rd tag; strokes 688, 689).
+- 691: v2.112.0 verified. Six assets, green runs, both aarch64
+  archives run cold: module output byte-identical across two archives
+  and two engines (including a module's own top-level binding read
+  back as an export), the docs/vm.md divergence reproducing exactly,
+  the corpus at seven, 22 selftests / 2423 checks, baseline checksums
+  for stdlib and toplevel, and the shipped binary showing the flip
+  itself (stdlib.ting 913 ms eval against 505 ms vm). Nine site paths
+  at 200 serving v2.112.0, stdlib page at 174.
 - Backlog (one per tick, in order):
-  (1) verify v2.112.0; (2) health tick to close "the code you
-  imported".
+  (1) health tick to close "the code you imported".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
