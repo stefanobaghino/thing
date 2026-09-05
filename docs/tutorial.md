@@ -1153,6 +1153,22 @@ profile: 8 functions, 120003 calls, 43.209ms in them
   and call `slug` — is charged only its own loop, and the work it
   asked for shows up under the function that did it. Twenty rows at
   most; the rest are counted at the end.
+- `ting --coverage myscript.ting` runs it and then says which lines
+  ran; point it at a directory and it runs every `.ting` file in it,
+  adding them up:
+
+```text
+coverage: 2191 of 2210 lines (99%)
+  98%     67/68     lib/json.ting  missed 48
+  99%    296/298    lib/list.ting  missed 138, 139
+ 100%    177/177    lib/string.ting
+```
+
+  A test suite is the interesting thing to point it at: the rows for
+  the code under test say what the tests never reached. The lines it
+  counts are the ones holding a statement, so a `fn` definition is
+  covered as soon as the file runs — what tells you the function was
+  called is its body.
 - `ting --doc` prints the table of contents — every builtin and
   stdlib function — and `ting --doc list`, `ting --doc median` or
   `ting --doc myfile.ting` narrow it to a module, a function, or the

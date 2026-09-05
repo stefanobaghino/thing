@@ -490,8 +490,10 @@ holds only the current milestone and the standing rules.
   selftest/fs.ting in-process while the older test ran it as a child,
   racing on its fixed directory name. fs.ting and sh.ting are skipped
   there now.
+- 644: reference and tutorial document `--coverage` (a statement is
+  the unit; a `fn` definition is covered when the file runs, its body
+  when it is called); the CLI test covers the multi-script form.
 - Backlog (one per tick, in order):
-  (1) docs and a selftest;
   (3) point it at lib/ and fix what it finds;
   (4) RELEASE v2.106.0; (5) verify; (6) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with

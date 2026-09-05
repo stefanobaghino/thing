@@ -501,7 +501,29 @@ fn coverage_flag_reports_the_lines_that_ran() {
         seen.push(stderr);
     }
     assert_eq!(seen[0], seen[1], "engines disagree");
+
+    // Several scripts add up to one report, and a file both of them
+    // import is one row rather than two.
+    let other = std::env::temp_dir().join(format!("ting-coverage2-{}.ting", std::process::id()));
+    std::fs::write(&other, "print(1);\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--coverage")
+        .arg(&path)
+        .arg(&other)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "yes\n1\n");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    let rows = stderr
+        .lines()
+        .filter(|l| l.contains("ting-coverage"))
+        .count();
+    assert_eq!(rows, 2, "one row per script: {stderr}");
+    assert!(stderr.contains("missed 5, 8"), "{stderr}");
+
     let _ = std::fs::remove_file(&path);
+    let _ = std::fs::remove_file(&other);
 }
 
 /// `--profile` counts what every function did and prints the table on

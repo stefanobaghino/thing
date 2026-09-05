@@ -11598,3 +11598,16 @@ The rule this adds to the standing list: a test that runs the corpus
 in-process must not run the parts of it that touch the filesystem or
 spawn programs, because another test already runs those in processes
 of their own.
+
+## 2026-09-05 — Iteration 644: what a coverable line is
+
+The reference and the tutorial now carry `--coverage`, and both say
+the thing a reader will otherwise work out by being confused: the
+unit is the statement, so a blank line, a comment and a closing brace
+are not coverable, and a `fn` definition is covered as soon as the
+file runs, because what runs is the binding. What tells you the
+function was called is its body. The tutorial's example is the real
+selftest table, since a made-up one would teach the wrong shape.
+
+The CLI test grew the multi-script case: two scripts, two rows, one
+report, and the missed lines still named.

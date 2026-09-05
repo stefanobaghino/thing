@@ -10,6 +10,8 @@ Windows are attached to each
 - `--coverage` takes several paths (directories recurse, as every
   other tool flag here does): each script runs in its own interpreter,
   and they add up to one report.
+- The reference and the tutorial document `--coverage`, including
+  what counts as a coverable line.
 
 ## v2.105.0 (2026-09-05)
 

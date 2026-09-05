@@ -14,6 +14,7 @@ ting --check files...        # report errors and warnings without running
 ting --fmt files...          # reformat in place (--fmt-check to verify)
 ting --test dirs...          # run every .ting file as a test
 ting --test --watch dirs...  # and again on every change (--check too)
+ting --coverage paths...     # run each, then report which lines ran
 ting --doc [NAMES...]        # explain functions, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
@@ -583,6 +584,22 @@ The `ting` binary is the whole toolchain — no separate installs:
   `... N more functions`. Both engines count the same, and a run
   that fails still reports what it managed. Without the flag nothing
   is measured and nothing is printed.
+- `ting --coverage PATHS...` runs each script — directories recurse,
+  as they do for the other tools here — and then prints, on stderr,
+  which lines ran. One row per file: the share of its statements
+  reached, and the line numbers of those that were not, twelve of
+  them named before the rest are counted. A statement is the unit,
+  so a line holding one is coverable and a blank line, a comment or
+  a closing brace is not; a `fn` definition counts as the statement
+  that binds it, which runs whether or not the function is ever
+  called. Imported modules are counted against their own files, and a
+  file reached by several of the scripts is one row. Each script runs
+  in its own interpreter, so their globals stay apart exactly as
+  running them one after another would; the record does not. Both
+  engines report the same lines — a differential test over the
+  self-hosted suite says so — and a run that fails still reports what
+  it reached. Without the flag nothing is recorded and nothing is
+  printed.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
