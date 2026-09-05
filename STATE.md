@@ -565,8 +565,24 @@ holds only the current milestone and the standing rules.
   absolute path where the rest are relative, because
   selftest/testlib.ting imports it as `"../lib/test.ting"` and the
   report prints the path as resolved.
+- 658: replenishment. Measured gap: a failure's trace names the calls
+  and never the values — three note lines and not one says which row.
+  Milestone "what the values were" (v2.108.0, v2.109.0). The seam:
+  frames are pushed in exactly one place, `Interpreter::call`'s
+  `map_err`, which both engines go through and which runs only after
+  something has failed, so arguments cost nothing until then.
 - Backlog (one per tick, in order):
-  (1) replenish.
+  (1) frames carry their arguments, rendered into the diagnostic's
+  note lines, capped the way the ten-frame limit is capped, with both
+  engines producing the same text; (2) `try`'s trace maps carry them
+  and lib/err.ting reads them; (3) selftest and fuzzers; (4) docs;
+  (5) RELEASE v2.108.0; (6) verify; (7) health tick.
+- Small strokes available any time: the coverage report names
+  lib/test.ting by absolute path where the rest are relative (657).
+- Not chosen in 658, with reasons: an import-graph tool (`--deps`) is
+  the obvious next toolchain noun and has no measured pressure behind
+  it — the corpus's deepest import chain is two, and nothing in 657
+  iterations was hard to find for want of it.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21
   format() calls) and the one thing that cannot be added safely — a

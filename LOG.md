@@ -11911,3 +11911,49 @@ One cosmetic thing to note rather than chase: the coverage report
 names lib/test.ting by absolute path where every other file is
 relative, because selftest/testlib.ting imports it as
 `"../lib/test.ting"` and the report prints the path as resolved.
+
+## 2026-09-05 — Iteration 658: replenishment — "what the values were"
+
+The backlog emptied with v2.107.0 verified and the health tick green.
+Two milestones in a row have been language work, and the language's
+remaining honest gaps still need a keyword, so this survey went back
+to the toolchain and asked what it cannot answer.
+
+The measurement is a failure, run rather than imagined. A script that
+scales rows of numbers, given `[[1, 2], [3, "x"]]`, reports:
+
+    error: cannot apply '*' to string and int
+    note: in an anonymous function, called from fail.ting:1:32
+    note: in scale, called from fail.ting:4:29
+    note: in totals, called from fail.ting:7:7
+
+Three notes, and not one of them says which row. The trace names the
+calls; it never names the values, and for a data-processing script the
+value is the question. `--coverage` answered which lines ran and
+`--profile` how often — the frame is right there in both cases, and
+what it holds is a name and a span.
+
+The seam is better than it looks. Frames are pushed in exactly one
+place, `Interpreter::call`'s `map_err`, which both engines go through,
+and it runs only when something has already failed. Arguments cost
+nothing to carry until then, because the failing path is the only path
+that reads them.
+
+Milestone "what the values were" (v2.108.0, v2.109.0): each frame
+carries the arguments the call was made with, rendered into the
+diagnostic's note lines and into the `"trace"` maps `try` hands back,
+with lib/err.ting able to read them. Values are rendered the way
+`str` renders them and capped, the way a trace longer than ten frames
+is already capped, so a big list cannot bury the message. Both engines
+must produce the same text, which makes it a differential test rather
+than a new kind of trust.
+
+Considered and not chosen: an import-graph tool (`--deps`). It is the
+obvious next toolchain noun, and there is no measured pressure for it
+at all — the corpus's deepest import chain is two, and nothing in
+657 iterations was ever hard to find because a dependency was
+unclear. Building it would be building for a user nobody has met.
+
+Also still declined, from 649: string interpolation, because a sigil
+inside an existing literal changes what that literal means, and the
+2.x promise says a program that runs today runs tomorrow.
