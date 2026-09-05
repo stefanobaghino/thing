@@ -74,13 +74,17 @@ pub struct Expr {
 pub struct Param {
     pub name: String,
     pub default: Option<Expr>,
+    /// The last parameter may be written `...name`, and then it binds
+    /// a list of every argument the fixed parameters did not take.
+    pub rest: bool,
 }
 
 impl std::fmt::Display for Param {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        match &self.default {
-            Some(e) => write!(f, "({} {e})", self.name),
-            None => f.write_str(&self.name),
+        match (&self.default, self.rest) {
+            (Some(e), _) => write!(f, "({} {e})", self.name),
+            (None, true) => write!(f, "...{}", self.name),
+            (None, false) => f.write_str(&self.name),
         }
     }
 }

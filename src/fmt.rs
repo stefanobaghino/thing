@@ -122,6 +122,8 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
         }
         _ => match prev {
             LParen | LBracket | Dot => false,
+            // `...name` is one thing, the way `!x` is.
+            Ellipsis => false,
             Bang | Tilde => false,
             // Unary minus: previous minus not preceded by a value.
             Minus if !prev2.map(value_like).unwrap_or(false) => false,
@@ -322,6 +324,14 @@ mod tests {
         assert_eq!(
             format("let g = fn(x=nil){return x;};").unwrap(),
             "let g = fn(x = nil) { return x; };\n"
+        );
+    }
+
+    #[test]
+    fn a_rest_parameter_keeps_its_dots() {
+        assert_eq!(
+            format("fn f(a,... rest){return rest;}").unwrap(),
+            "fn f(a, ...rest) { return rest; }\n"
         );
     }
 

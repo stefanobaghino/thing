@@ -81,6 +81,7 @@ pub enum TokenKind {
     Comma,
     Semi,
     Dot,
+    Ellipsis,
     Colon,
     Eof,
 }
@@ -163,7 +164,17 @@ impl<'a> Lexer<'a> {
                 b']' => TokenKind::RBracket,
                 b',' => TokenKind::Comma,
                 b';' => TokenKind::Semi,
-                b'.' => TokenKind::Dot,
+                b'.' => {
+                    // `...` is the only spelling a dot takes part in;
+                    // a lone `.` is not part of any expression, and is
+                    // kept as a token only so the parser can name it.
+                    if self.peek() == Some(b'.') && self.peek2() == Some(b'.') {
+                        self.pos += 2;
+                        TokenKind::Ellipsis
+                    } else {
+                        TokenKind::Dot
+                    }
+                }
                 b':' => TokenKind::Colon,
                 b'=' => self.two(b'=', TokenKind::EqEq, TokenKind::Eq),
                 b'!' => self.two(b'=', TokenKind::BangEq, TokenKind::Bang),

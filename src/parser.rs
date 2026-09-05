@@ -267,6 +267,32 @@ impl<'a> Parser<'a> {
         if self.peek() != &TokenKind::RParen {
             loop {
                 match self.peek().clone() {
+                    TokenKind::Ellipsis => {
+                        self.advance();
+                        let TokenKind::Ident(name) = self.peek().clone() else {
+                            return Err(self.error(format!(
+                                "expected a name after '...', found {}",
+                                describe(self.peek())
+                            )));
+                        };
+                        if params.iter().any(|p: &crate::ast::Param| p.name == name) {
+                            return Err(self.error(format!("duplicate parameter '{name}'")));
+                        }
+                        self.advance();
+                        params.push(crate::ast::Param {
+                            name,
+                            default: None,
+                            rest: true,
+                        });
+                        // Everything left over goes here, so there is
+                        // nothing a later parameter could receive.
+                        if self.peek() == &TokenKind::Comma {
+                            return Err(
+                                self.error("a rest parameter must be the last one".to_string())
+                            );
+                        }
+                        break;
+                    }
                     TokenKind::Ident(name) => {
                         if params.iter().any(|p: &crate::ast::Param| p.name == name) {
                             return Err(self.error(format!("duplicate parameter '{name}'")));
@@ -289,7 +315,11 @@ impl<'a> Parser<'a> {
                                 "parameter '{name}' has no default but follows one that does"
                             )));
                         }
-                        params.push(crate::ast::Param { name, default });
+                        params.push(crate::ast::Param {
+                            name,
+                            default,
+                            rest: false,
+                        });
                     }
                     k => {
                         return Err(
@@ -561,6 +591,7 @@ fn describe(kind: &TokenKind) -> String {
                 TokenKind::Semi => ";",
                 TokenKind::Colon => ":",
                 TokenKind::Dot => ".",
+                TokenKind::Ellipsis => "...",
                 // Data-carrying kinds and Eof are handled above; keep a
                 // harmless fallback so a future token can't panic the
                 // error path (found by tests/fuzz.rs).
@@ -844,6 +875,26 @@ mod tests {
         assert_eq!(
             program_err("fn f(a = 1, b) { return a; }"),
             "parameter 'b' has no default but follows one that does"
+        );
+    }
+
+    #[test]
+    fn the_last_parameter_may_take_the_rest() {
+        assert_eq!(
+            sexpr("fn(a, ...rest) { return rest; }"),
+            "(fn (a ...rest) (return rest))"
+        );
+        assert_eq!(
+            program_err("fn f(...rest, a) { return a; }"),
+            "a rest parameter must be the last one"
+        );
+        assert_eq!(
+            program_err("fn f(...) { return 1; }"),
+            "expected a name after '...', found ')'"
+        );
+        assert_eq!(
+            program_err("fn f(...a = 1) { return a; }"),
+            "expected ')', found '='"
         );
     }
 

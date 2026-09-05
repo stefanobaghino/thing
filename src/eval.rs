@@ -154,6 +154,10 @@ pub struct Function {
     /// One entry per parameter: the expression standing in for it when
     /// the caller leaves it out, evaluated at each call.
     pub defaults: Rc<Vec<Option<crate::ast::Expr>>>,
+    /// True when the last parameter was written `...name`: it takes a
+    /// list of whatever the fixed parameters left over, so there is no
+    /// upper bound on how many arguments the function accepts.
+    pub rest: bool,
     pub body: FnBody,
     pub env: Rc<RefCell<Env>>,
     /// The imported file this function was defined in, if any.
@@ -926,6 +930,7 @@ impl<W: Write> Interpreter<W> {
             def,
             params: params.iter().map(|p| Rc::from(p.name.as_str())).collect(),
             defaults: Rc::new(params.iter().map(|p| p.default.clone()).collect()),
+            rest: params.last().is_some_and(|p| p.rest),
             body: FnBody::Ast(Rc::clone(body)),
             env: Rc::clone(&self.env),
             origin: self.defining_origin(),
@@ -2360,20 +2365,26 @@ impl<W: Write> Interpreter<W> {
         span: Span,
     ) -> Result<Value, RuntimeError> {
         // Parameters with a default may be left out; the rest may not.
+        // A `...rest` parameter is never required and has no upper
+        // bound: it takes whatever the fixed ones leave behind.
+        let fixed = func.params.len() - usize::from(func.rest);
         let required = func
             .defaults
             .iter()
             .position(|d| d.is_some())
-            .unwrap_or(func.params.len());
+            .unwrap_or(fixed)
+            .min(fixed);
         let mut args = args;
-        if args.len() < required || args.len() > func.params.len() {
+        if args.len() < required || (!func.rest && args.len() > func.params.len()) {
             // Named after the function it was defined as, the same way
             // a trace frame is; a literal has no name to give.
             let who = match &func.name {
                 Some(name) => name.to_string(),
                 None => "an anonymous function".to_string(),
             };
-            let wanted = if required == func.params.len() {
+            let wanted = if func.rest {
+                format!("at least {}", crate::diag::plural(required, "argument"))
+            } else if required == func.params.len() {
                 crate::diag::plural(func.params.len(), "argument")
             } else {
                 format!("{required} to {} arguments", func.params.len())
@@ -2383,7 +2394,20 @@ impl<W: Write> Interpreter<W> {
                 span,
             ));
         }
-        if args.len() < func.params.len() {
+        // The leftovers become one list before the defaults run, so a
+        // default cannot see them and the scratch scope holds exactly
+        // the fixed parameters bound so far.
+        let leftovers = if func.rest {
+            let tail = if args.len() > fixed {
+                args.split_off(fixed)
+            } else {
+                Vec::new()
+            };
+            Some(Value::list(tail))
+        } else {
+            None
+        };
+        if args.len() < fixed {
             // Defaults are evaluated here, at the call, in a scope that
             // already holds the arguments bound so far — so a later
             // default may name an earlier parameter, and `fn f(xs = [])`
@@ -2398,7 +2422,7 @@ impl<W: Write> Interpreter<W> {
             }));
             let saved = std::mem::replace(&mut self.env, scratch);
             let mut filled = Ok(());
-            for i in args.len()..func.params.len() {
+            for i in args.len()..fixed {
                 let default = func.defaults[i]
                     .as_ref()
                     .expect("a parameter past the required ones has a default");
@@ -2418,6 +2442,9 @@ impl<W: Write> Interpreter<W> {
             }
             self.env = saved;
             filled?;
+        }
+        if let Some(rest) = leftovers {
+            args.push(rest);
         }
         if self.depth >= self.max_depth {
             return Err(error(
@@ -3707,6 +3734,33 @@ mod tests {
         assert_eq!(
             program_err("fn f(a = fail(\"no\")) { return a; } f();"),
             "no"
+        );
+    }
+
+    #[test]
+    fn a_rest_parameter_takes_what_is_left() {
+        assert_eq!(
+            output("fn f(...xs) { return xs; } print(f(), f(1, 2));"),
+            "[] [1, 2]\n"
+        );
+        // The fixed parameters are filled first, defaults included.
+        assert_eq!(
+            output("fn f(a, b = 2, ...rest) { return [a, b, rest]; } print(f(1), f(1, 9, 8, 7));"),
+            "[1, 2, []] [1, 9, [8, 7]]\n"
+        );
+        // Each call gets its own list.
+        assert_eq!(
+            output("fn f(...xs) { push(xs, 0); return xs; } print(f(1), f(2));"),
+            "[1, 0] [2, 0]\n"
+        );
+        // Only the fixed parameters can be missing.
+        assert_eq!(
+            program_err("fn f(a, ...rest) { return a; } f();"),
+            "f expects at least 1 argument, got 0"
+        );
+        assert_eq!(
+            program_err("fn f(a, b, ...rest) { return a; } f(1);"),
+            "f expects at least 2 arguments, got 1"
         );
     }
 

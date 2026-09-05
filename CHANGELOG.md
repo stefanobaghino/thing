@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- A function's last parameter may be written `...rest`, and then it
+  binds a list of every argument the fixed parameters did not take.
+  Arity errors and `--check` warnings say "at least N arguments";
+  the formatter keeps `...name` tight and hover shows it as written.
+
 ## v2.102.0 (2026-09-05)
 
 - Function parameters may carry defaults (`fn f(a, b = 1)`), so a

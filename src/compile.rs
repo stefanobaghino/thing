@@ -93,6 +93,8 @@ pub struct FnProto {
     /// The default for each parameter, carried so a compiled function
     /// fills a missing argument exactly as an interpreted one does.
     pub defaults: std::rc::Rc<Vec<Option<crate::ast::Expr>>>,
+    /// True when the last parameter was written `...name`.
+    pub rest: bool,
     pub chunk: std::rc::Rc<Chunk>,
 }
 
@@ -668,6 +670,7 @@ impl Compiler {
             def: span,
             params: params.iter().map(|p| p.name.clone()).collect(),
             defaults: std::rc::Rc::new(params.iter().map(|p| p.default.clone()).collect()),
+            rest: params.last().is_some_and(|p| p.rest),
             chunk: std::rc::Rc::new(chunk),
         });
         let i = (self.chunk.protos.len() - 1) as u32;

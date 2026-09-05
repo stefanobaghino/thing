@@ -11324,3 +11324,27 @@ a pair apart, which is not enough pressure to add syntax.
 Noted for a later stroke, now that defaults exist: csv's
 `parse`/`parse_with` and `text`/`text_with` are twins that only exist
 because the separator could not be optional.
+
+## 2026-09-05 — Iteration 629: the last parameter takes the rest
+
+`fn f(a, ...rest)` binds a list of whatever the fixed parameters did
+not take. `...` is a new token, and it could be one because a lone
+`.` is lexed but belongs to no expression form — nothing could have
+been using it.
+
+The binding happens in the one shared Interpreter::call, so the two
+engines agree by construction, as they did for defaults. Order
+matters there: the leftovers are split off *before* the defaults run,
+so the scratch scope a default sees holds exactly the fixed
+parameters and cannot reach the rest list.
+
+Everything downstream is the same shape as the defaults work.
+Arity: no upper bound, so the message becomes "at least N arguments",
+in the runtime error and in --check. The formatter needed one rule —
+`...name` is one thing, the way `!x` is. The hover reads the
+parameter back from the source. The checker's arity map now carries
+`Option<usize>` for the upper bound rather than a number, which is
+the honest type: unbounded is not a large number.
+
+The parser refuses what has no meaning: a parameter after the rest
+one, a default on it, `...` with no name, and a duplicate name.

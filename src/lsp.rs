@@ -784,18 +784,24 @@ pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
     use crate::ast::{ExprKind as E, StmtKind as S};
     // Top-level `let name = fn(...)`, with the arity it was given:
     // how many arguments it needs, and how many it can take.
-    let mut arities: std::collections::HashMap<String, (usize, usize)> =
+    // How many arguments the function needs, and how many it can take
+    // — None where a `...rest` parameter means there is no upper bound.
+    let mut arities: std::collections::HashMap<String, (usize, Option<usize>)> =
         std::collections::HashMap::new();
     let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
     for stmt in &program {
         if let S::Let(name, value) = &stmt.kind {
             *seen.entry(name.clone()).or_insert(0) += 1;
             if let E::Fn(params, _) = &value.kind {
+                let rest = params.last().is_some_and(|p| p.rest);
+                let fixed = params.len() - usize::from(rest);
                 let required = params
                     .iter()
                     .position(|p| p.default.is_some())
-                    .unwrap_or(params.len());
-                arities.insert(name.clone(), (required, params.len()));
+                    .unwrap_or(fixed)
+                    .min(fixed);
+                let most = if rest { None } else { Some(params.len()) };
+                arities.insert(name.clone(), (required, most));
             }
         }
     }
@@ -893,27 +899,27 @@ fn collect_rebindings(
 
 fn check_calls(
     stmts: &[crate::ast::Stmt],
-    arities: &std::collections::HashMap<String, (usize, usize)>,
+    arities: &std::collections::HashMap<String, (usize, Option<usize>)>,
     out: &mut Vec<(usize, usize, String)>,
 ) {
     use crate::ast::{ExprKind as E, StmtKind as S};
     fn expr(
         e: &crate::ast::Expr,
-        arities: &std::collections::HashMap<String, (usize, usize)>,
+        arities: &std::collections::HashMap<String, (usize, Option<usize>)>,
         out: &mut Vec<(usize, usize, String)>,
     ) {
         match &e.kind {
             E::Call(callee, args) => {
                 if let E::Var(name) = &callee.kind
                     && let Some((required, most)) = arities.get(name).copied()
-                    && (args.len() < required || args.len() > most)
+                    && (args.len() < required || most.is_some_and(|m| args.len() > m))
                 {
                     // A range only when there is one: a function with no
                     // defaults reads exactly as it did before.
-                    let takes = if required == most {
-                        crate::diag::plural(most, "argument")
-                    } else {
-                        format!("{required} to {most} arguments")
+                    let takes = match most {
+                        None => format!("at least {}", crate::diag::plural(required, "argument")),
+                        Some(m) if m == required => crate::diag::plural(m, "argument"),
+                        Some(m) => format!("{required} to {m} arguments"),
                     };
                     out.push((
                         callee.span.start,
@@ -1716,13 +1722,14 @@ fn user_fn_params(src: &str, name: &str) -> Option<Vec<String>> {
                     // The default as it was written, read back out of
                     // the source: the AST prints s-expressions, which
                     // is not what anyone typed.
-                    .map(|p| match &p.default {
-                        Some(d) => format!(
+                    .map(|p| match (&p.default, p.rest) {
+                        (Some(d), _) => format!(
                             "{} = {}",
                             p.name,
                             src.get(d.span.start..d.span.end).unwrap_or("...")
                         ),
-                        None => p.name.clone(),
+                        (None, true) => format!("...{}", p.name),
+                        (None, false) => p.name.clone(),
                     })
                     .collect(),
             ),
@@ -2378,6 +2385,23 @@ mod tests {
         );
         // A call inside the range says nothing at all.
         assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
+
+    /// A rest parameter has no upper bound, and the hover says so the
+    /// way the source does.
+    #[test]
+    fn a_rest_parameter_has_no_upper_bound() {
+        let src = "fn f(a, ...rest) { return rest; }\nf();\nf(1, 2, 3, 4);\n";
+        let messages: Vec<String> = arity_mismatches(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(
+            messages,
+            vec!["`f` takes at least 1 argument, called with 0".to_string()]
+        );
+        let hover = hover_result(src, 1, 0).to_string();
+        assert!(hover.contains("f(a, ...rest)"), "hover was:\n{hover}");
     }
 
     /// What a default names is a use, not a binding: the names inside
