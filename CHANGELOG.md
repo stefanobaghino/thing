@@ -5,17 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.106.0 (2026-09-05)
 
 - `--coverage` takes several paths (directories recurse, as every
   other tool flag here does): each script runs in its own interpreter,
   and they add up to one report.
 - The reference and the tutorial document `--coverage`, including
   what counts as a coverable line.
-- Tests for what coverage found untested: `lib/json.ting`'s `set_in`
-  refusal, `lib/list.ting`'s `max_by` replacing its running best,
-  `lib/args.ting`'s `main`, and — from processes of their own —
-  `lib/test.ting`'s `summary` and `main`'s two exits.
 - Tests for what coverage found untested: `lib/json.ting`'s `set_in`
   refusal, `lib/list.ting`'s `max_by` replacing its running best,
   `lib/args.ting`'s `main`, and — from processes of their own —
