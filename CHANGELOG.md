@@ -5,6 +5,13 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `--check` on a module member that does not exist now names the
+  builtin of that name where there is one, instead of guessing at the
+  nearest export. A module that retires a function into a builtin —
+  as `lib/map.ting`'s `get` did in v2.109.0 — leaves its callers here.
+
 ## v2.109.0 (2026-09-05)
 
 - New builtin `get(x, k, default)`: `x[k]` where it is present,

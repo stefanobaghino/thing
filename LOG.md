@@ -12344,3 +12344,36 @@ stdlib page counting 174. No open PRs, issues disabled, tree clean.
 
 Still noted, still not chased: the coverage report names lib/test.ting
 by absolute path where every other row is relative (657).
+
+## 2026-09-05 — Iteration 673: the member that became a builtin
+
+Two measurements, one stroke.
+
+Measured first: the nil-fallback shape, `if x == nil { x = default; }`,
+in case it wanted the same treatment `has` got. Eight sites in the
+corpus, and only three actually fall back to a value — json.ting's
+`base = {}`, string.ting's `common = 0`, todo.ting's `path`. The other
+five return, break or fail. Three sites is not pressure, and a
+nil-coalescing form would be a second way to spell something already
+short. Not chosen.
+
+Measured second, and this one bit: upgrading past v2.109.0 leaves any
+caller of `lib/map.ting`'s `get` staring at
+
+    warning: lib/map.ting has no `get`
+
+which is true and useless. The answer — that `get` is now a builtin
+and the import is what to drop — was nowhere in the message. Now the
+member warning checks the builtins first: an exact builtin of that
+name is a certainty where the nearest export is only a guess, so it
+wins and the suggestion is suppressed.
+
+    warning: lib/map.ting has no `get` (`get` is a builtin)
+
+It is general, not a migration note for this one function: reaching
+for `list["len"]` or `string["str"]` says the same thing.
+`unknown_members_name_the_builtin` in tests/io.rs holds the wording,
+beside the test for the nearest-export case it does not disturb.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
+five deliberate warnings, 22 selftests (2421 checks).

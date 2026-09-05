@@ -1428,10 +1428,16 @@ pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
     stdlib_member_findings(src)
         .into_iter()
         .map(|f| {
-            let near = crate::diag::nearest(&f.key, f.exports.iter().map(String::as_str));
-            let message = match near {
-                Some(n) => format!("{} has no `{}` (did you mean `{}`?)", f.module, f.key, n),
-                None => format!("{} has no `{}`", f.module, f.key),
+            // An exact builtin of that name is a certainty where the
+            // nearest export is only a guess, so it wins: a module that
+            // retires a function into a builtin leaves callers here.
+            let message = if Builtin::ALL.iter().any(|b| b.name() == f.key) {
+                format!("{} has no `{}` (`{}` is a builtin)", f.module, f.key, f.key)
+            } else {
+                match crate::diag::nearest(&f.key, f.exports.iter().map(String::as_str)) {
+                    Some(n) => format!("{} has no `{}` (did you mean `{}`?)", f.module, f.key, n),
+                    None => format!("{} has no `{}`", f.module, f.key),
+                }
             };
             (f.start, f.end, message)
         })

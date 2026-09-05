@@ -643,11 +643,14 @@ holds only the current milestone and the standing rules.
   18 lines because 671 collapsed that many covered lines out of
   lib/err.ting), six assets on each of the last two tags, CI green on
   HEAD, nine site paths at 200 serving v2.109.0 and 174 functions.
+- 673: the member warning names the builtin. `lib/map.ting has no
+  `get`` now adds "(`get` is a builtin)" — an exact builtin beats the
+  nearest-export guess, which is what an upgrade past v2.109.0 needs.
+  Measured and declined: a nil-coalescing form (only three of eight
+  `if x == nil` sites fall back to a value; the rest are control flow).
 - Backlog (one per tick, in order):
-  (1) close or extend "the key that isn't there" — the measured
-  adoption is spent (what remains is thirteen control-flow guards and
-  twelve plain presence tests), so this tick decides between a
-  v2.110.0 that ships 671 and a further stroke first.
+  (1) one more stroke of "the key that isn't there", or docs for 673;
+  (2) release v2.110.0 (671 + 673 accumulated); (3) verify.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`

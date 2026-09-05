@@ -2105,6 +2105,32 @@ fn unknown_members_suggest_the_nearest_one() {
     );
 }
 
+/// A member a module retired into a builtin. The nearest export is a
+/// guess; a builtin of exactly that name is the answer, so it wins.
+#[test]
+fn unknown_members_name_the_builtin() {
+    let dir = std::env::temp_dir().join("ting-member-builtin");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("m.ting");
+    std::fs::write(
+        &script,
+        "let m = import(\"lib/map.ting\");\nprint(m[\"get\"]({\"a\": 1}, \"z\", 0));\n",
+    )
+    .expect("write");
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check"])
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("lib/map.ting has no `get` (`get` is a builtin)"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("did you mean"), "{stderr}");
+}
+
 #[test]
 fn undefined_names_suggest_the_nearest_one() {
     let dir = std::env::temp_dir().join("ting-suggest");

@@ -565,7 +565,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   the checker can see — not a parameter, not a `let` in an enclosing
   block, not a builtin — with the nearest name in scope suggested;
   an imported stdlib module
-  indexed with a name it does not export; a top-level binding that
+  indexed with a name it does not export, naming the builtin of that
+  name where there is one and the nearest export otherwise; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
   only of bindings is a module and exempt; a `let` inside a block
   that nothing in the block uses, same opt-out; a function parameter
