@@ -12946,3 +12946,28 @@ Checked while here that the change reaches everything: only repl.rs
 builds an interpreter outside lib.rs, and the REPL runs on the
 tree-walker by design, so --test, --profile and --coverage all pick up
 compiled imports through the two entry points 688 wired.
+
+## 2026-09-05 — Iteration 690: v2.112.0
+
+The 133rd tag, strokes 688 and 689: the bytecode VM compiles what a
+script imports, and a test that can tell whether it still does.
+
+What ships is one sentence with a measurement behind it. A module used
+to run on the tree-walking reference whichever engine started the
+script, so the standard library — where a program that uses it spends
+most of its time — never met the compiler. bench/stdlib.ting was the
+one benchmark the VM lost, at 6% behind; it is 44% ahead now, with
+every checksum unchanged. A module's own top level still binds by
+name, because that is where `import` reads the exports from.
+
+The changelog also carries the divergence, because a user can see it:
+a module with a top-level `return` or `break` is refused by both
+engines with the same message, but the VM refuses it before the module
+runs, so statements ahead of the bad one take effect under `--eval`
+only. docs/vm.md has the long form beside the rest of the rollout's
+accepted divergences.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt,
+zero clippy warnings, fourteen suites, the corpus at seven deliberate
+warnings, and 22 selftests / 2423 checks against the release binary
+that reports 2.112.0.

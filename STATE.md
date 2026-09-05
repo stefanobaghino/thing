@@ -751,9 +751,10 @@ holds only the current milestone and the standing rules.
   watching it fail. Only repl.rs builds an Interpreter outside lib.rs
   (tree-walker by design), so --test/--profile/--coverage all get
   compiled imports from the two entry points 688 wired.
+- 690: v2.112.0 released (133rd tag; strokes 688, 689).
 - Backlog (one per tick, in order):
-  (1) release v2.112.0 (strokes 688, 689); (2) verify it; (3) health
-  tick to close "the code you imported".
+  (1) verify v2.112.0; (2) health tick to close "the code you
+  imported".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
