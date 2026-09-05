@@ -12406,3 +12406,22 @@ tests/io.rs, which runs both flags over the file that caused it.
 
 Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
 five deliberate warnings, 22 selftests (2421 checks).
+
+## 2026-09-05 — Iteration 675: a red CI, and what it was right about
+
+674 went red on windows-latest and nowhere else.
+`reports_name_modules_relative_to_the_working_directory` looked for
+the literal `lib/test.ting`, and a shortened path keeps the platform's
+own separator, so Windows prints `lib\test.ting`. I had built the
+needle from `Path::join` in the unit test in src/diag.rs and written
+it out by hand in the integration test twenty minutes later.
+
+The test was wrong, not the output: a report should name a file the
+way the platform does. The needle is built now.
+
+Repairing it also caught a second slip from 674. Removing a duplicated
+`#[test]` took the line above the wrong function, which left
+`profile_flag_counts_calls_per_function` without its doc comment and
+gave mine two. Both are back where they belong.
+
+Gate: fmt clean, clippy zero, fourteen suites ok.

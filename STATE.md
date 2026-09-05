@@ -651,6 +651,10 @@ holds only the current milestone and the standing rules.
 - 674: diag::shorten relativises a path for display; --coverage and
   --profile both use it, closing 657. Declined: a runtime "is a
   builtin" hint (a module is a plain map with no provenance).
+- 675: repaired 674's red CI. The new integration test wrote
+  `lib/test.ting` literally; Windows shortens to `lib\test.ting`, so
+  the needle is built from Path::join now. A misplaced doc comment
+  from the same tick went back too.
 - Backlog (one per tick, in order):
   (1) release v2.110.0 (strokes 671, 673, 674); (2) verify;
   (3) replenish — "the key that isn't there" ends with the release.
