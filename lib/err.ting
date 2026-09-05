@@ -13,36 +13,20 @@
 # prefix — it comes before the arguments.
 
 # The failure message, or nil when the call returned.
-fn message(f, ...rest) {
-  let done = try(f, ...rest);
-  if has(done, "err") { return done["err"]; }
-  return nil;
-}
+fn message(f, ...rest) { return get(try(f, ...rest), "err", nil); }
 
 # Whether the call failed.
 fn failed(f, ...rest) { return has(try(f, ...rest), "err"); }
 
 # The call's value, or the fallback if it failed. For the many places
 # where a failure has an obvious answer and no story worth telling.
-fn value(f, fallback, ...rest) {
-  let done = try(f, ...rest);
-  if has(done, "err") { return fallback; }
-  return done["ok"];
-}
+fn value(f, fallback, ...rest) { return get(try(f, ...rest), "ok", fallback); }
 
 # Where it failed: the {"file", "line", "column"} try reports, or nil.
-fn site(f, ...rest) {
-  let done = try(f, ...rest);
-  if has(done, "at") { return done["at"]; }
-  return nil;
-}
+fn site(f, ...rest) { return get(try(f, ...rest), "at", nil); }
 
 # The calls the failure came out of, innermost first, or [].
-fn trace(f, ...rest) {
-  let done = try(f, ...rest);
-  if has(done, "trace") { return done["trace"]; }
-  return [];
-}
+fn trace(f, ...rest) { return get(try(f, ...rest), "trace", []); }
 
 # The call's value, or a failure with the prefix in front of the
 # original message. Context is what turns "no such file" into
@@ -58,7 +42,7 @@ fn wrap(f, prefix, ...rest) {
 # to value, or nil when the call returned. The trace carries the same
 # thing for every frame; this is the one usually being asked about.
 fn given(f, ...rest) {
-  let done = try(f, ...rest);
-  if has(done, "trace") && len(done["trace"]) > 0 { return done["trace"][0]["args"]; }
+  let frames = get(try(f, ...rest), "trace", []);
+  if len(frames) > 0 { return frames[0]["args"]; }
   return nil;
 }

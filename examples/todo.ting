@@ -12,9 +12,8 @@ let path = env("TODO_FILE");
 if path == nil { path = "todo.json"; }
 
 fn load() {
-  let r = try(fn() { return json_parse(read_file(path)); });
-  if has(r, "ok") { return r["ok"]; }
-  return [];  # missing or corrupt file: start fresh
+  # A missing or corrupt file is not an error here: start fresh.
+  return get(try(fn() { return json_parse(read_file(path)); }), "ok", []);
 }
 
 fn save(items) { write_file(path, json_str(items)); }

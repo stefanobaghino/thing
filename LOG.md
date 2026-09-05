@@ -12294,3 +12294,25 @@ rebuilt from this tree: `lib/list.ting`'s `get(out, k, 0) + 1` is
 embedded in it and the retired `lib/map.ting` `get` is gone.
 
 Two strokes of "the key that isn't there" are shipped and verified.
+
+## 2026-09-05 — Iteration 671: lib/err.ting reads past the absence
+
+The module that exists to reshape `try`'s map was still taking that
+map apart by hand. Five of its seven functions named `done` and the
+key twice to say one thing; `message`, `value`, `site` and `trace` are
+each one line now, and `given` names the trace once instead of three
+times. `value` is the one that reads differently than it did:
+`get(done, "ok", fallback)` says the fallback answers a missing "ok",
+which is exactly what a failed call leaves behind.
+
+`failed` stays a presence test and `wrap` stays control flow — it
+calls `fail`, and no default expresses that.
+
+`examples/todo.ting`'s `load` went the same way: a missing or corrupt
+file is not an error there, it is an empty list, and that now reads as
+one return instead of a branch. The cookbook renders from `examples/`
+and its guard caught the stale copy before the commit did.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
+five deliberate warnings, 22 selftests (2421 checks) and all 18 example
+outputs matching. No behaviour changed, so the changelog says nothing.

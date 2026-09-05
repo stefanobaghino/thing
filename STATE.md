@@ -632,8 +632,14 @@ holds only the current milestone and the standing rules.
   200 serving v2.109.0 and 174 stdlib functions, and the playground
   wasm rebuilt from this tree (it embeds list.ting's new `get` call
   and no longer carries map.ting's retired one).
+- 671: lib/err.ting reads `get` — message, value, site and trace are
+  one line each, given names the trace once; failed (presence) and
+  wrap (control flow) stay. examples/todo.ting's load likewise. No
+  behaviour change, so no changelog bullet.
 - Backlog (one per tick, in order):
-  (1) next stroke of "the key that isn't there"; (2) health tick.
+  (1) health tick; (2) close or extend "the key that isn't there"
+  (the measured adoption is now spent: what remains in the corpus is
+  thirteen control-flow guards and twelve plain presence tests).
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
