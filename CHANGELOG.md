@@ -5,6 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- A module exports what its top level declares. `let` and `fn` at a
+  module's top level are its exports, read from the module itself
+  rather than guessed from the environment it ran in. The visible
+  difference is that a module can now re-export a builtin under its
+  own name — `let sort = sort;` puts `sort` in the module map, where
+  before it vanished, because the old rule treated any builtin still
+  bound to its own name as ambient. Every existing module exports
+  exactly the same 175 names as before.
+
 ## v2.113.0 (2026-09-05)
 
 - Pattern matching is about three times faster. The search reuses its

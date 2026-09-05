@@ -2627,15 +2627,16 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
-    /// Load, run, and cache a module. The module executes in a fresh
-    /// global environment; its top-level bindings (minus untouched
-    /// builtins) come back as a map, the same map on every import.
     /// The module currently being imported, for functions defined
     /// during its top-level run.
     pub(crate) fn current_origin(&self) -> Option<Rc<Origin>> {
         self.origin_stack.last().cloned()
     }
 
+    /// Load, run, and cache a module. The module executes in a fresh
+    /// global environment, and what its top level declares — every
+    /// `let` and `fn` at depth zero — comes back as a map, the same
+    /// map on every import.
     fn import_module(&mut self, path: &str, span: Span) -> Result<Value, RuntimeError> {
         let base = self.dir_stack.last().cloned().unwrap_or_default();
         let raw = if std::path::Path::new(path).is_absolute() {
@@ -2722,16 +2723,24 @@ impl<W: Write> Interpreter<W> {
         let module_env = std::mem::replace(&mut self.env, saved_env);
         result.map_err(|e| in_module(&e.message, e.span, &src))?;
 
+        // What a module exports is what its top level declares: every
+        // `let` and `fn` at depth zero, which the parser makes the same
+        // statement. The environment is only asked for the values.
+        //
+        // Reading the environment instead meant guessing which of its
+        // names the module had put there, and the guess was value
+        // identity: a builtin still bound to its own name was ambient.
+        // That is true of the 67 a module never touches and equally
+        // true of one it deliberately rebinds, so `let sort = sort;`
+        // exported nothing.
         let mut exports = std::collections::BTreeMap::new();
-        for (name, v) in module_env.borrow().vars.iter() {
-            // Builtins still bound to their own name are ambient, not
-            // something the module defined.
-            if let Value::Builtin(b) = v
-                && b.name() == name.as_ref()
+        let vars = &module_env.borrow().vars;
+        for stmt in &program {
+            if let crate::ast::StmtKind::Let(name, _) = &stmt.kind
+                && let Some(v) = vars.get(name.as_str())
             {
-                continue;
+                exports.insert(name.clone(), v.clone());
             }
-            exports.insert(name.to_string(), v.clone());
         }
         let map = Value::map(exports);
         self.import_cache.insert(resolved, map.clone());

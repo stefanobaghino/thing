@@ -1,0 +1,6 @@
+# A module whose top level rebinds a builtin to its own name. The
+# export rule reads the top-level declarations, so this is an export
+# like any other; the value it exports is the builtin itself.
+let sort = sort;
+let named = len;
+fn own(xs) { return sort(xs); }

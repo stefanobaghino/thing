@@ -449,6 +449,12 @@ let m = import("mathutils.ting");
 print(m["double"](21));   # 42
 ```
 
+"Everything its top level defined" means every `let` and `fn` written
+at the top level of the module, and nothing else. The builtins are in
+scope inside a module the way they are everywhere, but they are not
+exports; a module that wants one in its map has to declare it, and
+`let sort = sort;` does exactly that.
+
 Relative paths resolve against the importing file's directory. A module
 runs once per program: later imports return the very same map (mutating
 it is visible everywhere). Circular imports, missing files, and errors

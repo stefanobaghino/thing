@@ -380,3 +380,23 @@ fn both_engines_cover_the_same_lines() {
     }
     assert_eq!(reports[0], reports[1], "engines cover different lines");
 }
+
+/// A module exports what its top level declares, and `let sort = sort;`
+/// is a declaration. The rule this replaced asked the environment
+/// which of its names looked module-defined, and answered by value:
+/// a builtin still bound to its own name was ambient. That is right
+/// for the ones a module never touches and wrong for one it rebinds
+/// on purpose, so the name simply vanished from the module map.
+#[test]
+fn a_module_can_re_export_a_builtin() {
+    let src = "let m = import(\"tests/fixtures/reexport.ting\");\n\
+               print(m[\"sort\"]([3, 1, 2]));\n\
+               print(m[\"named\"]([1, 2]));\n\
+               print(m[\"own\"]([2, 1]));\n\
+               print(has(m, \"push\"));";
+    let want = "[1, 2, 3]\n2\n[1, 2]\nfalse\n";
+    for engine in [Engine::Eval, Engine::Vm] {
+        let got = run(engine, src).expect("the module imports");
+        assert_eq!(got, want, "{engine:?} exported something else");
+    }
+}
