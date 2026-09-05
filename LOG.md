@@ -12675,3 +12675,18 @@ for many iterations. Checksums decide; timings are weather.
 
 Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
 seven deliberate warnings, 22 selftests (2423 checks).
+
+## 2026-09-05 — Iteration 683: v2.111.0
+
+Released, the 132nd tag. It carries the top-level frame slots (681),
+the engine agreement on a misspelled local that finding them uncovered
+(680), and bench/toplevel.ting to keep the first honest (682).
+
+Version bumped, `## Unreleased` cut to `## v2.111.0 (2026-09-05)`, the
+gate green (fmt, clippy at zero, fourteen suites), the corpus at its
+seven deliberate warnings, the binary reporting 2.111.0 and 22
+selftests / 2421 checks passing. Tagged and pushed; a monitor is
+pinned to the Release and CI run ids.
+
+This is the release where the default engine stopped losing to the
+reference one on the code shape scripts are mostly made of.
