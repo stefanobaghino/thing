@@ -11838,3 +11838,24 @@ in a comment.
 The rewrite also skipped selftest/functions.ting on purpose: its
 wrong-arity call is one of the corpus's five deliberate warnings, and
 `try(add, 1)` is a call the checker's arity pass cannot see.
+
+## 2026-09-05 — Iteration 654: the docs
+
+The reference gained the two compound-assignment lines in the
+statement block and a paragraph on what they mean — the operator is
+the binary one, the right-hand side is a whole expression, and an
+indexed target's subscript is evaluated once. `try`'s row and its
+worked example take the arguments now. The tutorial introduces `+=`
+where it already had `total = total + n`, and catches `parse_age` with
+`try(parse_age, raw)`.
+
+Both files then say the same thing about the lambda, because it is the
+one part of this that is easy to get wrong and 653 proved it on real
+code: what goes inside the lambda is what `try` evaluates and can
+catch; what goes in `try`'s own argument list is evaluated before
+`try` runs. `try(f, ...xs)` catches nothing if `xs` is not a list.
+
+lib/err.ting's table and its header sentence in the stdlib page follow
+the module, and the README's one-line summary of the language mentions
+the operators. The tutorial's examples are executed by the test suite,
+so its new output is checked, not claimed.

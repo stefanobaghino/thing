@@ -182,6 +182,8 @@ would have to invent.
 let x = 1;          # define (or shadow) in the current scope
 x = 2;              # rebind the nearest existing x; undefined name errors
 xs[0] = 9;          # write a list slot / insert or update a map key
+x += 1;             # also -=, *=, /=, %=: read, apply, write back
+xs[i] += 1;         # base and subscript are evaluated once, not twice
 { let y = 1; }      # block: introduces a scope; y does not leak
 if c { } else if d { } else { }
 while c { }
@@ -196,6 +198,15 @@ expr;               # expression statement (e.g. a call)
 `if`/`while`/`for` require braces and take no parentheses around the
 condition. Assignment is a statement, not an expression (`a = b = c` and
 `1 = 2` are parse errors).
+
+The compound forms `+=`, `-=`, `*=`, `/=` and `%=` apply the binary
+operator of the same name, so they do whatever it does — `s += "b"`
+concatenates. The right-hand side is a whole expression, taken before
+the operator is applied: `n *= 3 + 4` multiplies by 7. On an indexed
+target the base and the subscript are evaluated once and used for both
+the read and the write, which `m[k()] = m[k()] + 1` cannot promise. The
+target must already exist, and reading comes first, so both a missing
+name and a missing key are errors.
 
 `for` iterates over a **snapshot** taken when the loop starts, so the
 body may mutate the list or map it is iterating. Map iteration visits
@@ -312,7 +323,7 @@ scope).
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
-| `try(f)`       | calls `f()`; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
+| `try(f, ...args)` | calls `f` with the arguments that follow it; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
 | `fail(msg)`    | raises a runtime error with the given string message         |
 | `map(xs, f)`   | a fresh list of `f(x)` for each element                      |
 | `filter(xs, f)` | a fresh list of the elements where `f(x)` is `true` (bool required) |
@@ -477,12 +488,23 @@ The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
 out-of-bounds indices error immediately.
 
-To recover from an expected failure, wrap the risky code in a function
-and hand it to `try`; raise your own errors with `fail`:
+To recover from an expected failure, hand the function to `try` along
+with the arguments to call it with; raise your own errors with `fail`:
 
 ```ting
-let r = try(fn() { return int(input()); });
+let r = try(int, input());
 if has(r, "err") { print("not a number:", r["err"]); }
+```
+
+A lambda is still the way to guard more than one call, or a piece of
+code that is not a call at all — and it is not merely a longer
+spelling. What goes inside it is evaluated by `try`; what goes in
+`try`'s own argument list is evaluated before `try` runs, so
+`try(f, ...xs)` catches nothing if `xs` turns out not to be a list.
+Each lambda also adds the frame it is to `"trace"`.
+
+```ting
+let r = try(fn() { return json_parse(read_file(path)); });
 ```
 
 A caught failure carries what the diagnostic would have printed:

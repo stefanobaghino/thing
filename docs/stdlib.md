@@ -239,17 +239,18 @@ and written as a bare newline.
 
 What a program does about failure. `try` hands back a map, which is
 the right shape for a primitive and the wrong shape for the questions
-programs actually ask. Every function here takes a function of no
-arguments, as `try` does.
+programs actually ask. Every function here takes the function first
+and hands it whatever follows, as `try` does; where there is a second
+thing to say — a fallback, a prefix — it comes before the arguments.
 
 | Function | Does |
 |----------|------|
-| `message(f)` | the failure message, or nil when the call returned |
-| `failed(f)` | whether the call failed |
-| `value(f, fallback)` | the value, or the fallback if it failed |
-| `wrap(f, prefix)` | the value, or a failure with the prefix in front of the message — how "no such file" becomes "reading the config: no such file" |
-| `site(f)` | where it failed: the `{"file", "line", "column"}` `try` reports, or nil |
-| `trace(f)` | the calls the failure came out of, innermost first, or `[]` |
+| `message(f, ...rest)` | the failure message, or nil when the call returned |
+| `failed(f, ...rest)` | whether the call failed |
+| `value(f, fallback, ...rest)` | the value, or the fallback if it failed |
+| `wrap(f, prefix, ...rest)` | the value, or a failure with the prefix in front of the message — how "no such file" becomes "reading the config: no such file" |
+| `site(f, ...rest)` | where it failed: the `{"file", "line", "column"}` `try` reports, or nil |
+| `trace(f, ...rest)` | the calls the failure came out of, innermost first, or `[]` |
 
 ## lib/sh.ting
 

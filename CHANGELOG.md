@@ -17,6 +17,9 @@ Windows are attached to each
 - A document highlight now calls the target of an assignment a write,
   compound or plain, rather than only the names a `let` or `fn`
   introduces.
+- The reference and the tutorial cover both, including what a lambda
+  around a `try` still buys you; the corpus uses them throughout, and
+  the fuzzers generate them.
 
 ## v2.106.0 (2026-09-05)
 

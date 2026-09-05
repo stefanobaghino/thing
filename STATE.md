@@ -545,8 +545,12 @@ holds only the current milestone and the standing rules.
   Two reverts worth keeping in mind: a lambda is a trace frame, and a
   spread in try's own argument list is try's to evaluate, so the
   failure escapes instead of being caught.
+- 654: docs. Reference (statement block, a paragraph on the semantics,
+  try's row and example), tutorial (+= where the loop already added,
+  try(parse_age, raw)), stdlib err.ting table, README. Both the
+  reference and the tutorial spell out who evaluates what: inside the
+  lambda try can catch, in try's argument list it cannot.
 - Backlog (one per tick, in order):
-  (1) docs;
   (3) RELEASE v2.107.0; (4) verify; (5) health tick.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21

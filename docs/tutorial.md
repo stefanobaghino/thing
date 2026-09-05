@@ -136,7 +136,7 @@ for n in range(1, 11) {
   if n % 2 == 1 {
     continue;             # skip odd numbers
   }
-  total = total + n;
+  total += n;
 }
 print("sum of evens up to 10:", total);
 ```
@@ -144,6 +144,13 @@ print("sum of evens up to 10:", total);
 ```text
 sum of evens up to 10: 30
 ```
+
+`total += n` is `total = total + n` with the target named once. There
+are five of them — `+=`, `-=`, `*=`, `/=`, `%=` — and each does
+whatever its operator does, so `s += "!"` concatenates. They work on
+an element too, and there the shorter spelling is also the more
+careful one: `counts[word] += 1` looks the key up once, where
+`counts[word] = counts[word] + 1` looks it up twice.
 
 ## Functions are values
 
@@ -361,8 +368,8 @@ true false
 ## When things go wrong
 
 Runtime errors stop the program with a caret diagnostic — unless you
-catch them. `try(f)` calls `f()` and gives you a map instead of a
-crash; `fail(msg)` raises your own:
+catch them. `try(f, ...args)` calls `f` with the arguments that follow
+and gives you a map instead of a crash; `fail(msg)` raises your own:
 
 ```ting
 fn parse_age(s) {
@@ -371,7 +378,7 @@ fn parse_age(s) {
   return n;
 }
 for raw in ["42", "-1", "unknown"] {
-  let r = try(fn() { return parse_age(raw); });
+  let r = try(parse_age, raw);
   if has(r, "ok") {
     print(raw, "->", r["ok"]);
   } else {
@@ -385,6 +392,13 @@ for raw in ["42", "-1", "unknown"] {
 -1 -> error: age cannot be negative
 unknown -> error: cannot convert "unknown" to int
 ```
+
+A function of no arguments still works — `try(f)` — and so does a
+lambda, which is what you want when the risky part is more than one
+call, or is not a call at all. The difference is who evaluates what:
+whatever you put inside the lambda, `try` runs and can catch;
+whatever you put in `try`'s own argument list is evaluated before
+`try` is even called.
 
 ## Splitting code into modules
 
