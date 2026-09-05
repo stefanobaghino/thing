@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.103.0 (2026-09-05)
 
 - A function's last parameter may be written `...rest`, and then it
   binds a list of every argument the fixed parameters did not take.
