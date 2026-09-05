@@ -12651,3 +12651,27 @@ name, slot or not, so every such block needs its scope.
 Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
 seven deliberate warnings, 22 selftests (2423 checks), and 50000
 differential, 20000 formatter and the crash fuzzer cases at seed 681.
+
+## 2026-09-05 — Iteration 682: a bench row for the top of the file
+
+`bench/toplevel.ting` exists so 681 cannot silently come back. It
+defines no function and calls none of its own: a 200000-iteration loop
+that accumulates an int, tallies into a map with `get`, pushes rows,
+then walks those rows building strings — every read and write in it a
+top-level binding. That is the shape the VM resolved by name until
+yesterday's tick, and the one no existing row covered, since all six
+did their work inside functions or builtins.
+
+Both engines agree on its checksum, `1199980 97 200 10 2062`, and the
+new baseline has it at eval 469.4 ms against vm 309.4 ms — the VM 34%
+ahead on the workload it used to lose.
+
+BASELINE.md is regenerated, seven rows, the six older checksums
+unchanged. Its absolute times sit above the ones it replaces (fib at
+701 ms where the old file said 601) because the host had been running
+benchmarks all afternoon when I wrote it. The ratios are the part that
+carries meaning and they match: fib -36% against the -35% it has read
+for many iterations. Checksums decide; timings are weather.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
+seven deliberate warnings, 22 selftests (2423 checks).

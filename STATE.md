@@ -691,9 +691,13 @@ holds only the current milestone and the standing rules.
   and captured names never get slots. Top-level blocks always need a
   runtime scope now, or the nil binding outlives its block (caught by
   edge.ting's shadowed `len`).
+- 682: bench/toplevel.ting guards 681 — a function-free 200000-step
+  loop, checksum `1199980 97 200 10 2062`, eval 469.4 ms against vm
+  309.4 ms. BASELINE regenerated, seven rows, older checksums
+  unchanged; its absolute times run high because the host was busy,
+  the ratios match history.
 - Backlog (one per tick, in order):
-  (1) a bench row that isolates top-level work, BASELINE regenerated;
-  (2) release v2.111.0; (3) verify; (4) health tick.
+  (1) release v2.111.0; (2) verify; (3) health tick.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
@@ -790,5 +794,5 @@ Standing rules (each from a slip; the LOG entry named has the story):
   v2.17.0, 6 from v2.30.0.
 - Toolchain: rustc 1.98 locally; rustfmt and clippy reinstalled at 196.
 - Periodic health ticks (bench vs bench/BASELINE.md — recorded on this
-  host, six rows — plus 50000 differential, crash and 20000 formatter
+  host, seven rows since 682 — plus 50000 differential, crash and 20000 formatter
   fuzz cases in release) close every milestone.

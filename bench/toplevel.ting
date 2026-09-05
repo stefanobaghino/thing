@@ -1,0 +1,21 @@
+# Script scope, and nothing else: no function is called and none is
+# defined, so every read and write here is a top-level binding. That
+# is the shape a script is made of, and the one the VM resolved by
+# name until v2.111.0.
+let total = 0;
+let seen = {};
+let rows = [];
+for i in range(200000) {
+  let key = "k" + str(i % 97);
+  total += i % 13;
+  seen[key] = get(seen, key, 0) + 1;
+  if i % 1000 == 0 {
+    push(rows, [key, i, total % 7]);
+  }
+}
+let widest = 0;
+for r in rows {
+  let text = r[0] + ":" + str(r[1]);
+  if len(text) > widest { widest = len(text); }
+}
+print(total, len(seen), len(rows), widest, seen["k0"]);
