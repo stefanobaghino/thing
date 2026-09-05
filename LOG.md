@@ -13422,3 +13422,53 @@ cheaper than guessing now.
 Still available as a small stroke any tick, unrelated to this
 milestone: the 53 corpus sites that still write
 `try(fn() { return f(x); })` where `try(f, x)` now works.
+
+## 2026-09-06 — Iteration 702: a module exports what it declares
+
+The milestone's first stroke was supposed to be a fast `sort_with`.
+Two measurements changed what it is.
+
+The first priced the prize honestly. A native comparator sort still has
+to call the ting comparator once per comparison — about n log2 n, or
+287000 times for the 20000-element list in bench/stdlib.ting — and that
+is not free. Measured here: 287000 two-argument callbacks through
+`reduce` cost 64 ms, and through `map` 47 ms. So a native `sort_with`
+has a floor near 70 ms, not the 6 ms `sort_by` reaches; `sort_by`
+calls its key function 20000 times, not 287000, and compares natively
+after. The prize is about five times, not fifty-eight. Still the
+largest single win in the standard library, and worth having — but the
+number in 701's replenishment entry was the wrong number to plan with,
+and it is corrected here rather than quietly carried.
+
+The second killed the plan I had. 2.x is additive-only, so
+`import("lib/list.ting")["sort_with"]` has to keep working whatever
+runs underneath, and my intended escape was for lib/list.ting to
+re-export the builtin: `let sort_with = sort_with;`. It does not work,
+and the reason is a rule in `import_module`: a builtin still bound to
+its own name was treated as ambient and dropped from the exports. That
+is right for the 67 builtins a module never touches. It is wrong for
+one a module rebinds on purpose, and the two are indistinguishable by
+value, which is all the old rule had to look at.
+
+So this stroke is the rule, and the sort comes next. A module now
+exports what its top level declares: every `let` and `fn` at depth
+zero, read from the module's own AST, with the environment asked only
+for the values. The parser makes `fn f() {}` a `Let`, so one arm covers
+both. It says what it means, and it needs no heuristic.
+
+The risk was losing an export, so that was measured too, not argued:
+the twelve stdlib modules were dumped name by name from a binary built
+before the change and one built after, and the two lists are identical
+at 175 names. tests/differential.rs gains a test that a module can
+re-export a builtin — checking on both engines that a deliberate
+rebinding of `sort` and `len` comes through, and that `push`, which
+the fixture never mentions, does not.
+
+One thing found on the way: `import_module`'s doc comment was not on
+`import_module`. It had been merged into the top of `current_origin`'s,
+so the two functions shared one block and the reader got the module
+rule while looking at the origin stack — the iteration 675 shape,
+sitting in the tree unnoticed because nothing about it is a warning.
+Split, and the module half rewritten for the new rule. docs/reference.md
+now states the rule where `import` is explained, and the CHANGELOG has
+it under Unreleased.

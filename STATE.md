@@ -858,8 +858,21 @@ holds only the current milestone and the standing rules.
   re-exports a native implementation without its own binding
   shadowing the builtin is the first stroke's question, to be settled
   before any Rust.
+- 702: a module exports what its top level declares — every `let` and
+  `fn` at depth zero, read from the AST, the environment asked only
+  for values. Replaces a value-identity heuristic that dropped any
+  builtin still bound to its own name, so `let sort = sort;` exported
+  nothing. Verified by dumping all twelve stdlib modules from binaries
+  built before and after: IDENTICAL at 175 names. Also split
+  `import_module`'s doc comment, which had been merged into the top of
+  `current_origin`'s (the 675 shape, unnoticed because it warns about
+  nothing). CORRECTION to 701: a native `sort_with` must still call the
+  ting comparator ~n log2 n times (287000 for n = 20000), measured at
+  64 ms through `reduce` and 47 ms through `map`, so its floor is ~70 ms
+  and the prize is ~5x, NOT the 58x that comparing against `sort_by`
+  suggested — `sort_by` makes 20000 key calls, not 287000.
 - Backlog (one per tick, in order):
-  (1) `sort_with` stops being half of bench/stdlib;
+  (1) `sort_with` as a builtin, re-exported by lib/list.ting;
   (2) the character accumulator in `words` and its five sibling sites
   in lib/string.ting and lib/csv.ting;
   (3) re-profile and follow whatever is on top then.
