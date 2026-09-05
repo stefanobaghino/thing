@@ -11381,3 +11381,11 @@ Cut on 85c9ba8's green CI: strokes 629 and 630, the two halves of the
 same feature — a rest parameter that collects and a spread that
 forwards. Neither is much use without the other, so they ship
 together. The 124th tag; verification next.
+
+## 2026-09-05 — Iteration 632: v2.103.0 verified
+
+Both aarch64 Linux archives downloaded cold and run here on the whole
+feature: a variadic `log`, a `format` wrapper, forwarding a rest
+parameter through a spread, and both refusals. gnu and musl print the
+same thing, `--eval` hashes identically to the VM, `--check` is clean
+on it. Six assets on the tag.

@@ -449,13 +449,13 @@ holds only the current milestone and the standing rules.
   not an expression, so it parses nowhere else. Calls that contain one
   compile to `Op::Spread` + `MakeList(1)` + `Op::CallSpread`; calls
   without one keep `Op::Call` and pay nothing.
-- 631: v2.103.0 released (124th tag; strokes 629, 630) — awaiting
-  cold verification.
+- v2.103.0 VERIFIED (124th tag; strokes 629, 630; both aarch64
+  archives executed here on a variadic wrapper, a forwarded spread
+  and both refusals).
 - Backlog (one per tick, in order):
-  (1) verify v2.103.0;
-  (3) fuzz generator + differential corpus, docs and a selftest;
-  (4) the stdlib uses it (lib/test.ting's five format lines);
-  (5) RELEASE v2.104.0; (6) verify; (7) health tick.
+  (1) fuzz generator + differential corpus, docs and a selftest;
+  (2) the stdlib uses it (lib/test.ting's five format lines);
+  (3) RELEASE v2.104.0; (4) verify; (5) health tick.
 - Small stroke available any time, now that defaults exist: csv's
   parse/parse_with and text/text_with are twins only because the
   separator could not be optional.
@@ -482,7 +482,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 124 (v2.103.0), 123 verified; v2.29.0 is publicly marked broken
+- Tags: 124 (v2.103.0), 124 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
