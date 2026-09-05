@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 66 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 175
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 316 Rust tests
   in 11 suites.
 - One binary is the toolchain: a script may be a path or `-`
@@ -576,10 +576,14 @@ holds only the current milestone and the standing rules.
   chars, rendered as a list renders elements so strings keep quotes.
   Cost measured, not assumed: interleaved A/B on bench/fib.ting gives
   +2.9% median, +0.4% minimum. Not zero, as 658 claimed.
+- 660: `try`'s trace frames carry `"args"` (name to value, the values
+  themselves — the note line's 32-char cut is for people, not
+  programs); lib/err.ting gained `given(f, ...rest)`, 175 stdlib
+  functions. Selftests in errors.ting and errlib.ting, two
+  differential lines.
 - Backlog (one per tick, in order):
-  (1) `try`'s trace maps carry the arguments and lib/err.ting reads
-  them; (2) selftest and fuzzers; (3) docs; (4) RELEASE v2.108.0;
-  (5) verify; (6) health tick.
+  (1) fuzzers, and a selftest for the caps; (2) docs;
+  (3) RELEASE v2.108.0; (4) verify; (5) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is

@@ -11989,3 +11989,25 @@ but not nothing, and worth saying so.
 Four existing tests pinned the old note text; all four now pin the new
 one, including `in run(f = <fn()>)`, which is how a function argument
 reads.
+
+## 2026-09-05 — Iteration 660: try's trace carries them too
+
+Each frame map in `try`'s `"trace"` gained `"args"`, a map from
+parameter name to value. The values themselves, not the string the
+diagnostic prints: the note line is text for a person and is cut to
+32 characters, while a program that asks what a call was given wants
+to look inside the list it was given. Same data, two renderings, and
+the split is the point.
+
+lib/err.ting gained `given(f, ...rest)` — the arguments of the
+innermost failing call, or nil when the call returned. Seventh
+function in the module, 175 in the stdlib. It is not called `args`,
+which shadows a builtin; 652 learned that the hard way and this time
+the name was chosen with it in mind.
+
+One correction inside the tick: the first selftest asserted three
+frames for `try(outer_of, [1, 2])` and there are two, because since
+652 `try` calls the function itself and adds no lambda of its own.
+The test now checks both shapes — the direct call with two frames,
+and a wrapped one whose third frame reports `{}` for the lambda that
+takes nothing.

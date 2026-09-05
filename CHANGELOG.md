@@ -13,6 +13,10 @@ Windows are attached to each
   body saw. At most four arguments are named and each value is cut to
   32 characters, so a big list cannot bury the message. Both engines
   render the same text.
+- Every frame in the `"trace"` `try` hands back carries an `"args"`
+  map from parameter name to value — the values themselves, not the
+  diagnostic's shortened rendering. `lib/err.ting` gains
+  `given(f, ...rest)`, the arguments of the innermost failing call.
 
 ## v2.107.0 (2026-09-05)
 

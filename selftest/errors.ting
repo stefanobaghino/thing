@@ -78,3 +78,14 @@ fn plus(a, b) { return a + b; }
 assert(try(plus, 1, 2)["ok"] == 3, "more than one argument");
 assert(try(plus, ...[1, 2])["ok"] == 3, "a spread is an argument list like any other");
 assert(contains(try(plus, 1)["err"], "expects 2 arguments"), "the callee's arity is the callee's");
+
+# Every trace frame carries what its call was given, as values rather
+# than the diagnostic's shortened rendering of them.
+fn outer_of(xs) { return inner_of(xs); }
+fn inner_of(xs) { return xs[9]; }
+let deep_args = try(outer_of, [1, 2]);
+assert(len(deep_args["trace"]) == 2, "one frame per call, and try added no lambda");
+assert(deep_args["trace"][0]["args"] == {"xs": [1, 2]}, "the innermost call's arguments");
+assert(deep_args["trace"][1]["args"] == {"xs": [1, 2]}, "and its caller's");
+let wrapped = try(fn() { return outer_of([1, 2]); });
+assert(wrapped["trace"][2]["args"] == {}, "a lambda that takes nothing says so");

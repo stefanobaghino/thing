@@ -53,3 +53,12 @@ fn wrap(f, prefix, ...rest) {
   if has(done, "err") { fail(prefix + ": " + done["err"]); }
   return done["ok"];
 }
+
+# What the innermost failing call was given: a map from parameter name
+# to value, or nil when the call returned. The trace carries the same
+# thing for every frame; this is the one usually being asked about.
+fn given(f, ...rest) {
+  let done = try(f, ...rest);
+  if has(done, "trace") && len(done["trace"]) > 0 { return done["trace"][0]["args"]; }
+  return nil;
+}

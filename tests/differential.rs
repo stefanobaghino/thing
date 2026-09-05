@@ -113,6 +113,9 @@ fn expressions_match_across_engines() {
         "fn f(a, b, c, d, e) { fail(\"x\"); } f(1, 2, 3, 4, 5);",
         "fn f(g) { return g(); } f(fn() { return nosuch; });",
         "fn f(xs) { return xs[9]; } f(range(0, 40));",
+        // try's trace carries the same arguments, as values.
+        "fn f(a, b) { return a / b; } let r = try(f, 1, 0); print(r[\"trace\"][0][\"args\"]);",
+        "fn f() { fail(\"x\"); } print(try(f)[\"trace\"][0][\"args\"]);",
         // patterns: the map a match returns, a scan, and a refusal
         "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
         "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",

@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 174 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 175 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -251,6 +251,7 @@ thing to say — a fallback, a prefix — it comes before the arguments.
 | `wrap(f, prefix, ...rest)` | the value, or a failure with the prefix in front of the message — how "no such file" becomes "reading the config: no such file" |
 | `site(f, ...rest)` | where it failed: the `{"file", "line", "column"}` `try` reports, or nil |
 | `trace(f, ...rest)` | the calls the failure came out of, innermost first, or `[]` |
+| `given(f, ...rest)` | what the innermost failing call was given: parameter name to value, or nil |
 
 ## lib/sh.ting
 

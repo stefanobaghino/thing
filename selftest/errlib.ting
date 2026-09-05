@@ -36,3 +36,8 @@ assert(err["wrap"](int, "reading", "7") == 7, "so does the prefix");
 assert(err["site"](int, "x") != nil, "a site either way");
 fn pair(a, b) { return [a, b]; }
 assert(err["value"](pair, nil, ...[1, 2]) == [1, 2], "a spread reaches through");
+
+# What the innermost failing call was given.
+fn halve(n, by) { return n / by; }
+assert(err["given"](halve, 1, 0) == {"n": 1, "by": 0}, "the arguments of the failing call");
+assert(err["given"](halve, 4, 2) == nil, "nothing to say when it returned");

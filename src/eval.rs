@@ -2010,6 +2010,20 @@ impl<W: Write> Interpreter<W> {
                                                 None => Value::Nil,
                                             },
                                         );
+                                        // The values themselves, not
+                                        // the diagnostic's abbreviated
+                                        // rendering of them: a program
+                                        // asking what the call was
+                                        // given wants to look inside.
+                                        site.insert(
+                                            "args".to_string(),
+                                            Value::map(
+                                                f.args
+                                                    .iter()
+                                                    .map(|(n, v)| (n.to_string(), v.clone()))
+                                                    .collect(),
+                                            ),
+                                        );
                                         Value::map(site)
                                     })
                                     .collect();
