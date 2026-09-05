@@ -624,8 +624,11 @@ holds only the current milestone and the standing rules.
   table, indexing, compound assignment), the v2.109.0 changelog
   heading. The cookbook renders from examples/ and already carried
   the one-liner.
+- 669: v2.109.0 released (130th tag; strokes 667-668), the
+  milestone's first release.
 - Backlog (one per tick, in order):
-  (1) release v2.109.0; (2) verify; (3) health tick.
+  (1) verify v2.109.0 by cold asset download; (2) health tick;
+  (3) next stroke of "the key that isn't there".
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`

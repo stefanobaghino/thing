@@ -12254,3 +12254,16 @@ The changelog heading for v2.109.0 covers both halves: the builtin, and
 
 Gate: fmt clean, fourteen suites ok, the corpus at its five deliberate
 warnings, 22 selftests and 2421 checks passing, the docs guard green.
+
+## 2026-09-05 — Iteration 669: v2.109.0
+
+Released, the 130th tag and the first of milestone "the key that
+isn't there". It carries the `get(x, k, default)` builtin sharing one
+lookup with indexing, `lib/map.ting`'s `get` retired into it (builtins
+66->67, stdlib 175->174), the corpus adoptions, and the docs that stop
+telling a reader to test with `has` first. Version bumped, the
+CHANGELOG heading already in place from 668, the gate green (fmt,
+clippy at zero, fourteen suites), the corpus at its five deliberate
+warnings, the binary reporting 2.109.0 and 22 selftests / 2421 checks
+passing. Tagged and pushed; a monitor is pinned to the Release and CI
+run ids.
