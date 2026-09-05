@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.113.0 (2026-09-05)
 
 - Pattern matching is about three times faster. The search reuses its
   thread lists, its `seen` vector and its epsilon stack across
