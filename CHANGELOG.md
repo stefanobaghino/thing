@@ -5,6 +5,21 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- Pattern matching is about three times faster. The search reuses its
+  thread lists, its `seen` vector and its epsilon stack across
+  positions instead of allocating them per character; capture slots are
+  shared between threads and recycled rather than copied; and a pattern
+  that can only match at the start of the text no longer begins a
+  thread at every position, since every one of those threads died on
+  the same instruction. A match against a short subject goes from
+  4.65 us to about 1.45 us, and the new `bench/regex.ting` is in
+  BASELINE alongside the rest.
+- Nothing about what a pattern matches changed. The matcher was already
+  a Pike VM with no backtracking, and this is a constant-factor change
+  to the same algorithm.
+
 ## v2.112.0 (2026-09-05)
 
 - The bytecode VM now compiles what a script imports. A module used to

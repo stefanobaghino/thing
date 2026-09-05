@@ -13227,3 +13227,41 @@ It also points at the next stroke, and a better one than either: an
 anchored pattern cannot match at any position but the first, so every
 restart it makes is born dead. Not making them at all would take the
 per-position work to nothing for exactly the case that just regressed.
+
+## 2026-09-05 — Iteration 697: an anchored pattern stops restarting
+
+The best stroke of the milestone, and the one 696 pointed at while
+apologising for slowing things down. A search begins a fresh thread at
+every position so that the leftmost match wins. When a pattern can only
+match at the start of the text, every one of those threads dies on the
+same instruction. They are not started any more.
+
+Detecting it is one line and deliberately conservative: `Save(0)` is
+emitted first, so the pattern's own first instruction is the second
+one, and the flag is set when that is `Start`. Alternation compiles to
+a `Split` there instead, so `^a|b` is correctly not anchored — the case
+that would have silently stopped finding `b`.
+
+The probes, against 693's numbers and 696's:
+
+| probe | 693 | 696 | now |
+|-------|----:|----:|----:|
+| short (11 ch), no groups | 93 ms | 55 ms | 29 ms |
+| long (352 ch), no groups | 105 ms | 70 ms | 42 ms |
+| short, three groups | 104 ms | 62 ms | 40 ms |
+| long, three groups | 127 ms | 77 ms | 53 ms |
+
+Per match, 4.65 us to about 1.45 us: 3.2 times faster than the
+milestone started. bench/regex.ting also gains, 230 ms to 198 ms on the
+VM, because one of its four calls is an anchored `re_test`. That is
+696's regression recovered several times over.
+
+Getting the flag wrong would be silent — the matcher would simply stop
+finding things — so the shapes that decide it are pinned in
+selftest/regex.ting rather than left to a benchmark: an anchored
+pattern matching only at the start, alternation not anchored by its
+first branch and still found away from the start, an anchor inside a
+group, and an unanchored search still restarting. 44 checks there now,
+2431 across the suite. The pattern fuzzer is clean at seed 697 over
+4000000 cases, twice the usual sweep, because this is the stroke that
+could quietly change what matches.

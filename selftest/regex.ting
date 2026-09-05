@@ -69,3 +69,16 @@ assert(err(fn() { return re_test(1, "a"); }) == "re_test expects two strings, go
 # The pattern that eats a backtracking engine: here it just answers.
 assert(re_find("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "(a+)+b") == nil,
 "no pattern can be made to hang");
+
+# A pattern that can only match at the start skips the fresh thread the
+# search otherwise begins at every position. Getting that wrong is
+# silent — the matcher would simply stop finding things — so the shapes
+# that decide it are pinned here.
+assert(re_test("abc", "^abc"), "an anchored pattern matches at the start");
+assert(!re_test("zabc", "^abc"), "and nowhere else");
+assert(re_test("zzb", "^a|b"), "alternation is not anchored by its first branch");
+assert(!re_test("zza", "^a|b"), "though the anchored branch still holds");
+assert(re_find("xxbyy", "^a|b")["start"] == 2, "and it is found away from the start");
+assert(re_test("abc", "(^a)bc"), "an anchor inside a group still anchors");
+assert(!re_test("zabc", "(^a)bc"), "and still refuses a later position");
+assert(re_find("xxxneedle", "needle")["start"] == 3, "an unanchored search still restarts");

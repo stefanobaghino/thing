@@ -96,6 +96,12 @@ pub struct Regex {
     prog: Vec<Inst>,
     /// Capturing groups, not counting the whole match.
     groups: usize,
+    /// Whether every path out of the start needs to be at the
+    /// beginning of the text. A search normally starts a fresh thread
+    /// at each position so the leftmost match wins; when this holds,
+    /// every one of those threads dies on the same instruction, so
+    /// none is started.
+    anchored: bool,
 }
 
 struct Parser<'a> {
@@ -561,9 +567,15 @@ impl Regex {
         compiler.emit(&node)?;
         compiler.push(Inst::Save(1))?;
         compiler.push(Inst::Match)?;
+        // `Save(0)` is emitted first, so the pattern's own first
+        // instruction is the second one. If that is `Start`, no thread
+        // can get past it anywhere but position 0. Alternation makes
+        // this a `Split` instead, so `^a|b` is correctly not anchored.
+        let anchored = matches!(compiler.prog.get(1), Some(Inst::Start));
         Ok(Regex {
             prog: compiler.prog,
             groups: parser.groups,
+            anchored,
         })
     }
 
@@ -628,7 +640,7 @@ impl Regex {
             // A fresh start at the next position, at lowest priority,
             // and only while nothing has matched: that is what makes
             // the search leftmost.
-            if matched.is_none() && pos < text.len() {
+            if !self.anchored && matched.is_none() && pos < text.len() {
                 let fresh = empty_caps(&mut scratch, slots);
                 self.add(&mut nlist, &mut scratch, 0, pos + 1, text, fresh);
             }

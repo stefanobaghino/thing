@@ -818,10 +818,19 @@ holds only the current milestone and the standing rules.
   greps for 15. Honest trade: bench/regex 246 to 230 ms on the VM, but
   the anchored micro-probes 46 to 55 ms, since pooling walks the list
   where `clear()` was free.
+- 697: a pattern that can only match at the start no longer begins a
+  thread at every position. The flag is conservative — `Save(0)` is
+  first, so it is set when prog[1] is `Start`; alternation puts a
+  `Split` there, so `^a|b` is correctly NOT anchored. Probes 55 to
+  29 ms (93 ms at the milestone's start), per match 4.65 us to ~1.45 us
+  = 3.2x; bench/regex 230 to 198 ms on the VM, recovering 696's
+  regression several times over. A wrong flag would be SILENT, so the
+  deciding shapes are pinned in selftest/regex.ting (44 checks, 2431
+  across the suite) and the fuzzer ran 4000000 cases at seed 697.
+  BASELINE regenerated; CHANGELOG has the Unreleased entry.
 - Backlog (one per tick, in order):
-  (1) skip the leftmost restart for an anchored pattern — it cannot
-  match past position 0, so every restart it makes is born dead, and
-  this is exactly the case 696 slowed; (2) release v2.113.0.
+  (1) release v2.113.0 (strokes 694, 695, 696, 697); (2) verify it;
+  (3) health tick to close "the matcher's inner loop".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
