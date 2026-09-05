@@ -793,11 +793,21 @@ holds only the current milestone and the standing rules.
   2.75 us, the per-step cost ~330 ns to ~173 ns, the 693 probe 320 ms
   to 195 ms. Semantics unchanged: 36 regex checks, the pattern fuzzer
   clean at seed 694 over 2000000 cases, full suite green.
+- 695: capture slots are an `Rc`, shared until a `Save` writes, and
+  every leftmost restart shares one empty set instead of allocating
+  per position. Per match 2.75 us to 2.30 us; over both strokes
+  4.65 us to 2.30 us, and the per-step cost 330 ns to 127 ns.
+  NEGATIVE RESULT worth not re-deriving: copying capture slots was NOT
+  the remaining cost. The three-group probe moved least (61 to 59 ms)
+  though it has eight slots to copy, because a `Save` usually finds
+  its slots shared after a `Split` and `Rc::make_mut` copies anyway;
+  the gain came from the shared empty set and from the thread copy in
+  the main loop becoming a refcount. What is left is a ~0.90 us floor
+  before any character is examined, and it is not the `Vec<char>` (341
+  extra chars of subject cost 0.70 us, ~2 ns each).
 - Backlog (one per tick, in order):
-  (1) stop cloning capture slots per thread per step (the other half
-  of the per-step cost, plus the fresh capture vector allocated at
-  every position for the leftmost restart); (2) bench and guard the
-  result; (3) release v2.113.0.
+  (1) bench and guard the result — the gain is invisible to every
+  existing test; (2) release v2.113.0.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

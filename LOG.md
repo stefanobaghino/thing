@@ -13138,3 +13138,43 @@ Nothing about what the matcher accepts changed, which is the claim
 worth checking rather than asserting: selftest/regex.ting's 36 checks
 pass, the pattern fuzzer is clean at seed 694 over 2000000 cases, and
 the full suite is green.
+
+## 2026-09-05 — Iteration 695: capture slots stop being copied
+
+The second half of what 693 measured, and it did not pay what the
+first half did. A thread's capture slots are now an `Rc`, shared until
+a `Save` writes to one, and the empty slots every leftmost restart
+begins with are a single shared set rather than a fresh vector per
+position.
+
+| probe | 693 | 694 | now |
+|-------|----:|----:|----:|
+| short (11 ch), no groups | 93 ms | 55 ms | 46 ms |
+| long (352 ch), no groups | 105 ms | 65 ms | 60 ms |
+| short, three groups | 104 ms | 61 ms | 59 ms |
+| long, three groups | 127 ms | 74 ms | 70 ms |
+| fails on the first char | 20 ms | 17 ms | 18 ms |
+
+Per match 2.75 us to 2.30 us, and the per-step cost about 173 ns to
+about 127 ns. Over both strokes: 4.65 us to 2.30 us a match, and 330 ns
+to 127 ns a character step.
+
+The three-group row is the one worth reading rather than skipping. It
+moved least — 61 ms to 59 ms — and that is exactly the case where
+copying capture slots should have cost the most, with eight slots
+instead of two. So the win here is not mostly `make_mut`: it is the
+shared empty set that restarts no longer allocate per position, and
+the thread copy in the main loop becoming a reference count. When a
+pattern has groups, a `Save` usually finds its slots shared, because a
+`Split` handed a copy to the other branch a moment earlier, and
+`Rc::make_mut` then copies exactly as the old code did. Recorded as a
+negative result: copying capture slots was not the remaining cost, and
+a future tick should not go looking for more there.
+
+The floor is now the interesting part and not the step: 0.90 us before
+a single character is examined. It is not the `Vec<char>` the builtins
+build — 341 extra characters of subject cost 0.70 us, about 2 ns each —
+so it is the work around the search rather than the search.
+
+Semantics unchanged, checked and not asserted: 36 regex checks, the
+pattern fuzzer clean at seed 695 over 2000000 cases, full suite green.

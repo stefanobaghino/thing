@@ -507,7 +507,13 @@ impl Compiler {
 }
 
 /// A thread: where it is in the program, and what it has captured.
-type Thread = (usize, Vec<Option<usize>>);
+/// A thread's capture slots. Threads share one set until a `Save`
+/// writes to it, so the copies a search makes are reference counts:
+/// only a thread that actually records a group position pays for a
+/// vector, and only when it does not already hold the last reference.
+type Caps = std::rc::Rc<Vec<Option<usize>>>;
+
+type Thread = (usize, Caps);
 
 /// What a search reuses at every position: which instructions this
 /// step has already reached, and the stack `add` walks the epsilon
@@ -563,8 +569,11 @@ impl Regex {
             seen: vec![false; self.prog.len()],
             stack: Vec::new(),
         };
-        self.add(&mut clist, &mut scratch, 0, from, text, vec![None; slots]);
-        let mut matched: Option<Vec<Option<usize>>> = None;
+        // One set of empty slots for every restart to share, since a
+        // restart that never reaches a `Save` never writes to it.
+        let empty: Caps = std::rc::Rc::new(vec![None; slots]);
+        self.add(&mut clist, &mut scratch, 0, from, text, empty.clone());
+        let mut matched: Option<Caps> = None;
         let mut pos = from;
         loop {
             nlist.clear();
@@ -595,14 +604,7 @@ impl Regex {
             // and only while nothing has matched: that is what makes
             // the search leftmost.
             if matched.is_none() && pos < text.len() {
-                self.add(
-                    &mut nlist,
-                    &mut scratch,
-                    0,
-                    pos + 1,
-                    text,
-                    vec![None; slots],
-                );
+                self.add(&mut nlist, &mut scratch, 0, pos + 1, text, empty.clone());
             }
             if pos >= text.len() {
                 break;
@@ -613,7 +615,9 @@ impl Regex {
                 break;
             }
         }
-        matched
+        // The winner's slots come back owned: unwrap when this is the
+        // last reference, copy when other threads still share it.
+        matched.map(|caps| std::rc::Rc::try_unwrap(caps).unwrap_or_else(|rc| (*rc).clone()))
     }
 
     /// Adds a thread and everything reachable from it without reading
@@ -626,7 +630,7 @@ impl Regex {
         pc: usize,
         pos: usize,
         text: &[char],
-        caps: Vec<Option<usize>>,
+        caps: Caps,
     ) {
         let Scratch { seen, stack } = scratch;
         stack.clear();
@@ -647,7 +651,9 @@ impl Regex {
                 Inst::Save(slot) => {
                     let mut caps = caps;
                     if *slot < caps.len() {
-                        caps[*slot] = Some(pos);
+                        // The one place a thread's slots are written,
+                        // and so the only place a copy can be needed.
+                        std::rc::Rc::make_mut(&mut caps)[*slot] = Some(pos);
                     }
                     stack.push((pc + 1, caps));
                 }
