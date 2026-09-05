@@ -475,15 +475,17 @@ holds only the current milestone and the standing rules.
   file; the compiler emits Op::Mark before each statement only when
   compiled for coverage, so both engines record statement starts and
   agree by construction (an op's span can sit on another line).
+- 640: `--coverage` reports — share per file plus the missed lines
+  (twelve named, the rest counted), on stderr like the profile. What
+  could run comes from the AST (statement walk at parse time), so the
+  denominator matches for both engines by construction.
 - Backlog (one per tick, in order):
-  (1) `--coverage SCRIPT` — per file, the share of executable lines
-  reached and the numbers of those that were not;
-  (2) RELEASE v2.105.0; (3) verify;
-  (4) several scripts in one run, plus a differential test that the
+  (1) RELEASE v2.105.0; (2) verify;
+  (3) several scripts in one run, plus a differential test that the
   two engines report the same lines;
-  (5) docs and a selftest;
-  (6) point it at lib/ and fix what it finds;
-  (7) RELEASE v2.106.0; (8) verify; (9) health tick.
+  (4) docs and a selftest;
+  (5) point it at lib/ and fix what it finds;
+  (6) RELEASE v2.106.0; (7) verify; (8) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).

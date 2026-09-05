@@ -1,5 +1,5 @@
 use std::process::ExitCode;
-use ting::{Engine, repl, run_source_profiled};
+use ting::{Engine, Reports, repl, run_source_reported};
 
 fn main() -> ExitCode {
     // The bytecode VM is the default (see docs/vm.md for the numbers);
@@ -42,6 +42,7 @@ fn main() -> ExitCode {
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
+                 \x20 ting --coverage <script>    run it, then report which lines ran\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
@@ -135,13 +136,14 @@ fn main() -> ExitCode {
             _ => ExitCode::FAILURE,
         };
     }
-    // Engine choice and --profile may come in either order.
-    let mut profile = false;
+    // Engine choice and the reporting flags may come in any order.
+    let mut reports = Reports::default();
     loop {
         match args.peek().map(String::as_str) {
             Some("--vm") => engine = Engine::Vm,
             Some("--eval") => engine = Engine::Eval,
-            Some("--profile") => profile = true,
+            Some("--profile") => reports.profile = true,
+            Some("--coverage") => reports.coverage = true,
             _ => break,
         }
         args.next();
@@ -155,7 +157,7 @@ fn main() -> ExitCode {
         None => repl::run(),
         // Everything after the script path is the script's own argv,
         // exposed via the args() builtin.
-        Some(path) => run_file(engine, path, args.collect(), profile),
+        Some(path) => run_file(engine, path, args.collect(), reports),
     }
 }
 
@@ -167,8 +169,9 @@ fn is_option(a: &str) -> bool {
 
 /// Every option any mode accepts, for suggesting the one that was
 /// meant. Keep in step with the dispatch above and the usage text.
-const OPTIONS: [&str; 21] = [
+const OPTIONS: [&str; 22] = [
     "--check",
+    "--coverage",
     "--diff",
     "--doc",
     "--eval",
@@ -206,7 +209,7 @@ fn unknown_option(a: &str) -> ExitCode {
 /// call-depth cap is derived from (see eval::max_depth).
 const INTERPRETER_STACK: usize = 32 * 1024 * 1024;
 
-fn run_file(engine: Engine, path: String, script_args: Vec<String>, profile: bool) -> ExitCode {
+fn run_file(engine: Engine, path: String, script_args: Vec<String>, reports: Reports) -> ExitCode {
     // The AST holds Rc (not Send), so the whole pipeline runs on one
     // dedicated thread, sized generously because deep ting recursion
     // consumes host stack. Telling the interpreter how much it has is
@@ -214,13 +217,18 @@ fn run_file(engine: Engine, path: String, script_args: Vec<String>, profile: boo
     ting::eval::set_stack_budget(INTERPRETER_STACK);
     std::thread::Builder::new()
         .stack_size(INTERPRETER_STACK)
-        .spawn(move || run_file_inner(engine, &path, script_args, profile))
+        .spawn(move || run_file_inner(engine, &path, script_args, reports))
         .expect("failed to spawn interpreter thread")
         .join()
         .expect("interpreter thread panicked")
 }
 
-fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>, profile: bool) -> ExitCode {
+fn run_file_inner(
+    engine: Engine,
+    path: &str,
+    script_args: Vec<String>,
+    reports: Reports,
+) -> ExitCode {
     // `-` is stdin here as it is for every tool flag, so a generated
     // or piped script runs without a file to put it in. The script
     // eats the whole stream, so input() sees EOF straight away —
@@ -229,13 +237,13 @@ fn run_file_inner(engine: Engine, path: &str, script_args: Vec<String>, profile:
         Ok(src) => src,
         Err(code) => return code,
     };
-    let (result, report) = run_source_profiled(
+    let (result, report) = run_source_reported(
         engine,
         path,
         &src,
         std::io::stdout().lock(),
         script_args,
-        profile,
+        reports,
     );
     let outcome = match result {
         Ok(()) => ExitCode::SUCCESS,

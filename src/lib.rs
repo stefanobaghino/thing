@@ -96,6 +96,13 @@ pub fn run_source_engine<W: Write>(
 /// the second half of the answer is the profile table, present only
 /// when `profile` asked for it. The run's own result is unchanged by
 /// it, and a failed run still reports what it managed to do.
+/// What a run should report on besides its own output.
+#[derive(Default, Clone, Copy)]
+pub struct Reports {
+    pub profile: bool,
+    pub coverage: bool,
+}
+
 pub fn run_source_profiled<W: Write>(
     engine: Engine,
     path: &str,
@@ -103,6 +110,31 @@ pub fn run_source_profiled<W: Write>(
     out: W,
     script_args: Vec<String>,
     profile: bool,
+) -> (Result<(), String>, Option<String>) {
+    run_source_reported(
+        engine,
+        path,
+        src,
+        out,
+        script_args,
+        Reports {
+            profile,
+            coverage: false,
+        },
+    )
+}
+
+/// `run_source_engine`, with whichever reports were asked for
+/// appended into the second half of the answer. The run's own result
+/// is unchanged by them, and a failed run still reports what it
+/// managed to do.
+pub fn run_source_reported<W: Write>(
+    engine: Engine,
+    path: &str,
+    src: &str,
+    out: W,
+    script_args: Vec<String>,
+    reports: Reports,
 ) -> (Result<(), String>, Option<String>) {
     let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
     let tokens = match lexer::lex(src) {
@@ -116,22 +148,46 @@ pub fn run_source_profiled<W: Write>(
     let mut interp = eval::Interpreter::new(out);
     interp.set_args(script_args);
     interp.set_source(path, src);
-    if profile {
+    if reports.profile {
         interp.profile();
+    }
+    if reports.coverage {
+        interp.cover();
+        interp.note_coverable(&program);
     }
     if let Some(dir) = std::path::Path::new(path).parent() {
         interp.set_base_dir(dir.to_path_buf());
     }
+    // Coverage needs a `Mark` in front of every statement, which is
+    // a different chunk: a plain run must not pay for one.
+    let compile_for = |program: &[ast::Stmt]| {
+        if reports.coverage {
+            compile::compile_program_covered(program)
+        } else {
+            compile::compile_program(program)
+        }
+    };
     let result = match engine {
         Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
-        Engine::Vm => match compile::compile_program(&program) {
+        Engine::Vm => match compile_for(&program) {
             Ok(chunk) => vm::run_chunk(&mut interp, &chunk)
                 .map(|_| ())
                 .map_err(|e| e.render(path, src)),
             Err(e) => Err(render(&e.message, e.span)),
         },
     };
-    let report = interp.profile_report();
+    let mut report = String::new();
+    if let Some(table) = interp.profile_report() {
+        report.push_str(&table);
+    }
+    if let Some(table) = interp.coverage_report() {
+        report.push_str(&table);
+    }
+    let report = if report.is_empty() {
+        None
+    } else {
+        Some(report)
+    };
     (result, report)
 }
 

@@ -48,23 +48,26 @@ pub struct Origin {
 pub struct Coverage {
     /// Keyed by the file's identity — the origin's address, or 0 for
     /// the script itself, which has no origin.
-    files: HashMap<usize, (String, Rc<str>, std::collections::HashSet<usize>)>,
+    files: HashMap<usize, FileCoverage>,
+}
+
+/// One file's share of a run.
+#[derive(Debug)]
+pub struct FileCoverage {
+    pub path: String,
+    pub src: Rc<str>,
+    /// Where every statement in the file starts: what could run.
+    pub coverable: std::collections::HashSet<usize>,
+    /// Where the statements that did run start.
+    pub hit: std::collections::HashSet<usize>,
 }
 
 impl Coverage {
-    /// Every file that ran anything, as (path, source, the offsets
-    /// reached), ordered by path so a report reads the same twice.
-    pub fn files(&self) -> Vec<(&str, &Rc<str>, Vec<usize>)> {
-        let mut out: Vec<(&str, &Rc<str>, Vec<usize>)> = self
-            .files
-            .values()
-            .map(|(path, src, hits)| {
-                let mut hits: Vec<usize> = hits.iter().copied().collect();
-                hits.sort_unstable();
-                (path.as_str(), src, hits)
-            })
-            .collect();
-        out.sort_by(|a, b| a.0.cmp(b.0));
+    /// Every file the run touched, ordered by path so a report reads
+    /// the same way twice.
+    pub fn files(&self) -> Vec<&FileCoverage> {
+        let mut out: Vec<&FileCoverage> = self.files.values().collect();
+        out.sort_by(|a, b| a.path.cmp(&b.path));
         out
     }
 }
@@ -121,6 +124,81 @@ pub(crate) fn spread_values(v: Value, span: Span) -> Result<Vec<Value>, RuntimeE
             span,
         )),
     }
+}
+
+/// Where every statement starts, nested blocks and function bodies
+/// included: exactly the statements `exec` runs and the compiler puts
+/// a `Mark` in front of, so what could run and what did are counted
+/// against the same set.
+fn statement_offsets(stmts: &[Stmt], out: &mut std::collections::HashSet<usize>) {
+    fn expr(e: &Expr, out: &mut std::collections::HashSet<usize>) {
+        match &e.kind {
+            ExprKind::Fn(_, body) => statement_offsets(body, out),
+            ExprKind::List(xs) => xs.iter().for_each(|x| expr(x, out)),
+            ExprKind::Map(kvs) => kvs.iter().for_each(|(k, v)| {
+                expr(k, out);
+                expr(v, out);
+            }),
+            ExprKind::Unary(_, a) | ExprKind::Spread(a) => expr(a, out),
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+                expr(a, out);
+                expr(b, out);
+            }
+            ExprKind::Call(callee, args) => {
+                expr(callee, out);
+                args.iter().for_each(|a| expr(a, out));
+            }
+            _ => {}
+        }
+    }
+    for s in stmts {
+        out.insert(s.span.start);
+        match &s.kind {
+            StmtKind::Let(_, e) | StmtKind::Assign(_, e) | StmtKind::Expr(e) => expr(e, out),
+            StmtKind::IndexAssign(a, b, c) => {
+                expr(a, out);
+                expr(b, out);
+                expr(c, out);
+            }
+            StmtKind::Block(body) => statement_offsets(body, out),
+            StmtKind::If(cond, then, els) => {
+                expr(cond, out);
+                statement_offsets(std::slice::from_ref(then), out);
+                if let Some(e) = els {
+                    statement_offsets(std::slice::from_ref(e), out);
+                }
+            }
+            StmtKind::While(cond, body) => {
+                expr(cond, out);
+                statement_offsets(std::slice::from_ref(body), out);
+            }
+            StmtKind::For(_, iterable, body) => {
+                expr(iterable, out);
+                statement_offsets(std::slice::from_ref(body), out);
+            }
+            StmtKind::Return(Some(e)) => expr(e, out),
+            StmtKind::Break | StmtKind::Continue | StmtKind::Return(None) => {}
+        }
+    }
+}
+
+/// The line each offset falls on, 1-based, computed once per file:
+/// asking a span for its line scans the source from the start, which
+/// is fine for one diagnostic and not for a few thousand offsets.
+fn lines_of(src: &str, offsets: &std::collections::HashSet<usize>) -> Vec<usize> {
+    let mut starts = vec![0usize];
+    starts.extend(
+        src.char_indices()
+            .filter(|(_, c)| *c == '\n')
+            .map(|(i, _)| i + 1),
+    );
+    let mut lines: Vec<usize> = offsets
+        .iter()
+        .map(|o| starts.partition_point(|start| start <= o))
+        .collect();
+    lines.sort_unstable();
+    lines.dedup();
+    lines
 }
 
 pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
@@ -427,6 +505,18 @@ struct Counted {
 /// How many rows a profile prints before it starts counting the rest.
 const PROFILE_ROWS: usize = 20;
 
+/// How many missed lines a file's row names before it just counts the
+/// rest: enough to act on, not so many that the table stops being one.
+const MISSED_LINES: usize = 12;
+
+/// A whole-number percentage, and 100 only when nothing was missed.
+fn percent(part: usize, whole: usize) -> usize {
+    if whole == 0 {
+        return 100;
+    }
+    part * 100 / whole
+}
+
 /// Nanoseconds as milliseconds, three decimals: one unit for the
 /// whole table, so a column can be compared by eye.
 fn millis(ns: u128) -> String {
@@ -681,22 +771,101 @@ impl<W: Write> Interpreter<W> {
         if self.coverage.is_none() {
             return;
         }
+        self.file_coverage().hit.insert(offset);
+    }
+
+    /// Note where every statement of `stmts` starts, so the report can
+    /// say what did not run as well as what did. Called once per file,
+    /// with that file's origin in place.
+    pub(crate) fn note_coverable(&mut self, stmts: &[Stmt]) {
+        if self.coverage.is_none() {
+            return;
+        }
+        let mut offsets = std::collections::HashSet::new();
+        statement_offsets(stmts, &mut offsets);
+        self.file_coverage().coverable.extend(offsets);
+    }
+
+    /// The current file's row, created on first use. The file is the
+    /// one the running code was defined in, the same answer a trace
+    /// gives.
+    fn file_coverage(&mut self) -> &mut FileCoverage {
         let origin = self.defining_origin();
         let key = origin.as_ref().map_or(0, |o| Rc::as_ptr(o) as usize);
+        let source = self.source.clone();
         let coverage = self.coverage.as_mut().expect("recording is on");
-        let entry = coverage.files.entry(key).or_insert_with(|| match &origin {
-            Some(o) => (o.path.clone(), Rc::clone(&o.src), Default::default()),
-            None => match &self.source {
-                Some((p, s)) => (p.clone(), Rc::clone(s), Default::default()),
-                None => (String::new(), Rc::from(""), Default::default()),
-            },
-        });
-        entry.2.insert(offset);
+        coverage.files.entry(key).or_insert_with(|| {
+            let (path, src) = match &origin {
+                Some(o) => (o.path.clone(), Rc::clone(&o.src)),
+                None => match &source {
+                    Some((p, s)) => (p.clone(), Rc::clone(s)),
+                    None => (String::new(), Rc::from("")),
+                },
+            };
+            FileCoverage {
+                path,
+                src,
+                coverable: Default::default(),
+                hit: Default::default(),
+            }
+        })
     }
 
     /// The profile as a table, busiest function first: how often each
     /// ran and where it was defined. None when counting was never
     /// asked for.
+    /// What ran, as a table: one row per file, the share of its
+    /// statements reached, and the lines of those that were not. None
+    /// when recording was never asked for.
+    pub fn coverage_report(&self) -> Option<String> {
+        let coverage = self.coverage.as_ref()?;
+        let files = coverage.files();
+        let mut rows = Vec::new();
+        let (mut total, mut total_hit) = (0usize, 0usize);
+        for f in &files {
+            let coverable = lines_of(&f.src, &f.coverable);
+            let hit = lines_of(&f.src, &f.hit);
+            let missed: Vec<usize> = coverable
+                .iter()
+                .copied()
+                .filter(|l| !hit.contains(l))
+                .collect();
+            total += coverable.len();
+            total_hit += coverable.len() - missed.len();
+            rows.push((f.path.clone(), coverable.len(), missed));
+        }
+        let mut out = format!(
+            "coverage: {} of {} ({}%)\n",
+            total_hit,
+            crate::diag::plural(total, "line"),
+            percent(total_hit, total)
+        );
+        for (path, lines, missed) in rows {
+            let reached = lines - missed.len();
+            out.push_str(&format!(
+                "{:>4}%  {:>5}/{:<5}  {}",
+                percent(reached, lines),
+                reached,
+                lines,
+                path
+            ));
+            if !missed.is_empty() {
+                let shown: Vec<String> = missed
+                    .iter()
+                    .take(MISSED_LINES)
+                    .map(|l| l.to_string())
+                    .collect();
+                out.push_str(&format!("  missed {}", shown.join(", ")));
+                let hidden = missed.len().saturating_sub(MISSED_LINES);
+                if hidden > 0 {
+                    out.push_str(&format!(" and {hidden} more"));
+                }
+            }
+            out.push('\n');
+        }
+        Some(out)
+    }
+
     pub fn profile_report(&self) -> Option<String> {
         let counts = self.profile.as_ref()?;
         let mut rows: Vec<&Counted> = counts.values().collect();
@@ -2393,6 +2562,7 @@ impl<W: Write> Interpreter<W> {
                 .map(|p| p.to_path_buf())
                 .unwrap_or_default(),
         );
+        self.note_coverable(&program);
         let result = self.run(&program);
         self.dir_stack.pop();
         self.importing.pop();
@@ -3882,7 +4052,9 @@ mod tests {
     fn offsets(interp: &Interpreter<Vec<u8>>) -> Vec<usize> {
         let files = interp.coverage().expect("recording is on").files();
         assert_eq!(files.len(), 1, "one file ran");
-        files[0].2.clone()
+        let mut hits: Vec<usize> = files[0].hit.iter().copied().collect();
+        hits.sort_unstable();
+        hits
     }
 
     /// Recording is off unless it is asked for, so a plain run pays

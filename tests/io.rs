@@ -473,6 +473,37 @@ fn try_reports_where_a_failure_happened() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--coverage` says which lines ran, on stderr, and says the same
+/// thing whichever engine ran them.
+#[test]
+fn coverage_flag_reports_the_lines_that_ran() {
+    let path = std::env::temp_dir().join(format!("ting-coverage-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "fn taken(n) {\n  if n > 0 {\n    return \"yes\";\n  }\n  return \"no\";\n}\nfn never() {\n  print(\"unreached\");\n}\nprint(taken(1));\n",
+    )
+    .unwrap();
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg("--coverage")
+            .arg(&path)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(0), "{engine}");
+        assert_eq!(String::from_utf8_lossy(&out.stdout), "yes\n", "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        // The branch not taken and the body of the function never
+        // called are the two lines that did not run.
+        assert!(stderr.contains("missed 5, 8"), "{engine}: {stderr}");
+        assert!(stderr.starts_with("coverage: "), "{engine}: {stderr}");
+        seen.push(stderr);
+    }
+    assert_eq!(seen[0], seen[1], "engines disagree");
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--profile` counts what every function did and prints the table on
 /// stderr, leaving the program's own output alone.
 #[test]

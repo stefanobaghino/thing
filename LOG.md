@@ -11522,3 +11522,26 @@ absent from them.
 Which file an offset belongs to comes from `defining_origin()`, the
 same answer a trace uses, so a statement inside an imported module is
 recorded against that module rather than against whoever called it.
+
+## 2026-09-05 — Iteration 640: --coverage says what it found
+
+The reporting half. A file's row is the share of its statements that
+ran and the line numbers of those that did not, twelve of them named
+before the rest are counted — enough to act on, not so many that the
+table stops being one. The header is the whole run. It goes to
+stderr, like the profile table, so a covered run is still pipeable.
+
+What *could* run comes from the AST rather than from either engine: a
+walk over every statement, nested blocks and function bodies
+included, collected when the file is parsed — the script in the
+runner, a module in import_module while its origin is in place. So
+the denominator is the same for both engines by construction, and the
+numerator already was.
+
+Offsets become line numbers once, at the end, against a table of line
+starts built per file: asking a span for its line scans the source
+from the beginning, which is right for one diagnostic and wrong for a
+few thousand offsets.
+
+A CLI test runs the same script under both engines and compares the
+whole stderr, not just the summary line.
