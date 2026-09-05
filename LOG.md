@@ -12458,7 +12458,7 @@ an imported module's path the way the rest of their rows are printed
 Version bumped, `## Unreleased` cut to `## v2.110.0 (2026-09-05)`, the
 gate green (fmt, clippy at zero, fourteen suites), the corpus at its
 five deliberate warnings, the binary reporting 2.110.0 and 22
-selftests / 2421 checks passing. Tagged and pushed; a monitor is
+selftests / 2423 checks passing. Tagged and pushed; a monitor is
 pinned to the Release and CI run ids.
 
 The milestone took the `has`-guard measurement of 666 and spent it:
