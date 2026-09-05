@@ -832,11 +832,13 @@ holds only the current milestone and the standing rules.
   from f4f6d50 with CI and Pages green; gate green at the tag (fmt,
   zero clippy warnings, fifteen suites, corpus at seven warnings, 22
   selftests / 2431 checks) and the release binary reports 2.113.0.
-  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
-  and runs them.
+- v2.113.0 VERIFIED (135th tag; strokes 694, 695, 696, 697; both
+  aarch64 archives downloaded cold and executed here, 22 selftests /
+  2431 checks each, and the shipped binary asked the anchoring
+  questions the release turns on). Six assets, site audit green on all
+  nine paths, published changelog carries the tag.
 - Backlog (one per tick, in order):
-  (1) verify v2.113.0 by cold asset download and execution;
-  (2) health tick to close "the matcher's inner loop".
+  (1) health tick to close "the matcher's inner loop".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

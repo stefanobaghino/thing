@@ -13300,3 +13300,23 @@ Cut from a HEAD with CI and Pages green on f4f6d50, gate green at the
 tag: fmt, zero clippy warnings, fifteen suites, the corpus at seven
 deliberate warnings, and 22 selftests / 2431 checks against the release
 binary that reports 2.113.0.
+
+## 2026-09-06 — Iteration 699: v2.113.0 verified
+
+The 135th tag verified the way every tag is: both aarch64 Linux
+archives downloaded cold from the release, unpacked, and run here.
+Both report 2.113.0 and both pass the whole selftest suite — 22 files,
+2431 checks — against the `lib` that ships beside them.
+
+The shipped binary was also asked the questions this release turns on,
+since a wrong anchoring flag would be silent: `^abc` matches "abc" and
+refuses "zabc", and `^a|b` is still found at position 2 of "xxbyy".
+Both archives answer identically.
+
+Release, CI and Pages all completed successfully; six assets on the
+tag, as expected since v2.30.0. The site audit is green on all nine
+paths and the published changelog carries v2.113.0.
+
+The milestone "the matcher's inner loop" is shipped and verified. One
+tick remains on it: the health tick — bench against BASELINE plus the
+release-mode fuzz sweep — which is what closes a milestone here.
