@@ -623,6 +623,13 @@ holds only the current milestone and the standing rules.
   (7) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
+- Not chosen in 666, with reasons: a --check warning suggesting `get`
+  (ruled out by 649's principle — the nine warnings each claim "this
+  is probably a bug"); an index-and-element loop form (zero pressure:
+  all ten `for i in range(len(X))` loops use `i` for itself);
+  nearest-key suggestions on a missing key (already implemented);
+  auto-seeding `m[k] += 1` (a missing key is an error on purpose);
+  `has` for lists and strings (the corpus tests bounds with `len`).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is
   the obvious next toolchain noun and has no measured pressure behind
   it — the corpus's deepest import chain is two, and nothing in 657
