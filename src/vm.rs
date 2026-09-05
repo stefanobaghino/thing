@@ -160,6 +160,32 @@ fn exec<W: Write>(
                     }
                 }
             }
+            Op::Spread(inner_span) => {
+                let v = stack.pop().expect("stack underflow");
+                stack.push(Value::list(eval::spread_values(v, *inner_span)?));
+            }
+            Op::CallSpread(n, callee_span) => {
+                let lists = stack.split_off(stack.len() - *n as usize);
+                let mut args = Vec::new();
+                for l in lists {
+                    match l {
+                        Value::List(items) => args.extend(items.borrow().iter().cloned()),
+                        other => unreachable!("call argument is not a list: {other:?}"),
+                    }
+                }
+                let callee = stack.pop().expect("stack underflow");
+                match &callee {
+                    Value::Fn(_) | Value::Builtin(_) => {
+                        stack.push(interp.call_value(&callee, args, span)?)
+                    }
+                    other => {
+                        return Err(eval::error(
+                            format!("{} is not callable", other.type_name()),
+                            *callee_span,
+                        ));
+                    }
+                }
+            }
             Op::Jump(o) => {
                 ip = offset(ip, *o);
                 continue;

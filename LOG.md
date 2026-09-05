@@ -11348,3 +11348,29 @@ the honest type: unbounded is not a large number.
 
 The parser refuses what has no meaning: a parameter after the rest
 one, a default on it, `...` with no name, and a duplicate name.
+
+## 2026-09-05 — Iteration 630: spreading a list into a call
+
+`f(...xs)` hands a list over as arguments. With 629's rest parameter
+that closes the loop: `fn log(prefix, ...rest) { print(prefix,
+...rest); }` is now writable, and wrapping `format` — the thing this
+milestone was chosen for — works.
+
+A spread is an argument, not an expression. The parser builds
+`ExprKind::Spread` only inside an argument list, so `let x = ...xs;`
+and `[...xs]` do not parse, and the evaluator's arm for it is a
+message rather than behaviour.
+
+The VM needed two ops. `Op::Call` carries its argument count in a
+byte, and a spread makes that count a runtime fact, so a call with
+one compiles differently: every argument becomes a list (`Op::Spread`
+validates the spread ones, `MakeList(1)` wraps the rest) and
+`Op::CallSpread` concatenates them. Calls without a spread keep the
+direct path and the old opcode, so nothing that exists today pays for
+this.
+
+Two places had to learn to see through the new node, and both are
+the bug class 621 and 624 already found here: the compiler's capture
+analysis (a name inside a spread lives in the enclosing frame) and
+the checker's arity pass, which now says nothing at all about a call
+whose count it cannot know.

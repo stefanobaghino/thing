@@ -445,13 +445,15 @@ holds only the current milestone and the standing rules.
   the leftovers split off before the defaults run, so a default
   cannot see them. The checker's arity upper bound is now
   `Option<usize>`: unbounded is not a large number.
+- 630: `f(...xs)` spreads a list into a call. A spread is an argument,
+  not an expression, so it parses nowhere else. Calls that contain one
+  compile to `Op::Spread` + `MakeList(1)` + `Op::CallSpread`; calls
+  without one keep `Op::Call` and pay nothing.
 - Backlog (one per tick, in order):
-  (1) spread at a call, `f(...xs)`, without which a rest parameter
-  can receive but never forward;
-  (2) RELEASE v2.103.0; (3) verify;
-  (4) fuzz generator + differential corpus, docs and a selftest;
-  (5) the stdlib uses it (lib/test.ting's five format lines);
-  (6) RELEASE v2.104.0; (7) verify; (8) health tick.
+  (1) RELEASE v2.103.0; (2) verify;
+  (3) fuzz generator + differential corpus, docs and a selftest;
+  (4) the stdlib uses it (lib/test.ting's five format lines);
+  (5) RELEASE v2.104.0; (6) verify; (7) health tick.
 - Small stroke available any time, now that defaults exist: csv's
   parse/parse_with and text/text_with are twins only because the
   separator could not be optional.

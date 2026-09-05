@@ -116,7 +116,7 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
         Comma | Semi | Colon | RParen | RBracket | Dot => false,
         // `fn(`, `!(`, and unary `-(` stay tight.
         LParen | LBracket => {
-            !(matches!(prev, LParen | LBracket | Fn | Bang | Tilde)
+            !(matches!(prev, LParen | LBracket | Fn | Bang | Tilde | Ellipsis)
                 || (matches!(prev, Minus) && !prev2.map(value_like).unwrap_or(false))
                 || value_like(prev))
         }
@@ -324,6 +324,14 @@ mod tests {
         assert_eq!(
             format("let g = fn(x=nil){return x;};").unwrap(),
             "let g = fn(x = nil) { return x; };\n"
+        );
+    }
+
+    #[test]
+    fn a_spread_argument_keeps_its_dots() {
+        assert_eq!(
+            format("print(... xs,... [1]);").unwrap(),
+            "print(...xs, ...[1]);\n"
         );
     }
 

@@ -83,6 +83,18 @@ impl RuntimeError {
 const TRACE_LIMIT: usize = 10;
 const TRACE_EDGE: usize = 4;
 
+/// The values a `...xs` argument contributes. Both engines call this,
+/// so the refusal reads the same either way.
+pub(crate) fn spread_values(v: Value, span: Span) -> Result<Vec<Value>, RuntimeError> {
+    match v {
+        Value::List(items) => Ok(items.borrow().clone()),
+        other => Err(error(
+            format!("cannot spread {}, expected a list", other.type_name()),
+            span,
+        )),
+    }
+}
+
 pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     RuntimeError {
         message: message.into(),
@@ -2581,7 +2593,13 @@ impl<W: Write> Interpreter<W> {
                 let callee_v = self.eval(callee)?;
                 let mut arg_vals = Vec::with_capacity(args.len());
                 for a in args {
-                    arg_vals.push(self.eval(a)?);
+                    match &a.kind {
+                        ExprKind::Spread(inner) => {
+                            let v = self.eval(inner)?;
+                            arg_vals.extend(spread_values(v, inner.span)?);
+                        }
+                        _ => arg_vals.push(self.eval(a)?),
+                    }
                 }
                 match callee_v {
                     Value::Fn(func) => self.call(&func, arg_vals, expr.span),
@@ -2593,6 +2611,9 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             ExprKind::Fn(params, body) => Ok(self.make_fn(params, body, None, expr.span)),
+            // The parser only builds one in an argument list, where the
+            // call above consumes it before this ever runs.
+            ExprKind::Spread(_) => Err(error("'...' outside a call", expr.span)),
             ExprKind::Unary(op, operand) => {
                 let v = self.eval(operand)?;
                 unary(*op, v, expr.span)
@@ -3761,6 +3782,29 @@ mod tests {
         assert_eq!(
             program_err("fn f(a, b, ...rest) { return a; } f(1);"),
             "f expects at least 2 arguments, got 1"
+        );
+    }
+
+    #[test]
+    fn a_spread_hands_a_list_over_as_arguments() {
+        assert_eq!(output("let xs = [1, 2, 3]; print(...xs);"), "1 2 3\n");
+        assert_eq!(output("let xs = [1, 2]; print(0, ...xs, 3);"), "0 1 2 3\n");
+        assert_eq!(output("print(...[]);"), "\n");
+        // Forwarding: what a rest parameter collects, a spread passes on.
+        assert_eq!(
+            output(
+                "fn add(a, b) { return a + b; } fn f(...xs) { return add(...xs); } print(f(1, 2));"
+            ),
+            "3\n"
+        );
+        // The arity check still happens, against what the list held.
+        assert_eq!(
+            program_err("fn add(a, b) { return a + b; } add(...[1]);"),
+            "add expects 2 arguments, got 1"
+        );
+        assert_eq!(
+            program_err("print(...5);"),
+            "cannot spread int, expected a list"
         );
     }
 

@@ -402,7 +402,21 @@ impl<'a> Parser<'a> {
                     let mut args = Vec::new();
                     if self.peek() != &TokenKind::RParen {
                         loop {
-                            args.push(self.expr_bp(0)?);
+                            // `...xs` spreads a list into the call. It is
+                            // an argument, not an expression: nowhere else
+                            // parses one.
+                            if self.peek() == &TokenKind::Ellipsis {
+                                let start = self.span().start;
+                                self.advance();
+                                let inner = self.expr_bp(0)?;
+                                let span = Span::new(start, inner.span.end);
+                                args.push(Expr {
+                                    kind: ExprKind::Spread(Box::new(inner)),
+                                    span,
+                                });
+                            } else {
+                                args.push(self.expr_bp(0)?);
+                            }
                             if self.peek() == &TokenKind::Comma {
                                 self.advance();
                             } else {
@@ -895,6 +909,20 @@ mod tests {
         assert_eq!(
             program_err("fn f(...a = 1) { return a; }"),
             "expected ')', found '='"
+        );
+    }
+
+    #[test]
+    fn a_spread_is_an_argument_and_nothing_else() {
+        assert_eq!(sexpr("f(a, ...xs)"), "(call f a (... xs))");
+        // Only an argument list parses one.
+        assert_eq!(
+            program_err("let x = ...xs;"),
+            "expected expression, found '...'"
+        );
+        assert_eq!(
+            program_err("print([...xs]);"),
+            "expected expression, found '...'"
         );
     }
 

@@ -103,6 +103,9 @@ pub enum ExprKind {
     Unary(UnaryOp, Box<Expr>),
     Binary(BinaryOp, Box<Expr>, Box<Expr>),
     Call(Box<Expr>, Vec<Expr>),
+    /// `...xs` in an argument list: the list it evaluates to is spread
+    /// into the call. The parser builds it nowhere else.
+    Spread(Box<Expr>),
     Index(Box<Expr>, Box<Expr>),
     /// `fn(a, b) { ... }` — body is Rc-shared with the closures created
     /// from it, so evaluating the same literal twice doesn't clone it.
@@ -206,6 +209,7 @@ impl fmt::Display for Expr {
                 }
                 f.write_str(")")
             }
+            ExprKind::Spread(e) => write!(f, "(... {e})"),
             ExprKind::Index(base, idx) => write!(f, "(index {base} {idx})"),
             ExprKind::Fn(params, body) => {
                 let params: Vec<String> = params.iter().map(|p| p.to_string()).collect();

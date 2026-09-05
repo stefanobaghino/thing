@@ -11,6 +11,10 @@ Windows are attached to each
   binds a list of every argument the fixed parameters did not take.
   Arity errors and `--check` warnings say "at least N arguments";
   the formatter keeps `...name` tight and hover shows it as written.
+- `f(...xs)` spreads a list into a call, so what a rest parameter
+  collects a spread can pass on. Spreading anything but a list is an
+  error naming the type; `...` outside an argument list does not
+  parse.
 
 ## v2.102.0 (2026-09-05)
 

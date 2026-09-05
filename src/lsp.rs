@@ -849,6 +849,7 @@ fn collect_rebindings(
                 expr(callee, out);
                 args.iter().for_each(|a| expr(a, out));
             }
+            E::Spread(a) => expr(a, out),
             E::Index(base, idx) => {
                 expr(base, out);
                 expr(idx, out);
@@ -910,7 +911,11 @@ fn check_calls(
     ) {
         match &e.kind {
             E::Call(callee, args) => {
+                // A spread argument makes the count a runtime fact,
+                // so this pass has nothing to say about the call.
+                let spread = args.iter().any(|a| matches!(a.kind, E::Spread(_)));
                 if let E::Var(name) = &callee.kind
+                    && !spread
                     && let Some((required, most)) = arities.get(name).copied()
                     && (args.len() < required || most.is_some_and(|m| args.len() > m))
                 {
@@ -930,6 +935,7 @@ fn check_calls(
                 expr(callee, arities, out);
                 args.iter().for_each(|a| expr(a, arities, out));
             }
+            E::Spread(a) => expr(a, arities, out),
             E::Fn(_, body) => check_calls(body, arities, out),
             E::List(items) => items.iter().for_each(|i| expr(i, arities, out)),
             E::Map(entries) => entries.iter().for_each(|(k, v)| {
@@ -1092,6 +1098,7 @@ fn walk_expr(
                 walk_expr(e, tokens, scopes, out);
             }
         }
+        E::Spread(e) => walk_expr(e, tokens, scopes, out),
         E::Map(entries) => {
             for (k, v) in entries {
                 walk_expr(k, tokens, scopes, out);
@@ -2402,6 +2409,14 @@ mod tests {
         );
         let hover = hover_result(src, 1, 0).to_string();
         assert!(hover.contains("f(a, ...rest)"), "hover was:\n{hover}");
+    }
+
+    /// A spread argument makes the count a runtime fact, so the arity
+    /// pass says nothing about the call either way.
+    #[test]
+    fn a_spread_call_is_left_alone() {
+        let src = "fn f(a, b) { return a; }\nf(...xs);\nf(1, ...xs);\n";
+        assert!(arity_mismatches(src).is_empty());
     }
 
     /// What a default names is a use, not a binding: the names inside

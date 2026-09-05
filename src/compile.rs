@@ -31,6 +31,12 @@ pub enum Op {
     /// stack: [callee, arg0..argn-1] -> [result]; the span names the
     /// callee for not-callable errors (matching the tree-walker).
     Call(u8, Span),
+    /// Error unless the top of stack is a list; the span names the
+    /// expression that was spread.
+    Spread(Span),
+    /// stack: [callee, list0..listn-1] -> [result]; the lists are
+    /// concatenated in order into the arguments.
+    CallSpread(u8, Span),
     /// Relative jump.
     Jump(i32),
     /// Pop a bool (strict); jump when false.
@@ -237,6 +243,7 @@ fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
                 walk_expr(c, in_fn, out);
                 args.iter().for_each(|a| walk_expr(a, in_fn, out));
             }
+            ExprKind::Spread(x) => walk_expr(x, in_fn, out),
             // Everything inside a nested fn literal is "captured".
             ExprKind::Fn(params, body) => {
                 if in_fn {
@@ -635,13 +642,35 @@ impl Compiler {
             }
             ExprKind::Call(callee, args) => {
                 self.expr(callee)?;
-                for a in args {
-                    self.expr(a)?;
-                }
                 if args.len() > u8::MAX as usize {
                     return Err(unsupported("more than 255 arguments", e.span));
                 }
-                self.emit(Op::Call(args.len() as u8, callee.span), e.span);
+                // A spread makes the argument count a runtime fact, so
+                // every argument becomes a list and the call flattens
+                // them. Calls without one keep the direct path.
+                if args.iter().any(|a| matches!(a.kind, ExprKind::Spread(_))) {
+                    for a in args {
+                        match &a.kind {
+                            ExprKind::Spread(inner) => {
+                                self.expr(inner)?;
+                                self.emit(Op::Spread(inner.span), a.span);
+                            }
+                            _ => {
+                                self.expr(a)?;
+                                self.emit(Op::MakeList(1), a.span);
+                            }
+                        }
+                    }
+                    self.emit(Op::CallSpread(args.len() as u8, callee.span), e.span);
+                } else {
+                    for a in args {
+                        self.expr(a)?;
+                    }
+                    self.emit(Op::Call(args.len() as u8, callee.span), e.span);
+                }
+            }
+            ExprKind::Spread(_) => {
+                return Err(unsupported("'...' outside a call", e.span));
             }
             ExprKind::Fn(params, body) => self.closure(params, body, e.span, None)?,
         }
