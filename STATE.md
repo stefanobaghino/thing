@@ -525,12 +525,13 @@ holds only the current milestone and the standing rules.
   leaving both operands for IndexSet) and `GetVarToUpdate` (a read
   that reports the assignment error, so `x += 1` fails the way
   `x = 1` does — the engines disagreed here on the first run).
-- Open for the next tick: the checker counts a *read*, and `x += 1`
-  reads x. `unused_top_level_lets` and `unused_local_lets` see only
-  the right-hand side today, so `let x = 0; x += 1;` would warn that
-  x is never used. Must be fixed before the corpus adopts `+=`.
+- 650b: that note was wrong, and checking beat assuming. The checker
+  warns on neither `let x = 0; x += 1;` nor `x = x + 1` — an
+  assignment already counts as a mention — and the formatter needs
+  nothing, since it spaces tokens by default and a compound file
+  formats unchanged. Only the LSP and a selftest are left.
 - Backlog (one per tick, in order):
-  (1) formatter, checker and LSP follow, plus a selftest;
+  (1) the LSP follows, plus a selftest;
   (3) `try(f, ...args)`; (4) fuzzers learn the tokens and the corpus
   adopts both; (5) docs; (6) RELEASE v2.107.0; (7) verify;
   (8) health tick.

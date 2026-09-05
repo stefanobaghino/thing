@@ -11756,3 +11756,16 @@ the right one — a compound assignment is an assignment, and `x += 1`
 should fail the way `x = 1` does — so the compiler emits the variant
 that says so. Nine differential corpus lines cover the arithmetic, the
 container write, the once-only subscript and the four failures.
+
+## 2026-09-05 — Iteration 650b: the next tick was smaller than recorded
+
+650 left a note saying the checker would now warn that
+`let x = 0; x += 1;` never uses x, and that this had to be fixed
+before the corpus could adopt the operators. Checked instead of
+assumed: it warns on neither, at top level or inside a function, and
+neither does `x = x + 1`. An assignment already counts as a mention.
+The formatter needs nothing either — it spaces tokens by default, and
+a file of compound assignments formats and re-formats unchanged.
+
+So the next tick is only what is actually left: the LSP, which does
+have places that read the statement shape, and a selftest.
