@@ -895,8 +895,9 @@ impl<W: Write> Interpreter<W> {
                 .collect();
             total += coverable.len();
             total_hit += coverable.len() - missed.len();
-            rows.push((f.path.clone(), coverable.len(), missed));
+            rows.push((crate::diag::shorten(&f.path), coverable.len(), missed));
         }
+        rows.sort_by(|a, b| a.0.cmp(&b.0));
         let mut out = format!(
             "coverage: {} of {} ({}%)\n",
             total_hit,
@@ -992,7 +993,7 @@ impl<W: Write> Interpreter<W> {
             },
         };
         let (line, col) = r.def.line_col(src);
-        format!("{path}:{line}:{col}")
+        format!("{}:{line}:{col}", crate::diag::shorten(path))
     }
 
     /// A span as the entries of a ting map: the file it belongs to,

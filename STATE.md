@@ -648,11 +648,14 @@ holds only the current milestone and the standing rules.
   nearest-export guess, which is what an upgrade past v2.109.0 needs.
   Measured and declined: a nil-coalescing form (only three of eight
   `if x == nil` sites fall back to a value; the rest are control flow).
+- 674: diag::shorten relativises a path for display; --coverage and
+  --profile both use it, closing 657. Declined: a runtime "is a
+  builtin" hint (a module is a plain map with no provenance).
 - Backlog (one per tick, in order):
-  (1) one more stroke of "the key that isn't there", or docs for 673;
-  (2) release v2.110.0 (671 + 673 accumulated); (3) verify.
-- Small strokes available any time: the coverage report names
-  lib/test.ting by absolute path where the rest are relative (657).
+  (1) release v2.110.0 (strokes 671, 673, 674); (2) verify;
+  (3) replenish — "the key that isn't there" ends with the release.
+- Small strokes available any time: none outstanding (657's coverage
+  path closed in 674).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
   is probably a bug"); an index-and-element loop form (zero pressure:

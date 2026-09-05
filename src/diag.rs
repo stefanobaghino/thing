@@ -54,6 +54,20 @@ pub fn plural(n: usize, word: &str) -> String {
     }
 }
 
+/// A path the way the reader wrote it, where that is still true.
+/// An imported module resolves to an absolute path — the right
+/// identity, and the wrong thing to print in a table beside rows
+/// named relative to the directory the command ran in.
+pub fn shorten(path: &str) -> String {
+    let Ok(cwd) = std::env::current_dir() else {
+        return path.to_string();
+    };
+    match std::path::Path::new(path).strip_prefix(&cwd) {
+        Ok(rest) => rest.display().to_string(),
+        Err(_) => path.to_string(),
+    }
+}
+
 /// The candidate nearest to `name` by edit distance, if one is close
 /// enough to be worth suggesting: at most a third of the name wrong
 /// (and always at least one edit, so short names still get help), or
@@ -189,6 +203,24 @@ mod tests {
             Span::new(start, start + "wörld".len()),
         );
         assert!(out.ends_with(" |             ^^^^^"), "got:\n{out}");
+    }
+
+    #[test]
+    fn shorten_names_paths_under_the_working_directory() {
+        let cwd = std::env::current_dir().expect("cwd");
+        let inside = cwd.join("lib").join("test.ting");
+        let want = std::path::Path::new("lib").join("test.ting");
+        assert_eq!(
+            shorten(&inside.display().to_string()),
+            want.display().to_string()
+        );
+        // A path that is not under it needs all of itself to say
+        // where it is, and a relative one is already there.
+        assert_eq!(shorten("lib/test.ting"), "lib/test.ting");
+        let outside = cwd
+            .parent()
+            .map_or_else(|| "/".to_string(), |p| p.display().to_string());
+        assert_eq!(shorten(&outside), outside);
     }
 
     #[test]

@@ -12377,3 +12377,32 @@ beside the test for the nearest-export case it does not disturb.
 
 Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
 five deliberate warnings, 22 selftests (2421 checks).
+
+## 2026-09-05 — Iteration 674: the path a report prints
+
+The standing small stroke from 657, closed. `--coverage` named
+`lib/test.ting` by its absolute path where every other row was
+relative, because `selftest/testlib.ting` imports it as
+`"../lib/test.ting"` and the report printed the path the import
+resolved to. `--profile` had it too, in its `where` column — the same
+cause, spotted while fixing the first.
+
+The resolved path is the right identity: it is what keeps two scripts
+of one `--coverage` run from merging into a single row. It is only
+wrong to print. So `diag::shorten` relativises a path against the
+working directory for display and both reports call it, with the
+coverage rows sorted on what is printed rather than on the identity
+behind them, so the table stays in order.
+
+Considered and not done: making the runtime say "`get` is a builtin"
+the way 673 made `--check` say it. A module is a plain `Value::Map`
+with no provenance, so the runtime cannot tell one from any other map,
+and marking maps would touch equality, printing and json for a case
+the checker already catches before the program runs.
+
+Tests: `shorten_names_paths_under_the_working_directory` in src/diag.rs
+and `reports_name_modules_relative_to_the_working_directory` in
+tests/io.rs, which runs both flags over the file that caused it.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
+five deliberate warnings, 22 selftests (2421 checks).

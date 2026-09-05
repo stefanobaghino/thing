@@ -11,6 +11,9 @@ Windows are attached to each
   builtin of that name where there is one, instead of guessing at the
   nearest export. A module that retires a function into a builtin —
   as `lib/map.ting`'s `get` did in v2.109.0 — leaves its callers here.
+- `--coverage` and `--profile` name an imported module the way the
+  rest of their rows are named, relative to the directory the command
+  ran in, instead of printing the absolute path it resolved to.
 
 ## v2.109.0 (2026-09-05)
 

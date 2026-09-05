@@ -653,6 +653,28 @@ fn the_stdlib_functions_that_exit_do_what_they_say() {
 
 /// `--profile` counts what every function did and prints the table on
 /// stderr, leaving the program's own output alone.
+/// A module reached through `..` resolves to an absolute path. That
+/// is the right identity and the wrong thing to print beside rows
+/// named relative to the directory the command ran in.
+#[test]
+fn reports_name_modules_relative_to_the_working_directory() {
+    let cwd = std::env::current_dir().expect("cwd").display().to_string();
+    for flag in ["--coverage", "--profile"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .arg(flag)
+            .arg("selftest/testlib.ting")
+            .output()
+            .expect("failed to run ting");
+        let text = format!(
+            "{}{}",
+            String::from_utf8_lossy(&out.stdout),
+            String::from_utf8_lossy(&out.stderr)
+        );
+        assert!(text.contains("lib/test.ting"), "{flag}: {text}");
+        assert!(!text.contains(&cwd), "{flag}: {text}");
+    }
+}
+
 #[test]
 fn profile_flag_counts_calls_per_function() {
     let path = std::env::temp_dir().join(format!("ting-profile-{}.ting", std::process::id()));
