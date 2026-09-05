@@ -1,0 +1,25 @@
+# Pattern matching: the shape a log or CSV scanner makes. Every one of
+# these calls runs the matcher over a fresh subject, so the cost is the
+# search itself rather than the pattern cache.
+let lines = [];
+for i in range(4000) {
+  push(lines, "2026-09-05 host" + str(i % 37) + " code=" + str(i % 503) + " ok");
+}
+let seen = 0;
+let codes = 0;
+let hosts = {};
+for r in range(6) {
+  for line in lines {
+    if re_test(line, "^[0-9]{4}-[0-9]{2}-[0-9]{2} ") { seen += 1; }
+    let m = re_find(line, "code=([0-9]+)");
+    if m != nil { codes += int(m["groups"][0]); }
+  }
+}
+for line in lines {
+  let parts = re_split(line, " +");
+  let host = parts[1];
+  hosts[host] = get(hosts, host, 0) + 1;
+  let masked = re_replace(line, "[0-9]+", "#");
+  if len(masked) < 10 { print("impossible"); }
+}
+print(seen, codes, len(hosts), hosts["host0"]);

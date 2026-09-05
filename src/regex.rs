@@ -521,6 +521,25 @@ type Thread = (usize, Caps);
 struct Scratch {
     seen: Vec<bool>,
     stack: Vec<Thread>,
+    /// Capture sets whose last reference has come back, ready to be
+    /// filled again. The leftmost restart needs a fresh set at every
+    /// position, which is once per character: taking those from here
+    /// is what keeps a search from allocating per character.
+    pool: Vec<Caps>,
+}
+
+/// A capture set of `slots` empty slots, refilled from the pool when
+/// one has come back and allocated only when it has not.
+fn empty_caps(scratch: &mut Scratch, slots: usize) -> Caps {
+    match scratch.pool.pop() {
+        Some(mut caps) => {
+            let v = std::rc::Rc::get_mut(&mut caps).expect("a pooled set is unheld");
+            v.clear();
+            v.resize(slots, None);
+            caps
+        }
+        None => std::rc::Rc::new(vec![None; slots]),
+    }
 }
 
 impl Regex {
@@ -568,15 +587,21 @@ impl Regex {
         let mut scratch = Scratch {
             seen: vec![false; self.prog.len()],
             stack: Vec::new(),
+            pool: Vec::new(),
         };
-        // One set of empty slots for every restart to share, since a
-        // restart that never reaches a `Save` never writes to it.
-        let empty: Caps = std::rc::Rc::new(vec![None; slots]);
-        self.add(&mut clist, &mut scratch, 0, from, text, empty.clone());
+        let first = empty_caps(&mut scratch, slots);
+        self.add(&mut clist, &mut scratch, 0, from, text, first);
         let mut matched: Option<Caps> = None;
         let mut pos = from;
         loop {
-            nlist.clear();
+            // The sets nobody else still holds go back to the pool
+            // rather than being dropped, so the restart below can
+            // refill one instead of allocating another.
+            for (_, caps) in nlist.drain(..) {
+                if std::rc::Rc::strong_count(&caps) == 1 {
+                    scratch.pool.push(caps);
+                }
+            }
             // `seen` belongs to the list being built, and from here on
             // that is nlist: what it recorded for clist is spent.
             scratch.seen.fill(false);
@@ -604,7 +629,8 @@ impl Regex {
             // and only while nothing has matched: that is what makes
             // the search leftmost.
             if matched.is_none() && pos < text.len() {
-                self.add(&mut nlist, &mut scratch, 0, pos + 1, text, empty.clone());
+                let fresh = empty_caps(&mut scratch, slots);
+                self.add(&mut nlist, &mut scratch, 0, pos + 1, text, fresh);
             }
             if pos >= text.len() {
                 break;
@@ -632,7 +658,7 @@ impl Regex {
         text: &[char],
         caps: Caps,
     ) {
-        let Scratch { seen, stack } = scratch;
+        let Scratch { seen, stack, .. } = scratch;
         stack.clear();
         stack.push((pc, caps));
         while let Some((pc, caps)) = stack.pop() {

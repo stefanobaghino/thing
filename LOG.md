@@ -13178,3 +13178,52 @@ so it is the work around the search rather than the search.
 
 Semantics unchanged, checked and not asserted: 36 regex checks, the
 pattern fuzzer clean at seed 695 over 2000000 cases, full suite green.
+
+## 2026-09-05 — Iteration 696: the guard says the milestone was not done
+
+The tick was meant to bench and guard two strokes that were already
+finished. The guard failed, and it was right to.
+
+bench/regex.ting first: 4000 log-shaped lines scanned six times with
+re_test and re_find, then split and masked, checksum
+`24000 5989512 37 109`. `--profile` puts 204 ms of its 213 ms inside
+the four re_ builtins, so it measures the matcher and not the string
+building around it. BASELINE is eight rows now.
+
+Then the guard, in tests/alloc.rs — a test binary of its own, because a
+global allocator can only be defined once. It counts allocations on the
+measuring thread and asserts that ten times the subject does not cost
+ten times the allocations. Every other test compares what the matcher
+ANSWERS, and the answers were right the whole way through, so nothing
+in the suite could see the difference between the old code and the new.
+
+It failed on the first run: 54 allocations over 23 characters against
+468 over 230, which is about two per character. The claim of 694 and
+695 — that a search no longer allocates per character — was not true.
+
+The mechanism, confirmed rather than guessed by running an anchored
+pattern beside an unanchored one: `^needle` passed and `needle` failed,
+so it is the leftmost restart. 695 gave every restart a share of one
+permanently held empty capture set, and the restart's first act is
+`Save(0)`, which calls `Rc::make_mut` on a set that is always shared
+and therefore always copies. The optimisation guaranteed the copy it
+was written to avoid, which is also why the three-group probe barely
+moved and why 695 read the result as a negative one. It was a bug,
+not a limit.
+
+Capture sets whose last reference has come back now go into a pool on
+the Scratch and get refilled, so a restart allocates only when the pool
+is empty. The guard passes.
+
+The honest part: this is a trade, not a free win, and the numbers go
+both ways. bench/regex.ting improves, 246 ms to 230 ms on the VM.
+The anchored micro-probes get worse, 46 ms to 55 ms, because returning
+threads to the pool costs a walk of the list at every position where
+`clear()` was free. The realistic workload is the one that got faster
+and the one BASELINE now tracks, so the pool stays; both are still far
+ahead of the 93 ms this milestone started from.
+
+It also points at the next stroke, and a better one than either: an
+anchored pattern cannot match at any position but the first, so every
+restart it makes is born dead. Not making them at all would take the
+per-position work to nothing for exactly the case that just regressed.

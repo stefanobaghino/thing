@@ -805,9 +805,23 @@ holds only the current milestone and the standing rules.
   the main loop becoming a refcount. What is left is a ~0.90 us floor
   before any character is examined, and it is not the `Vec<char>` (341
   extra chars of subject cost 0.70 us, ~2 ns each).
+- 696: bench/regex.ting (checksum `24000 5989512 37 109`, 204 of its
+  213 ms inside the four re_ builtins; BASELINE is eight rows) and
+  tests/alloc.rs, a test binary of its own that counts allocations and
+  asserts ten times the subject does not cost ten times as many. THE
+  GUARD FAILED FIRST: 54 allocations over 23 chars against 468 over
+  230. 695's claim was untrue and its "negative result" was a bug —
+  every restart shared one permanently held empty capture set, and a
+  restart's first act is `Save(0)`, so `Rc::make_mut` always found it
+  shared and always copied. Capture sets now return to a pool on the
+  Scratch. The suite is FIFTEEN binaries now, not fourteen — the gate
+  greps for 15. Honest trade: bench/regex 246 to 230 ms on the VM, but
+  the anchored micro-probes 46 to 55 ms, since pooling walks the list
+  where `clear()` was free.
 - Backlog (one per tick, in order):
-  (1) bench and guard the result — the gain is invisible to every
-  existing test; (2) release v2.113.0.
+  (1) skip the leftmost restart for an anchored pattern — it cannot
+  match past position 0, so every restart it makes is born dead, and
+  this is exactly the case 696 slowed; (2) release v2.113.0.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
