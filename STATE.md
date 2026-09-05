@@ -550,8 +550,9 @@ holds only the current milestone and the standing rules.
   try(parse_age, raw)), stdlib err.ting table, README. Both the
   reference and the tutorial spell out who evaluates what: inside the
   lambda try can catch, in try's argument list it cannot.
+- 655: v2.107.0 released (128th tag; strokes 650-654).
 - Backlog (one per tick, in order):
-  (3) RELEASE v2.107.0; (4) verify; (5) health tick.
+  (1) verify v2.107.0; (2) health tick; (3) replenish.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21
   format() calls) and the one thing that cannot be added safely — a

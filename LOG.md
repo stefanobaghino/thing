@@ -11859,3 +11859,12 @@ lib/err.ting's table and its header sentence in the stdlib page follow
 the module, and the README's one-line summary of the language mentions
 the operators. The tutorial's examples are executed by the test suite,
 so its new output is checked, not claimed.
+
+## 2026-09-05 — Iteration 655: v2.107.0
+
+Released. The tag carries compound assignment, `try(f, ...args)`, the
+document-highlight fix, and the corpus and docs that use both. Version
+bumped, `## Unreleased` cut to `## v2.107.0 (2026-09-05)`, the gate
+green (fmt, clippy at zero, fourteen suites), the smoke check at the
+right version and the corpus at its five deliberate warnings, tagged
+and pushed. A monitor is pinned to the Release and CI run ids.
