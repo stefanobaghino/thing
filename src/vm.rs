@@ -186,6 +186,7 @@ fn exec<W: Write>(
                     }
                 }
             }
+            Op::Mark(offset) => interp.record(*offset),
             Op::Jump(o) => {
                 ip = offset(ip, *o);
                 continue;

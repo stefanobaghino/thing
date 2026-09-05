@@ -471,17 +471,19 @@ holds only the current milestone and the standing rules.
 - 638: replenishment — milestone "which lines ran" (v2.105.0,
   v2.106.0), reasoning in LOG.md: --profile counts calls, so nothing
   says which branch inside a called function never ran.
+- 639: recording lands — Interpreter::cover() collects offsets per
+  file; the compiler emits Op::Mark before each statement only when
+  compiled for coverage, so both engines record statement starts and
+  agree by construction (an op's span can sit on another line).
 - Backlog (one per tick, in order):
-  (1) record executed lines in both engines (the VM has a span per
-  instruction, the tree-walker one per statement);
-  (2) `--coverage SCRIPT` — per file, the share of executable lines
+  (1) `--coverage SCRIPT` — per file, the share of executable lines
   reached and the numbers of those that were not;
-  (3) RELEASE v2.105.0; (4) verify;
-  (5) several scripts in one run, plus a differential test that the
+  (2) RELEASE v2.105.0; (3) verify;
+  (4) several scripts in one run, plus a differential test that the
   two engines report the same lines;
-  (6) docs and a selftest;
-  (7) point it at lib/ and fix what it finds;
-  (8) RELEASE v2.106.0; (9) verify; (10) health tick.
+  (5) docs and a selftest;
+  (6) point it at lib/ and fix what it finds;
+  (7) RELEASE v2.106.0; (8) verify; (9) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).

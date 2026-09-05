@@ -41,6 +41,34 @@ pub struct Origin {
     pub src: Rc<str>,
 }
 
+/// Which offsets of which files ran. Offsets rather than lines: a
+/// line number costs a scan of the source, and the run is the hot
+/// part — the report can pay for it once, at the end.
+#[derive(Debug, Default)]
+pub struct Coverage {
+    /// Keyed by the file's identity — the origin's address, or 0 for
+    /// the script itself, which has no origin.
+    files: HashMap<usize, (String, Rc<str>, std::collections::HashSet<usize>)>,
+}
+
+impl Coverage {
+    /// Every file that ran anything, as (path, source, the offsets
+    /// reached), ordered by path so a report reads the same twice.
+    pub fn files(&self) -> Vec<(&str, &Rc<str>, Vec<usize>)> {
+        let mut out: Vec<(&str, &Rc<str>, Vec<usize>)> = self
+            .files
+            .values()
+            .map(|(path, src, hits)| {
+                let mut hits: Vec<usize> = hits.iter().copied().collect();
+                hits.sort_unstable();
+                (path.as_str(), src, hits)
+            })
+            .collect();
+        out.sort_by(|a, b| a.0.cmp(b.0));
+        out
+    }
+}
+
 impl RuntimeError {
     /// The diagnostic, rendered against the origin's file when the
     /// error came out of an imported module and against `path`/`src`
@@ -262,6 +290,8 @@ pub struct Interpreter<W: Write> {
     /// is one entry per `fn` in the program however many closures it
     /// makes.
     profile: Option<HashMap<(usize, usize), Counted>>,
+    /// Which offsets ran, when `--coverage` asked for them.
+    coverage: Option<Coverage>,
     /// Time charged to the callees of each active call, innermost
     /// last: what a frame subtracts from its own elapsed time.
     child_ns: Vec<u128>,
@@ -467,6 +497,7 @@ impl<W: Write> Interpreter<W> {
             call_origins: Vec::new(),
             source: None,
             profile: None,
+            coverage: None,
             child_ns: Vec::new(),
             patterns: HashMap::new(),
             rng: None,
@@ -632,6 +663,37 @@ impl<W: Write> Interpreter<W> {
         self.profile = Some(HashMap::new());
     }
 
+    /// Start recording which lines run. Off by default: the recording
+    /// costs a hash insert per statement, which a plain run should not
+    /// pay for.
+    pub fn cover(&mut self) {
+        self.coverage = Some(Coverage::default());
+    }
+
+    /// What ran, when recording was asked for.
+    pub fn coverage(&self) -> Option<&Coverage> {
+        self.coverage.as_ref()
+    }
+
+    /// Note that the statement starting at `offset` ran, against
+    /// whichever file the code currently running was defined in.
+    pub(crate) fn record(&mut self, offset: usize) {
+        if self.coverage.is_none() {
+            return;
+        }
+        let origin = self.defining_origin();
+        let key = origin.as_ref().map_or(0, |o| Rc::as_ptr(o) as usize);
+        let coverage = self.coverage.as_mut().expect("recording is on");
+        let entry = coverage.files.entry(key).or_insert_with(|| match &origin {
+            Some(o) => (o.path.clone(), Rc::clone(&o.src), Default::default()),
+            None => match &self.source {
+                Some((p, s)) => (p.clone(), Rc::clone(s), Default::default()),
+                None => (String::new(), Rc::from(""), Default::default()),
+            },
+        });
+        entry.2.insert(offset);
+    }
+
     /// The profile as a table, busiest function first: how often each
     /// ran and where it was defined. None when counting was never
     /// asked for.
@@ -792,6 +854,7 @@ impl<W: Write> Interpreter<W> {
     }
 
     fn exec(&mut self, stmt: &Stmt) -> Result<Control, RuntimeError> {
+        self.record(stmt.span.start);
         match &stmt.kind {
             StmtKind::Let(name, init) => {
                 // `fn f(..) {..}` parses as a let of a fn literal, so
@@ -3783,6 +3846,55 @@ mod tests {
             program_err("fn f(a, b, ...rest) { return a; } f(1);"),
             "f expects at least 2 arguments, got 1"
         );
+    }
+
+    /// Both engines record the same statements: the tree-walker from
+    /// its own statement spans, the VM from a Mark the compiler put
+    /// before each one. Agreement is the point — a coverage report
+    /// that depends on which engine ran would be worse than none.
+    #[test]
+    fn both_engines_record_the_same_statements() {
+        use crate::parser::parse_program;
+        let src = "let n = 0;\n                   fn bump(by) { n = n + by; return n; }\n                   if bump(1) == 1 { print(\"one\"); } else { print(\"other\"); }\n                   fn never() { print(\"unreached\"); }\n";
+        let program = parse_program(&lex(src).unwrap()).unwrap();
+
+        let mut walker = Interpreter::new(Vec::new());
+        walker.cover();
+        walker.run(&program).unwrap();
+        let walked = offsets(&walker);
+
+        let mut vm = Interpreter::new(Vec::new());
+        vm.cover();
+        let Ok(chunk) = crate::compile::compile_program_covered(&program) else {
+            panic!("the program compiles");
+        };
+        crate::vm::run_chunk(&mut vm, &chunk).unwrap();
+        let ran = offsets(&vm);
+
+        assert_eq!(walked, ran);
+        // The body of `never` is the one statement that did not run.
+        let unreached = src.find("print(\"unreached\")").unwrap();
+        assert!(!walked.contains(&unreached), "offsets: {walked:?}");
+        assert!(walked.contains(&src.find("print(\"one\")").unwrap()));
+        assert!(!walked.contains(&src.find("print(\"other\")").unwrap()));
+    }
+
+    fn offsets(interp: &Interpreter<Vec<u8>>) -> Vec<usize> {
+        let files = interp.coverage().expect("recording is on").files();
+        assert_eq!(files.len(), 1, "one file ran");
+        files[0].2.clone()
+    }
+
+    /// Recording is off unless it is asked for, so a plain run pays
+    /// nothing and reports nothing.
+    #[test]
+    fn coverage_is_off_by_default() {
+        use crate::parser::parse_program;
+        let mut interp = Interpreter::new(Vec::new());
+        interp
+            .run(&parse_program(&lex("print(1);").unwrap()).unwrap())
+            .unwrap();
+        assert!(interp.coverage().is_none());
     }
 
     #[test]

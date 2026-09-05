@@ -11497,3 +11497,28 @@ call with arguments, which `try(f, ...args)` would collapse to
 `try(pop, [])`. That is one additive stroke, not a milestone, and it
 is now on the small-stroke list. Destructuring stays where 628 left
 it: four pair-taking lambdas is not pressure.
+
+## 2026-09-05 — Iteration 639: recording which statements ran
+
+The recording half of `--coverage`. The Interpreter keeps an optional
+`Coverage`: per file, its path, its source and the set of offsets
+that ran. Offsets, not line numbers — a line number costs a scan of
+the source, and the run is the hot part, so the report pays for that
+once at the end.
+
+The two engines had to agree, and the obvious way would not have.
+The tree-walker records a statement span in `exec`; the VM's natural
+unit is the op, whose span is often an expression inside a statement
+and can sit on a different line. So the compiler emits `Op::Mark` in
+front of each statement, but only when the chunk was compiled for
+coverage — a plain run never executes one, and the flag is threaded
+into nested closures so a function body marks its statements too.
+Both engines then record exactly the same thing: statement starts.
+
+A test runs the same program both ways and compares the sets, and
+checks that the branch not taken and the function never called are
+absent from them.
+
+Which file an offset belongs to comes from `defining_origin()`, the
+same answer a trace uses, so a statement inside an imported module is
+recorded against that module rather than against whoever called it.

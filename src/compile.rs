@@ -34,6 +34,10 @@ pub enum Op {
     /// Error unless the top of stack is a list; the span names the
     /// expression that was spread.
     Spread(Span),
+    /// Note that the statement starting at this offset ran. Emitted
+    /// only when the chunk was compiled for coverage, so a plain run
+    /// never executes one.
+    Mark(usize),
     /// stack: [callee, list0..listn-1] -> [result]; the lists are
     /// concatenated in order into the arguments.
     CallSpread(u8, Span),
@@ -117,7 +121,13 @@ fn unsupported(what: &str, span: Span) -> CompileError {
 }
 
 pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
-    compile_stmts(stmts, None)
+    compile_stmts(stmts, None, false)
+}
+
+/// The same, with a `Mark` before every statement so a run can say
+/// which ones happened.
+pub fn compile_program_covered(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
+    compile_stmts(stmts, None, true)
 }
 
 /// Per-function resolver state: lexical scopes mapping names to frame
@@ -132,6 +142,7 @@ struct FnCtx {
 fn compile_stmts(
     stmts: &[Stmt],
     func: Option<(&[crate::ast::Param], FnCtx)>,
+    coverage: bool,
 ) -> Result<Chunk, CompileError> {
     let (params, fn_ctx) = match func {
         Some((p, ctx)) => (p.to_vec(), Some(ctx)),
@@ -152,6 +163,7 @@ fn compile_stmts(
         scope_depth: 0,
         in_function: fn_ctx.is_some(),
         fn_ctx,
+        coverage,
     };
     // Parameters are the function's outermost bindings.
     for p in &params {
@@ -285,6 +297,8 @@ struct Compiler {
     scope_depth: usize,
     in_function: bool,
     fn_ctx: Option<FnCtx>,
+    /// Emit a `Mark` before every statement, for `--coverage`.
+    coverage: bool,
 }
 
 impl Compiler {
@@ -375,6 +389,9 @@ impl Compiler {
     }
 
     fn stmt(&mut self, s: &Stmt) -> Result<(), CompileError> {
+        if self.coverage {
+            self.emit(Op::Mark(s.span.start), s.span);
+        }
         match &s.kind {
             StmtKind::Let(name, init) => {
                 // `fn f(..) {..}` parses as a let of a fn literal, so
@@ -693,7 +710,7 @@ impl Compiler {
             next_slot: 0,
             uses_env: false,
         };
-        let chunk = compile_stmts(body, Some((params, ctx)))?;
+        let chunk = compile_stmts(body, Some((params, ctx)), self.coverage)?;
         self.chunk.protos.push(FnProto {
             name: name.map(str::to_string),
             def: span,
