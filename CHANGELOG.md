@@ -5,6 +5,19 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.109.0 (2026-09-05)
+
+- New builtin `get(x, k, default)`: `x[k]` where it is present,
+  otherwise `default`. It reads a map by key and a list or string by
+  index, negatives counting from the end, and never errors on an
+  absence — so a tally is `m[k] = get(m, k, 0) + 1` rather than a
+  branch around the first sighting. A key of the wrong type for the
+  base is still an error, because a default answers an absence, not a
+  bug.
+- `lib/map.ting`'s `get` is gone: the builtin subsumes it, and a
+  module function that shadows a builtin is one of the checker's
+  warnings. Call `get(m, k, default)` directly, with no import.
+
 ## v2.108.0 (2026-09-05)
 
 - A runtime error's `note:` lines now show what each call was given:

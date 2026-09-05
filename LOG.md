@@ -12228,3 +12228,29 @@ Gate: fmt clean, clippy zero, fourteen suites ok, the corpus back at
 its five deliberate warnings, 50000 differential and 20000 formatter
 cases at seed 667 green, 22 selftests (2421 checks) and all 18 example
 outputs matching.
+
+## 2026-09-05 — Iteration 668: the docs read `get`
+
+The tutorial had the sentence this milestone was aimed at: "Reading a
+missing key is an error, so test with `has` first." It now offers both
+— `has` to ask, `get` to read — and follows with the counting example,
+because that is where the difference shows. The tally is four lines
+where the corpus used to spend five on the branch alone. Both new
+snippets were run before they were written down; the page prints what
+it claims, `36 0` and `{"cat": 1, "the": 2}` included.
+
+The reference gained `get` in the builtin table (that guard failed
+first and told me so), a line under indexing saying it covers all three
+bases, and a line under compound assignment saying `m[k] = get(m, k, 0)
++ 1` is how a tally is written — which is exactly what `m[k] += 1`
+cannot do, and the reason the milestone exists.
+
+The cookbook needed nothing: it renders from `examples/`, so the
+word-count one-liner arrived with the adoption in 667. Checked rather
+than assumed — the page carries the new line.
+
+The changelog heading for v2.109.0 covers both halves: the builtin, and
+`lib/map.ting`'s `get` retiring into it.
+
+Gate: fmt clean, fourteen suites ok, the corpus at its five deliberate
+warnings, 22 selftests and 2421 checks passing, the docs guard green.

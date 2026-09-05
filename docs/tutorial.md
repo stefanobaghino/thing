@@ -347,7 +347,8 @@ print(a, c);
 ```
 
 Maps have string keys, kept sorted. Reading a missing key is an error,
-so test with `has` first:
+so either test with `has` or read it with `get`, which takes the value
+to use when the key is absent:
 
 ```ting
 let ages = {"ada": 36, "linus": 55};
@@ -356,6 +357,7 @@ for name in ages {
   print(name, ages[name]);
 }
 print(has(ages, "ada"), has(ages, "bob"));
+print(get(ages, "ada", 0), get(ages, "bob", 0));
 ```
 
 ```text
@@ -363,7 +365,28 @@ ada 36
 grace 85
 linus 55
 true false
+36 0
 ```
+
+`get` is what makes counting a one-liner. Without it the first sighting
+of a word has no key to add to, so the tally needs a branch around it:
+
+```ting
+let counts = {};
+for w in ["the", "cat", "the"] {
+  counts[w] = get(counts, w, 0) + 1;
+}
+print(counts);
+```
+
+```text
+{"cat": 1, "the": 2}
+```
+
+It reads lists and strings too, by index, with negatives counting from
+the end — `get(xs, 9, nil)` is `nil` rather than an error. What it will
+not do is paper over a real mistake: asking a list for a string key
+still fails, because a default answers an absence, not a bug.
 
 ## When things go wrong
 

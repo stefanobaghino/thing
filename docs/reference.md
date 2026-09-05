@@ -174,7 +174,11 @@ would have to invent.
   (`xs[-1]` is the last element); out of bounds is an error.
 - Strings: `s[i]` yields a one-character string, by character (not byte).
 - Maps: `m["key"]` with a string; a missing key is an error — test with
-  `has(m, "key")` first.
+  `has(m, "key")` first, or read it with `get(m, "key", default)`.
+
+`get` covers all three: it takes the index or key and the value to use
+when it is absent, so a read that may miss needs no branch around it. An
+index or key of the wrong type for the base is still an error.
 
 ## Statements
 
@@ -206,7 +210,8 @@ the operator is applied: `n *= 3 + 4` multiplies by 7. On an indexed
 target the base and the subscript are evaluated once and used for both
 the read and the write, which `m[k()] = m[k()] + 1` cannot promise. The
 target must already exist, and reading comes first, so both a missing
-name and a missing key are errors.
+name and a missing key are errors. `m[k] = get(m, k, 0) + 1` is the way
+to write a tally, since the first sighting has nothing to add to.
 
 `for` iterates over a **snapshot** taken when the loop starts, so the
 body may mutate the list or map it is iterating. Map iteration visits

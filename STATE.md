@@ -619,10 +619,13 @@ holds only the current milestone and the standing rules.
   levels, the crash-fuzzer alphabet, the editor grammar, reference
   and stdlib docs. Corrects 666's "zero calls": map.get had two, as
   `m["get"](...)`, which the grep for `get(` missed.
+- 668: docs. Tutorial (the "test with has first" sentence rewritten,
+  the counting example, lists and strings), reference (the builtin
+  table, indexing, compound assignment), the v2.109.0 changelog
+  heading. The cookbook renders from examples/ and already carried
+  the one-liner.
 - Backlog (one per tick, in order):
-  (1) docs — the tutorial's map section and a cookbook entry, plus
-  the changelog heading for v2.109.0; (2) release v2.109.0;
-  (3) verify; (4) health tick.
+  (1) release v2.109.0; (2) verify; (3) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
