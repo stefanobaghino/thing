@@ -11374,3 +11374,10 @@ the bug class 621 and 624 already found here: the compiler's capture
 analysis (a name inside a spread lives in the enclosing frame) and
 the checker's arity pass, which now says nothing at all about a call
 whose count it cannot know.
+
+## 2026-09-05 — Iteration 631: v2.103.0
+
+Cut on 85c9ba8's green CI: strokes 629 and 630, the two halves of the
+same feature — a rest parameter that collects and a spread that
+forwards. Neither is much use without the other, so they ship
+together. The 124th tag; verification next.
