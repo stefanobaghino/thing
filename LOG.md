@@ -11545,3 +11545,8 @@ few thousand offsets.
 
 A CLI test runs the same script under both engines and compares the
 whole stderr, not just the summary line.
+
+## 2026-09-05 — Iteration 641: v2.105.0
+
+Cut on 5983f57's green CI: strokes 639 and 640, the recording and the
+report. The 126th tag; verification next.
