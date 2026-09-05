@@ -12316,3 +12316,31 @@ and its guard caught the stale copy before the commit did.
 Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
 five deliberate warnings, 22 selftests (2421 checks) and all 18 example
 outputs matching. No behaviour changed, so the changelog says nothing.
+
+## 2026-09-05 — Iteration 672: health tick
+
+Green everywhere I looked.
+
+All six bench checksums match BASELINE.md exactly (`317811`,
+`586934 1256961 499950 4 3`, `100000 0`, `100000 4999950000`,
+`10006 10 500 w0 18974763`, `60000 588890`). Timings are weather and
+sat within their usual spread.
+
+Three fuzzers at seed 672 clean: 50000 differential cases, 20000
+formatter cases, 2000000 pattern cases, plus the crash fuzzer.
+
+The gate: fmt clean, clippy at zero, fourteen suites ok, the corpus at
+its five deliberate warnings.
+
+Coverage 2268 of 2280 lines, with only the known misses — lib/test.ting
+95-97, lib/args.ting 191-198, lib/sh.ting 42-43, selftest/edge.ting 90.
+The denominator dropped 18 lines from 665's 2298 because 671 collapsed
+that many out of lib/err.ting, and every one of them was covered, so
+the ratio is unchanged in substance. lib/err.ting is at 100%.
+
+Six assets on each of the last two tags, CI green on HEAD (84b64cc),
+nine site paths at 200 with the changelog page at v2.109.0 and the
+stdlib page counting 174. No open PRs, issues disabled, tree clean.
+
+Still noted, still not chased: the coverage report names lib/test.ting
+by absolute path where every other row is relative (657).

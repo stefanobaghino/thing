@@ -636,10 +636,18 @@ holds only the current milestone and the standing rules.
   one line each, given names the trace once; failed (presence) and
   wrap (control flow) stay. examples/todo.ting's load likewise. No
   behaviour change, so no changelog bullet.
+- 672: health tick green — six bench checksums matching BASELINE,
+  three fuzzers at seed 672 clean (50000 differential, 20000
+  formatter, 2000000 pattern), the gate green, the corpus at five,
+  coverage 2268/2280 with only the known misses (the denominator fell
+  18 lines because 671 collapsed that many covered lines out of
+  lib/err.ting), six assets on each of the last two tags, CI green on
+  HEAD, nine site paths at 200 serving v2.109.0 and 174 functions.
 - Backlog (one per tick, in order):
-  (1) health tick; (2) close or extend "the key that isn't there"
-  (the measured adoption is now spent: what remains in the corpus is
-  thirteen control-flow guards and twelve plain presence tests).
+  (1) close or extend "the key that isn't there" — the measured
+  adoption is spent (what remains is thirteen control-flow guards and
+  twelve plain presence tests), so this tick decides between a
+  v2.110.0 that ships 671 and a further stroke first.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
