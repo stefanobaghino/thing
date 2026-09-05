@@ -12494,3 +12494,65 @@ sentence, and the playground wasm is built from this tree — it embeds
 lib/err.ting's `get(try(f, ...rest), "err", nil)`.
 
 Milestone "the key that isn't there" is complete and verified.
+
+## 2026-09-05 — Iteration 679: replenishment — milestone "the top of the file"
+
+Started by measuring the corpus for the next thing to say, found
+nothing worth a milestone there, and then found it in BASELINE.md.
+
+The corpus is quiet. Loops over `keys(m)` that also read `m[k]`: three,
+two. Two consecutive `let`s off one indexable, the destructuring shape:
+one, and it is a false positive (`lo` and `hi` both read `xs[0]`).
+For-loops that push one element per element, the map shape: four, and
+each pushes a computed expression rather than a call. Sorting is
+already served three ways (`sort`, `sort_by`, `sort_with`). None of
+these is pressure.
+
+What is pressure is in the benchmark table, and has been sitting there
+in plain sight. `bench/json.ting` is the one row where the bytecode VM
+— the default engine — loses to the tree-walking reference. Nine
+interleaved runs of each: eval 202.0 ms, vm 231.5 ms, the VM **14.6%
+slower**. `bench/maps.ting` is a wash (-1.5%), so this is not the
+machine having a bad afternoon.
+
+`--profile` says the opposite of the clock: inside functions the VM
+spends 150ms against eval's 184ms. So the whole loss is outside
+functions, and the micro-benchmarks say exactly where. The same code,
+written twice:
+
+    shape                  top level        inside a function
+    empty 300k loop        vm +14.1%        vm -64.6%
+    push a map literal     vm +21.1%        vm -23.5%
+
+A 2.9x swing on the same source text, decided only by whether it sits
+in a function. The VM's function path is superb and its top-level path
+is a different, slower machine.
+
+src/compile.rs:89 says why, in its own words: "Frame slot count
+(function chunks; **0 at top level**)". A function's locals resolve to
+frame slots at compile time; a top-level binding never does, so every
+read and write at the top of a file goes through the environment by
+name. Scripts do their work at the top of the file — that is what a
+scripting language is — so the default engine is slowest exactly where
+the language is most used.
+
+**Milestone "the top of the file" (v2.111.0-v2.112.0).** Give the
+top-level chunk the frame slots functions already get, so the VM stops
+resolving script-scope names by name. The invariant is already
+enforced: two engines, byte-identical, with a differential fuzzer over
+50000 generated programs standing guard, plus 22 selftests and 18
+example outputs. Then a bench row that isolates top-level work, so
+this cannot silently come back, and BASELINE regenerated on this host.
+
+Not chosen, with reasons:
+
+- Adopting `try(f, ...args)` at the 53 single-call `try(fn() { return
+  f(x); })` sites. Real repetition, but it is a cleanup stroke and not
+  a milestone; it stays on the small-strokes list, with the count
+  corrected from 649's 79.
+- A destructuring form, `let [a, b] = pair`. One site in the whole
+  corpus, and it is not even that shape.
+- Iterating a map's keys and values together. Three loops over
+  `keys(m)`, two of which read `m[k]`. 666 declined the list version of
+  this for the same reason and the map version is thinner still.
+- A set type. The corpus never fakes one with a map of dummy values.

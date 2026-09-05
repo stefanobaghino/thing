@@ -651,14 +651,14 @@ holds only the current milestone and the standing rules.
 - 674: diag::shorten relativises a path for display; --coverage and
   --profile both use it, closing 657. Declined: a runtime "is a
   builtin" hint (a module is a plain map with no provenance).
-- 676: 675 was not enough. The test's second assertion was right:
-  `shorten` did nothing on Windows, where canonicalize returns a
-  verbatim path that shares no prefix with current_dir. It
-  canonicalises the working directory before comparing now.
 - 675: repaired 674's red CI. The new integration test wrote
   `lib/test.ting` literally; Windows shortens to `lib\test.ting`, so
   the needle is built from Path::join now. A misplaced doc comment
   from the same tick went back too.
+- 676: 675 was not enough. The test's second assertion was right:
+  `shorten` did nothing on Windows, where canonicalize returns a
+  verbatim path that shares no prefix with current_dir. It
+  canonicalises the working directory before comparing now.
 - 677: v2.110.0 released (131st tag; strokes 671, 673, 674), closing
   milestone "the key that isn't there".
 - 678: v2.110.0 verified. Six assets, green runs, both aarch64
@@ -667,11 +667,20 @@ holds only the current milestone and the standing rules.
   from each archive, corpus at five, nine site paths at 200 serving
   v2.110.0 and 174 functions, the wasm built from this tree.
   Milestone "the key that isn't there" complete.
+- 679: replenishment — milestone "the top of the file"
+  (v2.111-v2.112), reasoning in LOG.md. Measured: the VM is 14.6%
+  slower than eval on bench/json.ting over nine interleaved runs each,
+  and every bit of it is outside functions (--profile has the VM
+  ahead, 150ms to 184ms, inside them). The same source moved into a
+  function swings 2.9x: an empty 300k loop is vm +14.1% at top level
+  and vm -64.6% in a function. src/compile.rs:89 names the cause —
+  frame slots are for function chunks, "0 at top level", so every
+  script-scope name resolves through the environment.
 - Backlog (one per tick, in order):
-  (1) replenish the backlog with a new milestone, measured;
-  (2) health tick.
-- Small strokes available any time: none outstanding (657's coverage
-  path closed in 674).
+  (1) give the top-level chunk frame slots; (2) a bench row that
+  isolates top-level work, BASELINE regenerated; (3) release v2.111.0;
+  (4) verify; (5) health tick.
+- 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
   is probably a bug"); an index-and-element loop form (zero pressure:
@@ -691,9 +700,9 @@ holds only the current milestone and the standing rules.
   A --check warning suggesting `+=` was also declined: the nine
   warnings each claim "this is probably a bug", and a style
   preference would change what --strict's exit status means.
-- Small strokes available any time: `try(f, ...args)` calling f with
-  those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
-  29 of them a single call).
+- Small strokes available any time: adopting `try(f, ...args)` at the
+  53 corpus sites still written `try(fn() { return f(x); })` (the
+  builtin takes the arguments already; 649's count of 79 predates it).
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.
