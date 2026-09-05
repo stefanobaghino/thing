@@ -592,8 +592,15 @@ holds only the current milestone and the standing rules.
   diagnostic's line), tutorial (its stale illustrative trace, and a
   worked example that reads `["args"]`), README.
 - 663: v2.108.0 released (129th tag; strokes 659-662).
+- v2.108.0 VERIFIED (129th tag; strokes 659-662; both aarch64
+  archives executed here on the milestone itself — a trace naming
+  each frame's arguments, err["given"], the uncapped data a program
+  reads back, and two uncaught diagnostics matching line for line
+  with the caps applied; four runs byte-identical; --check and --fmt
+  quiet; the site serves v2.108.0 and counts 175 stdlib functions).
+  Milestone "what the values were" complete.
 - Backlog (one per tick, in order):
-  (1) verify v2.108.0; (2) health tick; (3) replenish.
+  (1) health tick; (2) replenish.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is

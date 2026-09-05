@@ -12069,3 +12069,24 @@ cut to `## v2.108.0 (2026-09-05)`, the gate green (fmt, clippy at
 zero, fourteen suites), the smoke check at the right version with the
 corpus at its five deliberate warnings, tagged and pushed. A monitor
 is pinned to the Release and CI run ids.
+
+## 2026-09-05 — Iteration 664: v2.108.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives came down cold and
+ran here on the milestone itself: a caught failure whose trace names
+each frame's arguments, `err["given"]` returning `{"x": "x"}` for the
+element that broke, and the uncapped data a program reads back (five
+parameters, a forty-element list). Four runs — two archives, two
+engines — byte-identical, and the two uncaught diagnostics match each
+other line for line, caps included:
+
+    note: in wide(a = 1, b = 2, c = 3, d = 4, and 1 more), ...
+    note: in big(xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1...), ...
+
+`--check` and `--fmt --diff` were quiet on both. The site serves
+v2.108.0, the stdlib page counts 175, and the tutorial page shows the
+worked example's new line. Nine paths answer 200.
+
+Milestone "what the values were" is complete: the diagnostic, the
+trace, lib/err.ting's `given`, the caps, the tests at three levels and
+the docs.
