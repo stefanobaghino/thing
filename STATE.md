@@ -711,6 +711,12 @@ holds only the current milestone and the standing rules.
   at 200. Milestone "the top of the file" complete, having shipped
   v2.111.0 alone: two of its four ticks went to bugs it did not
   create, which is what touching a resolver costs.
+- 686: the host wedged twice, and a human asked whether the loop had a
+  hand in it. It does. Measured rather than guessed, and the first
+  guess was wrong: memory is not the pressure (peaks above), CPU is —
+  four cores saturated for minutes by a background chore. Every step
+  of a tick now runs nice'd; the gate was rerun that way to prove it
+  still passes. No coverage was traded away for it.
 - Backlog (one per tick, in order):
   (1) replenishment — design the next milestone from measurement.
 - 657's coverage path closed in 674.
@@ -794,6 +800,19 @@ Standing rules (each from a slip; the LOG entry named has the story):
   the guard (v2.29.1). A failed Pages deploy is retried only with
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
+- This host is shared and has four cores, and a tick saturates all of
+  them for minutes. Every step runs under `nice -n 19` (plus
+  `ionice -c 3` where it touches the disk), bench included: nice costs
+  nothing on an idle host and yields the box on a busy one, where the
+  loop is a background chore competing with someone's foreground work.
+  It does not lower the load average — it lowers priority, which is
+  the part that keeps the host answering. Measured in 686, memory is
+  NOT the pressure and a volume cut would buy nothing: the tick peaks
+  under 1 GB (differential fuzz at 50000 cases is the high-water mark
+  at 916 MB; the whole debug suite is 115 MB, a -j4 build 385 MB,
+  pattern fuzz at 2000000 cases 172 MB, formatter fuzz 30 MB). Both
+  engines run at the same nice level in one bench invocation, so the
+  eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
   seven warnings, guarded by a test since 499, all on purpose:
   edge.ting shadows `len` (451), repeats a map key and writes a

@@ -12752,3 +12752,58 @@ engines see the same scope, and a `!in_function` guard in
 `block_needs_env` so a shadowed builtin still comes back. 682 measured
 it. Two of the four ticks were spent on bugs the milestone did not
 create, which is the ordinary cost of touching a resolver.
+
+## 2026-09-05 — Iteration 686: the loop learns to yield
+
+The host wedged twice in a row, and a human asked whether the loop had
+a hand in it. It did, and the honest answer took a measurement to
+find, because the first explanation was wrong.
+
+The guess was memory: an 8 GB box with 512 MB of swap, `overcommit_memory=0`,
+and a tick that builds eleven test binaries while another tenant holds
+3.6 GB. Plausible, and false. Sampling total RSS across each phase:
+
+| phase | peak |
+|-------|-----:|
+| whole debug suite | 115 MB |
+| formatter fuzz, 20000 cases | 30 MB |
+| pattern fuzz, 2000000 cases | 172 MB |
+| build at -j4 | 385 MB |
+| differential fuzz, 50000 cases | 916 MB |
+
+Under 1 GB for the whole tick. Nothing there wedges an 8 GB host, and
+the cut I had been about to make — fewer fuzz cases per tick — would
+have traded real coverage for a problem that does not exist. The
+differential fuzzer is the high-water mark only because cargo runs its
+eight test functions across four threads at once, and one of them runs
+the selftest corpus twice over for the coverage comparison; the fuzz
+loop itself accumulates nothing.
+
+What the tick actually spends is cores. Four of them, pinned for
+minutes at a stretch: test threads default to nproc, the bench runs
+five times over seven scripts on two engines in the foreground by
+standing rule, and the three fuzzers saturate whatever is left. Load
+was 7.71 on a 4-core machine that also carries a media stack, two
+stockfish engines, a pytest run and four other sessions. A background
+chore was competing on equal terms with someone's foreground work.
+
+So the fix is priority, not volume: every step of a tick runs
+`nice -n 19`, with `ionice -c 3` where it touches the disk. Nice costs
+nothing on an idle host — the loop still gets the whole machine when
+nothing else wants it — and yields on a busy one. It does not lower
+the load average, which counts runnable tasks and not their claim on
+the CPU; it lowers the claim, which is the part that keeps a host
+answering its owner. Bench is nice'd too. Its absolute times were
+already declared weather, and both engines run at the same priority
+within one invocation, so the ratio that the health tick actually
+reads still compares.
+
+The gate was rerun in the courteous form to prove it still passes:
+fmt clean, zero clippy warnings, fourteen `test result: ok` lines, the
+corpus at its seven deliberate warnings.
+
+No code changed. The stroke is a standing rule, which is where this
+project keeps its process — beside "a tick's shell chain is ONE `&&`
+list" and "checksums decide, timings are weather". It belongs there
+rather than in `.cargo/config.toml`, because CI runs on a machine that
+should use every core it has.
