@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.108.0 (2026-09-05)
 
 - A runtime error's `note:` lines now show what each call was given:
   `note: in scale(row = [3, "x"], factor = 2), called from ...`.
