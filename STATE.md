@@ -717,8 +717,21 @@ holds only the current milestone and the standing rules.
   four cores saturated for minutes by a background chore. Every step
   of a tick now runs nice'd; the gate was rerun that way to prove it
   still passes. No coverage was traded away for it.
+- 687: replenishment — milestone "the code you imported"
+  (v2.112-v2.113), reasoning in LOG.md. Measured: stdlib.ting is the
+  one BASELINE row where the VM loses (+6%), and --profile puts ~976 ms
+  of its 1212 ms in ting code inside lib/, which `import_module` runs
+  on the tree-walker whatever engine started the script
+  (src/eval.rs:2698). The same sort_with imported is vm -11%; pasted
+  inline so it compiles, vm -42%, with eval unmoved at 661 vs 649 —
+  about 37% on module-heavy work. The seam exists already
+  (FnBody::Ast | FnBody::Chunk, src/eval.rs:329, both engines call
+  either); what is missing is that Interpreter carries no engine to
+  branch on. Hazard: docs/vm.md's accepted divergence (stray
+  return/break rejected at compile time) would reach import.
 - Backlog (one per tick, in order):
-  (1) replenishment — design the next milestone from measurement.
+  (1) give Interpreter its engine and compile imported modules under
+  the VM; (2) bench and guard the result; (3) release v2.112.0.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

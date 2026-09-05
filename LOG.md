@@ -12807,3 +12807,65 @@ project keeps its process — beside "a tick's shell chain is ONE `&&`
 list" and "checksums decide, timings are weather". It belongs there
 rather than in `.cargo/config.toml`, because CI runs on a machine that
 should use every core it has.
+
+## 2026-09-05 — Iteration 687: replenishment — "the code you imported"
+
+The backlog was down to this tick, and BASELINE names where to look
+without being asked. Six of its seven rows have the VM ahead by 18% to
+52%. One row has it behind: stdlib.ting, at +6%, which is also the
+slowest benchmark there is.
+
+`--profile` says where that goes. Of 1212 ms in functions, about 976 ms
+is ting code living in lib/list.ting and lib/string.ting — sort_with
+alone is 772 ms, then words at 107 ms, group_by at 47 ms, count_by at
+46 ms. The main script's own functions account for 61 ms and the
+builtins, which are Rust either way, for 158 ms. So roughly four fifths
+of this benchmark is module code.
+
+And module code is interpreted. `import_module` ends in
+`self.run(&program)` (src/eval.rs:2698) — the tree-walker, whichever
+engine the script was started with. The VM never sees the standard
+library. That is the whole of the +6%: it gets no advantage on 80% of
+the work and still pays to compile the fifth it does own.
+
+The prize, measured rather than assumed. The same sort_with over the
+same 20000 values, once imported and once pasted into the script so it
+compiles, best of five each:
+
+| variant | eval | vm |
+|---------|-----:|---:|
+| imported | 661 ms | 590 ms (-11%) |
+| inline | 649 ms | 374 ms (-42%) |
+
+Eval barely moves between the two, which is what makes it a fair
+comparison: the tree-walker does not care where code lives, so the
+374 against 590 is the compiler's doing and not the edit's. Compiling
+what a script imports is worth about 37% on module-heavy work.
+
+The seam for it is already there. A ting function is one
+`Value::Fn(Rc<Function>)` whose body is `FnBody::Ast` or
+`FnBody::Chunk` (src/eval.rs:329), and both engines call either — the
+VM already builds closures over chunks, and the tree-walker already
+runs functions that the compiler produced. What is missing is smaller
+than the seam: `Interpreter` carries no engine, so `import_module` has
+nothing to branch on.
+
+Milestone "the code you imported" (v2.112-v2.113): give the
+interpreter the engine it is running under, compile an imported module
+when that engine is the VM, and hold the two byte-identical while
+doing it. The hazard is named in docs/vm.md — the VM rejects a stray
+`return` or `break` at compile time where the tree-walker reaches it at
+run time. Today that divergence is confined to the script; compiling
+modules extends it to import, where a bad module would fail earlier
+under one engine than the other. The differential tests are the check,
+and if it bites, the accepted-divergence list is where it gets written
+down.
+
+Not chosen, with reasons. The REPL also runs on the tree-walker and
+shares the root cause, but there is no pressure behind it: a REPL line
+is a few statements and compiling one would cost more than it saves.
+Adopting `try(f, ...args)` at the 53 corpus sites still written
+`try(fn() { return f(x); })` stays on the shelf as a small stroke — it
+is a tidy, not a milestone, and it does not need a version. The 38 GB
+of target/debug is the loop's own litter rather than the project's,
+and reclaiming it costs a full rebuild, so it waits on a human's word.
