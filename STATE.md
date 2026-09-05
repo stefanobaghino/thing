@@ -515,8 +515,26 @@ holds only the current milestone and the standing rules.
   The published site set is exactly what pages.yml lists: the six doc
   pages, the root, index.html and ting.wasm. docs/vm.md is repo-only
   and there is no playground.html — the playground is the root.
+- 649: replenishment. Corpus counts: 44 of 110 plain assignments name
+  their target twice (5 repeat an index, so it is evaluated twice);
+  80 try() wrappers, 33 around a single call with arguments.
+  Milestone "saying it once" (v2.107.0, v2.108.0): compound
+  assignment and `try(f, ...args)`.
 - Backlog (one per tick, in order):
-  (1) replenish.
+  (1) compound assignment `+= -= *= /= %=` in lexer, parser, AST and
+  both engines, evaluating an indexed target's subscript once;
+  (2) formatter, checker and LSP follow, plus a selftest;
+  (3) `try(f, ...args)`; (4) fuzzers learn the tokens and the corpus
+  adopts both; (5) docs; (6) RELEASE v2.107.0; (7) verify;
+  (8) health tick.
+- Not chosen in 649, with reasons: string interpolation is the
+  strongest pressure in the corpus (124 `+` concatenations against 21
+  format() calls) and the one thing that cannot be added safely — a
+  sigil inside an existing literal changes what it means; a new
+  literal prefix buys safety with two spellings of a string forever.
+  A --check warning suggesting `+=` was also declined: the nine
+  warnings each claim "this is probably a bug", and a style
+  preference would change what --strict's exit status means.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).

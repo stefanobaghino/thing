@@ -11694,3 +11694,45 @@ repo-only note that pages.yml has never published, and playground.html
 does not exist because the playground is the root page. Worth writing
 down so the next health tick does not rediscover it as a regression:
 the published set is exactly what pages.yml lists.
+
+## 2026-09-05 — Iteration 649: replenishment — "saying it once"
+
+The backlog emptied with v2.106.0 verified and the health tick green.
+The survey counted the corpus rather than imagining a user, because
+the two honest gaps left in the language — match, catch — both need a
+keyword, and a keyword breaks a program using that word as a name.
+
+What the count found: of 110 plain assignments across selftest,
+examples, lib and bench, **44 name their target twice** — `i = i + 1`,
+`total = total + n`, `state["passed"] = state["passed"] + 1`. Five of
+those repeat an index expression, which is therefore evaluated twice;
+today `m[f()] = m[f()] + 1` calls `f` twice, and there is no way to
+say otherwise. That is the part that is not sugar.
+
+The second count: 80 `try(fn() { return ...; })` wrappers, 33 of them
+around a single plain call with arguments. The lambda exists only to
+carry the arguments across, and since v2.103.0 the language can pass
+arguments through — the wrapper is now the only thing left doing by
+hand what rest and spread do.
+
+Milestone "saying it once" (v2.107.0, v2.108.0): the compound
+assignments `+=`, `-=`, `*=`, `/=` and `%=`, which are a syntax error
+today and so cost nothing under the 2.x promise, evaluating an
+indexed target's subscript once; and `try(f, ...args)`, which calls f
+with those arguments. Both engines, the formatter, the checker's
+arity table and the LSP follow; the fuzzers learn the tokens; the
+corpus adopts both, which is what turns 44 counted sites into 44
+tested ones.
+
+Considered and not chosen: string interpolation. 124 concatenations
+with `+` against 21 `format(` calls is the strongest pressure in the
+corpus, and it is the one thing here that cannot be added safely —
+any sigil inside an existing string literal changes what that literal
+means, and the 2.x promise says a program that runs today runs
+tomorrow. A new literal prefix would dodge that at the cost of two
+spellings of a string forever. Not worth it.
+
+Also not chosen: a `--check` warning suggesting the compound form.
+The nine warnings are each "this is probably a bug"; a style
+preference is a different kind of claim, and mixing them would make
+the exit status under `--strict` mean something new.
