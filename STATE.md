@@ -733,6 +733,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - After writing LOG/STATE, rerun the docs guard and gate the push on
   the literal `test result: ok` (238). No angle-bracket placeholders
   in markdown (238, 262).
+- A test that looks for a path must build the needle with Path::join:
+  a written `a/b` passes everywhere but Windows, which is the one
+  runner that catches it, an hour later (675).
 - Linux release builds stay on 22.04 runners; the glibc-floor step is
   the guard (v2.29.1). A failed Pages deploy is retried only with
   `gh workflow run pages.yml --ref main`.
