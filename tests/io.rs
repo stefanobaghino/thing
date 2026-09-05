@@ -358,6 +358,50 @@ fn module_runtime_errors_point_into_the_module() {
 /// frame, innermost first, named after the function it was raised in,
 /// identical under both engines. A long trace is elided in the middle
 /// so a runaway recursion cannot bury the message.
+/// The note lines carry what each call was given, and the two caps
+/// that keep a long list or a wide signature from burying the
+/// message. Both engines must print the same text, from the binary
+/// rather than from the library.
+#[test]
+fn a_trace_shows_the_arguments_within_its_caps() {
+    let dir = std::env::temp_dir().join(format!("ting-args-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let script = dir.join("args.ting");
+    std::fs::write(
+        &script,
+        "fn wide(a, b, c, d, e) { return a + e; }\n\
+         fn big(xs) { return wide(1, 2, 3, 4, xs); }\n\
+         big(range(0, 40));\n",
+    )
+    .unwrap();
+    let mut seen = Vec::new();
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1), "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+        let notes: Vec<&str> = stderr.lines().filter(|l| l.starts_with("note:")).collect();
+        assert_eq!(notes.len(), 2, "{engine}: {stderr}");
+        // Five parameters: four named, the rest counted.
+        assert!(
+            notes[0].starts_with("note: in wide(a = 1, b = 2, c = 3, d = 4, and 1 more)"),
+            "{engine}: {stderr}"
+        );
+        // A long value is cut where the cap falls, and says so.
+        assert!(
+            notes[1].contains("xs = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1..."),
+            "{engine}: {stderr}"
+        );
+        assert!(!notes[1].contains(", 39]"), "{engine}: {stderr}");
+        seen.push(stderr);
+    }
+    assert_eq!(seen[0], seen[1], "engines disagree");
+    std::fs::remove_dir_all(&dir).ok();
+}
+
 #[test]
 fn errors_show_the_whole_way_back() {
     let dir = std::env::temp_dir().join(format!("ting-trace-{}", std::process::id()));

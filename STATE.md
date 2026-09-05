@@ -581,9 +581,14 @@ holds only the current milestone and the standing rules.
   programs); lib/err.ting gained `given(f, ...rest)`, 175 stdlib
   functions. Selftests in errors.ting and errlib.ting, two
   differential lines.
+- 661: the fuzzers already covered it — measured, not assumed: 1862
+  of 2000 generated programs fail uncaught and 268 print a note with
+  arguments, so ~6500 per 50000-case sweep are already compared
+  across engines. Added what was missing instead: a CLI test pinning
+  both caps on both engines, and a selftest stating that the caps are
+  the diagnostic's and not the data's.
 - Backlog (one per tick, in order):
-  (1) fuzzers, and a selftest for the caps; (2) docs;
-  (3) RELEASE v2.108.0; (4) verify; (5) health tick.
+  (1) docs; (2) RELEASE v2.108.0; (3) verify; (4) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is

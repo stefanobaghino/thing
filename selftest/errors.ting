@@ -89,3 +89,11 @@ assert(deep_args["trace"][0]["args"] == {"xs": [1, 2]}, "the innermost call's ar
 assert(deep_args["trace"][1]["args"] == {"xs": [1, 2]}, "and its caller's");
 let wrapped = try(fn() { return outer_of([1, 2]); });
 assert(wrapped["trace"][2]["args"] == {}, "a lambda that takes nothing says so");
+
+# The caps are the diagnostic's, not the data's: what a program reads
+# back is the whole value and every parameter, however many.
+fn wide(a, b, c, d, e) { return a + b + c + d + e; }
+let capped = try(wide, 1, 2, 3, 4, range(0, 40));
+let seen = capped["trace"][0]["args"];
+assert(len(seen) == 5, "every parameter, not the four the note names");
+assert(len(seen["e"]) == 40, "and the whole list, not the first 32 characters of it");

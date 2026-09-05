@@ -12011,3 +12011,27 @@ frames for `try(outer_of, [1, 2])` and there are two, because since
 The test now checks both shapes — the direct call with two frames,
 and a wrapped one whose third frame reports `{}` for the lambda that
 takes nothing.
+
+## 2026-09-05 — Iteration 661: what the fuzzers already covered
+
+The tick was meant to teach the fuzzers the new rendering, and the
+measurement said they already knew it. A throwaway probe over 2000
+generated programs: 1862 fail uncaught, and 268 of them — 13% — print
+a note line carrying arguments. At 50000 cases per sweep that is
+roughly six and a half thousand traces with values in them, compared
+byte-for-byte between the engines, without a line of generator change.
+The probe is not in the tree; it existed to answer the question.
+
+So the tick did what was actually missing. A CLI test drives the
+binary on both engines and pins the two caps end to end: five
+parameters render as four named and `and 1 more`, and a forty-element
+list is cut at `[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 1...` with the tail
+absent. And a selftest states the other half of the design from
+inside ting: `len(seen) == 5` and `len(seen["e"]) == 40`, because the
+caps belong to the diagnostic and not to the data a program reads
+back.
+
+The checker had an opinion about the first draft. `fn wide(a, b, c,
+d, e) { return a + e; }` left three parameters unused, which is three
+of the nine warnings and would have taken the corpus from five to
+eight. It sums all five now.
