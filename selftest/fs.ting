@@ -56,8 +56,8 @@ assert(fs["walk"](root + "/a.ting") == [root + "/a.ting"], "a file walks to itse
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");
-assert(try(fn() { return remove_dir(root); })["err"] != nil, "a full directory is not removable");
-assert(try(fn() { return remove_file(root + "/nope"); })["err"] != nil, "removing nothing errors");
+assert(try(remove_dir, root)["err"] != nil, "a full directory is not removable");
+assert(try(remove_file, root + "/nope")["err"] != nil, "removing nothing errors");
 
 fs["remove_tree"](root);
 assert(!exists(root), "the tree is gone");

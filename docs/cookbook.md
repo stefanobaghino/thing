@@ -19,27 +19,27 @@ fn tokenize(src) {
   while i < n {
     let c = src[i];
     if c == " " {
-      i = i + 1;
+      i += 1;
       continue;
     }
     if contains("0123456789", c) {
       let num = "";
       while i < n && contains("0123456789.", src[i]) {
-        num = num + src[i];
-        i = i + 1;
+        num += src[i];
+        i += 1;
       }
       push(toks, {"kind": "num", "text": num});
       continue;
     }
     if contains("+-*/()", c) {
       push(toks, {"kind": c, "text": c});
-      i = i + 1;
+      i += 1;
       continue;
     }
     let name = "";
     while i < n && !contains(" +-*/()", src[i]) {
-      name = name + src[i];
-      i = i + 1;
+      name += src[i];
+      i += 1;
     }
     push(toks, {"kind": "ident", "text": name});
   }
@@ -133,7 +133,7 @@ Closures capture their environment by reference.
 fn make_counter() {
   let n = 0;
   fn tick() {
-    n = n + 1;
+    n += 1;
     return n;
   }
   return tick;
@@ -169,7 +169,7 @@ let words = split("the cat sat on the mat the end", " ");
 let counts = {};
 for w in words {
   if has(counts, w) {
-    counts[w] = counts[w] + 1;
+    counts[w] += 1;
   } else {
     counts[w] = 1;
   }
@@ -298,7 +298,7 @@ while i <= 15 {
   } else {
     print(i);
   }
-  i = i + 1;
+  i += 1;
 }
 ```
 
@@ -589,7 +589,7 @@ let totals = {};
 for row in rows {
   let key = row[column];
   if !has(totals, key) { totals[key] = 0; }
-  totals[key] = totals[key] + int(row["amount"]);
+  totals[key] += int(row["amount"]);
 }
 
 # The output is CSV too, written by the same module that read it.
@@ -695,10 +695,10 @@ fn sorted(xs) {
     let j = i - 1;
     while j >= 0 && out[j] > key {
       out[j + 1] = out[j];
-      j = j - 1;
+      j -= 1;
     }
     out[j + 1] = key;
-    i = i + 1;
+    i += 1;
   }
   return out;
 }
@@ -871,7 +871,7 @@ fn show(items) {
   }
   let i = 0;
   for item in items {
-    i = i + 1;
+    i += 1;
     let mark = " ";
     if item["done"] { mark = "x"; }
     print(format("{}. [{}] {}", i, mark, item["text"]));
@@ -894,7 +894,7 @@ if cmd == "list" {
   save(items);
   print(format("added #{}", len(items)));
 } else if cmd == "done" || cmd == "rm" {
-  let r = try(fn() { return item_number(argv, items); });
+  let r = try(item_number, argv, items);
   if has(r, "err") {
     print("error:", r["err"]);
     exit(2);
@@ -907,7 +907,7 @@ if cmd == "list" {
     let kept = [];
     let i = 0;
     for item in items {
-      i = i + 1;
+      i += 1;
       if i != n { push(kept, item); }
     }
     items = kept;

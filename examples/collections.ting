@@ -4,7 +4,7 @@ let words = split("the cat sat on the mat the end", " ");
 let counts = {};
 for w in words {
   if has(counts, w) {
-    counts[w] = counts[w] + 1;
+    counts[w] += 1;
   } else {
     counts[w] = 1;
   }

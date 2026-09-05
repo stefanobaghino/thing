@@ -10,9 +10,9 @@ assert(two(1) == [1, 2, 3], "all defaults");
 assert(two(1, 9) == [1, 9, 3], "some defaults");
 assert(two(1, 9, 8) == [1, 9, 8], "no defaults");
 let call = two;
-let few = try(fn() { return call(); });
+let few = try(call);
 assert(contains(few["err"], "two expects 1 to 3 arguments, got 0"), "too few names the range");
-let many = try(fn() { return call(1, 2, 3, 4); });
+let many = try(call, 1, 2, 3, 4);
 assert(contains(many["err"], "two expects 1 to 3 arguments, got 4"), "too many names the range");
 
 # A default is an expression, evaluated at the call.

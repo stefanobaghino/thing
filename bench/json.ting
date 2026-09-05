@@ -14,7 +14,7 @@ let pretty_len = len(json_str(back, 2));
 
 let total = 0;
 for i in range(len(users)) {
-  total = total + j["get_in"](back, ["users", i, "score"]);
+  total += j["get_in"](back, ["users", i, "score"]);
 }
 let patched = j["set_in"](back, ["meta", "version"], 4);
 let merged = j["merge_in"](patched, {"meta": {"stamp": "now"}, "extra": [1, 2]});

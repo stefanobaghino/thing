@@ -73,14 +73,14 @@ fn help(spec) {
     for opt in spec["options"] {
       let name = "";
       if has(opt, "short") { name = "-" + opt["short"] + ", "; }
-      name = name + "--" + opt["long"];
+      name += "--" + opt["long"];
       let value = "VALUE";
       if has(opt, "value") { value = opt["value"]; }
       push(names, name + " " + value);
       let text = "";
       if has(opt, "help") { text = opt["help"]; }
       if has(opt, "default") && opt["default"] != nil {
-        text = text + " (default " + str(opt["default"]) + ")";
+        text += " (default " + str(opt["default"]) + ")";
       }
       push(helps, text);
     }
@@ -134,7 +134,7 @@ fn parse(spec, argv) {
   let only_positionals = false;
   while i < len(argv) {
     let arg = argv[i];
-    i = i + 1;
+    i += 1;
     if only_positionals || arg == "-" || !starts_with(arg, "-") {
       push(loose, arg);
       continue;
@@ -163,7 +163,7 @@ fn parse(spec, argv) {
     if attached != nil { options[opt["long"]] = attached; continue; }
     if i >= len(argv) { fail(name + " needs a value"); }
     options[opt["long"]] = argv[i];
-    i = i + 1;
+    i += 1;
   }
   # What is left goes to the positionals, in order, with a "many" one
   # taking everything that remains.
@@ -181,7 +181,7 @@ fn parse(spec, argv) {
         fail("missing <" + p["name"] + ">");
       }
       positionals[p["name"]] = loose[at];
-      at = at + 1;
+      at += 1;
     }
   }
   if at < len(loose) && !wants_help { fail("unexpected argument " + loose[at]); }
@@ -192,7 +192,7 @@ fn parse(spec, argv) {
 # --help prints the help and leaves happy, a bad command line prints
 # the trouble and the help to stderr and leaves with status 2.
 fn main(spec, argv) {
-  let done = try(fn() { return parse(spec, argv); });
+  let done = try(parse, spec, argv);
   if has(done, "err") {
     eprint(spec["name"] + ": " + done["err"]);
     eprint("");

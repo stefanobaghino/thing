@@ -539,8 +539,14 @@ holds only the current milestone and the standing rules.
 - 652: `try(f, ...args)` and all six lib/err.ting functions with it.
   The first spelling was `...args`, which shadows the `args` builtin —
   the five-warning corpus guard caught it; it is `...rest` now.
+- 653: fuzzers learn both (crash alphabet, generator statements and
+  `try(h, e)`); the corpus adopts them — 44 compound assignments, 28
+  try calls with arguments, zero self-referential assignments left.
+  Two reverts worth keeping in mind: a lambda is a trace frame, and a
+  spread in try's own argument list is try's to evaluate, so the
+  failure escapes instead of being caught.
 - Backlog (one per tick, in order):
-  (1) fuzzers learn the tokens and the corpus adopts both; (2) docs;
+  (1) docs;
   (3) RELEASE v2.107.0; (4) verify; (5) health tick.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21

@@ -20,7 +20,7 @@ assert(mix(1, 9, 8, 7) == [1, 9, [8, 7]], "then the leftovers");
 
 # Only the fixed parameters can be missing.
 let f = tail;
-let few = try(fn() { return f(); });
+let few = try(f);
 assert(contains(few["err"], "expects at least 1 argument, got 0"), "no upper bound, still a lower one");
 
 # A spread hands a list over as arguments.
@@ -38,10 +38,12 @@ fn wrap(pattern, ...parts) { return format(pattern, ...parts); }
 assert(wrap("{} and {}", "a", "b") == "a and b", "a format wrapper, at last");
 
 # Arity is checked against what the list held.
-let short = try(fn() { return add3(...[1, 2]); });
+let short = try(add3, ...[1, 2]);
 assert(contains(short["err"], "add3 expects 3 arguments, got 2"), "the count is the list's length");
 
-# Only a list can be spread.
+# Only a list can be spread. The lambda stays: a spread in try's own
+# argument list is try's to evaluate, so the failure would be raised
+# before the call try was asked to make.
 let bad = try(fn() { return add3(...5); });
 assert(contains(bad["err"], "cannot spread int, expected a list"), "spreading a non-list is refused");
 

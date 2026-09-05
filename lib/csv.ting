@@ -43,7 +43,7 @@ fn parse(text, sep = ",") {
     }
     if quoted {
       if c == "\"" { pending = true; continue; }
-      field = field + c;
+      field += c;
       continue;
     }
     if c == "\"" && field == "" && !started {
@@ -69,7 +69,7 @@ fn parse(text, sep = ",") {
       dirty = false;
       continue;
     }
-    field = field + c;
+    field += c;
     dirty = true;
   }
   if dirty || len(row) > 0 {

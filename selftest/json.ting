@@ -12,9 +12,9 @@ let doc = {"name": "ting", "tags": ["tiny", "strict"], "version": 0.8, "wasm": t
 assert(json_parse(json_str(doc)) == doc, "round trip");
 
 # Errors are catchable.
-let bad = try(fn() { return json_parse("[1,]"); });
+let bad = try(json_parse, "[1,]");
 assert(contains(bad["err"], "json_parse"), "malformed input errors");
-let fun = try(fn() { return json_str(len); });
+let fun = try(json_str, len);
 assert(contains(fun["err"], "function"), "functions cannot encode");
 
 # Pretty printing: optional indent, round-trips.
@@ -22,7 +22,7 @@ let doc2 = {"a": [1, 2], "b": {}};
 assert(contains(json_str(doc2, 2), "\n  \"a\": [\n    1,"), "pretty shape");
 assert(json_parse(json_str(doc2, 4)) == doc2, "pretty round trip");
 assert(json_str(doc2, 0) != json_str(doc2), "indent 0 still multiline");
-let badindent = try(fn() { return json_str(doc2, "x"); });
+let badindent = try(json_str, doc2, "x");
 assert(contains(badindent["err"], "indent"), "indent type checked");
 
 # Control characters round-trip (\r expressible in source since 2.11).

@@ -9,7 +9,7 @@ fn reverse(xs) {
   let i = len(xs) - 1;
   while i >= 0 {
     push(out, xs[i]);
-    i = i - 1;
+    i -= 1;
   }
   return out;
 }
@@ -46,7 +46,7 @@ fn enumerate(xs) {
   let i = 0;
   for x in xs {
     push(out, [i, x]);
-    i = i + 1;
+    i += 1;
   }
   return out;
 }
@@ -100,7 +100,7 @@ fn find_index(xs, pred) {
   let i = 0;
   for x in xs {
     if pred(x) { return i; }
-    i = i + 1;
+    i += 1;
   }
   return nil;
 }
@@ -201,7 +201,7 @@ fn insert_at(xs, i, v) {
   for x in xs {
     if k == i { push(out, v); }
     push(out, x);
-    k = k + 1;
+    k += 1;
   }
   if i == len(xs) { push(out, v); }
   return out;
@@ -214,7 +214,7 @@ fn remove_at(xs, i) {
   let k = 0;
   for x in xs {
     if k != i { push(out, x); }
-    k = k + 1;
+    k += 1;
   }
   return out;
 }
@@ -309,7 +309,7 @@ fn window(xs, n) {
   let i = 0;
   while i + n <= len(xs) {
     push(out, slice(xs, i, i + n));
-    i = i + 1;
+    i += 1;
   }
   return out;
 }
@@ -428,7 +428,7 @@ fn mode(xs) {
       push(counts, 1);
       i = len(seen) - 1;
     } else {
-      counts[i] = counts[i] + 1;
+      counts[i] += 1;
     }
     if counts[i] > best_n {
       best = x;
@@ -461,10 +461,10 @@ fn sort_with(xs, cmp) {
   while i < len(a) && j < len(b) {
     if cmp(b[j], a[i]) < 0 {
       push(out, b[j]);
-      j = j + 1;
+      j += 1;
     } else {
       push(out, a[i]);
-      i = i + 1;
+      i += 1;
     }
   }
   return out + slice(a, i, len(a)) + slice(b, j, len(b));

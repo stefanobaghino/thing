@@ -17,13 +17,13 @@ let state = {"passed": 0, "failed": 0, "failures": []};
 
 # Records a pass. Custom checks call it directly.
 fn pass() {
-  state["passed"] = state["passed"] + 1;
+  state["passed"] += 1;
 }
 
 # Records a failure whose message is built the way format() builds
 # one, so a custom check reads like the ones here.
 fn fail_with(pattern, ...parts) {
-  state["failed"] = state["failed"] + 1;
+  state["failed"] += 1;
   push(state["failures"], format(pattern, ...parts));
 }
 

@@ -34,7 +34,7 @@ let totals = {};
 for row in rows {
   let key = row[column];
   if !has(totals, key) { totals[key] = 0; }
-  totals[key] = totals[key] + int(row["amount"]);
+  totals[key] += int(row["amount"]);
 }
 
 # The output is CSV too, written by the same module that read it.

@@ -43,7 +43,7 @@ let total = 0;
 for n in range(10) {
   if n == 5 { break; }
   if n % 2 == 1 { continue; }
-  total = total + n;
+  total += n;
 }
 assert(total == 6, "break and continue");
 

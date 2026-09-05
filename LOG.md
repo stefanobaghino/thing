@@ -11810,3 +11810,31 @@ The first spelling used `...args`, and `--check` refused it: `args` is
 a builtin, and shadowing one is one of the nine warnings. Six warnings
 in one file, caught before the commit by the guard that expects the
 corpus to have exactly five. Renamed to `...rest`.
+
+## 2026-09-05 — Iteration 653: the fuzzers and the corpus adopt both
+
+The crash fuzzer's alphabet has the five compound spellings; the
+differential generator emits `a op= e` and `xs[e] op= e` as statements
+and `try(h, e)` as an expression. 50000 differential, 20000 formatter
+and the pattern cases at seed 653, all clean.
+
+The corpus: all 44 self-referential assignments are compound now, and
+28 try wrappers hand their arguments over instead. Zero of the first
+kind are left. The examples' recorded output is what proves the
+rewrite kept its meaning — every .out file still matches, and the
+cookbook was regenerated from the sources twice.
+
+Two rewrites had to come back, and both are the interesting part. In
+selftest/errors.ting the trace test counts frames, and the lambda is
+one of them: `try(outermost, 1)` has two frames where
+`try(fn() { return outermost(1); })` has three, which is what the test
+is checking. In selftest/varargs.ting the case is sharper —
+`try(add3, ...5)` puts the spread in *try's* argument list, so the
+"cannot spread int" failure is raised while evaluating the call to
+try, before try has anything to catch. The wrapper is not always
+noise: it decides who evaluates the arguments. Both sites now say so
+in a comment.
+
+The rewrite also skipped selftest/functions.ting on purpose: its
+wrong-arity call is one of the corpus's five deliberate warnings, and
+`try(add, 1)` is a call the checker's arity pass cannot see.

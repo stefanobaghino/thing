@@ -12,7 +12,7 @@ let again = import("_lib.ting");
 assert(has(again, "extra"), "second import returns the same map");
 
 # Failure modes are ordinary catchable errors.
-let missing = try(fn() { return import("no-such-module.ting"); });
+let missing = try(import, "no-such-module.ting");
 assert(contains(missing["err"], "cannot import"), "missing module");
-let notstr = try(fn() { return import(42); });
+let notstr = try(import, 42);
 assert(contains(notstr["err"], "string path"), "path must be a string");

@@ -17,7 +17,7 @@ fn pow(base, n) {
   let e = n;
   while e > 0 {
     if e % 2 == 1 { result = result * b; }
-    e = e / 2;
+    e /= 2;
     if e > 0 { b = b * b; }
   }
   return result;
@@ -89,7 +89,7 @@ fn is_prime(n) {
   let d = 3;
   while d * d <= n {
     if n % d == 0 { return false; }
-    d = d + 2;
+    d += 2;
   }
   return true;
 }
@@ -104,7 +104,7 @@ fn variance(xs) {
   let acc = 0.0;
   for x in xs {
     let d = x - mean;
-    acc = acc + d * d;
+    acc += d * d;
   }
   return acc / len(xs);
 }

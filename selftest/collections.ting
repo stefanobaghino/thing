@@ -16,7 +16,7 @@ assert(xs[0] == 99 && copy[0] == 1, "copy is independent");
 
 push(xs, 4);
 assert(len(xs) == 4 && pop(xs) == 4 && len(xs) == 3, "push/pop");
-let popped = try(fn() { return pop([]); });
+let popped = try(pop, []);
 assert(has(popped, "err"), "pop of empty errors");
 
 let m = {"b": 2, "a": 1};

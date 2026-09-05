@@ -6,6 +6,8 @@
 /// xorshift64* — same generator as tests/fuzz.rs.
 pub struct Rng(pub u64);
 
+const COMPOUND: &[&str] = &["+", "-", "*", "/", "%"];
+
 impl Rng {
     pub fn next(&mut self) -> u64 {
         let mut x = self.0;
@@ -56,7 +58,21 @@ impl Gen {
         if depth == 0 {
             return format!("print({});", self.expr(1));
         }
-        match self.rng.below(10) {
+        match self.rng.below(12) {
+            // Compound assignment, to a variable and into a list slot:
+            // the operator is folded in, and the subscript is only
+            // written once.
+            10 => format!(
+                "a {}= {};",
+                COMPOUND[self.rng.below(COMPOUND.len())],
+                self.expr(1)
+            ),
+            11 => format!(
+                "xs[{}] {}= {};",
+                self.expr(1),
+                COMPOUND[self.rng.below(COMPOUND.len())],
+                self.expr(1)
+            ),
             0 => format!("let v{} = {};", self.rng.below(3), self.expr(2)),
             1 => format!("a = {};", self.expr(2)),
             2 => format!("print({}, {});", self.expr(2), self.expr(1)),
@@ -106,7 +122,7 @@ impl Gen {
                 _ => "b".into(),
             };
         }
-        match self.rng.below(37) {
+        match self.rng.below(38) {
             0 => format!("({} + {})", self.expr(depth - 1), self.expr(depth - 1)),
             1 => format!("({} * {})", self.expr(depth - 1), self.expr(depth - 1)),
             2 => format!("({} / {})", self.expr(depth - 1), self.expr(depth - 1)),
@@ -181,6 +197,9 @@ impl Gen {
                 self.expr(depth - 1)
             ),
             35 => format!("try(fn() {{ return r(...{}); }})", self.expr(depth - 1)),
+            // try with the arguments handed straight over, which is
+            // the wrapper above without the wrapper.
+            36 => format!("try(h, {})", self.expr(depth - 1)),
             _ => format!("-({})", self.expr(depth - 1)),
         }
     }

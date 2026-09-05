@@ -67,7 +67,7 @@ assert(range(0, 10, 3) == [0, 3, 6, 9], "range positive step");
 assert(range(5, 0, -1) == [5, 4, 3, 2, 1], "range negative step");
 assert(range(0, 5, -1) == [], "range wrong-way step is empty");
 assert(range(3, 3, 2) == [], "range empty span with step");
-assert(has(try(fn() { return range(0, 5, 0); }), "err"), "range zero step fails");
+assert(has(try(range, 0, 5, 0), "err"), "range zero step fails");
 
 # find: first index or nil; char (not byte) indexing on strings.
 assert(find("hello", "llo") == 2, "find substring");
@@ -96,7 +96,7 @@ let before = time_ms();
 sleep_ms(10);
 assert(time_ms() - before >= 5, "sleep_ms waits");
 assert(sleep_ms(0) == nil, "and returns nil");
-let slept = try(fn() { return sleep_ms(-1); });
+let slept = try(sleep_ms, -1);
 assert(contains(slept["err"], "negative"), "a negative pause is an error");
 
 let err = import("lib/err.ting")["message"];
