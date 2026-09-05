@@ -742,9 +742,18 @@ holds only the current milestone and the standing rules.
   message, but the VM refuses before it runs, so earlier statements
   take effect under --eval only. tests/differential.rs had NO import
   in it; it has twelve now, plus fixtures under tests/fixtures/.
+- 689: a guard for 688. No differential test can see whether a module
+  was compiled — both engines agree either way — so the wiring could
+  have been deleted with the suite still green.
+  `an_imported_module_is_compiled_only_for_the_vm` asserts the
+  exported function carries FnBody::Ast with compile_imports off and
+  FnBody::Chunk with it on; verified by switching the feature off and
+  watching it fail. Only repl.rs builds an Interpreter outside lib.rs
+  (tree-walker by design), so --test/--profile/--coverage all get
+  compiled imports from the two entry points 688 wired.
 - Backlog (one per tick, in order):
-  (1) release v2.112.0; (2) verify it; (3) health tick to close
-  "the code you imported".
+  (1) release v2.112.0 (strokes 688, 689); (2) verify it; (3) health
+  tick to close "the code you imported".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

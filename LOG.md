@@ -12914,3 +12914,35 @@ module's own file. The first version of the broken-module test passed
 without testing anything — it named fixtures that did not exist, and
 both engines agreed about failing to find them. It now asserts which
 error it saw, so a missing fixture fails instead of passing.
+
+## 2026-09-05 — Iteration 689: a test that can see the compiler
+
+688 shipped the feature and could not have noticed losing it. Both
+engines agree on what a module computes — that is the whole point of
+the differential suite — so whether the module was compiled or walked
+is invisible to every test that compares them. Delete the wiring and
+the suite stays green; only bench/stdlib.ting would quietly go back to
++6%.
+
+So this tick is the test that looks at the thing itself:
+`an_imported_module_is_compiled_only_for_the_vm` imports lib/list.ting
+through an interpreter with `compile_imports` off and then on, and
+asserts the exported `sum` carries `FnBody::Ast` in the first case and
+`FnBody::Chunk` in the second. It was checked the way a guard should
+be: the feature was switched off, the test was watched to fail with
+`compile_imports = true`, and the feature was put back.
+
+Release deferred by one tick on purpose. The standing rule is to
+release when about three strokes accumulate, and v2.112.0 had one; it
+now has two, and the second is the one that keeps the first from
+rotting.
+
+The insertion went in between another test's doc comment and its
+`#[test]`, which is the mistake of 675 exactly — clippy caught it as an
+empty line after a doc comment, and `coverage_is_off_by_default` had
+its comment back before the gate ran green.
+
+Checked while here that the change reaches everything: only repl.rs
+builds an interpreter outside lib.rs, and the REPL runs on the
+tree-walker by design, so --test, --profile and --coverage all pick up
+compiled imports through the two entry points 688 wired.

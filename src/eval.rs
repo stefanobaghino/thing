@@ -4248,6 +4248,33 @@ mod tests {
         hits
     }
 
+    /// The VM compiles what a script imports so that a module's
+    /// functions become chunks. Both engines agree on what those
+    /// functions COMPUTE — that is the point — so no differential test
+    /// can see the difference, and without this one the wiring could
+    /// come out and only the benchmark would notice.
+    #[test]
+    fn an_imported_module_is_compiled_only_for_the_vm() {
+        for (compile_imports, want_chunk) in [(false, false), (true, true)] {
+            let mut interp = Interpreter::new(Vec::new());
+            interp.set_compile_imports(compile_imports);
+            let module = interp
+                .import_module("lib/list.ting", Span::new(0, 0))
+                .expect("the embedded stdlib imports");
+            let Value::Map(entries) = &module else {
+                panic!("a module is a map");
+            };
+            let Some(Value::Fn(f)) = entries.borrow().get("sum").cloned() else {
+                panic!("lib/list.ting exports sum");
+            };
+            assert_eq!(
+                matches!(f.body, FnBody::Chunk(_)),
+                want_chunk,
+                "compile_imports = {compile_imports}"
+            );
+        }
+    }
+
     /// Recording is off unless it is asked for, so a plain run pays
     /// nothing and reports nothing.
     #[test]
