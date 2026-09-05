@@ -286,8 +286,8 @@ impl Builtin {
             ),
             Builtin::SortBy => ("sort_by(xs, f)", "A fresh list sorted by key f(x), stable."),
             Builtin::Try => (
-                "try(f)",
-                "Calls f(); {\"ok\": result} on success, {\"err\": message} on a runtime error.",
+                "try(f) / try(f, ...args)",
+                "Calls f with the arguments that follow it; {\"ok\": result} on success, {\"err\": message} on a runtime error.",
             ),
             Builtin::Fail => (
                 "fail(msg)",

@@ -11792,3 +11792,21 @@ name is write access. The check is now "the next token assigns",
 which covers `=` and the five compound spellings at once, and the
 existing test that pinned the old counts says why the new ones are
 right.
+
+## 2026-09-05 — Iteration 652: try takes the arguments
+
+`try(f, ...args)` hands everything after the function to it, so the 33
+corpus wrappers that exist only to carry arguments across — `try(fn()
+{ return pop(xs); })` — can say `try(pop, xs)`. The builtin drops its
+upper arity and splits the extra values off; the callee's own arity
+still applies, so `try(add, 1)` reports what `add` reports.
+
+lib/err.ting went with it. Its header said every function there takes
+a function of no arguments "the way try does", which had just stopped
+being true, so all six now take the arguments too — `value` and `wrap`
+keep their second thing to say in front of them.
+
+The first spelling used `...args`, and `--check` refused it: `args` is
+a builtin, and shadowing one is one of the nine warnings. Six warnings
+in one file, caught before the commit by the guard that expects the
+corpus to have exactly five. Renamed to `...rest`.

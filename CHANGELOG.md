@@ -11,6 +11,9 @@ Windows are attached to each
   or an indexed element. The target is named once, and for
   `m[k] op= v` the base and the subscript are evaluated once and used
   for both the read and the write.
+- `try(f, ...args)` calls f with the arguments that follow it, so a
+  call with arguments needs no lambda to carry them. Every function in
+  `lib/err.ting` takes them the same way.
 - A document highlight now calls the target of an assignment a write,
   compound or plain, rather than only the names a `let` or `fn`
   introduces.

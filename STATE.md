@@ -536,10 +536,12 @@ holds only the current milestone and the standing rules.
   writes, so `count = count + 1` read as two reads. It now asks
   whether the next token assigns, which covers `=` and the five
   compound spellings.
+- 652: `try(f, ...args)` and all six lib/err.ting functions with it.
+  The first spelling was `...args`, which shadows the `args` builtin —
+  the five-warning corpus guard caught it; it is `...rest` now.
 - Backlog (one per tick, in order):
-  (3) `try(f, ...args)`; (4) fuzzers learn the tokens and the corpus
-  adopts both; (5) docs; (6) RELEASE v2.107.0; (7) verify;
-  (8) health tick.
+  (1) fuzzers learn the tokens and the corpus adopts both; (2) docs;
+  (3) RELEASE v2.107.0; (4) verify; (5) health tick.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21
   format() calls) and the one thing that cannot be added safely — a

@@ -25,3 +25,14 @@ assert(len(err["trace"](outer)) > 0, "a failure carries the calls it came out of
 assert(err["wrap"](fn() { return 2; }, "ctx") == 2, "wrap passes a value through");
 assert(err["message"](fn() { return err["wrap"](fn() { fail("no such file"); }, "reading it"); })
 == "reading it: no such file", "and puts the prefix in front of a failure");
+
+# The function comes first and everything after it is handed over, so
+# a call with arguments needs no lambda to carry them.
+assert(err["failed"](int, "x") && !err["failed"](int, "7"), "arguments reach the callee");
+assert(err["message"](int, "x") == "cannot convert \"x\" to int", "and so does the failure");
+assert(err["value"](int, -1, "x") == -1 && err["value"](int, -1, "7") == 7,
+"the fallback keeps its place before them");
+assert(err["wrap"](int, "reading", "7") == 7, "so does the prefix");
+assert(err["site"](int, "x") != nil, "a site either way");
+fn pair(a, b) { return [a, b]; }
+assert(err["value"](pair, nil, ...[1, 2]) == [1, 2], "a spread reaches through");

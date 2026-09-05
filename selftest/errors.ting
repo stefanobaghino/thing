@@ -67,3 +67,12 @@ assert(deep["trace"][0]["fn"] == "middle", "innermost frame first");
 assert(deep["trace"][1]["fn"] == "outermost", "then its caller");
 assert(deep["trace"][2]["fn"] == nil, "the literal try() called has no name");
 assert(deep["trace"][0]["line"] == deep["at"]["line"] + 1, "frames carry their call site");
+
+# try takes the arguments to pass on, so the lambda is optional.
+assert(try(int, "7") == {"ok": 7}, "try hands its extra arguments over");
+let none = try(int, "x");
+assert(has(none, "err") && has(none, "at"), "a failure is reported the same way");
+fn plus(a, b) { return a + b; }
+assert(try(plus, 1, 2)["ok"] == 3, "more than one argument");
+assert(try(plus, ...[1, 2])["ok"] == 3, "a spread is an argument list like any other");
+assert(contains(try(plus, 1)["err"], "expects 2 arguments"), "the callee's arity is the callee's");

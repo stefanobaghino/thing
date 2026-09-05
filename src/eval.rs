@@ -1932,12 +1932,18 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             Builtin::Try => {
-                arity(1, 1)?;
+                if args.is_empty() {
+                    return Err(error("try expects at least 1 argument, got 0", span));
+                }
+                // Everything after the function is handed to it, so a
+                // call with arguments needs no lambda to carry them.
+                let mut args = args;
+                let rest = args.split_off(1);
                 match &args[0] {
                     f @ (Value::Fn(_) | Value::Builtin(_)) => {
                         let f = f.clone();
                         let mut m = std::collections::BTreeMap::new();
-                        match self.call_value(&f, Vec::new(), span) {
+                        match self.call_value(&f, rest, span) {
                             Ok(v) => {
                                 m.insert("ok".to_string(), v);
                             }
@@ -4396,6 +4402,30 @@ mod tests {
             program_err("let s = \"a\"; s -= 1;"),
             "cannot apply '-' to string and int"
         );
+    }
+
+    #[test]
+    fn try_hands_its_extra_arguments_over() {
+        assert_eq!(output("print(try(int, \"7\"));"), "{\"ok\": 7}\n");
+        assert_eq!(
+            output("fn add(a, b) { return a + b; } print(try(add, 1, 2)[\"ok\"]);"),
+            "3\n"
+        );
+        // The call's own arity is the callee's, not try's.
+        assert_eq!(
+            output("fn add(a, b) { return a; } print(try(add, 1)[\"err\"]);"),
+            "add expects 2 arguments, got 1\n"
+        );
+        // A spread reaches the callee like any other argument list.
+        assert_eq!(
+            output("fn add(a, b) { return a + b; } print(try(add, ...[3, 4])[\"ok\"]);"),
+            "7\n"
+        );
+        assert_eq!(
+            program_err("try();"),
+            "try expects at least 1 argument, got 0"
+        );
+        assert_eq!(program_err("try(1, 2);"), "try expects a function, got int");
     }
 
     #[test]

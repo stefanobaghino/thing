@@ -99,6 +99,12 @@ fn expressions_match_across_engines() {
         "let m = {}; m[\"k\"] += 1;",
         "let s = \"a\"; s -= 1;",
         "let xs = [1]; xs[9] += 1;",
+        // try with arguments: the callee's own failures, and try's.
+        "print(try(int, \"7\"), try(int, \"x\")[\"err\"]);",
+        "fn add(a, b) { return a + b; } print(try(add, 1, 2), try(add, 1)[\"err\"]);",
+        "fn add(a, b) { return a + b; } print(try(add, ...[3, 4]));",
+        "try();",
+        "try(1, 2);",
         // patterns: the map a match returns, a scan, and a refusal
         "print(re_test(\"héllo\", \"l+o\"), re_find(\"a1\", \"([a-z])(\\\\d)\"));",
         "print(re_find_all(\"a1 b2\", \"\\\\w\\\\d\"), re_split(\"a1b\", \"\\\\d\"));",
