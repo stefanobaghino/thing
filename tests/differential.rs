@@ -194,6 +194,15 @@ fn functions_match_across_engines() {
          print(fs[0](), fs[1](), fs[2]());",
         // fn value display + identity equality
         "fn g(x) { return x; } print(g == g, g);",
+        // A near-miss on a local: the VM keeps those in frame slots,
+        // where they have no name at runtime, and must still offer the
+        // one the tree-walker offers from its environment.
+        "fn f() { let amount = 1; return amount + amonut; } print(f());",
+        "fn f() { let amount = 1; amonut = 2; return amount; } print(f());",
+        // ...and must not offer one that is out of scope at the point
+        // it failed, which the environment would never have held.
+        "fn f() { if false { let volume = 1; print(volume); } return volme; } print(f());",
+        "fn f(amount) { return amonut; } print(f(1));",
     ];
     for src in corpus {
         same(src);

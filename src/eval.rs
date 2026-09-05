@@ -1268,17 +1268,39 @@ impl<W: Write> Interpreter<W> {
     /// "undefined variable 'cont'", plus the nearest name in scope
     /// (a binding or a builtin) when there is one worth naming.
     pub(crate) fn undefined(&self, name: &str, span: Span) -> RuntimeError {
-        self.undefined_msg("undefined variable", name, span)
+        self.undefined_msg("undefined variable", name, span, &[])
     }
 
     /// The same for an assignment to a name that was never bound.
     pub(crate) fn undefined_assign(&self, name: &str, span: Span) -> RuntimeError {
-        self.undefined_msg("cannot assign to undefined variable", name, span)
+        self.undefined_msg("cannot assign to undefined variable", name, span, &[])
     }
 
-    fn undefined_msg(&self, what: &str, name: &str, span: Span) -> RuntimeError {
+    /// The same with names the environment cannot show: the VM's
+    /// slot-allocated locals, which the tree-walker keeps in scope by
+    /// name and so offers without being asked.
+    pub(crate) fn undefined_among(
+        &self,
+        name: &str,
+        span: Span,
+        in_scope: &[String],
+    ) -> RuntimeError {
+        self.undefined_msg("undefined variable", name, span, in_scope)
+    }
+
+    pub(crate) fn undefined_assign_among(
+        &self,
+        name: &str,
+        span: Span,
+        in_scope: &[String],
+    ) -> RuntimeError {
+        self.undefined_msg("cannot assign to undefined variable", name, span, in_scope)
+    }
+
+    fn undefined_msg(&self, what: &str, name: &str, span: Span, extra: &[String]) -> RuntimeError {
         let mut names = Vec::new();
         Env::names(&self.env, &mut names);
+        names.extend(extra.iter().cloned());
         match crate::diag::nearest(name, names.iter().map(String::as_str)) {
             Some(near) => error(format!("{what} '{name}' (did you mean '{near}'?)"), span),
             None => error(format!("{what} '{name}'"), span),

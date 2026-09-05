@@ -97,6 +97,25 @@ pub struct Chunk {
     pub protos: Vec<FnProto>,
     /// spans[i] belongs to code[i]; used for diagnostics.
     pub spans: Vec<Span>,
+    /// For each instruction that can raise "undefined variable", the
+    /// slot-allocated names in scope there. The tree-walker finds
+    /// those in its environment and names the nearest one; a slot
+    /// holds no name at runtime, so the compiler writes down what was
+    /// in scope and the two engines say the same thing.
+    pub in_scope: Vec<(u32, Vec<String>)>,
+}
+
+impl Chunk {
+    /// The slot-allocated names in scope at `ip`, for a diagnostic.
+    pub fn in_scope_at(&self, ip: usize) -> &[String] {
+        match self
+            .in_scope
+            .binary_search_by_key(&(ip as u32), |(at, _)| *at)
+        {
+            Ok(i) => &self.in_scope[i].1,
+            Err(_) => &[],
+        }
+    }
 }
 
 #[derive(Debug)]
@@ -166,6 +185,7 @@ fn compile_stmts(
             needs_env_frame: false,
             protos: Vec::new(),
             spans: Vec::new(),
+            in_scope: Vec::new(),
         },
         loops: Vec::new(),
         scope_depth: 0,
@@ -330,6 +350,24 @@ impl Compiler {
         (self.chunk.consts.len() - 1) as u32
     }
 
+    /// Note the slot names in scope for the instruction just emitted,
+    /// which is one that can fail with "undefined variable".
+    fn note_scope(&mut self) {
+        let Some(ctx) = &self.fn_ctx else { return };
+        let names: Vec<String> = ctx
+            .scopes
+            .iter()
+            .flatten()
+            .filter(|(_, loc)| loc.is_some())
+            .map(|(n, _)| n.clone())
+            .collect();
+        if names.is_empty() {
+            return;
+        }
+        let at = (self.chunk.code.len() - 1) as u32;
+        self.chunk.in_scope.push((at, names));
+    }
+
     fn name(&mut self, n: &str) -> u32 {
         if let Some(i) = self.chunk.names.iter().position(|x| x == n) {
             return i as u32;
@@ -426,6 +464,7 @@ impl Compiler {
                         None => {
                             let i = self.name(name);
                             self.emit(Op::GetVarToUpdate(i), s.span);
+                            self.note_scope();
                         }
                     }
                     self.expr(value)?;
@@ -438,6 +477,7 @@ impl Compiler {
                     None => {
                         let i = self.name(name);
                         self.emit(Op::SetVar(i), s.span);
+                        self.note_scope();
                     }
                 }
             }
@@ -638,6 +678,7 @@ impl Compiler {
                 None => {
                     let i = self.name(name);
                     self.emit(Op::GetVar(i), e.span);
+                    self.note_scope();
                 }
             },
             ExprKind::List(items) => {

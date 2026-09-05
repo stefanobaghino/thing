@@ -676,6 +676,12 @@ holds only the current milestone and the standing rules.
   and vm -64.6% in a function. src/compile.rs:89 names the cause —
   frame slots are for function chunks, "0 at top level", so every
   script-scope name resolves through the environment.
+- 680: an engine divergence the slots change uncovered and that was
+  older than it — the VM gave no nearest-name suggestion for a
+  misspelled local, because frame slots carry no name at runtime.
+  Chunk::in_scope records the names in scope per instruction, so both
+  engines suggest the same one and neither offers an out-of-scope
+  name. The slots change was reverted and waits for the next tick.
 - Backlog (one per tick, in order):
   (1) give the top-level chunk frame slots; (2) a bench row that
   isolates top-level work, BASELINE regenerated; (3) release v2.111.0;
@@ -762,11 +768,12 @@ Standing rules (each from a slip; the LOG entry named has the story):
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  five warnings, guarded by a test since 499, all on purpose:
+  seven warnings, guarded by a test since 499, all on purpose:
   edge.ting shadows `len` (451), repeats a map key and writes a
   statement after a return (507), errors.ting reads the unbound
-  `totl` (495) and functions.ting calls `add(1)` to prove arity
-  (498). A file's warnings come in line order (507).
+  `totl` (495) and, since 680, `amonut` and `volme`, and
+  functions.ting calls `add(1)` to prove arity (498). A file's
+  warnings come in line order (507).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,

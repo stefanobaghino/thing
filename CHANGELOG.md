@@ -5,6 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- The two engines said different things about a misspelled local. A
+  function's locals live in frame slots under the bytecode VM, where
+  they carry no name at runtime, so `amonut` next to a local `amount`
+  got the bare "undefined variable" from the VM and the suggestion
+  from the tree-walker. The compiler now records what was in scope at
+  each site that can raise it, and both engines name the nearest one —
+  and neither offers a name that is out of scope where the failure
+  happened.
+
 ## v2.110.0 (2026-09-05)
 
 - `--check` on a module member that does not exist now names the

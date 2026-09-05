@@ -32,6 +32,12 @@ let total = 1;
 assert(total == 1, "total is bound");
 let typo = try(fn() { return totl; });
 assert(contains(typo["err"], "did you mean 'total'"), "undefined variable suggests");
+# A function's locals live in frame slots under the VM, where they have
+# no names at runtime. Both engines still name the nearest one.
+let inner = try(fn() { let amount = 1; return amount + amonut; });
+assert(contains(inner["err"], "did you mean 'amount'"), "a local suggests too");
+let hidden = try(fn() { if false { let volume = 1; print(volume); } return volme; });
+assert(!contains(hidden["err"], "did you mean"), "a local out of scope says nothing");
 let m = {"alpha": 1};
 let key = try(fn() { return m["alpah"]; });
 assert(contains(key["err"], "did you mean \"alpha\""), "unknown key suggests");

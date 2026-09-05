@@ -41,10 +41,10 @@ fn selftests_pass_silently() {
 /// The whole corpus under `--check`: the warnings it may print are
 /// enumerated here, so a new false positive fails the build. Every one
 /// is deliberate — a shadowed builtin, a duplicate key, a statement
-/// after a return, an unbound name and a wrong-arity call — and each
-/// was written to test the runtime that catches it.
+/// after a return, three unbound names and a wrong-arity call — and
+/// each was written to test the runtime that catches it.
 #[test]
-fn corpus_check_warnings_are_the_expected_five() {
+fn corpus_check_warnings_are_the_expected_seven() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
@@ -55,14 +55,16 @@ fn corpus_check_warnings_are_the_expected_five() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 5, "{stderr}");
+    assert_eq!(warnings.len(), 7, "{stderr}");
     // File names only: Windows prints the paths with backslashes. A
     // file's warnings come in the order its lines do.
     let expected = [
         ("edge.ting", "shadows a builtin"),
         ("edge.ting", "duplicate key `a`"),
         ("edge.ting", "can never run"),
-        ("errors.ting", "bound nowhere"),
+        ("errors.ting", "`totl` is bound nowhere"),
+        ("errors.ting", "`amonut` is bound nowhere"),
+        ("errors.ting", "`volme` is bound nowhere"),
         ("functions.ting", "called with 1"),
     ];
     for (i, (file, phrase)) in expected.iter().enumerate() {

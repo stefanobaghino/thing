@@ -70,14 +70,20 @@ fn exec<W: Write>(
                 let name = &chunk.names[*i as usize];
                 match interp.lookup(name) {
                     Some(v) => stack.push(v),
-                    None => return Err(interp.undefined(name, span)),
+                    None => return Err(interp.undefined_among(name, span, chunk.in_scope_at(ip))),
                 }
             }
             Op::GetVarToUpdate(i) => {
                 let name = &chunk.names[*i as usize];
                 match interp.lookup(name) {
                     Some(v) => stack.push(v),
-                    None => return Err(interp.undefined_assign(name, span)),
+                    None => {
+                        return Err(interp.undefined_assign_among(
+                            name,
+                            span,
+                            chunk.in_scope_at(ip),
+                        ));
+                    }
                 }
             }
             Op::Define(i) => {
@@ -88,7 +94,7 @@ fn exec<W: Write>(
                 let v = stack.pop().expect("stack underflow");
                 let name = &chunk.names[*i as usize];
                 if !interp.assign(name, v) {
-                    return Err(interp.undefined_assign(name, span));
+                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
                 }
             }
             Op::Unary(op) => {

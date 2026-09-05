@@ -12556,3 +12556,50 @@ Not chosen, with reasons:
   `keys(m)`, two of which read `m[k]`. 666 declined the list version of
   this for the same reason and the map version is thinner still.
 - A set type. The corpus never fakes one with a map of dummy values.
+
+## 2026-09-05 — Iteration 680: what the VM could not name
+
+Set out to give the top-level chunk frame slots, wrote it, and the
+differential tests failed on selftest/errors.ting. The assertion that
+`totl` suggests `total` stopped holding under the VM, because `total`
+had just moved from the environment into a frame slot and a slot
+carries no name at runtime.
+
+That was not my bug. It was already there, one level down:
+
+    fn f() { let total = 1; return totl; }
+
+    vm:   undefined variable 'totl'
+    eval: undefined variable 'totl' (did you mean 'total'?)
+
+The two engines are meant to be byte-identical, and here they had
+never been. The differential fuzzer missed it because its generated
+names are too short to be near-misses — `nearest` says nothing under
+three characters — and the selftest that would have caught it asks at
+the top level, which is exactly where the VM still used the
+environment. The bug was hidden by the very thing I was about to
+change.
+
+So this tick fixes that, and the slots wait for the next one. The
+compiler already knows which names are in scope at every instruction;
+it now writes them down for the instructions that can raise "undefined
+variable", and the VM hands them to the diagnostic. `Chunk::in_scope`
+is a sorted list of (instruction, names), consulted only when raising
+the error, so a running program pays nothing for it.
+
+Recording it per instruction rather than per chunk is what keeps it
+honest: a name out of scope where the failure happened is not offered,
+which is what the environment would have said.
+
+    fn f() { if false { let volume = 1; print(volume); } return volme; }
+
+is bare on both engines. Four corpus lines in tests/differential.rs
+cover the near-miss on a local, on an assignment, on a parameter, and
+the out-of-scope case; two more assertions sit in selftest/errors.ting.
+
+The corpus scan expects seven deliberate warnings now, not five: the
+checker finds the two new typos exactly as the runtime does, which is
+the point of them. tests/selftest.rs enumerates all seven.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, 22 selftests (2423
+checks), 50000 differential cases at seed 680 green.
