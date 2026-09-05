@@ -11639,3 +11639,21 @@ Eleven lines are left and all three groups are deliberate: those two
 exiting paths (now tested from outside, though a selftest still
 cannot reach them), and sh.ting:42-43, the Windows PATHEXT branch,
 which cannot run on this host at all. lib/ reads 2203 of 2215.
+
+## 2026-09-05 — Iteration 646: v2.106.0
+
+Released the milestone. The tag carries `--coverage` taking several
+paths, the reference and tutorial sections on it, and the tests that
+its first report asked for. Version bumped, `## Unreleased` cut to
+`## v2.106.0 (2026-09-05)`, gate green (fmt, clippy at zero, fourteen
+suites), tagged and pushed; a monitor is pinned to the Release run's
+id.
+
+Two repairs on the way. The CHANGELOG's last bullet was there twice —
+645b's repair added an entry the failed script had in fact already
+written — so the duplicate went. And the release smoke test's warning
+count read zero when five were printed: it grepped `^warning:`, but a
+checker warning starts with `file:line:col:`. A gate that can only
+fail open is worse than no gate, and this one had been passing on the
+wrong thing; it now matches `: warning:`, which is what the output
+says.

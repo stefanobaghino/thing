@@ -501,8 +501,13 @@ holds only the current milestone and the standing rules.
 - 645b: the tick's STATE and CHANGELOG edits were a separate command
   from the gate chain, so a failed assertion in them did not stop the
   commit. Every edit script belongs in the chain that gates the push.
+- 646: v2.106.0 released (127th tag). Two repairs: the CHANGELOG had
+  645b's bullet twice, and the release smoke test counted warnings
+  with `^warning:` when a checker warning starts with
+  `file:line:col:` — it read zero where five were printed, so the
+  gate could only fail open. It matches `: warning:` now.
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.106.0; (2) verify; (3) health tick.
+  (1) verify v2.106.0; (2) health tick; (3) replenish.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).
