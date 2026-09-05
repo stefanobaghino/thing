@@ -42,7 +42,7 @@ fn main() -> ExitCode {
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no name lists all\n\
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
-                 \x20 ting --coverage <script>    run it, then report which lines ran\n\
+                 \x20 ting --coverage <paths...>  run each, then report which lines ran (dirs recurse)\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
@@ -155,10 +155,40 @@ fn main() -> ExitCode {
     }
     match args.next() {
         None => repl::run(),
-        // Everything after the script path is the script's own argv,
-        // exposed via the args() builtin.
+        // Under --coverage every remaining argument is another script
+        // to run, the way every other tool flag here takes paths;
+        // otherwise they are the script's own argv, via args().
+        Some(path) if reports.coverage => {
+            let mut paths = vec![path];
+            paths.extend(args);
+            run_covered_files(engine, &expand_paths(&paths))
+        }
         Some(path) => run_file(engine, path, args.collect(), reports),
     }
+}
+
+/// `--coverage` over one or more scripts: run them all, then print
+/// the one table they add up to.
+fn run_covered_files(engine: Engine, paths: &[String]) -> ExitCode {
+    let mut files = Vec::new();
+    for path in paths {
+        match read_tool_source(path) {
+            Ok(src) => files.push((path.clone(), src)),
+            Err(code) => return code,
+        }
+    }
+    let (result, report) = ting::run_covered(engine, &files, std::io::stdout().lock());
+    let outcome = match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(diagnostic) => {
+            eprintln!("{diagnostic}");
+            ExitCode::FAILURE
+        }
+    };
+    if let Some(report) = report {
+        eprint!("{report}");
+    }
+    outcome
 }
 
 /// An argument shaped like an option: a leading dash, but not the

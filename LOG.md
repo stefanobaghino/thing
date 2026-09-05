@@ -11560,3 +11560,22 @@ byte: the branch not taken and the body of the function never called
 are the two missed lines in the script, and lib/list.ting reads
 47/298 for a program that calls one of its functions. Six assets on
 the tag.
+
+## 2026-09-05 — Iteration 643: a suite at a time, and a bug it found
+
+`--coverage` now takes paths the way `--check`, `--fmt` and `--test`
+do — directories recurse — and runs each script in its own
+interpreter, so their globals stay apart while one coverage record
+passes from run to run. `ting --coverage selftest` is the number this
+milestone was chosen to produce: 2191 of 2210 lines, with nineteen
+lines in lib/ that 2382 checks never reach.
+
+The differential test earned its place immediately. Records were
+keyed by address — the origin's, or the script path string's — which
+is cheap to take on every statement and wrong: one interpreter's
+freed path string and the next one's share an allocation often
+enough, and the VM run merged selftest/args.ting into
+selftest/_lib.ting's row while the tree-walker, allocating in a
+different order, did not. The key is the path now. That is a bug no
+single-script run could have shown, found by the first test to ask
+the two engines the same question about coverage.

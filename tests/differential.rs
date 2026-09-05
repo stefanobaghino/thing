@@ -237,3 +237,28 @@ fn vm_rejects_stray_break_at_compile_time() {
     let err = run(Engine::Vm, "if false { break; }").unwrap_err();
     assert!(err.contains("break outside loop"), "{err}");
 }
+
+/// Coverage is part of the shared semantics: the two engines must not
+/// only compute the same values but agree on which lines they took to
+/// get there. Run the self-hosted suite both ways and compare the
+/// tables.
+#[test]
+fn both_engines_cover_the_same_lines() {
+    let dir = std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("selftest");
+    let mut files: Vec<(String, String)> = Vec::new();
+    for entry in std::fs::read_dir(&dir).expect("selftest/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) == Some("ting") {
+            let src = std::fs::read_to_string(&path).expect("unreadable selftest");
+            files.push((path.display().to_string(), src));
+        }
+    }
+    files.sort();
+    let mut reports = Vec::new();
+    for engine in [ting::Engine::Vm, ting::Engine::Eval] {
+        let (result, report) = ting::run_covered(engine, &files, Vec::new());
+        assert!(result.is_ok(), "{engine:?}: {result:?}");
+        reports.push(report.expect("a covered run reports"));
+    }
+    assert_eq!(reports[0], reports[1], "engines cover different lines");
+}

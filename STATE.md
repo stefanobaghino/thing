@@ -481,10 +481,13 @@ holds only the current milestone and the standing rules.
   denominator matches for both engines by construction.
 - v2.105.0 VERIFIED (126th tag; strokes 639, 640; both aarch64
   archives, both engines, the same coverage table byte for byte).
+- 643: `--coverage` takes paths (dirs recurse), one interpreter per
+  script sharing one record. `ting --coverage selftest` reads 2191 of
+  2210 lines. The differential test found a real bug: records keyed by
+  address merged two files when an allocation was reused; the key is
+  the path now.
 - Backlog (one per tick, in order):
-  (1) several scripts in one run, plus a differential test that the
-  two engines report the same lines;
-  (2) docs and a selftest;
+  (1) docs and a selftest;
   (3) point it at lib/ and fix what it finds;
   (4) RELEASE v2.106.0; (5) verify; (6) health tick.
 - Small strokes available any time: `try(f, ...args)` calling f with

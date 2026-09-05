@@ -5,6 +5,12 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `--coverage` takes several paths (directories recurse, as every
+  other tool flag here does): each script runs in its own interpreter,
+  and they add up to one report.
+
 ## v2.105.0 (2026-09-05)
 
 - New `ting --coverage SCRIPT`: runs the script, then reports on

@@ -124,6 +124,68 @@ pub fn run_source_profiled<W: Write>(
     )
 }
 
+/// Run several scripts, each in its own interpreter — separate
+/// globals, as running them one after another means — but sharing one
+/// coverage record, so the report is about all of them together. The
+/// first failure stops the run and is returned with what was recorded
+/// up to then.
+pub fn run_covered<W: Write>(
+    engine: Engine,
+    files: &[(String, String)],
+    mut out: W,
+) -> (Result<(), String>, Option<String>) {
+    let mut coverage = eval::Coverage::default();
+    let mut failure = None;
+    for (path, src) in files {
+        let tokens = match lexer::lex(src) {
+            Ok(t) => t,
+            Err(e) => {
+                failure = Some(diag::render(path, src, &e.message, e.span));
+                break;
+            }
+        };
+        let program = match parser::parse_program(&tokens) {
+            Ok(p) => p,
+            Err(e) => {
+                failure = Some(diag::render(path, src, &e.message, e.span));
+                break;
+            }
+        };
+        let mut interp = eval::Interpreter::new(&mut out);
+        interp.set_source(path, src);
+        interp.cover_into(coverage);
+        interp.note_coverable(&program);
+        if let Some(dir) = std::path::Path::new(path).parent() {
+            interp.set_base_dir(dir.to_path_buf());
+        }
+        let result = match engine {
+            Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
+            Engine::Vm => match compile::compile_program_covered(&program) {
+                Ok(chunk) => vm::run_chunk(&mut interp, &chunk)
+                    .map(|_| ())
+                    .map_err(|e| e.render(path, src)),
+                Err(e) => Err(diag::render(path, src, &e.message, e.span)),
+            },
+        };
+        let report = interp.coverage_report();
+        coverage = interp.take_coverage().unwrap_or_default();
+        if let Err(e) = result {
+            failure = Some(e);
+            let _ = report;
+            break;
+        }
+    }
+    // The table is built from the record the last run handed back, so
+    // a run that failed still reports what it reached.
+    let mut interp = eval::Interpreter::new(Vec::new());
+    interp.cover_into(coverage);
+    let report = interp.coverage_report();
+    match failure {
+        Some(e) => (Err(e), report),
+        None => (Ok(()), report),
+    }
+}
+
 /// `run_source_engine`, with whichever reports were asked for
 /// appended into the second half of the answer. The run's own result
 /// is unchanged by them, and a failed run still reports what it

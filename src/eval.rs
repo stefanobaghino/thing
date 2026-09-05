@@ -46,9 +46,9 @@ pub struct Origin {
 /// part — the report can pay for it once, at the end.
 #[derive(Debug, Default)]
 pub struct Coverage {
-    /// Keyed by the file's identity — the origin's address, or 0 for
-    /// the script itself, which has no origin.
-    files: HashMap<usize, FileCoverage>,
+    /// Keyed by path: one record per file however many times it was
+    /// imported, and however many interpreters ran it.
+    files: HashMap<Rc<str>, FileCoverage>,
 }
 
 /// One file's share of a run.
@@ -765,6 +765,18 @@ impl<W: Write> Interpreter<W> {
         self.coverage.as_ref()
     }
 
+    /// Carry on recording into `coverage`, so several scripts run by
+    /// separate interpreters — each with its own globals, as running
+    /// them separately means — add up to one report.
+    pub fn cover_into(&mut self, coverage: Coverage) {
+        self.coverage = Some(coverage);
+    }
+
+    /// Take the record away, to hand to the next run.
+    pub fn take_coverage(&mut self) -> Option<Coverage> {
+        self.coverage.take()
+    }
+
     /// Note that the statement starting at `offset` ran, against
     /// whichever file the code currently running was defined in.
     pub(crate) fn record(&mut self, offset: usize) {
@@ -790,25 +802,33 @@ impl<W: Write> Interpreter<W> {
     /// one the running code was defined in, the same answer a trace
     /// gives.
     fn file_coverage(&mut self) -> &mut FileCoverage {
+        // The path is the identity. An address would be cheaper to
+        // take, and wrong: one interpreter's freed path string and the
+        // next one's can share an address, which merged two scripts of
+        // a `--coverage` run into one row until a differential test
+        // caught it.
         let origin = self.defining_origin();
-        let key = origin.as_ref().map_or(0, |o| Rc::as_ptr(o) as usize);
-        let source = self.source.clone();
+        let source = &self.source;
         let coverage = self.coverage.as_mut().expect("recording is on");
-        coverage.files.entry(key).or_insert_with(|| {
-            let (path, src) = match &origin {
-                Some(o) => (o.path.clone(), Rc::clone(&o.src)),
-                None => match &source {
-                    Some((p, s)) => (p.clone(), Rc::clone(s)),
-                    None => (String::new(), Rc::from("")),
+        let (path, src): (&str, Option<&Rc<str>>) = match &origin {
+            Some(o) => (o.path.as_str(), Some(&o.src)),
+            None => match source {
+                Some((p, s)) => (p.as_str(), Some(s)),
+                None => ("", None),
+            },
+        };
+        if !coverage.files.contains_key(path) {
+            coverage.files.insert(
+                Rc::from(path),
+                FileCoverage {
+                    path: path.to_string(),
+                    src: src.map_or_else(|| Rc::from(""), Rc::clone),
+                    coverable: Default::default(),
+                    hit: Default::default(),
                 },
-            };
-            FileCoverage {
-                path,
-                src,
-                coverable: Default::default(),
-                hit: Default::default(),
-            }
-        })
+            );
+        }
+        coverage.files.get_mut(path).expect("just inserted")
     }
 
     /// The profile as a table, busiest function first: how often each
