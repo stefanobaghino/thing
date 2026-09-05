@@ -468,11 +468,23 @@ holds only the current milestone and the standing rules.
   varargs docs. json/maps read -1% against the VM today where 627
   read +5%/+3%: timings are weather, and 628's "no gap to chase" was
   right for a better reason than it gave.
+- 638: replenishment — milestone "which lines ran" (v2.105.0,
+  v2.106.0), reasoning in LOG.md: --profile counts calls, so nothing
+  says which branch inside a called function never ran.
 - Backlog (one per tick, in order):
-  (1) replenishment tick — the backlog is empty.
-- Small stroke available any time, now that defaults exist: csv's
-  parse/parse_with and text/text_with are twins only because the
-  separator could not be optional.
+  (1) record executed lines in both engines (the VM has a span per
+  instruction, the tree-walker one per statement);
+  (2) `--coverage SCRIPT` — per file, the share of executable lines
+  reached and the numbers of those that were not;
+  (3) RELEASE v2.105.0; (4) verify;
+  (5) several scripts in one run, plus a differential test that the
+  two engines report the same lines;
+  (6) docs and a selftest;
+  (7) point it at lib/ and fix what it finds;
+  (8) RELEASE v2.106.0; (9) verify; (10) health tick.
+- Small strokes available any time: `try(f, ...args)` calling f with
+  those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
+  29 of them a single call).
 - Defaults are evaluated at each call in the callee's scope, left to
   right, so a later default may name an earlier parameter and
   fn f(xs = []) gets a fresh list every call.

@@ -11466,3 +11466,34 @@ right for a better reason than it gave: there was no gap to close.
 
 Milestone "as many as you like" is complete: rest parameters, spreads,
 the fuzzers, the docs, a selftest, and the stdlib using both.
+
+## 2026-09-05 — Iteration 638: replenishment — "which lines ran"
+
+The backlog emptied with v2.104.0 verified. The survey this time went
+looking for what the toolchain cannot answer rather than what the
+language cannot say, because the language has just had two milestones
+in a row and the honest gaps left in it are the ones a new keyword
+would open (match, catch), which the 2.x promise forbids.
+
+The question the toolchain cannot answer: which lines ran. There is
+`--profile`, which counts calls and self time per function, so the
+instrumentation seam already exists — but a function that was called
+once tells you nothing about the branch inside it that never was.
+2382 selftest checks say a great deal about lib/, and nothing at all
+about what they miss.
+
+Milestone "which lines ran" (v2.105.0, v2.106.0): `--coverage`, which
+runs a script (or several, in one process) and reports, per file, the
+share of executable lines reached and the numbers of those that were
+not. Both engines record it — the VM already carries a span per
+instruction, the tree-walker a span per statement — so the two must
+agree, which is a differential test rather than a new kind of trust.
+The last stroke points it at lib/ and fixes what it finds; that is
+the stroke this milestone is really for.
+
+Considered and not chosen: `try(f)` wrappers. 79 of them in the
+corpus are `try(fn() { return ...; })`, and 29 of those wrap a single
+call with arguments, which `try(f, ...args)` would collapse to
+`try(pop, [])`. That is one additive stroke, not a milestone, and it
+is now on the small-stroke list. Destructuring stays where 628 left
+it: four pair-taking lambdas is not pressure.
