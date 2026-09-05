@@ -462,8 +462,14 @@ holds only the current milestone and the standing rules.
 - v2.104.0 VERIFIED (125th tag; strokes 633, 634; both aarch64
   archives run from inside their own directory, so the shipped lib/
   was the one imported). Milestone "as many as you like" complete.
+- 637: health tick green — six bench checksums match baseline, 50000
+  differential + 20000 formatter + 2000000 pattern cases at seed 637,
+  corpus at five warnings, six assets, site serving v2.104.0 and the
+  varargs docs. json/maps read -1% against the VM today where 627
+  read +5%/+3%: timings are weather, and 628's "no gap to chase" was
+  right for a better reason than it gave.
 - Backlog (one per tick, in order):
-  (1) health tick.
+  (1) replenishment tick — the backlog is empty.
 - Small stroke available any time, now that defaults exist: csv's
   parse/parse_with and text/text_with are twins only because the
   separator could not be optional.

@@ -11448,3 +11448,21 @@ six assets on the tag.
 Milestone "as many as you like" is complete. It cost four strokes and
 two releases, found no bugs in the engines, and ended where it said
 it would: a ting function can wrap `format`.
+
+## 2026-09-05 — Iteration 637: health tick, and the milestone closes
+
+All six bench checksums match bench/BASELINE.md. 50000 differential,
+20000 formatter and 2000000 pattern cases at seed 637, all clean. The
+corpus scan is at exactly the five deliberate warnings. Nine site
+paths answer 200, the changelog names v2.104.0, the tutorial carries
+"As many arguments as you like" and the stdlib page counts 174.
+
+One thing worth recording: json.ting and maps.ting, which read +5%
+and +3% *against* the VM in iteration 627 and were cited in 628 as a
+milestone not worth chasing, both read -1% today. Same binary shape,
+same host, opposite sign. That is the standing rule earning its keep
+— checksums decide, timings are weather — and it also means 628 was
+right for a better reason than it gave: there was no gap to close.
+
+Milestone "as many as you like" is complete: rest parameters, spreads,
+the fuzzers, the docs, a selftest, and the stdlib using both.
