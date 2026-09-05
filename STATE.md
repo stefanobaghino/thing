@@ -551,8 +551,14 @@ holds only the current milestone and the standing rules.
   reference and the tutorial spell out who evaluates what: inside the
   lambda try can catch, in try's argument list it cannot.
 - 655: v2.107.0 released (128th tag; strokes 650-654).
+- v2.107.0 VERIFIED (128th tag; strokes 650-654; both aarch64
+  archives executed here on one script using the whole milestone —
+  compound assignment on a map key, a counter and a string, try with
+  arguments, lib/err.ting with them, defaults/rest/spread — four runs
+  byte-identical; --coverage, --check, --fmt and stdin all behaved;
+  the site serves v2.107.0). Milestone "saying it once" complete.
 - Backlog (one per tick, in order):
-  (1) verify v2.107.0; (2) health tick; (3) replenish.
+  (1) health tick; (2) replenish.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21
   format() calls) and the one thing that cannot be added safely — a

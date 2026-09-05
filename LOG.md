@@ -11868,3 +11868,21 @@ bumped, `## Unreleased` cut to `## v2.107.0 (2026-09-05)`, the gate
 green (fmt, clippy at zero, fourteen suites), the smoke check at the
 right version and the corpus at its five deliberate warnings, tagged
 and pushed. A monitor is pinned to the Release and CI run ids.
+
+## 2026-09-05 — Iteration 656: v2.107.0 verified
+
+Six assets on the tag. Both aarch64 Linux archives came down cold and
+ran here on a script that uses the whole milestone at once: `+=` on a
+map key inside a while loop, `+=` on the loop counter, `+=` on a
+string, `try(int, "7")` and its failure, lib/err.ting taking arguments,
+and a function with a default, a rest parameter and a spread. Four
+runs — two archives, two engines — byte-identical. `--coverage` read
+13 of 13, `--check` and `--fmt --diff` were quiet, stdin ran a
+compound assignment.
+
+The site serves v2.107.0, the tutorial page carries `total += n` and
+the reference page `try(f, ...args)`. Nine paths answer 200.
+
+Milestone "saying it once" is complete: the five operators, try's
+arguments, the LSP, the fuzzers, the corpus with zero self-referential
+assignments left, and the docs.
