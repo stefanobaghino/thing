@@ -11428,3 +11428,10 @@ thing. Additive, so the 2.x promise holds and nothing that imports
 them notices.
 
 Two functions more in lib/, so docs/stdlib.md counts 174.
+
+## 2026-09-05 — Iteration 635: v2.104.0
+
+Cut on 99087ab's green CI: strokes 633 and 634 — the fuzzers, the
+docs and a selftest for varargs, then the stdlib actually using them.
+The 125th tag, and the second of the two this milestone planned;
+verification next.
