@@ -11435,3 +11435,16 @@ Cut on 99087ab's green CI: strokes 633 and 634 — the fuzzers, the
 docs and a selftest for varargs, then the stdlib actually using them.
 The 125th tag, and the second of the two this milestone planned;
 verification next.
+
+## 2026-09-05 — Iteration 636: v2.104.0 verified
+
+Both aarch64 Linux archives downloaded cold and run from inside their
+own directory, so the lib/ they import is the shipped one: the csv
+separator as a default and as an argument, the older `parse_with`
+spelling still working, and `fail_with` recording a message it built
+itself. gnu and musl agree, `--eval` hashes identically to the VM,
+six assets on the tag.
+
+Milestone "as many as you like" is complete. It cost four strokes and
+two releases, found no bugs in the engines, and ended where it said
+it would: a ting function can wrap `format`.

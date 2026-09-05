@@ -459,10 +459,11 @@ holds only the current milestone and the standing rules.
   (variadic, so it could not exist before); lib/csv.ting's parse and
   text take an optional separator, the _with twins kept as the older
   spelling. 174 stdlib functions.
-- 635: v2.104.0 released (125th tag; strokes 633, 634) — awaiting
-  cold verification.
+- v2.104.0 VERIFIED (125th tag; strokes 633, 634; both aarch64
+  archives run from inside their own directory, so the shipped lib/
+  was the one imported). Milestone "as many as you like" complete.
 - Backlog (one per tick, in order):
-  (1) verify v2.104.0; (2) health tick.
+  (1) health tick.
 - Small stroke available any time, now that defaults exist: csv's
   parse/parse_with and text/text_with are twins only because the
   separator could not be optional.
@@ -489,7 +490,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 125 (v2.104.0), 124 verified; v2.29.0 is publicly marked broken
+- Tags: 125 (v2.104.0), 125 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
