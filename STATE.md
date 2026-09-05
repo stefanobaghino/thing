@@ -697,9 +697,14 @@ holds only the current milestone and the standing rules.
   unchanged; its absolute times run high because the host was busy,
   the ratios match history.
 - 683: v2.111.0 released (132nd tag; strokes 680, 681, 682).
+- 684: v2.111.0 verified. Six assets, green runs, both aarch64
+  archives run cold on the fixed diagnostic and its scope rule (four
+  byte-identical runs across two programs), each printing
+  bench/toplevel.ting's baseline checksum and the corpus at seven,
+  nine site paths at 200 serving v2.111.0.
 - Backlog (one per tick, in order):
-  (1) verify v2.111.0 by cold asset download; (2) health tick;
-  (3) close or extend "the top of the file".
+  (1) health tick (confirms the new BASELINE on a quiet host);
+  (2) close or extend "the top of the file".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

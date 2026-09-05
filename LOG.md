@@ -12690,3 +12690,32 @@ pinned to the Release and CI run ids.
 
 This is the release where the default engine stopped losing to the
 reference one on the code shape scripts are mostly made of.
+
+## 2026-09-05 — Iteration 684: v2.111.0 verified
+
+Six assets on the tag; Release and CI green from the API. Both aarch64
+Linux archives came down cold and ran here on what the release is
+about. The diagnostic 680 fixed:
+
+    undefined variable 'amonut' (did you mean 'amount'?)
+
+and the scope rule that keeps it honest — a local bound only inside a
+branch that never ran is not offered:
+
+    if false { let volume = 1; print(volume); }
+    print(try(fn() { return volme; })["err"]);
+    undefined variable 'volme'
+
+Four runs — two archives, two engines — byte-identical, on both
+programs. Each archive runs the corpus to its seven deliberate
+warnings and 22 selftests / 2423 checks, and prints
+bench/toplevel.ting's checksum `1199980 97 200 10 2062`, matching the
+baseline 682 recorded.
+
+Nine site paths at 200, the changelog page carrying v2.111.0, the
+stdlib page still counting 174.
+
+Milestone "the top of the file" has its measured result: the default
+engine no longer loses to the reference one on top-level code. What
+remains for it is a health tick's confirmation on a quiet host, and
+then it can close.
