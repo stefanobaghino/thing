@@ -626,9 +626,14 @@ holds only the current milestone and the standing rules.
   the one-liner.
 - 669: v2.109.0 released (130th tag; strokes 667-668), the
   milestone's first release.
+- 670: v2.109.0 verified. Six assets, three green runs, both aarch64
+  archives run cold on the milestone (four byte-identical runs across
+  two archives and two engines), corpus at five, nine site paths at
+  200 serving v2.109.0 and 174 stdlib functions, and the playground
+  wasm rebuilt from this tree (it embeds list.ting's new `get` call
+  and no longer carries map.ting's retired one).
 - Backlog (one per tick, in order):
-  (1) verify v2.109.0 by cold asset download; (2) health tick;
-  (3) next stroke of "the key that isn't there".
+  (1) next stroke of "the key that isn't there"; (2) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`

@@ -12267,3 +12267,30 @@ clippy at zero, fourteen suites), the corpus at its five deliberate
 warnings, the binary reporting 2.109.0 and 22 selftests / 2421 checks
 passing. Tagged and pushed; a monitor is pinned to the Release and CI
 run ids.
+
+## 2026-09-05 — Iteration 670: v2.109.0 verified
+
+Six assets on the tag; Release, CI and Pages all green from the API.
+Both aarch64 Linux archives came down cold and ran here on the
+milestone itself — a map hit and miss, a list index forward and
+backward and past the end, a string index, the counting loop, and the
+type error a default does not answer:
+
+    1 0
+    20 30 -1
+    b ?
+    {"cat": 1, "the": 2}
+    cannot index list with string
+
+Four runs — two archives, two engines — byte-identical. `--check` and
+`--fmt --diff` quiet on both, the corpus at its five deliberate
+warnings, `--doc get` printing the new signature, 22 selftests / 2421
+checks passing from each archive.
+
+The site's nine paths answer 200. The changelog page carries v2.109.0,
+the stdlib page counts 174, the reference lists `get(x, k, default)`
+and the tutorial shows the counting example. The playground's wasm was
+rebuilt from this tree: `lib/list.ting`'s `get(out, k, 0) + 1` is
+embedded in it and the retired `lib/map.ting` `get` is gone.
+
+Two strokes of "the key that isn't there" are shipped and verified.
