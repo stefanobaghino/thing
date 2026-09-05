@@ -13009,3 +13009,35 @@ stdlib page still counting 174.
 
 What remains for "the code you imported" is a health tick, and then it
 can close.
+
+## 2026-09-05 — Iteration 692: health tick — "the code you imported" closes
+
+All seven bench checksums match BASELINE, on a host quiet enough
+(load 1.30) that the timings mean something for once: stdlib.ting at
+862.2 ms on the tree-walker against 473.6 ms on the VM, which is -45%
+where the milestone started at +6%. Every row is now between -21% and
+-45%; there is no benchmark left that the default engine loses.
+
+Fuzzers at seed 692 — 50000 differential, 20000 formatter, 2000000
+pattern, plus the crash fuzzer — all green in release. The differential
+sweep finished in 7.9 s where seed 685 took 21.4 s, which was worth
+being suspicious about: a case count silently ignored would make a
+health tick a false green. It is honoured. 5000, 50000 and 200000 cases
+take 0.8 s, 7.7 s and 32.4 s, which is linear, and the earlier 21.4 s
+was a loaded host running unniced.
+
+Gate green: fmt, zero clippy warnings, fourteen suites, the corpus at
+its seven deliberate warnings. Coverage over selftest holds at 2272 of
+2284 lines, the same four files short for the same reasons. Six assets
+on each of v2.112.0 and v2.111.0, CI green on HEAD from the API, nine
+site paths at 200.
+
+Milestone "the code you imported" closes. 687 found it by asking
+BASELINE where the VM still lost and following the profile into lib/;
+688 took the whole measured prize in one stroke, because the seam
+between an AST body and a chunk body was already built and only the
+module top level needed to stay bound by name; 689 added the test that
+can see the feature, since no differential test can — both engines
+agree whether or not a module was compiled, so the wiring could have
+been deleted with the suite still green. Four ticks, one hazard that
+landed exactly where 687 predicted, and no coverage traded away.

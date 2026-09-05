@@ -760,8 +760,18 @@ holds only the current milestone and the standing rules.
   for stdlib and toplevel, and the shipped binary showing the flip
   itself (stdlib.ting 913 ms eval against 505 ms vm). Nine site paths
   at 200 serving v2.112.0, stdlib page at 174.
+- 692: health tick green — all seven bench checksums match, stdlib.ting
+  at -45% on a quiet host where the milestone began at +6%, and no
+  benchmark row left that the VM loses. Fuzzers at seed 692 (50000
+  differential, 20000 formatter, 2000000 pattern, crash), gate green,
+  coverage 2272/2284, six assets on the last two tags, nine site paths
+  at 200. The differential sweep ran 7.9 s against seed 685's 21.4 s;
+  checked rather than assumed — the case count is honoured (5000 /
+  50000 / 200000 take 0.8 / 7.7 / 32.4 s), and the old number was a
+  loaded host running unniced. Milestone "the code you imported"
+  complete.
 - Backlog (one per tick, in order):
-  (1) health tick to close "the code you imported".
+  (1) replenishment — design the next milestone from measurement.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
