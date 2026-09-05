@@ -110,6 +110,15 @@ Stack machine. Working set, subject to growth:
   errors surface earlier; message text must match.)
 - `return` unwinds the current frame; at top level it is a compile
   error, same message rule.
+- Since v2.112.0 the VM compiles what a script imports, so both rules
+  above reach a module's top level too, and the divergence they carry
+  grows a second half: the message and span still match, but the
+  tree-walker reaches the bad statement after running the statements
+  before it, and the VM rejects the module before any of it runs. A
+  module that prints and then returns at top level prints under
+  `--eval` and not under the VM. This is the same trade the rules
+  above already make — an error found earlier — and it is only ever
+  visible in a module that is broken.
 
 ## Differential testing plan
 

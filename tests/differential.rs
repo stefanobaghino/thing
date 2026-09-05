@@ -266,6 +266,73 @@ fn generated_programs_match_across_engines() {
     }
 }
 
+/// Since v2.112.0 the VM compiles what a script imports, so a module
+/// runs on the engine that imported it rather than always on the
+/// tree-walker. That makes every module a second place the two can
+/// disagree, and the standard library is the one every program uses.
+#[test]
+fn imported_modules_match_across_engines() {
+    let corpus: &[&str] = &[
+        // Exports come out of the environment a module ran in, and a
+        // frame slot holds no name: a module whose top level took
+        // slots would export nils.
+        "let l = import(\"lib/list.ting\"); print(l[\"sum\"]([1, 2, 3]));",
+        "let l = import(\"lib/list.ting\"); print(len(keys(l)) > 0);",
+        // A module's own top-level state, read back through a function.
+        "let m = import(\"lib/math.ting\"); print(m[\"clamp\"](9, 0, 5));",
+        // Recursion and a caller-supplied closure crossing into it.
+        "let l = import(\"lib/list.ting\"); \
+         print(l[\"sort_with\"]([3, 1, 2], fn(p, q) { return q - p; }));",
+        // A builtin the module shadows must not leak back out.
+        "let s = import(\"lib/string.ting\"); print(s[\"words\"](\"a b\"), len(\"xy\"));",
+        // Two modules, one importing the other, and the cache between.
+        "let a = import(\"lib/list.ting\"); let b = import(\"lib/list.ting\"); \
+         print(a[\"sum\"]([1]) + b[\"sum\"]([2]));",
+        // Errors raised inside a module point into the module's file.
+        "let l = import(\"lib/list.ting\"); print(l[\"mean\"]([]));",
+        "let l = import(\"lib/list.ting\"); print(try(fn() { return l[\"mean\"]([]); })[\"err\"]);",
+        // A module off the filesystem rather than the embedded stdlib,
+        // whose functions close over its own top-level binding.
+        "let g = import(\"tests/fixtures/good.ting\"); print(g[\"scaled\"](4), g[\"base\"]);",
+        "let g = import(\"tests/fixtures/good.ting\"); \
+         print(g[\"twice\"](g[\"scaled\"], 1));",
+        // A module that does not exist, and a member that does not.
+        "print(try(fn() { return import(\"lib/nope.ting\"); })[\"err\"]);",
+        "let l = import(\"lib/list.ting\"); print(get(l, \"nope\", \"absent\"));",
+    ];
+    for src in corpus {
+        same(src);
+    }
+}
+
+/// The accepted divergence of docs/vm.md, now reaching import: the
+/// message and span match, but a module the VM refuses to compile
+/// never runs, so the statements before the bad one have no effect.
+/// Both engines must still reject it, and say the same thing.
+#[test]
+fn a_broken_module_is_rejected_by_both_engines() {
+    for (src, want) in [
+        (
+            "let m = import(\"tests/fixtures/broken_return.ting\"); print(m);",
+            "return outside function",
+        ),
+        (
+            "let m = import(\"tests/fixtures/broken_break.ting\"); print(m);",
+            "break outside loop",
+        ),
+    ] {
+        let a = run(Engine::Eval, src).unwrap_err();
+        let b = run(Engine::Vm, src).unwrap_err();
+        // Naming the error keeps this from passing on some other one:
+        // a missing fixture would fail to import and agree about that.
+        assert!(a.contains(want), "eval said something else:\n{a}");
+        assert!(b.contains(want), "vm said something else:\n{b}");
+        // Same diagnostic; the stdout before it is what may differ.
+        let tail = |s: &str| s.split("--\n").nth(1).unwrap_or(s).to_string();
+        assert_eq!(tail(&a), tail(&b), "diagnostics differ on:\n{src}");
+    }
+}
+
 #[test]
 fn vm_rejects_stray_return_at_compile_time() {
     // Accepted divergence (docs/vm.md): same message, surfaces earlier.

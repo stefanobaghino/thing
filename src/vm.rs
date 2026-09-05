@@ -32,6 +32,17 @@ pub(crate) fn give_buf(mut buf: Vec<Value>) {
 /// Execute a chunk. `Ok(Some(v))` means an Op::Return fired (function
 /// frames); `Ok(None)` means the code ran off the end (top level, or a
 /// function falling through to an implicit nil).
+/// Run a whole program, compiling whatever it imports. This is the
+/// entry point a script gets: under the VM a module is compiled too,
+/// so the standard library runs on the same engine as its caller.
+pub fn run_chunk_compiling_imports<W: Write>(
+    interp: &mut Interpreter<W>,
+    chunk: &Chunk,
+) -> Result<Option<Value>, RuntimeError> {
+    interp.set_compile_imports(true);
+    run_chunk(interp, chunk)
+}
+
 pub fn run_chunk<W: Write>(
     interp: &mut Interpreter<W>,
     chunk: &Chunk,

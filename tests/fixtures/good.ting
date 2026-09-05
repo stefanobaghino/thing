@@ -1,0 +1,5 @@
+# A module outside lib/, so the import path under test is the
+# filesystem one rather than the stdlib embedded in the binary.
+let base = 10;
+fn scaled(x) { return x * base; }
+fn twice(f, x) { return f(f(x)); }

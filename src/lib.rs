@@ -161,7 +161,7 @@ pub fn run_covered<W: Write>(
         let result = match engine {
             Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
             Engine::Vm => match compile::compile_program_covered(&program) {
-                Ok(chunk) => vm::run_chunk(&mut interp, &chunk)
+                Ok(chunk) => vm::run_chunk_compiling_imports(&mut interp, &chunk)
                     .map(|_| ())
                     .map_err(|e| e.render(path, src)),
                 Err(e) => Err(diag::render(path, src, &e.message, e.span)),
@@ -232,7 +232,7 @@ pub fn run_source_reported<W: Write>(
     let result = match engine {
         Engine::Eval => interp.run(&program).map_err(|e| e.render(path, src)),
         Engine::Vm => match compile_for(&program) {
-            Ok(chunk) => vm::run_chunk(&mut interp, &chunk)
+            Ok(chunk) => vm::run_chunk_compiling_imports(&mut interp, &chunk)
                 .map(|_| ())
                 .map_err(|e| e.render(path, src)),
             Err(e) => Err(render(&e.message, e.span)),

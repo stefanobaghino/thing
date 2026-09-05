@@ -148,13 +148,23 @@ fn unsupported(what: &str, span: Span) -> CompileError {
 }
 
 pub fn compile_program(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
-    compile_stmts(stmts, None, false)
+    compile_stmts(stmts, None, false, false)
+}
+
+/// A module's top level, which is compiled but binds every name in the
+/// environment. `import_module` reads a module's exports out of the
+/// environment it ran in, and a frame slot holds no name — so the top
+/// level of a module stays where the exports can be found, and only
+/// its functions take slots. Nothing is given up for it: a module's
+/// top level runs once, and the functions are where the work is.
+pub fn compile_module(stmts: &[Stmt], coverage: bool) -> Result<Chunk, CompileError> {
+    compile_stmts(stmts, None, coverage, true)
 }
 
 /// The same, with a `Mark` before every statement so a run can say
 /// which ones happened.
 pub fn compile_program_covered(stmts: &[Stmt]) -> Result<Chunk, CompileError> {
-    compile_stmts(stmts, None, true)
+    compile_stmts(stmts, None, true, false)
 }
 
 /// Per-function resolver state: lexical scopes mapping names to frame
@@ -170,15 +180,20 @@ fn compile_stmts(
     stmts: &[Stmt],
     func: Option<(&[crate::ast::Param], FnCtx)>,
     coverage: bool,
+    env_top: bool,
 ) -> Result<Chunk, CompileError> {
-    // The top level gets a resolver of its own. Its bindings are as
-    // local as a function's — nothing outside the chunk reads them by
-    // name, since a module runs on the tree-walker and so does the
-    // REPL — so the ones no nested closure captures live in frame
-    // slots instead of the environment.
+    // A script's top level gets a resolver of its own. Its bindings are
+    // as local as a function's — nothing outside the chunk reads them
+    // by name, since the REPL runs on the tree-walker — so the ones no
+    // nested closure captures live in frame slots instead of the
+    // environment. A module's top level is the exception, and
+    // `env_top` names it: its bindings ARE read from outside, by
+    // `import_module`, which collects the exports out of the
+    // environment the module ran in.
     let in_function = func.is_some();
     let (params, fn_ctx) = match func {
         Some((p, ctx)) => (p.to_vec(), Some(ctx)),
+        None if env_top => (Vec::new(), None),
         None => {
             let mut captured = std::collections::HashSet::new();
             captured_names(stmts, &mut captured);
@@ -819,7 +834,7 @@ impl Compiler {
             next_slot: 0,
             uses_env: false,
         };
-        let chunk = compile_stmts(body, Some((params, ctx)), self.coverage)?;
+        let chunk = compile_stmts(body, Some((params, ctx)), self.coverage, false)?;
         self.chunk.protos.push(FnProto {
             name: name.map(str::to_string),
             def: span,

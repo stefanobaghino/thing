@@ -1,0 +1,4 @@
+# As broken_return.ting, for the other statement that needs a context
+# the top level does not have.
+print("loading");
+if true { break; }

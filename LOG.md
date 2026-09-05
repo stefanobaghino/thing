@@ -12869,3 +12869,48 @@ Adopting `try(f, ...args)` at the 53 corpus sites still written
 is a tidy, not a milestone, and it does not need a version. The 38 GB
 of target/debug is the loop's own litter rather than the project's,
 and reclaiming it costs a full rebuild, so it waits on a human's word.
+
+## 2026-09-05 — Iteration 688: the VM compiles what a script imports
+
+The milestone's first stroke, and it took the whole prize 687 measured.
+`bench/stdlib.ting` was the one row where the VM lost, at +6%. It now
+runs 44% ahead of the tree-walker, and all seven checksums are
+unchanged.
+
+The change is small because the seam was already there. `Interpreter`
+gained one flag, `compile_imports`, which `vm::run_chunk_compiling_imports`
+sets for a script the VM is running and nothing else sets at all — so
+the REPL and `--eval` keep interpreting modules, as before.
+`import_module` branches on it and compiles instead of walking. A
+module's functions then carry `FnBody::Chunk` like any other, which
+both engines already knew how to call.
+
+The one real design question was where a module's top-level bindings
+live. 681 moved a script's into frame slots and left only a nil
+placeholder in the environment — and `import_module` collects a
+module's exports by walking that environment. Compiling a module the
+way a script is compiled would have exported nils. So `compile_module`
+keeps the top level bound by name, and only the module's functions
+take slots. Nothing is paid for it: a module's top level runs once,
+and the measurement said the work is in the functions. The imported
+probe from 687 went 590 ms to 370 ms, against an inline upper bound of
+374 ms — the whole of it.
+
+The hazard named in 687 showed up exactly where it was expected and no
+wider. A module with a top-level `return` or `break` is refused by both
+engines with the same message and the same span; but the tree-walker
+gets there by running the statements before it, and the VM refuses the
+module before any of it runs, so a module that prints and then returns
+prints only under `--eval`. That is the same trade docs/vm.md already
+records for scripts — an error found earlier — and it is now written
+down there, where the rest of the rollout's divergences live.
+
+Testing found a gap worth more than the feature: `tests/differential.rs`
+had no import in it at all. It has twelve now, over the embedded
+stdlib and a module on the filesystem, covering exports read back,
+recursion, a caller's closure crossing into module code, a shadowed
+builtin not leaking out, the import cache, and errors pointing into the
+module's own file. The first version of the broken-module test passed
+without testing anything — it named fixtures that did not exist, and
+both engines agreed about failing to find them. It now asserts which
+error it saw, so a missing fixture fails instead of passing.

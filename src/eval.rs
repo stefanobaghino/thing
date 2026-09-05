@@ -416,6 +416,10 @@ pub struct Interpreter<W: Write> {
     /// Time charged to the callees of each active call, innermost
     /// last: what a frame subtracts from its own elapsed time.
     child_ns: Vec<u128>,
+    /// Whether an imported module is compiled before it runs. The VM
+    /// sets it; the tree-walker and the REPL leave it false, and a
+    /// module then runs as an AST the way it always has.
+    compile_imports: bool,
     /// Patterns already compiled, keyed by their source text: a match
     /// inside a loop compiles once. Cleared wholesale when it grows
     /// past its cap, since a program that generates patterns should
@@ -632,9 +636,18 @@ impl<W: Write> Interpreter<W> {
             profile: None,
             coverage: None,
             child_ns: Vec::new(),
+            compile_imports: false,
             patterns: HashMap::new(),
             rng: None,
         }
+    }
+
+    /// Compile imported modules instead of interpreting them, which is
+    /// what the VM wants: a module's functions are then chunks like any
+    /// other, and the standard library stops running on the other
+    /// engine.
+    pub fn set_compile_imports(&mut self, yes: bool) {
+        self.compile_imports = yes;
     }
 
     /// The compiled form of a pattern, compiling it if this is the
@@ -2695,7 +2708,14 @@ impl<W: Write> Interpreter<W> {
                 .unwrap_or_default(),
         );
         self.note_coverable(&program);
-        let result = self.run(&program);
+        let result = if self.compile_imports {
+            match crate::compile::compile_module(&program, self.coverage.is_some()) {
+                Ok(chunk) => crate::vm::run_chunk(self, &chunk).map(|_| ()),
+                Err(e) => Err(error(e.message, e.span)),
+            }
+        } else {
+            self.run(&program)
+        };
         self.dir_stack.pop();
         self.importing.pop();
         self.origin_stack.pop();

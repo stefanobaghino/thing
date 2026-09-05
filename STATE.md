@@ -729,9 +729,22 @@ holds only the current milestone and the standing rules.
   either); what is missing is that Interpreter carries no engine to
   branch on. Hazard: docs/vm.md's accepted divergence (stray
   return/break rejected at compile time) would reach import.
+- 688: the VM compiles what a script imports. Interpreter gained
+  `compile_imports`, set only by `vm::run_chunk_compiling_imports`, so
+  --eval and the REPL still interpret modules; `import_module` branches
+  on it. `compile_module` keeps a module's TOP LEVEL bound by name —
+  `import_module` reads exports out of that environment and a frame
+  slot holds no name, so compiling it like a script would export nils.
+  bench/stdlib.ting goes from vm +6% to vm -44%, all seven checksums
+  unchanged, BASELINE regenerated. The 687 hazard landed exactly as
+  predicted and is now an accepted divergence in docs/vm.md: both
+  engines refuse a module with a top-level return/break with the same
+  message, but the VM refuses before it runs, so earlier statements
+  take effect under --eval only. tests/differential.rs had NO import
+  in it; it has twelve now, plus fixtures under tests/fixtures/.
 - Backlog (one per tick, in order):
-  (1) give Interpreter its engine and compile imported modules under
-  the VM; (2) bench and guard the result; (3) release v2.112.0.
+  (1) release v2.112.0; (2) verify it; (3) health tick to close
+  "the code you imported".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

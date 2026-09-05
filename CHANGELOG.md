@@ -5,6 +5,21 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- The bytecode VM now compiles what a script imports. A module used to
+  run on the tree-walking reference whichever engine the script was
+  started with, so the standard library — where a program that uses it
+  spends most of its time — never saw the compiler. `bench/stdlib.ting`
+  was the one benchmark the VM lost, at 6% behind the reference; it is
+  now 44% ahead, and every benchmark checksum is unchanged. A module's
+  own top level still binds by name, because that is where `import`
+  reads a module's exports from.
+- Accepted divergence, documented in docs/vm.md: a module with a
+  `return` or `break` at its top level is refused by both engines with
+  the same message, but the VM refuses it before the module runs, so
+  statements ahead of the bad one take effect under `--eval` only.
+
 ## v2.111.0 (2026-09-05)
 
 - The bytecode VM was slower than the tree-walking reference on

@@ -1,0 +1,5 @@
+# A module the VM refuses to compile and the tree-walker refuses to
+# finish: it prints first, so it also shows the accepted divergence of
+# docs/vm.md, where only the VM keeps the print from happening.
+print("loading");
+return 1;
