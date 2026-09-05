@@ -11579,3 +11579,22 @@ selftest/_lib.ting's row while the tree-walker, allocating in a
 different order, did not. The key is the path now. That is a bug no
 single-script run could have shown, found by the first test to ask
 the two engines the same question about coverage.
+
+## 2026-09-05 — Iteration 643b: the new test raced the old one
+
+643 went red on CI. The coverage differential test ran every
+selftest/ file in this process, twice; selftest_programs_match_across_engines
+runs the same files as child processes at the same time; and
+selftest/fs.ting builds a tree under the fixed name
+"selftest-fs-tree". Two runs, one directory name, one race — on the
+runner, not here, which is the usual shape of this mistake.
+
+fs.ting and sh.ting are skipped by the coverage test now, with the
+reason written next to the skip. Nothing is lost: the test is about
+whether the engines agree on which lines ran, and the other test
+already runs those two files properly isolated.
+
+The rule this adds to the standing list: a test that runs the corpus
+in-process must not run the parts of it that touch the filesystem or
+spawn programs, because another test already runs those in processes
+of their own.

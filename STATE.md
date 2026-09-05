@@ -486,6 +486,10 @@ holds only the current milestone and the standing rules.
   2210 lines. The differential test found a real bug: records keyed by
   address merged two files when an allocation was reused; the key is
   the path now.
+- 643b: 643 went red — the new coverage differential test ran
+  selftest/fs.ting in-process while the older test ran it as a child,
+  racing on its fixed directory name. fs.ting and sh.ting are skipped
+  there now.
 - Backlog (one per tick, in order):
   (1) docs and a selftest;
   (3) point it at lib/ and fix what it finds;
@@ -530,6 +534,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
   never the order of two rows that a loaded runner can reverse
   (533b). Every release cold-verified by downloading
   and executing an aarch64 archive on this host (musl and gnu).
+- A test that runs the corpus in-process skips the files that touch
+  the filesystem or spawn programs: another test already runs those as
+  child processes, and selftest/fs.ting's tree has a fixed name (643b).
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
   line); `set -e` is NOT honoured by the harness (377b); never a bare
   line after the gate (358, 377 pushed green records for red gates).
