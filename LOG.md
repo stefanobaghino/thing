@@ -12465,3 +12465,32 @@ The milestone took the `has`-guard measurement of 666 and spent it:
 the builtin, the corpus adoption, the docs, and then the two places
 the change itself created work — a caller left behind by a retired
 module function, and a report naming a file two different ways.
+
+## 2026-09-05 — Iteration 678: v2.110.0 verified
+
+Six assets on the tag; Release and both CI runs green from the API.
+Both aarch64 Linux archives came down cold and ran here on the
+milestone's own surface — lib/err.ting answering through `get`:
+
+    no key
+    fallback
+    []
+    nil
+
+Four runs — two archives, two engines — byte-identical. The member
+warning arrives as released:
+
+    warning: lib/map.ting has no `get` (`get` is a builtin)
+
+and both reports name the module relative from either archive:
+`lib/test.ting` in the coverage table and in the profile's `where`
+column, the row 674 set out to fix. `--fmt --diff` quiet over 52
+files, the corpus at its five deliberate warnings, 22 selftests / 2421
+checks passing from each archive.
+
+The site's nine paths answer 200, the changelog page carries v2.110.0,
+the stdlib page counts 174, the reference carries the new warning
+sentence, and the playground wasm is built from this tree — it embeds
+lib/err.ting's `get(try(f, ...rest), "err", nil)`.
+
+Milestone "the key that isn't there" is complete and verified.

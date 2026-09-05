@@ -661,9 +661,15 @@ holds only the current milestone and the standing rules.
   from the same tick went back too.
 - 677: v2.110.0 released (131st tag; strokes 671, 673, 674), closing
   milestone "the key that isn't there".
+- 678: v2.110.0 verified. Six assets, green runs, both aarch64
+  archives run cold on lib/err.ting and the member warning (four
+  byte-identical runs), both reports naming lib/test.ting relative
+  from each archive, corpus at five, nine site paths at 200 serving
+  v2.110.0 and 174 functions, the wasm built from this tree.
+  Milestone "the key that isn't there" complete.
 - Backlog (one per tick, in order):
-  (1) verify v2.110.0 by cold asset download; (2) replenish the
-  backlog with a new milestone, measured; (3) health tick.
+  (1) replenish the backlog with a new milestone, measured;
+  (2) health tick.
 - Small strokes available any time: none outstanding (657's coverage
   path closed in 674).
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
