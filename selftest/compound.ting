@@ -66,7 +66,6 @@ assert(next() == 1 && next() == 2 && next() == 3, "captured and updated");
 let absent = try(fn() {
   let empty = {};
   empty["k"] += 1;
-  return empty;
 });
 assert(contains(absent["err"], "not found"), "no key, no update");
 
@@ -74,6 +73,5 @@ assert(contains(absent["err"], "not found"), "no key, no update");
 let mixed = try(fn() {
   let t = "a";
   t -= 1;
-  return t;
 });
 assert(contains(mixed["err"], "cannot apply '-' to string and int"), "types still checked");

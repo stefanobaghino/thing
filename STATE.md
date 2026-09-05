@@ -557,8 +557,16 @@ holds only the current milestone and the standing rules.
   arguments, lib/err.ting with them, defaults/rest/spread — four runs
   byte-identical; --coverage, --check, --fmt and stdin all behaved;
   the site serves v2.107.0). Milestone "saying it once" complete.
+- 657: health tick green — six bench checksums, three fuzzers at seed
+  657, gate, corpus at five, nine site paths. Coverage caught two
+  dead `return`s inside compound.ting's try lambdas; removed, and
+  selftest now reads 2266 of 2278 with every miss deliberate.
+- Noted, not chased: the coverage report names lib/test.ting by
+  absolute path where the rest are relative, because
+  selftest/testlib.ting imports it as `"../lib/test.ting"` and the
+  report prints the path as resolved.
 - Backlog (one per tick, in order):
-  (1) health tick; (2) replenish.
+  (1) replenish.
 - Not chosen in 649, with reasons: string interpolation is the
   strongest pressure in the corpus (124 `+` concatenations against 21
   format() calls) and the one thing that cannot be added safely — a

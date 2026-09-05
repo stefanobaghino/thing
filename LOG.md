@@ -11886,3 +11886,28 @@ the reference page `try(f, ...args)`. Nine paths answer 200.
 Milestone "saying it once" is complete: the five operators, try's
 arguments, the LSP, the fuzzers, the corpus with zero self-referential
 assignments left, and the docs.
+
+## 2026-09-05 — Iteration 657: health tick
+
+All six bench checksums match bench/BASELINE.md. 50000 differential,
+20000 formatter and 2000000 pattern cases at seed 657, all clean. The
+gate is green, the corpus is at exactly the five deliberate warnings,
+and nine site paths answer 200 with the stdlib page still counting
+174.
+
+Coverage found two lines the milestone had left behind: the `return`
+after the deliberately failing statement inside two of
+selftest/compound.ting's try lambdas, which by construction can never
+run. They are gone — the lambdas fail before they would have returned
+anything, and the assertions only read `"err"`. selftest now reads
+2266 of 2278, and every one of the twelve misses is a group already
+known and deliberate: lib/test.ting's summary and lib/args.ting's
+main, which print and exit and are tested from Rust in processes of
+their own; lib/sh.ting's Windows PATHEXT branch, unreachable on this
+host; and selftest/edge.ting's unreachable-code line, which is one of
+the five warnings.
+
+One cosmetic thing to note rather than chase: the coverage report
+names lib/test.ting by absolute path where every other file is
+relative, because selftest/testlib.ting imports it as
+`"../lib/test.ting"` and the report prints the path as resolved.
