@@ -13265,3 +13265,38 @@ group, and an unanchored search still restarting. 44 checks there now,
 2431 across the suite. The pattern fuzzer is clean at seed 697 over
 4000000 cases, twice the usual sweep, because this is the stroke that
 could quietly change what matches.
+
+## 2026-09-05 — Iteration 698: v2.113.0
+
+The 135th tag, strokes 694, 695, 696 and 697: the pattern matcher's
+inner loop, about three times faster with nothing about what a pattern
+matches changed.
+
+What ships is a constant-factor change to a Pike VM that never
+backtracked. The search reuses its two thread lists, its `seen` vector
+and its epsilon stack across positions instead of allocating them per
+character; capture slots are shared between threads behind a refcount
+and recycled through a pool rather than copied; and a pattern that can
+only match at the start of the text no longer starts a thread at every
+position, since every one of those threads died on the same
+instruction. A match against a short subject goes from 4.65 us to about
+1.45 us. bench/regex.ting, added in 696, is in BASELINE alongside the
+rest, at 235.5 ms on eval and 197.8 ms on the VM with checksum
+`24000 5989512 37 109`.
+
+The milestone's own lesson is in 696: the allocation guard failed the
+first time it ran, and the "negative result" 695 had recorded turned
+out to be a bug. tests/alloc.rs is a test binary of its own — a global
+allocator can only be defined once — and it asserts that ten times the
+subject does not cost ten times as many allocations. The suite is
+fifteen binaries now.
+
+The anchoring flag would have failed silently if it were wrong, so the
+shapes that decide it are pinned in selftest/regex.ting rather than
+left to a benchmark, and the pattern fuzzer ran 4000000 cases at seed
+697 — twice the usual sweep.
+
+Cut from a HEAD with CI and Pages green on f4f6d50, gate green at the
+tag: fmt, zero clippy warnings, fifteen suites, the corpus at seven
+deliberate warnings, and 22 selftests / 2431 checks against the release
+binary that reports 2.113.0.

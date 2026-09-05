@@ -17,8 +17,8 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 67 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 316 Rust tests
-  in 11 suites.
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 336 Rust tests
+  in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -828,9 +828,15 @@ holds only the current milestone and the standing rules.
   deciding shapes are pinned in selftest/regex.ting (44 checks, 2431
   across the suite) and the fuzzer ran 4000000 cases at seed 697.
   BASELINE regenerated; CHANGELOG has the Unreleased entry.
+- 698: v2.113.0 TAGGED (135th tag; strokes 694, 695, 696, 697). Cut
+  from f4f6d50 with CI and Pages green; gate green at the tag (fmt,
+  zero clippy warnings, fifteen suites, corpus at seven warnings, 22
+  selftests / 2431 checks) and the release binary reports 2.113.0.
+  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
+  and runs them.
 - Backlog (one per tick, in order):
-  (1) release v2.113.0 (strokes 694, 695, 696, 697); (2) verify it;
-  (3) health tick to close "the matcher's inner loop".
+  (1) verify v2.113.0 by cold asset download and execution;
+  (2) health tick to close "the matcher's inner loop".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
@@ -940,5 +946,5 @@ Standing rules (each from a slip; the LOG entry named has the story):
   v2.17.0, 6 from v2.30.0.
 - Toolchain: rustc 1.98 locally; rustfmt and clippy reinstalled at 196.
 - Periodic health ticks (bench vs bench/BASELINE.md — recorded on this
-  host, seven rows since 682 — plus 50000 differential, crash and 20000 formatter
+  host, eight rows since 696 — plus 50000 differential, crash and 20000 formatter
   fuzz cases in release) close every milestone.
