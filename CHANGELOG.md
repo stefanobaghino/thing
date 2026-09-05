@@ -7,6 +7,14 @@ Windows are attached to each
 
 ## Unreleased
 
+- The bytecode VM was slower than the tree-walking reference on
+  top-level code — the shape most scripts are made of — because a
+  function's locals resolve to frame slots at compile time and a
+  script's did not. They do now. An empty 300k loop at the top of a
+  file goes from 14% slower than the reference to 66% faster, and
+  `bench/json.ting` from 15% slower to 5% faster. Every benchmark
+  checksum is unchanged.
+
 - The two engines said different things about a misspelled local. A
   function's locals live in frame slots under the bytecode VM, where
   they carry no name at runtime, so `amonut` next to a local `amount`

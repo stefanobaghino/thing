@@ -36,7 +36,9 @@ pub fn run_chunk<W: Write>(
     interp: &mut Interpreter<W>,
     chunk: &Chunk,
 ) -> Result<Option<Value>, RuntimeError> {
-    run_chunk_with(interp, chunk, &mut [])
+    // The top level has frame slots too, so it needs a frame.
+    let mut locals = vec![Value::Nil; chunk.slots as usize];
+    run_chunk_with(interp, chunk, &mut locals)
 }
 
 /// `run_chunk` with a caller-prepared locals frame (function calls;

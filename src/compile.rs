@@ -86,7 +86,7 @@ pub struct Chunk {
     pub code: Vec<Op>,
     pub consts: Vec<Value>,
     pub names: Vec<String>,
-    /// Frame slot count (function chunks; 0 at top level).
+    /// Frame slot count, at the top level as well as in a function.
     pub slots: u16,
     /// Where each parameter lives: Some(slot) or None (Env, captured).
     pub param_locs: Vec<Option<u16>>,
@@ -171,9 +171,25 @@ fn compile_stmts(
     func: Option<(&[crate::ast::Param], FnCtx)>,
     coverage: bool,
 ) -> Result<Chunk, CompileError> {
+    // The top level gets a resolver of its own. Its bindings are as
+    // local as a function's — nothing outside the chunk reads them by
+    // name, since a module runs on the tree-walker and so does the
+    // REPL — so the ones no nested closure captures live in frame
+    // slots instead of the environment.
+    let in_function = func.is_some();
     let (params, fn_ctx) = match func {
         Some((p, ctx)) => (p.to_vec(), Some(ctx)),
-        None => (Vec::new(), None),
+        None => {
+            let mut captured = std::collections::HashSet::new();
+            captured_names(stmts, &mut captured);
+            let ctx = FnCtx {
+                scopes: vec![Vec::new()],
+                captured,
+                next_slot: 0,
+                uses_env: false,
+            };
+            (Vec::new(), Some(ctx))
+        }
     };
     let mut c = Compiler {
         chunk: Chunk {
@@ -189,7 +205,7 @@ fn compile_stmts(
         },
         loops: Vec::new(),
         scope_depth: 0,
-        in_function: fn_ctx.is_some(),
+        in_function,
         fn_ctx,
         coverage,
     };
@@ -377,7 +393,7 @@ impl Compiler {
     }
 
     /// Bind a fresh local: a frame slot when possible, Env when the
-    /// name is captured by a nested closure (or at top level).
+    /// name is captured by a nested closure.
     fn bind(&mut self, n: &str) -> Option<u16> {
         let Some(ctx) = &mut self.fn_ctx else {
             return None;
@@ -426,6 +442,13 @@ impl Compiler {
     /// declares an Env-allocated (captured) binding.
     fn block_needs_env(&self, stmts: &[Stmt]) -> bool {
         stmts.iter().any(|st| match &st.kind {
+            // Every top-level `let` binds a name in the environment,
+            // slot or not, so the block it sits in needs a scope to
+            // pop — that is what restores a shadowed builtin.
+            StmtKind::Let(n, _) if !self.in_function => {
+                let _ = n;
+                true
+            }
             StmtKind::Let(n, _) => match &self.fn_ctx {
                 Some(ctx) => ctx.captured.contains(n),
                 None => true,
@@ -449,7 +472,23 @@ impl Compiler {
                     _ => self.expr(init)?,
                 }
                 match self.bind(name) {
-                    Some(slot) => self.emit(Op::SetSlot(slot), s.span),
+                    Some(slot) => {
+                        self.emit(Op::SetSlot(slot), s.span);
+                        // At the top level the environment is also what
+                        // every diagnostic means by "in scope": it is
+                        // where the nearest-name suggestion looks. A
+                        // slot holds no name, so the name is bound here
+                        // too, to nil. Nothing can read it — a name any
+                        // closure mentions is captured, and captured
+                        // names never get a slot — so the binding is
+                        // only ever a name, and both engines go on
+                        // seeing the same scope.
+                        if !self.in_function {
+                            let i = self.name(name);
+                            self.emit(Op::Nil, s.span);
+                            self.emit(Op::Define(i), s.span);
+                        }
+                    }
                     None => {
                         let i = self.name(name);
                         self.emit(Op::Define(i), s.span);

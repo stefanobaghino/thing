@@ -12603,3 +12603,51 @@ the point of them. tests/selftest.rs enumerates all seven.
 
 Gate: fmt clean, clippy zero, fourteen suites ok, 22 selftests (2423
 checks), 50000 differential cases at seed 680 green.
+
+## 2026-09-05 — Iteration 681: the top of the file has slots
+
+The top-level chunk resolves its bindings to frame slots now, the way
+a function's body always has. Same source, measured before and after:
+
+    shape                  before      after
+    empty 300k loop        vm +14.1%   vm -65.9%
+    the same, with n += 1  vm +11.3%   vm -74.1%
+    push a map literal     vm +15.1%   vm -12.1%
+    bench/json.ting        vm +14.6%   vm  -4.6%
+
+All six bench checksums are unchanged. `bench/stdlib.ting` printed
++11% in the suite run and -6.9% under an interleaved A/B, matching
+BASELINE's -6%: the machine was loaded from the runs before it.
+Checksums decide, timings are weather.
+
+The thing I had not seen coming is that the environment is not only
+storage. It is also what a diagnostic means by "in scope" — where the
+nearest-name suggestion looks. Move a top-level binding into a slot
+and it stops being a candidate, so selftest/errors.ting's
+
+    let total = 1;
+    try(fn() { return totl; })
+
+lost its "did you mean 'total'?" under the VM. 680 fixed the same
+thing for function locals by recording the names per instruction, but
+that cannot reach here: the typo is inside a closure, and the name it
+should suggest belongs to the chunk outside it.
+
+The answer was smaller than the machinery I nearly built. A name that
+gets a slot is mentioned in no closure — `captured_names` is what
+decides, and anything a closure mentions is Env-allocated — so nothing
+can ever read that name at runtime. Only the name itself matters. So a
+top-level `let` that takes a slot also binds its name to nil in the
+environment: reads and writes go to the slot, and every diagnostic
+goes on seeing exactly the scope it saw before, at exactly the moments
+it saw it. No side table, no runtime bookkeeping.
+
+That left one leak, and selftest/edge.ting caught it: `block_needs_env`
+had stopped asking for a runtime scope around a top-level block whose
+lets were all slots, so the nil binding for a shadowed `len` never
+popped and outlived its block. At the top level every `let` binds a
+name, slot or not, so every such block needs its scope.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, the corpus at its
+seven deliberate warnings, 22 selftests (2423 checks), and 50000
+differential, 20000 formatter and the crash fuzzer cases at seed 681.

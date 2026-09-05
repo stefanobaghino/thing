@@ -682,10 +682,18 @@ holds only the current milestone and the standing rules.
   Chunk::in_scope records the names in scope per instruction, so both
   engines suggest the same one and neither offers an out-of-scope
   name. The slots change was reverted and waits for the next tick.
+- 681: the top-level chunk has frame slots. bench/json.ting goes from
+  vm +14.6% to vm -4.6%, an empty top-level loop from +14.1% to
+  -65.9%; all six checksums unchanged. A top-level `let` that takes a
+  slot still binds its name to nil in the environment, because the
+  environment is what a diagnostic means by "in scope" — and nothing
+  can read that binding, since any name a closure mentions is captured
+  and captured names never get slots. Top-level blocks always need a
+  runtime scope now, or the nil binding outlives its block (caught by
+  edge.ting's shadowed `len`).
 - Backlog (one per tick, in order):
-  (1) give the top-level chunk frame slots; (2) a bench row that
-  isolates top-level work, BASELINE regenerated; (3) release v2.111.0;
-  (4) verify; (5) health tick.
+  (1) a bench row that isolates top-level work, BASELINE regenerated;
+  (2) release v2.111.0; (3) verify; (4) health tick.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
