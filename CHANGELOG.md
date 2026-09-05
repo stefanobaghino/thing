@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.107.0 (2026-09-05)
 
 - Compound assignment: `+=`, `-=`, `*=`, `/=` and `%=` on a variable
   or an indexed element. The target is named once, and for
