@@ -12058,3 +12058,14 @@ line is checked rather than claimed.
 
 The README's one-line description of the diagnostics says the trace
 carries what each call was given.
+
+## 2026-09-05 — Iteration 663: v2.108.0
+
+Released. The tag carries the arguments in the diagnostic's note
+lines, `"args"` in every frame of `try`'s trace, `lib/err.ting`'s
+`given`, and the docs that draw the line between the caps a person
+sees and the values a program reads. Version bumped, `## Unreleased`
+cut to `## v2.108.0 (2026-09-05)`, the gate green (fmt, clippy at
+zero, fourteen suites), the smoke check at the right version with the
+corpus at its five deliberate warnings, tagged and pushed. A monitor
+is pinned to the Release and CI run ids.

@@ -591,8 +591,9 @@ holds only the current milestone and the standing rules.
   thought, `"args"` in the frame map, and the caps-are-the-
   diagnostic's line), tutorial (its stale illustrative trace, and a
   worked example that reads `["args"]`), README.
+- 663: v2.108.0 released (129th tag; strokes 659-662).
 - Backlog (one per tick, in order):
-  (1) RELEASE v2.108.0; (2) verify; (3) health tick.
+  (1) verify v2.108.0; (2) health tick; (3) replenish.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is
