@@ -64,3 +64,8 @@ assert(contains(text, "-f, --file PATH"), "an option with its value name");
 assert(contains(text, "(default d.txt)"), "and its default");
 assert(contains(text, "-h, --help"), "help is always offered");
 assert(contains(cli["help"](bare), "usage: bare <one>"), "a spec with no options says so");
+
+# main() is parse() plus what a program does around it. Only its happy
+# path can be checked from here: the other two print and exit.
+let ran = cli["main"](spec, ["go", "-v"]);
+assert(ran["positionals"]["command"] == "go" && ran["flags"]["verbose"], "main hands back the parse");

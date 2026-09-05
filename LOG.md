@@ -11611,3 +11611,31 @@ selftest table, since a made-up one would teach the wrong shape.
 
 The CLI test grew the multi-script case: two scripts, two rows, one
 report, and the missed lines still named.
+
+## 2026-09-05 — Iteration 645: what the coverage found
+
+The stroke this milestone was for. Nineteen lines of lib/ that 2382
+checks never reached, one at a time:
+
+- json.ting:48 — `set_in` refusing a path step that is neither a
+  string nor an int. A refusal nobody had ever asked for.
+- list.ting:138-139 — `max_by` replacing its running best. Every
+  existing case had the largest element first, so the branch that
+  makes the function do anything never ran. `min_by`'s twin was
+  covered; this is exactly the asymmetry a coverage report is for.
+- args.ting:195-206 — `main`, untested end to end.
+- test.ting:95-97 — `summary`, the test framework's own reporting,
+  never once run by the tests it reports on.
+
+The last two print and exit, which a selftest cannot do and stay
+silent, so they are checked from Rust in processes of their own: a
+suite with one failure leaves 1 and prints the FAIL: line and the
+totals; the same suite passing leaves 0; `main` with `--help` prints
+the usage and leaves 0 before the program's own work; `main` with an
+option the spec does not describe leaves 2 with the trouble and the
+help on stderr.
+
+Eleven lines are left and all three groups are deliberate: those two
+exiting paths (now tested from outside, though a selftest still
+cannot reach them), and sh.ting:42-43, the Windows PATHEXT branch,
+which cannot run on this host at all. lib/ reads 2203 of 2215.

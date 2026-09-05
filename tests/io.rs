@@ -526,6 +526,86 @@ fn coverage_flag_reports_the_lines_that_ran() {
     let _ = std::fs::remove_file(&other);
 }
 
+/// The two stdlib functions that print and exit — lib/test.ting's
+/// `summary` and lib/args.ting's `main` — can only be checked from
+/// outside, in a process of their own. Coverage found them untested
+/// (iteration 645), which is what it is for.
+#[test]
+fn the_stdlib_functions_that_exit_do_what_they_say() {
+    let dir = std::env::temp_dir().join(format!("ting-exits-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+
+    // A suite with one failure: the FAIL: line, the totals, exit 1.
+    let failing = dir.join("failing.ting");
+    std::fs::write(
+        &failing,
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"kept\", true);\nt[\"check_eq\"](\"broken\", 1, 2);\nt[\"summary\"]();\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&failing)
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(stdout.contains("FAIL: broken: got 1, want 2"), "{stdout}");
+    assert!(stdout.contains("1 passed, 1 failed"), "{stdout}");
+
+    // The same suite with nothing wrong leaves happily.
+    let passing = dir.join("passing.ting");
+    std::fs::write(
+        &passing,
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"kept\", true);\nt[\"summary\"]();\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&passing)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    assert!(
+        String::from_utf8_lossy(&out.stdout).contains("1 passed, 0 failed"),
+        "{:?}",
+        out.stdout
+    );
+
+    // args.main: --help prints the help and leaves 0; a command line
+    // the spec does not describe prints the trouble and leaves 2.
+    let cli = dir.join("cli.ting");
+    std::fs::write(
+        &cli,
+        "let cli = import(\"lib/args.ting\");\nlet spec = {\"name\": \"demo\", \"summary\": \"a demo\", \"options\": [], \"positionals\": []};\nlet got = cli[\"main\"](spec, args());\nprint(\"ran\");\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&cli)
+        .arg("--help")
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("usage: demo"), "{stdout}");
+    assert!(
+        !stdout.contains("ran"),
+        "--help leaves before the program: {stdout}"
+    );
+
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&cli)
+        .arg("--nosuch")
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(2));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("demo: "), "{stderr}");
+    assert!(
+        stderr.contains("usage: demo"),
+        "the help goes with it: {stderr}"
+    );
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// `--profile` counts what every function did and prints the table on
 /// stderr, leaving the program's own output alone.
 #[test]

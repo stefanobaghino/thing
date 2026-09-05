@@ -74,6 +74,8 @@ assert(l["find_index"]([1, 2], fn(x) { return x > 5; }) == nil, "find_index none
 assert(l["find_index"]([], fn(_x) { return true; }) == nil, "find_index empty is nil");
 assert(l["min_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "b", "min_by");
 assert(l["max_by"](["aaa", "b", "cc"], fn(s) { return len(s); }) == "aaa", "max_by");
+# The largest last, so the branch that replaces the running best runs.
+assert(l["max_by"](["b", "cc", "aaa"], fn(s) { return len(s); }) == "aaa", "max_by improves");
 assert(l["min_by"]([], fn(x) { return x; }) == nil, "min_by empty is nil");
 assert(l["extent"]([3, 1, 4, 1, 5]) == [1, 5], "extent");
 assert(l["extent"](["pear", "apple", "fig"]) == ["apple", "pear"], "extent strings");
@@ -364,6 +366,8 @@ assert(j["get_in"](updated, ["users", 1, "tags"]) == ["c"], "set_in creates a mi
 assert(j["get_in"](doc, ["users", 1, "tags"]) == nil, "set_in leaves the input untouched");
 assert(j["set_in"]({}, ["a", "b"], 1) == {"a": {"b": 1}}, "set_in builds nested maps");
 assert(j["set_in"]([1, 2], [1], 9) == [1, 9], "set_in replaces a list element");
+let badstep = try(fn() { return j["set_in"]({"a": 1}, [true], 9); });
+assert(contains(badstep["err"], "path steps must be strings or ints"), "set_in refuses a bad step");
 assert(has(try(fn() { return j["set_in"]([1], [3], 0); }), "err"), "set_in out-of-range index fails");
 assert(j["paths"]({"a": [1, {"b": 2}], "c": 3}) == [["a", 0], ["a", 1, "b"], ["c"]], "paths");
 assert(j["paths"](7) == [[]], "paths of a leaf is the empty path");
