@@ -13358,3 +13358,67 @@ Milestone "the matcher's inner loop" is complete: four
 strokes, v2.113.0 shipped and verified, pattern matching about three
 times faster with nothing about what a pattern matches changed. The
 backlog is empty, so the next tick replenishes it.
+
+## 2026-09-06 — Iteration 701: replenishment — "what the standard library costs"
+
+The backlog emptied when the matcher milestone closed, so this tick
+picks the next one. It was picked by profile, not by taste:
+`--profile bench/stdlib.ting` puts 421 ms of the run's 810 ms inside a
+single function, `sort_with` at lib/list.ting:453, and another 121 ms
+inside `words` at lib/string.ting:118 in one call.
+
+Both are honest ting, and both have a native sibling that is much
+faster. Measured here on a 20000-element list and a 108 KB text:
+
+| what | how long |
+|------|---------:|
+| `sort_with`, ting merge sort | 346 ms |
+| `sort_by`, a builtin | 6 ms |
+| `sort`, a builtin | 2 ms |
+| `words`, ting, one character at a time | 55 ms |
+| `split` then `filter`, builtins | 8 ms |
+
+Fifty-eight times and seven times. The `split`+`filter` pair is not a
+replacement — `words` separates on tabs and newlines too, and `split`
+takes one separator — but it prices the cost: it is the accumulator,
+not the algorithm. `cur += c` allocates a new string per character,
+and that shape appears six times across lib/string.ting and
+lib/csv.ting.
+
+The asymmetry is the interesting part. `sort` and `sort_by` are
+builtins; `sort_with`, the one that takes a three-way comparator, is
+not. A builtin that calls back into user code is established here —
+`sort_by`, `map`, `filter` and `reduce` all do it — so nothing new has
+to be invented for the fast version to exist. What has to be settled
+first is compatibility: 2.x is additive-only, and `sort_with` is
+reached as `import("lib/list.ting")["sort_with"]`, so it must keep
+being exported by that module whatever runs underneath. Deleting it
+from lib/list.ting is not on the table; how a module re-exports a
+native implementation without its own binding shadowing the builtin is
+the first stroke's real question, and it should be answered before any
+Rust is written.
+
+Milestone: **"what the standard library costs"** (v2.114–v2.115). One
+stroke per tick:
+
+1. `sort_with` stops being half of bench/stdlib — settling the
+   re-export question first, and only then the implementation.
+2. The character accumulator in `words`, and the five sibling sites in
+   lib/string.ting and lib/csv.ting that share its shape.
+3. Re-profile and follow whatever is on top then; the point of a
+   profile-led milestone is that the third stroke is not chosen yet.
+
+Not chosen, with reasons. Making `sort_with` faster in ting rather
+than natively: the merge sort is already the right algorithm, and the
+cost is per-element interpreter work that a rewrite cannot remove —
+`sort_by` proves the floor is 6 ms. Adding a `sort_desc` or a reversed
+flag: the corpus sorts descending exactly once, and a comparator
+already says it. Touching `group_by`, `count_by` and `frequencies`,
+which are the next rows in the profile at 44 and 25 ms: they are an
+order of magnitude below the two chosen and may well fall out of the
+accumulator work anyway — measuring again after two strokes is
+cheaper than guessing now.
+
+Still available as a small stroke any tick, unrelated to this
+milestone: the 53 corpus sites that still write
+`try(fn() { return f(x); })` where `try(f, x)` now works.

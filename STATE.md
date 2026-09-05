@@ -843,8 +843,26 @@ holds only the current milestone and the standing rules.
   clean in release at seed 699. Found: I ran the pattern sweep against
   tests/grammar.rs, which does not read TING_RE_*, and it reported
   `test result: ok` in 0.00 seconds having fuzzed nothing.
-- Backlog: EMPTY. The next tick replenishes it (LOOP.md's no-idle
-  rule): pick the next milestone and write the reasoning into LOG.md.
+- 701: replenishment — milestone "what the standard library costs"
+  (v2.114-v2.115), reasoning in LOG.md. Picked by profile:
+  bench/stdlib.ting spends 421 of 810 ms in `sort_with`
+  (lib/list.ting:453) and 121 ms in one call to `words`
+  (lib/string.ting:118). Measured against their native siblings on
+  20000 elements / 108 KB: sort_with 346 ms vs sort_by 6 ms vs sort
+  2 ms; words 55 ms vs split+filter 8 ms. `sort` and `sort_by` are
+  builtins and `sort_with` is not, and a builtin calling back into
+  user code is already established (sort_by, map, filter, reduce).
+  CONSTRAINT: 2.x is additive-only and `sort_with` is reached as
+  `import("lib/list.ting")["sort_with"]`, so lib/list.ting must keep
+  exporting the name whatever runs underneath — how a module
+  re-exports a native implementation without its own binding
+  shadowing the builtin is the first stroke's question, to be settled
+  before any Rust.
+- Backlog (one per tick, in order):
+  (1) `sort_with` stops being half of bench/stdlib;
+  (2) the character accumulator in `words` and its five sibling sites
+  in lib/string.ting and lib/csv.ting;
+  (3) re-profile and follow whatever is on top then.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
