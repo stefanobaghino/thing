@@ -651,6 +651,10 @@ holds only the current milestone and the standing rules.
 - 674: diag::shorten relativises a path for display; --coverage and
   --profile both use it, closing 657. Declined: a runtime "is a
   builtin" hint (a module is a plain map with no provenance).
+- 676: 675 was not enough. The test's second assertion was right:
+  `shorten` did nothing on Windows, where canonicalize returns a
+  verbatim path that shares no prefix with current_dir. It
+  canonicalises the working directory before comparing now.
 - 675: repaired 674's red CI. The new integration test wrote
   `lib/test.ting` literally; Windows shortens to `lib\test.ting`, so
   the needle is built from Path::join now. A misplaced doc comment

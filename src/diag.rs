@@ -62,10 +62,18 @@ pub fn shorten(path: &str) -> String {
     let Ok(cwd) = std::env::current_dir() else {
         return path.to_string();
     };
-    match std::path::Path::new(path).strip_prefix(&cwd) {
-        Ok(rest) => rest.display().to_string(),
-        Err(_) => path.to_string(),
+    // The path being shortened came from `canonicalize`, which on
+    // Windows hands back a verbatim prefix the working directory does
+    // not carry — so the two are compared canonicalised, and plain as
+    // well, for a path that never went through it.
+    let canonical = cwd.canonicalize().unwrap_or_else(|_| cwd.clone());
+    let path = std::path::Path::new(path);
+    for base in [&canonical, &cwd] {
+        if let Ok(rest) = path.strip_prefix(base) {
+            return rest.display().to_string();
+        }
     }
+    path.display().to_string()
 }
 
 /// The candidate nearest to `name` by edit distance, if one is close
@@ -208,12 +216,20 @@ mod tests {
     #[test]
     fn shorten_names_paths_under_the_working_directory() {
         let cwd = std::env::current_dir().expect("cwd");
+        let want = std::path::Path::new("lib")
+            .join("test.ting")
+            .display()
+            .to_string();
         let inside = cwd.join("lib").join("test.ting");
-        let want = std::path::Path::new("lib").join("test.ting");
-        assert_eq!(
-            shorten(&inside.display().to_string()),
-            want.display().to_string()
-        );
+        assert_eq!(shorten(&inside.display().to_string()), want);
+        // The shape the reports really pass: what `import` resolved
+        // to, which is canonical, and on Windows verbatim with it.
+        let resolved = cwd
+            .canonicalize()
+            .expect("canonicalize")
+            .join("lib")
+            .join("test.ting");
+        assert_eq!(shorten(&resolved.display().to_string()), want);
         // A path that is not under it needs all of itself to say
         // where it is, and a relative one is already there.
         assert_eq!(shorten("lib/test.ting"), "lib/test.ting");

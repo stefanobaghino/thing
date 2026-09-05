@@ -12425,3 +12425,23 @@ Repairing it also caught a second slip from 674. Removing a duplicated
 gave mine two. Both are back where they belong.
 
 Gate: fmt clean, clippy zero, fourteen suites ok.
+
+## 2026-09-05 — Iteration 676: the feature, not the test
+
+675 fixed the needle and CI stayed red on windows-latest — one line
+further down, at the assertion that the absolute path is gone. So the
+test was right the second time: `shorten` did nothing on Windows.
+
+`std::fs::canonicalize` there hands back a verbatim path,
+`\\?\C:\...`, and `current_dir` does not. Nothing was ever stripped
+because the two never shared a prefix. `shorten` now canonicalises the
+working directory before comparing, and still tries the plain one, for
+a path that never went through `canonicalize` at all.
+
+The unit test asks for both shapes now — a joined path and a resolved
+one, which is what the reports actually pass. On Linux they are the
+same string, which is exactly why the first version of this test could
+not see the bug and the integration test could.
+
+Gate: fmt clean, clippy zero, fourteen suites ok, and the coverage
+report still names lib/test.ting relative here.
