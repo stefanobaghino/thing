@@ -510,8 +510,13 @@ holds only the current milestone and the standing rules.
   archives executed here, defaults, rest, spread, imports and both
   engines byte-identical; --coverage, --check, --fmt and stdin all
   behaved; the site serves v2.106.0).
+- 648: health tick green — six bench checksums, three fuzzers at seed
+  648, gate, corpus at five, coverage at 2203/2215, nine site paths.
+  The published site set is exactly what pages.yml lists: the six doc
+  pages, the root, index.html and ting.wasm. docs/vm.md is repo-only
+  and there is no playground.html — the playground is the root.
 - Backlog (one per tick, in order):
-  (1) health tick; (2) replenish.
+  (1) replenish.
 - Small strokes available any time: `try(f, ...args)` calling f with
   those arguments (79 corpus wrappers are `try(fn() { return ...; })`,
   29 of them a single call).

@@ -11671,3 +11671,26 @@ the binary being right: `sorted` is not in lib/list.ting, and the
 clock builtin is `time_ms`. The checker named the second one before
 the run did, with the right suggestion — which is the tool doing its
 job on the first outside program it had seen.
+
+## 2026-09-05 — Iteration 648: health tick
+
+All six bench checksums match bench/BASELINE.md. 50000 differential,
+20000 formatter and 2000000 pattern cases at seed 648, all clean. The
+gate is green — fmt, clippy at zero, fourteen suites. The corpus scan
+is at exactly the five deliberate warnings, and `--coverage selftest`
+still reads 2203 of 2215. Nine site paths answer 200 (the six doc
+pages, the root, index.html and ting.wasm), the changelog names
+v2.106.0, the stdlib page counts 174 and the tutorial carries
+`--coverage`.
+
+The timings moved again and told the same story as 637: fib's eval run
+came in at 507 ms against a 601 ms baseline, a 16% swing on a script
+that has not changed a line, while json and maps sat at +1% and +0%
+where they read -1% last tick. Six matching checksums, six different
+numbers. Weather.
+
+Two paths I checked were 404 and neither is a fault: docs/vm.md is a
+repo-only note that pages.yml has never published, and playground.html
+does not exist because the playground is the root page. Worth writing
+down so the next health tick does not rediscover it as a regression:
+the published set is exactly what pages.yml lists.
