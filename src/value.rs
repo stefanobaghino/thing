@@ -578,6 +578,16 @@ fn with_printing<T>(ptr: *const (), body: impl FnOnce() -> T) -> Option<T> {
 
 /// Elements inside containers print with strings quoted, so nested
 /// output stays unambiguous.
+/// A value as it reads inside a container: a string keeps its quotes,
+/// so `x = "x"` cannot be mistaken for a name. Diagnostics show
+/// arguments this way for the same reason.
+pub(crate) fn element_repr(v: &Value) -> String {
+    match v {
+        Value::Str(s) => format!("{s:?}"),
+        other => other.to_string(),
+    }
+}
+
 fn write_element(f: &mut fmt::Formatter<'_>, v: &Value) -> fmt::Result {
     match v {
         Value::Str(s) => write!(f, "{s:?}"),

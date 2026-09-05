@@ -31,6 +31,11 @@ pub struct Frame {
     pub name: Option<Rc<str>>,
     pub span: Span,
     pub origin: Option<Rc<Origin>>,
+    /// The values the call ran with, paired with the parameter names —
+    /// defaults filled in and the rest list included, because those
+    /// are what the body actually saw. Built only when a call is
+    /// unwound, so a call that returns pays nothing for it.
+    pub args: Vec<(Rc<str>, Value)>,
 }
 
 /// A file a function was defined in: what an error raised inside it
@@ -103,7 +108,10 @@ impl RuntimeError {
                 Some(name) => format!("in {name}"),
                 None => "in an anonymous function".to_string(),
             };
-            text.push_str(&format!("\nnote: {what}, called from {p}:{line}:{col}"));
+            text.push_str(&format!(
+                "\nnote: {what}{}, called from {p}:{line}:{col}",
+                render_args(&frame.args)
+            ));
         }
         text
     }
@@ -113,6 +121,41 @@ impl RuntimeError {
 /// `TRACE_EDGE` frames at each end.
 const TRACE_LIMIT: usize = 10;
 const TRACE_EDGE: usize = 4;
+
+/// A frame's arguments as `(a = 1, b = "x")`, capped both ways so a
+/// big value or a long parameter list cannot bury the message.
+const ARGS_SHOWN: usize = 4;
+const ARG_WIDTH: usize = 32;
+
+pub(crate) fn render_args(args: &[(Rc<str>, Value)]) -> String {
+    let mut out = String::from("(");
+    for (i, (name, v)) in args.iter().take(ARGS_SHOWN).enumerate() {
+        if i > 0 {
+            out.push_str(", ");
+        }
+        out.push_str(name);
+        out.push_str(" = ");
+        out.push_str(&abbreviate(&crate::value::element_repr(v)));
+    }
+    if args.len() > ARGS_SHOWN {
+        if !args.is_empty() {
+            out.push_str(", ");
+        }
+        out.push_str(&format!("and {} more", args.len() - ARGS_SHOWN));
+    }
+    out.push(')');
+    out
+}
+
+/// A rendered value, cut to `ARG_WIDTH` characters — never mid
+/// character, so the text stays valid UTF-8 to look at.
+fn abbreviate(s: &str) -> String {
+    if s.chars().count() <= ARG_WIDTH {
+        return s.to_string();
+    }
+    let kept: String = s.chars().take(ARG_WIDTH).collect();
+    format!("{kept}...")
+}
 
 /// The values a `...xs` argument contributes. Both engines call this,
 /// so the refusal reads the same either way.
@@ -2746,8 +2789,8 @@ impl<W: Write> Interpreter<W> {
         let (frame, mut locals) = match &func.body {
             FnBody::Ast(_) => {
                 let mut vars = HashMap::with_capacity(func.params.len());
-                for (p, a) in func.params.iter().zip(args) {
-                    vars.insert(Rc::clone(p), a);
+                for (p, a) in func.params.iter().zip(&args) {
+                    vars.insert(Rc::clone(p), a.clone());
                 }
                 (
                     Rc::new(RefCell::new(Env {
@@ -2761,11 +2804,11 @@ impl<W: Write> Interpreter<W> {
                 let mut locals = crate::vm::take_buf();
                 locals.resize(chunk.slots as usize, Value::Nil);
                 let mut env_params = HashMap::new();
-                for ((p, a), loc) in func.params.iter().zip(args).zip(&chunk.param_locs) {
+                for ((p, a), loc) in func.params.iter().zip(&args).zip(&chunk.param_locs) {
                     match loc {
-                        Some(i) => locals[*i as usize] = a,
+                        Some(i) => locals[*i as usize] = a.clone(),
                         None => {
-                            env_params.insert(Rc::clone(p), a);
+                            env_params.insert(Rc::clone(p), a.clone());
                         }
                     }
                 }
@@ -2820,6 +2863,12 @@ impl<W: Write> Interpreter<W> {
                 name: func.name.clone(),
                 span,
                 origin: caller.clone(),
+                args: func
+                    .params
+                    .iter()
+                    .cloned()
+                    .zip(args.iter().cloned())
+                    .collect(),
             });
             e
         });
@@ -4401,6 +4450,52 @@ mod tests {
         assert_eq!(
             program_err("let s = \"a\"; s -= 1;"),
             "cannot apply '-' to string and int"
+        );
+    }
+
+    #[test]
+    fn a_frame_shows_what_the_call_was_given() {
+        let render = |src: &str| {
+            use crate::parser::parse_program;
+            let mut interp = Interpreter::new(Vec::new());
+            let e = interp
+                .run(&parse_program(&lex(src).unwrap()).unwrap())
+                .unwrap_err();
+            e.render("t.ting", src)
+        };
+        // The values, not just the names, and a string keeps its
+        // quotes so it cannot be mistaken for one.
+        let text = render("fn f(a, b) { return a + b; } f(1, \"x\");");
+        assert!(text.contains("in f(a = 1, b = \"x\")"), "{text}");
+        // No arguments still reads as a call.
+        let text = render("fn f() { fail(\"x\"); } f();");
+        assert!(text.contains("in f()"), "{text}");
+        // Defaults and the rest list are what the body saw.
+        let text = render("fn f(a, b = 2, ...r) { fail(\"x\"); } f(1, 2, 3, 4);");
+        assert!(text.contains("in f(a = 1, b = 2, r = [3, 4])"), "{text}");
+        // Past four arguments the rest are counted, not printed.
+        let text = render("fn f(a, b, c, d, e) { fail(\"x\"); } f(1, 2, 3, 4, 5);");
+        assert!(
+            text.contains("in f(a = 1, b = 2, c = 3, d = 4, and 1 more)"),
+            "{text}"
+        );
+        // A long value is cut, and the cut is marked. The assertion
+        // reads the note line alone: the diagnostic echoes the source,
+        // which of course still holds the whole string.
+        let text =
+            render("fn f(s) { fail(\"x\"); } f(\"0123456789012345678901234567890123456789\");");
+        let note = text
+            .lines()
+            .find(|l| l.starts_with("note:"))
+            .expect("a frame")
+            .to_string();
+        assert!(
+            note.contains("s = \"0123456789012345678901234567890..."),
+            "{note}"
+        );
+        assert!(
+            !note.contains("0123456789012345678901234567890123456789"),
+            "{note}"
         );
     }
 

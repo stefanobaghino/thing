@@ -5,6 +5,15 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- A runtime error's `note:` lines now show what each call was given:
+  `note: in scale(row = [3, "x"], factor = 2), called from ...`.
+  Defaults and the rest list are included, because those are what the
+  body saw. At most four arguments are named and each value is cut to
+  32 characters, so a big list cannot bury the message. Both engines
+  render the same text.
+
 ## v2.107.0 (2026-09-05)
 
 - Compound assignment: `+=`, `-=`, `*=`, `/=` and `%=` on a variable

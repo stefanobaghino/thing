@@ -319,7 +319,7 @@ fn module_runtime_errors_point_into_the_module() {
         // The importer's call site follows as a named frame, and
         // nowhere else.
         assert!(
-            stderr.contains("note: in boom, called from") && stderr.contains("main.ting:3:"),
+            stderr.contains("note: in boom(), called from") && stderr.contains("main.ting:3:"),
             "{engine}: {stderr}"
         );
         assert_eq!(
@@ -347,7 +347,7 @@ fn module_runtime_errors_point_into_the_module() {
         "{stderr}"
     );
     assert!(
-        stderr.contains("note: in mean, called from") && stderr.contains("emb.ting:2:"),
+        stderr.contains("note: in mean(xs = []), called from") && stderr.contains("emb.ting:2:"),
         "{stderr}"
     );
     assert!(!stderr.contains("panicked"), "{stderr}");
@@ -380,18 +380,19 @@ fn errors_show_the_whole_way_back() {
         let notes: Vec<&str> = stderr.lines().filter(|l| l.starts_with("note:")).collect();
         assert_eq!(notes.len(), 3, "{engine}: {stderr}");
         assert!(
-            notes[0].starts_with("note: in inner, called from"),
+            notes[0].starts_with("note: in inner(x = 1), called from"),
             "{engine}: {stderr}"
         );
         assert!(notes[0].ends_with("nested.ting:2:22"), "{engine}: {stderr}");
         assert!(
-            notes[1].starts_with("note: in outer, called from"),
+            notes[1].starts_with("note: in outer(x = 1), called from"),
             "{engine}: {stderr}"
         );
         assert!(notes[1].ends_with("nested.ting:3:28"), "{engine}: {stderr}");
-        // `let apply = fn(..)` is named by the binding it is given.
+        // `let apply = fn(..)` is named by the binding it is given,
+        // and a function passed as an argument renders as one.
         assert!(
-            notes[2].starts_with("note: in apply, called from"),
+            notes[2].starts_with("note: in apply(f = <fn(x)>), called from"),
             "{engine}: {stderr}"
         );
         assert!(notes[2].ends_with("nested.ting:4:1"), "{engine}: {stderr}");
@@ -412,7 +413,7 @@ fn errors_show_the_whole_way_back() {
         .expect("failed to run ting");
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
-        stderr.contains("note: in an anonymous function, called from"),
+        stderr.contains("note: in an anonymous function(), called from"),
         "{stderr}"
     );
 

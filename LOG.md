@@ -11957,3 +11957,35 @@ unclear. Building it would be building for a user nobody has met.
 Also still declined, from 649: string interpolation, because a sigil
 inside an existing literal changes what that literal means, and the
 2.x promise says a program that runs today runs tomorrow.
+
+## 2026-09-05 — Iteration 659: frames carry their arguments
+
+The failure that opened 658 now reads:
+
+    note: in an anonymous function(x = "x"), called from fail.ting:1:32
+    note: in scale(row = [3, "x"], factor = 2), called from fail.ting:4:29
+    note: in totals(rows = [[1, 2], [3, "x"]], factor = 2), ...
+
+which says which row. `Frame` gained the parameter/value pairs, built
+inside the one `map_err` in `Interpreter::call` that both engines
+unwind through, so the pairs are only assembled when something has
+already failed. Arguments are what the body saw: defaults filled in
+and the rest list included, which is why `f(1, 2, 3, 4)` on
+`fn f(a, b = 2, ...r)` reads `a = 1, b = 2, r = [3, 4]`.
+
+Two caps, matching the existing ten-frame one: four arguments named
+then `and N more`, and each value cut to 32 characters. Values render
+the way a list renders its elements, so a string keeps its quotes —
+the first version printed `x = x`, which reads like a name.
+
+The claim in 658 was that this costs nothing. Measured rather than
+repeated: keeping the argument vector alive to the end of the call
+costs one refcount bump per argument and no new allocation, and an
+interleaved fifteen-round A/B against the v2.107.0 binary on
+bench/fib.ting — the most call-heavy script there is — put the median
+at +2.9% and the minimum, the least noisy statistic, at +0.4%. Small,
+but not nothing, and worth saying so.
+
+Four existing tests pinned the old note text; all four now pin the new
+one, including `in run(f = <fn()>)`, which is how a function argument
+reads.

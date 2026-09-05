@@ -571,12 +571,15 @@ holds only the current milestone and the standing rules.
   frames are pushed in exactly one place, `Interpreter::call`'s
   `map_err`, which both engines go through and which runs only after
   something has failed, so arguments cost nothing until then.
+- 659: frames carry their arguments; the diagnostic's note lines show
+  them. Caps: four named then `and N more`, each value cut to 32
+  chars, rendered as a list renders elements so strings keep quotes.
+  Cost measured, not assumed: interleaved A/B on bench/fib.ting gives
+  +2.9% median, +0.4% minimum. Not zero, as 658 claimed.
 - Backlog (one per tick, in order):
-  (1) frames carry their arguments, rendered into the diagnostic's
-  note lines, capped the way the ten-frame limit is capped, with both
-  engines producing the same text; (2) `try`'s trace maps carry them
-  and lib/err.ting reads them; (3) selftest and fuzzers; (4) docs;
-  (5) RELEASE v2.108.0; (6) verify; (7) health tick.
+  (1) `try`'s trace maps carry the arguments and lib/err.ting reads
+  them; (2) selftest and fuzzers; (3) docs; (4) RELEASE v2.108.0;
+  (5) verify; (6) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is
