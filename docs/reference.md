@@ -477,12 +477,21 @@ an imported module is named both by `--check` and at runtime.
 An error is reported against the file and line that raised it — for
 one raised inside a function an imported module defines, that
 module's own file (for an embedded stdlib module, its `lib/...`
-path) — followed by a `note: in NAME, called from FILE:LINE:COL`
-line for every call it unwound through, innermost first. A function
-is named after the binding it was defined as; one that never had a
-name reads `an anonymous function`. A trace longer than ten frames
-keeps four at each end and replaces the rest with `note: ... N more
-frames`, so runaway recursion cannot bury the message.
+path) — followed by a
+`note: in NAME(args), called from FILE:LINE:COL` line for every call
+it unwound through, innermost first. A function is named after the
+binding it was defined as; one that never had a name reads
+`an anonymous function`.
+
+The arguments are what the body saw: defaults filled in, the rest
+list included, and each value written the way it reads inside a list,
+so a string keeps its quotes. Three caps keep a diagnostic readable
+whatever it is handed: at most four arguments are named and the rest
+counted (`and 2 more`), each value is cut to 32 characters, and a
+trace longer than ten frames keeps four at each end and replaces the
+rest with `note: ... N more frames`. So a failure deep in a fold
+says which value it choked on rather than only which functions were
+on the way there.
 
 The interpreter is strict on purpose: no truthiness, no implicit
 conversions, exact arity, integer overflow checks, missing map keys and
@@ -511,8 +520,15 @@ A caught failure carries what the diagnostic would have printed:
 `"err"` is the message, `"at"` is a map of the `"file"`, `"line"`
 and `"col"` it was raised at, and `"trace"` is the list of calls it
 came out of, innermost first — each frame those same three fields
-plus `"fn"`, the function's name or `nil` for one that has none. The
+plus `"fn"`, the function's name or `nil` for one that has none, and
+`"args"`, a map from parameter name to the value it was given. The
 trace always holds at least the call `try` itself made.
+
+The caps above are the diagnostic's, not the data's: `"args"` holds
+every parameter and the whole of each value, because a program
+reading a failure back wants to look inside what it was given rather
+than at 32 characters of it. `lib/err.ting`'s `given` is the short
+way to ask for the innermost call's.
 
 ## Tooling
 

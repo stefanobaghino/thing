@@ -17,6 +17,8 @@ Windows are attached to each
   map from parameter name to value — the values themselves, not the
   diagnostic's shortened rendering. `lib/err.ting` gains
   `given(f, ...rest)`, the arguments of the innermost failing call.
+- The reference and the tutorial cover both, and say which caps belong
+  to the diagnostic and which do not.
 
 ## v2.107.0 (2026-09-05)
 

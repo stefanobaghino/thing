@@ -12035,3 +12035,26 @@ The checker had an opinion about the first draft. `fn wide(a, b, c,
 d, e) { return a + e; }` left three parameters unused, which is three
 of the nine warnings and would have taken the corpus from five to
 eight. It sums all five now.
+
+## 2026-09-05 — Iteration 662: the docs for what a call was given
+
+The reference's paragraph on diagnostics now describes the note line
+as `note: in NAME(args), called from ...`, says the arguments are what
+the body saw — defaults filled in, rest list included, strings
+quoted — and lists all three caps together, because they are one
+thought: four arguments named, 32 characters per value, ten frames.
+Its `try` section adds `"args"` to the frame map and then draws the
+line the design turns on: the caps are the diagnostic's and not the
+data's, and `given` is the short way to ask.
+
+The tutorial's illustrative trace was stale the moment 659 landed —
+it showed notes without arguments — so it now shows `total(x = 3)`
+and `line(row = [3, 4])`, which makes its own point better: knowing
+`line` was on `[3, 4]` beats knowing only that `line` was on the way.
+Its worked example reads `r["trace"][0]["args"]` and, since it was
+being touched anyway, catches with `try(parse, "x")` rather than a
+lambda. That block is executed by the test suite, so its new last
+line is checked rather than claimed.
+
+The README's one-line description of the diagnostics says the trace
+carries what each call was given.

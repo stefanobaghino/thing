@@ -27,7 +27,8 @@ plus twelve embedded stdlib modules
 directories, JSON with pretty printing, sorting, map/filter/reduce,
 try/fail error recovery, string formatting, regular expressions,
 running other programs, the clock and a seeded generator), and
-rustc-style caret diagnostics. Binaries for Linux (x86-64 and arm64,
+rustc-style caret diagnostics whose trace says what each call was
+given. Binaries for Linux (x86-64 and arm64,
 glibc and fully static musl), macOS and Windows are attached to every
 [release](https://github.com/stefanobaghino/thing/releases). **Try it
 in your browser at the

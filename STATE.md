@@ -587,8 +587,12 @@ holds only the current milestone and the standing rules.
   across engines. Added what was missing instead: a CLI test pinning
   both caps on both engines, and a selftest stating that the caps are
   the diagnostic's and not the data's.
+- 662: docs. Reference (the note-line shape, the three caps as one
+  thought, `"args"` in the frame map, and the caps-are-the-
+  diagnostic's line), tutorial (its stale illustrative trace, and a
+  worked example that reads `["args"]`), README.
 - Backlog (one per tick, in order):
-  (1) docs; (2) RELEASE v2.108.0; (3) verify; (4) health tick.
+  (1) RELEASE v2.108.0; (2) verify; (3) health tick.
 - Small strokes available any time: the coverage report names
   lib/test.ting by absolute path where the rest are relative (657).
 - Not chosen in 658, with reasons: an import-graph tool (`--deps`) is
