@@ -13041,3 +13041,64 @@ can see the feature, since no differential test can — both engines
 agree whether or not a module was compiled, so the wiring could have
 been deleted with the suite still green. Four ticks, one hazard that
 landed exactly where 687 predicted, and no coverage traded away.
+
+## 2026-09-05 — Iteration 693: replenishment — "the matcher's inner loop"
+
+Two milestones running have been the VM's, and the first job this tick
+was to find out whether that vein is worked out. It is. Six shapes the
+benchmarks do not cover, timed on a host at load 0.14, best of three:
+error handling through try() -22%, closure churn -40%, deep non-tail
+recursion -26%, varargs and spread -64%, string building and splitting
+-27%, pattern matching -8%. The VM is ahead everywhere, and there is no
+longer a shape in or out of BASELINE where it loses. Recorded as a
+negative result: the next milestone is not a VM milestone.
+
+The -8% is the interesting one, and it is not the VM's fault — 99.7% of
+that probe is inside one builtin. `re_test` on an eleven-character
+string with the pattern cache already warm costs 4.65 us. What that
+buys, measured by varying one thing at a time, 20000 calls each:
+
+| probe | per call |
+|-------|---------:|
+| short (11 ch), no groups | 4.65 us |
+| long (352 ch), no groups | 5.25 us |
+| short, three groups | 5.20 us |
+| short, fails on the first char | 1.00 us |
+
+Thirty-two times the subject length costs 13% more, so the `Vec<char>`
+the builtins build per call is not where the time goes. A match that
+fails immediately is 4.6 times faster than one that succeeds. The cost
+is per character step: about 330 ns each, over a fixed floor near
+1 us. On this core that is some hundreds of cycles to advance one
+character through an NFA, which is one to two orders of magnitude more
+than the step itself can possibly cost.
+
+src/regex.rs says why. `find_at` allocates a fresh `nlist` and a fresh
+`nseen` of program length for every character position, and inside
+that, `let (pc, caps) = thread.clone()` clones a
+`Vec<Option<usize>>` for every thread at every step. The work per
+character is allocation, not matching.
+
+Milestone "the matcher's inner loop" (v2.113-v2.114): take the
+allocation out of the per-position step — two thread lists reused and
+swapped rather than allocated, `seen` cleared rather than rebuilt, and
+capture slots that are not copied per thread per step. Nothing about
+what the matcher accepts is meant to change.
+
+Three findings that shaped the choice, including one against it.
+
+Against: the pattern builtins appear in exactly one file in this
+project — selftest/regex.ting, their own test. No stdlib module and no
+example uses them, so there is no corpus pressure behind this the way
+BASELINE stood behind the last two milestones. It is chosen anyway
+because the gap is not a micro-optimisation: a documented public
+surface of six builtins costs one to two orders of magnitude more per
+character than its own algorithm does. If a future tick finds better
+pressure elsewhere, this is the one to drop first.
+
+For, twice. The matcher is a real Thompson NFA and not a backtracker:
+twenty-four `a`s against `^(a+)+$` and `^(a|a)*$` answer in under a
+millisecond, so there is no ReDoS to fix and, more usefully, no
+semantics at risk — this is a constant-factor job. And the safety net
+is already built: selftest/regex.ting guards behaviour, and the health
+tick already runs the pattern fuzzer at 2000000 cases.

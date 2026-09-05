@@ -770,8 +770,27 @@ holds only the current milestone and the standing rules.
   50000 / 200000 take 0.8 / 7.7 / 32.4 s), and the old number was a
   loaded host running unniced. Milestone "the code you imported"
   complete.
+- 693: replenishment — milestone "the matcher's inner loop"
+  (v2.113-v2.114), reasoning in LOG.md. First measured that the VM
+  vein is worked out: six unbenched shapes (try, closures, deep
+  recursion, varargs, string building, patterns) are vm -8% to -64%,
+  so no shape is left where the VM loses. The -8% is one builtin, not
+  the VM: re_test on 11 chars costs 4.65 us warm. Varying one thing at
+  a time — 32x the length costs +13%, three groups +12%, a match that
+  fails on the first char 1.00 us — puts the cost per CHARACTER STEP
+  at ~330 ns over a ~1 us floor, so the per-call `Vec<char>` the
+  builtins build is not where the time goes.
+  src/regex.rs `find_at` allocates nlist and nseen per position and
+  clones caps per thread per step. Against it: re_* appears in one
+  corpus file only (selftest/regex.ting), so pressure is weak — drop
+  this first if a tick finds better. For it: the matcher is a true
+  Thompson NFA (24 a's vs `^(a+)+$` under 1 ms), so no semantics are
+  at risk, and the guard exists already (selftest/regex.ting plus the
+  2000000-case pattern fuzzer).
 - Backlog (one per tick, in order):
-  (1) replenishment — design the next milestone from measurement.
+  (1) reuse the thread lists and `seen` across positions in
+  `find_at`; (2) stop cloning capture slots per thread per step;
+  (3) bench and guard the result; (4) release v2.113.0.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
