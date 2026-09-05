@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.112.0 (2026-09-05)
 
 - The bytecode VM now compiles what a script imports. A module used to
   run on the tree-walking reference whichever engine the script was
