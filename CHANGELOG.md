@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.110.0 (2026-09-05)
 
 - `--check` on a module member that does not exist now names the
   builtin of that name where there is one, instead of guessing at the
