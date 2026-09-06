@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 69 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 177
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 347 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
@@ -1166,13 +1166,23 @@ holds only the current milestone and the standing rules.
   filesystem's number for the directory, not its contents. Seven
   checks in selftest/fs.ting (2433 -> 2440 checks), tutorial block
   run by the docs guard, reference row + prose, editor grammar.
+- 729: lib/fs gained size(p), facts(d) and total_size(d), chosen by
+  drafting the example first and keeping what it wanted twice. facts
+  exists because sorting walk's paths with stat inside the comparator
+  asks once per COMPARISON: 249 ms vs 139 ms over .git's 5132 files
+  (1.8x, not the 12x n log n suggests — the comment carries the
+  measurement, not a complexity claim). NOT added: modified(p), asked
+  for once where size was asked for on every line.
+  FOUND, and it constrains the next tick: files written one after
+  another in the same run share a `modified` (writes are faster than
+  the clock), so "which is newest" is a tie that sort_with resolves
+  by input order. No way to set an mtime from ting, and sleep_ms
+  would still tie on a one-second filesystem. The example may ask HOW
+  RECENT something is; it must not claim which file is newest.
 - Backlog (one per tick, in order):
-  (1) lib/fs.ting on top of stat — a walk that hands back facts
-  rather than names is the candidate, but the design follows what
-  writing the example actually needs;
-  (2) an example that could not be written before (biggest files, or
-  changed since a time), which reaches the cookbook via
-  tools/cookbook.py and is run by CI.
+  (1) an example that could not be written before — sizes and a
+  recency question, not a "newest file" claim — which reaches the
+  cookbook via tools/cookbook.py and is run by CI.
   NOT CHOSEN: rename/copy. Moving a file works through run() today
   and I have no measured pain for it, where sizing has three separate
   failures. It can earn its own evidence later.

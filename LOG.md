@@ -14604,3 +14604,46 @@ The tutorial's file section says "five builtins" now, with a block the
 docs guard runs, and the reference has the row, the question/demand
 paragraph, and the paragraph explaining bytes against characters. The
 editor grammar has the name.
+
+## 2026-09-06 — Iteration 729: `lib/fs.ting` learns what `stat` says
+
+Backlog item 1, and STATE said the design should follow what writing
+the example actually needs. So I wrote the example first, as a draft,
+with nothing new in the module, and kept only what the draft wanted
+twice.
+
+Three things came out of it:
+
+- **`size(p)`** — `stat(p)["size"]`, or nil where `stat` is nil. The
+  draft defined `fn size_of(p)` on its third line, which is the sign
+  that every script sizing anything is about to define it too.
+- **`facts(d)`** — `walk` plus one `stat` per file, as maps of path,
+  size, modified and kind. The draft sorted `walk`'s paths with `stat`
+  inside the comparator, which asks once per *comparison* rather than
+  once per file. Measured over this repository's `.git`, 5132 files:
+  249 ms that way against 139 ms for asking here first and sorting the
+  answers. The comment carries the measurement rather than a
+  complexity claim, since the constant matters more than the shape —
+  it is 1.8 times, not the twelve times n log n would suggest.
+- **`total_size(d)`** — `du`, minus the directories themselves.
+
+Not added, though symmetry invites it: a `modified(p)` beside `size`.
+The draft asked for a size on nearly every line and a modification
+time once, where `stat(p)["modified"]` reads perfectly well.
+
+**Found while drafting, and it shapes the next tick.** Three files
+written one after another in the same run come back with the *same*
+`modified`, because the writes take less than the clock's resolution.
+Sorting them by it is a tie, and a tie in `sort_with` keeps input
+order, so "the newest file" was reported as the alphabetically first
+one — deterministic, and wrong as an illustration. Nothing can be
+done about it from inside ting: there is no way to set a file's
+mtime, and `sleep_ms` between writes would still tie on a filesystem
+with one-second stamps, which CI's Windows and macOS runners may well
+have. So the example that closes this milestone can use `modified` to
+ask *how recent* something is, and must not claim which of several
+files is newest.
+
+Also, incidentally: `"x" * 3` is not string repetition in ting —
+`lib/string.ting`'s `repeat` is. The draft assumed otherwise and the
+error said so immediately.
