@@ -13951,3 +13951,29 @@ Cut from a HEAD with CI and Pages green, gate green at the tag: fmt,
 zero clippy warnings, fifteen suites, the corpus at seven deliberate
 warnings, and 22 selftests / 2433 checks against the release binary
 that reports 2.115.0.
+
+## 2026-09-06 — Iteration 714: v2.115.0 verified
+
+Both aarch64 Linux archives downloaded cold, unpacked and run here.
+Both report 2.115.0 and both pass the whole selftest suite — 22 files,
+2433 checks.
+
+The shipped binaries were asked what the release claims. `words`
+returns the same lists it always did, including across a CRLF, on the
+empty string and on nothing but spaces, and `squeeze` still collapses
+what it is given. It is also linear where it used to look at every
+character: ten times the text costs about ten times the time, 9 ms to
+96 ms on gnu and 11 to 114 on musl, not the hundred times a quadratic
+would have wanted. And both spellings of `try` work — the argument form
+the docs now use, and the lambda the reference keeps for guarding more
+than one call.
+
+Release, CI and Pages completed successfully; six assets on the tag.
+The site audit is green on all nine paths, and the published pages
+carry the release rather than merely existing: the changelog has
+v2.115.0, the tutorial has `try(json_parse`, and the reference has the
+"not a program" line on the blocks that are illustrations. That last
+one is the part worth checking on the site, because it is a sentence
+written for readers and not only a marker for a test.
+
+One tick remains on the milestone: the health tick that closes it.

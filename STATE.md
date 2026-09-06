@@ -999,11 +999,19 @@ holds only the current milestone and the standing rules.
   from ff172db with CI and Pages green; gate green at the tag (fmt,
   zero clippy warnings, fifteen suites, corpus at seven warnings, 22
   selftests / 2433 checks) and the release binary reports 2.115.0.
-  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
-  and runs them.
+- v2.115.0 VERIFIED (137th tag; strokes 707, 710, 711, 712; both
+  aarch64 archives downloaded cold and executed here, 22 selftests /
+  2433 checks each). The shipped binaries were asked what the release
+  claims: `words` returns the same lists (CRLF, empty, all-spaces) and
+  `squeeze` still collapses, and it is LINEAR — ten times the text
+  costs ~ten times the time (9->96 ms gnu, 11->114 musl), not a
+  hundred; both spellings of `try` work. Six assets, site audit green
+  on nine paths, and the PUBLISHED pages carry the changes: changelog
+  has v2.115.0, tutorial has `try(json_parse`, reference has the "not
+  a program" line — worth checking on the site because it is a
+  sentence for readers, not only a marker for a test.
 - Backlog (one per tick, in order):
-  (1) verify v2.115.0 by cold asset download and execution;
-  (2) health tick to close "the code the docs promise".
+  (1) health tick to close "the code the docs promise".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
