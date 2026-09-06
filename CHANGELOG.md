@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.117.0 (2026-09-06)
 
 - `ting --bundle SCRIPT -o FILE` writes the bundle to a file, and
   refuses when that file is one of the files that went into it,
