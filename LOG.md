@@ -13977,3 +13977,53 @@ one is the part worth checking on the site, because it is a sentence
 written for readers and not only a marker for a test.
 
 One tick remains on the milestone: the health tick that closes it.
+
+## 2026-09-06 — Iteration 715: health tick closes "the code the docs promise"
+
+Nothing found, which for a milestone that added guards rather than
+changing behaviour is what should happen.
+
+All nine bench checksums are identical to BASELINE. The timings moved a
+few percent, weather as always. The fuzz sweep in release, each against
+the target that reads its variables: 50000 differential cases at seed
+715, the crash fuzzer, 20000 formatter cases and 2000000 pattern cases,
+the last taking 2.98 seconds against the 0.22 a default run takes.
+Clean throughout.
+
+The gate is green — fmt, zero clippy warnings, fifteen suites, the
+corpus at seven deliberate warnings, 22 selftests / 2433 checks — and
+so are both audits: nine site paths, six assets on each of the last six
+tags.
+
+Milestone "the code the docs promise" is complete. It started from a
+gap rather than a defect: the cookbook has been executable since it was
+generated from `examples/`, while the tutorial and the reference held
+52 code blocks that nothing had ever run. Both pages turned out to be
+correct — 50 of the 52 ran on the first try, the other two are
+illustrations rather than programs, and all 43 of the tutorial's stated
+outputs were already exactly right. So no rot was found, and that is
+the honest summary: what changed is that rot now has nowhere to enter
+unseen.
+
+What the milestone leaves behind:
+
+- Every block runs, in a directory of its own, because they write into
+  the working one.
+- Every block that states its output is held to it character for
+  character, with the counts of compared, run-only and illustration
+  blocks pinned per page so that a claim which stops being paired
+  fails rather than silently stops being checked.
+- Two illustrations say so in a sentence the reader gets, rather than
+  being an omission in a test.
+- Five `try` sites read the way the tutorial teaches, and the three
+  that guard more than one call still do not, because that is what the
+  reference explains a lambda is for.
+
+Both guards were made to fail on purpose before being believed: an
+undefined name inserted into a snippet, and a claimed output falsified.
+
+Housekeeping, unchanged and still not urgent: `target/` is 41 GB and
+the disk is at 53%. A `cargo clean` would cost one full rebuild and
+nobody has asked for it.
+
+The backlog is empty, so the next tick replenishes it.

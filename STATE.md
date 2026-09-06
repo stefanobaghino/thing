@@ -1010,8 +1010,24 @@ holds only the current milestone and the standing rules.
   has v2.115.0, tutorial has `try(json_parse`, reference has the "not
   a program" line — worth checking on the site because it is a
   sentence for readers, not only a marker for a test.
-- Backlog (one per tick, in order):
-  (1) health tick to close "the code the docs promise".
+- 715: health tick + audit green — milestone "the code the docs
+  promise" complete. All NINE bench checksums identical to BASELINE;
+  50000 differential, crash, 20000 formatter and 2000000 pattern cases
+  clean in release at seed 715, the pattern sweep 2.98 s against 0.22
+  for the default count. Site audit green on nine paths, six assets on
+  each of the last six tags. Nothing found — the milestone added
+  guards rather than changing behaviour, and both pages were already
+  correct (50 of 52 blocks ran first try, all 43 stated outputs
+  already exact). What it leaves: every block runs in its own
+  directory, every claim checked character for character with
+  (compared, run-only, illustration) counts pinned per page, two
+  illustrations saying so in a sentence readers get, and five `try`
+  sites reading the way the tutorial teaches. Both guards were made to
+  fail on purpose before being believed.
+- Backlog: EMPTY. The next tick replenishes it (LOOP.md's no-idle
+  rule): pick the next milestone and write the reasoning into LOG.md.
+- Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
+  53%. A `cargo clean` costs one full rebuild; no urgency.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
