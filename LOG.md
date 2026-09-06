@@ -14738,3 +14738,37 @@ row, the stdlib page says 177 functions, and the cookbook has the tree
 example.
 
 One tick remains on the milestone: the health tick that closes it.
+
+## 2026-09-06 — Iteration 733: health tick closes "what a file is, besides its name"
+
+**Bench.** All nine checksums identical to `bench/BASELINE.md`.
+Timings ran 5 to 14 per cent above it — closer than the 8 to 25 of the
+last health tick, which is the same host being less busy rather than
+anything in the code, and the eval-to-vm ratios are where they were
+(accum -42%, toplevel -42%, regex -18%). The milestone added a builtin
+that no benchmark calls, so there was nothing here to move.
+
+**Fuzzers, in release.** 50000 differential cases in 9.12 s, the crash
+and pattern suites with 2000000 pattern cases in 3.20 s, 20000
+formatter cases in 3.82 s. All green, and the runtimes are the
+evidence they ran on the targets that read those variables rather than
+passing instantly having fuzzed nothing.
+
+**Audits.** All 139 releases carry the assets their era calls for —
+three up to v2.16.0, four from v2.17.0, six from v2.30.0 — checked
+release by release. Nine site paths answer 200. The corpus scan is at
+its seven deliberate warnings and all 62 ting files are already
+formatted.
+
+The milestone is complete. It began with a measurement — a ting
+program could not say how big a file was without reading it, which
+counts characters rather than bytes and refuses anything that is not
+text, and could not say when a file was written at all — and ends with
+`stat`, three `lib/fs.ting` functions built on what writing the
+example actually needed, and `examples/tree.ting`, whose five numbers
+were none of them available a release ago. Two findings came out of
+building it and are written down rather than lost: files written in
+one run share a modification stamp, so "which is newest" is a tie that
+means nothing; and asking for facts inside a comparator costs once per
+comparison rather than once per file, 249 ms against 139 over 5132
+files.

@@ -1204,11 +1204,16 @@ holds only the current milestone and the standing rules.
   says 570.0 KB for src, matching 583635 bytes summed in Python. Site
   audit green on nine paths; changelog, reference (stat row), stdlib
   (177 functions) and cookbook (tree) carry the release.
+- 733: health tick + audits green — milestone "what a file is,
+  besides its name" COMPLETE. Nine bench checksums identical; timings
+  5-14% above baseline (closer than the last tick's 8-25%, same host
+  less busy), ratios unchanged, and no benchmark calls stat. Fuzz in
+  release: 50000 differential 9.12s, patterns at 2000000 3.20s, 20000
+  formatter 3.82s. All 139 releases carry their era's assets (3/4/6),
+  checked one by one; nine site paths 200; corpus at seven warnings;
+  all 62 ting files formatted.
 - Backlog (one per tick, in order):
-  (1) the health tick that closes "what a file is, besides its name":
-  bench vs bench/BASELINE.md, 50000 differential, crash and 20000
-  formatter fuzz cases in release, audits;
-  (2) replenishment — the next milestone.
+  (1) replenishment — the next milestone.
   NOT CHOSEN: rename/copy. Moving a file works through run() today
   and I have no measured pain for it, where sizing has three separate
   failures. It can earn its own evidence later.
