@@ -15187,3 +15187,78 @@ runs standalone and checks nothing — which is why `--test` says "22
 passed (1 file checked nothing)".
 
 Suite: 352 tests in 15 suites, corpus warnings 7 as pinned.
+
+## 2026-09-06 — Iteration 741: replenishment — "a file read a line at a time"
+
+I went looking for what a ting script still cannot do that a shell
+script does without thinking, and found it in the most ordinary task
+there is: counting the matching lines in a log.
+
+The same program, the same 147 MB file (2000000 lines), the same
+answer (666306 lines containing ERROR):
+
+```
+given the path:        2.11 s   454 MB peak
+given it on stdin:     1.38 s     9 MB peak
+grep -c:               0.37 s     9 MB peak
+```
+
+Fifty times the memory for reading the file the obvious way. ting can
+already stream — `input()` hands back one line at a time and nil at
+the end, and that loop holds nine megabytes no matter how big the
+input is. It just cannot do it to a *file*. A script handed a path
+must call `read_file`, which is the whole thing at once.
+
+The workaround is `cat big.log | ting count.ting`, and it is not
+good enough: the script cannot then take the path as an argument, it
+cannot read two files, and the caller has to build the pipe.
+
+I split the cost to be sure where it lives:
+
+```
+read_file alone:       0.16 s   149 MB     (the file, once)
++ split on newlines:   0.88 s   376 MB     (2000001 strings)
+the whole count:       2.11 s   454 MB
+```
+
+That measurement rules out the easy answer. A `read_lines(path)`
+builtin handing back a list would still pay 376 MB, because the list
+of lines is heavier than the file — 227 MB on top of it. Whatever
+this milestone builds has to stream, not collect.
+
+Writing is **not** the pain, and I checked rather than assuming:
+appending 100000 lines one at a time takes 381 ms against 122 ms for
+building them in memory and writing once. Three times, not fifty, and
+it needs nothing new.
+
+Milestone: **"a file read a line at a time"** (v2.120–v2.121). One
+stroke per tick:
+
+1. `each_line(path, f)`: the file streamed, `f(line)` called for each
+   one, nothing but the current line held. The shape follows what ting
+   already has — `map` and `filter` take functions, and a closure can
+   accumulate into a variable outside it (checked today). To decide
+   while building, with measurements rather than preferences: whether
+   `f` returning `false` stops the read, which is what makes `head`
+   and "the first match" possible; what a line ending in CRLF hands
+   back, with `input()` as the reference; a file with no final
+   newline; what happens to a file that is not valid UTF-8, where
+   `read_file` errors outright; and whether `"-"` means stdin here as
+   it does for `read_file`, which would close the asymmetry that
+   opened this milestone.
+2. `lib/fs.ting` on top: the two or three questions people actually
+   ask a file — how many lines, which ones match, the first n — built
+   from the one builtin so the streaming is not something you have to
+   remember to do.
+3. The example: a report on a log too big to hold, with the memory it
+   used printed beside the answer.
+
+Considered and not chosen, with the reason each time. A file handle
+value (`open`, `read_line`, `close`) is a new type and a resource that
+leaks when a script forgets it, and ting has no destructor or `defer`
+to lean on. Lazy iterators — `for line in lines(path)` — would read
+better than a callback, but that is a generator protocol in the
+language rather than a builtin, and I would rather learn what the
+streaming needs to do before choosing how it should look. And
+`read_lines` returning a list is not a candidate at all: measured
+above, it is the expensive half of the problem.

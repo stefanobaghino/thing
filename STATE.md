@@ -1323,8 +1323,37 @@ holds only the current milestone and the standing rules.
   "N functions between them" sentence, made to fail on purpose. Also
   corrected here: 22 selftest files, not 21 (the 22nd is _lib.ting,
   which checks nothing on its own).
+- 741: replenishment — milestone "a file read a line at a time"
+  (v2.120-v2.121), reasoning in LOG.md. MEASURED on a 147 MB,
+  2000000-line log, same program, same answer (666306): given the
+  PATH 2.11 s / 454 MB peak; given the same bytes on STDIN 1.38 s /
+  9 MB; grep -c 0.37 s / 9 MB. ting can already stream — input()
+  gives a line and nil at the end — but only from stdin, never from a
+  file. Cost split to locate it: read_file alone 149 MB, + split on
+  newlines 376 MB (the 2000001 strings weigh 227 MB MORE than the
+  file). That KILLS a read_lines(path) list builtin: it would pay the
+  expensive half. Writing is NOT the pain (checked): appending 100000
+  lines one at a time is 381 ms vs 122 ms building and writing once.
+  Closures can accumulate into an outer variable (checked), so a
+  callback shape works.
 - Backlog (one per tick, in order):
-  (1) replenishment — the next milestone.
+  (1) `each_line(path, f)` — stream the file, call f per line, hold
+  only the current one. DECIDE while building, by measurement: does
+  f returning false stop the read (that is what makes head and
+  first-match possible); CRLF, with input() as the reference; no
+  final newline; a file that is not valid UTF-8, where read_file
+  errors outright; and whether "-" means stdin as it does for
+  read_file, which would close the asymmetry that opened this;
+  (2) lib/fs on top — how many lines, which ones match, the first n,
+  built on the one builtin so streaming is not something to remember;
+  (3) the example — a report on a log too big to hold, with the
+  memory it used printed beside the answer.
+  NOT CHOSEN: a file handle value (open/read_line/close) is a new
+  type and a resource that leaks when a script forgets it, and ting
+  has no destructor or defer; lazy iterators (`for line in
+  lines(path)`) read better than a callback but are a generator
+  protocol in the language, not a builtin, and the streaming should
+  be understood before its looks are chosen.
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
   a list of ints for a 9 MB file is nine million values, and a real
   bytes type is a language addition, not a builtin. Also absent and
