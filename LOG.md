@@ -14502,3 +14502,68 @@ corpus program that imports a local module, and a tutorial section
 whose listing is checked against real output. Two of the five strokes
 were corrections to the other three, both found by looking rather than
 by being told.
+
+## 2026-09-06 — Iteration 727: replenishment — "what a file is, besides its name"
+
+Where to look next. ting has 68 builtins and twelve stdlib modules, and
+`lib/fs.ting` will walk a tree, split a path and delete a subtree — but
+nothing anywhere says how big a file is or when it was last written.
+`list_dir` gives names, `is_dir` says which of them are directories,
+and that is the whole of what a ting program can learn about a file
+without opening it.
+
+I went looking for whether that matters by writing the two most
+ordinary scripts I could think of: the biggest files under a
+directory, and the files changed since some time. Here is what the
+first one costs today, and the second cannot be written at all.
+
+**Sizing by reading is wrong.** `len(read_file(p))` counts characters,
+not bytes. `src/eval.rs` is 192530 bytes on disk and ting reports
+192474 — off by the multi-byte characters in its own comments. A size
+report is wrong by however much UTF-8 a file contains, and silently.
+
+**Sizing by reading is often impossible.** `read_file` requires valid
+UTF-8. Run the script over this repository's `.git`, 105 MB and 5108
+files, and 4978 of them cannot be sized at all: "stream did not
+contain valid UTF-8". Four files in five are invisible to a tool
+written in ting.
+
+**And it is slow, and holds the file in memory.** Sizing that tree by
+reading it took 3920 ms, and the high-water mark is the largest file
+in it. `du` answers without reading a byte of content.
+
+**The workaround through the shell is worse.** `run("stat", ["-c",
+"%s", p])` works: 200 files in 149 ms, three quarters of a millisecond
+each because each is a process. Over that same tree it would be about
+four seconds of pure process churn — and `stat -c` is GNU, so the
+script stops working on macOS and has nothing to say on Windows.
+ting's own file builtins are portable; this escape hatch is not.
+
+**Modification time is simply absent.** Nothing in the 68 builtins or
+the twelve modules reports it, and no arrangement of the ones that
+exist can compute it. "What changed since yesterday" is not a hard
+script in ting; it is an impossible one.
+
+Milestone: **"what a file is, besides its name"** (v2.118–v2.119). One
+stroke per tick:
+
+1. A builtin that answers the question directly: size in bytes,
+   modification time in milliseconds since the epoch — the same clock
+   `time_ms()` reads, so the two compare without ceremony — and what
+   kind of thing the path names. Shape to decide while building it:
+   whether a missing path is nil or an error (`exists()` already
+   answers presence, so an errorless probe is what a script wants),
+   and what it says about a symlink.
+2. `lib/fs.ting` on top of it, once the shape is known: the tree walk
+   that hands back facts rather than names is the obvious candidate,
+   but the design follows the builtin rather than preceding it.
+3. An example that could not be written before — one of the two
+   scripts above — which reaches the cookbook through
+   `tools/cookbook.py` and is run by CI like every other example.
+
+Noticed and not chosen, with the reason: there is no `rename` and no
+`copy`. Moving a file is possible today through `run`, portably enough
+for the shells people use, and I have no measured pain for it — where
+sizing has three separate failures above. Reading what a file is comes
+first; moving it is a different milestone and can earn its own
+evidence.

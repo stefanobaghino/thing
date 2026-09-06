@@ -1143,8 +1143,34 @@ holds only the current milestone and the standing rules.
   because they are the evidence the sweep ran (700's trap). All 138
   releases carry the assets their era calls for (3 / 4 / 6), checked
   release by release; nine site paths 200.
+- 727: replenishment — milestone "what a file is, besides its name"
+  (v2.118-v2.119), reasoning in LOG.md. Nothing in 68 builtins or
+  twelve modules gives a file's SIZE or its MODIFICATION TIME;
+  list_dir + is_dir is the whole of what a program can learn without
+  opening the file. MEASURED, not assumed: len(read_file) counts
+  CHARACTERS (src/eval.rs is 192530 bytes, ting says 192474 — wrong
+  by its own UTF-8, silently); read_file REFUSES non-UTF-8, so 4978
+  of .git's 5108 files cannot be sized at all; sizing that 105 MB
+  tree by reading it takes 3920 ms and peaks at the largest file;
+  `run("stat", ...)` costs 0.75 ms per file (a process each) and is
+  GNU-only, so it breaks on macOS and says nothing on Windows. mtime
+  cannot be computed from anything that exists — "what changed since
+  yesterday" is impossible, not merely awkward.
 - Backlog (one per tick, in order):
-  (1) replenishment — the next milestone.
+  (1) a builtin for a file's facts: size in bytes, modification time
+  in ms on the same clock as time_ms(), and what kind of thing the
+  path names. DECIDE while building: nil or an error for a missing
+  path (exists() already answers presence, so an errorless probe is
+  what scripts want), and what it says about a symlink;
+  (2) lib/fs.ting on top of it once the shape is known — a walk that
+  hands back facts rather than names is the candidate, but the design
+  follows the builtin;
+  (3) an example that could not be written before (biggest files, or
+  changed since a time), which reaches the cookbook via
+  tools/cookbook.py and is run by CI.
+  NOT CHOSEN: rename/copy. Moving a file works through run() today
+  and I have no measured pain for it, where sizing has three separate
+  failures. It can earn its own evidence later.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full
