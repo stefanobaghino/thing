@@ -1377,11 +1377,17 @@ holds only the current milestone and the standing rules.
   reformatted the example AFTER tools/cookbook.py had generated the
   page from it, so the guard failed on a stale page — format first,
   generate second.
+- 745: v2.120.0 released (141st tag; strokes 742, 743, 744). The 738
+  rule worked: diffing the previous release commit FIRST showed the
+  tree already in the state it assumed — `## Unreleased` present with
+  all three entries, written by the ticks that earned them, and
+  README already at 72 builtins. Nothing to repair.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.120.0 — three strokes stand (742 each_line, 743 the
-  four lib/fs questions, 744 the example).
+  - verify v2.120.0 — six assets, green runs by API verdict, an
+  aarch64 archive (musl and gnu) downloaded cold and executed here,
+  site audit.
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting
   has no destructor or defer; lazy iterators (`for line in

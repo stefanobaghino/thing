@@ -15423,3 +15423,26 @@ The cookbook guard fired twice, correctly, and the second time taught
 me the order: `--fmt` reformatted the new example *after* I had
 generated docs/cookbook.md from it, so the page was stale against the
 file. Format first, generate second.
+
+## 2026-09-06 — Iteration 745: v2.120.0
+
+Released. v2.120.0 is the 141st tag (read from
+`git tag --sort=creatordate`), carrying the three strokes of "a file
+read a line at a time": `each_line` (742), the four `lib/fs.ting`
+questions built on it (743), and the log report that never holds the
+log (744).
+
+The rule written after the last release did its job before anything
+else this tick: diff the previous release commit, and check the tree
+is in the state that commit assumed. `git show v2.119.0` touched
+CHANGELOG.md, Cargo.toml and Cargo.lock and nothing else, which means
+`## Unreleased` has to be there with every stroke in it. It was —
+three entries, written by the ticks that earned them rather than
+found missing here — and the README's count had already moved to 72.
+Nothing to repair, which is what a process fix looks like when it
+works.
+
+Full suite green before the tag (fifteen `test result: ok`), the
+binary reports `ting 2.120.0`, and the workflows started on the tag.
+Verification next tick: six assets, verdicts from the API, an aarch64
+archive downloaded cold and executed here.
