@@ -39,3 +39,30 @@ assert(records[0]["name"] == "ann", "columns take their names from the header");
 assert(records[1]["name"] == nil, "a short row leaves the rest nil");
 assert(csv["maps"]([]) == [], "no rows, no records");
 assert(csv["maps"]([["only", "header"]]) == [], "a header alone is no records");
+
+# A row is not a line. The scanner that reads a whole string and the
+# one that reads a file a line at a time are the same scanner, so the
+# two must agree on every input — including a field with a line break
+# in it, which is where cutting on newlines goes wrong.
+let doc = "id,note\n1,\"a note\nwith a newline\"\n2,plain\n";
+let path = "selftest-csv-rows.csv";
+write_file(path, doc);
+let streamed = [];
+let n = csv["each_row"](path, fn(row) { push(streamed, row); return nil; });
+assert(n == 3, "three rows, though the file has four lines");
+assert(each_line(path, fn(_l) { return nil; }) == 4, "and it really does have four lines");
+assert(streamed == csv["parse"](doc), "streaming and parsing agree");
+assert(streamed[1][1] == "a note\nwith a newline", "the line break survived inside the field");
+
+let first = [];
+assert(csv["each_row"](path, fn(row) { push(first, row); return false; }) == 1, "false stops the read");
+assert(first == [["id", "note"]], "after the first row");
+
+# A file that ends inside an open quote is malformed, and the two
+# readers have to be wrong in the same way rather than differently.
+let broken = "a,b\n1,\"unfinished\n";
+write_file(path, broken);
+let ragged = [];
+csv["each_row"](path, fn(row) { push(ragged, row); return nil; });
+assert(ragged == csv["parse"](broken), "malformed text reads the same either way");
+remove_file(path);

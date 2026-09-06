@@ -15580,3 +15580,52 @@ programming model; the evidence for that is not in hand, and CSV is
 where the big files actually are. And `read_bytes`/`write_bytes` stays
 where 734 left it: still absent, still the wrong representation as a
 list of ints, still waiting for its own evidence.
+
+## 2026-09-07 — Iteration 749: a row at a time, and the same scanner underneath
+
+Stroke one of "reading what other programs wrote". `lib/csv.ting`
+gained `each_row(path, f, sep = ",")`, and the way it was built
+matters more than the function.
+
+The measurement on the 15.7 MB export of 300000 rows, a third of them
+carrying a line break inside a quoted field:
+
+```
+parse(read_file(p)):   9.55 s   964 MB peak
+each_row:             10.45 s     9 MB peak
+```
+
+A hundred and seven times less memory for about a tenth more time, and
+the same 300001 rows. The sum of the amount column came out
+67499775000 both ways, which is the arithmetic answer for those rows —
+so it read the whole file correctly, embedded newlines included.
+
+**The design decision was not to write a second parser.** The obvious
+streaming reader cuts on newlines, and on this file that would invent
+a hundred thousand rows that do not exist. Counting quotes per line to
+guess whether a field is open would be better and still wrong: a stray
+quote in an unquoted field is a literal to `parse` and would flip the
+guess. So `parse` was taken apart instead: `fresh()` is the scanner's
+state, `scan(st, text, sep)` puts one chunk of text through it, and
+`finish(st)` is the end of the text. `parse` is now
+`finish(scan(fresh(), text, sep))["rows"]`, and `each_row` feeds the
+same scanner one line at a time. The two cannot disagree, because
+there is only one of them.
+
+The hot loop still runs on locals, loaded from the state map at entry
+and stored back at exit. A map lookup per character would have cost
+more than the fourteen loads and stores around the loop, and this is a
+character-at-a-time parser written in ting.
+
+Two selftest checks are the whole argument: `streamed == parse(doc)`
+for a document with a line break inside a field, and the same equality
+for a document that ends inside an open quote. The second is the one I
+would have got wrong by choosing: a malformed file must be read the
+same way by both readers, so `each_row` flushes what the scanner is
+holding exactly as `parse` does, rather than refusing where `parse`
+does not.
+
+Seven selftest checks (2483 → 2490), the stdlib count at 186, and a
+reminder learned the hard way in 729 that cost a confusing minute
+again: the stdlib is embedded at compile time, so a new lib function
+does not exist until `cargo build --release`.

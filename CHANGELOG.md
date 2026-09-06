@@ -5,6 +5,23 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `lib/csv.ting` gained `each_row(path, f, sep = ",")`: the rows of a
+  file one at a time, without holding the file. A 15.7 MB export of
+  300000 rows costs 964 MB through `parse(read_file(p))` — sixty-one
+  times the file, because a row is a list and a field is a string —
+  and 9 MB through `each_row`, for about a tenth more time. Reading
+  it with `each_line` and splitting on the separator is not merely
+  slower, it is **wrong**: a quoted field may contain line breaks, so
+  that same file is 400001 lines and 300001 rows. To be right rather
+  than nearly right, `each_row` and `parse` are now the same scanner:
+  `fresh()`, `scan(st, text, sep)` and `finish(st)` are the parser's
+  state, one chunk through it, and the end of the text, so feeding a
+  whole file and feeding it a line at a time give exactly the same
+  rows — including for malformed text, where both stop in the same
+  place.
+
 ## v2.120.0 (2026-09-06)
 
 - `each_line(path, f)` is the 72nd builtin: a file read one line at a

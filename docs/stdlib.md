@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 182 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 186 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -236,6 +236,8 @@ and written as a bare newline.
 | Function | Does |
 |----------|------|
 | `parse(text, sep = ",")` | rows of fields from delimited text; a comma unless another single character is given |
+| `each_row(path, f, sep = ",")` | rows from a file one at a time, without holding it: `f(row)` for each. A row is not a line — a quoted field may hold line breaks — so this feeds the same scanner `parse` uses. `"-"` is stdin, `false` from `f` stops the read, and it answers how many rows `f` was given |
+| `fresh()` / `scan(st, text, sep)` / `finish(st)` | the scanner underneath both: state, one chunk of text through it, and the end of the text. Feeding a whole file or a line at a time gives the same rows, which is what makes `each_row` right rather than nearly right |
 | `text(rows, sep = ",")` | delimited text from rows of fields, ending in a line break |
 | `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
 | `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |

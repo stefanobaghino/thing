@@ -1420,14 +1420,27 @@ holds only the current milestone and the standing rules.
   `cannot convert "not " to int` for "not a date" — a message about
   the wrong thing — and for "2026-13-45T99:99:99Z" a confident
   1802925639000.
+- 749: lib/csv gained each_row(path, f, sep) — 964 MB -> 9 MB on the
+  15.7 MB / 300000-row export, 9.55 s -> 10.45 s, same rows, amount
+  column summing to 67499775000 both ways. THE DESIGN IS THE POINT:
+  no second parser. Cutting on newlines invents 100000 rows; counting
+  quotes per line is also wrong (a stray quote in an unquoted field
+  is a literal to parse). So parse was taken apart into fresh() /
+  scan(st, text, sep) / finish(st), parse is now
+  finish(scan(fresh(), text, sep))["rows"], and each_row feeds the
+  SAME scanner a line at a time — they cannot disagree. Hot loop
+  still on locals (loaded at entry, stored at exit): a map lookup per
+  character would cost more than 14 loads and stores. The two
+  selftests that carry the argument: streamed == parse(doc) for a
+  field with a line break, AND the same for a document ending inside
+  an open quote — malformed input must be read the same way by both,
+  so each_row flushes as parse does rather than refusing. 7 selftest
+  checks (2483 -> 2490), stdlib 186. REMEMBER (729, cost time again):
+  the stdlib is embedded at compile time — a new lib function does
+  not exist until cargo build --release.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a streaming CSV reader in lib/csv on top of each_line — a row at
-  a time, carrying a partial row while a quoted field is open, so it
-  is RIGHT where a per-line split is wrong. DECIDE by measurement:
-  what it costs against 964 MB, and whether the shape is
-  each_row(path, f) like each_line or something the caller drives;
   - from_iso in lib/time, and what the round trip needs. Every
   decision is about REFUSAL: what a non-timestamp answers, whether a
   date without a time is accepted, what a month of 13 does — today's
