@@ -15,7 +15,7 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 68 builtins; twelve embedded stdlib modules
+- 69 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 347 Rust tests
   in 15 suites.
@@ -1156,16 +1156,21 @@ holds only the current milestone and the standing rules.
   GNU-only, so it breaks on macOS and says nothing on Windows. mtime
   cannot be computed from anything that exists — "what changed since
   yesterday" is impossible, not merely awkward.
+- 728: `stat(path)` is the 69th builtin — {size (bytes), modified (ms
+  on time_ms()'s clock), kind ("file"/"dir"/"other")}, nil when
+  nothing readable is there. DECIDED: nil not an error (exists() sets
+  the precedent — a question, not a demand, and no try() to ask how
+  big something is); symlinks FOLLOWED (what fs::metadata, exists and
+  is_dir already do, so a broken link is nil). Signed like time_ms(),
+  so a pre-1970 file counts backwards; a directory's size is the
+  filesystem's number for the directory, not its contents. Seven
+  checks in selftest/fs.ting (2433 -> 2440 checks), tutorial block
+  run by the docs guard, reference row + prose, editor grammar.
 - Backlog (one per tick, in order):
-  (1) a builtin for a file's facts: size in bytes, modification time
-  in ms on the same clock as time_ms(), and what kind of thing the
-  path names. DECIDE while building: nil or an error for a missing
-  path (exists() already answers presence, so an errorless probe is
-  what scripts want), and what it says about a symlink;
-  (2) lib/fs.ting on top of it once the shape is known — a walk that
-  hands back facts rather than names is the candidate, but the design
-  follows the builtin;
-  (3) an example that could not be written before (biggest files, or
+  (1) lib/fs.ting on top of stat — a walk that hands back facts
+  rather than names is the candidate, but the design follows what
+  writing the example actually needs;
+  (2) an example that could not be written before (biggest files, or
   changed since a time), which reaches the cookbook via
   tools/cookbook.py and is run by CI.
   NOT CHOSEN: rename/copy. Moving a file works through run() today

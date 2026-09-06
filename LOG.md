@@ -14567,3 +14567,40 @@ for the shells people use, and I have no measured pain for it — where
 sizing has three separate failures above. Reading what a file is comes
 first; moving it is a different milestone and can earn its own
 evidence.
+
+## 2026-09-06 — Iteration 728: `stat`, the 69th builtin
+
+Backlog item 1. `stat(path)` hands back a map of `size` (bytes),
+`modified` (milliseconds since the epoch) and `kind` (`"file"`,
+`"dir"` or `"other"`), and `nil` when nothing readable is at the path.
+
+The two shapes 727 left to decide, decided while building:
+
+- **Missing path is `nil`, not an error.** `exists()` already answers
+  presence by returning false rather than raising, and the reference
+  calls that the difference between a question and a demand. Asking
+  how big something is belongs on the question side: a script that has
+  to wrap `stat` in a `try` to ask about a file it is walking past has
+  been made worse, not safer. `nil` also composes — `get(facts,
+  "size", 0)` and `if stat(p) != nil` both read.
+- **Symbolic links are followed**, which is what `std::fs::metadata`
+  does and what `exists` and `is_dir` already do. A broken link is
+  therefore `nil`, consistently with `exists` answering false for one.
+
+Two details that are choices rather than defaults, both in the code as
+comments. `modified` is signed the way `time_ms()` is: a file written
+before 1970 counts backwards instead of wrapping through
+`duration_since` failing. And a directory's `size` is whatever the
+filesystem records for the directory itself — the number `ls -l`
+prints — not the size of what it holds, which is a different question
+and a much slower one.
+
+Seven checks in `selftest/fs.ting`, so they run under both engines on
+every platform CI covers: 6 bytes against 5 characters for the same
+`"héllo"`, both kinds, the `nil`, the age against `time_ms()`, and the
+type error. 2433 checks became 2440.
+
+The tutorial's file section says "five builtins" now, with a block the
+docs guard runs, and the reference has the row, the question/demand
+paragraph, and the paragraph explaining bytes against characters. The
+editor grammar has the name.
