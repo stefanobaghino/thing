@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 344 Rust tests
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 345 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1067,10 +1067,21 @@ holds only the current milestone and the standing rules.
   embedded — not "lib/ is always left alone". Also recorded: a bundle
   cannot keep try()'s file/line identical, those being where the code
   now sits; err() messages are identical.
+- 719: the tutorial's module section now ends with --bundle — two
+  files, the command, the bundle it writes — and the listing is
+  CHECKED, not transcribed: a docs test pulls the two sources out of
+  the page, bundles them and compares the third block byte for byte
+  (renaming the binding in the page fails it). FOUND while writing
+  it: --fmt-check on a bundle answers for the files that went in
+  (the bundler copies source as written), so "a bundle passes
+  --fmt-check" was true of the formatted corpus and too strong in
+  general; both pages now say so. Also corrected: the tutorial said
+  the stdlib page documents "all seven" modules — there are twelve.
+  NOT done: a cookbook entry. The cookbook is generated from
+  examples/ by tools/cookbook.py, and an example that shells out to
+  ting to demonstrate ting does not belong in the corpus.
 - Backlog (one per tick, in order):
-  (1) `--bundle` where a reader would look for it: the tutorial's
-  module section ends with two files and no way to hand them over,
-  and the cookbook has no entry;
+  (1) release v2.116.0 — three strokes banked (717, 718, 719);
   (2) chosen after — candidates: `--bundle -o FILE` (today it is
   stdout only), and whether a bundle should keep a module's own file
   name in its diagnostics.

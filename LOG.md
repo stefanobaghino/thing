@@ -14201,3 +14201,44 @@ started to. Recorded in the reference.
 The refusals list in the reference had two of the three: the module
 that returns from its own top level was in the commit message and not
 in the docs. Now in both.
+
+## 2026-09-06 — Iteration 719: the tutorial hands a program over
+
+Backlog item 1. The tutorial's module section taught a reader to split
+a program into files and stopped there; `--bundle` now closes it. The
+new subsection shows two files side by side, the command, and the
+bundle it writes, then says why a module becomes a function bound once
+and why the `lib/list.ting` import stays where it is.
+
+The listing is generated output, so it is checked rather than
+transcribed: a new docs test pulls the two source blocks out of the
+page, runs `--bundle` on them, and requires the third block character
+for character. Renaming `__ting_module_0` in the page fails it, which
+is how it was believed.
+
+That test needed a fence scanner, and the first one was wrong in a way
+worth recording: it recognised only bare ``` as an opening fence, so
+the *closing* fence of the ```sh block opened a block of its own and
+the section's three listings came back as two and a fragment. Reading
+the language on every opener and keeping the bodies of the bare ones
+fixes it. The page had been correct all along; the reader of it was
+not.
+
+Measured while writing the prose, and the reason the prose changed: the
+bundler copies a module's source as it was written, so `--fmt-check` on
+a bundle answers for the files that went in. A one-line
+`fn greet(name) { return "hi, " + name; }` is already canonical ting
+and its bundle formats clean; `let  version=1;` is not, and its bundle
+does not. Yesterday's "a bundle passes --fmt-check" was true of the
+corpus, which is formatted, and too strong as a general claim. Both
+pages now say what actually holds.
+
+Correction to the record: the tutorial said the stdlib page "documents
+all seven (list/map/string/math/json/fs/test)". There are twelve, and
+have been since `csv` landed. Fixed.
+
+Not done, and why: the cookbook. It is generated from `examples/` by
+`tools/cookbook.py`, so an entry there means an example, and an example
+that shells out to `ting` to demonstrate `ting` does not belong in a
+corpus that CI runs on every commit. The reference and the tutorial are
+where a reader looks for a flag.
