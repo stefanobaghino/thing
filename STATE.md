@@ -1382,12 +1382,23 @@ holds only the current milestone and the standing rules.
   tree already in the state it assumed — `## Unreleased` present with
   all three entries, written by the ticks that earned them, and
   README already at 72 builtins. Nothing to repair.
+- 746: v2.120.0 VERIFIED. Six assets, all four runs on the tag green
+  by API verdict, both aarch64 archives downloaded cold and executed
+  here (2483 checks each, `ting 2.120.0`), logreport run by the
+  released musl binary diffed clean against its .out. Because this
+  release is about MEMORY, the claim was checked on the artifact: the
+  downloaded musl binary counted a fresh 2000000-line log in 1.80 s /
+  9 MB peak. Site audit: nine paths 200, ting.wasm 825122 bytes,
+  changelog has v2.120.0, cookbook has logreport, reference has
+  each_line, github.io still redirects.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.120.0 — six assets, green runs by API verdict, an
-  aarch64 archive (musl and gnu) downloaded cold and executed here,
-  site audit.
+  - health tick — bench vs bench/BASELINE.md (checksums decide,
+  timings are weather), 50000 differential, crash and 20000 formatter
+  fuzz cases in release, audit — closes the milestone "a file read a
+  line at a time";
+  - replenishment — the next milestone.
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting
   has no destructor or defer; lazy iterators (`for line in

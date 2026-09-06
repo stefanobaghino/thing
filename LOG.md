@@ -15446,3 +15446,32 @@ Full suite green before the tag (fifteen `test result: ok`), the
 binary reports `ting 2.120.0`, and the workflows started on the tag.
 Verification next tick: six assets, verdicts from the API, an aarch64
 archive downloaded cold and executed here.
+
+## 2026-09-06 — Iteration 746: v2.120.0 verified
+
+Verdicts from the API: Release, Pages and both CI runs on the tag
+`completed success`. Six assets, the expected count.
+
+Both aarch64 Linux archives downloaded cold into a directory outside
+the repository and run here:
+
+```
+ting 2.120.0                                       (gnu and musl)
+22 passed, 0 failed, 2483 checks                   (gnu and musl)
+f6b0b1712d56a32794e78696e6b0900c4326b29085ade37fdd91f20a2b4f4876  ting-gnu
+ba3dd60e6a473a65ef975d25bbc53a4af5e1a76e3a1742875ec5f3274fa048bd  ting-musl
+```
+
+This release's own example ran on the released musl binary and diffed
+clean against `examples/logreport.out`. And because this release is
+about memory rather than output, I checked the claim on the artifact
+rather than only on my build: the downloaded musl binary counted the
+ERROR lines in a fresh 2000000-line log in **1.80 s and 9 MB**. The
+promise the changelog makes is the promise the download keeps.
+
+Site audit: nine paths 200 — the playground, `examples.js`,
+`ting.wasm` at 825122 bytes, and the six pages. changelog.html carries
+v2.120.0, cookbook.html has the logreport example, reference.html has
+`each_line`, and github.io still redirects to www.baghino.me/thing.
+
+Nothing to fix. A health tick closes the milestone.
