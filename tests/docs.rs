@@ -42,10 +42,24 @@ fn stdlib_page_lists_every_function_and_the_right_count() {
         }
         let src = std::fs::read_to_string(&path).unwrap();
         for line in src.lines() {
-            let Some(rest) = line.strip_prefix("fn ") else {
-                continue;
+            // A module offers a name either by defining it or, for a
+            // builtin it re-exports, by declaring `let f = f;`. Both
+            // belong on the page, so both are counted here.
+            let name = match line.strip_prefix("fn ") {
+                Some(rest) => &rest[..rest.find('(').unwrap_or(rest.len())],
+                None => {
+                    let Some(rest) = line.strip_prefix("let ") else {
+                        continue;
+                    };
+                    let Some((name, init)) = rest.split_once(" = ") else {
+                        continue;
+                    };
+                    if init != format!("{name};") {
+                        continue;
+                    }
+                    name
+                }
             };
-            let name = &rest[..rest.find('(').unwrap_or(rest.len())];
             total += 1;
             if !page.contains(&format!("`{name}(")) {
                 missing.push(format!(

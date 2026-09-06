@@ -67,6 +67,7 @@ pub enum Builtin {
     Chr,
     Sort,
     SortBy,
+    SortWith,
     Try,
     Fail,
     Map,
@@ -98,7 +99,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 67] = [
+    pub const ALL: [Builtin; 68] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -138,6 +139,7 @@ impl Builtin {
         Builtin::Chr,
         Builtin::Sort,
         Builtin::SortBy,
+        Builtin::SortWith,
         Builtin::Try,
         Builtin::Fail,
         Builtin::Map,
@@ -291,6 +293,10 @@ impl Builtin {
                 "A fresh sorted list; all numbers or all strings, else error.",
             ),
             Builtin::SortBy => ("sort_by(xs, f)", "A fresh list sorted by key f(x), stable."),
+            Builtin::SortWith => (
+                "sort_with(xs, cmp)",
+                "A fresh list sorted by a three-way comparator: cmp(a, b) is negative when a comes first, positive when b does, 0 for ties, which keep their input order.",
+            ),
             Builtin::Try => (
                 "try(f) / try(f, ...args)",
                 "Calls f with the arguments that follow it; {\"ok\": result} on success, {\"err\": message} on a runtime error.",
@@ -429,6 +435,7 @@ impl Builtin {
             Builtin::Chr => "chr",
             Builtin::Sort => "sort",
             Builtin::SortBy => "sort_by",
+            Builtin::SortWith => "sort_with",
             Builtin::Try => "try",
             Builtin::Fail => "fail",
             Builtin::Map => "map",

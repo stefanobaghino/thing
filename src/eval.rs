@@ -2016,6 +2016,68 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::SortWith => {
+                arity(2, 2)?;
+                let f = args[1].clone();
+                match (&args[0], &f) {
+                    (Value::List(items), Value::Fn(_) | Value::Builtin(_)) => {
+                        // Bottom-up merge sort, so the comparator's own
+                        // errors travel out with `?` and the sort stays
+                        // stable: a tie is not negative, so the left run
+                        // goes first and equal elements keep their order.
+                        let mut src = items.borrow().clone();
+                        let mut dst = Vec::with_capacity(src.len());
+                        let mut width = 1;
+                        while width < src.len() {
+                            dst.clear();
+                            let mut lo = 0;
+                            while lo < src.len() {
+                                let mid = (lo + width).min(src.len());
+                                let hi = (lo + 2 * width).min(src.len());
+                                let (mut i, mut j) = (lo, mid);
+                                while i < mid && j < hi {
+                                    let args = vec![src[j].clone(), src[i].clone()];
+                                    let ord = self.call_value(&f, args, span)?;
+                                    let take_right = match ord {
+                                        Value::Int(n) => n < 0,
+                                        Value::Float(x) => x < 0.0,
+                                        v => {
+                                            return Err(error(
+                                                format!(
+                                                    "sort_with comparator must return a number, got {}",
+                                                    v.type_name()
+                                                ),
+                                                span,
+                                            ));
+                                        }
+                                    };
+                                    if take_right {
+                                        dst.push(src[j].clone());
+                                        j += 1;
+                                    } else {
+                                        dst.push(src[i].clone());
+                                        i += 1;
+                                    }
+                                }
+                                dst.extend_from_slice(&src[i..mid]);
+                                dst.extend_from_slice(&src[j..hi]);
+                                lo = hi;
+                            }
+                            std::mem::swap(&mut src, &mut dst);
+                            width *= 2;
+                        }
+                        Ok(Value::list(src))
+                    }
+                    (a, f) => Err(error(
+                        format!(
+                            "sort_with expects a list and a function, got {} and {}",
+                            a.type_name(),
+                            f.type_name()
+                        ),
+                        span,
+                    )),
+                }
+            }
             Builtin::Try => {
                 if args.is_empty() {
                     return Err(error("try expects at least 1 argument, got 0", span));

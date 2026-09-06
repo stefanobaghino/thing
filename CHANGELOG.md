@@ -7,6 +7,17 @@ Windows are attached to each
 
 ## Unreleased
 
+- `sort_with(xs, cmp)` is a builtin. The standard library's comparator
+  sort was the one sort written in ting, and the slowest thing in the
+  standard library: it is about six times faster now, 346 ms to 60 ms
+  on 20000 elements. `import("lib/list.ting")["sort_with"]` is
+  unchanged and still finds it, the ordering it produces is unchanged,
+  and it is still a stable merge sort. A comparator that returns
+  something other than a number now says so by name.
+- `--check` no longer warns that `let f = f;` shadows a builtin. That
+  line re-exports the builtin from a module rather than hiding it, and
+  nobody writes it by accident.
+
 - A module exports what its top level declares. `let` and `fn` at a
   module's top level are its exports, read from the module itself
   rather than guessed from the environment it ran in. The visible

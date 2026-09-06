@@ -1395,7 +1395,20 @@ pub fn shadowed_builtins(src: &str) -> Vec<(usize, usize, String)> {
                 let after_let = i > 0 && matches!(tokens[i - 1].kind, lexer::TokenKind::Let);
                 let after_fn = i > 0 && matches!(tokens[i - 1].kind, lexer::TokenKind::Fn);
                 let param = in_params && !after_fn;
-                if (after_let || after_fn || param) && is_builtin(n) {
+                // `let f = f;` re-exports the builtin rather than
+                // hiding it: a module's exports are what its top level
+                // declares, so this line is how a module puts a builtin
+                // in its own map. Nobody writes it by accident.
+                let re_export = after_let
+                    && matches!(
+                        tokens.get(i + 1).map(|t| &t.kind),
+                        Some(lexer::TokenKind::Eq)
+                    )
+                    && matches!(
+                        tokens.get(i + 2).map(|t| &t.kind),
+                        Some(lexer::TokenKind::Ident(m)) if m == n
+                    );
+                if (after_let || after_fn || param) && is_builtin(n) && !re_export {
                     out.push((t.span.start, t.span.end, format!("`{n}` shadows a builtin")));
                 }
             }

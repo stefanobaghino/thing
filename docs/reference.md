@@ -329,6 +329,7 @@ scope).
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
+| `sort_with(xs, cmp)` | a fresh list sorted by a three-way comparator: `cmp(a, b)` negative when `a` comes first, positive when `b` does, `0` for ties, which keep their input order |
 | `try(f, ...args)` | calls `f` with the arguments that follow it; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
 | `fail(msg)`    | raises a runtime error with the given string message         |
 | `map(xs, f)`   | a fresh list of `f(x)` for each element                      |

@@ -15,7 +15,7 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 67 builtins; twelve embedded stdlib modules
+- 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
   functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 336 Rust tests
   in 15 suites.
