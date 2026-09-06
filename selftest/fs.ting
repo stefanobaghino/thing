@@ -66,7 +66,18 @@ assert(stat(root + "/nope") == nil, "nothing there is nil, not an error");
 let age = time_ms() - facts["modified"];
 assert(age >= -1000 && age < 60000, "modified is the clock time_ms reads");
 assert(try(stat, 3)["err"] == "stat expects a string path, got int", "a path is a string");
+
+# And the module on top of it: a size without the map, every file's
+# facts in one pass, and the total.
+assert(fs["size"](root + "/bytes.txt") == 6, "size is stat's size");
+assert(fs["size"](root + "/nope") == nil, "and nil where stat is nil");
+let rows = fs["facts"](root);
+assert(len(rows) == 5, "one row per file, directories left out");
+assert(rows[0]["path"] == root + "/a.ting", "sorted by path, like walk");
+assert(keys(rows[0]) == ["kind", "modified", "path", "size"], "path plus what stat says");
+assert(fs["total_size"](root) == 6, "only bytes.txt has any bytes in it");
 remove_file(root + "/bytes.txt");
+assert(fs["total_size"](root) == 0, "and now none of them do");
 
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");

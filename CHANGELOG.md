@@ -20,6 +20,14 @@ Windows are attached to each
   A modification time could not be had by any arrangement of what
   existed, so "what changed since yesterday" was not a hard script
   but an impossible one.
+- `lib/fs.ting` gained `size(p)` (a file's bytes, or `nil`, without
+  the surrounding map), `facts(d)` (every file at or below a
+  directory as a map of path, size, modified and kind, one `stat`
+  each) and `total_size(d)` (the bytes below a directory, which is
+  `du`). `facts` exists because the obvious alternative — sorting
+  `walk`'s paths with `stat` inside the comparator — calls it once
+  per comparison rather than once per file: 249 ms against 139 ms
+  over 5132 files.
 
 ## v2.117.0 (2026-09-06)
 

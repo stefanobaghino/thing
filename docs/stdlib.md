@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 174 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 177 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -160,8 +160,8 @@ index lists.
 
 ## lib/fs.ting
 
-Path handling and directory walking on top of the filesystem
-builtins. Paths are split on both `/` and `\`, so one that came from
+Path handling, directory walking and what `stat` says about what it
+finds, on top of the filesystem builtins. Paths are split on both `/` and `\`, so one that came from
 a Windows tool parses, and joined with `/`, which every platform the
 binary runs on accepts.
 
@@ -178,6 +178,9 @@ binary runs on accepts.
 | `entries(d)` | the direct children of a directory as paths, sorted |
 | `walk(d)` | every file at or below a directory, sorted, directories themselves left out |
 | `walk_ext(d, e)` | the files `walk` finds whose extension is `e` |
+| `size(p)` | how big a file is in bytes, or `nil` when nothing readable is there — `stat`'s size without the map |
+| `facts(d)` | every file at or below a directory with what `stat` says: maps of `path`, `size`, `modified` and `kind`, sorted by path, one `stat` each |
+| `total_size(d)` | the bytes at or below a directory, directories themselves left out |
 | `remove_tree(p)` | every file and directory at or below `p`, gone; a path that is not there is not an error |
 
 ## lib/time.ting
