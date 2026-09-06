@@ -412,3 +412,47 @@ fn the_tutorials_bundle_is_what_bundle_prints() {
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// docs/stdlib.md opens by claiming how many functions the twelve
+/// modules hold. That number drifts silently — a module gains a
+/// function and the sentence does not — so it is asked of the
+/// modules themselves rather than counted by hand. `grep '^fn '` is
+/// not the answer either: lib/list.ting re-exports the builtin
+/// sort_with with a `let`, and lib/test.ting exports a map of state
+/// that is not a function at all.
+#[test]
+fn the_stdlib_page_counts_what_the_modules_export() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let script = r#"let names = ["list", "map", "string", "math", "json", "fs",
+                                 "test", "time", "sh", "args", "err", "csv"];
+let total = 0;
+for n in names {
+  let m = import("lib/" + n + ".ting");
+  for k in keys(m) { if type(m[k]) == "function" { total += 1; } }
+}
+print(total);
+"#;
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("-")
+        .current_dir(root)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .and_then(|mut child| {
+            use std::io::Write;
+            child
+                .stdin
+                .as_mut()
+                .unwrap()
+                .write_all(script.as_bytes())?;
+            child.wait_with_output()
+        })
+        .expect("failed to run ting");
+    let counted = String::from_utf8_lossy(&out.stdout).trim().to_string();
+    let page = std::fs::read_to_string(root.join("docs/stdlib.md")).expect("docs/stdlib.md");
+    assert!(
+        page.contains(&format!("{counted} functions between them")),
+        "docs/stdlib.md does not say \"{counted} functions between them\", \
+         which is what the modules export"
+    );
+}

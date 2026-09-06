@@ -17,7 +17,9 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 71 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 178
-  functions, guarded); 41 ting programs (21 selftest files, 20 examples with .out); 351 Rust tests
+  functions, guarded); 42 ting programs (22 selftest files — 21 tests
+  plus _lib.ting, the module modules.ting imports, which checks
+  nothing on its own — and 20 examples with .out); 352 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1304,12 +1306,25 @@ holds only the current milestone and the standing rules.
   diffed clean against examples/organize.out. Site audit: nine paths
   200, ting.wasm 819704 bytes, changelog carries v2.119.0, cookbook
   has organize, reference has copy_file, github.io still redirects.
+- 740: health tick GREEN — milestone "moving a file, not retyping it"
+  complete. All nine bench checksums match BASELINE exactly; timings
+  ran ~25-30% above it across the board, which is the host being busy
+  and not a regression (checksums decide, timings are weather). VM
+  ahead of eval on all nine rows (-22% to -47%). Fuzzers at seed 740:
+  50000 differential (16.96 s vs ~1 s default), 20000 formatter
+  (5.35 s), 2000000 patterns (3.78 s vs 0.22 s) — runtimes are the
+  evidence they ran. Suite 352 tests in 15 suites, corpus 7 warnings.
+  AUDIT of the counts the docs claim, and a NEW GUARD: never count
+  stdlib functions with `grep '^fn '` — it says 177 where the truth
+  is 178, because lib/list.ting re-exports the builtin sort_with with
+  a `let` (line 455) and lib/test.ting exports a non-function `state`
+  map. Asking the modules (keys + type == "function") is the only
+  right answer, and tests/docs.rs now does exactly that against the
+  "N functions between them" sentence, made to fail on purpose. Also
+  corrected here: 22 selftest files, not 21 (the 22nd is _lib.ting,
+  which checks nothing on its own).
 - Backlog (one per tick, in order):
-  (1) health tick — bench vs bench/BASELINE.md (checksums decide,
-  timings are weather), 50000 differential, crash and 20000 formatter
-  fuzz cases in release, audit — closes the milestone "moving a file,
-  not retyping it";
-  (2) replenishment — the next milestone.
+  (1) replenishment — the next milestone.
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
   a list of ints for a 9 MB file is nine million values, and a real
   bytes type is a language addition, not a builtin. Also absent and

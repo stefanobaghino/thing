@@ -15134,3 +15134,56 @@ redirects to www.baghino.me/thing.
 
 Nothing left to fix. The milestone's three strokes are shipped and
 running from a cold download; a health tick closes it.
+
+## 2026-09-06 — Iteration 740: health tick, and how not to count
+
+Green, and the milestone "moving a file, not retyping it" is
+complete.
+
+**Bench.** All nine checksums match `bench/BASELINE.md` exactly, which
+is the part that decides. Every timing ran 25–30% above the recorded
+baseline — this host is shared and was busier than when the baseline
+was taken — and the VM leads eval on all nine rows, from -22% to
+-47%. Timings are weather.
+
+**Fuzzers, seed 740.** 50000 differential cases in 16.96 s against
+about a second for the default count; 20000 formatter cases in 5.35 s;
+2000000 pattern cases in 3.78 s against 0.22 s. The runtimes are the
+evidence the sweep actually swept — naming the wrong target passes
+instantly having fuzzed nothing.
+
+**The audit turned up a lesson about my own method.** Checking the
+counts the docs claim, I ran `grep -c '^fn ' lib/*.ting`, got 177, and
+briefly believed docs/stdlib.md's "178 functions between them" was
+wrong — a claim I had raised from 177 in iteration 737. It was not
+wrong. Asking the modules themselves:
+
+```
+list: 47 keys, 47 functions      json: 7      sh: 7
+map: 16                          fs: 16       args: 6
+string: 29                       test: 9 keys, 8 functions
+math: 15                         time: 14     err: 7, csv: 6
+total functions: 178
+```
+
+Two things the grep cannot see. `lib/list.ting` re-exports the builtin
+`sort_with` with `let sort_with = sort_with;` (line 455, with a
+comment saying why), so the module has 47 functions and 46 `fn` lines.
+And `lib/test.ting` exports a `state` map that is not a function at
+all, so its 9 keys are 8 functions. The two errors happened to cancel
+in the total I doubted.
+
+Almost trusting a grep over the binary is exactly the failure this
+loop is supposed to avoid, so the count is now a test rather than a
+habit: `tests/docs.rs` runs the twelve modules through the released
+interpreter, counts the keys whose value is a function, and requires
+docs/stdlib.md to say that number. Broken on purpose it reports
+`docs/stdlib.md does not say "178 functions between them", which is
+what the modules export`.
+
+One stale count corrected while I was there: 22 selftest files, not
+21. The 22nd is `_lib.ting`, the module `modules.ting` imports, which
+runs standalone and checks nothing — which is why `--test` says "22
+passed (1 file checked nothing)".
+
+Suite: 352 tests in 15 suites, corpus warnings 7 as pinned.
