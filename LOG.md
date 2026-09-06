@@ -14459,3 +14459,46 @@ release: the changelog has v2.117.0, the tutorial teaches
 and the reference documents `-o FILE`.
 
 One tick remains on the milestone: the health tick that closes it.
+
+## 2026-09-06 — Iteration 726: health tick closes "a script you can hand over"
+
+Everything the milestone touched, measured against what was there
+before it.
+
+**Bench.** All nine checksums identical to `bench/BASELINE.md`:
+accum `80000 30000 22890 11999`, fib `317811`, json
+`586934 1256961 499950 4 3`, lists `100000 0`, maps
+`100000 4999950000`, regex `24000 5989512 37 109`, stdlib
+`10006 10 500 w0 18974763`, strings `60000 588890`, toplevel
+`1199980 97 200 10 2062`. Timings ran 8 to 25 per cent above the
+baseline across every row and both engines, which on a shared
+four-core host is weather and not a regression: a uniform shift on
+nine unrelated benchmarks is the machine, and the eval-to-vm ratios
+are unchanged (accum -41%, toplevel -46%, json -16%). The milestone
+added no code to any path a benchmark runs — `--bundle` is a separate
+mode that ends before a program starts — so there was nothing here to
+expect either way.
+
+**Fuzzers, in release.** 50000 differential cases in 11.03 s, the
+crash and pattern suites with 2000000 pattern cases in 3.29 s, 20000
+formatter cases in 4.14 s. All green. The runtimes are the evidence
+the sweeps ran rather than passing in no time on the wrong target,
+which is the trap of iteration 700 — 11 s against about 1 s for the
+default differential count, 3.3 s against 0.22 s for the patterns.
+
+**Audits.** Every one of the 138 releases carries the number of assets
+its era calls for: three up to v2.16.0, four from v2.17.0, six from
+v2.30.0, checked release by release rather than by spot check. Nine
+site paths answer 200. The corpus scan is at its seven deliberate
+warnings and fifteen suites pass, both from the release gate an hour
+ago.
+
+The milestone is complete. It began with a program that split into
+files and stayed split, and ends with `--bundle`: local modules
+inlined once, each running the first time something asks for it,
+`lib/` imports left to the binary, three refusals rather than guesses,
+`-o` so writing a bundle cannot eat the script, a guard over every
+corpus program that imports a local module, and a tutorial section
+whose listing is checked against real output. Two of the five strokes
+were corrections to the other three, both found by looking rather than
+by being told.

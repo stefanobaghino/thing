@@ -1134,11 +1134,17 @@ holds only the current milestone and the standing rules.
   at `work/./greeter.ting` is refused with the file intact. Site
   audit green on nine paths; changelog, tutorial (`-o one.ting`,
   "runs the first time") and reference (`-o FILE`) carry the release.
+- 726: health tick + audits green — milestone "a script you can hand
+  over" COMPLETE. Nine bench checksums identical; timings 8-25% above
+  baseline uniformly across both engines, which is this shared host's
+  weather (ratios unchanged, and --bundle adds nothing to a path a
+  benchmark runs). Fuzz in release: 50000 differential 11.03s,
+  patterns at 2000000 3.29s, 20000 formatter 4.14s — runtimes quoted
+  because they are the evidence the sweep ran (700's trap). All 138
+  releases carry the assets their era calls for (3 / 4 / 6), checked
+  release by release; nine site paths 200.
 - Backlog (one per tick, in order):
-  (1) the health tick that closes "a script you can hand over": bench
-  vs bench/BASELINE.md, 50000 differential, crash and 20000 formatter
-  fuzz cases in release, audits;
-  (2) replenishment — the next milestone.
+  (1) replenishment — the next milestone.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full
