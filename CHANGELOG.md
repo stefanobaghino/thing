@@ -5,6 +5,41 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.116.0 (2026-09-06)
+
+- `ting --bundle SCRIPT` prints a script and the local modules it
+  imports as one file, on stdout, changing nothing on disk. The binary
+  was always one self-contained thing, but a program of your own that
+  split into modules stayed several files, with nothing to turn it
+  back into one you could hand to somebody. Each module becomes a
+  function returning what its top level declared, bound once, and
+  every `import` of it reads that one binding — which is what
+  importing the same file twice already gives, so a module that keeps
+  state stays one module, and a module two others import is inlined
+  once. An import is inlined when its path names a file and left alone
+  when it does not, the order the interpreter itself resolves in, so
+  `import("lib/list.ting")` normally stays: the binary answers it, and
+  that is what makes one file enough. Three things are refused rather
+  than guessed at, each named at the import that could not be
+  followed: a circular import, a path that is not a literal string,
+  and a module that returns from its own top level. It takes a file
+  and only a file, a script's imports resolving against its own
+  directory.
+- The promise is a test, not a sentence: every program in the
+  repository that imports a local module — fourteen of them, the
+  standard library included — is bundled and rerun, and the bundle
+  must print the same bytes on stdout, exit the same way, and pass
+  `--check` and `--fmt-check`. The bundler copies a module's source as
+  it was written, so a bundle of files that pass `--fmt-check` passes
+  it too. What a bundle cannot keep identical is a program that prints
+  where its own code sits: `try()` hands back a file and a line, and
+  in a bundle those are the bundle's.
+- The tutorial's module section, which used to end with a program in
+  several files, now ends with `--bundle` — the two files, the
+  command, and the bundle it writes, that listing checked against the
+  real output by a test rather than transcribed. It also said the
+  stdlib page documents "all seven" modules; there are twelve.
+
 ## v2.115.0 (2026-09-06)
 
 - The tutorial uses `try(f, ...args)` where that is what it means. It
