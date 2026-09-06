@@ -1407,10 +1407,39 @@ holds only the current milestone and the standing rules.
   over deterministic work, and file reading is the filesystem's mood;
   the memory claim belongs on the release artifact, where 746 checked
   it (9 MB for 2000000 lines).
+- 748: replenishment — milestone "reading what other programs wrote"
+  (v2.121-v2.122), reasoning in LOG.md. BOTH halves are traps, not
+  difficulties. CSV: a 15.7 MB file of 300000 rows (a third with a
+  newline inside a quoted field) costs 9.36 s / 964 MB peak through
+  csv["parse"](read_file(p)) — 61x the file — and lib/csv cannot be
+  asked for one row. The obvious workaround is not just slower, it is
+  WRONG: the file is 400001 LINES and 300001 ROWS, so a per-line
+  split invents 100000 rows silently. TIME: lib/time writes iso() and
+  cannot read it. The five lines a script writes today round-trip
+  correctly (including pre-epoch) but on real input give
+  `cannot convert "not " to int` for "not a date" — a message about
+  the wrong thing — and for "2026-13-45T99:99:99Z" a confident
+  1802925639000.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment — the next milestone.
+  - a streaming CSV reader in lib/csv on top of each_line — a row at
+  a time, carrying a partial row while a quoted field is open, so it
+  is RIGHT where a per-line split is wrong. DECIDE by measurement:
+  what it costs against 964 MB, and whether the shape is
+  each_row(path, f) like each_line or something the caller drives;
+  - from_iso in lib/time, and what the round trip needs. Every
+  decision is about REFUSAL: what a non-timestamp answers, whether a
+  date without a time is accepted, what a month of 13 does — today's
+  answer being the one thing it must not be;
+  - the example — a report over a CSV too big to hold, grouped by
+  something read out of a date column: needs both strokes and cannot
+  be written today without being quietly wrong.
+  NOT CHOSEN: streaming JSON (json_parse also takes the whole
+  document, but a JSON document is a tree, not a sequence, so it
+  means an event reader and a different programming model; the
+  evidence is not in hand and CSV is where the big files are).
+  read_bytes/write_bytes stays where 734 left it.
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting
   has no destructor or defer; lazy iterators (`for line in

@@ -15509,3 +15509,74 @@ of any size is the filesystem's mood as much as the interpreter's —
 it would add a row that is weather all the way down. The memory claim
 is checked where it belongs, on the release artifact, which 746 did:
 9 MB for a 2000000-line log.
+
+## 2026-09-07 — Iteration 748: replenishment — "reading what other programs wrote"
+
+The last milestone gave a script lines without holding the file. This
+one is about what those lines *mean*, and both halves of it turned out
+to be traps rather than difficulties — the kind where the program does
+not fail, it answers wrongly.
+
+**A CSV cannot be streamed, and streaming it naively is wrong.** I
+built a 15.7 MB CSV of 300000 rows, a third of them carrying a
+newline inside a quoted field, which is ordinary in exported data:
+
+```
+csv["parse"](read_file(p)):   9.36 s   964 MB peak
+```
+
+Sixty-one times the file, because a row is a list and a field is a
+string and there are 1.2 million of them. That is the same shape as
+the problem `each_line` solved, one level up. But the obvious
+workaround is not merely slower — it is incorrect. The file is 400001
+lines and 300001 rows:
+
+```
+each_line over the same file:  400001
+csv["parse"] of the same file: 300001 rows
+```
+
+A per-line split would report a hundred thousand rows that do not
+exist, silently, and `lib/csv.ting` has no way to be asked for one row
+at a time.
+
+**A timestamp can be written but not read.** `lib/time.ting` has
+`iso(ms)` and no inverse, so I wrote the five lines a script has to
+write today — six `int(slice(...))` calls into `from_parts` — and they
+round-trip correctly, including before the epoch. Then I gave them
+what a real file contains:
+
+```
+from_iso("not a date")            -> error: cannot convert "not " to int
+from_iso("2026-13-45T99:99:99Z")  -> 1802925639000
+```
+
+The first message is about the wrong thing. The second is worse: a
+month of 13, a day of 45 and an hour of 99 produce a confident number,
+and every script that reads timestamps this way carries that bug.
+
+Milestone: **"reading what other programs wrote"** (v2.121–v2.122).
+One stroke per tick:
+
+1. A streaming CSV reader in `lib/csv.ting` — a row at a time, built
+   on `each_line`, carrying a partial row across lines while a quoted
+   field is open, so it is right where a per-line split is wrong. To
+   decide while building, by measurement: what it costs against the
+   964 MB above, and whether the shape is `each_row(path, f)` like
+   `each_line` or something the caller drives.
+2. `from_iso` in `lib/time.ting`, and whatever else the round trip
+   needs. The decisions are all about refusal: what a string that is
+   not a timestamp answers, whether a date without a time is
+   accepted, what happens to a month of 13 — the current answer being
+   the one thing it must not be.
+3. The example: a report over a CSV too big to hold, grouped by
+   something read out of a date column — a program that needs both
+   strokes and cannot be written today without being quietly wrong.
+
+Noticed and not chosen. JSON has the same shape — `json_parse` takes
+the whole document — but a JSON document is a tree rather than a
+sequence, so streaming it means an event reader and a different
+programming model; the evidence for that is not in hand, and CSV is
+where the big files actually are. And `read_bytes`/`write_bytes` stays
+where 734 left it: still absent, still the wrong representation as a
+list of ints, still waiting for its own evidence.
