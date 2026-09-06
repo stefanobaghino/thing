@@ -348,3 +348,67 @@ fn ting_blocks(src: &str) -> Vec<(String, Option<String>)> {
     }
     out
 }
+
+/// The tutorial shows a bundle: two files, the command, and what it
+/// writes. That listing is generated output, so it is checked the way
+/// the snippets are — the two source files come out of the page, run
+/// through `--bundle`, and the result must be the third block
+/// character for character. A changed header comment or a changed
+/// binding name would go stale here rather than in front of a reader.
+#[test]
+fn the_tutorials_bundle_is_what_bundle_prints() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let src = std::fs::read_to_string(root.join("docs/tutorial.md")).expect("the tutorial");
+    let section = src
+        .split_once("### Handing the program over as one file")
+        .expect("the bundling section")
+        .1;
+    let section = section.split_once("\n## ").expect("a section after it").0;
+    // The blocks with no language: the two sources and the bundle.
+    // The `sh` line between them carries one and is skipped.
+    let mut blocks = Vec::new();
+    let mut open: Option<(String, String)> = None;
+    for line in section.lines() {
+        match &mut open {
+            None => {
+                if let Some(kind) = line.trim_end().strip_prefix("```") {
+                    open = Some((kind.to_string(), String::new()));
+                }
+            }
+            Some(_) if line.trim_end() == "```" => {
+                let (kind, body) = open.take().expect("a fence is open");
+                if kind.is_empty() {
+                    blocks.push(body);
+                }
+            }
+            Some((_, body)) => {
+                body.push_str(line);
+                body.push('\n');
+            }
+        }
+    }
+    assert_eq!(blocks.len(), 3, "expected greeter, main and the bundle");
+
+    let dir = std::env::temp_dir().join(format!("ting-tutorial-bundle-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("a directory for the two files");
+    std::fs::write(dir.join("greeter.ting"), &blocks[0]).unwrap();
+    let main = dir.join("main.ting");
+    std::fs::write(&main, &blocks[1]).unwrap();
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--bundle")
+        .arg(&main)
+        .output()
+        .expect("failed to run ting");
+    assert!(
+        out.status.success(),
+        "--bundle failed:\n{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        blocks[2],
+        "the tutorial's bundle is not what --bundle prints"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}

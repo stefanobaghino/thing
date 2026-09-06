@@ -555,11 +555,85 @@ print(li["take"](words, 2), li["drop"](words, 4));
 Keys of a map are always strings, so `group_by`'s key function must
 return one — `str(...)` is the idiom.
 
-The [stdlib page](stdlib.html) documents all seven
-(list/map/string/math/json/fs/test), and you never have to open a
+The [stdlib page](stdlib.html) documents all twelve
+(list/map/string/math/json/fs/time/args/csv/err/sh/test), and you
+never have to open a
 module's source to read about one function: `ting --doc median` in
 a shell, or `:doc median` in the REPL, prints its signature, module
 and comment — the same text an LSP-capable editor shows on hover.
+
+### Handing the program over as one file
+
+A program split into modules is several files, and a single binary
+does not fix that on its own: whoever you send it to needs all of
+them, in the right places. `--bundle` prints the script and the local
+modules it imports as one file, and writes nothing itself.
+
+Say these two sit side by side — `greeter.ting`:
+
+```
+fn greet(name) { return "hi, " + name; }
+let version = 1;
+```
+
+and `main.ting`, which imports it and one standard library module:
+
+```
+let g = import("greeter.ting");
+let li = import("lib/list.ting");
+
+print(g["greet"]("ting"), "- module v" + str(g["version"]));
+print(li["sum"]([1, 2, 3]));
+```
+
+Then:
+
+```sh
+ting --bundle main.ting > one.ting
+```
+
+writes this:
+
+```
+# main.ting, bundled by `ting --bundle`.
+#
+# Each local module is inlined once, after the modules it
+# imports, as a function returning what its top level
+# declared; every import of it reads that one binding, which
+# is what importing a file twice already gives. An import
+# whose path is not a file was left as it was: the binary
+# answers it.
+
+# greeter.ting
+let __ting_module_0 = fn() {
+  fn greet(name) { return "hi, " + name; }
+  let version = 1;
+  return {"greet": greet, "version": version};
+}();
+
+# main.ting
+let g = __ting_module_0;
+let li = import("lib/list.ting");
+
+print(g["greet"]("ting"), "- module v" + str(g["version"]));
+print(li["sum"]([1, 2, 3]));
+```
+
+A module becomes a function returning what its top level declared,
+bound once, and every `import` of it reads that one binding — which is
+what importing the same file twice already gives you, so a module that
+keeps state stays one module. `lib/list.ting` is still an `import`,
+because the binary answers that one on its own; leaving it there is
+why one file is enough. `one.ting` prints exactly what the two files
+printed, and passes `--check`. The bundler adds nothing the formatter
+would rewrite, so if your files pass `--fmt-check` the bundle does
+too.
+
+Three things `--bundle` refuses rather than guesses at, each named at
+the import it could not follow: a circular import, a path that is not
+a literal string, and a module that returns from its own top level. It
+takes a file and only a file — a script's imports resolve against its
+own directory, and a script piped in has none.
 
 ## Working with JSON
 

@@ -681,7 +681,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   read from stdin has none. Every program in this repository that
   imports a local module is bundled and rerun by a test, which is
   where the promise is kept: the same bytes on stdout, the same exit,
-  and a bundle that passes `--check` and `--fmt-check`.
+  and a bundle that passes `--check` and `--fmt-check`. The bundler
+  adds nothing the formatter would rewrite, so a bundle of files that
+  pass `--fmt-check` passes it too — and a bundle of files that do not
+  does not, the source being copied as it was written.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
   signature and doc line, or a stdlib function's signature, module
   and comment. A module name (`list` or `lib/list.ting`) lists that
