@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.118.0 (2026-09-06)
 
 - `stat(path)` is the 69th builtin: what a file is besides its name.
   A map of `size` in bytes, `modified` in milliseconds on the same
