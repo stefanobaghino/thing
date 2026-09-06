@@ -14365,3 +14365,45 @@ uses one.
 The tutorial's listing changed with the shape, and the guard written
 in 719 is what said so — a docs test that compares the page to real
 output earns its keep the first time the output moves.
+
+## 2026-09-06 — Iteration 723: `-o`, so writing a bundle cannot eat the script
+
+Backlog item 1, choosing between `-o` and keeping module file names in
+a bundle's diagnostics. `-o` won on evidence: I measured what happens
+without it, and it is data loss.
+
+```
+ting --bundle main.ting > main.ting
+```
+
+exits 0 and leaves a 350-byte bundle of an empty program where the
+script was. The shell opens the target before ting starts, so ting
+reads a file that has already been truncated, finds no imports, and
+writes out the nothing it found. Nothing in the tool can catch that
+after the fact — which is exactly why there has to be a way to write a
+bundle that does not go through the shell.
+
+`-o FILE` writes the bundle there and refuses when FILE is one of the
+files that went into it. `bundle()` now hands back the sources it read
+alongside the text, and the comparison is by resolved path, so
+`./greeter.ting` and `sub/../greeter.ting` are refused too.
+
+That second spelling is worth recording, because the first version got
+it wrong and the test caught it. `canonicalize` fails outright when a
+directory in the middle of the path does not exist, so
+`sub/../greeter.ting` fell through to a literal comparison, matched
+nothing, and was let past — the write then failed for its own reasons,
+so no file was lost, but the guard had not done the work. It now makes
+the path absolute and resolves `.` and `..` by hand before asking the
+filesystem, and popping cannot walk off the front of an absolute path.
+Doing it lexically *first* would have been the other bug: `../o/x` has
+no `..` to pop against and would have named a different file.
+
+The tutorial and the reference now teach `-o` and say what `>` does.
+The stdin refusal points at `--help`, like every other usage error.
+
+Not chosen, and the reason: a bundle's diagnostics point into the
+bundle rather than at the module a line came from. Fixing that needs
+something ting does not have — a way for a file to say a line belongs
+elsewhere — and inventing one for the bundler alone is a much bigger
+thing than this milestone. It stays written down.

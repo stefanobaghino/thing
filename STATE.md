@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 346 Rust tests
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 347 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1107,10 +1107,20 @@ holds only the current milestone and the standing rules.
   in selftest/modules.ting does not by itself prove two imports give
   one map (716 proved it by writing through one name and reading
   through the other); the new test uses a side effect.
+- 723: `--bundle -o FILE`. MEASURED FIRST: `ting --bundle main.ting >
+  main.ting` exits 0 and leaves a bundle of an EMPTY program where the
+  script was — the shell truncates before ting starts. -o writes the
+  file and refuses when it is one of the bundle's own sources, by
+  resolved path (`./x`, `sub/../x` too). The first version missed
+  `sub/../x` when `sub` does not exist, because canonicalize fails
+  outright; it now absolutises and resolves `.`/`..` by hand first —
+  but only after trying canonicalize, since lexical-first would
+  misname `../o/x`. Docs teach -o and say what `>` does.
+  NOT CHOSEN: module file names in a bundle's diagnostics — ting has
+  no way for a file to say a line belongs elsewhere, and inventing one
+  for the bundler alone is bigger than this milestone.
 - Backlog (one per tick, in order):
-  (1) chosen next tick — candidates: `--bundle -o FILE` (today stdout
-  only, and PowerShell's `>` writes UTF-16), and whether a bundle
-  should keep a module's own file name in its diagnostics;
+  (1) release v2.117.0 — two strokes banked (722, 723);
   (2) then the health tick that closes "a script you can hand over".
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
