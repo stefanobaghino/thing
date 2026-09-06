@@ -15316,3 +15316,46 @@ Named `_l`, as the checker's own rule allows, it is seven again.
 Seven selftest checks (2465 → 2472), a reference row and two
 paragraphs, a tutorial block, the changelog entry written *this* time
 rather than at release, and the README's count moved to 72.
+
+## 2026-09-06 — Iteration 743: the four questions, and a tail that does not crawl
+
+Stroke two of "a file read a line at a time". `lib/fs.ting` gained
+`count_lines`, `head`, `tail` and `lines_matching` — the questions
+people actually ask a file whose size they do not control, built on
+`each_line` so the streaming is not something you have to remember to
+do.
+
+Two of the four are easy to write badly, which is the argument for
+writing them once.
+
+`head` has to *stop*. Reading the file and keeping the first n would
+give the same answer at the cost of the whole file; returning
+`len(out) < n` from the callback makes it cost what its first n lines
+cost.
+
+`tail` has to hold a window rather than a list, and I measured the
+difference rather than assuming it. The obvious version pushes every
+line and drops the front when the list grows past n:
+
+```
+1000000 lines      naive      ring
+  n = 10          2007 ms    925 ms
+  n = 1000       75000 ms    926 ms
+```
+
+Dropping the front copies the whole window, once per line, so the
+naive version is O(n) per line and its cost grows with the window: at
+a thousand lines of tail it takes a minute and a quarter to read a
+file the ring reads in under a second. The ring writes into
+`ring[seen % n]` and unrolls once at the end — the same 925 ms
+whatever n is. Both were checked against each other on the same file
+before I kept one (`same answer true`).
+
+The wrap is the part a test has to hold down, so the selftest asks for
+the last three of five lines, where the ring's start is not zero and
+an unroll that forgot to rotate would answer in the wrong order.
+
+Eleven selftest checks (2472 → 2483), four rows on the stdlib page
+with the count moved to 182 — checked by the guard written in 740,
+which is the first time that test has done its job on a change rather
+than on an audit.

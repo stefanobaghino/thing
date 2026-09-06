@@ -157,6 +157,58 @@ fn total_size(d) {
   return total;
 }
 
+# How many lines a file has, without ever holding it. `wc -l` counts
+# newline characters; this counts lines, so a last line with nothing
+# after it still counts as one, which is what each_line gives.
+fn count_lines(p) {
+  return each_line(p, fn(_l) { return nil; });
+}
+
+# The first n lines, reading no further: each_line stops when the
+# function answers false, so this costs what the first n lines cost
+# and not what the file does.
+fn head(p, n) {
+  if n <= 0 { return []; }
+  let out = [];
+  each_line(p, fn(l) {
+    push(out, l);
+    return len(out) < n;
+  });
+  return out;
+}
+
+# The last n lines, holding only n of them. The obvious way — push
+# every line, drop the front when the list grows past n — copies the
+# whole window once per line: over 1000000 lines that measured 2007 ms
+# at n = 10 and 75000 ms at n = 1000. Writing into a ring and
+# unrolling it once at the end costs the same whatever n is: 925 ms
+# and 926 ms for those two.
+fn tail(p, n) {
+  if n <= 0 { return []; }
+  let ring = [];
+  let seen = 0;
+  each_line(p, fn(l) {
+    if len(ring) < n { push(ring, l); } else { ring[seen % n] = l; }
+    seen += 1;
+    return nil;
+  });
+  if seen <= n { return ring; }
+  let start = seen % n;
+  return slice(ring, start, n) + slice(ring, 0, start);
+}
+
+# Every line containing needle, in order. The file is never held; the
+# answer is, so a needle that matches every line costs what reading
+# the whole file would.
+fn lines_matching(p, needle) {
+  let out = [];
+  each_line(p, fn(l) {
+    if contains(l, needle) { push(out, l); }
+    return nil;
+  });
+  return out;
+}
+
 # A file moved, wherever it has to go. rename is the whole operation
 # when both paths are on one filesystem: nothing is copied, so the
 # size does not matter and the modification time comes through

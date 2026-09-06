@@ -159,6 +159,29 @@ assert(try(each_line, root + "/lines.txt", 3)["err"] ==
 remove_file(root + "/lines.txt");
 remove_file(root + "/none.txt");
 
+# And the module on top of it: the questions people ask a file whose
+# size they do not control.
+write_file(root + "/log.txt", "alpha\nbeta\ngamma\ndelta\nepsilon\n");
+assert(fs["count_lines"](root + "/log.txt") == 5, "five lines");
+write_file(root + "/tailless.txt", "one\ntwo");
+assert(fs["count_lines"](root + "/tailless.txt") == 2,
+"a last line with no newline after it still counts");
+assert(fs["head"](root + "/log.txt", 2) == ["alpha", "beta"], "the first two");
+assert(fs["head"](root + "/log.txt", 0) == [], "none of them");
+assert(fs["head"](root + "/log.txt", 99) == fs["head"](root + "/log.txt", 5),
+"and asking for more than there are gives what there is");
+assert(fs["tail"](root + "/log.txt", 2) == ["delta", "epsilon"], "the last two");
+assert(fs["tail"](root + "/log.txt", 3) == ["gamma", "delta", "epsilon"],
+"the ring unrolls in order wherever it wrapped");
+assert(fs["tail"](root + "/log.txt", 99) == fs["head"](root + "/log.txt", 5),
+"a window wider than the file is the file");
+assert(fs["tail"](root + "/log.txt", 0) == [], "and none of them is none");
+assert(fs["lines_matching"](root + "/log.txt", "a") == ["alpha", "beta", "gamma", "delta"],
+"every line containing it, in order");
+assert(fs["lines_matching"](root + "/log.txt", "zzz") == [], "and no lines when none do");
+remove_file(root + "/log.txt");
+remove_file(root + "/tailless.txt");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

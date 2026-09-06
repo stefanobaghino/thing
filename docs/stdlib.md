@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 178 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 182 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -181,6 +181,10 @@ binary runs on accepts.
 | `size(p)` | how big a file is in bytes, or `nil` when nothing readable is there — `stat`'s size without the map |
 | `facts(d)` | every file at or below a directory with what `stat` says: maps of `path`, `size`, `modified` and `kind`, sorted by path, one `stat` each |
 | `total_size(d)` | the bytes at or below a directory, directories themselves left out |
+| `count_lines(p)` | how many lines, without holding the file; a last line with no newline after it still counts |
+| `head(p, n)` | the first `n` lines, reading no further |
+| `tail(p, n)` | the last `n` lines, holding only `n` of them |
+| `lines_matching(p, needle)` | every line containing `needle`, in order |
 | `move(from, to)` | the file moved: `rename` where that works, and across filesystems what `mv` does — copy the bytes, then remove the original, which is slower and not atomic |
 | `remove_tree(p)` | every file and directory at or below `p`, gone; a path that is not there is not an error |
 

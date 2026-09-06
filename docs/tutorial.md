@@ -911,7 +911,9 @@ same count through `each_line` costs 9 MB. Returning `false` stops
 the read, so the second call above never touches the rest of the
 file — that is how `head` and "the first line that matches" are
 written. `"-"` reads stdin, the same name `read_file` uses, so a
-script can take a path or a pipe without caring which.
+script can take a path or a pipe without caring which. `fs["count_lines"]`,
+`fs["head"]`, `fs["tail"]` and `fs["lines_matching"]` are the same
+four questions, already written.
 
 `stat` answers what a name cannot — how big a file is, when it was
 last written, and what kind of thing it is:

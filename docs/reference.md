@@ -519,6 +519,12 @@ disk, which is what makes "the first ten lines" or "the first line
 that matches" cost what they should; every other answer, `nil`
 included, carries on.
 
+`lib/fs.ting` asks the four questions people actually ask a file too
+big to hold: `count_lines`, `head`, `tail` and `lines_matching`. They
+are there so the streaming is not something you have to remember to
+do, and because two of them are easy to write badly — `head` has to
+stop the read, and `tail` has to hold a window rather than a list.
+
 The move that works either way is `lib/fs.ting`'s `move`: a `rename`
 where that succeeds, and where it cannot, the copy and the removal
 `mv` falls back to. It lives there rather than in the binary so that

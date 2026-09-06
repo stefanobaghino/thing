@@ -22,6 +22,15 @@ Windows are attached to each
   `"-"` is stdin and shares the buffer `input()` reads from, and
   returning `false` from `f` stops the read, which is what makes
   "the first ten lines" cost what it should.
+- `lib/fs.ting` gained `count_lines(p)`, `head(p, n)`, `tail(p, n)`
+  and `lines_matching(p, needle)`, all built on `each_line` so the
+  streaming is not something to remember. Two of them are easy to
+  write badly: `head` has to stop the read rather than filter
+  afterwards, and `tail` has to hold a window rather than a list —
+  pushing every line and dropping the front copies the window once
+  per line, which over 1000000 lines measured 2007 ms at n = 10 and
+  75000 ms at n = 1000, against 925 ms and 926 ms for a ring that
+  costs the same whatever n is.
 
 ## v2.119.0 (2026-09-06)
 
