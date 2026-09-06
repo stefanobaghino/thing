@@ -13518,3 +13518,64 @@ Three guards had opinions about that line, and each was right to:
 
 68 builtins now. The gate is green, 50000 differential cases are clean
 at seed 703, and BASELINE is regenerated with every checksum unchanged.
+
+## 2026-09-06 — Iteration 704: `s += x` stops copying the string
+
+The backlog said "the character accumulator in `words` and its five
+sibling sites". The first thing to do was find out what the accumulator
+actually costs, and the answer sent this somewhere better than
+lib/string.ting.
+
+Doubling the length quadrupled the time: 25000, 50000 and 100000
+single-character appends took 19, 66 and 240 ms, against 12, 27 and
+50 ms for the same work through a list and one `join`. `s += c` was
+quadratic, and not in the standard library — in the language. Six sites
+in lib/ have the shape, and so does any program anyone writes.
+
+The cost was one clone. A compound assignment read the old value out of
+its binding, which for a string copies it, then concatenated and stored
+the answer back — so every round of the loop copied everything built so
+far and threw the copy away. `String + &str` already reuses the
+left-hand allocation; it was never getting an owned left-hand side.
+
+Moving the value out instead of copying it needs two things to be true,
+and neither is free:
+
+- The move has to happen after the right-hand side has run, or `s += s`
+  reads a binding that has already been emptied. But reading late is
+  not the same as reading early: `s += f()` where f assigns to s takes
+  the value f left rather than the one the statement began with. So the
+  reorder is allowed only when the right-hand side provably cannot
+  reach the name — `cannot_reach` answers no to any call, any function
+  literal and any mention of the name, and yes to the shapes the
+  accumulator actually uses.
+- The operator has to not fail, or the binding is left holding the nil
+  that was put there as a placeholder. So the move is used only for a
+  string appended to a string. Every other pair is copied first and
+  behaves exactly as it did, including `s += 1` and integer overflow.
+
+Both conditions are invisible when they hold, which is the dangerous
+kind, so the deciding cases are pinned in tests/differential.rs: self
+append, a right-hand side that writes the name, a failed operator on
+both a string and an overflowing int, ints, lists, index compounds, and
+an unbound name failing before the right-hand side runs. The first
+version of this got the second condition wrong in the tree-walker —
+it moved before checking the pair, so a failed `u += 1` left u as nil
+while the VM left it alone. The engines disagreeing is what showed it,
+which is what running both is for.
+
+In the VM the read, the operator and the write are now one instruction
+(`UpdateSlot`, or `CheckVar` plus `UpdateVar` for a name in the
+environment, the check kept ahead of the right-hand side so an unbound
+name still fails first). 100000 appends: 240 ms to 14 ms.
+
+bench/accum.ting is new, because nothing in the suite built a long
+string and the win was therefore unmeasured: 166.7 to 74.6 ms on eval,
+142.3 to 44.1 ms on the VM. BASELINE has nine rows now.
+
+And the honest part: `words` barely moved, 55 to 48 ms. Its words are
+about five characters long, so the quadratic term was never its cost —
+`--profile` puts 52.8 of its 86 ms in the per-character loop itself and
+95599 calls to `contains`. The accumulator was the right thing to fix
+and the wrong reason to have picked it. What `words` needs is a
+different change, and it is not this one.

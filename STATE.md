@@ -883,11 +883,30 @@ holds only the current milestone and the standing rules.
   exactly, still fires on `let len = 5;`), tests/docs.rs's fn-line
   count (now counts the re-export form), tests/grammar.rs's editor
   grammar. BASELINE regenerated.
+- 704: `s += x` appends instead of copying. It was QUADRATIC in the
+  language, not just in lib/: 25000/50000/100000 appends took
+  19/66/240 ms, now 4/6/14 on the VM. The old value is moved out of
+  its binding, which needs BOTH conditions: the move happens after the
+  right-hand side, so it is only sound when the RHS provably cannot
+  reach the name (`cannot_reach` in eval.rs says no to any call, fn
+  literal or mention of the name); and a moved-out binding cannot be
+  restored, so only string-appended-to-string, the one pair that
+  cannot fail, is moved. VM fuses read/op/write into UpdateSlot, or
+  CheckVar + UpdateVar for the environment with the check kept ahead
+  of the RHS. The tree-walker got the second condition wrong first —
+  moved before checking the pair, so a failed `u += 1` left u nil
+  while the VM left it alone; the engines disagreeing is what caught
+  it. Deciding cases pinned in tests/differential.rs. bench/accum.ting
+  is new (166.7->74.6 eval, 142.3->44.1 vm); BASELINE is NINE rows.
+  FOUND: `words` barely moved (55->48 ms). Its words are ~5 chars, so
+  the quadratic term was never its cost — --profile puts 52.8 of 86 ms
+  in the per-character loop and 95599 `contains` calls. The
+  accumulator was the right fix picked for the wrong reason.
 - Backlog (one per tick, in order):
-  (1) the character accumulator in `words` and its five sibling sites
-  in lib/string.ting and lib/csv.ting;
-  (2) re-profile and follow whatever is on top then;
-  (3) release v2.114.0 once three strokes are banked (702, 703 so far).
+  (1) release v2.114.0 (strokes 702, 703, 704);
+  (2) verify it;
+  (3) re-profile the stdlib and follow whatever is on top, `words`
+  included — its cost is the per-character loop, not the append.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
