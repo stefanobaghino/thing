@@ -15262,3 +15262,57 @@ language rather than a builtin, and I would rather learn what the
 streaming needs to do before choosing how it should look. And
 `read_lines` returning a list is not a candidate at all: measured
 above, it is the expensive half of the problem.
+
+## 2026-09-06 — Iteration 742: each_line, a file that does not have to fit
+
+Stroke one of "a file read a line at a time". `each_line(path, f)` is
+the 72nd builtin, and the measurement that asked for it now answers
+back to back on the same host:
+
+```
+read_file + split:   1.35 s   454 MB peak
+each_line:           1.24 s     9 MB peak
+```
+
+Same 147 MB log, same 2000000 lines, same answer (666306 lines with
+ERROR in them). Fifty times less memory, and slightly quicker, because
+the expensive part was never the reading — it was the list of two
+million strings, which weighs more than the file it came from.
+
+The five open questions from 741, each settled by looking rather than
+choosing:
+
+- **CRLF.** `input()` strips the carriage return as well as the
+  newline — measured, `printf 'a\r\n'` gives a string of length 1 —
+  so `each_line` does the same, and a file written on Windows reads
+  like one written here.
+- **No final newline.** The last line counts. `"one\r\ntwo\nthree"`
+  gives three lines.
+- **Not UTF-8.** It errors, like `read_file`:
+  `cannot read "bin.dat": stream did not contain valid UTF-8`. The
+  same wall `copy_file` was built to get around, in the same words.
+- **Stopping.** Returning `false` stops the read; every other answer,
+  `nil` included, carries on. Requiring a bool the way `filter` does
+  would make every callback end in `return true;` for nothing, and
+  without a stop there is no way to write `head` that does not read
+  the whole file.
+- **`"-"`.** It is stdin, the name `read_file` already uses. It also
+  shares the buffer `input()` reads from, so the two compose: a script
+  that reads a header line with `input()` and streams the rest with
+  `each_line` loses nothing between them. That is the Rust guard,
+  broken on purpose first — `first a / then b / then c / 2`.
+
+The implementation reuses one `String` for the whole read. That is the
+point of the builtin: nothing in it grows with the file.
+
+Two things caught by the machinery rather than by me. The reference
+guard failed before I had written a word of prose, because every
+builtin must appear in docs/reference.md — the count of builtins and
+the page cannot drift apart. And the corpus check went from seven
+warnings to nine: my callbacks were written `fn(l) { return nil; }`
+and ting warns about a parameter that is never used, which is right.
+Named `_l`, as the checker's own rule allows, it is seven again.
+
+Seven selftest checks (2465 → 2472), a reference row and two
+paragraphs, a tutorial block, the changelog entry written *this* time
+rather than at release, and the README's count moved to 72.

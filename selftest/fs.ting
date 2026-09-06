@@ -136,6 +136,29 @@ assert(read_file(root + "/there.txt") == "cargo", "and a move replaces its targe
 fs["move"](root + "/there.txt", root + "/b.txt");
 assert(try(fs["move"], root + "/nope", root + "/x")["err"] != nil, "moving nothing errors");
 
+# A file read a line at a time. The lines arrive as input() gives
+# them: no newline, and no carriage return before it, so a file
+# written on Windows reads like one written here. The last line
+# counts even without a newline after it.
+write_file(root + "/lines.txt", "one\r\ntwo\nthree");
+let seen = [];
+assert(each_line(root + "/lines.txt", fn(l) { push(seen, l); return nil; }) == 3,
+"it answers how many lines it gave");
+assert(seen == ["one", "two", "three"], "newline and carriage return both gone");
+let first = nil;
+assert(each_line(root + "/lines.txt", fn(l) { first = l; return false; }) == 1,
+"false stops the read");
+assert(first == "one", "after the first line");
+write_file(root + "/none.txt", "");
+assert(each_line(root + "/none.txt", fn(_l) { return nil; }) == 0, "an empty file has no lines");
+assert(try(each_line, root + "/nope", fn(_l) { return nil; })["err"] != nil,
+"a file that is not there errors, as read_file does");
+assert(try(each_line, root + "/lines.txt", 3)["err"] ==
+"each_line expects a string path and a function, got string and int",
+"a path and a function");
+remove_file(root + "/lines.txt");
+remove_file(root + "/none.txt");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

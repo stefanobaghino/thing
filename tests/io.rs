@@ -3627,3 +3627,43 @@ fn copy_file_refuses_the_file_it_would_empty() {
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// each_line's "-" is read_file's "-": stdin, so a script can take a
+/// path or a pipe without caring which. It shares the buffer input()
+/// reads from, so the two compose rather than losing a line between
+/// them — which a separate reader would.
+#[test]
+fn each_line_reads_stdin_where_input_left_off() {
+    let dir = tree(
+        "each-line-stdin",
+        &[(
+            "run.ting",
+            "print(\"first \" + input());\n\
+             print(each_line(\"-\", fn(l) { print(\"then \" + l); return nil; }));\n",
+        )],
+    );
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("run.ting")
+        .current_dir(&dir)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    {
+        use std::io::Write;
+        child
+            .stdin
+            .as_mut()
+            .unwrap()
+            .write_all(b"a\nb\nc\n")
+            .unwrap();
+    }
+    let out = child.wait_with_output().unwrap();
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "first a\nthen b\nthen c\n2\n",
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}

@@ -23,8 +23,9 @@ flow with compound assignment (`+=` and its four siblings),
 modules via `import()`
 plus twelve embedded stdlib modules
 (list/map/string/math/json/fs/test/time/sh/args/err/csv),
-71 builtins (file and stdin I/O, listing, making and removing
-directories, moving and copying files, JSON with pretty printing,
+72 builtins (file and stdin I/O including a file read a line at a
+time, listing, making and removing directories, moving and copying
+files, JSON with pretty printing,
 sorting, map/filter/reduce,
 try/fail error recovery, string formatting, regular expressions,
 running other programs, the clock and a seeded generator), and

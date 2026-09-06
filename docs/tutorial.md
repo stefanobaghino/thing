@@ -881,6 +881,38 @@ extension, which is most of what a tool that runs over a tree needs.
 that is already there, so it pairs with `write_file` into a tree
 that does not exist yet.
 
+A file too big to hold is read a line at a time. `each_line` calls a
+function with each line and keeps only that line, so the memory it
+uses does not depend on the size of the file:
+
+```ting
+write_file("log.txt", "INFO ok\nERROR disk full\nINFO ok\nERROR timeout\n");
+
+let errors = 0;
+let total = each_line("log.txt", fn(line) {
+  if starts_with(line, "ERROR") { errors += 1; }
+  return nil;
+});
+print(total, errors);
+
+each_line("log.txt", fn(line) { print("first: " + line); return false; });
+```
+
+```text
+4 2
+first: INFO ok
+```
+
+`read_file` would answer both questions too, and for a small file it
+is the simpler thing to write. The difference shows up with size: on
+a 147 MB log, reading it whole and splitting it into lines costs
+454 MB, because the list of lines weighs more than the file; the
+same count through `each_line` costs 9 MB. Returning `false` stops
+the read, so the second call above never touches the rest of the
+file — that is how `head` and "the first line that matches" are
+written. `"-"` reads stdin, the same name `read_file` uses, so a
+script can take a path or a pipe without caring which.
+
 `stat` answers what a name cannot — how big a file is, when it was
 last written, and what kind of thing it is:
 

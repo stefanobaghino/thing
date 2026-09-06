@@ -57,6 +57,7 @@ pub enum Builtin {
     Input,
     ReadFile,
     WriteFile,
+    EachLine,
     ListDir,
     Exists,
     IsDir,
@@ -102,7 +103,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 71] = [
+    pub const ALL: [Builtin; 72] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -132,6 +133,7 @@ impl Builtin {
         Builtin::Input,
         Builtin::ReadFile,
         Builtin::WriteFile,
+        Builtin::EachLine,
         Builtin::ListDir,
         Builtin::Exists,
         Builtin::IsDir,
@@ -261,6 +263,10 @@ impl Builtin {
             Builtin::WriteFile => (
                 "write_file(path, s) / write_file(path, s, \"append\")",
                 "Writes (or overwrites) the file; \"append\" adds to the end. Returns nil.",
+            ),
+            Builtin::EachLine => (
+                "each_line(path, f)",
+                "Reads the file one line at a time, calling f(line) for each — newline removed, CRLF too, as input() does. Only the current line is held, so a file larger than memory still reads. \"-\" is stdin. Returning false from f stops the read. Answers how many lines f was given.",
             ),
             Builtin::ListDir => (
                 "list_dir(path)",
@@ -443,6 +449,7 @@ impl Builtin {
             Builtin::Input => "input",
             Builtin::ReadFile => "read_file",
             Builtin::WriteFile => "write_file",
+            Builtin::EachLine => "each_line",
             Builtin::ListDir => "list_dir",
             Builtin::Exists => "exists",
             Builtin::IsDir => "is_dir",

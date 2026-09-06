@@ -260,7 +260,7 @@ fn documented_snippets_run() {
     // that quietly disappeared would fail here rather than stop being
     // checked.
     for (page, want_checked, want_run_only, want_skipped) in
-        [("tutorial", 46, 1, 0), ("reference", 0, 6, 2)]
+        [("tutorial", 47, 1, 0), ("reference", 0, 6, 2)]
     {
         let src = std::fs::read_to_string(root.join(format!("docs/{page}.md")))
             .unwrap_or_else(|_| panic!("docs/{page}.md missing"));
@@ -440,11 +440,7 @@ print(total);
         .spawn()
         .and_then(|mut child| {
             use std::io::Write;
-            child
-                .stdin
-                .as_mut()
-                .unwrap()
-                .write_all(script.as_bytes())?;
+            child.stdin.as_mut().unwrap().write_all(script.as_bytes())?;
             child.wait_with_output()
         })
         .expect("failed to run ting");

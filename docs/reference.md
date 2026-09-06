@@ -324,6 +324,7 @@ scope).
 | `input()`      | one line from stdin without the newline; `nil` at end of input |
 | `read_file(path)` | the file's entire contents as a string; `"-"` reads stdin to EOF |
 | `write_file(path, s)` / `write_file(path, s, "append")` | writes (or overwrites) the file; `"append"` adds to the end |
+| `each_line(path, f)` | reads the file one line at a time, calling `f(line)` for each — newline gone, and the carriage return before it, as `input()` gives them. Only the current line is held. `"-"` is stdin; returning `false` from `f` stops the read; answers how many lines `f` was given |
 | `list_dir(path)` | the names in the directory, sorted; not the paths, and not recursive; a path that is not a readable directory errors |
 | `exists(path)` | whether anything is at that path; `is_dir(path)` whether that thing is a directory. Questions, so an absent or unreadable path is `false`, never an error |
 | `is_dir(path)` | see `exists` |
@@ -413,7 +414,8 @@ The rest of the semantics:
 
 ### Files and directories
 
-`read_file` and `write_file` handle a file's contents; `list_dir`,
+`read_file`, `each_line` and `write_file` handle a file's contents;
+`list_dir`,
 `exists`, `is_dir`, `stat`, `make_dir`, `rename` and `copy_file`
 handle the tree around it.
 The split between them is deliberate:
@@ -498,6 +500,24 @@ What `copy_file` is not is atomic: a failure part way leaves a
 partial target, and that is not hidden. A copy that cannot be seen
 half-done is a copy to a temporary name followed by a `rename` onto
 the target — two lines, in ting, where you can read them.
+
+`read_file` hands back the whole file, which is the right answer
+until the file is large. Counting the matching lines in a 147 MB log
+that way costs 454 MB of memory: the file once, and then the list of
+its 2000001 lines, which weighs more than the file it came from.
+`each_line` reads the same file in 9 MB and slightly less time,
+because nothing but the current line is ever held — the same nine
+megabytes whether the file is a kilobyte or a terabyte.
+
+The line arrives as `input()` gives it, without its newline and
+without a carriage return before it, so a file written on Windows
+reads like one written here; a last line with no newline after it
+still counts. `"-"` is stdin, the name `read_file` already uses, and
+it shares the buffer `input()` reads from, so the two compose. `f`
+returning `false` stops the read and nothing further is read from
+disk, which is what makes "the first ten lines" or "the first line
+that matches" cost what they should; every other answer, `nil`
+included, carries on.
 
 The move that works either way is `lib/fs.ting`'s `move`: a `rename`
 where that succeeds, and where it cannot, the copy and the removal

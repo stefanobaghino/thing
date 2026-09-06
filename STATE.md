@@ -15,11 +15,11 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 71 builtins; twelve embedded stdlib modules
+- 72 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 178
   functions, guarded); 42 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 20 examples with .out); 352 Rust tests
+  nothing on its own — and 20 examples with .out); 353 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1336,15 +1336,24 @@ holds only the current milestone and the standing rules.
   lines one at a time is 381 ms vs 122 ms building and writing once.
   Closures can accumulate into an outer variable (checked), so a
   callback shape works.
+- 742: `each_line(path, f)` — the 72nd builtin. Back to back on this
+  host: read_file + split 1.35 s / 454 MB, each_line 1.24 s / 9 MB,
+  same 147 MB log and same answer (666306). All five questions
+  settled by looking: input() strips the CR as well as the NL
+  (measured), so each_line does; a last line without a newline
+  counts; a file that is not UTF-8 errors as read_file does; `false`
+  stops the read and every other answer including nil carries on (a
+  bool requirement like filter's would make every callback end in
+  `return true;`, and without a stop there is no cheap `head`); "-"
+  is stdin AND shares input()'s buffer, so the two compose (that is
+  the Rust guard, broken on purpose). One String reused for the whole
+  read. CAUGHT BY THE MACHINERY: the reference guard fired before any
+  prose was written (every builtin must be in docs/reference.md), and
+  the corpus check went 7 -> 9 because `fn(l) { return nil; }` warns
+  about an unused parameter — `_l` is the checker's own escape. 7
+  selftest checks (2465 -> 2472).
 - Backlog (one per tick, in order):
-  (1) `each_line(path, f)` — stream the file, call f per line, hold
-  only the current one. DECIDE while building, by measurement: does
-  f returning false stop the read (that is what makes head and
-  first-match possible); CRLF, with input() as the reference; no
-  final newline; a file that is not valid UTF-8, where read_file
-  errors outright; and whether "-" means stdin as it does for
-  read_file, which would close the asymmetry that opened this;
-  (2) lib/fs on top — how many lines, which ones match, the first n,
+  (1) lib/fs on top — how many lines, which ones match, the first n,
   built on the one builtin so streaming is not something to remember;
   (3) the example — a report on a log too big to hold, with the
   memory it used printed beside the answer.

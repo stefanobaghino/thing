@@ -5,6 +5,24 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `each_line(path, f)` is the 72nd builtin: a file read one line at a
+  time, `f(line)` called for each, with only the current line held.
+  Until now a script given a path had to call `read_file`, which is
+  the whole file at once — counting the matching lines in a 147 MB
+  log that way costs 454 MB, the file once and then the list of its
+  2000001 lines, which weighs more than the file. The same count
+  through `each_line` costs 9 MB and slightly less time. ting could
+  already stream, but only from stdin, through `input()`; the
+  workaround was `cat big.log | ting count.ting`, which stops the
+  script from taking the path as an argument or reading two files.
+  The line arrives as `input()` gives it — no newline, no carriage
+  return before it — a last line without a newline still counts,
+  `"-"` is stdin and shares the buffer `input()` reads from, and
+  returning `false` from `f` stops the read, which is what makes
+  "the first ten lines" cost what it should.
+
 ## v2.119.0 (2026-09-06)
 
 - `rename(from, to)` is the 70th builtin: a file or directory given
