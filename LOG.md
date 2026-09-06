@@ -14772,3 +14772,70 @@ one run share a modification stamp, so "which is newest" is a tie that
 means nothing; and asking for facts inside a comparator costs once per
 comparison rather than once per file, 249 ms against 139 over 5132
 files.
+
+## 2026-09-06 — Iteration 734: replenishment — "moving a file, not retyping it"
+
+Where to look next. The last milestone taught ting to say how big a
+file is and when it was written; this one starts from what a script
+does *after* it knows. I wrote the most ordinary tidying script there
+is — put every file into a folder named for the day it was last
+modified — and ran it on a directory holding a text file, a script and
+a photograph:
+
+```
+moved note.txt to 2026-09-06
+moved organize.ting to 2026-09-06
+cannot move photo.jpg -> cannot read "./photo.jpg": stream did not contain valid UTF-8
+```
+
+There is no `rename` and no `copy` among the 69 builtins, so a move is
+`write_file(target, read_file(source))` and then `remove_file`. Three
+things follow, and I measured each rather than asserting it.
+
+**A file that is not text cannot be moved at all.** The photograph is
+exactly the kind of file people tidy, and the script cannot touch it.
+This is the same wall the last milestone found for sizing, still
+standing on the other side of it.
+
+**The move destroys the date it sorted by.** A file copied through
+`read_file` and `write_file` comes out with a modification time of
+*now* — measured 16 ms after the original. `mv` keeps the date (I
+checked: true), `cp` without `-p` does not (checked: false). So a
+script that organises files by their date rewrites every date it used.
+That is not a small blemish; it makes the tool useless the second time
+it runs.
+
+**Speed is not the argument, and I am not going to pretend it is.** A
+9 MB file copied through ting took 11 ms against `cp -p`'s 6. Under
+two times, on a file most scripts will never see. What is true is that
+the whole file goes through memory, and that a write followed by a
+remove is not atomic — a failure between them leaves two copies, and a
+failed write leaves a truncated target where a file used to be.
+
+Milestone: **"moving a file, not retyping it"** (v2.119–v2.120). One
+stroke per tick:
+
+1. `rename(from, to)`: the operation that keeps a file's identity, and
+   with it the date, because nothing is copied. To decide while
+   building, with a measurement rather than a preference: what it does
+   across filesystems, where the system call refuses and `mv` quietly
+   falls back to copying.
+2. `copy_file(from, to)`: any bytes, no memory held. What it preserves
+   is a decision, not a default — `std::fs::copy` carries the
+   permission bits and not the date, and `File::set_modified` exists
+   in the standard library at the version this builds on (checked
+   today), so following the date is possible if it is the right
+   answer.
+3. `lib/fs.ting` on top, and the example: the tidying script above,
+   finished, which is a program that could not be written before and
+   would have been wrong if it had.
+
+Noticed and not chosen, with the reason: general byte access
+(`read_bytes`/`write_bytes`). It would solve copying too, but a list
+of ints for a 9 MB file is nine million values, which is the wrong
+representation, and a proper bytes type is a language addition rather
+than a builtin. Copy and rename are the right size for the measured
+problem; bytes can earn their own evidence later. Also absent, and
+also not chosen: any way to make a file executable, which `run` covers
+on the systems that have `chmod` and which nothing has yet made me
+want.

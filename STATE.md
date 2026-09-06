@@ -1212,8 +1212,35 @@ holds only the current milestone and the standing rules.
   formatter 3.82s. All 139 releases carry their era's assets (3/4/6),
   checked one by one; nine site paths 200; corpus at seven warnings;
   all 62 ting files formatted.
+- 734: replenishment — milestone "moving a file, not retyping it"
+  (v2.119-v2.120), reasoning in LOG.md. No rename and no copy among
+  the 69 builtins, so a move is read_file + write_file + remove_file.
+  PROBED with the most ordinary tidying script there is (files into
+  folders named for their modification day): it moved the text files
+  and FAILED on the photograph ("stream did not contain valid
+  UTF-8"), and the files it did move came out dated NOW — 16 ms after
+  the original — so a script that organises by date rewrites every
+  date it used. Checked, not assumed: `mv` keeps the date (true),
+  `cp` without -p does not (false). Speed is NOT the argument: 9 MB
+  copied through ting is 11 ms against cp -p's 6. What is true is the
+  whole file goes through memory and write-then-remove is not atomic.
 - Backlog (one per tick, in order):
-  (1) replenishment — the next milestone.
+  (1) `rename(from, to)` — keeps the file's identity and its date,
+  nothing copied. DECIDE with a measurement: what happens across
+  filesystems, where the syscall refuses and `mv` falls back to
+  copying;
+  (2) `copy_file(from, to)` — any bytes, nothing held in memory. What
+  it preserves is a DECISION: std::fs::copy takes the permission bits
+  and not the date, and File::set_modified is in std at rustc 1.98
+  (checked today), so following the date is possible if it is right;
+  (3) lib/fs on top plus the example — the tidying script, finished:
+  a program that could not be written before and would have been
+  wrong if it had.
+  NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
+  a list of ints for a 9 MB file is nine million values, and a real
+  bytes type is a language addition, not a builtin. Also absent and
+  not chosen: making a file executable (run + chmod covers it, and
+  nothing has made me want it).
   NOT CHOSEN: rename/copy. Moving a file works through run() today
   and I have no measured pain for it, where sizing has three separate
   failures. It can earn its own evidence later.
