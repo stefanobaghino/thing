@@ -871,11 +871,23 @@ holds only the current milestone and the standing rules.
   64 ms through `reduce` and 47 ms through `map`, so its floor is ~70 ms
   and the prize is ~5x, NOT the 58x that comparing against `sort_by`
   suggested — `sort_by` makes 20000 key calls, not 287000.
+- 703: `sort_with` is a builtin (68 now), a bottom-up merge sort in
+  Rust so the comparator's raise travels on `?` and stability is
+  structural. 346->60 ms on 20000 elements, right at 702's predicted
+  ~70 ms floor; bench/stdlib 866.8->345.6 eval, 476.5->196.0 vm,
+  checksum unchanged. Equivalence measured, not argued: the old ting
+  merge sort copied verbatim into a probe, 160 cases plus a stability
+  case, zero mismatches on both engines. lib/list.ting keeps the name
+  via `let sort_with = sort_with;`. Three guards fired and all three
+  were right: --check's shadow warning (now skips `let f = f;`
+  exactly, still fires on `let len = 5;`), tests/docs.rs's fn-line
+  count (now counts the re-export form), tests/grammar.rs's editor
+  grammar. BASELINE regenerated.
 - Backlog (one per tick, in order):
-  (1) `sort_with` as a builtin, re-exported by lib/list.ting;
-  (2) the character accumulator in `words` and its five sibling sites
+  (1) the character accumulator in `words` and its five sibling sites
   in lib/string.ting and lib/csv.ting;
-  (3) re-profile and follow whatever is on top then.
+  (2) re-profile and follow whatever is on top then;
+  (3) release v2.114.0 once three strokes are banked (702, 703 so far).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

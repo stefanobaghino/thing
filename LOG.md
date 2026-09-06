@@ -13472,3 +13472,49 @@ sitting in the tree unnoticed because nothing about it is a warning.
 Split, and the module half rewritten for the new rule. docs/reference.md
 now states the rule where `import` is explained, and the CHANGELOG has
 it under Unreleased.
+
+## 2026-09-06 — Iteration 703: sort_with is a builtin
+
+The comparator sort was the one sort written in ting, and the slowest
+thing in the standard library. It is a builtin now: 346 ms to 60 ms on
+20000 elements, and bench/stdlib.ting as a whole goes 866.8 to 345.6 ms
+on eval and 476.5 to 196.0 ms on the VM, with its checksum unchanged.
+
+Five point eight times, against the ~70 ms floor iteration 702
+predicted from the cost of the callbacks. The prediction was the point:
+a comparator sort must call the comparator once per comparison whatever
+language it is written in, so the win was never going to be `sort_by`'s
+6 ms, and the measured 60 ms is where the arithmetic said it would
+land.
+
+It is a bottom-up merge sort in Rust rather than a call to
+`slice::sort_by`, for two reasons that are the same reason: the
+comparator is ting code, so it can raise, and `sort_by`'s closure has
+nowhere to put an error. Writing the merge out means the raise travels
+on `?` like any other, and stability is structural — a tie is not
+negative, so the left run goes first.
+
+Equivalence was checked against the implementation being replaced
+rather than argued: the old ting merge sort was copied verbatim into a
+probe and run beside the builtin over 160 cases (lengths 0 to 39, four
+comparators including a constant 0), plus a list of pairs where
+stability is observable. Zero mismatches, on both engines.
+
+`lib/list.ting` keeps the name — `let sort_with = sort_with;`, the
+re-export that iteration 702 made possible, so
+`import("lib/list.ting")["sort_with"]` is untouched.
+
+Three guards had opinions about that line, and each was right to:
+
+- `--check` warned that it shadows a builtin. It does not; it publishes
+  one. The warning now skips `let f = f;` exactly, and still fires on
+  `let len = 5;`.
+- tests/docs.rs counts what lib/ offers by counting `fn ` lines, and
+  found 173 where the page says 174. The page is right — the module
+  still offers `sort_with` — so the guard now counts the re-export
+  form too.
+- tests/grammar.rs caught the editor grammar missing the new builtin,
+  which is exactly what it is for.
+
+68 builtins now. The gate is green, 50000 differential cases are clean
+at seed 703, and BASELINE is regenerated with every checksum unchanged.
