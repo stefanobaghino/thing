@@ -945,6 +945,35 @@ existing target without asking, and it refuses to cross a
 filesystem, where the operating system will not rename and `mv`
 quietly copies instead.
 
+Crossing a filesystem, or duplicating rather than moving, is
+`copy_file`, and it works on bytes rather than text:
+
+```ting
+write_file("photo.bin", "pretend this is a photograph");
+let taken = stat("photo.bin")["modified"];
+
+copy_file("photo.bin", "backup.bin");
+print(exists("photo.bin"), stat("backup.bin")["size"]);
+print(stat("backup.bin")["modified"] == taken);
+```
+
+```text
+true 28
+true
+```
+
+A real photograph would come through the same way, though
+`read_file` could not open it — `copy_file` never decodes what it
+copies, and never holds the whole file in memory. The copy keeps the
+original's permission bits and its date, which is why a script that
+moves files across a filesystem with `copy_file` and `remove_file`
+does not lose what it was sorting by. Copying a file onto itself is
+an error rather than a silent way to empty it, and copying a
+directory is an error too. One thing it does not promise is that a
+half-finished copy is invisible: if that matters, copy to a
+temporary name and `rename` it into place, which is two lines you
+can read.
+
 ## How deep recursion goes
 
 Recursion costs host stack, so there is a limit, and the interpreter

@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 70 builtins; twelve embedded stdlib modules
+- 71 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 177
-  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 349 Rust tests
+  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 351 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1244,12 +1244,32 @@ holds only the current milestone and the standing rules.
   2454). The grammar guard caught the alternation inserted in the
   wrong place: editor/ting.tmLanguage.json must hold Builtin::ALL's
   order exactly, so rename goes after remove_dir, not after make_dir.
+- 736: `copy_file(from, to)` — the 71st builtin. MEASURED first: `mv`
+  across filesystems KEEPS the date (981169506 on both sides), `cp`
+  without -p does not, `cp -p` does; `cp` refuses a self-copy AND a
+  hard-link alias ("are the same file", exit 1), which it must,
+  because std::fs::copy there truncates the source it is about to
+  read and reports a successful copy of nothing (measured 735).
+  DECIDED: copy_file keeps the permission bits (std does) and the
+  modification time (std does NOT — set explicitly, after the bytes),
+  because a cross-filesystem move in ting is copy_file + remove_file
+  and mv keeps the date there; a copy that dropped it would restore
+  the bug that opened this milestone. Same file refused by inode on
+  unix, canonicalized paths elsewhere. A directory refused in ting's
+  words, not std's "neither a regular file nor a symlink to a regular
+  file". NOT atomic, deliberately and documented: the
+  half-done-invisible version is copy to a temporary name + rename,
+  two readable lines now that both builtins exist; baking it in would
+  need write permission in the target's directory, would break
+  copying into a file something holds open or hard-links, and would
+  leave debris with a name nobody chose. rename's EXDEV message
+  gained its second half ("which copy_file crosses and rename
+  cannot"). Guards: 2 in tests/io.rs (backdated stamp + six non-UTF-8
+  bytes; hard-link refusal with the source still reading "still
+  here"), both made to FAIL on purpose; 7 selftest checks (2454 ->
+  2461).
 - Backlog (one per tick, in order):
-  (1) `copy_file(from, to)` — any bytes, nothing held in memory. What
-  it preserves is a DECISION: std::fs::copy takes the permission bits
-  and not the date, and File::set_modified is in std at rustc 1.98
-  (checked today), so following the date is possible if it is right;
-  (3) lib/fs on top plus the example — the tidying script, finished:
+  (1) lib/fs on top plus the example — the tidying script, finished:
   a program that could not be written before and would have been
   wrong if it had.
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
@@ -1257,9 +1277,10 @@ holds only the current milestone and the standing rules.
   bytes type is a language addition, not a builtin. Also absent and
   not chosen: making a file executable (run + chmod covers it, and
   nothing has made me want it).
-  NOT CHOSEN: rename/copy. Moving a file works through run() today
-  and I have no measured pain for it, where sizing has three separate
-  failures. It can earn its own evidence later.
+  SUPERSEDED: an earlier tick declined rename/copy for want of
+  measured pain. 734 measured it — the photograph that cannot be
+  moved, the date destroyed by read+write, the non-atomic
+  write-then-remove — and the decision reversed on the evidence.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

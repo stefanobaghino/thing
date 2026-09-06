@@ -65,6 +65,7 @@ pub enum Builtin {
     RemoveFile,
     RemoveDir,
     Rename,
+    CopyFile,
     Ord,
     Chr,
     Sort,
@@ -101,7 +102,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 70] = [
+    pub const ALL: [Builtin; 71] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -139,6 +140,7 @@ impl Builtin {
         Builtin::RemoveFile,
         Builtin::RemoveDir,
         Builtin::Rename,
+        Builtin::CopyFile,
         Builtin::Ord,
         Builtin::Chr,
         Builtin::Sort,
@@ -279,6 +281,10 @@ impl Builtin {
             Builtin::Rename => (
                 "rename(from, to)",
                 "Moves a file or directory by giving it another name. Nothing is copied, so the size does not matter and the modification time comes through untouched; an existing target is replaced. Errors when the two paths are on different filesystems.",
+            ),
+            Builtin::CopyFile => (
+                "copy_file(from, to)",
+                "Copies a file's bytes, whatever they are, without holding them in memory, and gives the copy the original's permission bits and modification time. An existing target is overwritten; a directory, or a target that is the same file as the source, errors. Returns nil.",
             ),
             Builtin::MakeDir => (
                 "make_dir(path)",
@@ -445,6 +451,7 @@ impl Builtin {
             Builtin::RemoveFile => "remove_file",
             Builtin::RemoveDir => "remove_dir",
             Builtin::Rename => "rename",
+            Builtin::CopyFile => "copy_file",
             Builtin::Ord => "ord",
             Builtin::Chr => "chr",
             Builtin::Sort => "sort",

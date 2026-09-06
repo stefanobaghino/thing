@@ -102,6 +102,27 @@ assert(try(rename, root + "/nope", root + "/x")["err"] != nil, "renaming nothing
 assert(try(rename, 1, "x")["err"] == "rename expects two string paths, got int and string",
 "both paths are strings");
 
+# Copying: the move rename cannot make — across a filesystem, or of a
+# file read_file would refuse. The date follows the bytes, the way it
+# does when mv has to fall back to copying. b.txt was written at the
+# top of this file, so an equal stamp here is not two operations
+# landing in one millisecond.
+let stamp = stat(root + "/b.txt")["modified"];
+copy_file(root + "/b.txt", root + "/copy.txt");
+assert(stat(root + "/copy.txt")["modified"] == stamp, "the copy carries the original's date");
+assert(exists(root + "/b.txt"), "and the original stays, unlike rename");
+write_file(root + "/source.txt", "hello");
+copy_file(root + "/source.txt", root + "/copy.txt");
+assert(read_file(root + "/copy.txt") == "hello", "an existing target is overwritten");
+assert(try(copy_file, root + "/source.txt", root + "/source.txt")["err"] != nil,
+"copying a file onto itself errors");
+assert(read_file(root + "/source.txt") == "hello",
+"rather than emptying it, which is what the copy underneath would do");
+assert(try(copy_file, root, root + "/x")["err"] != nil, "a directory is not a file to copy");
+assert(try(copy_file, "x")["err"] != nil, "and it takes two paths, not one");
+remove_file(root + "/source.txt");
+remove_file(root + "/copy.txt");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

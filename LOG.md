@@ -14918,3 +14918,75 @@ than the suites I think I touched.
 Docs: a reference row plus two paragraphs on the move and the
 refusal; a tutorial passage with a runnable block whose last line is
 `true` — the date surviving — and the block count pinned at 45.
+
+## 2026-09-06 — Iteration 736: copy_file, and what a copy owes the original
+
+Stroke two of "moving a file, not retyping it". `copy_file(from, to)`
+is the 71st builtin, and the whole stroke is one decision: what a copy
+keeps.
+
+I measured the neighbours before choosing:
+
+```
+mv across filesystems:   date kept   (981169506 on both sides)
+cp without -p:           date lost   (stamped now)
+cp -p:                   date kept
+cp onto itself:          refused, "are the same file", exit 1
+cp onto a hard link:     refused, the same way
+```
+
+That first line settles it. `mv` keeps the modification time *even
+when it has to fall back to copying*, and a cross-filesystem move in
+ting is `copy_file` followed by `remove_file`. A `copy_file` that
+dropped the date would put back the exact bug that opened this
+milestone — a script filing things by their date destroying the dates
+— just one filesystem boundary further away. So the copy carries the
+original's permission bits (which `std::fs::copy` already does) and
+its modification time (which it does not: set explicitly, after the
+bytes, since writing them is what sets it to now).
+
+The second measurement is a hazard rather than a preference. From
+735: `std::fs::copy` from a file to itself opens the target for
+writing, truncating the source it is about to read, and returns `Ok`
+having copied nothing. It empties your file and calls it success.
+`cp` refuses that case, and by inode rather than by name, which is why
+it also catches a hard link. `copy_file` refuses it the same way —
+`same_file` asks the filesystem on unix and compares canonical paths
+elsewhere — so `a` and `./a` are caught and so is an alias that shares
+no spelling at all.
+
+A directory is refused too, in ting's words. `std::fs::copy` says "the
+source path is neither a regular file nor a symlink to a regular
+file", which is true and useless; it now says `it is a directory`. The
+recursive copy stays composable ting, for the same reason
+`remove_tree` is not a builtin.
+
+**What it deliberately is not: atomic.** A failure part way leaves a
+partial target, and I decided not to hide that behind a temporary file
+and a rename. Baking it in has real costs — it needs write permission
+in the target's directory, it breaks copying into a file something
+else holds open or that is hard-linked elsewhere, and an interrupted
+process leaves debris with a name nobody chose. Documented instead:
+if a half-done copy must be invisible, copy to a temporary name and
+`rename` it into place, which is two readable lines *now that both
+builtins exist*. That is what the milestone was for.
+
+`rename`'s cross-device error gained its second half, which was
+waiting on this stroke:
+
+```
+cannot rename "STATE.md" to "/dev/shm/zz.md": they are on different
+filesystems, which copy_file crosses and rename cannot
+```
+
+Guards, both broken on purpose first. One copies a file of six bytes
+that are not valid UTF-8, backdated to `1000000000000`, and checks the
+copy's stamp, its size, that `read_file` still refuses it, and that
+the bytes on disk are identical — the photograph from the probe that
+opened this milestone, passing. The other hard-links two names to one
+file and checks that copying between them errors *and* that the
+original still reads `still here`, which is the assertion that would
+have caught the truncation.
+
+Seven more selftest checks (2454 → 2461), a reference row with three
+paragraphs, and a tutorial block whose last line is `true`.

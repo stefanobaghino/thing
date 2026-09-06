@@ -3553,3 +3553,77 @@ fn rename_says_when_the_two_paths_are_on_different_filesystems() {
     let _ = std::fs::remove_file(&target);
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// copy_file is for the bytes rename cannot move and read_file cannot
+/// read. Both claims at once: the source is not valid UTF-8, and its
+/// modification time is backdated to a fixed instant so that "the date
+/// followed" cannot be two operations in the same millisecond.
+#[test]
+fn copy_file_carries_any_bytes_and_the_date() {
+    let dir = tree("copy-bytes", &[]);
+    std::fs::create_dir_all(&dir).unwrap();
+    let bytes: &[u8] = &[0xff, 0xfe, 0x00, 0x01, b'h', b'i'];
+    std::fs::write(dir.join("photo.bin"), bytes).unwrap();
+    let then = std::time::UNIX_EPOCH + std::time::Duration::from_millis(1_000_000_000_000);
+    std::fs::File::options()
+        .write(true)
+        .open(dir.join("photo.bin"))
+        .unwrap()
+        .set_modified(then)
+        .unwrap();
+    std::fs::write(
+        dir.join("run.ting"),
+        "copy_file(\"photo.bin\", \"copy.bin\");\n\
+         print(stat(\"copy.bin\")[\"modified\"], stat(\"copy.bin\")[\"size\"]);\n\
+         print(try(read_file, \"copy.bin\")[\"err\"] != nil);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("run.ting")
+        .current_dir(&dir)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(
+        text,
+        "1000000000000 6\ntrue\n",
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert_eq!(
+        std::fs::read(dir.join("copy.bin")).unwrap(),
+        bytes,
+        "the copy is the same bytes"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// std::fs::copy from a file to itself opens the target for writing,
+/// truncating the source it is about to read, and calls that a
+/// successful copy of nothing. A hard link is the spelling of "the
+/// same file" that comparing paths cannot catch.
+#[cfg(unix)]
+#[test]
+fn copy_file_refuses_the_file_it_would_empty() {
+    let dir = tree("copy-self", &[("original.txt", "still here")]);
+    std::fs::hard_link(dir.join("original.txt"), dir.join("alias.txt")).unwrap();
+    std::fs::write(
+        dir.join("run.ting"),
+        "print(try(copy_file, \"original.txt\", \"alias.txt\")[\"err\"]);\n\
+         print(read_file(\"original.txt\"));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("run.ting")
+        .current_dir(&dir)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(
+        text,
+        "cannot copy \"original.txt\" to \"alias.txt\": they are the same file\nstill here\n",
+        "stderr: {}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}

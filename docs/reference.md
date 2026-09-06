@@ -332,6 +332,7 @@ scope).
 | `remove_file(path)` | deletes the file; absent, or a directory, errors |
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
 | `rename(from, to)` | gives a file or directory another name, which is what a move is: nothing is copied, so the size does not matter and the modification time comes through untouched. An existing target is replaced. Errors when the two paths are on different filesystems |
+| `copy_file(from, to)` | copies a file's bytes, whatever they are, without holding them in memory, and gives the copy the original's permission bits and modification time. An existing target is overwritten; a directory, or a target that is the same file as the source, errors |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `sort_with(xs, cmp)` | a fresh list sorted by a three-way comparator: `cmp(a, b)` negative when `a` comes first, positive when `b` does, `0` for ties, which keep their input order |
@@ -413,8 +414,8 @@ The rest of the semantics:
 ### Files and directories
 
 `read_file` and `write_file` handle a file's contents; `list_dir`,
-`exists`, `is_dir`, `stat`, `make_dir` and `rename` handle the tree
-around it.
+`exists`, `is_dir`, `stat`, `make_dir`, `rename` and `copy_file`
+handle the tree around it.
 The split between them is deliberate:
 
 - `exists`, `is_dir` and `stat` are **questions**. An absent,
@@ -471,6 +472,32 @@ instead. ting neither hides the refusal behind an unfamiliar phrase
 nor turns a cheap move into an expensive copy without saying so — it
 reports that the two paths are on different filesystems, and the
 caller chooses what to do about it.
+
+`copy_file` is what the caller chooses. It copies bytes rather than
+text, so it moves a photograph that `read_file` cannot even open, and
+it streams them instead of holding the file in memory, which
+`write_file(t, read_file(s))` cannot avoid. The copy gets the
+original's permission bits and its modification time. That last part
+is a decision: `cp` needs `-p` for it, but `mv` keeps the date even
+when it has to fall back to copying across a filesystem, and a
+cross-filesystem move in ting is `copy_file` followed by
+`remove_file` — a copy that dropped the date would put back the very
+bug these two builtins exist to remove. Where the filesystem cannot
+record a time, the bytes still arrive; that is the same platform
+limit `stat` reports as a `nil` `modified`.
+
+Two refusals. A directory is not a file to copy, and the recursive
+version stays composable ting for the same reason `remove_tree` does.
+And a source and target that are **the same file** error rather than
+proceeding: the copy underneath opens the target for writing, which
+truncates the source it is about to read, and would report a
+successful copy of nothing. Sameness is asked of the filesystem, not
+of the spelling, so `a` and `./a` are caught and so is a hard link.
+
+What `copy_file` is not is atomic: a failure part way leaves a
+partial target, and that is not hidden. A copy that cannot be seen
+half-done is a copy to a temporary name followed by a `rename` onto
+the target — two lines, in ting, where you can read them.
 
 ### Modules
 

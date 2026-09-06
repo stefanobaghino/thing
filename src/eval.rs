@@ -2105,13 +2105,77 @@ impl<W: Write> Interpreter<W> {
                 std::fs::rename(std::path::Path::new(from), std::path::Path::new(to)).map_err(
                     |e| {
                         let why = if e.kind() == std::io::ErrorKind::CrossesDevices {
-                            "they are on different filesystems".to_string()
+                            "they are on different filesystems, which copy_file crosses and rename cannot"
+                                .to_string()
                         } else {
                             e.to_string()
                         };
                         error(format!("cannot rename {from:?} to {to:?}: {why}"), span)
                     },
                 )?;
+                Ok(Value::Nil)
+            }
+            // The copy rename cannot be. It works on any bytes, since
+            // nothing decodes them, and streams them rather than
+            // holding the file in memory, which is what read_file into
+            // write_file cannot avoid.
+            //
+            // It keeps the modification time, and that is a decision:
+            // `cp` needs -p to do it, but `mv` keeps it even when it
+            // has to fall back to copying across filesystems, and a
+            // cross-filesystem move in ting is exactly copy_file
+            // followed by remove_file. A copy that dropped the date
+            // would put back the bug that opened this milestone —
+            // a script filing things by their date destroying the
+            // dates. Where a filesystem cannot record the time, the
+            // bytes are still copied; that is the same platform limit
+            // stat reports as a nil modified.
+            //
+            // What it is NOT is atomic: a failure part way leaves a
+            // partial target. That is deliberately not hidden. A copy
+            // that cannot be seen half-done is a copy to a temporary
+            // name and a rename onto the target, which is four lines
+            // of ting with both builtins in hand, and readable where a
+            // silent temporary file would not be.
+            Builtin::CopyFile => {
+                arity(2, 2)?;
+                let (Value::Str(from), Value::Str(to)) = (&args[0], &args[1]) else {
+                    return Err(error(
+                        format!(
+                            "copy_file expects two string paths, got {} and {}",
+                            args[0].type_name(),
+                            args[1].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                let src = std::path::Path::new(from);
+                let dst = std::path::Path::new(to);
+                if same_file(src, dst) {
+                    return Err(error(
+                        format!("cannot copy {from:?} to {to:?}: they are the same file"),
+                        span,
+                    ));
+                }
+                // A directory reaches std::fs::copy as "neither a
+                // regular file nor a symlink to a regular file", which
+                // is true and unhelpful. The recursive copy is not a
+                // builtin for the same reason remove_tree is not.
+                if src.is_dir() {
+                    return Err(error(
+                        format!("cannot copy {from:?} to {to:?}: it is a directory"),
+                        span,
+                    ));
+                }
+                std::fs::copy(src, dst)
+                    .map_err(|e| error(format!("cannot copy {from:?} to {to:?}: {e}"), span))?;
+                // Contents first, then the time: writing the bytes is
+                // what sets it to now, so the order is the whole trick.
+                if let Ok(when) = std::fs::metadata(src).and_then(|m| m.modified())
+                    && let Ok(file) = std::fs::File::options().write(true).open(dst)
+                {
+                    let _ = file.set_modified(when);
+                }
                 Ok(Value::Nil)
             }
             // The two directions between a character and its number.
@@ -3309,6 +3373,30 @@ pub(crate) fn as_bool(v: Value, span: Span) -> Result<bool, RuntimeError> {
 
 /// Read an int the way the lexer reads a literal: an optional sign,
 /// an optional `0x`/`0b` prefix, and `_` only between two digits.
+/// Whether two paths name the one file. `std::fs::copy` from a file
+/// to itself does not fail: it opens the target for writing, which
+/// truncates the source it is about to read, and reports a successful
+/// copy of nothing. `cp` refuses the same case by inode, and so does
+/// this. A path spelled two ways (`a` and `./a`) is the easy half; a
+/// hard link is the half only the inode catches, which is why unix
+/// asks the filesystem rather than comparing names.
+#[cfg(unix)]
+fn same_file(a: &std::path::Path, b: &std::path::Path) -> bool {
+    use std::os::unix::fs::MetadataExt;
+    match (std::fs::metadata(a), std::fs::metadata(b)) {
+        (Ok(x), Ok(y)) => x.dev() == y.dev() && x.ino() == y.ino(),
+        _ => false,
+    }
+}
+
+#[cfg(not(unix))]
+fn same_file(a: &std::path::Path, b: &std::path::Path) -> bool {
+    match (a.canonicalize(), b.canonicalize()) {
+        (Ok(x), Ok(y)) => x == y,
+        _ => false,
+    }
+}
+
 fn int_from_text(text: &str) -> Option<i64> {
     let text = text.trim();
     let (sign, rest) = match text.strip_prefix('-') {
