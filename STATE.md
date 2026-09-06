@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 72 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 178
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 182
   functions, guarded); 42 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 20 examples with .out); 353 Rust tests
@@ -1352,11 +1352,23 @@ holds only the current milestone and the standing rules.
   the corpus check went 7 -> 9 because `fn(l) { return nil; }` warns
   about an unused parameter — `_l` is the checker's own escape. 7
   selftest checks (2465 -> 2472).
-- Backlog (one per tick, in order):
-  (1) lib/fs on top — how many lines, which ones match, the first n,
-  built on the one builtin so streaming is not something to remember;
-  (3) the example — a report on a log too big to hold, with the
-  memory it used printed beside the answer.
+- 743: lib/fs gained count_lines, head, tail, lines_matching on top
+  of each_line (178 -> 182 stdlib functions). Two are easy to write
+  badly, so they are written once: head must STOP the read (return
+  len(out) < n), and tail must hold a WINDOW, not a list. MEASURED
+  over 1000000 lines, naive (push then drop the front) vs ring
+  (ring[seen % n], unrolled once): n=10 2007 ms vs 925 ms; n=1000
+  75000 ms vs 926 ms — the naive one is O(n) per line, the ring is
+  flat. Both versions checked against each other before one was kept.
+  The selftest asks for the last three of five, where the ring's
+  start is not zero and a forgotten rotation answers out of order.
+  11 selftest checks (2472 -> 2483). The 740 count guard did its job
+  on a change for the first time.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - the example — a report on a log too big to hold, with the memory
+  it used printed beside the answer.
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting
   has no destructor or defer; lazy iterators (`for line in

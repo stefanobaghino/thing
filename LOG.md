@@ -15359,3 +15359,18 @@ Eleven selftest checks (2472 → 2483), four rows on the stdlib page
 with the count moved to 182 — checked by the guard written in 740,
 which is the first time that test has done its job on a change rather
 than on an audit.
+
+A process failure to record with it, twice over. The heredoc that
+rewrites STATE.md failed its assertion — my anchor said `(2) lib/fs`
+where the file said `(1) lib/fs` — and because the commit sat after it
+in the same `&&` chain, **the commit went out with LOG.md written and
+STATE.md not**. That is the exact hazard STATE has carried since
+iteration 645, and knowing the rule was not enough to follow it. The
+anchor was wrong for the same reason it was wrong in 735: striking out
+a numbered backlog item leaves the numbers below it stale, so `(2)`
+became `(3)` and stayed there.
+
+Both fixed at the root rather than promised against: the backlog is
+now bullets rather than hand-written ordinals, so removing an item
+cannot leave a wrong number behind, and STATE.md says so in the line
+that introduces it.
