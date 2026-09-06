@@ -79,6 +79,29 @@ assert(fs["total_size"](root) == 6, "only bytes.txt has any bytes in it");
 remove_file(root + "/bytes.txt");
 assert(fs["total_size"](root) == 0, "and now none of them do");
 
+# Renaming: the move that gives a file another name without copying
+# it. The modification time is the tell — a.ting was written at the
+# top of this file and its stamp has to survive the move, where
+# write_file(t, read_file(s)) would stamp the copy now.
+let stamped = stat(root + "/a.ting")["modified"];
+rename(root + "/a.ting", root + "/renamed.ting");
+assert(!exists(root + "/a.ting"), "the old name is gone");
+assert(stat(root + "/renamed.ting")["modified"] == stamped, "and the date came with it");
+rename(root + "/renamed.ting", root + "/a.ting");
+write_file(root + "/over.txt", "new");
+write_file(root + "/under.txt", "old");
+rename(root + "/over.txt", root + "/under.txt");
+assert(read_file(root + "/under.txt") == "new", "an existing target is replaced, silently");
+assert(!exists(root + "/over.txt"), "leaving one file where there were two");
+remove_file(root + "/under.txt");
+make_dir(root + "/box/inner");
+rename(root + "/box", root + "/crate");
+assert(is_dir(root + "/crate/inner"), "a directory moves whole, and cheaply");
+fs["remove_tree"](root + "/crate");
+assert(try(rename, root + "/nope", root + "/x")["err"] != nil, "renaming nothing errors");
+assert(try(rename, 1, "x")["err"] == "rename expects two string paths, got int and string",
+"both paths are strings");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

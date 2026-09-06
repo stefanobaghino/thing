@@ -15,9 +15,9 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 69 builtins; twelve embedded stdlib modules
+- 70 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 177
-  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 347 Rust tests
+  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 349 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1224,12 +1224,28 @@ holds only the current milestone and the standing rules.
   `cp` without -p does not (false). Speed is NOT the argument: 9 MB
   copied through ting is 11 ms against cp -p's 6. What is true is the
   whole file goes through memory and write-then-remove is not atomic.
+- 735: `rename(from, to)` — the 70th builtin. MEASURED first, on this
+  host, ext4 against tmpfs: rename keeps the modification time
+  (true), takes a directory whole, replaces an existing target
+  silently, and refuses across filesystems with EXDEV ("Invalid
+  cross-device link", os error 18) — the one case `mv` handles by
+  quietly copying. DECIDED not to fall back: a copy has a different
+  cost and a different date, and a rename that is sometimes a copy is
+  the surprise this milestone exists to remove. So the error says
+  "they are on different filesystems" in ting's words, not the
+  kernel's. std::io::ErrorKind::CrossesDevices is stably matchable at
+  rustc 1.98 (checked by compiling it). Guards: two in tests/io.rs,
+  each made to FAIL on purpose first — the date test backdates both
+  files to a fixed instant (1000000000000) so "the stamp survived"
+  cannot be two operations landing in the same millisecond, and the
+  cross-device test really crossed to /dev/shm (proved by reading the
+  message out of the deliberate failure) and reports-and-passes where
+  only one filesystem is mounted. 7 new selftest checks (2447 ->
+  2454). The grammar guard caught the alternation inserted in the
+  wrong place: editor/ting.tmLanguage.json must hold Builtin::ALL's
+  order exactly, so rename goes after remove_dir, not after make_dir.
 - Backlog (one per tick, in order):
-  (1) `rename(from, to)` — keeps the file's identity and its date,
-  nothing copied. DECIDE with a measurement: what happens across
-  filesystems, where the syscall refuses and `mv` falls back to
-  copying;
-  (2) `copy_file(from, to)` — any bytes, nothing held in memory. What
+  (1) `copy_file(from, to)` — any bytes, nothing held in memory. What
   it preserves is a DECISION: std::fs::copy takes the permission bits
   and not the date, and File::set_modified is in std at rustc 1.98
   (checked today), so following the date is possible if it is right;

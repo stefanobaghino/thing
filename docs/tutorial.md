@@ -918,6 +918,33 @@ takes only an empty directory — the recursive version is
 `fs["remove_tree"]`, written in ting rather than hidden in a
 builtin, so you can read what it will touch before you call it.
 
+Moving a file is `rename`, and the name is the honest one: the file
+is given another name, and nothing is copied.
+
+```ting
+write_file("draft.txt", "the report");
+let written = stat("draft.txt")["modified"];
+
+rename("draft.txt", "report.txt");
+print(exists("draft.txt"), read_file("report.txt"));
+print(stat("report.txt")["modified"] == written);
+```
+
+```text
+false the report
+true
+```
+
+That last `true` is the whole point. Writing the contents somewhere
+else and deleting the original would move the file too, but the copy
+is stamped at the moment it was made — so a script that files things
+by the day they were written destroys every date it sorted by, the
+second time it runs. `rename` moves a directory whole for the same
+reason it is cheap on a large file: nothing is read. It replaces an
+existing target without asking, and it refuses to cross a
+filesystem, where the operating system will not rename and `mv`
+quietly copies instead.
+
 ## How deep recursion goes
 
 Recursion costs host stack, so there is a limit, and the interpreter

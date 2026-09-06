@@ -331,6 +331,7 @@ scope).
 | `make_dir(path)` | creates the directory and any missing parents; a directory that is already there is not an error |
 | `remove_file(path)` | deletes the file; absent, or a directory, errors |
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
+| `rename(from, to)` | gives a file or directory another name, which is what a move is: nothing is copied, so the size does not matter and the modification time comes through untouched. An existing target is replaced. Errors when the two paths are on different filesystems |
 | `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
 | `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
 | `sort_with(xs, cmp)` | a fresh list sorted by a three-way comparator: `cmp(a, b)` negative when `a` comes first, positive when `b` does, `0` for ties, which keep their input order |
@@ -412,7 +413,8 @@ The rest of the semantics:
 ### Files and directories
 
 `read_file` and `write_file` handle a file's contents; `list_dir`,
-`exists`, `is_dir`, `stat` and `make_dir` handle the tree around it.
+`exists`, `is_dir`, `stat`, `make_dir` and `rename` handle the tree
+around it.
 The split between them is deliberate:
 
 - `exists`, `is_dir` and `stat` are **questions**. An absent,
@@ -452,6 +454,23 @@ builtin: `lib/fs.ting`'s `remove_tree` walks a tree, removing files
 and then each directory once it is empty, so the one operation that
 can destroy a lot of work at once is readable ting rather than a
 word that hides it.
+
+`rename` gives a file another name, and that is what a move is. The
+file is not copied, so it costs the same for a line of text and a
+video, and — the reason it exists — the modification time comes
+through untouched. A script that files things by the day they were
+written would otherwise rewrite every date it sorted by, since a
+copy is stamped at the moment it is made. A directory moves whole
+and an existing target is replaced, both silently, as the system
+call and `mv` do.
+
+The one thing `rename` will not do is cross a filesystem. The
+operating system refuses there, saying "invalid cross-device link",
+which names nothing a script can act on; `mv` quietly copies
+instead. ting neither hides the refusal behind an unfamiliar phrase
+nor turns a cheap move into an expensive copy without saying so — it
+reports that the two paths are on different filesystems, and the
+caller chooses what to do about it.
 
 ### Modules
 

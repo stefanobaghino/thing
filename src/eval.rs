@@ -2074,6 +2074,46 @@ impl<W: Write> Interpreter<W> {
                 done.map_err(|e| error(format!("cannot remove {path:?}: {e}"), span))?;
                 Ok(Value::Nil)
             }
+            // Renaming is the move that keeps a file's identity. Nothing
+            // is copied, so it costs the same for one byte and one
+            // gigabyte and the modification time comes through
+            // untouched (measured: true, where read+write puts *now* on
+            // the copy). It takes a directory as readily as a file, and
+            // it replaces an existing target, which is what the system
+            // call does and what `mv` does.
+            //
+            // The one thing it cannot do is cross a filesystem, and
+            // there the operating system's own words ("Invalid
+            // cross-device link") say nothing to whoever wrote the
+            // script. `mv` quietly copies instead; this does not,
+            // because a copy is a different operation with a different
+            // cost and a different modification time, and hiding that
+            // is the surprise this is here to remove. It says what
+            // stopped it, and the caller decides.
+            Builtin::Rename => {
+                arity(2, 2)?;
+                let (Value::Str(from), Value::Str(to)) = (&args[0], &args[1]) else {
+                    return Err(error(
+                        format!(
+                            "rename expects two string paths, got {} and {}",
+                            args[0].type_name(),
+                            args[1].type_name()
+                        ),
+                        span,
+                    ));
+                };
+                std::fs::rename(std::path::Path::new(from), std::path::Path::new(to)).map_err(
+                    |e| {
+                        let why = if e.kind() == std::io::ErrorKind::CrossesDevices {
+                            "they are on different filesystems".to_string()
+                        } else {
+                            e.to_string()
+                        };
+                        error(format!("cannot rename {from:?} to {to:?}: {why}"), span)
+                    },
+                )?;
+                Ok(Value::Nil)
+            }
             // The two directions between a character and its number.
             // ord takes exactly one character, not a prefix: a string
             // of several characters has several code points, and

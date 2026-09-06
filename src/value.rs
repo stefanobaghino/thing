@@ -64,6 +64,7 @@ pub enum Builtin {
     MakeDir,
     RemoveFile,
     RemoveDir,
+    Rename,
     Ord,
     Chr,
     Sort,
@@ -100,7 +101,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 69] = [
+    pub const ALL: [Builtin; 70] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -137,6 +138,7 @@ impl Builtin {
         Builtin::MakeDir,
         Builtin::RemoveFile,
         Builtin::RemoveDir,
+        Builtin::Rename,
         Builtin::Ord,
         Builtin::Chr,
         Builtin::Sort,
@@ -273,6 +275,10 @@ impl Builtin {
             Builtin::Stat => (
                 "stat(path)",
                 "What a file is besides its name: a map of size (bytes), modified (ms since the epoch, the clock time_ms() reads) and kind (\"file\", \"dir\" or \"other\"). nil when nothing readable is there.",
+            ),
+            Builtin::Rename => (
+                "rename(from, to)",
+                "Moves a file or directory by giving it another name. Nothing is copied, so the size does not matter and the modification time comes through untouched; an existing target is replaced. Errors when the two paths are on different filesystems.",
             ),
             Builtin::MakeDir => (
                 "make_dir(path)",
@@ -438,6 +444,7 @@ impl Builtin {
             Builtin::MakeDir => "make_dir",
             Builtin::RemoveFile => "remove_file",
             Builtin::RemoveDir => "remove_dir",
+            Builtin::Rename => "rename",
             Builtin::Ord => "ord",
             Builtin::Chr => "chr",
             Builtin::Sort => "sort",

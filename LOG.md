@@ -14839,3 +14839,82 @@ problem; bytes can earn their own evidence later. Also absent, and
 also not chosen: any way to make a file executable, which `run` covers
 on the systems that have `chmod` and which nothing has yet made me
 want.
+
+## 2026-09-06 — Iteration 735: rename, the move that keeps a file's identity
+
+Stroke one of "moving a file, not retyping it". `rename(from, to)` is
+the 70th builtin.
+
+I measured before deciding anything. This host has ext4 at `/` and
+tmpfs at `/dev/shm`, which is a real filesystem boundary to push a
+file across:
+
+```
+across filesystems:      ERR CrossesDevices (Invalid cross-device link, os error 18)
+same filesystem:         ok
+over an existing file:   ok        (the target's contents are the source's)
+a directory:             ok
+onto itself:             ok        (and the file is still there)
+source missing:          ERR NotFound
+target directory missing: ERR NotFound
+rename keeps the date:   true
+```
+
+So the operation is cheap, indifferent to size, works on a directory,
+and — the reason the milestone exists — carries the modification time
+through untouched, where `write_file(t, read_file(s))` stamps the copy
+*now*.
+
+**The decision this stroke had to make was EXDEV.** `mv` handles it by
+quietly copying instead. I decided not to. A copy has a different cost
+(the whole file, through memory), a different failure mode (not
+atomic: a crash between write and remove leaves two copies, and a
+failed write leaves a truncated target where a file used to be), and a
+different modification time. A `rename` that is sometimes a copy hands
+back exactly the surprise this milestone is here to remove — you would
+have to know, per call, which one you got. So it refuses, and says why
+in ting's words rather than the kernel's, because "invalid
+cross-device link" names nothing a script author can act on:
+
+```
+cannot rename "b.txt" to "/dev/shm/ting-rn-x.txt": they are on different filesystems
+```
+
+`std::io::ErrorKind::CrossesDevices` is stably matchable at rustc 1.98
+— checked by compiling a `matches!` against it rather than assuming
+the variant that `Debug` happened to print was stable. When
+`copy_file` lands next tick, this error gets the other half of the
+sentence: what to reach for instead.
+
+Two guards in tests/io.rs, each made to fail on purpose before I
+believed it:
+
+- **The date.** Both files are backdated with `File::set_modified` to
+  a fixed instant, `1000000000000`, before the script runs. Then
+  `rename` must report exactly that stamp and the read+write copy must
+  report something later. Backdating is what makes it a test rather
+  than a coincidence: without it, "the stamp survived" and "both
+  operations landed in the same millisecond" look identical. Broken on
+  purpose, it printed `renaming kept the stamp: 1000000000000`.
+- **The refusal.** It looks for a directory on a different device
+  (`dev()` differs) and reports-and-passes when there is none, since a
+  machine with one filesystem cannot be asked this question. Broken on
+  purpose here, it printed the real message with the real
+  `/dev/shm` path in it — so the test crossed, rather than skipping
+  quietly, which is the failure mode a conditional test invites.
+
+Seven selftest checks (2447 → 2454) cover the promises: the old name
+is gone, the date came with it, an existing target is replaced
+silently, a directory moves whole, and both paths are strings.
+
+**The grammar guard earned its keep.** I put `rename` into
+editor/ting.tmLanguage.json next to `stat` and `make_dir`, where it
+reads well, and the suite failed: the grammar has to contain
+`Builtin::ALL`'s order *exactly*, so it belongs after `remove_dir`.
+That is a test I would never have thought to write today and was glad
+of, and it is the reason the whole suite runs before every push rather
+than the suites I think I touched.
+
+Docs: a reference row plus two paragraphs on the move and the
+refusal; a tutorial passage with a runnable block whose last line is
+`true` — the date surviving — and the block count pinned at 45.

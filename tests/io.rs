@@ -3460,3 +3460,96 @@ fn bundle_writes_where_o_says_and_never_over_its_own_source() {
     assert!(std::fs::read_to_string(&app).unwrap().contains("import("));
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// The claim rename is for: the file keeps its modification time,
+/// because nothing was copied. Both files are backdated to a fixed
+/// instant first, so "the stamp survived" cannot be a coincidence of
+/// two operations landing in the same millisecond.
+#[test]
+fn rename_keeps_the_date_that_copying_loses() {
+    let dir = tree(
+        "rename-date",
+        &[("old.txt", "hello"), ("copy-me.txt", "hello")],
+    );
+    let then = std::time::UNIX_EPOCH + std::time::Duration::from_millis(1_000_000_000_000);
+    for name in ["old.txt", "copy-me.txt"] {
+        std::fs::File::options()
+            .write(true)
+            .open(dir.join(name))
+            .unwrap()
+            .set_modified(then)
+            .unwrap();
+    }
+    std::fs::write(
+        dir.join("run.ting"),
+        "rename(\"old.txt\", \"new.txt\");\n\
+         write_file(\"copied.txt\", read_file(\"copy-me.txt\"));\n\
+         print(stat(\"new.txt\")[\"modified\"]);\n\
+         print(stat(\"copied.txt\")[\"modified\"]);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("run.ting")
+        .current_dir(&dir)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    assert_eq!(
+        lines.next(),
+        Some("1000000000000"),
+        "renaming kept the stamp: {text}"
+    );
+    let copied: i64 = lines.next().unwrap().parse().unwrap();
+    assert!(
+        copied > 1_000_000_000_000,
+        "copying stamped the copy now, not then: {copied}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// What rename refuses, in words a script author can act on: the
+/// system call's own "Invalid cross-device link" names nothing a
+/// caller can do. Needs a second filesystem to be mounted, so it
+/// reports and passes where there is none rather than pretending.
+#[cfg(unix)]
+#[test]
+fn rename_says_when_the_two_paths_are_on_different_filesystems() {
+    use std::os::unix::fs::MetadataExt;
+    let dir = tree("rename-across", &[("a.txt", "hello")]);
+    let here = std::fs::metadata(&dir).unwrap().dev();
+    let elsewhere = ["/dev/shm", "/tmp", "/var/tmp", "/run/user/1000"]
+        .into_iter()
+        .map(std::path::PathBuf::from)
+        .find(|p| {
+            std::fs::metadata(p)
+                .map(|m| m.dev() != here && m.is_dir())
+                .unwrap_or(false)
+        });
+    let Some(elsewhere) = elsewhere else {
+        eprintln!("only one filesystem here; nothing to cross");
+        return;
+    };
+    let target = elsewhere.join(format!("ting-across-{}.txt", std::process::id()));
+    std::fs::write(
+        dir.join("run.ting"),
+        format!("rename(\"a.txt\", {:?});\n", target.display().to_string()),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("run.ting")
+        .current_dir(&dir)
+        .output()
+        .expect("failed to run ting");
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("they are on different filesystems"),
+        "got: {err}"
+    );
+    assert!(
+        dir.join("a.txt").exists(),
+        "and the file stayed where it was"
+    );
+    let _ = std::fs::remove_file(&target);
+    let _ = std::fs::remove_dir_all(&dir);
+}
