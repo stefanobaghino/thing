@@ -1086,14 +1086,25 @@ holds only the current milestone and the standing rules.
   2.116.0. ORDINAL CORRECTED: `git tag --sort=creatordate` makes
   v2.113/114/115 the 134th/135th/136th, so recent entries were each
   one high.
+- v2.116.0 VERIFIED (137th tag; strokes 717, 718, 719; both aarch64
+  archives downloaded cold and executed here, 22 selftests / 2433
+  checks each). The shipped binaries bundled a purpose-built program
+  (direct import + the same module through a subdirectory reaching
+  back out with ../, lib/string.ting in the middle) and the bundle
+  ran from a directory holding nothing else: same bytes, diamond
+  still shared, lib/ import answered by the embedded stdlib, --check
+  and --fmt-check clean, all three refusals as documented. Site audit
+  green on nine paths; changelog/tutorial/reference carry the
+  release.
 - Backlog (one per tick, in order):
-  (1) verify v2.116.0 — cold download and execute both aarch64
-  archives, ask the shipped binary what the release claims (bundle a
-  two-module script with it, check the bundle runs and formats), site
-  audit on the nine paths, six assets on the tag;
-  (2) chosen after — candidates: `--bundle -o FILE` (today it is
-  stdout only), and whether a bundle should keep a module's own file
-  name in its diagnostics.
+  (1) an import that might not run: `if x { let m = import(...); }`
+  runs the module only when the branch is taken, but --bundle hoists
+  every module to the top and runs it unconditionally. A module that
+  only defines things cannot tell; one that prints, writes or takes
+  time can. MEASURE it first, then either document or refuse;
+  (2) chosen after — candidates: `--bundle -o FILE` (today stdout
+  only, and PowerShell's `>` writes UTF-16), and whether a bundle
+  should keep a module's own file name in its diagnostics.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

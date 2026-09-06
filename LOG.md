@@ -14274,3 +14274,37 @@ v2.113.0, v2.114.0 and v2.115.0 as 134, 135 and 136, so the ordinals in
 the last several entries have each been one high. Iteration 700 dropped
 an ordinal rather than assert one it had not checked; the right move
 was to check it.
+
+## 2026-09-06 — Iteration 721: v2.116.0 verified
+
+Both aarch64 Linux archives downloaded cold, unpacked and run here.
+Both report 2.116.0 and both pass the whole selftest suite — 22 files,
+2433 checks. Six assets on the tag; Release, CI and Pages all green
+from the API.
+
+The shipped binaries were asked what the release claims, on a program
+built for the purpose: an app importing a module directly and the same
+module through a subdirectory, that subdirectory module reaching back
+out with `../shout.ting`, and `lib/string.ting` in the middle of it.
+Bundled, it prints the same bytes, and the bundle was run from a
+directory holding nothing else — no modules, no `lib/` — which is the
+entire point of the flag. `shout == greet["shout"]` stays true, so the
+diamond still shares one module; the `lib/` import is still an import
+and the embedded standard library answers it from a foreign directory;
+the bundle passes `--check` and `--fmt-check`. All three refusals
+answer as documented, naming the import that could not be followed.
+Identical on gnu and musl.
+
+Site audit green on all nine paths, and the published pages carry the
+release rather than merely existing: the changelog has v2.116.0, the
+tutorial has "Handing the program over as one file", and the reference
+has `--bundle`.
+
+Found while writing the next backlog item rather than by running
+anything, and worth checking before it is claimed: an `import` does not
+have to sit at a module's top level. `if x { let m = import("heavy.ting"); }`
+runs the module only when the branch is taken, but a bundle hoists
+every module to the top and runs it unconditionally. A module whose top
+level only defines things cannot tell the difference; one that prints,
+writes a file or takes time can. That is the next stroke — measure it,
+then either say so or refuse it.
