@@ -906,13 +906,19 @@ holds only the current milestone and the standing rules.
   82a4797 with CI and Pages green; gate green at the tag (fmt, zero
   clippy warnings, fifteen suites, corpus at seven warnings, 22
   selftests / 2431 checks) and the release binary reports 2.114.0.
-  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
-  and runs them.
+- v2.114.0 VERIFIED (136th tag; strokes 702, 703, 704; both aarch64
+  archives downloaded cold and executed here, 22 selftests / 2431
+  checks each). The shipped binaries were asked what the release
+  claims: `import("lib/list.ting")["sort_with"]` still there, still
+  sorting, still stable; `sort_with` as a bare builtin; and the append
+  linear at 50000/100000 (6/14 ms gnu, 11/17 musl) with `s += s` and a
+  failed `u += 1` still behaving. Six assets, site audit green on all
+  nine paths, published changelog carries the tag and the published
+  reference carries `sort_with`.
 - Backlog (one per tick, in order):
-  (1) verify v2.114.0 by cold asset download and execution;
-  (2) re-profile the stdlib and follow whatever is on top, `words`
+  (1) re-profile the stdlib and follow whatever is on top, `words`
   included — its cost is the per-character loop, not the append;
-  (3) health tick to close "what the standard library costs".
+  (2) health tick to close "what the standard library costs".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

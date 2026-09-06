@@ -13618,3 +13618,34 @@ zero clippy warnings, fifteen suites, the corpus at seven deliberate
 warnings, and 22 selftests / 2431 checks against the release binary
 that reports 2.114.0. BASELINE has nine rows, with bench/accum.ting
 new for the append shape nothing else in the suite covered.
+
+## 2026-09-06 — Iteration 706: v2.114.0 verified
+
+Both aarch64 Linux archives downloaded cold from the release, unpacked
+and run here. Both report 2.114.0 and both pass the whole selftest
+suite — 22 files, 2431 checks — against the `lib` that ships beside
+them.
+
+The shipped binaries were also asked the three things this release
+claims, since a release note is not evidence:
+
+- `import("lib/list.ting")["sort_with"]` is still there and still
+  sorts, and still stably: `[[1, "a"], [0, "b"], [1, "c"]]` by first
+  element comes back with "a" before "c". That is the export rule and
+  the new builtin at once — the name comes from the module, the work
+  from Rust.
+- `sort_with` as a bare builtin sorts too.
+- The append is linear: 50000 and 100000 single-character appends take
+  6 and 14 ms on gnu, 11 and 17 on musl, where quadratic would have
+  quadrupled. And it still behaves — `s += s` gives "aa", and a failed
+  `u += 1` leaves u as "a".
+
+Release, CI and Pages completed successfully; six assets on the tag, as
+expected since v2.30.0. The site audit is green on all nine paths, the
+published changelog carries v2.114.0 and the published reference
+carries `sort_with`.
+
+The milestone "what the standard library costs" is shipped and
+verified. Two ticks remain on it: the re-profile it was always going to
+end with — the third stroke was deliberately left unchosen — and then
+the health tick that closes it.
