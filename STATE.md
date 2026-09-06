@@ -966,13 +966,28 @@ holds only the current milestone and the standing rules.
   against real rot (a `no_such_builtin` inserted into the tutorial's
   first block turned it red, removing it green). 0.17 s, so it rides
   along in the docs guard every tick already reruns.
+- 711: five of the eight try-wrapper sites now use `try(f, ...args)`;
+  three keep the lambda ON PURPOSE. The reference's was never drift —
+  it illustrates the paragraph saying a lambda guards more than one
+  call and that try's own arguments are evaluated before try runs; the
+  cookbook's todo example reads and parses in one lambda for the same
+  reason. The tutorial WAS drift: it teaches the short form at line
+  394 (`try(parse_age, raw)`) then used a lambda four times after.
+  The fifth (line 318, closures section) comes before the reader meets
+  try at all, so it gets the simpler form. examples/machine.ting
+  changed and cookbook regenerated — machine.out UNCHANGED, the proof
+  that mattered. The tutorial has no recording, so the five blocks were
+  run and diffed BY HAND against the text block each sits above: all
+  seven try blocks match.
+  FOUND, and it is the next stroke: 710's guard checks a snippet RUNS,
+  not that it prints what the page CLAIMS. 43 of the tutorial's 44
+  blocks are followed by a claimed output and NOTHING verifies any of
+  them (the reference has 0 such claims).
 - Backlog (one per tick, in order):
-  (1) the idiom the docs teach — eight sites still write
-  `try(fn() { return f(x); })`, but they are NOT interchangeable with
-  `try(f, x)`: moving an argument out of the closure takes it out of
-  the try's reach, so each site needs reading;
-  (2) chosen once the guard has had something to say.
-  Release v2.115.0 when ~3 strokes are banked (707, 710 so far).
+  (1) check the claimed output, not just the exit status — 43 tutorial
+  blocks make a claim nothing verifies;
+  (2) chosen after that.
+  Release v2.115.0 when ~3 strokes are banked (707, 710, 711 — enough).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

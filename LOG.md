@@ -13837,3 +13837,50 @@ into the tutorial's first block turned it red with the undefined-name
 diagnostic, and removing it turned it green again. The whole thing
 costs 0.17 seconds, so it runs in the docs guard that every tick reruns
 after writing LOG and STATE.
+
+## 2026-09-06 — Iteration 711: the idiom the docs teach
+
+Eight places in the docs wrapped a single call in a lambda to hand it
+to `try`. Five of them are now written the way the tutorial itself
+says to write them, and three keep the lambda because it is the right
+thing there. The reading was the work; the editing took a minute.
+
+The reference turned out not to be drift at all. Its
+`try(fn() { return json_parse(read_file(path)); })` sits directly under
+a paragraph explaining that a lambda is how you guard more than one
+call, that what goes in `try`'s own argument list is evaluated before
+`try` runs, and that `try(f, ...xs)` therefore catches nothing if `xs`
+is not a list. The block is the illustration of that sentence. It
+stays, and so does the cookbook's `todo` example, which reads a file
+and parses it inside one lambda for exactly that reason.
+
+The tutorial was drift, and of a specific kind: it *teaches*
+`try(f, ...args)` at line 394, with `try(parse_age, raw)` as the
+example — and then goes on using a lambda four times afterwards, for
+calls that take a literal or a value already computed. A reader is
+shown the short form and then watched the page not use it. Those four
+now read `try(json_parse, "{oops")`, `try(read_file, args()[0])`,
+`try(run, "no-such-program-anywhere-xyz")` and `try(depth, -1)`.
+
+The fifth, at line 318, comes before the reader has met `try` at all —
+it is in the closures section, where an account object refuses an
+overdraft. Whichever form appears there is the first one anybody sees,
+which is a reason to make it the simpler one:
+`try(acct["withdraw"], 100)`. Moving `acct["withdraw"]` outside the
+`try` does change what is guarded, but a missing key there would be the
+example's own bug, not a failure it is demonstrating.
+
+examples/machine.ting got the same treatment and the cookbook was
+regenerated from it; its recorded output is unchanged, which is the
+proof that mattered.
+
+For the tutorial there was no such recording, so the five changed
+blocks were run and their output compared by hand against the
+```text``` block each one sits above. All seven blocks that mention
+`try` match exactly.
+
+Doing that by hand is the finding. Iteration 710's guard checks that a
+snippet runs; it does not check that it prints what the page says it
+prints. Forty-three of the tutorial's forty-four blocks are followed by
+a claimed output, and not one of those claims is verified by anything.
+That is the next stroke, and it is a bigger one than this.
