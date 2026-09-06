@@ -1,0 +1,11 @@
+monthly-demo.csv: 5000 rows, 250966 bytes
+held while reading: the column numbers, a total per month, and one row
+
+by month
+  2026-01   1080 rows      59431.15
+  2026-02   1119 rows      60606.95
+  2026-03   1239 rows      68464.45
+  2026-04   1199 rows      65732.60
+  2026-05    360 rows      19822.35
+
+dates nothing could read: 3

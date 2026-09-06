@@ -15676,3 +15676,49 @@ Twenty-two selftest checks (2490 → 2512), two stdlib rows, the count
 at 188. The tables above are the tests, more or less line for line —
 which is the useful shape for a parser, because a parser's behaviour
 *is* its table of cases.
+
+## 2026-09-07 — Iteration 751: a report that reads what it was handed
+
+Stroke three closes the build for "reading what other programs wrote".
+`examples/monthly.ting` totals a CSV month by month, and it is the
+program neither of the two previous strokes could be justified without:
+
+```
+monthly-demo.csv: 5000 rows, 250966 bytes
+held while reading: the column numbers, a total per month, and one row
+
+by month
+  2026-01   1080 rows      59431.15
+  2026-02   1119 rows      60606.95
+  2026-03   1239 rows      68464.45
+  2026-04   1199 rows      65732.60
+  2026-05    360 rows      19822.35
+
+dates nothing could read: 3
+```
+
+Three things in that output are the milestone.
+
+**5000 rows.** The file the demo builds is 5001 rows in **6001
+lines**, because every fifth note carries a line break inside a quoted
+field, the way exported data does. A reader that cut on newlines would
+report a thousand rows that do not exist — and would have been the
+obvious way to write this before `each_row`.
+
+**dates nothing could read: 3.** The demo plants `"not a date"`,
+`"2026-02-30"` and an empty field, because exports do. `from_iso`
+answers `nil` for each, so the report counts them and says so. Written
+by hand the way a script had to before, those three would have become
+numbers — one of them a date in March — and quietly joined a month's
+total. The counted rows add up: 1080 + 1119 + 1239 + 1199 + 360 is
+4997, which is 5000 less the three.
+
+**The columns are found by name**, from the header row, so the report
+does not care what else the file carries or in what order.
+
+The whole thing is bounded: two integers per month, two column
+numbers, and the row in hand. It takes a path or `-`, like everything
+else that reads in this language now.
+
+Formatting before generating the cookbook, which is the order 744
+taught me, meant the guard passed the first time.

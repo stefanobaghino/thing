@@ -625,6 +625,140 @@ actions: {"alarm": 2, "pass": 1, "refund": 1, "unlock": 2}
 unknown event: no transition for kick in unlocked
 ```
 
+## monthly
+
+What a CSV says, month by month, without holding the CSV — the two things a report over exported data needs and could not have before: rows read one at a time (a row is not a line, since a quoted field may hold line breaks) and a date column that is read rather than guessed at.  ting monthly.ting                 # report on a file this makes ting monthly.ting sales.csv       # report on a file of your own cat sales.csv | ting monthly.ting -  The columns are found by name in the header row: a date column and an amount column, whatever else the file carries. With no argument it builds a file, reports on it and removes it, so the example prints the same thing every time — and that file is 5001 rows in 6001 lines, so a reader that cut on newlines would invent a thousand rows that are not there.
+
+```ting
+# What a CSV says, month by month, without holding the CSV — the two
+# things a report over exported data needs and could not have before:
+# rows read one at a time (a row is not a line, since a quoted field
+# may hold line breaks) and a date column that is read rather than
+# guessed at.
+#
+#   ting monthly.ting                 # report on a file this makes
+#   ting monthly.ting sales.csv       # report on a file of your own
+#   cat sales.csv | ting monthly.ting -
+#
+# The columns are found by name in the header row: a date column and
+# an amount column, whatever else the file carries. With no argument
+# it builds a file, reports on it and removes it, so the example
+# prints the same thing every time — and that file is 5001 rows in
+# 6001 lines, so a reader that cut on newlines would invent a
+# thousand rows that are not there.
+
+let csv = import("../lib/csv.ting");
+let tm = import("../lib/time.ting");
+let st = import("../lib/string.ting");
+
+fn build(path) {
+  let rows = [["date", "customer", "note", "amount"]];
+  let day = 86400000;
+  let start = tm["from_iso"]("2026-01-05");
+  for i in range(5000) {
+    let when = tm["iso"](start + i * day / 40);
+    # Every fifth note carries a comma and a line break, which is
+    # what makes the file more rows than lines.
+    let note = "plain";
+    if i % 5 == 0 { note = "urgent, see\nthe attached sheet"; }
+    let date = when;
+    # Three rows carry a date nothing can read. Exports do this.
+    if i == 1200 { date = "not a date"; }
+    if i == 2400 { date = "2026-02-30"; }
+    if i == 3600 { date = ""; }
+    push(rows, [date, format("customer {}", i % 97), note, format("{}.{}", 10 + i % 90, i % 100)]);
+  }
+  write_file(path, csv["text"](rows));
+  return path;
+}
+
+fn money(cents) {
+  return str(cents / 100) + "." + st["pad_left"](str(cents % 100), 2, "0");
+}
+
+let given = args();
+let path = "monthly-demo.csv";
+let mine = len(given) == 0;
+if !mine { path = given[0]; }
+if mine { build(path); }
+
+if path != "-" && !exists(path) {
+  eprint(format("monthly: no such path: {}", path));
+  exit(2);
+}
+
+# One pass. What is held: the column numbers, one counter and one
+# total per month, and the row in hand.
+let date_at = nil;
+let amount_at = nil;
+let months = {};
+let counts = {};
+let unreadable = 0;
+let rows = 0;
+
+csv["each_row"](path, fn(row) {
+  rows += 1;
+  if rows == 1 {
+    let i = 0;
+    for name in row {
+      if name == "date" { date_at = i; }
+      if name == "amount" { amount_at = i; }
+      i += 1;
+    }
+    return nil;
+  }
+  if date_at == nil || amount_at == nil { return false; }
+  let when = tm["from_iso"](row[date_at]);
+  # A date that cannot be read is counted, not guessed at, and not
+  # allowed to stop the report.
+  if when == nil {
+    unreadable += 1;
+    return nil;
+  }
+  let month = slice(tm["date"](when), 0, 7);
+  let cents = int(float(row[amount_at]) * 100.0 + 0.5);
+  months[month] = get(months, month, 0) + cents;
+  counts[month] = get(counts, month, 0) + 1;
+  return nil;
+});
+
+if date_at == nil || amount_at == nil {
+  eprint("monthly: the header has no date and amount columns");
+  exit(2);
+}
+
+let size = "";
+if path != "-" { size = format(", {} bytes", stat(path)["size"]); }
+print(format("{}: {} rows{}", path, rows - 1, size));
+print("held while reading: the column numbers, a total per month, and one row");
+print("");
+
+print("by month");
+for month in keys(months) {
+  print(format("  {}  {} rows  {}", month,
+  st["pad_left"](str(counts[month]), 5, " "),
+  st["pad_left"](money(months[month]), 12, " ")));
+}
+print("");
+print(format("dates nothing could read: {}", unreadable));
+
+if mine { remove_file(path); }
+```
+
+```text
+monthly-demo.csv: 5000 rows, 250966 bytes
+held while reading: the column numbers, a total per month, and one row
+
+by month
+  2026-01   1080 rows      59431.15
+  2026-02   1119 rows      60606.95
+  2026-03   1239 rows      68464.45
+  2026-04   1199 rows      65732.60
+  2026-05    360 rows      19822.35
+
+dates nothing could read: 3
+```
+
 ## organize
 
 Filing a directory by the day each file was last written — the tidy-up a script could not do before, because moving a file meant reading it and writing it somewhere else, which stamps the copy with the moment it was made and destroys the very dates it is sorting by.  ting organize.ting             # file a small tree this makes ting organize.ting downloads   # file a directory of your own  With no argument it builds a directory, files it, reports and removes it, so the example prints the same thing every time. Its files are all made moments apart, so they all belong to one day; a directory with some history in it spreads over as many folders as it has days. A real one also holds files that are not text, which read_file cannot open and this moves without noticing.

@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 72 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 182
-  functions, guarded); 43 ting programs (22 selftest files — 21 tests
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 188
+  functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 21 examples with .out); 353 Rust tests
+  nothing on its own — and 22 examples with .out); 353 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1451,12 +1451,23 @@ holds only the current milestone and the standing rules.
   a leap second refused rather than answered. 22 selftest checks
   (2490 -> 2512). The acceptance and refusal tables ARE the tests,
   line for line, which is the right shape for a parser.
+- 751: examples/monthly.ting — a CSV totalled month by month without
+  holding it. Three things in its output ARE the milestone: "5000
+  rows" from a file that is 5001 rows in 6001 LINES (every fifth note
+  has a line break in a quoted field), so a newline-cutting reader
+  would invent a thousand rows; "dates nothing could read: 3" from
+  planted "not a date" / "2026-02-30" / "" fields, which the
+  hand-rolled parser would have turned into numbers (one of them a
+  date in March) and added to a month's total; and columns found BY
+  NAME in the header. Counts add up: 1080+1119+1239+1199+360 = 4997 =
+  5000 - 3. Bounded state: two ints per month, two column numbers,
+  the row in hand. Format BEFORE generating the cookbook (744's
+  lesson) — the guard passed first time.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the example — a report over a CSV too big to hold, grouped by
-  something read out of a date column: needs both strokes and cannot
-  be written today without being quietly wrong.
+  - release v2.121.0 — three strokes stand (749 each_row, 750
+  from_iso, 751 the monthly example).
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

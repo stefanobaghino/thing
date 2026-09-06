@@ -34,6 +34,12 @@ Windows are attached to each
   `cannot convert "not " to int` for `"not a date"`. Every field is
   checked against what exists, so February the 30th, the 29th of a
   non-leap year, an hour of 24 and a leap second are all `nil`.
+- `examples/monthly.ting` reports a CSV month by month without
+  holding it: the columns found by name in the header, one pass with
+  `each_row`, the date column read with `from_iso`, and a count of
+  the dates nothing could read rather than a guess at what they
+  meant. The file it builds for the demo is 5001 rows in 6001 lines,
+  so a reader that cut on newlines would invent a thousand rows.
 
 ## v2.120.0 (2026-09-06)
 
