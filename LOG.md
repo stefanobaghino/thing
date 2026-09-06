@@ -15094,3 +15094,43 @@ binary reports `ting 2.119.0`, and all three workflows started on the
 tag: Release, Pages and CI. Verification — six assets, green runs by
 API verdict, and an aarch64 archive downloaded cold and executed here
 — is the next tick, as always.
+
+## 2026-09-06 — Iteration 739: v2.119.0 verified
+
+Verdicts from the API, not from a watcher's exit code: Release,
+Pages and both CI runs on the tag all `completed success`. Six assets,
+the expected count since v2.30.0:
+
+```
+ting-v2.119.0-aarch64-apple-darwin.tar.gz          946399
+ting-v2.119.0-aarch64-unknown-linux-gnu.tar.gz     996414
+ting-v2.119.0-aarch64-unknown-linux-musl.tar.gz   1052501
+ting-v2.119.0-x86_64-pc-windows-msvc.zip           923469
+ting-v2.119.0-x86_64-unknown-linux-gnu.tar.gz     1057058
+ting-v2.119.0-x86_64-unknown-linux-musl.tar.gz    1118207
+```
+
+Both aarch64 Linux archives downloaded cold into a directory outside
+the repository, unpacked and run here:
+
+```
+ting 2.119.0                                        (gnu and musl)
+22 passed, 0 failed, 2465 checks                    (gnu and musl)
+881e3eea4d8a920d12cb865f8a372e09f49e4d5f7540aa4637d8f00a72cb7176  ting-gnu
+9139a06a2d18ce019fd1dde48a3f6559ee1876745f5ac257dc9bb72700edb6b8  ting-musl
+```
+
+`--doc rename` and `--doc copy_file` answer from the released
+binaries, and this release's own example was run by one of them:
+`ting-musl organize.ting` diffed clean against `examples/organize.out`
+— the milestone's script, executed by the binary a stranger would
+download, matching the output committed to the repository.
+
+Site audit: all nine paths 200 —  `/`, `/examples.js`, `/ting.wasm`
+(819704 bytes, so the playground got this build's wasm), and the six
+pages. changelog.html carries v2.119.0, cookbook.html has the organize
+example, reference.html has copy_file. The github.io address still
+redirects to www.baghino.me/thing.
+
+Nothing left to fix. The milestone's three strokes are shipped and
+running from a cold download; a health tick closes it.

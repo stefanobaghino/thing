@@ -1297,10 +1297,19 @@ holds only the current milestone and the standing rules.
   Cargo.toml + Cargo.lock. The rule that caught it, worth keeping: a
   release tick's FIRST act is to diff the previous release commit and
   check the tree is in the state that commit assumed.
+- 739: v2.119.0 VERIFIED. Six assets, all four runs on the tag green
+  by API verdict, both aarch64 archives downloaded cold and executed
+  here (22 selftests / 2465 checks on gnu and musl, `ting 2.119.0`),
+  and the release's own example run by the released musl binary
+  diffed clean against examples/organize.out. Site audit: nine paths
+  200, ting.wasm 819704 bytes, changelog carries v2.119.0, cookbook
+  has organize, reference has copy_file, github.io still redirects.
 - Backlog (one per tick, in order):
-  (1) verify v2.119.0 — six assets, green runs by API verdict, an
-  aarch64 archive (musl and gnu) downloaded cold and executed here,
-  site audit.
+  (1) health tick — bench vs bench/BASELINE.md (checksums decide,
+  timings are weather), 50000 differential, crash and 20000 formatter
+  fuzz cases in release, audit — closes the milestone "moving a file,
+  not retyping it";
+  (2) replenishment — the next milestone.
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
   a list of ints for a 9 MB file is nine million values, and a real
   bytes type is a language addition, not a builtin. Also absent and
