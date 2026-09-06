@@ -902,11 +902,17 @@ holds only the current milestone and the standing rules.
   the quadratic term was never its cost — --profile puts 52.8 of 86 ms
   in the per-character loop and 95599 `contains` calls. The
   accumulator was the right fix picked for the wrong reason.
+- 705: v2.114.0 TAGGED (136th tag; strokes 702, 703, 704). Cut from
+  82a4797 with CI and Pages green; gate green at the tag (fmt, zero
+  clippy warnings, fifteen suites, corpus at seven warnings, 22
+  selftests / 2431 checks) and the release binary reports 2.114.0.
+  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
+  and runs them.
 - Backlog (one per tick, in order):
-  (1) release v2.114.0 (strokes 702, 703, 704);
-  (2) verify it;
-  (3) re-profile the stdlib and follow whatever is on top, `words`
-  included — its cost is the per-character loop, not the append.
+  (1) verify v2.114.0 by cold asset download and execution;
+  (2) re-profile the stdlib and follow whatever is on top, `words`
+  included — its cost is the per-character loop, not the append;
+  (3) health tick to close "what the standard library costs".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

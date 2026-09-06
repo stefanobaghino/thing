@@ -13579,3 +13579,42 @@ about five characters long, so the quadratic term was never its cost —
 95599 calls to `contains`. The accumulator was the right thing to fix
 and the wrong reason to have picked it. What `words` needs is a
 different change, and it is not this one.
+
+## 2026-09-06 — Iteration 705: v2.114.0
+
+The 136th tag, strokes 702, 703 and 704: what the standard library
+costs, and it turned out two of the three answers were not in the
+standard library at all.
+
+`sort_with` is a builtin — the comparator sort was the one sort written
+in ting, 346 ms to 60 ms on 20000 elements, and bench/stdlib.ting as a
+whole 866.8 to 340.4 ms on eval and 476.5 to 191.2 on the VM with its
+checksum unchanged. It is a bottom-up merge sort in Rust rather than a
+call to the library's, because the comparator is ting code that can
+raise and `sort_by`'s closure has nowhere to put an error.
+
+`s += x` appends instead of copying. That one was a language defect
+rather than a library one: building a string a piece at a time was
+quadratic, and any program with the shape paid for it. 100000
+single-character appends, 240 ms to 14 ms.
+
+Between them sits the stroke neither was possible without: a module
+exports what its top level declares, read from its own AST, rather than
+whatever the environment held that did not look like an untouched
+builtin. That rule could not express "I meant to export this", which is
+what `lib/list.ting` needs to keep offering `sort_with` after the work
+moved into Rust. Every existing module exports the same 175 names it
+did before; that was measured, from binaries built either side of the
+change, not argued.
+
+Two guards fired on the way and both were right — the editor grammar
+did not know the new builtin, and the docs page counted what lib/
+offers by counting `fn` lines, which a re-export is not. A third was
+wrong and was corrected: `--check` called `let f = f;` a shadowed
+builtin when it is a published one.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt,
+zero clippy warnings, fifteen suites, the corpus at seven deliberate
+warnings, and 22 selftests / 2431 checks against the release binary
+that reports 2.114.0. BASELINE has nine rows, with bench/accum.ting
+new for the append shape nothing else in the suite covered.
