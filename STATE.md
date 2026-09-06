@@ -1194,15 +1194,21 @@ holds only the current milestone and the standing rules.
   --sort=creatordate`; strokes 728, 729, 730). Gate green at the tag:
   fmt, zero clippy, fifteen suites, corpus at seven warnings, 22
   selftests / 2447 checks on a binary reporting 2.118.0.
+- v2.118.0 VERIFIED (139th tag; strokes 728, 729, 730; both aarch64
+  archives downloaded cold and executed here, 22 selftests / 2447
+  checks each). Shipped binaries checked against the OS: stat says 7
+  where len(read_file) says 6 on the same file; a 300000-byte random
+  file sizes although read_file still errors on it; an age from
+  time_ms() is sane; fs["total_size"] is du -sb less the 4096 the
+  directory entry takes; tree.ting prints its recorded report and
+  says 570.0 KB for src, matching 583635 bytes summed in Python. Site
+  audit green on nine paths; changelog, reference (stat row), stdlib
+  (177 functions) and cookbook (tree) carry the release.
 - Backlog (one per tick, in order):
-  (1) verify v2.118.0 — cold download and execute both aarch64
-  archives, ask the shipped binaries what the release claims (stat's
-  bytes against len(read_file)'s characters, a binary file it can
-  size at all, an age against time_ms(), tree.ting on a real
-  directory checked against du), site audit on the nine paths, six
-  assets on the tag;
-  (2) then the health tick that closes "what a file is, besides its
-  name".
+  (1) the health tick that closes "what a file is, besides its name":
+  bench vs bench/BASELINE.md, 50000 differential, crash and 20000
+  formatter fuzz cases in release, audits;
+  (2) replenishment — the next milestone.
   NOT CHOSEN: rename/copy. Moving a file works through run() today
   and I have no measured pain for it, where sizing has three separate
   failures. It can earn its own evidence later.

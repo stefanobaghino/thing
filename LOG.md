@@ -14707,3 +14707,34 @@ clean, zero clippy warnings, fifteen suites, the corpus at seven
 deliberate warnings, and 22 selftests / 2447 checks against the
 release binary that reports 2.118.0. The tag ordinal was read from
 `git tag --sort=creatordate`.
+
+## 2026-09-06 — Iteration 732: v2.118.0 verified
+
+Both aarch64 Linux archives downloaded cold, unpacked and run here.
+Both report 2.118.0 and both pass the whole selftest suite — 22 files,
+2447 checks. Six assets on the tag; Release, CI and Pages all green
+from the API.
+
+The shipped binaries were asked what the release claims, on files made
+for the purpose and checked against the operating system:
+
+- `stat` on a seven-byte file with one two-byte character says 7,
+  where `len(read_file(p))` says 6. That difference is the whole point
+  of the builtin.
+- A 300000-byte file of random bytes sizes correctly and `read_file`
+  on it still errors, so a size no longer requires the file to be
+  text.
+- `time_ms()` minus `modified` is an age in the expected range.
+- `fs["size"]` answers 7 and `nil` for a path that is not there;
+  `fs["total_size"]` says 300750 for the directory, which is exactly
+  `du -sb` less the 4096 the directory entry itself takes.
+- `examples/tree.ting` prints its recorded report on both binaries,
+  and on this repository's `src` says 570.0 KB across 17 files —
+  583635 bytes summed independently in Python, 570.0 KB to the tenth.
+
+Site audit green on all nine paths, and the published pages carry the
+release: the changelog has v2.118.0, the reference has the `stat(path)`
+row, the stdlib page says 177 functions, and the cookbook has the tree
+example.
+
+One tick remains on the milestone: the health tick that closes it.
