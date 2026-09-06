@@ -17,9 +17,9 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 72 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 182
-  functions, guarded); 42 ting programs (22 selftest files — 21 tests
+  functions, guarded); 43 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 20 examples with .out); 353 Rust tests
+  nothing on its own — and 21 examples with .out); 353 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1364,11 +1364,24 @@ holds only the current milestone and the standing rules.
   start is not zero and a forgotten rotation answers out of order.
   11 selftest checks (2472 -> 2483). The 740 count guard did its job
   on a change for the first time.
+- 744: examples/logreport.ting — a log read in one pass, printing
+  what the file weighs beside what reading it cost (216388 bytes
+  against 86 held: a counter per level, one per source, the first
+  line, the last, the longest — nothing that grows with the file).
+  It does NOT use fs head/tail for the ends: each is another pass,
+  and inside a pass already running the ends are free; the library
+  ones are for when the ends are all you want. FOUND BY RUNNING IT
+  ON /dev/null: an empty log crashed on len(nil) — examples must be
+  run against what they were not written for. Also confirmed the pipe
+  form (`cat log | ting logreport.ting -`). ORDER LESSON: --fmt
+  reformatted the example AFTER tools/cookbook.py had generated the
+  page from it, so the guard failed on a stale page — format first,
+  generate second.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the example — a report on a log too big to hold, with the memory
-  it used printed beside the answer.
+  - release v2.120.0 — three strokes stand (742 each_line, 743 the
+  four lib/fs questions, 744 the example).
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting
   has no destructor or defer; lazy iterators (`for line in

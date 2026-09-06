@@ -1,0 +1,106 @@
+# What a log says, without holding the log — a report that costs the
+# same nine megabytes whether the file is a kilobyte or a terabyte,
+# because each_line hands over one line at a time and this keeps only
+# what it is counting.
+#
+#   ting logreport.ting              # report on a log this makes
+#   ting logreport.ting /var/log/x   # report on a log of your own
+#   cat big.log | ting logreport.ting -
+#
+# With no argument it builds a log, reports on it and removes it, so
+# the example prints the same thing every time. The demo is small
+# enough to run anywhere; the point is that nothing in the report
+# grows with the file.
+
+let fs = import("../lib/fs.ting");
+let st = import("../lib/string.ting");
+let tm = import("../lib/time.ting");
+
+fn build(path) {
+  let levels = ["INFO", "INFO", "INFO", "WARN", "WARN", "ERROR"];
+  let sources = ["api", "db", "cache"];
+  let lines = [];
+  let start = 1788652800000;
+  for i in range(5000) {
+    push(lines, format("{} {} {} request {}",
+    tm["iso"](start + i * 1000), levels[i % 6], sources[i % 3], i));
+  }
+  write_file(path, join(lines, "\n") + "\n");
+  return path;
+}
+
+let given = args();
+let path = "logreport-demo.log";
+let mine = len(given) == 0;
+if !mine { path = given[0]; }
+if mine { build(path); }
+
+if path != "-" && !exists(path) {
+  eprint(format("logreport: no such path: {}", path));
+  exit(2);
+}
+
+# One pass. Everything below is bounded: three counters per level,
+# one per source, and two lines held at a time. fs["head"] and
+# fs["tail"] would give the first and last just as well, but each of
+# them is another pass over the file, and the ends are free here.
+let by_level = {};
+let by_source = {};
+let first = nil;
+let last = nil;
+let longest = "";
+let lines = each_line(path, fn(line) {
+  let fields = split(line, " ");
+  if len(fields) >= 3 {
+    by_level[fields[1]] = get(by_level, fields[1], 0) + 1;
+    by_source[fields[2]] = get(by_source, fields[2], 0) + 1;
+  }
+  if first == nil { first = line; }
+  last = line;
+  if len(line) > len(longest) { longest = line; }
+  return nil;
+});
+
+fn ranked(counts) {
+  let rows = [];
+  for k in keys(counts) { push(rows, {"name": k, "n": counts[k]}); }
+  return sort_with(rows, fn(a, b) { return b["n"] - a["n"]; });
+}
+
+# The comparison the report is for: what the file weighs against what
+# reading it cost. A pipe has no size to ask for, so it says so.
+let size = fs["size"](path);
+
+# An empty log is an ordinary thing to be handed, and everything below
+# this point assumes there was a line to look at.
+if lines == 0 {
+  print(format("{}: no lines", path));
+  if mine { remove_file(path); }
+  exit(0);
+}
+
+let held = len(longest) + len(last);
+if size == nil {
+  print(format("{}: {} lines", path, lines));
+} else {
+  print(format("{}: {} lines, {} bytes", path, lines, size));
+}
+print(format("held while reading: {} bytes (the longest line and the last one)", held));
+print("");
+
+print("by level");
+for row in ranked(by_level) {
+  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+}
+print("");
+
+print("by source");
+for row in ranked(by_source) {
+  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+}
+print("");
+
+print(format("first  {}", first));
+print(format("last   {}", last));
+
+if mine { remove_file(path); }

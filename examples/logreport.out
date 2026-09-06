@@ -1,0 +1,15 @@
+logreport-demo.log: 5000 lines, 216388 bytes
+held while reading: 86 bytes (the longest line and the last one)
+
+by level
+   2501 INFO
+   1666 WARN
+    833 ERROR
+
+by source
+   1667 api
+   1667 db
+   1666 cache
+
+first  2026-09-06T00:00:00Z INFO api request 0
+last   2026-09-06T01:23:19Z INFO db request 4999

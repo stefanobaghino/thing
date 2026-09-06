@@ -31,6 +31,13 @@ Windows are attached to each
   per line, which over 1000000 lines measured 2007 ms at n = 10 and
   75000 ms at n = 1000, against 925 ms and 926 ms for a ring that
   costs the same whatever n is.
+- `examples/logreport.ting` reports on a log without holding it: one
+  pass with `each_line`, counting by level and by source, keeping the
+  first line, the last, and the longest. It prints what the file
+  weighs beside what reading it cost — 216388 bytes against 86 —
+  because nothing in the report grows with the file. It takes a path
+  or `-` for a pipe, and an empty log is answered rather than
+  crashed on.
 
 ## v2.119.0 (2026-09-06)
 

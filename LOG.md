@@ -15374,3 +15374,52 @@ Both fixed at the root rather than promised against: the backlog is
 now bullets rather than hand-written ordinals, so removing an item
 cannot leave a wrong number behind, and STATE.md says so in the line
 that introduces it.
+
+## 2026-09-06 — Iteration 744: a report on a log it never holds
+
+Stroke three closes the build for "a file read a line at a time".
+`examples/logreport.ting` reads a log in one pass and prints what the
+file weighs beside what reading it cost:
+
+```
+logreport-demo.log: 5000 lines, 216388 bytes
+held while reading: 86 bytes (the longest line and the last one)
+
+by level
+   2501 INFO
+   1666 WARN
+    833 ERROR
+
+by source
+   1667 api
+   1667 db
+   1666 cache
+
+first  2026-09-06T00:00:00Z INFO api request 0
+last   2026-09-06T01:23:19Z INFO db request 4999
+```
+
+Two hundred and sixteen thousand bytes against eighty-six. Every part
+of the report is bounded on purpose: a counter per level, a counter
+per source, the first line, the last, and the longest — nothing that
+grows with the file, which is why the same script answers a log of
+five million lines in the same memory.
+
+It could have used `fs["head"]` and `fs["tail"]` for the first and
+last lines, and the comment says why it does not: each of those is
+another pass over the file, and the ends are free inside a pass that
+is already running. The library functions are for when the ends are
+all you want.
+
+**Running it on `/dev/null` crashed it**, and that is why examples get
+run against things they were not written for. An empty log is an
+ordinary thing to be handed, and `len(last)` with no last line is
+`len does not apply to nil`. It answers `no lines` now, and the same
+run also confirmed the pipe form works: `cat log | ting
+logreport.ting -` reports on two lines as readily as on five
+thousand.
+
+The cookbook guard fired twice, correctly, and the second time taught
+me the order: `--fmt` reformatted the new example *after* I had
+generated docs/cookbook.md from it, so the page was stale against the
+file. Format first, generate second.
