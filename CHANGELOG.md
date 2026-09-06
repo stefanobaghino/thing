@@ -5,6 +5,20 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- A bundled module runs the first time something asks for it, not at
+  the top of the file. An `import` does not have to sit at a module's
+  top level — `if x { let m = import("noisy.ting"); }` runs the module
+  only when the branch is taken — and v2.116.0's bundle hoisted every
+  module and ran it whether or not the program asked. A module that
+  only defines things could not tell the difference; one that prints,
+  writes a file or takes time could. Each module is now a function
+  holding what its top level declared, which runs its body once and
+  hands back the same map ever after, which is what `import` itself
+  does. The bundle's shape changed with it, and the tutorial's listing
+  along with it.
+
 ## v2.116.0 (2026-09-06)
 
 - `ting --bundle SCRIPT` prints a script and the local modules it

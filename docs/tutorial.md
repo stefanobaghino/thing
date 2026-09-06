@@ -597,32 +597,39 @@ writes this:
 ```
 # main.ting, bundled by `ting --bundle`.
 #
-# Each local module is inlined once, after the modules it
-# imports, as a function returning what its top level
-# declared; every import of it reads that one binding, which
-# is what importing a file twice already gives. An import
-# whose path is not a file was left as it was: the binary
-# answers it.
+# Each local module became a function holding what its top
+# level declared. It runs the first time it is asked for and
+# hands back the same map ever after, which is what importing
+# one file twice already gives. An import whose path is not a
+# file was left as it was: the binary answers it.
 
 # greeter.ting
-let __ting_module_0 = fn() {
+let __ting_module_0_once = nil;
+
+fn __ting_module_0() {
+  if __ting_module_0_once != nil {
+    return __ting_module_0_once;
+  }
   fn greet(name) { return "hi, " + name; }
   let version = 1;
-  return {"greet": greet, "version": version};
-}();
+  __ting_module_0_once = {"greet": greet, "version": version};
+  return __ting_module_0_once;
+}
 
 # main.ting
-let g = __ting_module_0;
+let g = __ting_module_0();
 let li = import("lib/list.ting");
 
 print(g["greet"]("ting"), "- module v" + str(g["version"]));
 print(li["sum"]([1, 2, 3]));
 ```
 
-A module becomes a function returning what its top level declared,
-bound once, and every `import` of it reads that one binding — which is
-what importing the same file twice already gives you, so a module that
-keeps state stays one module. `lib/list.ting` is still an `import`,
+A module becomes a function holding what its top level declared. It
+runs the first time something asks for it and hands back the same map
+ever after, which is exactly what `import` does — so a module that
+keeps state stays one module, and a module nothing asks for never
+runs, `import` in a branch not taken included. `lib/list.ting` is
+still an `import`,
 because the binary answers that one on its own; leaving it there is
 why one file is enough. `one.ting` prints exactly what the two files
 printed, and passes `--check`. The bundler adds nothing the formatter

@@ -659,12 +659,12 @@ The `ting` binary is the whole toolchain — no separate installs:
   writes the formatted source to stdout, for editor integrations.
 - `ting --bundle SCRIPT` prints the script and the local modules it
   imports as one file, on stdout, changing nothing on disk. Each
-  module becomes a function returning what its top level declared,
-  bound once, and every import of it reads that one binding — because
-  importing the same file twice already hands back the same map, and a
-  module holding state has to stay one module. A module is inlined
-  after whatever it imports, so a module two others import is still
-  inlined once and shared. An import is inlined when its path names a
+  module becomes a function holding what its top level declared, which
+  runs the first time something asks for it and hands back the same
+  map ever after — which is what `import` itself does, so a module
+  holding state stays one module, a module two others import is
+  inlined once and shared, and a module nothing asks for never runs
+  (an `import` inside a branch not taken included). An import is inlined when its path names a
   file and left alone when it does not — the order the interpreter
   resolves in, filesystem first — so `import("lib/list.ting")` stays,
   the binary answering it, which is what makes one file enough, while

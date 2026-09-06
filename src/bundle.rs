@@ -5,10 +5,17 @@
 //! measured before this file was written. A module is a map of what
 //! its top level declares (the rule import_module follows), so a
 //! module body can become a function that returns that map. And
-//! importing the same file twice hands back the *same* map, so the
-//! bundle binds each module once and every import site reads that one
-//! binding — pasting a module per import site would give a program
-//! that behaves differently the moment a module holds state.
+//! importing the same file twice hands back the *same* map, so that
+//! function runs its body once and hands the same map back ever
+//! after — pasting a module per import site would give a program that
+//! behaves differently the moment a module holds state.
+//!
+//! Running it on the first ask rather than at the top of the file is
+//! not decoration. An `import` need not sit at a module's top level:
+//! `if x { let m = import("noisy.ting"); }` runs the module only when
+//! the branch is taken, and a bundle that hoisted every module would
+//! print what that module prints whether or not the program asked
+//! for it. Measured in iteration 722, which is why the shape changed.
 //!
 //! An import is inlined when its path names a file and left alone
 //! when it does not, which is the order the interpreter resolves in:
@@ -28,8 +35,9 @@
 use crate::lexer;
 use std::path::{Path, PathBuf};
 
-/// The name a bundled module is bound to. Long and dull on purpose:
-/// it shares a scope with the script's own top-level names.
+/// The function a bundled module becomes. Long and dull on purpose:
+/// it shares a scope with the script's own top-level names, as does
+/// the `_once` beside it holding the map after the first ask.
 fn binding(n: usize) -> String {
     format!("__ting_module_{n}")
 }
@@ -137,8 +145,8 @@ impl Bundler {
     }
 
     /// Read `path`, inline whatever it imports, and append it. Returns
-    /// the name the module is bound to; a file already inlined returns
-    /// its existing name and is not read again.
+    /// the call an import of it becomes; a file already inlined
+    /// returns that same call and is not read again.
     fn add(
         &mut self,
         path: &Path,
@@ -166,7 +174,9 @@ impl Bundler {
         let exports = exports_of(&display, &src)?;
         let name = binding(self.done.len());
         let entries: Vec<String> = exports.iter().map(|n| format!("{n:?}: {n}")).collect();
-        let mut text = format!("# {display}\nlet {name} = fn() {{\n");
+        let mut text = format!(
+            "# {display}\nlet {name}_once = nil;\n\nfn {name}() {{\n  if {name}_once != nil {{\n    return {name}_once;\n  }}\n"
+        );
         for line in body.lines() {
             if line.trim().is_empty() {
                 text.push('\n');
@@ -176,15 +186,18 @@ impl Bundler {
                 text.push('\n');
             }
         }
-        text.push_str(&format!("  return {{{}}};\n}}();\n", entries.join(", ")));
-        self.done.insert(path.to_path_buf(), name.clone());
+        text.push_str(&format!(
+            "  {name}_once = {{{}}};\n  return {name}_once;\n}}\n",
+            entries.join(", ")
+        ));
+        let call = format!("{name}()");
+        self.done.insert(path.to_path_buf(), call.clone());
         self.out.push(text);
-        Ok(name)
+        Ok(call)
     }
 
-    /// `src` with every local import replaced by the name of the
-    /// module it asks for, the modules themselves having been added
-    /// first.
+    /// `src` with every local import replaced by a call to the module
+    /// it asks for, the modules themselves having been added first.
     fn inline(&mut self, display: &str, src: &str, path: &Path) -> Result<String, String> {
         let dir = path.parent().unwrap_or(Path::new("."));
         let imports = imports_of(display, src, dir)?;
@@ -256,12 +269,11 @@ pub fn bundle(path: &Path) -> Result<String, String> {
     let mut out = format!(
         "# {display}, bundled by `ting --bundle`.\n\
          #\n\
-         # Each local module is inlined once, after the modules it\n\
-         # imports, as a function returning what its top level\n\
-         # declared; every import of it reads that one binding, which\n\
-         # is what importing a file twice already gives. An import\n\
-         # whose path is not a file was left as it was: the binary\n\
-         # answers it.\n\n"
+         # Each local module became a function holding what its top\n\
+         # level declared. It runs the first time it is asked for and\n\
+         # hands back the same map ever after, which is what importing\n\
+         # one file twice already gives. An import whose path is not a\n\
+         # file was left as it was: the binary answers it.\n\n"
     );
     for text in &bundler.out {
         out.push_str(text);

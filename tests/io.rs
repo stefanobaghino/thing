@@ -3166,7 +3166,7 @@ fn bundle_prints_what_the_separate_files_printed() {
     // Inlined once, not per import site: a module holding state must
     // stay one module, which is what importing a file twice gives.
     assert_eq!(text.matches("fn loud(t)").count(), 1, "{text}");
-    assert_eq!(text.matches("let __ting_module_").count(), 2, "{text}");
+    assert_eq!(text.matches("fn __ting_module_").count(), 2, "{text}");
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -3348,4 +3348,49 @@ fn bundling_never_changes_what_a_program_prints() {
     // every assertion above.
     assert!(checked >= 12, "only {checked} programs had a local import");
     let _ = std::fs::remove_dir_all(&out_dir);
+}
+
+/// An `import` does not have to sit at a module's top level, and a
+/// module's top level can do more than define things. A bundle that
+/// ran every module at the top of the file would print what a module
+/// prints whether or not the program ever asked for it, so a bundled
+/// module runs on the first ask and hands back the same map after —
+/// which is what `import` itself does.
+#[test]
+fn a_bundled_module_runs_only_when_it_is_asked_for() {
+    let dir = tree(
+        "lazy",
+        &[
+            (
+                "app.ting",
+                "print(\"start\");\n\
+                 if false {\n\
+                 \x20 let m = import(\"noisy.ting\");\n\
+                 \x20 print(m[\"answer\"]);\n\
+                 }\n\
+                 let first = import(\"noisy.ting\");\n\
+                 let second = import(\"noisy.ting\");\n\
+                 print(first[\"answer\"], first == second);\n",
+            ),
+            ("noisy.ting", "print(\"loaded\");\nlet answer = 42;\n"),
+        ],
+    );
+    let app = dir.join("app.ting");
+    let before = ting(&[&app]);
+    let bundled = ting(&[std::path::Path::new("--bundle"), &app]);
+    assert!(bundled.status.success(), "{:?}", bundled);
+    let one = dir.join("one.ting");
+    std::fs::write(&one, &bundled.stdout).unwrap();
+    let after = ting(&[&one]);
+    // The branch is never taken, so the module runs once, when the
+    // first real import asks for it — after "start" and not before.
+    assert_eq!(
+        String::from_utf8_lossy(&before.stdout),
+        "start\nloaded\n42 true\n"
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&after.stdout),
+        String::from_utf8_lossy(&before.stdout)
+    );
+    let _ = std::fs::remove_dir_all(&dir);
 }
