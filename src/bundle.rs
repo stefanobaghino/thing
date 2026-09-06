@@ -10,9 +10,14 @@
 //! binding — pasting a module per import site would give a program
 //! that behaves differently the moment a module holds state.
 //!
-//! Imports of the standard library are left exactly as they are:
-//! those modules already live inside the binary, which is the whole
-//! reason one file is enough.
+//! An import is inlined when its path names a file and left alone
+//! when it does not, which is the order the interpreter resolves in:
+//! filesystem first, and what has no file is a module embedded in the
+//! binary. So `import("lib/list.ting")` normally stays — the binary
+//! answers it, which is the whole reason one file is enough — while a
+//! copy of that module sitting beside the script is inlined like any
+//! other local module. Either way the bundle runs what the script
+//! ran.
 //!
 //! One difference the bundle cannot hide: a module runs in a fresh
 //! global environment, so a name it never defines is unbound there,
@@ -254,9 +259,9 @@ pub fn bundle(path: &Path) -> Result<String, String> {
          # Each local module is inlined once, after the modules it\n\
          # imports, as a function returning what its top level\n\
          # declared; every import of it reads that one binding, which\n\
-         # is what importing a file twice already gives. Imports of\n\
-         # the standard library are left alone: those modules are in\n\
-         # the binary.\n\n"
+         # is what importing a file twice already gives. An import\n\
+         # whose path is not a file was left as it was: the binary\n\
+         # answers it.\n\n"
     );
     for text in &bundler.out {
         out.push_str(text);

@@ -664,13 +664,24 @@ The `ting` binary is the whole toolchain — no separate installs:
   importing the same file twice already hands back the same map, and a
   module holding state has to stay one module. A module is inlined
   after whatever it imports, so a module two others import is still
-  inlined once and shared. `lib/...` imports are left as they are:
-  those modules live in the binary, which is what makes one file
-  enough. Two things are refused rather than guessed at, each named at
-  the file, line and column of the import: a cycle, and an `import`
-  whose path is not a literal string.
-  It takes a file and only a file: a script's imports resolve against
-  its own directory, and a script read from stdin has none.
+  inlined once and shared. An import is inlined when its path names a
+  file and left alone when it does not — the order the interpreter
+  resolves in, filesystem first — so `import("lib/list.ting")` stays,
+  the binary answering it, which is what makes one file enough, while
+  a copy of that module sitting beside your script is inlined like any
+  other. What a bundle cannot keep identical is a program that prints
+  where its own code sits: `try()` hands back a file and a line, and
+  in a bundle those are the bundle's. Three things are refused rather
+  than guessed at, each named at the file, line and column of the
+  import that could not be followed: a cycle, an `import` whose path
+  is not a literal string, and a module that returns from its own top
+  level — the bundle would hand back that value instead of the
+  module's map, and quietly. It takes a file and only a file: a
+  script's imports resolve against its own directory, and a script
+  read from stdin has none. Every program in this repository that
+  imports a local module is bundled and rerun by a test, which is
+  where the promise is kept: the same bytes on stdout, the same exit,
+  and a bundle that passes `--check` and `--fmt-check`.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
   signature and doc line, or a stdlib function's signature, module
   and comment. A module name (`list` or `lib/list.ting`) lists that

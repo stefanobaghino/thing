@@ -3256,3 +3256,96 @@ fn bundle_takes_exactly_one_file() {
         );
     }
 }
+
+/// Every `import("...")` in `src` whose path names a file next to it:
+/// the imports a bundle has to inline, told apart from the standard
+/// library exactly as the interpreter tells them apart — filesystem
+/// first, and what has no file is embedded in the binary.
+fn has_a_local_import(src: &str, dir: &std::path::Path) -> bool {
+    src.match_indices("import(\"").any(|(at, marker)| {
+        let rest = &src[at + marker.len()..];
+        match rest.find('"') {
+            Some(end) => dir.join(&rest[..end]).is_file(),
+            None => false,
+        }
+    })
+}
+
+/// The promise `--bundle` has to keep, over every program in the
+/// corpus that imports a local module: the bundle prints exactly the
+/// bytes the separate files printed and exits the same way, and it is
+/// itself ting the toolchain accepts — `--check` clean and already in
+/// the format `--fmt` would produce. A bundler that emitted code the
+/// formatter would rewrite would not be emitting ting.
+///
+/// Here that means the standard library too: `selftest/` and
+/// `examples/` reach it as `../lib/...`, which is a file in this
+/// repository, so those bundles inline the real modules and run them.
+/// The one thing a bundle cannot keep identical is a program that
+/// prints where its own code sits — `try()` hands back the file and
+/// line, and in a bundle that is the bundle. Nothing in the corpus
+/// does, and the guard would say so if something started to.
+#[test]
+fn bundling_never_changes_what_a_program_prints() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let out_dir = std::env::temp_dir().join(format!("ting-bundle-corpus-{}", std::process::id()));
+    std::fs::create_dir_all(&out_dir).unwrap();
+    let mut checked = 0;
+    for corner in ["selftest", "examples"] {
+        let dir = root.join(corner);
+        let mut paths: Vec<_> = std::fs::read_dir(&dir)
+            .expect("corpus directory missing")
+            .map(|e| e.unwrap().path())
+            .filter(|p| p.extension().and_then(|e| e.to_str()) == Some("ting"))
+            .collect();
+        paths.sort();
+        for path in paths {
+            let src = std::fs::read_to_string(&path).unwrap();
+            if !has_a_local_import(&src, &dir) {
+                continue;
+            }
+            let before = ting(&[&path]);
+            let bundled = ting(&[std::path::Path::new("--bundle"), &path]);
+            assert!(
+                bundled.status.success(),
+                "--bundle failed on {}:\n{}",
+                path.display(),
+                String::from_utf8_lossy(&bundled.stderr)
+            );
+            let one = out_dir.join(path.file_name().unwrap());
+            std::fs::write(&one, &bundled.stdout).unwrap();
+            let after = ting(&[&one]);
+            assert_eq!(
+                String::from_utf8_lossy(&after.stdout),
+                String::from_utf8_lossy(&before.stdout),
+                "bundling changed what {} prints",
+                path.display()
+            );
+            assert_eq!(
+                after.status.code(),
+                before.status.code(),
+                "bundling changed how {} exits:\n{}",
+                path.display(),
+                String::from_utf8_lossy(&after.stderr)
+            );
+            let checked_bundle = ting(&[std::path::Path::new("--check"), &one]);
+            assert!(
+                checked_bundle.status.success(),
+                "the bundle of {} does not check:\n{}",
+                path.display(),
+                String::from_utf8_lossy(&checked_bundle.stderr)
+            );
+            let formatted = ting(&[std::path::Path::new("--fmt-check"), &one]);
+            assert!(
+                formatted.status.success(),
+                "the bundle of {} is not formatted as ting",
+                path.display()
+            );
+            checked += 1;
+        }
+    }
+    // Fourteen today. A scan that silently matched nothing would pass
+    // every assertion above.
+    assert!(checked >= 12, "only {checked} programs had a local import");
+    let _ = std::fs::remove_dir_all(&out_dir);
+}
