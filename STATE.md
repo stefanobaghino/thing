@@ -1190,8 +1190,17 @@ holds only the current milestone and the standing rules.
   put the point back), CHECKED against the filesystem: eval.rs 190.3
   KB for 194911 bytes, src total matches du -sb less the directory
   entries.
+- 731: v2.118.0 cut and pushed (139th tag, read from `git tag
+  --sort=creatordate`; strokes 728, 729, 730). Gate green at the tag:
+  fmt, zero clippy, fifteen suites, corpus at seven warnings, 22
+  selftests / 2447 checks on a binary reporting 2.118.0.
 - Backlog (one per tick, in order):
-  (1) release v2.118.0 — three strokes banked (728, 729, 730);
+  (1) verify v2.118.0 — cold download and execute both aarch64
+  archives, ask the shipped binaries what the release claims (stat's
+  bytes against len(read_file)'s characters, a binary file it can
+  size at all, an age against time_ms(), tree.ting on a real
+  directory checked against du), site audit on the nine paths, six
+  assets on the tag;
   (2) then the health tick that closes "what a file is, besides its
   name".
   NOT CHOSEN: rename/copy. Moving a file works through run() today

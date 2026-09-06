@@ -14683,3 +14683,27 @@ directory entries it counts are taken off.
 
 Both engines print the same report. Fifteen suites, the corpus still
 at its seven deliberate warnings, cookbook regenerated.
+
+## 2026-09-06 — Iteration 731: v2.118.0
+
+The 139th tag, strokes 728, 729 and 730 — one question a ting program
+could not ask, answered three ways.
+
+`stat(path)` is the 69th builtin: a file's size in bytes, its
+modification time in milliseconds on the clock `time_ms()` reads, and
+what kind of thing the path names, with `nil` where nothing readable
+is. `lib/fs.ting` builds `size`, `facts` and `total_size` on top of
+it. And `examples/tree.ting` is the report none of that existed for:
+a directory's bytes, its largest files, where the bytes are by
+extension, and how many changed in the last day.
+
+Before this release a program could learn a file's name and whether it
+was a directory. Sizing one meant reading it, which counts characters
+rather than bytes and refuses anything that is not text; a
+modification time could not be had at all.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt
+clean, zero clippy warnings, fifteen suites, the corpus at seven
+deliberate warnings, and 22 selftests / 2447 checks against the
+release binary that reports 2.118.0. The tag ordinal was read from
+`git tag --sort=creatordate`.
