@@ -1,0 +1,23 @@
+# Building a string a piece at a time, the shape the standard library
+# uses to assemble words, fields and wrapped lines. What it costs
+# depends on whether `s += x` appends to the string or copies it.
+let out = "";
+for i in range(40000) { out += "ab"; }
+
+# The same, one character at a time and through a function local.
+fn spell(xs) {
+  let s = "";
+  for x in xs { s += x; }
+  return s;
+}
+let letters = map(range(30000), fn(i) { return chr(97 + i % 26); });
+let spelled = spell(letters);
+
+# And a growing prefix, which reads what it has built so far.
+let seen = 0;
+let acc = "";
+for w in map(range(4000), fn(i) { return "w" + str(i); }) {
+  acc += w + " ";
+  seen += len(acc) % 7;
+}
+print(len(out), len(spelled), len(acc), seen);

@@ -306,6 +306,51 @@ fn exec<W: Write>(
             Op::SetSlot(i) => {
                 locals[*i as usize] = stack.pop().expect("stack underflow");
             }
+            Op::UpdateSlot(i, op) => {
+                let r = stack.pop().expect("stack underflow");
+                let slot = &mut locals[*i as usize];
+                // Appending a string to a string cannot fail, so the
+                // value may be moved out and appended to in place.
+                // Anything else is copied first, so a failed operator
+                // leaves the binding as it found it.
+                if matches!((&*slot, &r), (Value::Str(_), Value::Str(_))) {
+                    let (Value::Str(mut a), Value::Str(b)) =
+                        (std::mem::replace(slot, Value::Nil), r)
+                    else {
+                        unreachable!("both were strings a line ago")
+                    };
+                    a.push_str(&b);
+                    *slot = Value::Str(a);
+                } else {
+                    *slot = eval::binary(*op, slot.clone(), r, span)?;
+                }
+            }
+            Op::CheckVar(i) => {
+                let name = &chunk.names[*i as usize];
+                if !interp.is_bound(name) {
+                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
+                }
+            }
+            Op::UpdateVar(i, op) => {
+                let r = stack.pop().expect("stack underflow");
+                let name = &chunk.names[*i as usize];
+                // As UpdateSlot: only the pair that cannot fail is
+                // moved out of its binding.
+                let string_append =
+                    matches!(&r, Value::Str(_)) && matches!(interp.lookup_is_str(name), Some(true));
+                let v = if string_append {
+                    let old = interp.take(name).expect("CheckVar found the binding");
+                    let (Value::Str(mut a), Value::Str(b)) = (old, r) else {
+                        unreachable!("both were strings a line ago")
+                    };
+                    a.push_str(&b);
+                    Value::Str(a)
+                } else {
+                    let old = interp.lookup(name).expect("CheckVar found the binding");
+                    eval::binary(*op, old, r, span)?
+                };
+                interp.assign(name, v);
+            }
             Op::PushScope => interp.push_scope(),
             Op::PopScope => interp.pop_scope(),
             Op::IterNew => {

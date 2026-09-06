@@ -79,6 +79,19 @@ pub enum Op {
     GetSlot(u16),
     /// Pop into frame slot i.
     SetSlot(u16),
+    /// The write half of `slot op= rhs`: pop the right-hand side, take
+    /// the slot's value out, apply the operator and put the answer
+    /// back. Taking rather than reading means `s += c` appends to the
+    /// string already in the slot instead of to a copy of it, and
+    /// doing it after the right-hand side has run means `s += s` still
+    /// sees the old s.
+    UpdateSlot(u16, BinaryOp),
+    /// Error unless names[i] is bound, the way GetVarToUpdate does,
+    /// but without reading the value: the check has to happen before
+    /// the right-hand side runs, and the read after it.
+    CheckVar(u32),
+    /// UpdateSlot for a name in the environment.
+    UpdateVar(u32, BinaryOp),
 }
 
 #[derive(Debug)]
@@ -513,25 +526,56 @@ impl Compiler {
             StmtKind::Assign(name, op, value) => {
                 let slot = self.resolve(name);
                 if let Some(op) = op {
-                    match slot {
-                        Some(slot) => self.emit(Op::GetSlot(slot), s.span),
-                        None => {
+                    // Read, operate and write are one instruction, so
+                    // the old value is moved out of its home rather
+                    // than copied onto the stack. The name check for a
+                    // variable still comes first, because `x += 1` has
+                    // to fail the way `x = 1` does before the
+                    // right-hand side runs.
+                    let fuse = *op == BinaryOp::Add && crate::eval::cannot_reach(value, name);
+                    match (slot, fuse) {
+                        (Some(slot), true) => {
+                            self.expr(value)?;
+                            self.emit(Op::UpdateSlot(slot, *op), s.span);
+                        }
+                        (None, true) => {
                             let i = self.name(name);
-                            self.emit(Op::GetVarToUpdate(i), s.span);
+                            self.emit(Op::CheckVar(i), s.span);
+                            self.note_scope();
+                            self.expr(value)?;
+                            self.emit(Op::UpdateVar(i, *op), s.span);
                             self.note_scope();
                         }
+                        (slot, false) => {
+                            match slot {
+                                Some(slot) => self.emit(Op::GetSlot(slot), s.span),
+                                None => {
+                                    let i = self.name(name);
+                                    self.emit(Op::GetVarToUpdate(i), s.span);
+                                    self.note_scope();
+                                }
+                            }
+                            self.expr(value)?;
+                            self.emit(Op::Binary(*op), s.span);
+                            match slot {
+                                Some(slot) => self.emit(Op::SetSlot(slot), s.span),
+                                None => {
+                                    let i = self.name(name);
+                                    self.emit(Op::SetVar(i), s.span);
+                                    self.note_scope();
+                                }
+                            }
+                        }
                     }
-                    self.expr(value)?;
-                    self.emit(Op::Binary(*op), s.span);
                 } else {
                     self.expr(value)?;
-                }
-                match slot {
-                    Some(slot) => self.emit(Op::SetSlot(slot), s.span),
-                    None => {
-                        let i = self.name(name);
-                        self.emit(Op::SetVar(i), s.span);
-                        self.note_scope();
+                    match slot {
+                        Some(slot) => self.emit(Op::SetSlot(slot), s.span),
+                        None => {
+                            let i = self.name(name);
+                            self.emit(Op::SetVar(i), s.span);
+                            self.note_scope();
+                        }
                     }
                 }
             }

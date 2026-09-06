@@ -286,6 +286,42 @@ impl Env {
         }
     }
 
+    /// Whether a name is bound, without copying what it is bound to.
+    fn bound(env: &Rc<RefCell<Env>>, name: &str) -> bool {
+        let e = env.borrow();
+        e.vars.contains_key(name) || e.parent.as_ref().is_some_and(|p| Env::bound(p, name))
+    }
+
+    /// Look at the nearest binding without copying it.
+    fn with<T>(env: &Rc<RefCell<Env>>, name: &str, f: impl Fn(&Value) -> T) -> Option<T> {
+        let e = env.borrow();
+        match e.vars.get(name) {
+            Some(v) => Some(f(v)),
+            None => {
+                let parent = e.parent.clone()?;
+                drop(e);
+                Env::with(&parent, name, f)
+            }
+        }
+    }
+
+    /// Move the nearest binding's value out, leaving nil behind. For a
+    /// compound assignment, whose whole point is to overwrite it: a
+    /// clone of a string would be copied and thrown away, which is what
+    /// made `s += c` cost the length of s every time round a loop. The
+    /// hole is filled by the store that always follows.
+    fn take(env: &Rc<RefCell<Env>>, name: &str) -> Option<Value> {
+        let mut e = env.borrow_mut();
+        match e.vars.get_mut(name) {
+            Some(slot) => Some(std::mem::replace(slot, Value::Nil)),
+            None => {
+                let parent = e.parent.clone()?;
+                drop(e);
+                Env::take(&parent, name)
+            }
+        }
+    }
+
     /// Rebind the nearest existing binding; false if none exists.
     fn assign(env: &Rc<RefCell<Env>>, name: &str, v: Value) -> bool {
         let mut e = env.borrow_mut();
@@ -1122,12 +1158,46 @@ impl<W: Write> Interpreter<W> {
                     None => self.eval(value)?,
                     // The compound form reads first, so an undefined
                     // name is caught before the right-hand side runs.
+                    //
+                    // Appending a string to a string is the exception,
+                    // and only when the right-hand side cannot reach
+                    // the name: then the order is unobservable, so the
+                    // value is moved out of its binding and appended to
+                    // in place. Copying it first is what made `s += c`
+                    // cost the length of s every time round a loop.
                     Some(op) => {
-                        let Some(old) = Env::get(&self.env, name) else {
+                        if !Env::bound(&self.env, name) {
                             return Err(self.undefined_assign(name, stmt.span));
-                        };
-                        let r = self.eval(value)?;
-                        binary(*op, old, r, stmt.span)?
+                        }
+                        if *op == crate::ast::BinaryOp::Add && cannot_reach(value, name) {
+                            let r = self.eval(value)?;
+                            // Only this pair cannot fail, so only this
+                            // pair may leave the binding empty while it
+                            // is worked on. Both types are settled
+                            // before anything is moved.
+                            let append = matches!(r, Value::Str(_))
+                                && Env::with(&self.env, name, |v| matches!(v, Value::Str(_)))
+                                    == Some(true);
+                            if append {
+                                let old = Env::take(&self.env, name)
+                                    .expect("the binding was there a moment ago");
+                                let (Value::Str(mut a), Value::Str(b)) = (old, r) else {
+                                    unreachable!("both were strings a line ago")
+                                };
+                                a.push_str(&b);
+                                Value::Str(a)
+                            } else {
+                                let old = Env::get(&self.env, name)
+                                    .expect("the binding was there a moment ago");
+                                binary(*op, old, r, stmt.span)?
+                            }
+                        } else {
+                            let Some(old) = Env::get(&self.env, name) else {
+                                return Err(self.undefined_assign(name, stmt.span));
+                            };
+                            let r = self.eval(value)?;
+                            binary(*op, old, r, stmt.span)?
+                        }
                     }
                 };
                 if Env::assign(&self.env, name, v) {
@@ -1255,6 +1325,23 @@ impl<W: Write> Interpreter<W> {
 
     pub(crate) fn lookup(&self, name: &str) -> Option<Value> {
         Env::get(&self.env, name)
+    }
+
+    /// Whether a name is bound, without copying its value.
+    pub(crate) fn is_bound(&self, name: &str) -> bool {
+        Env::bound(&self.env, name)
+    }
+
+    /// Whether the name is bound to a string, asked without copying
+    /// one: the VM has to know before it decides to move a value out.
+    pub(crate) fn lookup_is_str(&self, name: &str) -> Option<bool> {
+        Env::with(&self.env, name, |v| matches!(v, Value::Str(_)))
+    }
+
+    /// Move a bound name's value out, leaving nil in its place; the
+    /// caller must put something back. See `Env::take`.
+    pub(crate) fn take(&mut self, name: &str) -> Option<Value> {
+        Env::take(&self.env, name)
     }
 
     /// A closure over the current environment, named when it is being
@@ -3181,6 +3268,31 @@ pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeE
             format!("cannot apply '{op}' to {}", v.type_name()),
             span,
         )),
+    }
+}
+
+/// Whether evaluating `e` can neither read nor write `name`. A
+/// compound assignment may only be reordered around its right-hand
+/// side when this holds — otherwise `s += s` would read a binding that
+/// had already been moved out of, and `s += f()` would see whatever f
+/// left rather than what was there when the statement began.
+///
+/// Deliberately blunt: any call, any function literal and any mention
+/// of the name itself answers no, because a call can reach anything
+/// and a closure can outlive the answer.
+pub(crate) fn cannot_reach(e: &crate::ast::Expr, name: &str) -> bool {
+    use crate::ast::ExprKind::*;
+    match &e.kind {
+        Call(..) | Fn(..) => false,
+        Var(n) => n != name,
+        Int(_) | Float(_) | Str(_) | Bool(_) | Nil => true,
+        Unary(_, a) => cannot_reach(a, name),
+        Binary(_, a, b) | Index(a, b) => cannot_reach(a, name) && cannot_reach(b, name),
+        List(xs) => xs.iter().all(|x| cannot_reach(x, name)),
+        Map(kvs) => kvs
+            .iter()
+            .all(|(k, v)| cannot_reach(k, name) && cannot_reach(v, name)),
+        _ => false,
     }
 }
 

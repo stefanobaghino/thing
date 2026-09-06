@@ -400,3 +400,50 @@ fn a_module_can_re_export_a_builtin() {
         assert_eq!(got, want, "{engine:?} exported something else");
     }
 }
+
+/// `s += x` moves the string out of its binding and appends in place,
+/// which is only sound when the right-hand side cannot reach the name
+/// and only safe when the operator cannot fail. Both conditions are
+/// invisible when they hold, so the cases that decide them are pinned
+/// here: without them the optimisation could silently start reading a
+/// binding it had already emptied.
+#[test]
+fn a_compound_append_does_not_disturb_what_it_appends_to() {
+    let cases = [
+        // The right-hand side is the name itself.
+        ("let s = \"a\"; s += s; print(s);", "aa\n"),
+        // The right-hand side writes the name, so the old value is the
+        // one the statement began with, not the one the call left.
+        (
+            "let t = \"a\"; fn f() { t = \"z\"; return \"b\"; } t += f(); print(t);",
+            "ab\n",
+        ),
+        // A failed operator leaves the binding as it found it.
+        (
+            "let u = \"a\"; print(try(fn() { u += 1; })[\"err\"] != nil); print(u);",
+            "true\na\n",
+        ),
+        (
+            "let n = 9223372036854775807; print(try(fn() { n += 1; })[\"err\"] != nil); print(n);",
+            "true\n9223372036854775807\n",
+        ),
+        // Everything else the operator does is untouched.
+        ("let n = 1; n += 2; print(n);", "3\n"),
+        ("let xs = [1]; xs += [2]; print(xs);", "[1, 2]\n"),
+        (
+            "let m = {\"k\": \"a\"}; m[\"k\"] += \"b\"; print(m);",
+            "{\"k\": \"ab\"}\n",
+        ),
+        // A name that is not bound fails before the right-hand side runs.
+        (
+            "fn f() { print(\"ran\"); return 1; } print(try(fn() { nope += f(); })[\"err\"] != nil);",
+            "true\n",
+        ),
+    ];
+    for (src, want) in cases {
+        for engine in [Engine::Eval, Engine::Vm] {
+            let got = run(engine, src).expect("the program runs");
+            assert_eq!(got, want, "{engine:?} on:\n{src}");
+        }
+    }
+}

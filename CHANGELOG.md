@@ -7,6 +7,16 @@ Windows are attached to each
 
 ## Unreleased
 
+- `s += x` appends to the string instead of copying it. Building a
+  string a piece at a time was quadratic: 25000, 50000 and 100000
+  single-character appends took 19, 66 and 240 ms, and now take 4, 6
+  and 14 ms on the VM. The old value is moved out of its binding
+  rather than cloned, which is done only when appending a string to a
+  string — the one pair that cannot fail — and only when the
+  right-hand side cannot reach the name being assigned, so `s += s`,
+  `s += f()` where f writes s, and a failed `s += 1` all behave
+  exactly as before. The new `bench/accum.ting` covers the shape.
+
 - `sort_with(xs, cmp)` is a builtin. The standard library's comparator
   sort was the one sort written in ting, and the slowest thing in the
   standard library: it is about six times faster now, 346 ms to 60 ms
