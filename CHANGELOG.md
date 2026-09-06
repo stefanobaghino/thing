@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.115.0 (2026-09-06)
 
 - The tutorial uses `try(f, ...args)` where that is what it means. It
   taught the short form and then went on using a lambda in five later
