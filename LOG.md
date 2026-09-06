@@ -13727,3 +13727,74 @@ having moved.
 
 One stroke is banked toward v2.115.0. That is not three, so the next
 tick replenishes rather than releases.
+
+## 2026-09-06 — Iteration 709: replenishment — "the code the docs promise"
+
+The backlog emptied when the standard-library milestone closed. This
+tick looked for the next one and spent most of its time ruling things
+out, which is the useful half.
+
+Ruled out, and why:
+
+- **What a call costs.** It is the largest single number in the whole
+  benchmark suite: bench/fib.ting makes 1028457 calls in 497 ms, about
+  0.48 us each, and nothing else in the suite comes close. But the path
+  is already the optimised one — parameters land in frame slots, a body
+  that captures nothing allocates no `Env` at all and runs against the
+  closure's own, and the locals buffer is pooled between calls. There
+  is no defect there to find, only a grind, on a host where the ~32 ns
+  per instruction that implies is unremarkable. A third performance
+  milestone in a row would have needed better evidence than that.
+- **Destructuring.** `let [a, b] = pair;` is a parse error, and nine
+  places in the corpus index a pair by `[0]` and `[1]`. Nine is not
+  pressure.
+- **Two findings carried in STATE from old health ticks are closed.**
+  Unused bindings inside function bodies *are* warned about now, and a
+  CRLF file passes `--fmt --diff` untouched. Both were checked, not
+  assumed; both are gone from the backlog.
+
+What is real: the docs contain 52 ting code blocks — 44 in the
+tutorial, 8 in the reference — and **not one of them is executed by any
+test**. The cookbook has exactly this guarantee, because it is
+generated from `examples/`, each of which has a recorded `.out` that
+tests/examples.rs replays. The tutorial and the reference are prose,
+written by hand, and nothing has ever run them.
+
+The good news, measured before proposing anything: they work. Extracted
+and run one by one, 50 of the 52 do what they should. The two that do
+not are deliberately not programs — the reference's syntax cheat-sheet,
+which has a bare `break;` in it, and its two-files-in-one-block module
+illustration. (A third looked broken and was my harness's fault: the
+tutorial's module example writes `greeter.ting` and then imports it, so
+it has to run in its own directory. It does.)
+
+Running them also showed why the guard has to give each one its own
+directory rather than just executing it: the tutorial's `walk_ext`
+example calls `make_dir("report/data")` and writes files into it, and
+running the blocks from the project root left a stray `report/` in the
+working tree. A guard that litters the repository would not survive
+its first week.
+
+So this is a milestone about keeping something that is already true,
+not repairing something broken — and the way it fails is silent. A
+snippet rots when the language moves, and nobody finds out until a
+reader copies it.
+
+Milestone: **"the code the docs promise"** (v2.115–v2.116). One stroke
+per tick:
+
+1. A guard that extracts every ting block from tutorial.md and
+   reference.md, runs it in a directory of its own, and fails if it
+   does not — with a visible, deliberate marker for the blocks that
+   are illustrations rather than programs, so that "this one is not
+   meant to run" is a decision in the file and not an omission.
+2. The idiom the docs teach. Eight places in tutorial.md, reference.md
+   and cookbook.md still write `try(fn() { return f(x); })` where
+   `try(f, x)` has worked for some time. The trap is that they are not
+   interchangeable: moving an argument out of the closure takes it out
+   of the try's reach, so `try(fn() { return json_parse(read_file(p)); })`
+   is not `try(json_parse, read_file(p))`. Each site needs reading,
+   which is why it comes after the guard rather than before.
+3. Chosen once the guard exists and has had something to say.
+
+Still banked toward v2.115.0: stroke 707.

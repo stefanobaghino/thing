@@ -935,10 +935,37 @@ holds only the current milestone and the standing rules.
   clean in release at seed 708, the pattern sweep taking 3.01 s
   against 0.22 for the default count. Site audit green on nine paths,
   six assets on each of the last six tags. Nothing found.
+- 709: replenishment — milestone "the code the docs promise"
+  (v2.115-v2.116), reasoning in LOG.md. The docs hold 52 ting code
+  blocks (44 tutorial, 8 reference) and NOT ONE is executed by any
+  test; the cookbook has that guarantee only because it is generated
+  from examples/, which tests/examples.rs replays against recorded
+  .out files. Measured before proposing: 50 of the 52 run correctly
+  today, and the 2 that do not are deliberate illustrations (the
+  reference's syntax cheat-sheet with a bare `break;`, and its
+  two-files-in-one-block module example). A guard must give each block
+  its OWN DIRECTORY — the tutorial's walk_ext example calls
+  `make_dir("report/data")` and left a stray report/ in the tree when
+  run from the root.
+  NOT CHOSEN, with reasons: what a call costs (bench/fib is 1028457
+  calls in 497 ms, ~0.48 us each and the largest number in the suite,
+  but params already land in slots, a capture-free body allocates no
+  Env, and the locals buffer is pooled — no defect, only a grind);
+  destructuring (`let [a, b] = pair;` is a parse error but only nine
+  corpus sites index a pair). CLOSED, verified this tick: unused
+  bindings inside function bodies ARE warned about now, and a CRLF
+  file passes `--fmt --diff` untouched — both old health-tick findings
+  are gone.
 - Backlog (one per tick, in order):
-  (1) replenishment — pick the next milestone, reasoning into LOG.md;
-  (2) then one stroke per tick, releasing v2.115.0 when ~3 are banked
-  (707 is the first).
+  (1) a guard that runs every ting block in tutorial.md and
+  reference.md in a directory of its own, with a visible marker for
+  the blocks that are illustrations rather than programs;
+  (2) the idiom the docs teach — eight sites still write
+  `try(fn() { return f(x); })`, but they are NOT interchangeable with
+  `try(f, x)`: moving an argument out of the closure takes it out of
+  the try's reach, so each site needs reading;
+  (3) chosen once the guard has had something to say.
+  Release v2.115.0 when ~3 strokes are banked (707 is the first).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
