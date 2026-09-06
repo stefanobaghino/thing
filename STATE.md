@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 69 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 177
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 347 Rust tests
+  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 347 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1179,10 +1179,21 @@ holds only the current milestone and the standing rules.
   by input order. No way to set an mtime from ting, and sleep_ms
   would still tie on a one-second filesystem. The example may ask HOW
   RECENT something is; it must not claim which file is newest.
+- 730: examples/tree.ting — a directory by size: total bytes, three
+  largest, bytes by extension, how many changed in the last day. None
+  of those five numbers existed for a ting program a release ago.
+  Takes a path or builds and removes its own tree (so the .out is
+  stable), which also keeps it out of the playground — the browser
+  has no filesystem. `modified` asks HOW RECENT, never which is
+  newest (729's tie). A missing path exits 2 rather than reporting an
+  empty directory. Human sizes done in ting (scale to tenths, round,
+  put the point back), CHECKED against the filesystem: eval.rs 190.3
+  KB for 194911 bytes, src total matches du -sb less the directory
+  entries.
 - Backlog (one per tick, in order):
-  (1) an example that could not be written before — sizes and a
-  recency question, not a "newest file" claim — which reaches the
-  cookbook via tools/cookbook.py and is run by CI.
+  (1) release v2.118.0 — three strokes banked (728, 729, 730);
+  (2) then the health tick that closes "what a file is, besides its
+  name".
   NOT CHOSEN: rename/copy. Moving a file works through run() today
   and I have no measured pain for it, where sizing has three separate
   failures. It can earn its own evidence later.

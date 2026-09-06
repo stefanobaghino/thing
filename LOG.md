@@ -14647,3 +14647,39 @@ files is newest.
 Also, incidentally: `"x" * 3` is not string repetition in ting —
 `lib/string.ting`'s `repeat` is. The draft assumed otherwise and the
 error said so immediately.
+
+## 2026-09-06 — Iteration 730: the example that could not be written
+
+Backlog item 1, and the point of the milestone: `examples/tree.ting`
+reports what a directory holds by size — total bytes, the three
+largest files, where the bytes sit by extension, and how many files
+changed in the last day. A release ago none of those five numbers was
+available to a ting program.
+
+It takes a path, or builds a small tree and removes it again, so the
+example prints the same thing every time and `tests/examples.rs` can
+replay it against a recorded output like every other one. Taking
+`args()` also keeps it out of the playground list, which is right: the
+browser has no filesystem to report on.
+
+Two things done deliberately:
+
+- **`modified` is used to ask how recent, never which is newest.**
+  729 found that files written one after another share a stamp, so a
+  "newest file" line would have been a tie broken by path order — an
+  answer that is deterministic and means nothing. The example says so
+  in a comment where a reader will meet it.
+- **A missing path is an error, not an empty report.** `facts` on a
+  path that is not there answers with nothing, which reads like an
+  empty directory rather than a mistake, so the example checks
+  `exists` and leaves with status 2.
+
+Human-readable sizes are written in ting, since there is no
+formatting language for one decimal place: scale to tenths as an int,
+round, and put the point back. Checked against the filesystem rather
+than assumed — `src/eval.rs` reports 190.3 KB for the 194911 bytes
+`stat -c %s` gives, and the total for `src` matches `du -sb` once the
+directory entries it counts are taken off.
+
+Both engines print the same report. Fifteen suites, the corpus still
+at its seven deliberate warnings, cookbook regenerated.
