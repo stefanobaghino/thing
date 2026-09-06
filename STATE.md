@@ -983,11 +983,22 @@ holds only the current milestone and the standing rules.
   not that it prints what the page CLAIMS. 43 of the tutorial's 44
   blocks are followed by a claimed output and NOTHING verifies any of
   them (the reference has 0 such claims).
+- 712: the snippet guard now checks the CLAIMED OUTPUT, not just the
+  exit status. Pairing is structural — the page is read as an ordered
+  list of fences and a `ting` block takes the `text` block immediately
+  after it as its claim. All 43 tutorial claims were ALREADY TRUE on
+  the first run (stdout only); the stroke found no rot, it closed the
+  way rot gets in — five of the 43 had been hand-edited one tick
+  earlier. Three counts pinned per page so a claim that stopped being
+  paired FAILS rather than silently stops being checked: tutorial
+  (43 compared, 1 run-only, 0 illustrations), reference (0, 6, 2). The
+  run-only one is the `sh` block that prints nothing definite when git
+  is absent. Made to fail on purpose first: "insufficient funds" ->
+  "plenty of funds" named the block and printed both sides.
 - Backlog (one per tick, in order):
-  (1) check the claimed output, not just the exit status — 43 tutorial
-  blocks make a claim nothing verifies;
-  (2) chosen after that.
-  Release v2.115.0 when ~3 strokes are banked (707, 710, 711 — enough).
+  (1) release v2.115.0 (strokes 707, 710, 711, 712);
+  (2) verify it;
+  (3) health tick to close "the code the docs promise".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

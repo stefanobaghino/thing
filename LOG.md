@@ -13884,3 +13884,39 @@ snippet runs; it does not check that it prints what the page says it
 prints. Forty-three of the tutorial's forty-four blocks are followed by
 a claimed output, and not one of those claims is verified by anything.
 That is the next stroke, and it is a bigger one than this.
+
+## 2026-09-06 — Iteration 712: the docs are held to what they claim
+
+Iteration 710's guard proved a snippet runs. It said nothing about
+whether the snippet prints what the page says it prints, and 43 of the
+tutorial's 44 blocks sit directly above a `text` block claiming exactly
+that. Those claims are checked now, character for character.
+
+They were all already true. Forty-three of forty-three, on the first
+run, comparing standard output alone. That is the honest result and it
+is the one worth having: this stroke found no rot, it removed the way
+rot gets in. Five of those forty-three had been rewritten by hand one
+tick earlier, which is precisely the kind of edit that would have
+introduced a wrong claim with nothing to catch it.
+
+The pairing is structural rather than positional: the pages are read as
+an ordered list of fences, and a `ting` block takes the `text` block
+that immediately follows it as its claim. A block with no claim is only
+run. There is one of those in the tutorial — the `sh` example that asks
+whether git is installed and prints nothing definite if it is not — and
+the reference makes no claims at all.
+
+Three counts per page are pinned: how many blocks had their output
+compared, how many were only run, and how many are illustrations. The
+tutorial is (43, 1, 0) and the reference (0, 6, 2). Without those, a
+claim that quietly stopped being paired would not fail; it would just
+stop being checked, which is the same failure this whole milestone
+exists to prevent.
+
+And the guard was made to fail on purpose before being believed: the
+account example's claimed "insufficient funds" was changed to "plenty
+of funds", and the test named the block and printed both sides. Put
+back, green again.
+
+Three strokes are banked toward v2.115.0 — 707, 710 and 712 — with 711
+alongside them.
