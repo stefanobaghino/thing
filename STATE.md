@@ -1289,9 +1289,18 @@ holds only the current milestone and the standing rules.
   cookbook guard caught the new example — every example needs a
   section in docs/cookbook.md, regenerated with
   `python3 tools/cookbook.py`. 4 selftest checks (2461 -> 2465).
+- 738: v2.119.0 released (140th tag; strokes 735, 736, 737). CAUGHT
+  AT RELEASE TIME: all three strokes had missed their CHANGELOG entry
+  (`## Unreleased` was not in the file), and README still said 69
+  builtins. Written in a commit ahead of the release, which keeps the
+  release commit what it has always been: CHANGELOG heading +
+  Cargo.toml + Cargo.lock. The rule that caught it, worth keeping: a
+  release tick's FIRST act is to diff the previous release commit and
+  check the tree is in the state that commit assumed.
 - Backlog (one per tick, in order):
-  (1) release v2.119.0 — three strokes stand (735 rename, 736
-  copy_file, 737 move + organize).
+  (1) verify v2.119.0 — six assets, green runs by API verdict, an
+  aarch64 archive (musl and gnu) downloaded cold and executed here,
+  site audit.
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
   a list of ints for a 9 MB file is nine million values, and a real
   bytes type is a language addition, not a builtin. Also absent and

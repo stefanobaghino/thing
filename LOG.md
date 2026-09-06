@@ -15065,3 +15065,32 @@ docs/cookbook.md, regenerated with `python3 tools/cookbook.py`.
 
 Four selftest checks (2461 → 2465), a stdlib row, and a sentence each
 in the tutorial and the reference. Three strokes stand: 735, 736, 737.
+
+## 2026-09-06 — Iteration 738: v2.119.0
+
+Released. v2.119.0 is the 140th tag (read from
+`git tag --sort=creatordate`, not counted forward), carrying the three
+strokes of "moving a file, not retyping it": `rename` (735),
+`copy_file` (736), and `lib/fs.ting`'s `move` with
+`examples/organize.ting` (737).
+
+**I had missed the changelog in all three strokes.** Every stroke
+commit is supposed to add its entry under `## Unreleased`, and the
+release commit only renames that heading; I checked the previous
+release's diff before cutting this one and found `## Unreleased` was
+not there at all. Written now, in one commit ahead of the release, and
+the README's builtin count corrected from 69 to 71 with "moving and
+copying files" added to what the parenthetical claims. The lesson is
+narrower than "remember the changelog": the release tick's first act
+should be to diff the last release commit and check that what it
+touched is in the state that commit assumed. That is what caught it.
+
+Two commits, deliberately: the changelog entries and README are their
+own commit, so the release commit stays what it has always been —
+CHANGELOG heading, Cargo.toml, Cargo.lock.
+
+Full suite green before the tag (fifteen `test result: ok`), the
+binary reports `ting 2.119.0`, and all three workflows started on the
+tag: Release, Pages and CI. Verification — six assets, green runs by
+API verdict, and an aarch64 archive downloaded cold and executed here
+— is the next tick, as always.
