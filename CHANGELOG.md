@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.114.0 (2026-09-06)
 
 - `s += x` appends to the string instead of copying it. Building a
   string a piece at a time was quadratic: 25000, 50000 and 100000
