@@ -1119,8 +1119,17 @@ holds only the current milestone and the standing rules.
   NOT CHOSEN: module file names in a bundle's diagnostics — ting has
   no way for a file to say a line belongs elsewhere, and inventing one
   for the bundler alone is bigger than this milestone.
+- 724: v2.117.0 cut and pushed (138th tag, read from `git tag
+  --sort=creatordate`; strokes 722, 723). Two strokes rather than
+  three on purpose: both fix something v2.116.0 shipped, and one of
+  them loses a file. Gate green at the tag: fmt, zero clippy, fifteen
+  suites, corpus at seven warnings, 22 selftests / 2433 checks on a
+  binary reporting 2.117.0.
 - Backlog (one per tick, in order):
-  (1) release v2.117.0 — two strokes banked (722, 723);
+  (1) verify v2.117.0 — cold download and execute both aarch64
+  archives, ask the shipped binaries what the release claims (a
+  conditional import must not run when bundled; `-o` must refuse its
+  own sources), site audit on the nine paths, six assets on the tag;
   (2) then the health tick that closes "a script you can hand over".
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take

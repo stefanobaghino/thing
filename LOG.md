@@ -14407,3 +14407,30 @@ bundle rather than at the module a line came from. Fixing that needs
 something ting does not have — a way for a file to say a line belongs
 elsewhere — and inventing one for the bundler alone is a much bigger
 thing than this milestone. It stays written down.
+
+## 2026-09-06 — Iteration 724: v2.117.0
+
+The 138th tag, strokes 722 and 723 — two corrections to a feature one
+release old, both of which came from looking rather than from someone
+reporting them.
+
+A bundled module now runs the first time something asks for it. An
+`import` need not sit at a module's top level, and v2.116.0's bundle
+hoisted every module and ran it whether or not the program asked, so a
+module with a side effect at its top level fired in a branch that was
+never taken.
+
+And `--bundle -o FILE` writes a bundle without going through the
+shell, refusing when the file is one of its own sources. Without it,
+`ting --bundle main.ting > main.ting` exits 0 and leaves a bundle of an
+empty program where the script was — the shell truncates the target
+before ting starts.
+
+Two strokes rather than the usual three, on purpose: both fix
+something that shipped a release ago, and one of them loses a file.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt
+clean, zero clippy warnings, fifteen suites, the corpus at seven
+deliberate warnings, and 22 selftests / 2433 checks against the release
+binary that reports 2.117.0. The tag ordinal was read from
+`git tag --sort=creatordate`, not counted forward from the last entry.
