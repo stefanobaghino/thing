@@ -13920,3 +13920,34 @@ back, green again.
 
 Three strokes are banked toward v2.115.0 — 707, 710 and 712 — with 711
 alongside them.
+
+## 2026-09-06 — Iteration 713: v2.115.0
+
+The 137th tag, strokes 707, 710, 711 and 712. One of them makes ting
+faster; the other three make its documentation something the test suite
+is responsible for.
+
+`words` splits instead of scanning: three passes of `replace` turn
+every separator into a space and one `split` does the work, which is
+five times faster than looking at each character in ting and finished
+the standard-library milestone at 866.8 to 247.7 ms on eval.
+
+The rest is the docs. The tutorial and the reference held 52 ting code
+blocks that nothing had ever run, while the cookbook next door has been
+generated from executable examples all along. Now every block runs, in
+a directory of its own, and every block that states its output is held
+to it exactly — 43 claims in the tutorial, all of which were already
+correct. Two blocks are illustrations rather than programs and say so
+on their first line, so that is a sentence a reader gets and not a hole
+in a test. Five places that wrapped a single call in a lambda for `try`
+now use the argument form the tutorial itself teaches; the three that
+guard more than one call keep the lambda, which is what the reference
+explains it is for.
+
+Nothing here changes what a program does, apart from `words` being
+quicker. What changed is what can rot unnoticed.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt,
+zero clippy warnings, fifteen suites, the corpus at seven deliberate
+warnings, and 22 selftests / 2433 checks against the release binary
+that reports 2.115.0.

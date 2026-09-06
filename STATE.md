@@ -995,10 +995,15 @@ holds only the current milestone and the standing rules.
   run-only one is the `sh` block that prints nothing definite when git
   is absent. Made to fail on purpose first: "insufficient funds" ->
   "plenty of funds" named the block and printed both sides.
+- 713: v2.115.0 TAGGED (137th tag; strokes 707, 710, 711, 712). Cut
+  from ff172db with CI and Pages green; gate green at the tag (fmt,
+  zero clippy warnings, fifteen suites, corpus at seven warnings, 22
+  selftests / 2433 checks) and the release binary reports 2.115.0.
+  NOT VERIFIED YET: the next tick downloads both aarch64 archives cold
+  and runs them.
 - Backlog (one per tick, in order):
-  (1) release v2.115.0 (strokes 707, 710, 711, 712);
-  (2) verify it;
-  (3) health tick to close "the code the docs promise".
+  (1) verify v2.115.0 by cold asset download and execution;
+  (2) health tick to close "the code the docs promise".
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
