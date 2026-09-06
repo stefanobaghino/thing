@@ -37,5 +37,5 @@ for step in m["history"]() { push(rows, step); }
 print(st["table"](rows));
 print("final state:", m["current"]());
 print("actions:", li["frequencies"](map(m["history"](), fn(s) { return s[2]; })));
-let bad = try(fn() { return m["send"]("kick"); });
+let bad = try(m["send"], "kick");
 print("unknown event:", bad["err"]);

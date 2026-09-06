@@ -315,7 +315,7 @@ let acct = make_account(10);
 acct["deposit"](5);
 acct["withdraw"](12);
 print(acct["statement"]());
-let r = try(fn() { return acct["withdraw"](100); });
+let r = try(acct["withdraw"], 100);
 print(r["err"]);
 ```
 
@@ -593,7 +593,7 @@ Malformed input fails like any other error, so `try` gives you a
 recovery path:
 
 ```ting
-let bad = try(fn() { return json_parse("{oops"); });
+let bad = try(json_parse, "{oops");
 if has(bad, "err") { print("rejected:", bad["err"]); } else { print("parsed"); }
 ```
 
@@ -659,7 +659,7 @@ itself on a built-in sample:
 ```ting
 let text = "the cat sat on the mat and the cat slept";
 if len(args()) > 0 {
-  let r = try(fn() { return read_file(args()[0]); });
+  let r = try(read_file, args()[0]);
   if has(r, "err") {
     print("cannot read", args()[0], "-", r["err"]);
   } else {
@@ -731,7 +731,7 @@ A program that is not there is an error, not an exit code, because
 "not installed" and "ran and failed" are different facts:
 
 ```ting
-let missing = try(fn() { return run("no-such-program-anywhere-xyz"); });
+let missing = try(run, "no-such-program-anywhere-xyz");
 print(starts_with(missing["err"], "run: cannot start "));
 ```
 
@@ -812,7 +812,7 @@ stops at it with a diagnostic instead of letting the process die:
 ```ting
 fn depth(n) { if n == 0 { return 0; } return depth(n - 1) + 1; }
 print(depth(300));
-print(type(try(fn() { return depth(-1); })["err"]));
+print(type(try(depth, -1)["err"]));
 ```
 
 ```text

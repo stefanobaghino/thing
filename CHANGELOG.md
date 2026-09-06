@@ -7,6 +7,11 @@ Windows are attached to each
 
 ## Unreleased
 
+- The tutorial uses `try(f, ...args)` where that is what it means. It
+  taught the short form and then went on using a lambda in five later
+  places; those five now read the way the page says to write them. The
+  two that guard more than one call keep the lambda, which is what the
+  reference already explains it is for.
 - Every ting code block in the tutorial and the reference is run by
   the test suite, in a directory of its own. The cookbook already had
   that guarantee through `examples/`; these two pages were written by
