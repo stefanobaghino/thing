@@ -28,6 +28,13 @@ Windows are attached to each
   `walk`'s paths with `stat` inside the comparator — calls it once
   per comparison rather than once per file: 249 ms against 139 ms
   over 5132 files.
+- A new example, `examples/tree.ting`, which could not have been
+  written a release ago: what a directory holds by size, the largest
+  files in it, where the bytes are by extension, and how many of them
+  changed in the last day. It reports on a path you give it, or on a
+  small tree it builds and removes, so it prints the same thing every
+  time. It is in the cookbook like every other example, and CI
+  replays it against its recorded output.
 
 ## v2.117.0 (2026-09-06)
 

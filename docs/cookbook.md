@@ -917,3 +917,118 @@ if cmd == "list" {
 ```text
 nothing to do!
 ```
+
+## tree
+
+What a directory holds, by size — the report a script cannot write from names alone, since a name says nothing about bytes or when a file was last written.  ting tree.ting            # report on a small tree this makes ting tree.ting src        # report on a directory of your own  With no argument it builds a tree, reports on it and removes it, so the example prints the same thing every time.
+
+```ting
+# What a directory holds, by size — the report a script cannot write
+# from names alone, since a name says nothing about bytes or when a
+# file was last written.
+#
+#   ting tree.ting            # report on a small tree this makes
+#   ting tree.ting src        # report on a directory of your own
+#
+# With no argument it builds a tree, reports on it and removes it, so
+# the example prints the same thing every time.
+
+let fs = import("../lib/fs.ting");
+let st = import("../lib/string.ting");
+
+# Bytes as a person would say them: exact under a kilobyte, one
+# decimal above it. 1024, not 1000 — the unit `ls -lh` uses.
+fn human(n) {
+  let units = ["KB", "MB", "GB"];
+  if n < 1024 { return str(n) + " B"; }
+  let size = float(n);
+  let unit = "";
+  for u in units {
+    if size >= 1024.0 {
+      size = size / 1024.0;
+      unit = u;
+    }
+  }
+  # One decimal place, without a formatting language: scale, round,
+  # and put the point back.
+  let tenths = int(size * 10.0 + 0.5);
+  return str(tenths / 10) + "." + str(tenths % 10) + " " + unit;
+}
+
+fn build(root) {
+  fs["remove_tree"](root);
+  make_dir(root + "/src");
+  make_dir(root + "/docs");
+  write_file(root + "/README.md", "# a small tree\n");
+  write_file(root + "/src/main.ting", "print(\"hello\");\n");
+  write_file(root + "/src/util.ting", st["repeat"]("# a comment line\n", 40));
+  write_file(root + "/docs/guide.md", st["repeat"]("Some prose.\n", 200));
+  write_file(root + "/docs/notes.md", "Shorter.\n");
+  return root;
+}
+
+let given = args();
+let root = "tree-demo";
+let mine = len(given) == 0;
+if !mine { root = given[0]; }
+if mine { build(root); }
+
+# A path that is not there would otherwise report nothing at all,
+# which reads like an empty directory rather than a mistake.
+if !exists(root) {
+  eprint(format("tree: no such path: {}", root));
+  exit(2);
+}
+
+let rows = fs["facts"](root);
+print(format("{}: {} files, {}", root, len(rows), human(fs["total_size"](root))));
+print("");
+
+print("largest");
+let by_size = sort_with(rows, fn(a, b) { return b["size"] - a["size"]; });
+for row in slice(by_size, 0, 3) {
+  print(format("  {} {}", st["pad_left"](human(row["size"]), 9, " "), row["path"]));
+}
+print("");
+
+# Where the bytes are, rather than where the files are.
+print("by extension");
+let bytes = {};
+for row in rows {
+  let e = fs["ext"](row["path"]);
+  if e == "" { e = "(none)"; }
+  bytes[e] = get(bytes, e, 0) + row["size"];
+}
+for e in keys(bytes) {
+  print(format("  {} {}", st["pad_left"](human(bytes[e]), 9, " "), e));
+}
+print("");
+
+# `modified` is milliseconds on the same clock `time_ms()` reads, so
+# an age is a subtraction. Files written moments apart can share a
+# stamp — the write is quicker than the clock — so this asks how
+# recent they are rather than which one is newest.
+let day = 24 * 60 * 60 * 1000;
+let recent = 0;
+for row in rows {
+  if time_ms() - row["modified"] < day { recent += 1; }
+}
+print(format("changed in the last day: {} of {}", recent, len(rows)));
+
+if mine { fs["remove_tree"](root); }
+```
+
+```text
+tree-demo: 5 files, 3.0 KB
+
+largest
+     2.3 KB tree-demo/docs/guide.md
+      680 B tree-demo/src/util.ting
+       16 B tree-demo/src/main.ting
+
+by extension
+     2.4 KB md
+      696 B ting
+
+changed in the last day: 5 of 5
+```
