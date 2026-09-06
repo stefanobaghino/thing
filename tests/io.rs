@@ -3244,15 +3244,20 @@ fn bundle_refuses_a_cycle_and_a_computed_path() {
 /// resolve against its own directory, which stdin does not have.
 #[test]
 fn bundle_takes_exactly_one_file() {
-    for args in [vec!["--bundle"], vec!["--bundle", "-"]] {
+    for args in [
+        vec!["--bundle"],
+        vec!["--bundle", "-"],
+        vec!["--bundle", "x.ting", "-o"],
+    ] {
         let out = Command::new(env!("CARGO_BIN_EXE_ting"))
             .args(&args)
             .output()
             .expect("failed to run ting");
         assert_eq!(out.status.code(), Some(2), "{args:?}");
+        let said = String::from_utf8_lossy(&out.stderr);
         assert!(
-            String::from_utf8_lossy(&out.stderr).starts_with("ting: --bundle "),
-            "{args:?}"
+            said.starts_with("ting: ") && said.contains("--help"),
+            "{said}"
         );
     }
 }
@@ -3392,5 +3397,66 @@ fn a_bundled_module_runs_only_when_it_is_asked_for() {
         String::from_utf8_lossy(&after.stdout),
         String::from_utf8_lossy(&before.stdout)
     );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// `-o` writes the bundle to a file and says nothing on stdout, and
+/// it refuses to write over a file that went into the bundle —
+/// however that file is spelled. This is not a hypothetical: a shell
+/// redirection onto an input truncates it before ting is started, so
+/// `ting --bundle main.ting > main.ting` leaves a bundle of an empty
+/// program where the script was. `-o` is the way to write a bundle
+/// without losing what it was made from.
+#[test]
+fn bundle_writes_where_o_says_and_never_over_its_own_source() {
+    let dir = tree(
+        "out",
+        &[
+            (
+                "app.ting",
+                "let g = import(\"greeter.ting\");\nprint(g[\"greet\"](\"ting\"));\n",
+            ),
+            ("greeter.ting", "fn greet(n) {\n  return \"hi, \" + n;\n}\n"),
+        ],
+    );
+    let app = dir.join("app.ting");
+    let one = dir.join("one.ting");
+    let written = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("--bundle")
+        .arg(&app)
+        .arg("-o")
+        .arg(&one)
+        .output()
+        .expect("failed to run ting");
+    assert!(written.status.success(), "{written:?}");
+    assert_eq!(String::from_utf8_lossy(&written.stdout), "");
+    let ran = ting(&[&one]);
+    assert_eq!(String::from_utf8_lossy(&ran.stdout), "hi, ting\n");
+
+    // Both the entry and a module, and a spelling that only resolves
+    // once the path is followed.
+    let greeter = dir.join("greeter.ting");
+    let before = std::fs::read_to_string(&greeter).unwrap();
+    for target in [
+        app.clone(),
+        greeter.clone(),
+        dir.join("sub").join("..").join("greeter.ting"),
+    ] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .arg("--bundle")
+            .arg(&app)
+            .arg("-o")
+            .arg(&target)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(2), "{}", target.display());
+        assert!(
+            String::from_utf8_lossy(&out.stderr).contains("which went into the bundle"),
+            "{}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+    assert_eq!(std::fs::read_to_string(&greeter).unwrap(), before);
+    assert!(std::fs::read_to_string(&app).unwrap().contains("import("));
     let _ = std::fs::remove_dir_all(&dir);
 }

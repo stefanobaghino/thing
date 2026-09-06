@@ -589,10 +589,10 @@ print(li["sum"]([1, 2, 3]));
 Then:
 
 ```sh
-ting --bundle main.ting > one.ting
+ting --bundle main.ting -o one.ting
 ```
 
-writes this:
+writes this into `one.ting`:
 
 ```
 # main.ting, bundled by `ting --bundle`.
@@ -635,6 +635,12 @@ why one file is enough. `one.ting` prints exactly what the two files
 printed, and passes `--check`. The bundler adds nothing the formatter
 would rewrite, so if your files pass `--fmt-check` the bundle does
 too.
+
+Write it with `-o` rather than with `>`. A shell redirection opens the
+file before ting is started, so `ting --bundle main.ting > main.ting`
+truncates your script, reads the empty file it now is, reports success
+and leaves a bundle of nothing behind. `-o` refuses to write over any
+file that went into the bundle.
 
 Three things `--bundle` refuses rather than guesses at, each named at
 the import it could not follow: a circular import, a path that is not

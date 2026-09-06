@@ -44,6 +44,7 @@ fn main() -> ExitCode {
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
                  \x20 ting --coverage <paths...>  run each, then report which lines ran (dirs recurse)\n\
                  \x20 ting --bundle <script>      print the script and its local modules as one file\n\
+                 \x20   [-o FILE]                 write it there instead of to stdout\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
@@ -204,7 +205,7 @@ fn is_option(a: &str) -> bool {
 
 /// Every option any mode accepts, for suggesting the one that was
 /// meant. Keep in step with the dispatch above and the usage text.
-const OPTIONS: [&str; 23] = [
+const OPTIONS: [&str; 24] = [
     "--bundle",
     "--check",
     "--coverage",
@@ -228,32 +229,103 @@ const OPTIONS: [&str; 23] = [
     "-V",
     "-h",
     "-j",
+    "-o",
 ];
 
-/// `--bundle`: one script, its local modules inlined, on stdout.
-/// Only a real file: a script's imports resolve against its own
-/// directory, and stdin has none.
-fn run_bundle(args: Vec<String>) -> ExitCode {
-    if let Some(a) = args.iter().find(|a| is_option(a)) {
-        return unknown_option(a);
+/// Where a path would be if it existed. The canonical form when there
+/// is a file; otherwise the path made absolute and its `.` and `..`
+/// resolved by hand, which a missing directory in the middle would
+/// otherwise leave in place, then canonicalised as far as it goes.
+/// Enough to tell whether two spellings name one file.
+fn same_file_as(path: &std::path::Path) -> std::path::PathBuf {
+    use std::path::{Component, PathBuf};
+    if let Ok(real) = path.canonicalize() {
+        return real;
     }
-    let [path] = args.as_slice() else {
+    let absolute = if path.is_absolute() {
+        path.to_path_buf()
+    } else {
+        std::env::current_dir().unwrap_or_default().join(path)
+    };
+    // Absolute, so popping on `..` cannot walk off the front.
+    let mut lexical = PathBuf::new();
+    for part in absolute.components() {
+        match part {
+            Component::ParentDir => {
+                lexical.pop();
+            }
+            Component::CurDir => {}
+            other => lexical.push(other),
+        }
+    }
+    if let Ok(real) = lexical.canonicalize() {
+        return real;
+    }
+    match (
+        lexical.parent().map(std::path::Path::canonicalize),
+        lexical.file_name(),
+    ) {
+        (Some(Ok(dir)), Some(name)) => dir.join(name),
+        _ => lexical,
+    }
+}
+
+/// `--bundle`: one script, its local modules inlined, on stdout or
+/// into the file `-o` names. Only a real file to read: a script's
+/// imports resolve against its own directory, and stdin has none.
+fn run_bundle(args: Vec<String>) -> ExitCode {
+    let mut path: Option<String> = None;
+    let mut out: Option<String> = None;
+    let mut rest = args.into_iter();
+    while let Some(a) = rest.next() {
+        if a == "-o" {
+            let Some(file) = rest.next() else {
+                eprintln!("ting: -o needs a file to write the bundle to (see --help)");
+                return ExitCode::from(2);
+            };
+            out = Some(file);
+        } else if is_option(&a) {
+            return unknown_option(&a);
+        } else if path.is_none() {
+            path = Some(a);
+        } else {
+            eprintln!("ting: --bundle takes exactly one script path (see --help)");
+            return ExitCode::from(2);
+        }
+    }
+    let Some(path) = path else {
         eprintln!("ting: --bundle takes exactly one script path (see --help)");
         return ExitCode::from(2);
     };
     if path == "-" {
         eprintln!(
-            "ting: --bundle needs a file path: a script's local imports resolve against its own directory, and stdin has none"
+            "ting: --bundle needs a file path: a script's local imports resolve against its own directory, and stdin has none (see --help)"
         );
         return ExitCode::from(2);
     }
-    match ting::bundle::bundle(std::path::Path::new(path)) {
-        Ok(text) => {
-            print!("{text}");
-            ExitCode::SUCCESS
-        }
+    let bundle = match ting::bundle::bundle(std::path::Path::new(&path)) {
+        Ok(bundle) => bundle,
         Err(e) => {
             eprintln!("{e}");
+            return ExitCode::FAILURE;
+        }
+    };
+    let Some(out) = out else {
+        print!("{}", bundle.text);
+        return ExitCode::SUCCESS;
+    };
+    // Writing the bundle over one of its own sources loses that file.
+    // A shell redirection does it before ting is even started, which
+    // is the reason -o exists; the least it can do is refuse.
+    let target = same_file_as(std::path::Path::new(&out));
+    if bundle.sources.contains(&target) {
+        eprintln!("ting: -o would overwrite {out}, which went into the bundle");
+        return ExitCode::from(2);
+    }
+    match std::fs::write(&out, &bundle.text) {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("ting: cannot write {out}: {e}");
             ExitCode::FAILURE
         }
     }

@@ -56,7 +56,7 @@ reporting calls and self time per function and builtin; `--coverage
 PATHS` reporting which lines ran, per file, over one script or a whole
 suite; `--bundle SCRIPT` printing a script and the local modules it
 imports as one file that runs the same way (an import the binary
-already answers stays as it is); `--doc NAME`
+already answers stays as it is, `-o` writing it to a file); `--doc NAME`
 for any builtin or stdlib function, `--doc
 MODULE` for a module's members and `--doc` alone for the whole table
 of contents; and `--lsp`, a language server with diagnostics (the

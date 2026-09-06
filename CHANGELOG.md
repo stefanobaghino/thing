@@ -7,6 +7,14 @@ Windows are attached to each
 
 ## Unreleased
 
+- `ting --bundle SCRIPT -o FILE` writes the bundle to a file, and
+  refuses when that file is one of the files that went into it,
+  however it is spelled. That refusal is the reason it exists: a shell
+  redirection opens its target before ting is started, so
+  `ting --bundle main.ting > main.ting` truncates the script, reads
+  the empty file it has become, reports success, and leaves a bundle
+  of nothing where the program was. Measured, not imagined.
+
 - A bundled module runs the first time something asks for it, not at
   the top of the file. An `import` does not have to sit at a module's
   top level — `if x { let m = import("noisy.ting"); }` runs the module

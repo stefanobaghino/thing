@@ -243,10 +243,19 @@ fn exports_of(display: &str, src: &str) -> Result<Vec<String>, String> {
     Ok(names.into_iter().collect())
 }
 
+/// A bundle and the files that went into it.
+pub struct Bundle {
+    pub text: String,
+    /// Every file read to build it, entry first, canonicalised — what
+    /// a caller needs to refuse writing the bundle over its own
+    /// source.
+    pub sources: Vec<PathBuf>,
+}
+
 /// The whole program in one file: every local module the script
 /// imports, directly or through another module, inlined once and in
 /// dependency order, then the script itself.
-pub fn bundle(path: &Path) -> Result<String, String> {
+pub fn bundle(path: &Path) -> Result<Bundle, String> {
     let path = path
         .canonicalize()
         .map_err(|e| format!("ting: cannot read {}: {e}", path.display()))?;
@@ -281,5 +290,7 @@ pub fn bundle(path: &Path) -> Result<String, String> {
     }
     out.push_str(&format!("# {display}\n"));
     out.push_str(&main);
-    Ok(out)
+    let mut sources = vec![path];
+    sources.extend(bundler.done.keys().cloned());
+    Ok(Bundle { text: out, sources })
 }

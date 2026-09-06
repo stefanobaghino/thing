@@ -16,6 +16,7 @@ ting --test dirs...          # run every .ting file as a test
 ting --test --watch dirs...  # and again on every change (--check too)
 ting --coverage paths...     # run each, then report which lines ran
 ting --bundle script.ting    # print it and its local modules as one file
+ting --bundle s.ting -o one  # write it there instead of to stdout
 ting --doc [NAMES...]        # explain functions, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
@@ -678,7 +679,13 @@ The `ting` binary is the whole toolchain — no separate installs:
   level — the bundle would hand back that value instead of the
   module's map, and quietly. It takes a file and only a file: a
   script's imports resolve against its own directory, and a script
-  read from stdin has none. Every program in this repository that
+  read from stdin has none. `-o FILE` writes the bundle there instead
+  of to stdout, and refuses when FILE is one of the files that went
+  into it, however it is spelled. That refusal is the reason `-o`
+  exists: a shell redirection onto an input truncates it before ting
+  is started, so `ting --bundle main.ting > main.ting` reads an empty
+  file, reports success, and leaves a bundle of nothing where the
+  script was. Every program in this repository that
   imports a local module is bundled and rerun by a test, which is
   where the promise is kept: the same bytes on stdout, the same exit,
   and a bundle that passes `--check` and `--fmt-check`. The bundler
