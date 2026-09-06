@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.119.0 (2026-09-06)
 
 - `rename(from, to)` is the 70th builtin: a file or directory given
   another name, which is what a move is. Nothing is copied, so it
