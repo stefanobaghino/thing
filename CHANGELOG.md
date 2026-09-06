@@ -21,6 +21,19 @@ Windows are attached to each
   whole file and feeding it a line at a time give exactly the same
   rows — including for malformed text, where both stop in the same
   place.
+- `lib/time.ting` gained `from_iso(s)`, the inverse `iso(ms)` never
+  had, plus the `digits(s)` it is built on. It reads what `iso`
+  writes, and also a bare date (midnight), a space where the `T`
+  should be, seconds and fractional seconds when they are present,
+  and an offset like `+02:00` or `-0500`, which it applies; a string
+  with no offset is UTC, since the module has no other zone. It is a
+  question rather than a demand — an unreadable string answers `nil`,
+  the way `stat` does for a path. The refusals are the reason it
+  exists: the handful of lines a script writes without it turns
+  `"2026-13-45T99:99:99Z"` into a confident number and reports
+  `cannot convert "not " to int` for `"not a date"`. Every field is
+  checked against what exists, so February the 30th, the 29th of a
+  non-leap year, an hour of 24 and a leap second are all `nil`.
 
 ## v2.120.0 (2026-09-06)
 

@@ -1438,13 +1438,22 @@ holds only the current milestone and the standing rules.
   checks (2483 -> 2490), stdlib 186. REMEMBER (729, cost time again):
   the stdlib is embedded at compile time — a new lib function does
   not exist until cargo build --release.
+- 750: lib/time gained from_iso(s) (+ digits(s)); stdlib 188.
+  ACCEPTS: what iso writes, a bare date (midnight), a space for the
+  T, missing seconds, fractions (truncated to ms, not rounded),
+  offsets +02:00 and -0500, pre-epoch. REFUSES (all nil):
+  2026-13-45T99:99:99Z, 2026-02-30, 2023-02-29, hour 24, minute 60,
+  second 60 (a leap second is refused, not moved), 2026/09/06,
+  "+2:00", an empty fraction, "", a trailing letter, a non-string.
+  THREE CHOICES: nil not an error (reading a file's timestamp is a
+  QUESTION, like stat on a path); no offset means UTC (a stated
+  convention, not a guess — the module has no local zone anywhere);
+  a leap second refused rather than answered. 22 selftest checks
+  (2490 -> 2512). The acceptance and refusal tables ARE the tests,
+  line for line, which is the right shape for a parser.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - from_iso in lib/time, and what the round trip needs. Every
-  decision is about REFUSAL: what a non-timestamp answers, whether a
-  date without a time is accepted, what a month of 13 does — today's
-  answer being the one thing it must not be;
   - the example — a report over a CSV too big to hold, grouped by
   something read out of a date column: needs both strokes and cannot
   be written today without being quietly wrong.

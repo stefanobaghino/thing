@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 186 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 188 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -198,6 +198,8 @@ zone here, because a zone is a database and this is a module.
 | `parts(ms)` | every field of an instant: `year`, `month`, `day`, `hour`, `minute`, `second`, `ms`, `weekday` (0 is Sunday) |
 | `from_parts(y, mo, d, h, mi, s)` | the milliseconds for a civil date and time |
 | `iso(ms)` | ISO 8601 in UTC: `2026-09-04T20:33:12Z` |
+| `from_iso(s)` | the milliseconds an ISO 8601 string names, or `nil` when it is not one. `iso`'s inverse and more: a bare date is midnight, a space reads like the `T`, seconds and fractions are optional, and an offset like `+02:00` is applied. No offset means UTC, since this module has no other zone. Every field is checked against what exists, February the 30th included |
+| `digits(s)` | whether every character is a digit, and there is at least one |
 | `date(ms)` | the date as `YYYY-MM-DD` |
 | `clock(ms)` | the time of day as `HH:MM:SS` |
 | `span(ms)` | a duration as `1h 2m 3s`, or milliseconds under a second; negatives keep the sign |

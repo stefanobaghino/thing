@@ -104,6 +104,102 @@ fn clock(ms) {
 # The instant as ISO 8601 in UTC: 2026-09-04T20:33:12Z.
 fn iso(ms) { return date(ms) + "T" + clock(ms) + "Z"; }
 
+# Whether every character is a digit, and there is at least one.
+fn digits(s) {
+  if len(s) == 0 { return false; }
+  for c in s {
+    if c < "0" || c > "9" { return false; }
+  }
+  return true;
+}
+
+# Milliseconds from an ISO 8601 instant, or nil when the string is not
+# one. This is iso()'s inverse and more: it also reads a date on its
+# own (midnight), a space instead of the T that databases write,
+# seconds and fractional seconds when they are there, and an offset
+# like +02:00 or -0500, which it applies.
+#
+# It is a question, not a demand — a timestamp read out of a file may
+# be anything, so an unreadable one answers nil rather than raising,
+# the way stat does for a path. What it must never do is answer
+# confidently: the five lines a script writes without it happily turn
+# "2026-13-45T99:99:99Z" into a number, and every month, day, hour,
+# minute and second here is checked against what exists, February the
+# 30th included.
+#
+# A string with no offset is read as UTC. That is a convention rather
+# than a guess: this module has no notion of a local zone anywhere, so
+# there is nothing else it could mean.
+fn from_iso(s) {
+  if type(s) != "string" || len(s) < 10 { return nil; }
+  if slice(s, 4, 5) != "-" || slice(s, 7, 8) != "-" { return nil; }
+  let ys = slice(s, 0, 4);
+  let mos = slice(s, 5, 7);
+  let ds = slice(s, 8, 10);
+  if !digits(ys) || !digits(mos) || !digits(ds) { return nil; }
+  let y = int(ys);
+  let mo = int(mos);
+  let d = int(ds);
+  if mo < 1 || mo > 12 { return nil; }
+  if d < 1 || d > days_in_month(y, mo) { return nil; }
+
+  let rest = slice(s, 10, len(s));
+  if rest == "" { return from_parts(y, mo, d, 0, 0, 0); }
+  let head = slice(rest, 0, 1);
+  if head != "T" && head != " " { return nil; }
+  rest = slice(rest, 1, len(rest));
+
+  if len(rest) < 5 || slice(rest, 2, 3) != ":" { return nil; }
+  let hs = slice(rest, 0, 2);
+  let mis = slice(rest, 3, 5);
+  if !digits(hs) || !digits(mis) { return nil; }
+  let h = int(hs);
+  let mi = int(mis);
+  if h > 23 || mi > 59 { return nil; }
+  rest = slice(rest, 5, len(rest));
+
+  let sec = 0;
+  if slice(rest, 0, 1) == ":" {
+    let ss = slice(rest, 1, 3);
+    if !digits(ss) { return nil; }
+    sec = int(ss);
+    # A leap second is a real thing this cannot represent, so :60 is
+    # refused rather than quietly moved to the next minute.
+    if sec > 59 { return nil; }
+    rest = slice(rest, 3, len(rest));
+  }
+
+  let millis = 0;
+  if slice(rest, 0, 1) == "." {
+    let frac = "";
+    let i = 1;
+    while i < len(rest) && digits(slice(rest, i, i + 1)) {
+      frac = frac + slice(rest, i, i + 1);
+      i += 1;
+    }
+    if frac == "" { return nil; }
+    # Milliseconds are the resolution: more digits are dropped rather
+    # than rounded, fewer are padded.
+    millis = int(slice(frac + "000", 0, 3));
+    rest = slice(rest, i, len(rest));
+  }
+
+  let offset = 0;
+  if rest != "" && rest != "Z" && rest != "z" {
+    let sign = slice(rest, 0, 1);
+    if sign != "+" && sign != "-" { return nil; }
+    let body = replace(slice(rest, 1, len(rest)), ":", "");
+    if len(body) != 4 || !digits(body) { return nil; }
+    let oh = int(slice(body, 0, 2));
+    let om = int(slice(body, 2, 4));
+    if oh > 23 || om > 59 { return nil; }
+    offset = oh * 3600000 + om * 60000;
+    if sign == "-" { offset = -offset; }
+  }
+
+  return from_parts(y, mo, d, h, mi, sec) + millis - offset;
+}
+
 # The name of a weekday number, 0 being Sunday.
 fn weekday_name(n) {
   let names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

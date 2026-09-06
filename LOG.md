@@ -15629,3 +15629,50 @@ Seven selftest checks (2483 → 2490), the stdlib count at 186, and a
 reminder learned the hard way in 729 that cost a confusing minute
 again: the stdlib is embedded at compile time, so a new lib function
 does not exist until `cargo build --release`.
+
+## 2026-09-07 — Iteration 750: from_iso, which is mostly a list of refusals
+
+Stroke two of "reading what other programs wrote". `lib/time.ting`
+could write a timestamp and not read one; now it reads one, and every
+decision in it was about what to refuse.
+
+What it accepts, and why each one is in rather than out:
+
+```
+2026-09-06T12:34:56Z        1788698096000   what iso() writes
+2026-09-06                  1788652800000   a date column is a date
+2026-09-06 12:34:56         1788698096000   what databases write
+2026-09-06T12:34            1788698040000   seconds are often left off
+2026-09-06T12:34:56.789Z    1788698096789   logs have fractions
+2026-09-06T12:34:56.1234567Z 1788698096123  dropped, not rounded
+2026-09-06T14:34:56+02:00   1788698096000   half the world's exports
+2026-09-06T07:34:56-0500    1788698096000   in either spelling
+1969-12-31T23:59:59Z                -1000   before the epoch
+```
+
+And what it refuses, which is the reason it exists: `2026-13-45T99:99:99Z`,
+`2026-02-30`, `2023-02-29`, an hour of 24, a minute of 60, a second of
+60, `2026/09/06`, an offset written `+2:00`, an empty fraction, an
+empty string, a trailing letter, and anything that is not a string.
+All `nil`.
+
+Three choices worth naming.
+
+**nil, not an error.** A timestamp read out of a file may be anything,
+so asking what one means is a question, like `stat` on a path, not a
+demand. A script can test the answer without wrapping the call.
+
+**No offset means UTC**, and that is a convention rather than a guess:
+this module has no notion of a local zone anywhere, so there is
+nothing else the string could mean. Saying so in the comment is the
+difference between a stated rule and a silent assumption.
+
+**A leap second is refused** rather than moved to the next minute.
+`:60` is a real thing that this representation cannot hold, and
+answering *something* for it would be the same failure the whole
+stroke is against.
+
+Twenty-two selftest checks (2490 → 2512), two stdlib rows, the count
+at 188. The tables above are the tests, more or less line for line —
+which is the useful shape for a parser, because a parser's behaviour
+*is* its table of cases.

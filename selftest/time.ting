@@ -46,3 +46,33 @@ assert(t["pad"](7, 3) == "007", "padding");
 # A clock reading now must land in a plausible century.
 let now = t["parts"](time_ms());
 assert(now["year"] >= 2026 && now["year"] < 2100, "the clock reads a plausible year");
+
+# Reading back what iso() writes, and refusing what is not a
+# timestamp. The refusals are the point: the five lines a script
+# writes without this turn "2026-13-45T99:99:99Z" into a number.
+let from_iso = t["from_iso"];
+assert(from_iso(t["iso"](1788652800000)) == 1788652800000, "iso and from_iso are inverses");
+assert(from_iso("2026-09-06T12:34:56Z") == 1788698096000, "the shape iso writes");
+assert(from_iso("2026-09-06") == 1788652800000, "a date on its own is midnight");
+assert(from_iso("2026-09-06 12:34:56") == from_iso("2026-09-06T12:34:56Z"),
+"a space reads like a T, which is what databases write");
+assert(from_iso("2026-09-06T12:34") == 1788698040000, "seconds may be left out");
+assert(from_iso("2026-09-06T12:34:56.789Z") == 1788698096789, "fractional seconds are milliseconds");
+assert(from_iso("2026-09-06T12:34:56.1234567Z") == 1788698096123, "and longer fractions are dropped, not rounded");
+assert(from_iso("2026-09-06T14:34:56+02:00") == from_iso("2026-09-06T12:34:56Z"),
+"an offset is applied");
+assert(from_iso("2026-09-06T07:34:56-0500") == from_iso("2026-09-06T12:34:56Z"),
+"in either spelling");
+assert(from_iso("1969-12-31T23:59:59Z") == -1000, "before the epoch counts backwards");
+assert(from_iso("2024-02-29") != nil, "a leap day exists");
+assert(from_iso("2023-02-29") == nil, "except in the years it does not");
+assert(from_iso("2026-02-30") == nil, "February has no thirtieth");
+assert(from_iso("2026-13-45T99:99:99Z") == nil, "nor does any month have a forty-fifth day");
+assert(from_iso("2026-09-06T24:00:00Z") == nil, "an hour is under 24");
+assert(from_iso("2026-09-06T12:60:00Z") == nil, "a minute is under 60");
+assert(from_iso("2026-09-06T12:34:60Z") == nil, "a leap second cannot be represented, so it is refused");
+assert(from_iso("2026/09/06") == nil, "the separators are dashes");
+assert(from_iso("not a date") == nil, "and what is not a date at all is nil, not an error");
+assert(from_iso("") == nil, "including nothing");
+assert(from_iso(3) == nil, "and what is not a string");
+assert(t["digits"]("0123") && !t["digits"]("12a") && !t["digits"](""), "digits is all of them and at least one");
