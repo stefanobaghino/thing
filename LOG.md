@@ -13798,3 +13798,42 @@ per tick:
 3. Chosen once the guard exists and has had something to say.
 
 Still banked toward v2.115.0: stroke 707.
+
+## 2026-09-06 — Iteration 710: the documented snippets run
+
+The tutorial and the reference hold 52 ting code blocks between them
+and nothing had ever run one. They run now, every time the suite does,
+each in a directory of its own.
+
+The guarantee already existed one page over. The cookbook is generated
+from `examples/`, and every example has a recorded `.out` that
+tests/examples.rs replays, so a cookbook snippet cannot rot without
+something going red. The tutorial and the reference are prose with code
+in it, written by hand, and the only thing checking them was a reader.
+
+The test extracts each ```ting block, writes it to a fresh temporary
+directory, runs the built binary there with stdin closed, and requires
+a zero exit. The directory matters and is not tidiness: the tutorial's
+`walk_ext` example calls `make_dir("report/data")` and writes files
+into it, and 709 discovered that by finding a stray `report/` in the
+working tree. A guard that leaves litter behind gets deleted.
+
+Two of the 52 are illustrations rather than programs — the reference's
+syntax summary, whose lines are forms rather than a sequence (it has a
+bare `break;` in it), and its module example, which shows two files in
+one block. They now say so on their first line — `# not a program:`
+and the reason — which the test reads and so does the reader. That is the part
+worth defending: "this one is not meant to run" is now a sentence
+someone wrote in the file, rather than a silence in a test.
+
+Two counts keep the guard from passing on nothing: at least 45 blocks
+must have run, and exactly 2 must have been skipped. Without the first,
+a change that stopped the extractor finding fences would pass by
+running none of them.
+
+And the guard was checked against a snippet that had actually rotted,
+rather than trusted because it was green: a `no_such_builtin` inserted
+into the tutorial's first block turned it red with the undefined-name
+diagnostic, and removing it turned it green again. The whole thing
+costs 0.17 seconds, so it runs in the docs guard that every tick reruns
+after writing LOG and STATE.

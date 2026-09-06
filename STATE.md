@@ -956,16 +956,23 @@ holds only the current milestone and the standing rules.
   bindings inside function bodies ARE warned about now, and a CRLF
   file passes `--fmt --diff` untouched — both old health-tick findings
   are gone.
+- 710: `documented_snippets_run` in tests/docs.rs — every ting block in
+  tutorial.md and reference.md is extracted, written to a fresh temp
+  directory, run there with stdin closed, and required to exit zero.
+  Own directory is NOT tidiness: the tutorial's walk_ext block calls
+  `make_dir("report/data")`. The 2 illustrations say so on their first
+  line, `# not a program: <why>`, which the reader gets too. Two counts
+  stop it passing on nothing: >= 45 ran, exactly 2 skipped. Checked
+  against real rot (a `no_such_builtin` inserted into the tutorial's
+  first block turned it red, removing it green). 0.17 s, so it rides
+  along in the docs guard every tick already reruns.
 - Backlog (one per tick, in order):
-  (1) a guard that runs every ting block in tutorial.md and
-  reference.md in a directory of its own, with a visible marker for
-  the blocks that are illustrations rather than programs;
-  (2) the idiom the docs teach — eight sites still write
+  (1) the idiom the docs teach — eight sites still write
   `try(fn() { return f(x); })`, but they are NOT interchangeable with
   `try(f, x)`: moving an argument out of the closure takes it out of
   the try's reach, so each site needs reading;
-  (3) chosen once the guard has had something to say.
-  Release v2.115.0 when ~3 strokes are banked (707 is the first).
+  (2) chosen once the guard has had something to say.
+  Release v2.115.0 when ~3 strokes are banked (707, 710 so far).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
