@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 345 Rust tests
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 346 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1096,15 +1096,22 @@ holds only the current milestone and the standing rules.
   and --fmt-check clean, all three refusals as documented. Site audit
   green on nine paths; changelog/tutorial/reference carry the
   release.
+- 722: an import that might not run was a BUG, not a footnote.
+  v2.116.0's bundle hoisted every module and ran it; `if false { let
+  m = import("noisy.ting"); }` printed the module's output where the
+  two files printed nothing. A bundled module is now a function that
+  returns early if it already ran, else runs its body and keeps the
+  map — what import does — so dependency order stops mattering and a
+  module nothing asks for never runs. Import sites became calls.
+  RECORDED: map `==` in ting is structural, not identity, so the `==`
+  in selftest/modules.ting does not by itself prove two imports give
+  one map (716 proved it by writing through one name and reading
+  through the other); the new test uses a side effect.
 - Backlog (one per tick, in order):
-  (1) an import that might not run: `if x { let m = import(...); }`
-  runs the module only when the branch is taken, but --bundle hoists
-  every module to the top and runs it unconditionally. A module that
-  only defines things cannot tell; one that prints, writes or takes
-  time can. MEASURE it first, then either document or refuse;
-  (2) chosen after — candidates: `--bundle -o FILE` (today stdout
+  (1) chosen next tick — candidates: `--bundle -o FILE` (today stdout
   only, and PowerShell's `>` writes UTF-16), and whether a bundle
-  should keep a module's own file name in its diagnostics.
+  should keep a module's own file name in its diagnostics;
+  (2) then the health tick that closes "a script you can hand over".
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

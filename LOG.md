@@ -14308,3 +14308,60 @@ every module to the top and runs it unconditionally. A module whose top
 level only defines things cannot tell the difference; one that prints,
 writes a file or takes time can. That is the next stroke — measure it,
 then either say so or refuse it.
+
+## 2026-09-06 — Iteration 722: an import that might not run
+
+Backlog item 1, and it was a real bug rather than a footnote to
+document. Measured first, as the item said to:
+
+```
+print("start");
+if false {
+  let m = import("noisy.ting");
+}
+print("end");
+```
+
+with a `noisy.ting` that prints at its top level. Run as two files:
+`start`, `end`. Bundled by v2.116.0: `noisy loaded`, `start`, `end`.
+The bundle hoisted every module to the top of the file and ran it
+whether or not the program ever asked. A module that only defines
+things cannot tell the difference; one that prints, writes a file or
+takes time can.
+
+So a bundled module is now a function that returns early if it has
+already run, and otherwise runs its body and keeps the map:
+
+```
+let __ting_module_0_once = nil;
+
+fn __ting_module_0() {
+  if __ting_module_0_once != nil {
+    return __ting_module_0_once;
+  }
+  # the module's own source
+  __ting_module_0_once = {"answer": answer};
+  return __ting_module_0_once;
+}
+```
+
+and every import site became a call. That is what `import` itself
+does — once, on the first ask, the same map ever after — so the
+shared-module property is unchanged and dependency order stops
+mattering: a module is defined before anything can call it, whatever
+order the definitions sit in. Refusing a cycle is still what keeps the
+call from recursing forever.
+
+Made to fail on purpose by dropping the early return: the module then
+runs per ask and the fixture prints `loaded` twice. Worth recording
+what that exposed — `first == second` stayed **true** with
+memoisation gone, because map equality in ting is structural, not
+identity. The `==` in `selftest/modules.ting` is not by itself proof
+that two imports give one map; iteration 716 proved it properly, by
+writing a key through one name and reading it through the other. A
+side effect is what tells the two apart, which is why the new test
+uses one.
+
+The tutorial's listing changed with the shape, and the guard written
+in 719 is what said so — a docs test that compares the page to real
+output earns its keep the first time the output moves.
