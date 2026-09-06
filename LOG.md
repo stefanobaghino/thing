@@ -13682,3 +13682,48 @@ assertions now do. 2433 checks.
 That is the whole milestone measured end to end: bench/stdlib.ting was
 866.8 ms on eval and 476.5 on the VM when it started, and is 256.2 and
 155.8 now — 3.4 and 3.1 times — with its checksum never having moved.
+
+## 2026-09-06 — Iteration 708: health tick closes "what the standard library costs"
+
+Nothing wrong to report, which after four strokes of moving work
+between ting and Rust is the result worth having.
+
+All nine bench checksums are identical to BASELINE, `stdlib.ting`'s
+`10006 10 500 w0 18974763` included — the number that mattered most,
+since every stroke in this milestone changed how it was computed and
+none was allowed to change what it computed. Timings moved a few
+percent either way, which is weather.
+
+The fuzz sweep in release, each against the target that actually reads
+its variables: 50000 differential cases at seed 708, the crash fuzzer,
+20000 formatter cases, and 2000000 pattern cases. The pattern sweep
+took 3.01 seconds against the 0.22 a default run takes, which is the
+comparison iteration 700 wrote the rule for after a green line in no
+time turned out to mean nothing had run. Clean throughout.
+
+The gate is green — fmt, zero clippy warnings, fifteen suites, the
+corpus at seven deliberate warnings, 22 selftests / 2433 checks — and
+so are both audits: nine site paths, and six assets on each of the last
+six tags.
+
+Milestone "what the standard library costs" is complete. It began by
+asking a profiler where the time went rather than guessing, and the
+profiler kept sending it somewhere other than where it was pointed:
+
+- The prize on `sort_with` was five times, not the fifty-eight that
+  comparing it to `sort_by` suggested, because a comparator sort has
+  to call the comparator once per comparison in any language.
+- Making it native was blocked by an export rule that could not
+  express "I meant to export this", so the rule was fixed first.
+- The character accumulator turned out to be a quadratic in the
+  language, not a wart in lib/string.ting — and fixing it barely
+  helped `words`, which was the reason it had been picked.
+- `words` needed a different change entirely, and got it once a second
+  profile said so.
+
+bench/stdlib.ting: 866.8 ms to 247.7 on eval, 476.5 to 148.7 on the VM.
+Three and a half times, and three and a bit, with the checksum never
+having moved.
+
+One stroke is banked toward v2.115.0. That is not three, so the next
+tick replenishes rather than releases.

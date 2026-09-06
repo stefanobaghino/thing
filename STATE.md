@@ -927,10 +927,18 @@ holds only the current milestone and the standing rules.
   carriage return nothing had pinned (2433 checks). MILESTONE TOTAL:
   bench/stdlib 866.8->256.2 eval (3.4x), 476.5->155.8 vm (3.1x),
   checksum never moved.
+- 708: health tick + audit green — milestone "what the standard
+  library costs" complete. All NINE bench checksums identical to
+  BASELINE (stdlib's `10006 10 500 w0 18974763` the one that mattered:
+  every stroke changed how it was computed, none what it computed);
+  50000 differential, crash, 20000 formatter and 2000000 pattern cases
+  clean in release at seed 708, the pattern sweep taking 3.01 s
+  against 0.22 for the default count. Site audit green on nine paths,
+  six assets on each of the last six tags. Nothing found.
 - Backlog (one per tick, in order):
-  (1) health tick to close "what the standard library costs";
-  (2) release v2.115.0 (stroke 707, plus whatever the health tick
-  banks).
+  (1) replenishment — pick the next milestone, reasoning into LOG.md;
+  (2) then one stroke per tick, releasing v2.115.0 when ~3 are banked
+  (707 is the first).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
