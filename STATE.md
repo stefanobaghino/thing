@@ -1080,8 +1080,17 @@ holds only the current milestone and the standing rules.
   NOT done: a cookbook entry. The cookbook is generated from
   examples/ by tools/cookbook.py, and an example that shells out to
   ting to demonstrate ting does not belong in the corpus.
+- 720: v2.116.0 cut and pushed (137th tag; strokes 717, 718, 719).
+  Gate green at the tag: fmt, zero clippy, fifteen suites, corpus at
+  seven warnings, 22 selftests / 2433 checks on a binary reporting
+  2.116.0. ORDINAL CORRECTED: `git tag --sort=creatordate` makes
+  v2.113/114/115 the 134th/135th/136th, so recent entries were each
+  one high.
 - Backlog (one per tick, in order):
-  (1) release v2.116.0 — three strokes banked (717, 718, 719);
+  (1) verify v2.116.0 — cold download and execute both aarch64
+  archives, ask the shipped binary what the release claims (bundle a
+  two-module script with it, check the bundle runs and formats), site
+  audit on the nine paths, six assets on the tag;
   (2) chosen after — candidates: `--bundle -o FILE` (today it is
   stdout only), and whether a bundle should keep a module's own file
   name in its diagnostics.

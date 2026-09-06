@@ -14242,3 +14242,35 @@ Not done, and why: the cookbook. It is generated from `examples/` by
 that shells out to `ting` to demonstrate `ting` does not belong in a
 corpus that CI runs on every commit. The reference and the tutorial are
 where a reader looks for a flag.
+
+## 2026-09-06 — Iteration 720: v2.116.0
+
+The 137th tag, strokes 717, 718 and 719 — one feature and the two
+things that make it real.
+
+`ting --bundle SCRIPT` prints a script and the local modules it imports
+as one file. The binary has always been one self-contained thing and
+the standard library has always been inside it, but a program of the
+user's own that split into modules stayed several files with nothing to
+turn it back into one. Each module becomes a function returning what
+its top level declared, bound once, every `import` of it reading that
+one binding — which is what importing a file twice already gives.
+
+The promise is a test: fourteen programs in this repository import a
+local module, and each is bundled and rerun, required to print the same
+bytes, exit the same way and pass `--check` and `--fmt-check`. And the
+tutorial's module section, which used to leave the reader with several
+files, now ends with the bundle — a listing checked against the real
+output rather than transcribed.
+
+Cut from a HEAD with CI and Pages green, gate green at the tag: fmt
+clean, zero clippy warnings, fifteen suites, the corpus at seven
+deliberate warnings, and 22 selftests / 2433 checks against the release
+binary that reports 2.116.0.
+
+Correction to the record, checked rather than assumed: this is the
+137th tag, not the 138th. `git tag --sort=creatordate` numbers
+v2.113.0, v2.114.0 and v2.115.0 as 134, 135 and 136, so the ordinals in
+the last several entries have each been one high. Iteration 700 dropped
+an ordinal rather than assert one it had not checked; the right move
+was to check it.
