@@ -123,6 +123,19 @@ assert(try(copy_file, "x")["err"] != nil, "and it takes two paths, not one");
 remove_file(root + "/source.txt");
 remove_file(root + "/copy.txt");
 
+# And the move on top of the two of them: a rename where that works,
+# and what mv does where it does not. Both paths here are on one
+# filesystem, so this is the rename, date and all.
+write_file(root + "/here.txt", "cargo");
+let carried = stat(root + "/b.txt")["modified"];
+fs["move"](root + "/b.txt", root + "/there.txt");
+assert(!exists(root + "/b.txt"), "the file left the old name");
+assert(stat(root + "/there.txt")["modified"] == carried, "with its date");
+fs["move"](root + "/here.txt", root + "/there.txt");
+assert(read_file(root + "/there.txt") == "cargo", "and a move replaces its target");
+fs["move"](root + "/there.txt", root + "/b.txt");
+assert(try(fs["move"], root + "/nope", root + "/x")["err"] != nil, "moving nothing errors");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

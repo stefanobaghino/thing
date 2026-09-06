@@ -16,8 +16,8 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 71 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 177
-  functions, guarded); 40 ting programs (21 selftest files, 19 examples with .out); 351 Rust tests
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 178
+  functions, guarded); 41 ting programs (21 selftest files, 20 examples with .out); 351 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1268,10 +1268,30 @@ holds only the current milestone and the standing rules.
   bytes; hard-link refusal with the source still reading "still
   here"), both made to FAIL on purpose; 7 selftest checks (2454 ->
   2461).
+- 737: `lib/fs.ting`'s `move` (rename, else copy_file + remove_file,
+  the mv fallback written where it is readable; it does NOT read the
+  error message — whatever stops the rename stops the copy, and the
+  copy's error says it better) plus examples/organize.ting, the
+  tidying script finished. Writing it turned up three things the 734
+  probe never reached: a name clash is a DELETION (rename replaces
+  silently, so the example numbers the second file and prints how
+  often it had to); filing twice must move nothing (a file already in
+  its day folder has target == path, and without that skip the clash
+  check sees the file itself and makes copies forever); and a
+  tidy-up that leaves empty directories is not tidy (prune, depth
+  first). Output line `every date survived: true` = sorted mtimes
+  before == after, which reads false if the same script copies
+  instead. Demo lands in ONE folder because ting cannot write a file
+  dated earlier than now, and holds no binary because write_file
+  takes a string — both said in the header, not hidden. FOUND BY
+  RUNNING: try() returns {"ok": ...} with NO err key on success, so
+  try(...)["err"] raises "key not found"; use has(r, "ok"). The
+  cookbook guard caught the new example — every example needs a
+  section in docs/cookbook.md, regenerated with
+  `python3 tools/cookbook.py`. 4 selftest checks (2461 -> 2465).
 - Backlog (one per tick, in order):
-  (1) lib/fs on top plus the example — the tidying script, finished:
-  a program that could not be written before and would have been
-  wrong if it had.
+  (1) release v2.119.0 — three strokes stand (735 rename, 736
+  copy_file, 737 move + organize).
   NOT CHOSEN: read_bytes/write_bytes. It would solve copying too, but
   a list of ints for a 9 MB file is nine million values, and a real
   bytes type is a language addition, not a builtin. Also absent and

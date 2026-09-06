@@ -972,7 +972,11 @@ an error rather than a silent way to empty it, and copying a
 directory is an error too. One thing it does not promise is that a
 half-finished copy is invisible: if that matters, copy to a
 temporary name and `rename` it into place, which is two lines you
-can read.
+can read. `fs["move"]` puts the two builtins together the
+way `mv` does — a rename when that works, a copy and a removal when
+it does not — and `examples/organize.ting` files a directory into
+folders named for the day each file was last written, which is the
+script that could not be written before.
 
 ## How deep recursion goes
 

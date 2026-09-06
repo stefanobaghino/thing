@@ -157,6 +157,24 @@ fn total_size(d) {
   return total;
 }
 
+# A file moved, wherever it has to go. rename is the whole operation
+# when both paths are on one filesystem: nothing is copied, so the
+# size does not matter and the modification time comes through
+# untouched. It refuses across filesystems, and there this does what
+# `mv` does — copy the bytes, then remove the original — which is
+# slower, holds nothing in memory, and is not atomic: a failure
+# between the two leaves the file at both names. Written here rather
+# than in the binary so that the fallback is readable, and so the
+# rare case cannot pretend to be the cheap one.
+fn move(from, to) {
+  if has(try(rename, from, to), "ok") { return nil; }
+  # Not read from the message: whatever stopped the rename will stop
+  # the copy too, and the copy's own error says it better.
+  copy_file(from, to);
+  remove_file(from);
+  return nil;
+}
+
 # Every file and directory at or below a path, gone. Files first, then
 # each directory once it is empty, deepest first — which is what
 # remove_dir needs, and why this is written here in ting rather than

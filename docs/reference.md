@@ -499,6 +499,12 @@ partial target, and that is not hidden. A copy that cannot be seen
 half-done is a copy to a temporary name followed by a `rename` onto
 the target — two lines, in ting, where you can read them.
 
+The move that works either way is `lib/fs.ting`'s `move`: a `rename`
+where that succeeds, and where it cannot, the copy and the removal
+`mv` falls back to. It lives there rather than in the binary so that
+the expensive path is readable, and so the rare case cannot pretend
+to be the cheap one.
+
 ### Modules
 
 `import(path)` loads another ting file, runs it in a fresh global

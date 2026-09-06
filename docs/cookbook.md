@@ -494,6 +494,132 @@ actions: {"alarm": 2, "pass": 1, "refund": 1, "unlock": 2}
 unknown event: no transition for kick in unlocked
 ```
 
+## organize
+
+Filing a directory by the day each file was last written — the tidy-up a script could not do before, because moving a file meant reading it and writing it somewhere else, which stamps the copy with the moment it was made and destroys the very dates it is sorting by.  ting organize.ting             # file a small tree this makes ting organize.ting downloads   # file a directory of your own  With no argument it builds a directory, files it, reports and removes it, so the example prints the same thing every time. Its files are all made moments apart, so they all belong to one day; a directory with some history in it spreads over as many folders as it has days. A real one also holds files that are not text, which read_file cannot open and this moves without noticing.
+
+```ting
+# Filing a directory by the day each file was last written — the
+# tidy-up a script could not do before, because moving a file meant
+# reading it and writing it somewhere else, which stamps the copy with
+# the moment it was made and destroys the very dates it is sorting by.
+#
+#   ting organize.ting             # file a small tree this makes
+#   ting organize.ting downloads   # file a directory of your own
+#
+# With no argument it builds a directory, files it, reports and
+# removes it, so the example prints the same thing every time. Its
+# files are all made moments apart, so they all belong to one day; a
+# directory with some history in it spreads over as many folders as it
+# has days. A real one also holds files that are not text, which
+# read_file cannot open and this moves without noticing.
+
+let fs = import("../lib/fs.ting");
+let tm = import("../lib/time.ting");
+
+fn build(root) {
+  fs["remove_tree"](root);
+  make_dir(root + "/old/deep");
+  write_file(root + "/notes.txt", "some notes\n");
+  write_file(root + "/report.md", "# a report\n");
+  write_file(root + "/script.ting", "print(1);\n");
+  write_file(root + "/old/notes.txt", "older notes, same name\n");
+  write_file(root + "/old/deep/data.csv", "a,b\n1,2\n");
+  return root;
+}
+
+# Two files can carry the same name in different directories, and
+# rename replaces its target without asking. Numbering the second one
+# is the difference between a tidy-up and a deletion.
+fn free_name(target) {
+  if !exists(target) { return target; }
+  let tail = "";
+  if fs["ext"](target) != "" { tail = "." + fs["ext"](target); }
+  let n = 2;
+  while true {
+    let candidate = fs["dir"](target) + "/" + fs["stem"](target) + "-" + str(n) + tail;
+    if !exists(candidate) { return candidate; }
+    n += 1;
+  }
+}
+
+# Every file at or below the root into a folder named for its day.
+# The facts are read once, before anything moves, because moving is
+# what changes them.
+fn file_all(root) {
+  let moved = 0;
+  let renamed = 0;
+  let days = {};
+  for f in fs["facts"](root) {
+    let day = tm["date"](f["modified"]);
+    days[day] = get(days, day, 0) + 1;
+    let target = root + "/" + day + "/" + fs["base"](f["path"]);
+    # Already where it belongs: filing again must move nothing.
+    if f["path"] == target { continue; }
+    make_dir(root + "/" + day);
+    let free = free_name(target);
+    if free != target { renamed += 1; }
+    fs["move"](f["path"], free);
+    moved += 1;
+  }
+  return {"moved": moved, "renamed": renamed, "days": len(keys(days))};
+}
+
+# A tidy-up that leaves the emptied directories behind is not tidy.
+fn prune(d) {
+  for child in fs["entries"](d) {
+    if is_dir(child) { prune(child); }
+  }
+  if len(list_dir(d)) == 0 { remove_dir(d); }
+}
+
+let given = args();
+let root = "organize-demo";
+let mine = len(given) == 0;
+if !mine { root = given[0]; }
+if mine { build(root); }
+
+if !exists(root) {
+  eprint(format("organize: no such path: {}", root));
+  exit(2);
+}
+
+# The dates as they were. If any of them changes, the filing was done
+# by copying and the folders are now a record of when it ran.
+let before = sort(map(fs["facts"](root), fn(f) { return f["modified"]; }));
+print(format("{}: {} files", root, len(before)));
+print("");
+
+let done = file_all(root);
+prune(root);
+let after = sort(map(fs["facts"](root), fn(f) { return f["modified"]; }));
+
+let loose = 0;
+for child in fs["entries"](root) {
+  if !is_dir(child) { loose += 1; }
+}
+
+let folders = "folders";
+if done["days"] == 1 { folders = "folder"; }
+print(format("  filed into {} {}", done["days"], folders));
+print(format("  numbered to keep a name clash from deleting one: {}", done["renamed"]));
+print(format("  every date survived: {}", after == before));
+print(format("  left at the top: {}", loose));
+print(format("  filing it again moves: {}", file_all(root)["moved"]));
+
+if mine { fs["remove_tree"](root); }
+```
+
+```text
+organize-demo: 5 files
+
+  filed into 1 folder
+  numbered to keep a name clash from deleting one: 1
+  every date survived: true
+  left at the top: 0
+  filing it again moves: 0
+```
+
 ## pipeline
 
 A data pipeline over stdin: one "name,region,amount" record per line (try `cat sales.csv | ting pipeline.ting`). With nothing on stdin it runs on a built-in sample so the output is reproducible.

@@ -14990,3 +14990,78 @@ have caught the truncation.
 
 Seven more selftest checks (2454 → 2461), a reference row with three
 paragraphs, and a tutorial block whose last line is `true`.
+
+## 2026-09-06 — Iteration 737: the tidy-up, finished
+
+Stroke three closes "moving a file, not retyping it": `lib/fs.ting`
+gains `move`, and `examples/organize.ting` is the script that opened
+the milestone, now working.
+
+`move` is six lines and the point is that they are readable:
+
+```ting
+fn move(from, to) {
+  if has(try(rename, from, to), "ok") { return nil; }
+  copy_file(from, to);
+  remove_file(from);
+  return nil;
+}
+```
+
+That is what `mv` does, in ting, where the expensive path cannot
+pretend to be the cheap one. It does not read the failure message to
+decide: whatever stopped the rename will stop the copy too, and the
+copy's own error says it better than a string match on someone else's
+words would.
+
+The example files a directory into folders named for the day each file
+was last written. Writing it turned up three things the probe in 734
+never reached, each of which is now in the code:
+
+- **A name clash is a deletion.** Two files can carry the same name in
+  different subdirectories, and `rename` replaces its target without
+  asking, so filing them both flattens one on top of the other. The
+  example numbers the second (`notes-2.txt`), and prints how many
+  times it had to, so the demo shows the case rather than describing
+  it.
+- **Filing twice must move nothing.** A file already in its day's
+  folder computes a target equal to where it is, and the loop skips
+  it — otherwise the collision check would see the file itself,
+  decide the name was taken, and make an endless line of copies. The
+  output reports `filing it again moves: 0`, which is a real second
+  pass, not an assertion.
+- **A tidy-up that leaves empty directories is not tidy.** `prune`
+  removes them depth-first once their contents have gone.
+
+```
+organize-demo: 5 files
+
+  filed into 1 folder
+  numbered to keep a name clash from deleting one: 1
+  every date survived: true
+  left at the top: 0
+  filing it again moves: 0
+```
+
+`every date survived: true` is the milestone in one line: the sorted
+modification times before filing equal the sorted times after. Run the
+same script with `read_file`/`write_file` instead and that line reads
+`false`, because the folders would then be a record of when the script
+ran rather than of when the files were written.
+
+The demo lands in one folder because ting cannot make a file that is
+older than now — every file it writes is written now — and it holds no
+file that is not text, because `write_file` takes a string and ting
+has no bytes type. Both limits are in the header comment rather than
+hidden: pointed at a real directory the script spreads over as many
+folders as there are days, and moves the photographs it cannot read.
+
+Two guards found by running, not by thinking. `try` returns
+`{"ok": ...}` with **no** `err` key on success, so `try(...)["err"]`
+raises "key not found" rather than answering nil — `has(r, "ok")` is
+the test. And the cookbook guard caught the new example before I
+remembered it existed: every example needs its section in
+docs/cookbook.md, regenerated with `python3 tools/cookbook.py`.
+
+Four selftest checks (2461 → 2465), a stdlib row, and a sentence each
+in the tutorial and the reference. Three strokes stand: 735, 736, 737.
