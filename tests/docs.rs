@@ -229,3 +229,81 @@ fn playground_examples_match_examples_dir() {
         "examples.js has {keys} entries for {expected} runnable examples"
     );
 }
+
+/// Every ting code block in the tutorial and the reference runs.
+///
+/// The cookbook has had this guarantee all along, because it is
+/// generated from examples/, which tests/examples.rs replays against
+/// recorded output. The tutorial and the reference are written by
+/// hand, and nothing ran them: a snippet that the language had moved
+/// out from under would sit there until a reader copied it.
+///
+/// A block that is an illustration rather than a program says so on
+/// its first line, `# not a program: <why>`, which is a sentence the
+/// reader gets as well. That way "this one is not meant to run" is a
+/// decision written in the file, not a gap in the test.
+///
+/// Each block runs in a directory of its own, because they write into
+/// the working one — the tutorial's walk_ext example makes
+/// `report/data` and fills it.
+#[test]
+fn documented_snippets_run() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut ran = 0;
+    let mut skipped = 0;
+    for page in ["tutorial", "reference"] {
+        let src = std::fs::read_to_string(root.join(format!("docs/{page}.md")))
+            .unwrap_or_else(|_| panic!("docs/{page}.md missing"));
+        for (i, block) in ting_blocks(&src).into_iter().enumerate() {
+            if block.starts_with("# not a program:") {
+                skipped += 1;
+                continue;
+            }
+            let dir = std::env::temp_dir()
+                .join(format!("ting-snippet-{}-{page}-{i}", std::process::id()));
+            let _ = std::fs::remove_dir_all(&dir);
+            std::fs::create_dir_all(&dir).expect("a directory for the snippet");
+            let file = dir.join("snippet.ting");
+            std::fs::write(&file, &block).expect("the snippet is written");
+            let out = std::process::Command::new(env!("CARGO_BIN_EXE_ting"))
+                .arg(&file)
+                .current_dir(&dir)
+                .stdin(std::process::Stdio::null())
+                .output()
+                .expect("failed to run ting");
+            let status = out.status;
+            let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+            std::fs::remove_dir_all(&dir).expect("the directory goes away again");
+            assert!(
+                status.success(),
+                "docs/{page}.md block {i} does not run:\n{block}\n{stderr}"
+            );
+            ran += 1;
+        }
+    }
+    // A change that stopped the blocks being found would otherwise
+    // pass by running none of them.
+    assert!(ran >= 45, "only {ran} blocks ran; the extractor is broken");
+    assert_eq!(skipped, 2, "the blocks marked as illustrations changed");
+}
+
+/// The bodies of the ```ting fenced blocks, in order.
+fn ting_blocks(src: &str) -> Vec<String> {
+    let mut out = Vec::new();
+    let mut current: Option<String> = None;
+    for line in src.lines() {
+        match &mut current {
+            None if line.trim_end() == "```ting" => current = Some(String::new()),
+            None => {}
+            Some(body) if line.trim_end() == "```" => {
+                out.push(std::mem::take(body));
+                current = None;
+            }
+            Some(body) => {
+                body.push_str(line);
+                body.push('\n');
+            }
+        }
+    }
+    out
+}

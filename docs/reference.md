@@ -183,6 +183,7 @@ index or key of the wrong type for the base is still an error.
 ## Statements
 
 ```ting
+# not a program: each line is a form on its own, not a sequence to run
 let x = 1;          # define (or shadow) in the current scope
 x = 2;              # rebind the nearest existing x; undefined name errors
 xs[0] = 9;          # write a list slot / insert or update a map key
@@ -442,6 +443,7 @@ word that hides it.
 scope, and returns a map of everything its top level defined:
 
 ```ting
+# not a program: two files, shown together
 # mathutils.ting
 fn double(x) { return x * 2; }
 
