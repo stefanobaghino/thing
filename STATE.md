@@ -17,14 +17,16 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 336 Rust tests
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 343 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
   imports, nine warnings, --strict, --watch), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
-  --fail-fast, --watch, per-file check counts), --profile (calls and self
+  --fail-fast, --watch, per-file check counts), --bundle (a script and
+  the local modules it imports as one file, stdlib imports left alone),
+  --profile (calls and self
   time per function and builtin, top twenty), --lsp (thirteen
   capabilities). A runtime error points at the line that raised it
   and carries a note per call it unwound through (named, capped at
@@ -1040,14 +1042,27 @@ holds only the current milestone and the standing rules.
   needs its own scope.
   NOT CHOSEN: a shebang line — `#!/usr/bin/env ting` already works,
   tested this tick.
+- 717: `--bundle` for the straight case — a script and the local
+  modules it imports as one file on stdout, nothing written to disk.
+  Each module body becomes `let __ting_module_N = fn() { ... return
+  {names}; }();`, emitted after whatever it imports, and every import
+  site reads that one binding (716's identity property: pasting per
+  site would split a module that holds state). lib/ imports stay.
+  REFUSED, each at the import's own file:line:col — a cycle, a
+  non-literal path, and a module that returns from its top level (the
+  bundle would hand back that value instead of the map). Only a file,
+  never `-`: imports resolve against the script's own directory, the
+  trap :load fell into at 425. Item 3's three open shapes were all
+  decided by building item 1: diamonds share, a module's imports
+  resolve against its own directory, a cycle is refused.
 - Backlog (one per tick, in order):
-  (1) `--bundle` for the straight case: a script plus the local
-  modules it imports, each inlined once, lib/ left alone;
-  (2) the guard — bundled output must print BYTE-IDENTICAL results and
-  itself pass --check and --fmt-check;
-  (3) chosen after; the shapes needing decisions are diamonds (two
-  modules importing a third), a module importing from its own
-  directory, and what --bundle does when handed a cycle.
+  (1) the guard — for every program that imports a local module, the
+  bundle must print BYTE-IDENTICAL output and itself pass --check and
+  --fmt-check (one fixture does both today; the guard is what makes it
+  a promise);
+  (2) `--bundle` where a reader would look for it: the tutorial's
+  module section ends with two files and no way to hand them over;
+  (3) chosen after.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

@@ -14088,3 +14088,71 @@ Not chosen: a shebang line, because `#!/usr/bin/env ting` already works
 Correction to the record: `target/` is still 41 GB. A `cargo clean` was
 attempted between ticks and did not take effect, and I said it had. The
 tree is untouched, nothing was rebuilt, and the offer stands.
+
+## 2026-09-06 — Iteration 717: `--bundle`, the straight case
+
+Backlog item 1. `ting --bundle SCRIPT` prints the script and the local
+modules it imports as one file, on stdout, changing nothing on disk.
+
+The shape follows from the two properties 716 measured. A module is a
+map of what its top level declares, so a module body can become a
+function that returns that map; importing the same file twice hands
+back the *same* map, so the bundle binds each module once and every
+import site reads that binding. Pasting a module per import site would
+have been simpler and wrong: a module holding state would become two
+modules the first time something imported it twice.
+
+```
+let __ting_module_0 = fn() {
+  # the module's own source, its local imports already rewritten
+  return {"greet": greet};
+}();
+```
+
+The function is what keeps the module's names out of the script's top
+level, which is the name-capture problem 716 named. Modules are emitted
+after whatever they import, so a module two others import is emitted
+once, before both. `lib/...` imports are left exactly as written —
+those modules are inside the binary, which is the reason one file is
+enough at all.
+
+Three things `--bundle` refuses rather than guesses at, each reported
+with the file, line and column of the import that could not be
+followed:
+
+- a cycle — the interpreter errors on one and must keep erroring;
+- an `import` whose path is not a literal string, which the bundler
+  cannot see until the program runs;
+- a module that returns from its own top level, because the bundle
+  would hand back that value instead of the module's map, and quietly.
+
+And only a file, never `-`: a script's local imports resolve against
+its own directory, and a script read from stdin has none. That is the
+same trap `:load` fell into at iteration 425.
+
+Checked here, not assumed, on a three-file script (an app importing a
+greeter twice, the greeter importing `lib/string.ting` and a module in
+a subdirectory): the separate files and the bundle print the same
+bytes, on both engines; the two local imports are gone from the output
+and the `lib/` one is still there; `loud` appears once. On a diamond
+(two modules importing a third, the third five files deep) the shared
+module is inlined once and `a["c"] == b["c"]` stays true. Four tests in
+`tests/io.rs` pin all of it, and the bundle of the first fixture passes
+`--check` and `--fmt-check` today — which is item 2's job to guarantee
+for every fixture, not this one's to claim.
+
+Backlog item 3 needed three decisions, and building item 1 made all
+three: diamonds share, a module's imports resolve against its own
+directory (each file is scanned with its own directory as the base,
+which is what `import_module` does with `dir_stack`), and a cycle is
+refused. So item 3 is open for something else.
+
+One difference the bundle cannot hide, recorded in `src/bundle.rs`: a
+module runs in a fresh global environment, so a name it never defines
+is unbound there, while inside the bundle that name could find one of
+the script's globals. It only separates programs that were already
+erroring.
+
+Correction to the record: STATE.md said 336 Rust tests. This run counts
+343 across the fifteen suites, four of them new here, so the number had
+been stale by three before today. Corrected below.
