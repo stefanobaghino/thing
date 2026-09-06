@@ -116,18 +116,11 @@ fn is_alpha(s) {
 # The whitespace-separated words of s (runs of spaces, tabs and
 # newlines count as one separator; no empty words).
 fn words(s) {
-  let out = [];
-  let cur = "";
-  for c in s {
-    if contains(" \t\n\r", c) {
-      if cur != "" { push(out, cur); }
-      cur = "";
-    } else {
-      cur += c;
-    }
-  }
-  if cur != "" { push(out, cur); }
-  return out;
+  # Every separator becomes a space, then one split does the work.
+  # Looking at each character in ting costs more than three passes
+  # through replace and one through split, which are builtins.
+  let flat = replace(replace(replace(s, "\t", " "), "\n", " "), "\r", " ");
+  return filter(split(flat, " "), fn(w) { return w != ""; });
 }
 
 # s with every run of whitespace (spaces, tabs, newlines) collapsed to

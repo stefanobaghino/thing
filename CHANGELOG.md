@@ -5,6 +5,14 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `words` is about five times faster. It turned every separator into a
+  space and split once, instead of looking at each character in ting:
+  48 ms to 9 ms on a 108 KB text, and 69 ms to 20 ms on one full of
+  tabs and newlines. What it returns is unchanged, carriage returns
+  included, and `squeeze` gets the same gain for free.
+
 ## v2.114.0 (2026-09-06)
 
 - `s += x` appends to the string instead of copying it. Building a

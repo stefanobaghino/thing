@@ -261,6 +261,10 @@ assert(s["words"]("  the\tquick\n brown  fox ") == ["the", "quick", "brown", "fo
 assert(s["words"]("") == [], "words empty");
 assert(s["words"]("   ") == [], "words only spaces");
 assert(s["words"]("one") == ["one"], "words single");
+# A carriage return separates too, so a CRLF file gives no empty word
+# and no word with a stray \r stuck to it.
+assert(s["words"]("a\r\nb") == ["a", "b"], "words across a CRLF");
+assert(s["words"]("a\rb") == ["a", "b"], "words on a bare carriage return");
 
 let base = {"a": 1};
 assert(m["with"](base, "b", 2) == {"a": 1, "b": 2}, "with adds");
