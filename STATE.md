@@ -915,10 +915,22 @@ holds only the current milestone and the standing rules.
   failed `u += 1` still behaving. Six assets, site audit green on all
   nine paths, published changelog carries the tag and the published
   reference carries `sort_with`.
+- 707: `words` splits instead of scanning. The re-profile picked it, as
+  704 predicted: with sort_with native and the append linear, the 810 ms
+  in functions was 296.7 and `words` at 58.9 ms was the largest thing
+  still in ting. Its cost was the per-character loop and 95599
+  `contains` calls, so three `replace` passes turn every separator into
+  a space and one `split` does the work — 48->9 ms plain, 69->20 ms
+  tab/newline-heavy, out of the profile entirely. bench/stdlib
+  340.4->256.2 eval, 191.2->155.8 vm, checksum unchanged. Fifteen
+  shapes agreed before the change; two selftest assertions now pin the
+  carriage return nothing had pinned (2433 checks). MILESTONE TOTAL:
+  bench/stdlib 866.8->256.2 eval (3.4x), 476.5->155.8 vm (3.1x),
+  checksum never moved.
 - Backlog (one per tick, in order):
-  (1) re-profile the stdlib and follow whatever is on top, `words`
-  included — its cost is the per-character loop, not the append;
-  (2) health tick to close "what the standard library costs".
+  (1) health tick to close "what the standard library costs";
+  (2) release v2.115.0 (stroke 707, plus whatever the health tick
+  banks).
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this

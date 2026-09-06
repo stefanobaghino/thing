@@ -13649,3 +13649,36 @@ The milestone "what the standard library costs" is shipped and
 verified. Two ticks remain on it: the re-profile it was always going to
 end with — the third stroke was deliberately left unchosen — and then
 the health tick that closes it.
+
+## 2026-09-06 — Iteration 707: words splits instead of scanning
+
+The milestone's third stroke was deliberately left unchosen so that a
+profile could pick it. The profile picked `words`, which is what
+iteration 704 said it would: with `sort_with` native and the append no
+longer quadratic, bench/stdlib.ting's 810 ms in functions had become
+296.7, and `words` at 58.9 ms was the largest thing still written in
+ting.
+
+Its cost was never the accumulator. It looked at each of 108000
+characters in a ting loop and asked `contains(" \t\n\r", c)` about
+95599 of them. So it does not look at characters any more: three passes
+of `replace` turn every separator into a space, and one `split` does
+the work. All four are builtins, all four are linear, and the whole
+thing is two lines.
+
+48 ms to 9 ms on a plain text, and 69 ms to 20 ms on one full of tabs
+and newlines — the harder case, because that is where the replaces
+actually copy. `words` is out of the profile's top rows entirely, and
+so are the 95599 `contains` calls. bench/stdlib.ting: 340.4 to 256.2 ms
+on eval, 191.2 to 155.8 on the VM, checksum unchanged.
+
+Equivalence first, as usual: fifteen shapes — empty, one space, only
+tabs, leading and trailing runs, a bare CR, a CRLF, mixed — agreed
+exactly before the change was made. The selftests already covered
+mixed whitespace, empty, only-spaces and single, but nothing pinned the
+carriage return that both implementations handle on purpose, so two
+assertions now do. 2433 checks.
+
+That is the whole milestone measured end to end: bench/stdlib.ting was
+866.8 ms on eval and 476.5 on the VM when it started, and is 256.2 and
+155.8 now — 3.4 and 3.1 times — with its checksum never having moved.
