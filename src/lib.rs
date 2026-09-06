@@ -2,6 +2,7 @@
 //! playground both link this same engine.
 
 pub mod ast;
+pub mod bundle;
 pub mod compile;
 pub mod diag;
 pub mod eval;

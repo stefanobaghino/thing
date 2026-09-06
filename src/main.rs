@@ -43,6 +43,7 @@ fn main() -> ExitCode {
                  \x20                             no name lists all\n\
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
                  \x20 ting --coverage <paths...>  run each, then report which lines ran (dirs recurse)\n\
+                 \x20 ting --bundle <script>      print the script and its local modules as one file\n\
                  \x20 ting --lsp                  language server on stdio\n\
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
@@ -126,6 +127,10 @@ fn main() -> ExitCode {
             ExitCode::SUCCESS
         };
     }
+    if args.peek().map(String::as_str) == Some("--bundle") {
+        args.next();
+        return run_bundle(args.collect());
+    }
     if args.peek().map(String::as_str) == Some("--test") {
         args.next();
         return run_tests(args.collect());
@@ -199,7 +204,8 @@ fn is_option(a: &str) -> bool {
 
 /// Every option any mode accepts, for suggesting the one that was
 /// meant. Keep in step with the dispatch above and the usage text.
-const OPTIONS: [&str; 22] = [
+const OPTIONS: [&str; 23] = [
+    "--bundle",
     "--check",
     "--coverage",
     "--diff",
@@ -223,6 +229,35 @@ const OPTIONS: [&str; 22] = [
     "-h",
     "-j",
 ];
+
+/// `--bundle`: one script, its local modules inlined, on stdout.
+/// Only a real file: a script's imports resolve against its own
+/// directory, and stdin has none.
+fn run_bundle(args: Vec<String>) -> ExitCode {
+    if let Some(a) = args.iter().find(|a| is_option(a)) {
+        return unknown_option(a);
+    }
+    let [path] = args.as_slice() else {
+        eprintln!("ting: --bundle takes exactly one script path (see --help)");
+        return ExitCode::from(2);
+    };
+    if path == "-" {
+        eprintln!(
+            "ting: --bundle needs a file path: a script's local imports resolve against its own directory, and stdin has none"
+        );
+        return ExitCode::from(2);
+    }
+    match ting::bundle::bundle(std::path::Path::new(path)) {
+        Ok(text) => {
+            print!("{text}");
+            ExitCode::SUCCESS
+        }
+        Err(e) => {
+            eprintln!("{e}");
+            ExitCode::FAILURE
+        }
+    }
+}
 
 /// An option no mode recognises: say so, name the nearest real option
 /// when there is one, point at --help, exit 2 (a usage error, distinct

@@ -15,6 +15,7 @@ ting --fmt files...          # reformat in place (--fmt-check to verify)
 ting --test dirs...          # run every .ting file as a test
 ting --test --watch dirs...  # and again on every change (--check too)
 ting --coverage paths...     # run each, then report which lines ran
+ting --bundle script.ting    # print it and its local modules as one file
 ting --doc [NAMES...]        # explain functions, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
@@ -656,6 +657,20 @@ The `ting` binary is the whole toolchain — no separate installs:
   printed.
 - All three accept `-` for stdin; `ting --fmt -` is a filter that
   writes the formatted source to stdout, for editor integrations.
+- `ting --bundle SCRIPT` prints the script and the local modules it
+  imports as one file, on stdout, changing nothing on disk. Each
+  module becomes a function returning what its top level declared,
+  bound once, and every import of it reads that one binding — because
+  importing the same file twice already hands back the same map, and a
+  module holding state has to stay one module. A module is inlined
+  after whatever it imports, so a module two others import is still
+  inlined once and shared. `lib/...` imports are left as they are:
+  those modules live in the binary, which is what makes one file
+  enough. Two things are refused rather than guessed at, each named at
+  the file, line and column of the import: a cycle, and an `import`
+  whose path is not a literal string.
+  It takes a file and only a file: a script's imports resolve against
+  its own directory, and a script read from stdin has none.
 - `ting --doc NAME` prints what the REPL's `:doc` would: a builtin's
   signature and doc line, or a stdlib function's signature, module
   and comment. A module name (`list` or `lib/list.ting`) lists that

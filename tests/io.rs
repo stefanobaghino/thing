@@ -3095,3 +3095,164 @@ fn eprint_writes_to_stderr_and_cwd_reports_the_directory() {
     let _ = std::fs::remove_file(&script);
     let _ = std::fs::remove_dir(&here);
 }
+
+/// A directory of ting files, named apart from any other test's.
+fn tree(name: &str, files: &[(&str, &str)]) -> std::path::PathBuf {
+    let dir = std::env::temp_dir().join(format!("ting-bundle-{}-{name}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    for (path, src) in files {
+        let file = dir.join(path);
+        std::fs::create_dir_all(file.parent().unwrap()).unwrap();
+        std::fs::write(&file, src).unwrap();
+    }
+    dir
+}
+
+fn ting(args: &[&std::path::Path]) -> std::process::Output {
+    Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(args)
+        .output()
+        .expect("failed to run ting")
+}
+
+/// `--bundle` writes one file that prints exactly what the several
+/// files printed: local modules inlined, in the order their imports
+/// ask for, with the standard library left where it is.
+#[test]
+fn bundle_prints_what_the_separate_files_printed() {
+    let dir = tree(
+        "same",
+        &[
+            (
+                "app.ting",
+                "let greeter = import(\"greeter.ting\");\n\
+                 let again = import(\"./greeter.ting\");\n\
+                 print(greeter[\"greet\"](\"world\"));\n\
+                 print(again[\"greet\"](\"ting\"));\n\
+                 print(greeter == again);\n",
+            ),
+            (
+                "greeter.ting",
+                "let s = import(\"lib/string.ting\");\n\
+                 let shout = import(\"sub/shout.ting\");\n\
+                 fn greet(name) {\n\
+                 \x20 return shout[\"loud\"](s[\"title\"](name));\n\
+                 }\n",
+            ),
+            ("sub/shout.ting", "fn loud(t) {\n  return t + \"!\";\n}\n"),
+        ],
+    );
+    let app = dir.join("app.ting");
+    let before = ting(&[&app]);
+    assert!(before.status.success(), "{:?}", before);
+
+    let bundled = ting(&[std::path::Path::new("--bundle"), &app]);
+    assert!(bundled.status.success(), "{:?}", bundled);
+    let one = dir.join("one.ting");
+    std::fs::write(&one, &bundled.stdout).unwrap();
+    let after = ting(&[&one]);
+    assert_eq!(
+        String::from_utf8_lossy(&after.stdout),
+        String::from_utf8_lossy(&before.stdout)
+    );
+
+    let text = String::from_utf8_lossy(&bundled.stdout);
+    // The two local imports are gone and the stdlib one stayed: that
+    // is the whole trade, one file instead of three because the
+    // twelfth module is already in the binary.
+    assert!(!text.contains("import(\"greeter.ting\")"), "{text}");
+    assert!(!text.contains("import(\"sub/shout.ting\")"), "{text}");
+    assert!(text.contains("import(\"lib/string.ting\")"), "{text}");
+    // Inlined once, not per import site: a module holding state must
+    // stay one module, which is what importing a file twice gives.
+    assert_eq!(text.matches("fn loud(t)").count(), 1, "{text}");
+    assert_eq!(text.matches("let __ting_module_").count(), 2, "{text}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// Two modules importing a third: the third is inlined once and both
+/// see the same map, exactly as two imports of one file do.
+#[test]
+fn bundle_shares_a_module_two_modules_import() {
+    let dir = tree(
+        "diamond",
+        &[
+            (
+                "app.ting",
+                "let a = import(\"a.ting\");\n\
+                 let b = import(\"b.ting\");\n\
+                 print(a[\"c\"] == b[\"c\"], a[\"n\"]() + b[\"n\"]());\n",
+            ),
+            (
+                "a.ting",
+                "let c = import(\"c.ting\");\nfn n() { return c[\"v\"]; }\n",
+            ),
+            (
+                "b.ting",
+                "let c = import(\"c.ting\");\nfn n() { return c[\"v\"] * 2; }\n",
+            ),
+            ("c.ting", "let v = 5;\n"),
+        ],
+    );
+    let app = dir.join("app.ting");
+    let before = ting(&[&app]);
+    let bundled = ting(&[std::path::Path::new("--bundle"), &app]);
+    assert!(bundled.status.success(), "{:?}", bundled);
+    let one = dir.join("one.ting");
+    std::fs::write(&one, &bundled.stdout).unwrap();
+    let after = ting(&[&one]);
+    assert_eq!(String::from_utf8_lossy(&before.stdout), "true 15\n");
+    assert_eq!(
+        String::from_utf8_lossy(&after.stdout),
+        String::from_utf8_lossy(&before.stdout)
+    );
+    let text = String::from_utf8_lossy(&bundled.stdout);
+    assert_eq!(text.matches("let v = 5;").count(), 1, "{text}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// What `--bundle` will not do: follow a path it cannot read until the
+/// program runs, or unroll a cycle. Both say so where the import is.
+#[test]
+fn bundle_refuses_a_cycle_and_a_computed_path() {
+    let dir = tree(
+        "refuse",
+        &[
+            ("a.ting", "let b = import(\"b.ting\");\nprint(b);\n"),
+            ("b.ting", "let a = import(\"a.ting\");\nlet x = 1;\n"),
+            ("dyn.ting", "let p = \"b.ting\";\nlet m = import(p);\n"),
+        ],
+    );
+    let cycle = ting(&[std::path::Path::new("--bundle"), &dir.join("a.ting")]);
+    assert_eq!(cycle.status.code(), Some(1));
+    let err = String::from_utf8_lossy(&cycle.stderr);
+    assert!(
+        err.starts_with("b.ting:1:9: error: cannot bundle: circular import of \"a.ting\""),
+        "{err}"
+    );
+    let computed = ting(&[std::path::Path::new("--bundle"), &dir.join("dyn.ting")]);
+    assert_eq!(computed.status.code(), Some(1));
+    let err = String::from_utf8_lossy(&computed.stderr);
+    assert!(
+        err.starts_with("dyn.ting:2:9: error: cannot bundle: this import's path is not a literal"),
+        "{err}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// `--bundle` takes one file, and only a file: a script's imports
+/// resolve against its own directory, which stdin does not have.
+#[test]
+fn bundle_takes_exactly_one_file() {
+    for args in [vec!["--bundle"], vec!["--bundle", "-"]] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(&args)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(2), "{args:?}");
+        assert!(
+            String::from_utf8_lossy(&out.stderr).starts_with("ting: --bundle "),
+            "{args:?}"
+        );
+    }
+}
