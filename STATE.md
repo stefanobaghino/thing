@@ -1125,12 +1125,20 @@ holds only the current milestone and the standing rules.
   them loses a file. Gate green at the tag: fmt, zero clippy, fifteen
   suites, corpus at seven warnings, 22 selftests / 2433 checks on a
   binary reporting 2.117.0.
+- v2.117.0 VERIFIED (138th tag; strokes 722, 723; both aarch64
+  archives downloaded cold and executed here, 22 selftests / 2433
+  checks each). The shipped binaries proved both corrections: a
+  module imported inside `if false` does not load, the same module
+  loads where the program does ask for it, bundled output is
+  byte-identical and runs from a foreign directory, and `-o` pointed
+  at `work/./greeter.ting` is refused with the file intact. Site
+  audit green on nine paths; changelog, tutorial (`-o one.ting`,
+  "runs the first time") and reference (`-o FILE`) carry the release.
 - Backlog (one per tick, in order):
-  (1) verify v2.117.0 — cold download and execute both aarch64
-  archives, ask the shipped binaries what the release claims (a
-  conditional import must not run when bundled; `-o` must refuse its
-  own sources), site audit on the nine paths, six assets on the tag;
-  (2) then the health tick that closes "a script you can hand over".
+  (1) the health tick that closes "a script you can hand over": bench
+  vs bench/BASELINE.md, 50000 differential, crash and 20000 formatter
+  fuzz cases in release, audits;
+  (2) replenishment — the next milestone.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

@@ -14434,3 +14434,28 @@ clean, zero clippy warnings, fifteen suites, the corpus at seven
 deliberate warnings, and 22 selftests / 2433 checks against the release
 binary that reports 2.117.0. The tag ordinal was read from
 `git tag --sort=creatordate`, not counted forward from the last entry.
+
+## 2026-09-06 — Iteration 725: v2.117.0 verified
+
+Both aarch64 Linux archives downloaded cold, unpacked and run here.
+Both report 2.117.0 and both pass the whole selftest suite — 22 files,
+2433 checks. Six assets on the tag; Release, CI and Pages all green
+from the API.
+
+The shipped binaries were asked what this release claims, which is two
+things it did wrong a release ago. A program that imports a noisy
+module inside `if false`, imports a greeter twice, and only then asks
+for the noisy one prints `start`, the greeting, `noisy loaded`, `42`,
+`end` — bundled and unbundled alike, byte for byte. The module runs
+where the program asks for it and not at the top of the file, and the
+branch never taken never loads it. The bundle was written with `-o`
+into a directory holding nothing else and ran there; it checks and
+formats clean. Pointing `-o` at `work/./greeter.ting` is refused and
+the file is still its 37 bytes. Identical on gnu and musl.
+
+Site audit green on all nine paths, and the published pages carry the
+release: the changelog has v2.117.0, the tutorial teaches
+`-o one.ting` and says a module "runs the first time" it is asked for,
+and the reference documents `-o FILE`.
+
+One tick remains on the milestone: the health tick that closes it.
