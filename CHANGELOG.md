@@ -5,6 +5,47 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `rename(from, to)` is the 70th builtin: a file or directory given
+  another name, which is what a move is. Nothing is copied, so it
+  costs the same for a byte and a gigabyte, and the modification time
+  comes through untouched — the reason it exists. Until now the only
+  way to move a file was `write_file(to, read_file(from))` followed by
+  `remove_file`, which stamps the copy with the moment it ran: a
+  script filing files by the day they were written destroyed every
+  date it had just sorted by. It also could not move a file that is
+  not text at all. `rename` replaces an existing target and moves a
+  directory whole, both as the system call and `mv` do. It refuses to
+  cross a filesystem, where `mv` quietly copies instead; a rename that
+  is sometimes a copy has a different cost, a different failure mode
+  and a different date, so it says so rather than hiding it.
+- `copy_file(from, to)` is the 71st builtin: a file's bytes copied,
+  whatever they are, without holding the file in memory. It carries
+  the original's permission bits and its modification time. That last
+  is a decision rather than an inheritance — `std::fs::copy` drops
+  the date and `cp` needs `-p` to keep it, but `mv` keeps it even
+  when it has to fall back to copying across a filesystem, and a
+  cross-filesystem move in ting is `copy_file` followed by
+  `remove_file`. A directory errors, and so does a target that is the
+  same file as the source: the copy underneath opens the target for
+  writing, which truncates the source it is about to read, and
+  reports a successful copy of nothing. Sameness is asked of the
+  filesystem rather than of the spelling, so `a` and `./a` are caught
+  and so is a hard link. It is not atomic, deliberately: a copy that
+  cannot be seen half-done is a copy to a temporary name and a
+  `rename` onto the target, which is two readable lines.
+- `lib/fs.ting` gained `move(from, to)`: a `rename` where that works,
+  and where it does not, the copy and the removal `mv` falls back to.
+  It is written in ting so the expensive path is readable, and so the
+  rare case cannot pretend to be the cheap one.
+- `examples/organize.ting` files a directory into folders named for
+  the day each file was last written — a script that could not be
+  written before, and that would have destroyed the dates it sorted
+  by if it had. It handles what a real tidy-up must: a name clash is
+  numbered rather than allowed to overwrite, filing twice moves
+  nothing, and emptied directories are removed.
+
 ## v2.118.0 (2026-09-06)
 
 - `stat(path)` is the 69th builtin: what a file is besides its name.
