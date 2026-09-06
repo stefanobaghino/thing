@@ -327,6 +327,7 @@ scope).
 | `list_dir(path)` | the names in the directory, sorted; not the paths, and not recursive; a path that is not a readable directory errors |
 | `exists(path)` | whether anything is at that path; `is_dir(path)` whether that thing is a directory. Questions, so an absent or unreadable path is `false`, never an error |
 | `is_dir(path)` | see `exists` |
+| `stat(path)` | what a file is besides its name: a map of `size` (bytes), `modified` (ms since the epoch, the clock `time_ms()` reads) and `kind` (`"file"`, `"dir"` or `"other"`). `nil` when nothing readable is there, so it is a question like `exists` |
 | `make_dir(path)` | creates the directory and any missing parents; a directory that is already there is not an error |
 | `remove_file(path)` | deletes the file; absent, or a directory, errors |
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
@@ -411,12 +412,13 @@ The rest of the semantics:
 ### Files and directories
 
 `read_file` and `write_file` handle a file's contents; `list_dir`,
-`exists`, `is_dir` and `make_dir` handle the tree around it. The
-split between them is deliberate:
+`exists`, `is_dir`, `stat` and `make_dir` handle the tree around it.
+The split between them is deliberate:
 
-- `exists` and `is_dir` are **questions**. An absent, unreadable or
-  otherwise awkward path answers `false`; neither ever raises, so
-  they can be used in an `if` without a `try` around them.
+- `exists`, `is_dir` and `stat` are **questions**. An absent,
+  unreadable or otherwise awkward path answers `false` — `nil` for
+  `stat` — and none of them ever raises, so they can be used in an
+  `if` without a `try` around them.
 - `list_dir` is a **demand**, and errors when the path is not a
   readable directory. Asking what is inside something that is not
   there is a mistake, and an empty list would hide it. A name that
@@ -426,6 +428,18 @@ split between them is deliberate:
 - `make_dir` creates missing parents, and a directory that already
   exists is success rather than an error: the useful postcondition
   is that the directory is there, not that this call made it.
+
+`stat` answers the questions a name cannot. `size` is **bytes**,
+which `len(read_file(p))` is not — that counts characters, so a file
+with any UTF-8 in it reports short, and a file that is not text
+cannot be read at all. `modified` is on the same clock as `time_ms()`
+and signed the same way, so `time_ms() - stat(p)["modified"]` is an
+age in milliseconds and a file older than 1970 counts backwards
+rather than wrapping; it is `nil` on a platform that cannot say. A
+directory's `size` is whatever the filesystem records for the
+directory itself, not the size of what it holds — the number `ls -l`
+prints. Symbolic links are followed, as they are for `exists` and
+`is_dir`, so a broken link is `nil`.
 
 `list_dir` answers with names, not paths — joining them onto the
 directory is `lib/fs.ting`'s `entries`, which is also where `walk`

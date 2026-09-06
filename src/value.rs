@@ -60,6 +60,7 @@ pub enum Builtin {
     ListDir,
     Exists,
     IsDir,
+    Stat,
     MakeDir,
     RemoveFile,
     RemoveDir,
@@ -99,7 +100,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 68] = [
+    pub const ALL: [Builtin; 69] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -132,6 +133,7 @@ impl Builtin {
         Builtin::ListDir,
         Builtin::Exists,
         Builtin::IsDir,
+        Builtin::Stat,
         Builtin::MakeDir,
         Builtin::RemoveFile,
         Builtin::RemoveDir,
@@ -267,6 +269,10 @@ impl Builtin {
             Builtin::IsDir => (
                 "is_dir(path)",
                 "Whether the path is a directory; false if it is anything else or absent.",
+            ),
+            Builtin::Stat => (
+                "stat(path)",
+                "What a file is besides its name: a map of size (bytes), modified (ms since the epoch, the clock time_ms() reads) and kind (\"file\", \"dir\" or \"other\"). nil when nothing readable is there.",
             ),
             Builtin::MakeDir => (
                 "make_dir(path)",
@@ -428,6 +434,7 @@ impl Builtin {
             Builtin::ListDir => "list_dir",
             Builtin::Exists => "exists",
             Builtin::IsDir => "is_dir",
+            Builtin::Stat => "stat",
             Builtin::MakeDir => "make_dir",
             Builtin::RemoveFile => "remove_file",
             Builtin::RemoveDir => "remove_dir",

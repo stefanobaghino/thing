@@ -5,6 +5,22 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `stat(path)` is the 69th builtin: what a file is besides its name.
+  A map of `size` in bytes, `modified` in milliseconds on the same
+  clock `time_ms()` reads, and `kind` — `"file"`, `"dir"` or
+  `"other"` — and `nil` when nothing readable is at the path, so it
+  is a question like `exists` rather than a demand. Until now a ting
+  program could learn a file's name and whether it was a directory,
+  and nothing else. Sizing one meant `len(read_file(p))`, which
+  counts characters rather than bytes (`src/eval.rs` is 192530 bytes
+  and that expression says 192474) and refuses a file that is not
+  valid UTF-8 at all — 4978 of this repository's 5108 `.git` files.
+  A modification time could not be had by any arrangement of what
+  existed, so "what changed since yesterday" was not a hard script
+  but an impossible one.
+
 ## v2.117.0 (2026-09-06)
 
 - `ting --bundle SCRIPT -o FILE` writes the bundle to a file, and

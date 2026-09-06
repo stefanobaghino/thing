@@ -850,7 +850,7 @@ for the scripts that care.
 
 ## Files and directories
 
-Four builtins let a script see the tree it is running in, and
+Five builtins let a script see the tree it is running in, and
 `lib/fs.ting` turns them into something comfortable:
 
 ```ting
@@ -881,8 +881,35 @@ extension, which is most of what a tool that runs over a tree needs.
 that is already there, so it pairs with `write_file` into a tree
 that does not exist yet.
 
-`exists` and `is_dir` are questions, so an absent or unreadable path
-answers `false` rather than raising — they can be used in an `if`
+`stat` answers what a name cannot — how big a file is, when it was
+last written, and what kind of thing it is:
+
+```ting
+write_file("notes.txt", "héllo");
+
+let facts = stat("notes.txt");
+print(facts["size"], facts["kind"]);
+print(len(read_file("notes.txt")));
+print(stat("nope.txt"), stat(".")["kind"]);
+```
+
+```text
+6 file
+5
+nil dir
+```
+
+`size` is bytes, which is not what `len(read_file(p))` says: that
+counts characters, so anything with UTF-8 in it reports short — and a
+file that is not text cannot be read at all, while `stat` never opens
+it. `modified` is milliseconds on the same clock as `time_ms()`, so
+`time_ms() - stat(p)["modified"]` is an age, which is how a script
+finds what changed recently. A path with nothing readable at it is
+`nil`, so `stat` is a question like the two below rather than a
+demand.
+
+`exists` and `is_dir` are questions too, so an absent or unreadable
+path answers `false` rather than raising — they can be used in an `if`
 without wrapping. `list_dir` is a demand, and errors when the path
 is not a readable directory, because asking what is inside
 something that is not there is a mistake worth hearing about.

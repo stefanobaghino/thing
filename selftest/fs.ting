@@ -53,6 +53,21 @@ assert(contains(found, root + "/deep/deeper/d.ting"), "the deepest one too");
 assert(len(fs["walk_ext"](root, "ting")) == 3, "only the ting files");
 assert(fs["walk"](root + "/a.ting") == [root + "/a.ting"], "a file walks to itself");
 
+# What a file is, besides its name. len(read_file(p)) counts
+# characters and refuses a file that is not text; stat counts bytes
+# and never opens it.
+write_file(root + "/bytes.txt", "héllo");
+let facts = stat(root + "/bytes.txt");
+assert(facts["size"] == 6, "size is bytes");
+assert(len(read_file(root + "/bytes.txt")) == 5, "which is not what len says");
+assert(facts["kind"] == "file", "and it says what kind of thing the path names");
+assert(stat(root + "/deep")["kind"] == "dir", "a directory says so");
+assert(stat(root + "/nope") == nil, "nothing there is nil, not an error");
+let age = time_ms() - facts["modified"];
+assert(age >= -1000 && age < 60000, "modified is the clock time_ms reads");
+assert(try(stat, 3)["err"] == "stat expects a string path, got int", "a path is a string");
+remove_file(root + "/bytes.txt");
+
 # Removal: a file, then an empty directory, then the whole tree.
 remove_file(root + "/b.txt");
 assert(!exists(root + "/b.txt"), "the file is gone");

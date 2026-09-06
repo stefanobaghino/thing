@@ -1981,6 +1981,56 @@ impl<W: Write> Interpreter<W> {
                     _ => path.exists(),
                 }))
             }
+            // What a file is besides its name. nil rather than an
+            // error when nothing readable is there, for the same
+            // reason exists() answers false: asking how big something
+            // is should not have to be guarded, and "there is nothing
+            // there" is an answer.
+            //
+            // A directory's size is whatever the filesystem records
+            // for the directory itself, which is not the size of what
+            // it holds — the same number `ls -l` prints.
+            Builtin::Stat => {
+                arity(1, 1)?;
+                let Value::Str(path) = &args[0] else {
+                    return Err(error(
+                        format!("stat expects a string path, got {}", args[0].type_name()),
+                        span,
+                    ));
+                };
+                let Ok(meta) = std::fs::metadata(std::path::Path::new(path)) else {
+                    return Ok(Value::Nil);
+                };
+                let mut facts = std::collections::BTreeMap::new();
+                facts.insert("size".to_string(), Value::Int(meta.len() as i64));
+                facts.insert(
+                    "kind".to_string(),
+                    Value::Str(
+                        if meta.is_dir() {
+                            "dir"
+                        } else if meta.is_file() {
+                            "file"
+                        } else {
+                            "other"
+                        }
+                        .to_string(),
+                    ),
+                );
+                // Milliseconds since the epoch, signed the way
+                // time_ms() is, so the two subtract without ceremony;
+                // a file older than 1970 counts backwards rather than
+                // wrapping. A platform that cannot say leaves nil
+                // instead of a made-up number.
+                let modified = match meta.modified() {
+                    Ok(t) => match t.duration_since(std::time::UNIX_EPOCH) {
+                        Ok(d) => Value::Int(d.as_millis() as i64),
+                        Err(e) => Value::Int(-(e.duration().as_millis() as i64)),
+                    },
+                    Err(_) => Value::Nil,
+                };
+                facts.insert("modified".to_string(), modified);
+                Ok(Value::map(facts))
+            }
             Builtin::MakeDir => {
                 arity(1, 1)?;
                 let Value::Str(path) = &args[0] else {
