@@ -17,7 +17,7 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 68 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 174
-  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 343 Rust tests
+  functions, guarded); 39 ting programs (21 selftest files, 18 examples with .out); 344 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1055,14 +1055,25 @@ holds only the current milestone and the standing rules.
   trap :load fell into at 425. Item 3's three open shapes were all
   decided by building item 1: diamonds share, a module's imports
   resolve against its own directory, a cycle is refused.
+- 718: the guard — every corpus program with a local import (14
+  today, the count asserted) is bundled and rerun: same stdout bytes,
+  same exit, bundle passes --check and --fmt-check. Both halves made
+  to fail on purpose (three-space indent breaks fmt on selftest/fs;
+  pasting per import site breaks selftest/modules, which already
+  tests map identity). FOUND, and the docs corrected: selftest/ and
+  examples/ reach the stdlib as ../lib/..., a FILE here, so those
+  bundles inline the real modules (838 lines for examples/text). The
+  rule is the interpreter's own — filesystem first, no file means
+  embedded — not "lib/ is always left alone". Also recorded: a bundle
+  cannot keep try()'s file/line identical, those being where the code
+  now sits; err() messages are identical.
 - Backlog (one per tick, in order):
-  (1) the guard — for every program that imports a local module, the
-  bundle must print BYTE-IDENTICAL output and itself pass --check and
-  --fmt-check (one fixture does both today; the guard is what makes it
-  a promise);
-  (2) `--bundle` where a reader would look for it: the tutorial's
-  module section ends with two files and no way to hand them over;
-  (3) chosen after.
+  (1) `--bundle` where a reader would look for it: the tutorial's
+  module section ends with two files and no way to hand them over,
+  and the cookbook has no entry;
+  (2) chosen after — candidates: `--bundle -o FILE` (today it is
+  stdout only), and whether a bundle should keep a module's own file
+  name in its diagnostics.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
   53%. A `cargo clean` was attempted between ticks and DID NOT take
   effect (target still 41 GB, nothing rebuilt). Costs one full

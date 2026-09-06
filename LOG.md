@@ -14156,3 +14156,48 @@ erroring.
 Correction to the record: STATE.md said 336 Rust tests. This run counts
 343 across the fifteen suites, four of them new here, so the number had
 been stale by three before today. Corrected below.
+
+## 2026-09-06 — Iteration 718: the guard that makes `--bundle` a promise
+
+Backlog item 1. A bundler is only worth having if the bundle is the
+same program, so the claim is now a test rather than a sentence: every
+program in the corpus that imports a local module is bundled and rerun,
+and the bundle must print the same bytes on stdout, exit the same way,
+pass `--check` and pass `--fmt-check`. Fourteen programs qualify today,
+and the count is asserted — a scan that silently matched nothing would
+pass every other assertion in the test.
+
+Both halves were made to fail on purpose before being believed:
+
+- indenting a module body three spaces instead of two fails
+  `--fmt-check` on `selftest/fs.ting`;
+- pasting a module per import site instead of binding it once changes
+  how `selftest/modules.ting` exits, which is that file already
+  testing that two imports of one path give the same map. That is the
+  property 716 measured, now defended from the other side.
+
+What the guard turned up, and the reason to run it before writing the
+docs it checks: `selftest/` and `examples/` reach the standard library
+as `../lib/...`, and in this repository that is a file. So those
+bundles inline the real `lib/list.ting`, `lib/string.ting` and the rest
+— 838 lines for `examples/text.ting` — and run them. Yesterday's
+sentence, "`lib/...` imports are left as they are: those modules live
+in the binary", is therefore true only when there is no such file. The
+rule `--bundle` actually follows is the interpreter's own: filesystem
+first, and what has no file is embedded. A copy of a stdlib module
+sitting beside a script is inlined like any other local module, which
+is the right answer — the bundle runs what the script ran. Corrected in
+the reference, in `src/bundle.rs`, and in the header every bundle
+carries.
+
+The other thing measured rather than assumed: what a bundle cannot keep
+identical. A module raising through a call reports the same message
+either way (`err(...)` on a module function that divides by zero prints
+`division by zero` in both), but `try()` hands back the file, line and
+column where the error sat, and in a bundle those are the bundle's.
+Nothing in the corpus prints them; the guard would say so if something
+started to. Recorded in the reference.
+
+The refusals list in the reference had two of the three: the module
+that returns from its own top level was in the commit message and not
+in the docs. Now in both.
