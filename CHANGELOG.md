@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.120.0 (2026-09-06)
 
 - `each_line(path, f)` is the 72nd builtin: a file read one line at a
   time, `f(line)` called for each, with only the current line held.
