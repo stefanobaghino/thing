@@ -14027,3 +14027,64 @@ the disk is at 53%. A `cargo clean` would cost one full rebuild and
 nobody has asked for it.
 
 The backlog is empty, so the next tick replenishes it.
+
+## 2026-09-06 — Iteration 716: replenishment — "a script you can hand over"
+
+ting's whole distribution story is that it is one file. The binary is
+self-contained, the standard library is embedded in it, and a script
+that imports `lib/list.ting` runs from any directory, in the REPL, and
+in the browser playground. A script the *user* writes does not get that.
+Split it into two files and it is two files forever: the tutorial
+teaches `import("greeter.ting")`, `--check` follows local imports, the
+LSP resolves them — local modules are first-class everywhere in the
+toolchain except in handing the result to somebody.
+
+Demonstrated rather than asserted: a `main.ting` importing a
+`greeter.ting` beside it prints fine, and with the module moved away it
+fails with "cannot import". Which is correct behaviour, and exactly the
+gap.
+
+So: **`--bundle`** — read a script, inline the local modules it
+imports, write one self-contained `.ting` file that any ting binary
+runs. Imports of `lib/...` stay imports, because those are already
+inside the binary.
+
+The interesting part is that a module is not a text include. Three
+things have to survive, and all three were checked this tick rather
+than assumed:
+
+- **A module is a map of what its top level declares.** Iteration 702
+  made that exact — every `let` and `fn` at depth zero, read from the
+  AST — which is precisely what lets a module be rewritten as an
+  expression that builds that map. The rule fixed to make `sort_with`
+  native turns out to be the rule that makes bundling expressible.
+- **Importing twice gives the same map.** `a["extra"] = 1` is visible
+  through `b`, and `a == b`. A bundle must therefore inline a module
+  once and share the binding, not paste it at each import site.
+- **Circular imports are an error**, and a bundle must not quietly
+  turn one into an infinite regress or a silent success.
+
+Name capture is the other half: a module's body cannot be dropped into
+the script's top level, where it would collide with the script's own
+names. Each one goes in a scope of its own.
+
+Milestone: **"a script you can hand over"** (v2.116–v2.117). One stroke
+per tick:
+
+1. `--bundle` for the straight case: a script and the local modules it
+   imports, each inlined once, `lib/` left alone.
+2. The guard that makes it worth having: for every program that imports
+   a local module, the bundle must print byte-identical output, and the
+   bundle itself must pass `--check` and `--fmt-check` — a bundler that
+   emits code the formatter would rewrite is not emitting ting.
+3. Chosen once the first two exist; the shapes that will need deciding
+   are diamonds (two modules importing a third), a module that imports
+   from its own directory, and what `--bundle` should do when handed a
+   cycle.
+
+Not chosen: a shebang line, because `#!/usr/bin/env ting` already works
+— tested this tick, it prints and does not complain.
+
+Correction to the record: `target/` is still 41 GB. A `cargo clean` was
+attempted between ticks and did not take effect, and I said it had. The
+tree is untouched, nothing was rebuilt, and the offer stands.

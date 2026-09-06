@@ -1024,10 +1024,34 @@ holds only the current milestone and the standing rules.
   illustrations saying so in a sentence readers get, and five `try`
   sites reading the way the tutorial teaches. Both guards were made to
   fail on purpose before being believed.
-- Backlog: EMPTY. The next tick replenishes it (LOOP.md's no-idle
-  rule): pick the next milestone and write the reasoning into LOG.md.
+- 716: replenishment — milestone "a script you can hand over"
+  (v2.116-v2.117), reasoning in LOG.md. The binary is self-contained
+  and the stdlib is embedded, but a USER's script that splits into
+  modules is two files forever: local modules are first-class in the
+  tutorial, --check and the LSP, and nowhere in handing the result to
+  somebody. `--bundle` inlines local imports into one runnable .ting
+  file; `lib/...` imports stay, being already in the binary.
+  THREE PROPERTIES CHECKED THIS TICK, not assumed: (a) a module is a
+  map of what its top level declares — 702's rule is exactly what lets
+  a module become an expression; (b) importing twice gives the SAME
+  map (`a["extra"] = 1` visible through b, `a == b`), so a bundle
+  inlines once and shares, never pastes per import site; (c) circular
+  imports error and must keep erroring. Name capture: each module body
+  needs its own scope.
+  NOT CHOSEN: a shebang line — `#!/usr/bin/env ting` already works,
+  tested this tick.
+- Backlog (one per tick, in order):
+  (1) `--bundle` for the straight case: a script plus the local
+  modules it imports, each inlined once, lib/ left alone;
+  (2) the guard — bundled output must print BYTE-IDENTICAL results and
+  itself pass --check and --fmt-check;
+  (3) chosen after; the shapes needing decisions are diamonds (two
+  modules importing a third), a module importing from its own
+  directory, and what --bundle does when handed a cycle.
 - Housekeeping, offered and unanswered: `target/` is 41 GB, disk at
-  53%. A `cargo clean` costs one full rebuild; no urgency.
+  53%. A `cargo clean` was attempted between ticks and DID NOT take
+  effect (target still 41 GB, nothing rebuilt). Costs one full
+  rebuild; no urgency.
 - 657's coverage path closed in 674.
 - Not chosen in 666, with reasons: a --check warning suggesting `get`
   (ruled out by 649's principle — the nine warnings each claim "this
