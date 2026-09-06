@@ -230,7 +230,8 @@ fn playground_examples_match_examples_dir() {
     );
 }
 
-/// Every ting code block in the tutorial and the reference runs.
+/// Every ting code block in the tutorial and the reference runs, and
+/// prints what the page says it prints.
 ///
 /// The cookbook has had this guarantee all along, because it is
 /// generated from examples/, which tests/examples.rs replays against
@@ -238,10 +239,15 @@ fn playground_examples_match_examples_dir() {
 /// hand, and nothing ran them: a snippet that the language had moved
 /// out from under would sit there until a reader copied it.
 ///
+/// A block followed by a ```text``` block is claiming that output, and
+/// the claim is checked exactly. A block with no such claim is only
+/// run — the tutorial has one, whose output depends on whether git is
+/// installed, and the reference makes no claims at all.
+///
 /// A block that is an illustration rather than a program says so on
-/// its first line, `# not a program: <why>`, which is a sentence the
-/// reader gets as well. That way "this one is not meant to run" is a
-/// decision written in the file, not a gap in the test.
+/// its first line, `# not a program:` and the reason, which is a
+/// sentence the reader gets as well. That way "this one is not meant
+/// to run" is a decision written in the file, not a gap in the test.
 ///
 /// Each block runs in a directory of its own, because they write into
 /// the working one — the tutorial's walk_ext example makes
@@ -249,12 +255,17 @@ fn playground_examples_match_examples_dir() {
 #[test]
 fn documented_snippets_run() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-    let mut ran = 0;
-    let mut skipped = 0;
-    for page in ["tutorial", "reference"] {
+    // Per page: blocks whose output was compared, blocks only run, and
+    // blocks marked as illustrations. Pinning all three means a claim
+    // that quietly disappeared would fail here rather than stop being
+    // checked.
+    for (page, want_checked, want_run_only, want_skipped) in
+        [("tutorial", 43, 1, 0), ("reference", 0, 6, 2)]
+    {
         let src = std::fs::read_to_string(root.join(format!("docs/{page}.md")))
             .unwrap_or_else(|_| panic!("docs/{page}.md missing"));
-        for (i, block) in ting_blocks(&src).into_iter().enumerate() {
+        let (mut checked, mut run_only, mut skipped) = (0, 0, 0);
+        for (i, (block, claim)) in ting_blocks(&src).into_iter().enumerate() {
             if block.starts_with("# not a program:") {
                 skipped += 1;
                 continue;
@@ -272,38 +283,68 @@ fn documented_snippets_run() {
                 .output()
                 .expect("failed to run ting");
             let status = out.status;
+            let stdout = String::from_utf8_lossy(&out.stdout).to_string();
             let stderr = String::from_utf8_lossy(&out.stderr).to_string();
             std::fs::remove_dir_all(&dir).expect("the directory goes away again");
             assert!(
                 status.success(),
                 "docs/{page}.md block {i} does not run:\n{block}\n{stderr}"
             );
-            ran += 1;
+            match claim {
+                Some(want) => {
+                    assert_eq!(
+                        stdout, want,
+                        "docs/{page}.md block {i} does not print what it claims:\n{block}"
+                    );
+                    checked += 1;
+                }
+                None => run_only += 1,
+            }
         }
+        assert_eq!(
+            (checked, run_only, skipped),
+            (want_checked, want_run_only, want_skipped),
+            "docs/{page}.md: (checked, run only, illustrations) changed"
+        );
     }
-    // A change that stopped the blocks being found would otherwise
-    // pass by running none of them.
-    assert!(ran >= 45, "only {ran} blocks ran; the extractor is broken");
-    assert_eq!(skipped, 2, "the blocks marked as illustrations changed");
 }
 
-/// The bodies of the ```ting fenced blocks, in order.
-fn ting_blocks(src: &str) -> Vec<String> {
-    let mut out = Vec::new();
-    let mut current: Option<String> = None;
+/// The bodies of the ```ting``` fenced blocks, in order, each with the
+/// ```text``` block that immediately follows it where there is one —
+/// which is how the pages state what a snippet prints.
+fn ting_blocks(src: &str) -> Vec<(String, Option<String>)> {
+    let mut fences: Vec<(&str, String)> = Vec::new();
+    let mut open: Option<(&str, String)> = None;
     for line in src.lines() {
-        match &mut current {
-            None if line.trim_end() == "```ting" => current = Some(String::new()),
-            None => {}
-            Some(body) if line.trim_end() == "```" => {
-                out.push(std::mem::take(body));
-                current = None;
+        match &mut open {
+            None => {
+                let trimmed = line.trim_end();
+                if let Some(kind) = trimmed.strip_prefix("```")
+                    && matches!(kind, "ting" | "text")
+                {
+                    open = Some((kind, String::new()));
+                }
             }
-            Some(body) => {
+            Some((_, body)) if line.trim_end() == "```" => {
+                let (kind, body) = open.take().expect("a fence is open");
+                fences.push((kind, body));
+            }
+            Some((_, body)) => {
                 body.push_str(line);
                 body.push('\n');
             }
         }
+    }
+    let mut out = Vec::new();
+    for (i, (kind, body)) in fences.iter().enumerate() {
+        if *kind != "ting" {
+            continue;
+        }
+        let claim = match fences.get(i + 1) {
+            Some((next, text)) if *next == "text" => Some(text.clone()),
+            _ => None,
+        };
+        out.push((body.clone(), claim));
     }
     out
 }

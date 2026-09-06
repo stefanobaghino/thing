@@ -13,10 +13,12 @@ Windows are attached to each
   two that guard more than one call keep the lambda, which is what the
   reference already explains it is for.
 - Every ting code block in the tutorial and the reference is run by
-  the test suite, in a directory of its own. The cookbook already had
-  that guarantee through `examples/`; these two pages were written by
-  hand and nothing ran them. The two blocks that are illustrations
-  rather than programs now say so on their first line.
+  the test suite, in a directory of its own, and each one is held to
+  the output the page claims for it. The cookbook already had that
+  guarantee through `examples/`; these two pages were written by hand
+  and nothing ran them. All 43 of the tutorial's claimed outputs were
+  already correct. The two blocks that are illustrations rather than
+  programs now say so on their first line.
 - `words` is about five times faster. It turned every separator into a
   space and split once, instead of looking at each character in ting:
   48 ms to 9 ms on a 108 KB text, and 69 ms to 20 ms on one full of
