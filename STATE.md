@@ -1391,13 +1391,25 @@ holds only the current milestone and the standing rules.
   9 MB peak. Site audit: nine paths 200, ting.wasm 825122 bytes,
   changelog has v2.120.0, cookbook has logreport, reference has
   each_line, github.io still redirects.
+- 747: health tick GREEN — milestone "a file read a line at a time"
+  complete. All nine bench checksums match BASELINE, and the timings
+  ANSWERED 740's open question: they are back ON the baseline on a
+  quiet host (accum 72.9 vs 75.0, fib 538.8 vs 535.3, toplevel 434.2
+  vs 451.1), so 740's uniform 25-30% excess really was the host and
+  not a regression — a second sample is what makes "timings are
+  weather" a measurement rather than a saying. VM ahead on all nine
+  (-19% to -45%). Fuzzers at seed 747: 50000 differential 8.15 s,
+  20000 formatter 3.70 s, 2000000 patterns 3.00 s, all back to their
+  historical runtimes. Audit: 72 builtins, 182 stdlib functions (by
+  the 740 guard), 22 selftest files, 21 examples with .out, 43 ting
+  programs, 353 Rust tests in 15 suites, 7 corpus warnings. NOT
+  added: a bench row for each_line — the bench decides by checksum
+  over deterministic work, and file reading is the filesystem's mood;
+  the memory claim belongs on the release artifact, where 746 checked
+  it (9 MB for 2000000 lines).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick — bench vs bench/BASELINE.md (checksums decide,
-  timings are weather), 50000 differential, crash and 20000 formatter
-  fuzz cases in release, audit — closes the milestone "a file read a
-  line at a time";
   - replenishment — the next milestone.
   NOT CHOSEN: a file handle value (open/read_line/close) is a new
   type and a resource that leaks when a script forgets it, and ting

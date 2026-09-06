@@ -15475,3 +15475,37 @@ v2.120.0, cookbook.html has the logreport example, reference.html has
 `each_line`, and github.io still redirects to www.baghino.me/thing.
 
 Nothing to fix. A health tick closes the milestone.
+
+## 2026-09-06 — Iteration 747: health tick, and the weather confirmed
+
+Green, and the milestone "a file read a line at a time" is complete.
+
+**Bench.** All nine checksums match `bench/BASELINE.md`. The timings
+are the interesting part this time, because they close a question 740
+left open: seven ticks ago every row ran 25–30% above the baseline and
+I wrote that down as the host being busy rather than a regression.
+Today, on the same binary shape and a quiet host, they are back on the
+baseline — accum 72.9 ms against 75.0, fib 538.8 against 535.3,
+toplevel 434.2 against 451.1. A second sample is what turns "timings
+are weather" from a saying into a measurement, and nothing in three
+releases has cost the interpreter anything. The VM leads eval on all
+nine rows, -19% to -45%.
+
+**Fuzzers, seed 747.** 50000 differential cases in 8.15 s, 20000
+formatter cases in 3.70 s, 2000000 pattern cases in 3.00 s. Those
+runtimes are also back to their historical figures, which is the same
+evidence read a second way.
+
+**Audit.** Every count the documentation claims, checked against what
+is there: 72 builtins, 182 stdlib functions (by the guard written in
+740, which asks the modules rather than grepping them), 22 selftest
+files, 21 examples each with its recorded output, 43 ting programs,
+353 Rust tests in 15 suites, and seven corpus warnings, all on
+purpose.
+
+One thing deliberately not added: a bench row for `each_line`. The
+bench decides by checksum over deterministic work, and reading a file
+of any size is the filesystem's mood as much as the interpreter's —
+it would add a row that is weather all the way down. The memory claim
+is checked where it belongs, on the release artifact, which 746 did:
+9 MB for a 2000000-line log.
