@@ -18262,3 +18262,32 @@ corpus at 7 warnings, selftest 22 files / 2583 checks, Windows and
 wasm targets, eleven bench checksums, and 100000 differential cases
 at seed 795 — twice the usual, because this changes the order two
 engines do things in.
+
+## 2026-09-08 — Iteration 796: v2.128.0
+
+The 149th tag. Release run `34170087973` is in flight; its verdict is
+next tick's, read per target from the log rather than from job
+colours.
+
+The milestone in one line: a ting program that reads or builds text
+used to cost the square of its length, and now costs its length.
+
+Five entries. Four are the strokes — indexing and `slice` that no
+longer decode the whole string, the shared text behind a string, the
+remembered character count, and the last copy on an append removed.
+The fifth is the cost, and it is there on purpose: a program that
+makes very many short strings and never reads a character out of one
+pays a little for a count nothing asks about. It is small against the
+rest, and it is why the count is taken lazily rather than when the
+string is made. A release note that lists only what got better is a
+release note that will be corrected later.
+
+Every number in the section was measured this milestone and appears
+in LOG 792-795 with the shape it was measured on: 10.3 s to 0.13 for
+a 320000-character scan, 0.77 to 0.13 for passing a 2 MB string 400
+times, 0.52 to 0.078 for 160000 appends with a closure naming the
+target.
+
+Gate green at the new version: `ting --version` reports `ting
+2.128.0`, Cargo.lock updated, fmt, clippy, 15 `test result: ok`, 71
+files unchanged, corpus at seven, selftest 22 files / 2583 checks.

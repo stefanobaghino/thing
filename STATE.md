@@ -2292,12 +2292,20 @@ holds only the current milestone and the standing rules.
   docs/reference.md said the saving "holds only while the right-hand
   side names nothing and calls nothing": TRUE WHEN WRITTEN, FALSE NOW,
   rewritten. Third false claim this milestone retired from the docs.
+- 796: v2.128.0 tagged (149th tag; strokes 792, 793, 794, 795).
+  Release run 34170087973 in flight, verdict next tick. FIVE
+  CHANGELOG ENTRIES, AND THE FIFTH IS THE COST: a program that makes
+  very many short strings and never reads a character out of one pays
+  a little for a remembered count nothing asks about. A release note
+  that lists only what got better is one that gets corrected later
+  (788 nearly shipped a false one). Every number in the section was
+  measured this milestone and is in LOG 792-795 with its shape.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next: release the milestone as v2.128.0 (write the CHANGELOG
-  section from LOG 792-795, tag, verify by cold asset download and
-  execution, and check the site serves it).
+  - next: verify v2.128.0 — release run 34170087973's verdict per
+  target from the API log, six assets, cold download and execution of
+  both aarch64 archives, and the site serving the new version.
   - then a health tick and the site audit, which closes the
   milestone.
   - then: prove the archive's lib/ and the binary's embedded stdlib
