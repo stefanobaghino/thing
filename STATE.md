@@ -2145,15 +2145,26 @@ holds only the current milestone and the standing rules.
   rebuilt), changelog at v2.127.0, reference serving the new cost
   note, and EXAMPLES.JS AS SERVED IS BYTE-IDENTICAL TO THE REPO's, so
   783's fix reached the front door and not just git.
+- 790: health tick green, milestone "the loop that rebuilds what it
+  just built" COMPLETE. All TEN bench checksums identical to BASELINE
+  (growth.ting included). Sweeps at seed 790 clean, each proven a
+  sweep two ways; crash fuzzer 6 passed. Gate green on all three
+  targets. Coverage 2694/2711 AND THE SEVENTEEN MISSES ARE THE SAME
+  SEVENTEEN 782 enumerated -- the denominator grew 59 lines and not
+  one new line went uncovered, which is what comparing against a list
+  rather than a total is for. CI green on HEAD, seven assets on each
+  of the last two tags, ten site paths 200.
+  A REGRESSION THAT WASN'T: the first bench run showed the VM LOSING
+  regex (+27%) and strings (+9%), which has not happened since the VM
+  took the lead. Second run: -29% and -32%. Host load average 4 from
+  FOUR UNRELATED PROCESSES (checked they were not mine -- 773 was).
+  The rule against asserting an ordering a loaded runner can reverse
+  is exactly this; the answer was a second measurement.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone (bench vs BASELINE's TEN rows,
-  50000 differential, crash and 20000 formatter fuzz in release,
-  timing two counts per 771; gate, corpus at seven, coverage against
-  782's enumerated seventeen misses, CI green on HEAD, assets on the
-  last two tags, ten site paths on www.baghino.me).
-  - then replenishment.
+  - replenishment: choose the next milestone and write the reasoning
+  in LOG.md before writing any code.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

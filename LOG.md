@@ -17880,3 +17880,53 @@ v2.127.0, and the reference serving the new note on what growing a
 string costs. **And `examples.js` as served is byte-identical to the
 repository's** — 783's stale playground reached the front door and is
 fixed there, not just in git.
+
+## 2026-09-07 — Iteration 790: health tick, and a regression that wasn't
+
+Milestone "the loop that rebuilds what it just built" closes green.
+
+**All ten bench checksums identical to BASELINE**, including
+`growth.ting`, the row the milestone added.
+
+The first run said the VM had **lost** two rows — `regex.ting` +27%,
+`strings.ting` +9% — which has not happened since the VM took the
+lead. A second run on the same binary:
+
+```
+            first run        second run
+regex.ting  vm +27%          vm -29%
+strings     vm  +9%          vm -32%
+```
+
+The host is carrying a load average of 4 from four unrelated
+processes at half a core each and one at 91%. Nothing of mine — I
+checked, because 773 was a stray of mine. The standing rule says
+never to assert an ordering that a loaded runner can reverse; this is
+what that rule is about, and the answer was a second measurement, not
+a shrug in either direction.
+
+**Three sweeps at seed 790, all clean**, each proven a sweep two ways
+— a case count in the output and a tenfold count taking longer:
+
+```
+differential   5000 → 2.6s     50000 → 13.8s
+formatter      2000 → 0.7s     20000 →  7.7s
+patterns     200000 → 0.5s   2000000 →  6.6s
+```
+
+The differential ratio is 5.3x rather than the 11.1x of 781: the
+small run is mostly fixed overhead on a busy host, and per case the
+two are the same. Crash fuzzer 6 passed.
+
+Gate green on all three targets (host, `x86_64-pc-windows-msvc`,
+`wasm32-unknown-unknown`): fmt, clippy at zero, fifteen suites,
+`--fmt` 0/70, corpus at its seven, 2558 selftest checks.
+
+**Coverage 2694/2711, and the seventeen misses are the same
+seventeen** 782 enumerated — args 191-194/197-198, fs 226-227, sh
+42-43, test 95-97, edge 90, time 128-130. The denominator grew by 59
+lines and not one new line went uncovered, which is what comparing
+against a list rather than a total is for.
+
+CI green on HEAD, seven assets on each of the last two tags, ten site
+paths at 200.
