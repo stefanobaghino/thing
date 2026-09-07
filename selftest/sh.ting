@@ -8,10 +8,16 @@ let err = import("lib/err.ting")["message"];
 assert(type(sh["windows"]()) == "bool", "the platform question has a yes or no answer");
 assert(sh["dir_sep"]() == "/" || sh["dir_sep"]() == "\\", "a separator is one of two things");
 
-# PATH is a list of non-empty directory names.
+# PATH is a list of non-empty directory names. Counted as ONE check
+# rather than one per entry: how long a machine's PATH is is not a
+# property of this suite, and asserting per entry made the suite's
+# total differ on every machine that ran it — 82 entries on a Windows
+# runner against 11 here, which is 71 phantom checks.
 let dirs = sh["path_dirs"]();
 assert(type(dirs) == "list", "PATH splits into a list");
-for dir in dirs { assert(dir != "", "no empty entry survives the split"); }
+let empty = 0;
+for dir in dirs { if dir == "" { empty += 1; } }
+assert(empty == 0, "no empty entry survives the split");
 
 # A name nothing could answer to is nil, not a guess.
 assert(sh["which"]("ting-definitely-no-such-program-xyz") == nil, "which misses cleanly");

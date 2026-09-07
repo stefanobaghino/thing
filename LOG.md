@@ -17073,3 +17073,54 @@ release should never be the first place a script is tried — and then
 verified the script by a method that could not fail the way the file
 could. Putting the check in CI is what caught it, one push before a
 tag would have.
+
+## 2026-09-07 — Iteration 775: four machines, four different totals
+
+CI green, and this time green is checked rather than trusted: the
+step's own output is in the log on all four runners.
+
+```
+[ubuntu-24.04-arm] started: ting 2.124.0   22 passed, 2559 checks   examples: 22 clean
+[macos-latest]     started: ting 2.124.0   22 passed, 2564 checks   examples: 22 clean
+[windows-latest]   started: ting 2.124.0   22 passed, 2618 checks   examples: 22 clean
+```
+
+**macOS and Windows have now run an archive-shaped ting for the first
+time** — binary started from where it was unpacked, the self-hosted
+suite against the stdlib compiled into it, all 22 examples against
+the `lib/` beside it, everywhere.
+
+And then the numbers, which do not match: 2555 here, 2559, 2564,
+2618. Twenty-two files pass everywhere and every example is clean, so
+nothing is wrong — but a suite whose total depends on the machine
+cannot be quoted, and I have been quoting it for ticks.
+
+Diffing the per-file counts found **one file** responsible, on every
+platform: `selftest/sh.ting`, 25 here against 88 on Windows. It
+contains
+
+```ting
+for dir in dirs { assert(dir != "", "no empty entry survives the split"); }
+```
+
+— one check per `PATH` entry. The Windows runner has 82 of them and
+this host has 11. The arithmetic closes on all four machines: six
+fixed checks, plus eight more where `sh` exists (Windows has none, so
+its block is skipped), plus one per `PATH` entry.
+
+That is a real defect in a test, not a curiosity. A count that moves
+with the machine's environment is 71 phantom checks on a Windows
+runner, and it makes the suite's own headline number useless as a
+signal. The loop now counts empty entries and asserts once that there
+are none — the same property, one check.
+
+**The prediction was written before the run**: `sh.ting` 15 checks,
+total 2545. Both came out exactly. The remaining machine-dependence
+is deliberate and singular: where there is no `sh` to drive, eight
+checks stand down, so Windows should now report 2537 against 2545
+everywhere else. That is a fact about the machine worth one sentence,
+not a number that drifts by seventy.
+
+None of the docs quoted the total, so nothing else needed correcting;
+STATE did, and now says which number belongs to which kind of
+machine.

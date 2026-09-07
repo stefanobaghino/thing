@@ -19,7 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out); 362 Rust tests
+  nothing on its own — and 22 examples with .out; 2545 selftest checks, 2537 where
+  there is no `sh` to drive); 362 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1885,14 +1886,29 @@ holds only the current milestone and the standing rules.
   a convenience. Now ${2-default}: only an ABSENT argument defaults;
   an empty one is an error. Three checks: broken workflow 1, explicit
   "" 1, real workflow 0.
+- 775: SMOKE RAN ON MACOS AND WINDOWS FOR THE FIRST TIME (CI green,
+  and the step's own output read from the log rather than trusted):
+  binary started from where it was unpacked, selftest against the
+  embedded stdlib, 22 of 22 examples against the shipped lib/, on all
+  four runners.
+  AND FOUR MACHINES GAVE FOUR TOTALS: 2555 here, 2559 arm, 2564
+  macOS, 2618 Windows. Per-file diff found ONE culprit everywhere —
+  selftest/sh.ting asserted ONCE PER PATH ENTRY (82 entries on the
+  Windows runner against 11 here = 71 phantom checks). Folded into
+  one check that counts empties. PREDICTION WRITTEN BEFORE RUNNING —
+  sh.ting 15, total 2545 — and both came out exactly.
+  THE REMAINING VARIANCE IS DELIBERATE AND SINGULAR: where there is
+  no `sh`, eight checks stand down, so Windows should read 2537 and
+  everywhere else 2545. No doc quoted the total; STATE did.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - watch CI again: 774 fixed the quoting that reddened all four
-  runners, but smoke.sh has STILL never run on macOS or Windows. The
-  remaining suspects there are cp/paths under Git Bash and the debug
-  binary's name (ting vs ting.exe); CRLF should be a non-issue since
-  .gitattributes forces LF on checkout.
+  - confirm the prediction on the runners: sh.ting 15 checks and 2545
+  total everywhere with a shell, 2537 on Windows (eight checks stand
+  down where there is no `sh` to drive). If any platform reports a
+  third number, something else counts per-machine too.
+  - then the next stroke of the milestone: prove the archive's lib/
+  and the binary's embedded stdlib are the same twelve modules (754).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
