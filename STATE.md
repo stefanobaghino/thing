@@ -1557,19 +1557,36 @@ holds only the current milestone and the standing rules.
   adding csv.ting to the skip list, which would drop a
   twice-changed module from the coverage comparison. Committed AHEAD
   of the release, no CHANGELOG entry (not news to a downloader).
+- 758: v2.122.0 VERIFIED, milestone closed and shipped. Four
+  workflows green by the API, six assets; cold aarch64 musl binary
+  reports 2.122.0 and runs the selftests on its own embedded stdlib
+  (22 passed, 2533 checks); both examples diff clean against the
+  tarball's OWN lib/. THE RELEASE'S OWN CHECK: a file written the way
+  a spreadsheet writes one (BOM, CRLF, quoted fields with a line
+  break inside) read by the downloaded binary — 12 rows from a file
+  each_line counts as 17 LINES, zero unreadable dates, months named
+  at all (the same binary before 756 would have exited 2 with "the
+  header has no date and amount columns"). Totals check by hand:
+  10.50..21.51 sums to 192.46 = 60.18 + 64.12 + 68.16. json_parse of
+  a BOM'd document answers on the artifact too.
+  SITE: TEN paths 200, not nine — earlier entries counted / and
+  /index.html as one; ting.wasm 839346 bytes (was 836714); changelog
+  carries v2.122.0, stdlib has each_map and says 190 functions,
+  reference mentions the byte order mark, github.io still 301s.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.122.0 — verdicts from the API, six assets, an aarch64
-  archive downloaded cold and executed here. This release's own
-  subject is a spreadsheet export: hand the downloaded binary a CSV
-  with a byte order mark and expect monthly.ting to read it.
   - let fs.ting and sh.ting back into the coverage comparison. They
   are skipped in both_engines_cover_the_same_lines for exactly the
   reason csv.ting was failing in 757 — a fixed fixture name raced by
   a parallel test — and the same fix (a name with random_int in it)
   should work. Prove it the same way: run the differential suite ten
   times before and after.
+  - then a health tick, and then REPLENISHMENT: the milestone
+  "reading what other programs wrote" closed with v2.122.0, so after
+  the coverage repair there is no milestone. Choose the next one on
+  evidence, the way 748 did — measure first, and let the measurement
+  say what is missing rather than picking a feature that sounds good.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

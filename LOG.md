@@ -16033,3 +16033,50 @@ Left for later, deliberately: `fs.ting` and `sh.ting` are still
 excluded from the coverage comparison for exactly the reason
 `csv.ting` just was, and the same fix would let them back in. That is
 its own stroke, not a passenger on a release.
+
+## 2026-09-07 — Iteration 758: v2.122.0 verified
+
+Four workflows green by the API, six assets on the tag. The cold
+aarch64 musl archive (statically linked) reports `ting 2.122.0` and
+runs the selftest suite on its own embedded stdlib: **22 passed,
+2533 checks**. Both examples diffed clean against their `.out`, run
+against the `lib/` the tarball itself ships.
+
+Then the check this release is actually for. I wrote a file the way a
+spreadsheet writes one — a UTF-8 byte order mark, CRLF endings, and
+quoted fields with a line break inside them — and handed it to the
+downloaded binary:
+
+```
+export.csv: 12 rows, 532 bytes
+by month
+  2026-01      4 rows         60.18
+  2026-02      4 rows         64.12
+  2026-03      4 rows         68.16
+dates nothing could read: 0
+```
+
+Three numbers carry the whole milestone. **12 rows** in a file that
+`each_line` counts as **17 lines** — the four notes with a break in
+them would have become sixteen phantom rows to a reader that cut on
+newlines. **Zero unreadable dates**, so `from_iso` read every one
+through the CRLF. And the months are named at all, which is 756: the
+same binary a week ago would have printed "the header has no date
+and amount columns" and exited 2, because the first column was
+called `\ufeffdate`. The totals check by hand: the amounts run
+10.50 to 21.51, summing to 192.46, and 60.18 + 64.12 + 68.16 is
+192.46.
+
+`json_parse(chr(65279) + "{\"ok\": true}")` also answers on the
+artifact, where before it reported a character at offset 0.
+
+Site audit: ten paths 200 — the playground at `/`, `index.html`,
+`examples.js`, `ting.wasm` (839346 bytes, up from 836714) and the six
+rendered docs. changelog.html carries v2.122.0, stdlib.html has
+`each_map` and says 190 functions, reference.html mentions the byte
+order mark, cookbook.html shows the rewritten example, and github.io
+still 301s. (Ten, not the "nine" earlier entries say: `/` and
+`/index.html` are the same page counted once before. Corrected here
+rather than repeated.)
+
+Nothing to fix. The milestone is closed and shipped.
