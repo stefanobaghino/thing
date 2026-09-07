@@ -15969,3 +15969,67 @@ entitled to decide the first character is not part of it.
 
 The release moves to the next tick, with three strokes instead of
 two.
+
+## 2026-09-07 — Iteration 757: v2.122.0, and the flake the gate caught
+
+Released. v2.122.0 is the 143rd tag (read from
+`git tag --sort=creatordate | grep -n`), closing the milestone
+"reading what other programs wrote" with three strokes: `each_map`
+(754), the example rewritten to read its columns by name (755), and
+the byte order mark that hid one (756).
+
+The 738 rule ran first and found the tree as the previous release
+commit left it: `909c4b8` touched CHANGELOG, Cargo.toml and
+Cargo.lock only, `## Unreleased` carried all three entries, and
+README's 72 builtins needed no move — 756 changed what `json_parse`
+*accepts*, not how many builtins there are.
+
+**Then the gate failed, before the tag, which is the only reason this
+entry is interesting.**
+
+```
+Eval: selftest/csv.ting:97: assertion failed: a header alone is no records
+test result: FAILED. 11 passed; 1 failed
+```
+
+`csv.ting` passed standalone on both engines. It failed only inside
+`both_engines_cover_the_same_lines`, and the answer was in that
+test's own comment, written for two other files: `fs.ting` and
+`sh.ting` are skipped there because they build fixtures under a fixed
+name, and this test runs every selftest a second time, in this
+process, while another test is running them in parallel.
+
+`csv.ting` had quietly joined that category. It has written
+`selftest-csv-rows.csv` since 749, but that block wrote the file
+twice; 754 and 756 took it to nine writes, and the race window went
+from a crack to a door. Two runs of the same file were writing each
+other's fixture out from under them.
+
+Measured rather than assumed, because "flaky" is a claim:
+
+| fixture name | differential suite |
+|---|---|
+| fixed (`selftest-csv-rows.csv`) | 5 ok, then FAILED — 1 in 6 |
+| unique per run | 10 ok, 0 failed |
+
+The fix is a name of its own —
+`format("selftest-csv-rows-{}.csv", random_int(0, 1000000000))` —
+and the seed is the clock in nanoseconds, so two interpreters in two
+threads do not share one. I preferred this to the established
+precedent of adding `csv.ting` to the skip list: skipping removes the
+race by removing the file from the coverage comparison, on a module
+this milestone changed twice. A unique name removes the race.
+
+Committed on its own, ahead of the release, so the release commit
+stays what it has always been: CHANGELOG heading, Cargo.toml,
+Cargo.lock. No CHANGELOG entry — a test that raced itself is not news
+to anyone downloading a binary.
+
+Gate green at the tag: fifteen `test result: ok`, zero clippy,
+formatter 0 of 69, corpus at seven, selftests 22 files / 2533 checks.
+Binary reports `ting 2.122.0`. Verification next tick.
+
+Left for later, deliberately: `fs.ting` and `sh.ting` are still
+excluded from the coverage comparison for exactly the reason
+`csv.ting` just was, and the same fix would let them back in. That is
+its own stroke, not a passenger on a release.

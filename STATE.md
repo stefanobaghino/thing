@@ -1539,15 +1539,37 @@ holds only the current milestone and the standing rules.
   NOT TOUCHED: read_file, each_line, trim, int — a file's bytes are
   its bytes; only a DOCUMENT reader may decide the first character is
   not part of the document.
+- 757: v2.122.0 released (143rd tag; strokes 754, 755, 756), closing
+  the milestone "reading what other programs wrote". 738 rule found
+  the tree as 909c4b8 left it. THE GATE CAUGHT A FLAKE BEFORE THE
+  TAG: selftest/csv.ting failed ONLY inside
+  both_engines_cover_the_same_lines (Eval, "a header alone is no
+  records"), passing standalone on both engines. Cause was in that
+  test's OWN COMMENT, written about fs.ting and sh.ting: it reruns
+  every selftest in-process while another test runs them in parallel,
+  so a FIXED FIXTURE NAME races. csv.ting had written
+  selftest-csv-rows.csv since 749 (two writes); 754 and 756 took it
+  to nine, widening the window. MEASURED: fixed name 1 failure in 6
+  runs, unique name 0 in 10. Fixed with
+  format("selftest-csv-rows-{}.csv", random_int(0, 1000000000)) —
+  the RNG seed is the clock in nanoseconds, so two interpreters in
+  two threads do not share one. Chose this over the precedent of
+  adding csv.ting to the skip list, which would drop a
+  twice-changed module from the coverage comparison. Committed AHEAD
+  of the release, no CHANGELOG entry (not news to a downloader).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.122.0 — THREE strokes stand (754 each_map, 755 the
-  example that asked for it, 756 the byte order mark), and the
-  milestone "reading what other programs wrote" closes with it. Check
-  the tree against the previous release commit FIRST (738):
-  `## Unreleased` must carry all three entries, and README's counts
-  (72 builtins) need no move since no stroke added one.
+  - verify v2.122.0 — verdicts from the API, six assets, an aarch64
+  archive downloaded cold and executed here. This release's own
+  subject is a spreadsheet export: hand the downloaded binary a CSV
+  with a byte order mark and expect monthly.ting to read it.
+  - let fs.ting and sh.ting back into the coverage comparison. They
+  are skipped in both_engines_cover_the_same_lines for exactly the
+  reason csv.ting was failing in 757 — a fixed fixture name raced by
+  a parallel test — and the same fix (a name with random_int in it)
+  should work. Prove it the same way: run the differential suite ten
+  times before and after.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
