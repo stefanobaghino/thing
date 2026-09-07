@@ -1806,12 +1806,27 @@ holds only the current milestone and the standing rules.
   ting.wasm SHRANK, 843223 -> 842947: the TZif reader is #[cfg(unix)]
   since 767, so the playground no longer carries a parser for files
   it cannot open.
+- 771: health tick + audit green — MILESTONE "THE TIME IT IS HERE"
+  COMPLETE (v2.123-v2.124; strokes 762, 763, 764, 767, 767b, 768).
+  All nine bench checksums identical to BASELINE; timings a few per
+  cent either side, which is this shared host. Fuzzers green in
+  release: 50000 differential, 20000 formatter, crash, 2000000
+  pattern.
+  AND THE SWEEPS WERE CHECKED TO BE SWEEPS (700's finding is that
+  naming the wrong target passes in no time having fuzzed nothing,
+  which looks exactly like a fast green run): differential 0.4s at
+  500 cases vs 10.5s at 50000, formatter 0.1s at 200 vs 4.1s at
+  20000, pattern 0.6s default vs 3.9s at 2000000. A run that had
+  fuzzed nothing would have been flat.
+  Distribution: six assets on each of the last five tags; v2.29.0
+  still carries its glibc warning.
+  THE MILESTONE'S THREAD: never return UTC when the answer is
+  unknown, because the caller cannot tell those apart afterwards.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then a health tick to close the milestone "the time it is here"
-  (bench vs BASELINE, 50000 differential, crash and 20000 formatter
-  fuzz cases in release), and replenishment after it.
+  - replenishment: choose the next milestone (two releases' worth) and
+  write the reasoning in LOG.md.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

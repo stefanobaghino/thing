@@ -16835,3 +16835,64 @@ One number moved the other way and it is the right one:
 `#[cfg(unix)]` since 767, so the playground no longer carries a
 parser for files it can never open. A release that adds a platform
 and takes 276 bytes off another is the cfg boundary doing its job.
+
+## 2026-09-07 — Iteration 771: health tick closes "the time it is here"
+
+Bench, both engines, against `bench/BASELINE.md`: **all nine
+checksums identical**. Timings ran a few per cent above the recorded
+medians (`accum` 47.0 ms against 43.6, `maps` 146.9 against 132.2,
+`regex` 211.5 against 194.6) and a few below (`fib` 343.4 against
+353.6, `toplevel` 244.6 against 251.1), which is this shared host
+being a shared host. Checksums decide; timings are weather. The
+eval-to-vm ratio still runs -17% to -45%, the same spread as when the
+baseline was recorded.
+
+Fuzzers in release, all green: 50000 differential cases, 20000
+formatter cases, the crash fuzzer, and a 2000000-case pattern sweep.
+
+**And this time I checked that the sweeps were sweeps.** Iteration
+700's finding was that naming the wrong test target passes in no time
+having fuzzed nothing, and a fast green run is exactly what that
+looks like. So each count was run twice and timed:
+
+```
+differential   500 cases   0.4 s      50000 cases  10.5 s
+formatter      200 cases   0.1 s      20000 cases   4.1 s
+pattern        default     0.6 s    2000000 cases   3.9 s
+```
+
+Twenty-six times the work for a hundred times the cases in the
+differential fuzzer — the grammar generates cases of very different
+sizes, so that is the shape to expect — and forty times for a hundred
+in the formatter. A run that had fuzzed nothing would have been flat.
+The 9.4 s I first saw was real; I just had no right to believe it
+yet.
+
+Distribution audit: six assets on each of the last five tags, and
+v2.29.0 still carries its public warning that its Linux binaries need
+glibc 2.39.
+
+**Milestone "the time it is here" is complete** — v2.123.0 and
+v2.124.0, six strokes:
+
+- 762 `local_zone`, the 73rd builtin, reading TZif on Unix
+- 763 `examples/organize.ting` filing by the local day, with a stderr
+  note where there is no zone data
+- 764 `local_date`, `local_clock`, `local_iso`, `offset_iso` in
+  `lib/time.ting`, all returning `nil` rather than a silent UTC
+  fallback
+- 767 the Windows answer, through the system's own calls
+- 767b the markdown guard that had been running on nothing since June
+- 768 Windows held to the six Zurich answers a zone file gives
+
+What the milestone actually changed: before it, ting had no idea what
+time it was anywhere but UTC, and an example whose whole job is
+filing by date filed by the wrong one for anybody not living on the
+prime meridian. After it, four platforms answer and one of them
+(the browser) says `nil` on purpose. The thread running through all
+six strokes is the same refusal: never return UTC when the answer is
+unknown, because the caller cannot tell those apart afterwards.
+
+The one honest gap, recorded in 770 and not papered over here: the
+released Windows `.exe` has never been executed by anyone. CI built
+and tested the same source, green, but that is a different build.
