@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.121.0 (2026-09-07)
 
 - `lib/csv.ting` gained `each_row(path, f, sep = ",")`: the rows of a
   file one at a time, without holding the file. A 15.7 MB export of
