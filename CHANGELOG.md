@@ -10,6 +10,10 @@ Windows are attached to each
 - The docs link in `--help` and in the README is `https`. The site
   answers on both, and nothing about a language reference should
   travel in the clear when it need not.
+- The browser playground shows the current examples again. Six of the
+  fifteen had been left at their pre-2.107 versions because the guard
+  compared only each example's first line; it compares whole bodies
+  now.
 
 ## v2.126.0 (2026-09-07)
 

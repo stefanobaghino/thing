@@ -2016,11 +2016,46 @@ holds only the current milestone and the standing rules.
   Defect found and fixed: README and the `docs:` line in `ting --help`
   linked the site as plain `http`. HTTPS is not enforced on that
   domain, so http was served as http, not redirected. Both now https.
+- 783: replenishment — milestone "THE LOOP THAT REBUILDS WHAT IT JUST
+  BUILT" (v2.127-v2.128), reasoning in LOG.md. MEASURED at 80000
+  appends on the release binary: `s = s + x` 7.863s vs `s += x`
+  0.015s (520x); `xs = xs + [i]` 47.652s and `xs += [i]` 46.269s vs
+  `push(xs, i)` 0.025s (1850x). Strings have one fast spelling out of
+  two; LISTS HAVE NONE — push is the only linear way to grow one.
+  Both quadratic because `+` always builds a fresh container.
+  The fix needs no language change: extend in place when the target
+  holds the only reference. The semantics to preserve are pinned by
+  tests written today — `let t = r; r += [2];` leaves t as [1], and a
+  string `+=` captured in a list leaves the copy alone; both are
+  unobservable at count 1, which is exactly when it applies.
+  docs/tutorial.md:196 TEACHES the quadratic form in a while loop;
+  lib/time.ting:222 uses it in the shipped stdlib.
+  Measured and NOT chosen: error messages (a runtime error already
+  carries caret, source line, and every frame with its argument
+  values); the shebang path (works, arguments and all).
+- 783 also: THE PLAYGROUND WAS SERVING FOUR-DAY-OLD CODE. Six of the
+  fifteen examples in playground/examples.js were the pre-v2.107
+  versions. The guard read each example's FIRST NON-COMMENT LINE
+  only, so everything below line one drifted while CI stayed green —
+  the second inert guard this month after 767b's markdown fence.
+  Regenerated, and the guard now compares each example's WHOLE body;
+  proven by running the strengthened guard against the stale file CI
+  had been passing, which failed. AUDITED: cookbook_matches_examples
+  already compares whole source and whole output, which is why
+  docs/cookbook.md never drifted. One sampled guard, not a habit.
+  RULE: a guard over a generated file compares the whole file. A
+  guard that samples is a guard that reports success.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone and write the reasoning
-  in LOG.md before writing any code.
+  - lists first: make `+` on a list extend in place when the target
+  holds the only reference (Rc count 1), so `xs += [i]` and
+  `xs = xs + [i]` reach push's cost. Aliasing must stay observable:
+  `let t = r; r += [2];` leaves t as [1]. Differential fuzzer plus
+  explicit aliasing tests; a bench row for the growing list.
+  - then the same for strings, so `s = s + x` matches `s += x`; then
+  docs/tutorial.md:196 and lib/time.ting:222, which teach and use the
+  quadratic form.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

@@ -17482,3 +17482,72 @@ the `docs:` line every user sees in `ting --help`. HTTPS is not
 enforced on that domain, so an http link is served as http rather
 than redirected. Both now say https, verified against a 200 on all
 ten paths.
+
+## 2026-09-07 — Iteration 783: replenishment, and a guard that read one line
+
+### The milestone: the loop that rebuilds what it just built
+
+**Measured, on the release binary, both engines agreeing:**
+
+```
+n = 80000 appends            time
+  s = s + "abcdefghij"      7.863 s
+  s += "abcdefghij"         0.015 s      520x
+  push(p, ...) then join    0.049 s
+
+  xs = xs + [i]            47.652 s
+  xs += [i]                46.269 s
+  push(xs, i)               0.025 s     1850x
+```
+
+Both are quadratic where they should be linear, and the two tables
+say different things. For **strings** there is one fast spelling out
+of two: `+=` appends in place, `s = s + x` copies the whole string
+first. For **lists** there is no fast `+` at all — `+=` is no better
+than the long form, and `push` is the only linear way to grow one.
+
+`Value::Str(String)` and a `ListRef` behind a `+` that always builds
+a fresh container is the whole story. The fix is the standard one and
+it needs no language change: when the target holds the only reference
+to the value, extend it in place; otherwise copy as now. The
+semantics that must survive are already pinned by a test I wrote
+today — `let t = r; r += [2];` leaves `t` as `[1]`, and a string `+=`
+captured in a list leaves the copy alone. Both are unobservable when
+the count is one, which is exactly when the optimisation applies.
+
+**It is not hypothetical, and the docs teach the slow form.**
+`docs/tutorial.md:196` is `while len(text) < width { text = text +
+fill; }` — a quadratic loop in the tutorial. `lib/time.ting:222`
+builds a fraction digit by digit the same way, in the shipped stdlib.
+
+Not chosen, with reasons: generated-file drift (fixed today, below,
+and it turned out to be one guard, not a class); streaming JSON and a
+bytes type (still no measured pressure); string interpolation (still
+forbidden by the 2.x promise); error messages (measured today: a
+runtime error carries a caret, the source line, and every frame with
+its argument values — `in inner(x = 1), called from e1.ting:2:23`.
+Nothing to add); the shebang path (`#!/usr/bin/env ting` works,
+arguments and all).
+
+### The defect found while measuring: the playground was serving old code
+
+Counting `x = x + ...` sites across the corpus turned up two — and
+then `playground/examples.js` disagreed with `examples/calc.ting`
+about a line the corpus had changed on 2026-09-05. It was not a
+counting error. **Six of the fifteen examples in the playground were
+the pre-v2.107 versions**: `i = i + 1` where the file says `i += 1`,
+a `has`/`else` block where the file uses `get(counts, w, 0)`, a
+`try(fn() {...})` where the file uses `try(m["send"], "kick")`. The
+front door the README points at had been showing four-day-old code.
+
+**The guard existed and was inert.** `playground_examples_match_examples_dir`
+asserted that each example's **first non-comment line** appears in the
+JS. Everything below line one could drift forever, and did. The
+neighbouring cookbook guard compares the whole source and the whole
+expected output, which is why `docs/cookbook.md` never drifted — so
+this was one sampled guard, not a habit; the audit found no others.
+
+Both fixed: the file regenerated, and the guard now compares each
+example's whole body. Proven inert-no-longer the way this project
+proves things — the strengthened guard was run against the stale file
+that CI had been passing for four days, and it failed.
