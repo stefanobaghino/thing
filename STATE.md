@@ -2125,12 +2125,24 @@ holds only the current milestone and the standing rules.
   len(s). Tried the ASCII fast path, measured 15%, reverted (see
   backlog). The example stays: it is the idiom and at width 12 it is
   instant.
+- 788: v2.127.0 cut (148th tag; commit db3fc45). Release run
+  34151404664 in flight. FOUR changelog entries, and ONE WAS WRONG
+  UNTIL THIS TICK: 786's bullet claimed a top-level binding still
+  copies, which 787 measured false. Caught before publication;
+  corrected to the rule that was measured (no function mentions the
+  name -> the saving holds). SECOND TIME THIS MILESTONE that writing
+  for a reader found the error. A log entry is cheap to fix; a
+  release note is permanent.
+  Gate green at the new version, --version reports ting 2.127.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - cut v2.127.0: the milestone is complete (784-787). CHANGELOG's
-  Unreleased has four entries; version, tag, watch the Release run,
-  then verify it next tick.
+  - verify v2.127.0. TWELVE EXECUTIONS, counted PER TARGET from the
+  Release log, not from job colours. SEVEN assets (the six archives
+  and SHA256SUMS), and `sha256sum -c` on a fresh download of all six
+  must say OK here. Both aarch64 archives unpacked cold must report
+  `ting 2.127.0`. Site audit on https://www.baghino.me/thing/ — the
+  ten paths from 782, changelog carrying v2.127.0.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -2219,7 +2231,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 147 (v2.126.0), 147 verified; v2.29.0 is publicly marked broken
+- Tags: 148 (v2.127.0), 147 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

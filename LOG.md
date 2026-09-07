@@ -17817,3 +17817,29 @@ The example itself stays as it is: it is the idiom, it is correct,
 and at width 12 it is instant.
 
 Gate green, corpus at seven, `--fmt` 0/70.
+
+## 2026-09-07 — Iteration 788: v2.127.0
+
+The 148th tag. Release run `34151404664` is in flight; its verdict is
+next tick's, read per target from the log rather than from job
+colours.
+
+Four entries, and **one of them had to be corrected before it could
+go out.** The bullet written in 786 said "A top-level binding is
+still reachable by any function, and still copies" — which 787
+measured to be false and which would have shipped as a published,
+permanent, wrong statement about the language. It now says what the
+rule actually is: the saving holds whenever no function in the file
+mentions the name, and where one does, the old value is read first.
+
+That is the second time this milestone that writing something down
+for a reader is what found the error. The log entry is cheap to fix;
+a release note is not.
+
+The milestone in one line: a loop that builds a string or a list a
+piece at a time used to cost the square of its length, and now costs
+its length. Also in the release: the `https` docs link, and the
+playground serving its current examples again.
+
+Gate green at the new version, `ting --version` reports `ting
+2.127.0`, Cargo.lock updated, corpus at seven, `--fmt` 0/70.
