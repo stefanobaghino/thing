@@ -1,3 +1,8 @@
 /target
 playground/ting.wasm
 .playwright-mcp/
+
+# Fixtures a selftest builds in the working directory. A run that
+# fails partway leaves one behind; it must never reach a commit.
+selftest-fs-tree-*
+selftest-csv-rows-*

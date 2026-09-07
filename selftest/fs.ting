@@ -32,7 +32,12 @@ assert(fs["with_ext"]("a/b.ting", "") == "a/b", "an empty extension removes it")
 # A tree this file builds, walks, and removes. It can tidy up after
 # itself now that remove_file and remove_dir exist, which is why this
 # lives here rather than only in the Rust tests.
-let root = "selftest-fs-tree";
+# A tree of its own. This file is run more than once at a time — the
+# coverage comparison reruns every selftest in its own process while
+# another test runs them in parallel — and a fixed name had the runs
+# building and removing each other's tree. The seed is the clock in
+# nanoseconds, so two interpreters do not share one.
+let root = format("selftest-fs-tree-{}", random_int(0, 1000000000));
 fs["remove_tree"](root);
 make_dir(root + "/deep/deeper");
 write_file(root + "/a.ting", "");

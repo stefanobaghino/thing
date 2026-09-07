@@ -360,14 +360,12 @@ fn both_engines_cover_the_same_lines() {
         if path.extension().and_then(|e| e.to_str()) != Some("ting") {
             continue;
         }
-        // fs.ting builds a tree under a fixed name and sh.ting spawns
-        // programs. The test above already runs both, in processes of
-        // their own; running them again here, in this process and
-        // twice over, races that on the one directory name.
-        let name = path.file_name().and_then(|n| n.to_str()).unwrap_or("");
-        if matches!(name, "fs.ting" | "sh.ting") {
-            continue;
-        }
+        // Every selftest, with none held out. fs.ting and sh.ting used
+        // to be, because this test reruns them in-process while the
+        // test above runs them in parallel and fs.ting's tree had one
+        // fixed name; the fixtures name themselves uniquely now, so
+        // the two runs cannot reach each other's files. Do not put a
+        // skip back here without fixing the fixture instead.
         let src = std::fs::read_to_string(&path).expect("unreadable selftest");
         files.push((path.display().to_string(), src));
     }
