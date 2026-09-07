@@ -16450,3 +16450,41 @@ The docs guard did its job twice in this tick without being asked:
 it caught `STATE.md` still saying 190 functions, and the cookbook
 still carrying the old `organize.ting`. That guard is two ticks old
 and has now paid for itself.
+
+## 2026-09-07 — Iteration 765: v2.123.0
+
+Released. v2.123.0 is the 144th tag (read from
+`git tag --sort=creatordate | grep -n`, never counted forward),
+carrying the first three strokes of "the time it is here":
+`local_zone` and the TZif reader behind it (762), `organize.ting`
+filing by the local day (763), and `local_date`/`local_clock`/
+`local_iso`/`offset_iso` in `lib/time.ting` (764).
+
+The 738 rule ran first. `git show --stat d80a797` — the v2.122.0
+release commit — touched CHANGELOG.md, Cargo.toml and Cargo.lock and
+nothing else, which is only true if the tree arrives at a release
+with `## Unreleased` already complete. It did: three entries, one per
+stroke. The README's builtin count had already moved to 73 in 762,
+where the builtin was added, rather than being left for the release
+tick to notice. Three releases running, this check has found nothing
+to repair — which is what a check that runs before the work is
+supposed to look like.
+
+Gate green before the tag, and this time in CI's own words, which is
+763's repair: `cargo fmt --check` clean (the omission that turned CI
+red on 762), `cargo clippy --all-targets -- -D warnings` clean,
+fifteen `test result: ok`, the ting formatter changing nothing across
+69 files, the corpus at its seven expected warnings. The binary
+reports `ting 2.123.0`. CI, Pages and Release all started on the
+push.
+
+Verification next tick, the usual way: verdicts from the API rather
+than from `gh run watch`'s exit code, six assets on the tag, and an
+aarch64 archive downloaded cold and executed here. This milestone is
+about *what time it is where the machine is*, so the artifact check
+has its subject ready: run the downloaded binary under a `TZ` this
+host is not in and see `local_iso` write an offset that is not
+`+02:00`, and see it answer `nil` under a `TZ` that carries a POSIX
+rule rather than a zone name. The zone data belongs to the machine,
+not to the binary, so this is the one milestone whose artifact check
+is genuinely about the environment it lands in.

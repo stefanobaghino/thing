@@ -1701,13 +1701,34 @@ holds only the current milestone and the standing rules.
   engines, TZ=Asia/Kolkata, and a POSIX-rule TZ for the nil branch.
   THE 760 GUARD PAID FOR ITSELF: it caught STATE still saying 190 and
   the cookbook still carrying the old example, unprompted.
+- 765: v2.123.0 released (144th tag, ordinal read from
+  `git tag --sort=creatordate | grep -n`), carrying 762, 763 and 764.
+  The 738 rule ran first and found nothing to repair for the third
+  release running: `git show --stat d80a797` touched only CHANGELOG,
+  Cargo.toml and Cargo.lock, and `## Unreleased` already held one
+  entry per stroke; README's builtin count had moved to 73 in 762,
+  where the builtin was added. Gate green IN CI'S OWN WORDS (763's
+  repair): cargo fmt --check, cargo clippy --all-targets -D warnings,
+  fifteen `test result: ok`, ting --fmt 0 of 69, corpus at seven.
+  NOT VERIFIED YET.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.123.0 — three strokes stand (762 local_zone, 763 the
-  local day in organize.ting, 764 the lib/time helpers). Check the
-  tree against the previous release commit FIRST (738); README's
-  builtin count already moved to 73 in 762.
+  - verify v2.123.0 — verdicts from the API (never gh run watch's
+  exit code), six assets on the tag, an aarch64 archive downloaded
+  cold and executed here (musl and gnu), site audit. The artifact
+  check for THIS milestone is about the environment: run the
+  downloaded binary under a TZ this host is not in and see local_iso
+  write an offset that is not +02:00, and under a POSIX-rule TZ see
+  local_zone answer nil. The zone data belongs to the machine, not to
+  the binary.
+  - the milestone's remaining question: WINDOWS HAS NO ZONE ANSWER.
+  local_zone is nil there, and "the time it is here" cannot honestly
+  close while a quarter of the release archives can never answer.
+  Decide it on evidence, not by adding an API: read what Windows
+  actually keeps (the registry's time zone data is not TZif), and if
+  the honest answer stays nil, say so in the docs where a Windows
+  user reads it rather than leaving it to be discovered.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
@@ -1778,7 +1799,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 126 (v2.105.0), 126 verified; v2.29.0 is publicly marked broken
+- Tags: 144 (v2.123.0), 143 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
