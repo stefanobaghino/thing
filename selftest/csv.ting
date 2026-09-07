@@ -66,3 +66,35 @@ let ragged = [];
 csv["each_row"](path, fn(row) { push(ragged, row); return nil; });
 assert(ragged == csv["parse"](broken), "malformed text reads the same either way");
 remove_file(path);
+
+# each_map is maps() over a file, and the same file read either way
+# has to name its rows identically — the header handling lives in one
+# place (entry_of) for exactly this reason.
+write_file(path, doc);
+let named = [];
+let rows = csv["each_map"](path, fn(row) { push(named, row); return nil; });
+assert(rows == 2, "two records, the header not being one of them");
+assert(named == csv["maps"](csv["parse"](doc)), "streamed maps and parsed maps agree");
+assert(named[0]["note"] == "a note\nwith a newline", "a column asked for by name");
+
+# A short row leaves its missing columns nil rather than absent, which
+# is what maps does and what a caller can test with == nil.
+let ragged_doc = "a,b,c\n1,2\n";
+write_file(path, ragged_doc);
+let short = [];
+csv["each_map"](path, fn(row) { push(short, row); return nil; });
+assert(short == csv["maps"](csv["parse"](ragged_doc)), "a short row is short the same way");
+assert(short[0]["c"] == nil, "the missing column is nil");
+assert(len(keys(short[0])) == 3, "and it is there to be asked for");
+
+# Stopping, and the two files that have nothing to hand over.
+write_file(path, doc);
+let one = [];
+assert(csv["each_map"](path, fn(row) { push(one, row); return false; }) == 1,
+"false stops the read after the record it was given");
+assert(len(one) == 1 && one[0]["id"] == "1", "which is the first record, not the header");
+write_file(path, "just,a,header\n");
+assert(csv["each_map"](path, fn(_row) { return nil; }) == 0, "a header alone is no records");
+write_file(path, "");
+assert(csv["each_map"](path, fn(_row) { return nil; }) == 0, "and an empty file is none either");
+remove_file(path);

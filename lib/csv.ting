@@ -172,21 +172,47 @@ fn text(rows, sep = ",") {
 # The older spelling of `text` with an explicit separator.
 fn text_with(rows, sep) { return text(rows, sep); }
 
+# One row named by a header: the map that maps and each_map both hand
+# out, so the two cannot disagree about what a row is called. A row
+# shorter than the header leaves those columns nil; extra fields have
+# no name and are dropped.
+fn entry_of(header, row) {
+  let entry = {};
+  for c in range(0, len(header)) {
+    if c < len(row) { entry[header[c]] = row[c]; }
+    else { entry[header[c]] = nil; }
+  }
+  return entry;
+}
+
 # The first row read as a header, the rest as maps from column name to
-# field. A row shorter than the header leaves those columns nil; extra
-# fields have no name and are dropped.
+# field.
 fn maps(rows) {
   if len(rows) == 0 { return []; }
   let header = rows[0];
   let out = [];
-  for i in range(1, len(rows)) {
-    let row = rows[i];
-    let entry = {};
-    for c in range(0, len(header)) {
-      if c < len(row) { entry[header[c]] = row[c]; }
-      else { entry[header[c]] = nil; }
-    }
-    push(out, entry);
-  }
+  for i in range(1, len(rows)) { push(out, entry_of(header, rows[i])); }
   return out;
+}
+
+# maps() over a file, without holding it: the first row is the header
+# and every later row reaches f as a map, so a column is asked for by
+# name rather than by a number the caller has to find and carry. The
+# same file, the same scanner and the same naming as
+# maps(parse(read_file(path))), one row at a time. "-" is stdin and
+# false from f stops the read, as each_row does. Answers how many maps
+# f was given, which is one less than the rows: the header is not one
+# of them.
+fn each_map(path, f, sep = ",") {
+  let header = nil;
+  let n = 0;
+  each_row(path, fn(row) {
+    if header == nil {
+      header = row;
+      return nil;
+    }
+    n += 1;
+    return f(entry_of(header, row));
+  }, sep);
+  return n;
 }

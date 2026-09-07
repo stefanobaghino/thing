@@ -5,6 +5,22 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `lib/csv.ting` gained `each_map(path, f, sep = ",")`: what `maps`
+  does to a parsed document, done to a file a row at a time. The
+  first row is the header and every later row arrives as a map, so a
+  column is asked for by name instead of by a number the caller has
+  to find in the header and then carry through the read — the
+  bookkeeping that `examples/monthly.ting` spends fourteen lines on.
+  The naming is nearly free: on a 9.4 MB export of 300000 rows it
+  costs about a tenth more time than `each_row` and the same 10 MB,
+  because only the row in hand becomes a map. As with `each_row`
+  there is no second implementation — `entry_of(header, row)` is now
+  the one place a row is given its column names, and `maps` and
+  `each_map` both call it, so a file read either way is named
+  identically.
+
 ## v2.121.0 (2026-09-07)
 
 - `lib/csv.ting` gained `each_row(path, f, sep = ",")`: the rows of a

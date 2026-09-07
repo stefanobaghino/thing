@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 188 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 190 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -244,6 +244,8 @@ and written as a bare newline.
 | `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
 | `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |
 | `maps(rows)` | the first row read as a header, the rest as maps; a short row leaves those columns nil |
+| `each_map(path, f, sep = ",")` | `maps` over a file, without holding it: the first row is the header and every later row reaches `f` as a map, so a column is asked for by name rather than by a number the caller has to find and carry. Answers how many maps `f` was given — one less than the rows |
+| `entry_of(header, row)` | one row named by a header, the map both `maps` and `each_map` hand out |
 | `quote(field, sep)` | a field, quoted if it needs to be — spaces at either end included, so they survive a round trip |
 
 ## lib/err.ting
