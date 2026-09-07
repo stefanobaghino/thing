@@ -1924,14 +1924,27 @@ holds only the current milestone and the standing rules.
   copy while a script beside the archive gets the other. Both
   failures made to happen (a line appended to lib/time.ting, and
   lib/csv.ting deleted): each exits 1 and names the file.
+- 777: v2.125.0 released (146th tag; strokes 773, 774, 775, 776).
+  738 rule ran first for the fifth release running, nothing to
+  repair. Three CHANGELOG lines added before the bump (the downloaded
+  archive, the two copies of the stdlib, the PATH-dependent count).
+  Gate green across three targets. THE FIRST RELEASE THAT RUNS
+  ITSELF: package six, unpack and run each on its own runner, upload,
+  download back, run again — twelve executions of a ting binary where
+  this morning there were zero. NOT VERIFIED YET.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - watch CI on 776, then cut v2.125.0 (773, 774, 775, 776 stand).
-  Check the tree against the previous release commit FIRST (738).
-  THE RELEASE ITSELF IS THE TEST OF THIS MILESTONE: the smoke and the
-  download-back step have never run on a real tag. Read the Release
-  workflow's log per target, not just its colour.
+  - verify v2.125.0, and NOT as a formality. Read the RELEASE
+  workflow's log PER TARGET and find the smoke output TWICE per
+  archive: once from the file the runner built, once from the file
+  the release page served. Twelve executions where there were zero.
+  A green job that silently skipped a step looks exactly like one
+  that did not — 768 made that mistake already. Then the usual: six
+  assets, both aarch64 archives run cold here, site audit.
+  If red: the Windows zip path first (tar -xf reading zip via
+  bsdtar, Git Bash cp -r), then the download step's asset pattern,
+  then macOS.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -2005,7 +2018,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 145 (v2.124.0), 145 verified; v2.29.0 is publicly marked broken
+- Tags: 146 (v2.125.0), 145 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

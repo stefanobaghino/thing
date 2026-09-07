@@ -17169,3 +17169,45 @@ beside the archive quietly got the other one. `smoke.sh` now diffs
 the two. Both failures were made to happen — a line appended to
 `lib/time.ting` in the archive, and `lib/csv.ting` deleted from it —
 and each exits 1, reporting the file by name.
+
+## 2026-09-07 — Iteration 777: v2.125.0, the first release that runs itself
+
+Released. v2.125.0 is the 146th tag (read from
+`git tag --sort=creatordate | grep -n`), carrying the four strokes of
+"the archive that was run": the smoke script and its place in the
+release and in CI (773), the method repair after I rehearsed a
+transcription instead of a step (774), the per-`PATH`-entry check
+count (775), and the download-back step plus the `lib/` comparison
+(776).
+
+The 738 rule ran first, for the fifth release running:
+`git show --stat` on the v2.124.0 release commit shows CHANGELOG,
+Cargo.toml and Cargo.lock and nothing else. Three CHANGELOG lines
+were added before the bump — the downloaded archive, the two copies
+of the stdlib, and the check count that used to depend on `PATH`
+length — because each of those is something a reader of the release
+would want to know and none had been written down yet.
+
+Gate green across three targets: `cargo fmt --check`, clippy with
+`-D warnings` here and on `x86_64-pc-windows-msvc`, the wasm library
+build, fifteen `test result: ok`, the formatter changing nothing
+across 69 files, the corpus at its seven warnings. The binary reports
+`ting 2.125.0`.
+
+**This release is the first test of the milestone, and it is a real
+one.** Everything 773–776 built has run in CI and on this host; none
+of it has ever run on a tag. The Release workflow now has to package
+six archives, unpack and run each one on its own runner, upload it,
+download it back and run it again — twelve executions of a ting
+binary that until this morning would have been zero.
+
+So the verification next tick is not the usual formality. It reads
+the Release workflow's log **per target**, not its colour, and looks
+for the smoke output twice per archive: once from the file the runner
+built, once from the file the release page served. A green Release
+job that skipped a step silently would look exactly like a green
+Release job that did not, which is the mistake 768 already made once.
+
+If it is red, the likeliest suspects in order are the Windows zip
+path (`tar -xf` reading a zip through bsdtar, and Git Bash's `cp -r`),
+then the download step's asset pattern, then macOS.
