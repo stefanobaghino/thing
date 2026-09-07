@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.126.0 (2026-09-07)
 
 - The release page now carries a `SHA256SUMS` file and says what was
   checked. Every archive is unpacked and run on a machine of its own
