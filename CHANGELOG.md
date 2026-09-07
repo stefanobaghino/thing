@@ -34,6 +34,21 @@ Windows are attached to each
   quietly — a folder named for the wrong day is the mistake it exists
   to avoid. The day is asked per file, not once, because a directory
   with a year of history in it spans summer time changes.
+- `lib/time.ting` gained `local_date(ms)`, `local_clock(ms)`,
+  `local_iso(ms)` and `offset_iso(off)`, so a caller stops writing
+  `+ local_zone(ms)["offset"]` by hand. `local_iso` writes the
+  instant so that it carries where "here" was —
+  `2026-09-07T00:30:00+02:00` — and `from_iso` reads it back to the
+  same instant, which makes the pair a round trip rather than two
+  half-measures. The three that need a zone answer `nil` where the
+  platform keeps none, rather than handing back the UTC answer under
+  a local name: a caller that wants UTC as a fallback says so in its
+  own code, where a reader can see it, which is exactly what
+  `examples/organize.ting` does in order to warn. `offset_iso`
+  truncates a sub-minute offset towards zero, since ISO 8601 has no
+  room for seconds in one and only the local mean times before about
+  1900 have them — Zurich's `+00:29:46` writes as `+00:29`, as `date`
+  prints it.
 
 ## v2.122.0 (2026-09-07)
 

@@ -51,9 +51,9 @@ fn free_name(target) {
 # than once, because a directory with a year of history in it spans
 # summer time changes.
 fn local_day(ms) {
-  let z = local_zone(ms);
-  if z == nil { return tm["date"](ms); }
-  return tm["date"](ms + z["offset"]);
+  let day = tm["local_date"](ms);
+  if day == nil { return tm["date"](ms); }
+  return day;
 }
 
 # Every file at or below the root into a folder named for its day.

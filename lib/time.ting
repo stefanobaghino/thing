@@ -104,6 +104,51 @@ fn clock(ms) {
 # The instant as ISO 8601 in UTC: 2026-09-04T20:33:12Z.
 fn iso(ms) { return date(ms) + "T" + clock(ms) + "Z"; }
 
+# An offset in milliseconds east of UTC, written the way ISO 8601
+# writes one: "Z" for none, "+02:00", "-05:30". ISO has no room for
+# seconds in an offset, and a handful of pre-1900 local mean times
+# have them, so those are truncated towards zero — which is what date
+# prints for them too.
+fn offset_iso(off) {
+  if off == 0 { return "Z"; }
+  let sign = "+";
+  let n = off;
+  if n < 0 {
+    sign = "-";
+    n = -n;
+  }
+  let minutes = n / 60000;
+  return sign + pad(minutes / 60, 2) + ":" + pad(minutes % 60, 2);
+}
+
+# The three questions that need a zone, and cannot be answered without
+# one: what day is it here, what time of day, and the instant written
+# so that it carries where "here" was. Each answers nil where the
+# platform keeps no zone data, rather than quietly handing back the
+# UTC answer under a local name — a caller that wants UTC as a
+# fallback should say so, in its own code, where a reader can see it.
+fn local_date(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  return date(ms + z["offset"]);
+}
+
+fn local_clock(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  return clock(ms + z["offset"]);
+}
+
+# 2026-09-07T00:30:00+02:00, which from_iso reads back to the same
+# instant — exactly, unless the offset has seconds in it, which only
+# the local mean times before about 1900 do.
+fn local_iso(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  let shifted = ms + z["offset"];
+  return date(shifted) + "T" + clock(shifted) + offset_iso(z["offset"]);
+}
+
 # Whether every character is a digit, and there is at least one.
 fn digits(s) {
   if len(s) == 0 { return false; }

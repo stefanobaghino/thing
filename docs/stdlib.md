@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 190 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 194 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -199,6 +199,9 @@ zone here, because a zone is a database and this is a module.
 | `from_parts(y, mo, d, h, mi, s)` | the milliseconds for a civil date and time |
 | `iso(ms)` | ISO 8601 in UTC: `2026-09-04T20:33:12Z` |
 | `from_iso(s)` | the milliseconds an ISO 8601 string names, or `nil` when it is not one. `iso`'s inverse and more: a bare date is midnight, a space reads like the `T`, seconds and fractions are optional, and an offset like `+02:00` is applied. No offset means UTC, since this module has no other zone. Every field is checked against what exists, February the 30th included |
+| `local_date(ms)` / `local_clock(ms)` | the day and the time of day where the machine is, or `nil` where it keeps no zone data. `nil` rather than the UTC answer under a local name: a caller that wants UTC as a fallback says so in its own code, where a reader can see it |
+| `local_iso(ms)` | the instant written so that it carries where "here" was: `2026-09-07T00:30:00+02:00`, which `from_iso` reads back to the same instant. `nil` where there is no zone data |
+| `offset_iso(off)` | an offset in milliseconds east of UTC as ISO writes one: `Z`, `+02:00`, `-05:30`. ISO has no room for seconds in an offset, and the local mean times before about 1900 have them, so those truncate towards zero |
 | `digits(s)` | whether every character is a digit, and there is at least one |
 | `date(ms)` | the date as `YYYY-MM-DD` |
 | `clock(ms)` | the time of day as `HH:MM:SS` |

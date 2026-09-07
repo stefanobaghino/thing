@@ -106,3 +106,37 @@ assert(err(fn() { return local_zone("2026-01-01"); }) ==
 "local_zone expects an instant in milliseconds, got string",
 "a date is not an instant");
 assert(contains(err(fn() { return local_zone(1, 2); }), "local_zone"), "and it takes at most one");
+
+# Writing an instant where a zone is involved. offset_iso is pure, so
+# it can be checked anywhere; the three that ask the platform are
+# checked only where the platform answers.
+assert(t["offset_iso"](0) == "Z", "no offset is Z, as iso writes it");
+assert(t["offset_iso"](3600000) == "+01:00", "an hour east");
+assert(t["offset_iso"](-18000000) == "-05:00", "and five hours west");
+assert(t["offset_iso"](19800000) == "+05:30", "a half-hour zone");
+assert(t["offset_iso"](-12600000) == "-03:30", "in both directions");
+assert(t["offset_iso"](50400000) == "+14:00", "the furthest east anyone is");
+# ISO has no room for seconds in an offset. The local mean times
+# before about 1900 have them, and they are truncated towards zero,
+# which is what date prints for them too.
+assert(t["offset_iso"](1786000) == "+00:29", "29 minutes 46 seconds, written as 29");
+assert(t["offset_iso"](-1786000) == "-00:29", "and the same going west");
+
+let sample = 1784116800000;
+if local_zone(sample) == nil {
+  assert(t["local_date"](sample) == nil, "no zone data, no local day");
+  assert(t["local_clock"](sample) == nil, "nor a local time of day");
+  assert(t["local_iso"](sample) == nil, "nor an instant that carries one");
+} else {
+  let off = local_zone(sample)["offset"];
+  assert(t["local_date"](sample) == t["date"](sample + off), "the local day is the shifted day");
+  assert(t["local_clock"](sample) == t["clock"](sample + off), "and so is the time of day");
+  assert(t["local_iso"](sample) == t["date"](sample + off) + "T" + t["clock"](sample + off) +
+  t["offset_iso"](off), "and the instant carries the offset");
+  # The round trip is the point of carrying it: from_iso reads back
+  # the instant, not the local reading of it. Whole-minute offsets
+  # only — the pre-1900 ones lose their seconds, as ISO requires.
+  if off % 60000 == 0 {
+    assert(t["from_iso"](t["local_iso"](sample)) == sample, "and reads back to the same instant");
+  }
+}
