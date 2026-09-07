@@ -1665,16 +1665,28 @@ holds only the current milestone and the standing rules.
   COPY of the rule inline and agreed with itself; the path decision
   is now zone_path(tz) and the test calls it. 10 selftest checks
   (2533 -> 2543), 4 Rust tests (353 -> 357).
+- 763: CI WENT RED on 762 — `cargo fmt --check`, all four runners.
+  My gate ran the TING formatter, clippy and the suite and NEVER
+  cargo fmt; it had not mattered while ticks touched ting and
+  markdown, and 762 was the first hand-written Rust in a while.
+  Fixed in four minutes, but the real repair is to the RULE: the gate
+  in this file now says run what CI runs IN CI'S OWN WORDS
+  (cargo fmt --check; cargo clippy --all-targets -- -D warnings;
+  cargo test), not a paraphrase — a gate that summarises another gate
+  drifts from it silently.
+  Then the stroke: examples/organize.ting files by the LOCAL day.
+  Two files an hour apart across local midnight (23:30 and 00:30)
+  now land in 2026-09-06/ and 2026-09-07/; before, both went into
+  2026-09-06/. THREE DECISIONS: the day is asked PER FILE (a year of
+  history spans summer time changes); where local_zone is nil the
+  example falls back to the UTC day and SAYS SO — checked by forcing
+  it with a POSIX-rule TZ; and it says so on STDERR, because
+  tests/examples.rs compares stdout to the .out and a
+  platform-dependent line would fail the Windows runner. Report
+  identical either way, verified under both.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - fix examples/organize.ting to file by the LOCAL day, which is
-  what the milestone was chosen for. It currently uses
-  tm["date"](f["modified"]) = the UTC day; a file written at 00:30
-  local goes in yesterday's folder. Say in the example what happens
-  where local_zone answers nil (the report must not silently become
-  a UTC one). The .out will move; regenerate the cookbook AFTER
-  --fmt (744).
   - then lib/time helpers on top of local_zone: local dates and an
   ISO string that carries the offset, rather than every caller
   writing `+ local_zone(ms)["offset"]` by hand.

@@ -16334,3 +16334,62 @@ local day: 2026-09-07
 Fixing `organize.ting` to use the second line is the next stroke.
 
 Ten selftest checks (2533 → 2543), four Rust tests (353 → 357).
+
+## 2026-09-07 — Iteration 763: a red CI first, then the day fixed
+
+### The gate had a hole in it
+
+CI went red on all four runners for iteration 762, on `cargo fmt
+--check`. My gate has always run the *ting* formatter, clippy and the
+full suite — and never `cargo fmt`. It had not mattered in a long
+while because most ticks touch ting and markdown; 762 was the first
+in some time to write a lot of Rust by hand, and rustfmt wanted three
+of my hand-wrapped expressions written differently.
+
+`cargo fmt` and a push, four minutes after the failure. Then the
+actual repair, which is to the rule and not the code: STATE's gate now
+says **run what CI runs, in CI's own words** — `cargo fmt --check`,
+`cargo clippy --all-targets -- -D warnings`, `cargo test` — rather
+than a paraphrase of them. A gate that is a summary of another gate
+drifts from it silently; this one had drifted for long enough that I
+cannot say when.
+
+### The day, fixed
+
+`examples/organize.ting` files by the **local** day now, which is what
+the milestone was chosen for. Two files an hour apart across local
+midnight, before and after:
+
+```
+early.txt  (23:30 local)  UTC day 2026-09-06   local day 2026-09-06
+late.txt   (00:30 local)  UTC day 2026-09-06   local day 2026-09-07
+```
+
+Filed with the new code they land in `2026-09-06/` and `2026-09-07/`.
+Filed with the old, both went into `2026-09-06/`, and the folder
+named for the day someone worked contained none of the evening's
+work.
+
+Three decisions in it worth naming:
+
+**The day is asked per file, not once.** A directory with a year of
+history in it spans summer time changes, and the offset that applied
+to a file in July is not the one that applies today.
+
+**Where there is no zone data, it says so — on stderr.** A machine
+with no TZif answers nil, and the example then files by the UTC day
+and prints `organize: this machine keeps no time zone data; filing by
+the UTC day`. Checked by forcing it, with a `TZ` holding a POSIX rule
+rather than a name: the note appears, both files go into the one UTC
+folder, and the exit code is still 0.
+
+**stderr rather than the report, on purpose.** `tests/examples.rs`
+compares stdout against the recorded `.out`, so a line that appears
+on some platforms and not others would fail the Windows runner. The
+report is identical either way — verified under both a real zone and
+the rule-string `TZ` — while a person running it on a machine that
+cannot name their day still gets told.
+
+Gate green the new way: `cargo fmt --check` clean, clippy with
+`-D warnings` clean, fifteen `test result: ok`, ting formatter 0 of
+69, corpus at seven, selftests 2543 checks.
