@@ -15911,3 +15911,61 @@ and 754 were both about not doing.
 Cookbook regenerated after `--fmt`, in that order, per 744. Gate
 green: fifteen `test result: ok`, zero clippy, formatter 0 of 69,
 corpus at seven.
+
+## 2026-09-07 — Iteration 756: the mark that hid a column
+
+I came to this tick to release v2.122.0. I did not release it, and
+the reason is worth writing down: before cutting a milestone called
+"reading what other programs wrote", I asked what other programs
+actually write, and the first answer was a byte order mark.
+
+The probe took two minutes and found three things wrong:
+
+```
+csv parse header:  ["\u{feff}a", "b"]
+json_parse:        json_parse: unexpected character at offset 0
+monthly.ting:      monthly: the header has no date and amount columns
+```
+
+That last line is the whole argument. A spreadsheet exports a CSV —
+which is the single most common way a ting script would ever be handed
+one — and `monthly.ting`, the example this milestone is built around,
+refuses it as malformed. The file is fine. The column is called
+`date`. Nothing in the report could see it, because behind a mark it
+is called `\ufeffdate`, and 755 had just made *asking by name* the
+way this program works. A release with that in it would have shipped
+the milestone's headline feature broken against its most likely input.
+
+**Both readers now skip a leading mark**, and only there. In
+`lib/csv.ting` the skip is at the head of `scan`, guarded by a new
+`begun` flag in the scanner's state — which is the 749 rule again:
+put it in the shared scanner and a file read whole and a file read a
+row at a time cannot disagree about it. In `json.rs`, `decode` strips
+one before parsing; RFC 8259 does not permit a mark but explicitly
+allows a parser to ignore one, and ignoring it is better than an
+error about offset 0 on a document that is otherwise correct.
+
+**Only one, and only at the head.** Six of the eleven new checks are
+about what is *not* stripped, because a fix like this goes too far by
+default:
+
+| input | reads as |
+|---|---|
+| `U+FEFF` then `a,b` | `["a", "b"]` |
+| two marks then `a` | one field, still carrying the second |
+| `a,` then a mark then `b` | the second field keeps it |
+| a mark inside a JSON string | the string is the mark |
+| two marks then `1` (JSON) | error, at offset 0 |
+| `1` then a mark (JSON) | error, trailing characters |
+
+2522 → 2533 checks. Every one of the positive cases was watched
+failing before the fix — that is what the probe output above is.
+
+Deliberately *not* touched: `read_file`, `each_line`, `trim` and
+`int`. A file's bytes are its bytes, and a mark in the middle of a
+string is a character. Only a *document reader* — something that has
+been told "this whole thing is one CSV / one JSON value" — is
+entitled to decide the first character is not part of it.
+
+The release moves to the next tick, with three strokes instead of
+two.

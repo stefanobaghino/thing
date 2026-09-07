@@ -1523,15 +1523,31 @@ holds only the current milestone and the standing rules.
   NOT DONE: handing the header to f or returning it — the map's keys
   ARE the header, and a second way to ask one question is the thing
   749 and 754 both avoided.
+- 756: a byte order mark is no longer content. CAME TO RELEASE, DID
+  NOT: asked what other programs actually write before closing a
+  milestone named for it, and the first answer broke the milestone's
+  own example — a spreadsheet-exported CSV made monthly.ting print
+  "the header has no date and amount columns", because behind a mark
+  the column is named \ufeffdate and 755 had just made asking BY NAME
+  how it works. json_parse was worse ("unexpected character at offset
+  0" on a fine document; RFC 8259 forbids the mark but lets a parser
+  ignore it). Fixed in lib/csv's SHARED scanner (new `begun` flag, so
+  whole-file and row-at-a-time drop the same mark — the 749 rule) and
+  in json::decode. ONE mark, ONLY at the head: six of the eleven new
+  checks are about what is NOT stripped (a second mark, a mark in a
+  later field, inside a JSON string, at the end). 2522 -> 2533.
+  NOT TOUCHED: read_file, each_line, trim, int — a file's bytes are
+  its bytes; only a DOCUMENT reader may decide the first character is
+  not part of the document.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.122.0 — two strokes stand (754 each_map, 755 the
-  example that asked for it), and the milestone "reading what other
-  programs wrote" closes with it. Check the tree against the previous
-  release commit FIRST (738): `## Unreleased` must carry both
-  entries, and README's counts (72 builtins) need no move since
-  neither stroke added one.
+  - release v2.122.0 — THREE strokes stand (754 each_map, 755 the
+  example that asked for it, 756 the byte order mark), and the
+  milestone "reading what other programs wrote" closes with it. Check
+  the tree against the previous release commit FIRST (738):
+  `## Unreleased` must carry all three entries, and README's counts
+  (72 builtins) need no move since no stroke added one.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
