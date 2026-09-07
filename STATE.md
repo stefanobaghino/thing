@@ -46,8 +46,13 @@ current orientation.
 
 1. Maintenance check every tick: issues, PRs, CI, tree.
 2. One small verifiable stroke per tick (feature, docs, test, health
-   check); fmt + clippy + full suite before every push — no exceptions
-   (clippy skipped once, iteration 182, cost a red CI). After writing
+   check); before every push run what CI runs, in CI's own words —
+   `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
+   `cargo test` — plus `ting --fmt .` and the corpus check. NO
+   EXCEPTIONS (clippy skipped once, iteration 182, cost a red CI;
+   `cargo fmt --check` was never in this list at all until 763, and
+   the first hand-written Rust in a while turned CI red on all four
+   runners). After writing
    LOG/STATE, rerun the docs guard and gate the push on the literal
    `test result: ok` (a grep for "test result" passed a FAILED line
    in 238 and shipped a red commit). No angle-bracket placeholders

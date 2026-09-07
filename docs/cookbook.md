@@ -756,10 +756,10 @@ dates nothing could read: 3
 
 ## organize
 
-Filing a directory by the day each file was last written — the tidy-up a script could not do before, because moving a file meant reading it and writing it somewhere else, which stamps the copy with the moment it was made and destroys the very dates it is sorting by.  ting organize.ting             # file a small tree this makes ting organize.ting downloads   # file a directory of your own  With no argument it builds a directory, files it, reports and removes it, so the example prints the same thing every time. Its files are all made moments apart, so they all belong to one day; a directory with some history in it spreads over as many folders as it has days. A real one also holds files that are not text, which read_file cannot open and this moves without noticing.
+Filing a directory by the local day each file was last written — the tidy-up a script could not do before, because moving a file meant reading it and writing it somewhere else, which stamps the copy with the moment it was made and destroys the very dates it is sorting by.  ting organize.ting             # file a small tree this makes ting organize.ting downloads   # file a directory of your own  With no argument it builds a directory, files it, reports and removes it, so the example prints the same thing every time. Its files are all made moments apart, so they all belong to one day; a directory with some history in it spreads over as many folders as it has days. A real one also holds files that are not text, which read_file cannot open and this moves without noticing.
 
 ```ting
-# Filing a directory by the day each file was last written — the
+# Filing a directory by the local day each file was last written — the
 # tidy-up a script could not do before, because moving a file meant
 # reading it and writing it somewhere else, which stamps the copy with
 # the moment it was made and destroys the very dates it is sorting by.
@@ -803,6 +803,20 @@ fn free_name(target) {
   }
 }
 
+# The day a file was written, where it was written. A file's date is
+# an instant, and an instant is not a day until you say whose: at half
+# past midnight here it is already tomorrow, and UTC still calls it
+# yesterday. The platform is the only source for that, so where it
+# keeps none — Windows today — local_zone answers nil and this falls
+# back to the UTC day, having said so. It is asked per file rather
+# than once, because a directory with a year of history in it spans
+# summer time changes.
+fn local_day(ms) {
+  let z = local_zone(ms);
+  if z == nil { return tm["date"](ms); }
+  return tm["date"](ms + z["offset"]);
+}
+
 # Every file at or below the root into a folder named for its day.
 # The facts are read once, before anything moves, because moving is
 # what changes them.
@@ -811,7 +825,7 @@ fn file_all(root) {
   let renamed = 0;
   let days = {};
   for f in fs["facts"](root) {
-    let day = tm["date"](f["modified"]);
+    let day = local_day(f["modified"]);
     days[day] = get(days, day, 0) + 1;
     let target = root + "/" + day + "/" + fs["base"](f["path"]);
     # Already where it belongs: filing again must move nothing.
@@ -842,6 +856,13 @@ if mine { build(root); }
 if !exists(root) {
   eprint(format("organize: no such path: {}", root));
   exit(2);
+}
+
+# On stderr, not in the report: a folder named for the wrong day is
+# the mistake this example exists to avoid, so a machine that cannot
+# name the right one has to say it out loud rather than file quietly.
+if local_zone() == nil {
+  eprint("organize: this machine keeps no time zone data; filing by the UTC day");
 }
 
 # The dates as they were. If any of them changes, the filing was done

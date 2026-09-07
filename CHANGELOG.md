@@ -25,6 +25,15 @@ Windows are attached to each
   of minutes. A `TZ` that carries a POSIX rule rather than a name,
   and a platform with no such file, both answer `nil` rather than a
   guess, so a caller can tell "unknown" from a real zero.
+- `examples/organize.ting` files by the **local** day. It sorts files
+  into folders named for the day each was last written, and until now
+  that was the UTC day: two files an hour apart across local midnight
+  both went into the earlier folder. They now go into the two folders
+  they belong in. Where the platform keeps no zone data the example
+  falls back to the UTC day and says so on stderr rather than filing
+  quietly — a folder named for the wrong day is the mistake it exists
+  to avoid. The day is asked per file, not once, because a directory
+  with a year of history in it spans summer time changes.
 
 ## v2.122.0 (2026-09-07)
 
