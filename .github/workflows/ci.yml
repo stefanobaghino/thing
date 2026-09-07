@@ -41,7 +41,7 @@ jobs:
           mkdir -p smoke
           cp target/debug/ting smoke/ 2>/dev/null || cp target/debug/ting.exe smoke/
           cp -r lib smoke/lib
-          tools/smoke.sh smoke "$(grep -m1 '^version' Cargo.toml | cut -d'\"' -f2)"
+          tools/smoke.sh smoke
 
   # The whole integration surface again with the binary forced onto the
   # reference tree-walker (the VM is the default engine) — end-to-end

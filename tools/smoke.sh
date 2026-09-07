@@ -3,7 +3,11 @@
 # would: start the binary out of the directory it was unpacked into,
 # and put it to work on real programs.
 #
-#   tools/smoke.sh <unpacked-root> <version it must report>
+#   tools/smoke.sh UNPACKED-ROOT [version it must report]
+#
+# The version defaults to the one in Cargo.toml, so a caller that is
+# checking a build of this tree does not have to dig it out in shell;
+# the release passes the tag instead, which is the whole point there.
 #
 # The suites are copied in beside the binary on purpose. A script
 # imports "lib/..." relative to its own directory, so selftest/ finds
@@ -15,7 +19,12 @@
 set -eu
 
 root=$1
-want=$2
+# ${2-...}, not ${2:-...}: only an ABSENT argument takes the default.
+# An argument that arrived empty is a caller whose shell went wrong,
+# and falling back to Cargo.toml there would quietly check a release
+# archive against this tree's version instead of against its tag.
+want=${2-$(sed -n 's/^version = "\(.*\)"/\1/p' Cargo.toml | head -1)}
+[ -n "$want" ] || { echo "::error::the version to expect came through empty"; exit 1; }
 
 ting=$root/ting
 [ -f "$ting" ] || ting=$root/ting.exe

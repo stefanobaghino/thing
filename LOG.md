@@ -17021,3 +17021,55 @@ why the same script went into CI rather than only into the release:
 CI runs on all four platforms on every push, so the script gets
 exercised on macOS and Windows long before a tag depends on it. The
 release should never be the first place a script is tried.
+
+## 2026-09-07 — Iteration 774: I tested a transcription of the step, not the step
+
+773's CI went red on **all four runners**, and the cause was three
+characters of my own quoting. The workflow line I wrote was
+
+```
+tools/smoke.sh smoke "$(grep -m1 '^version' Cargo.toml | cut -d'\"' -f2)"
+```
+
+— a backslash-escaped quote that belonged to the Python string that
+wrote the YAML, not to the YAML. `cut` was handed a two-character
+delimiter, said "the delimiter must be a single character", and the
+version came through empty.
+
+The guard did its job perfectly: `::error::the archive reports 'ting
+2.124.0', expected 'ting '`, exit 1, on every platform. What failed
+was my verification. I "ran the CI step body verbatim" last tick — by
+**retyping** it into a shell, where I naturally typed `-d'"'`, the
+thing I meant rather than the thing in the file. A transcription of a
+step is a different step.
+
+So the repair is not the quoting. **`tools/workflow_step.py` reads a
+named step's `run:` block out of a workflow and prints it**, and the
+rehearsal now pipes those exact bytes into bash. Both directions were
+proved: a copy of `ci.yml` with the old broken line fails with exit 1,
+and the real one passes.
+
+The version lookup also moved out of YAML and into `smoke.sh`, where
+a second argument is optional and defaults to `Cargo.toml`'s version.
+The release still passes the tag, which is the point there.
+
+**And that default nearly hid the bug I was fixing.** With
+`${2:-default}` the broken workflow line *passed* — an empty argument
+took the fallback, and the archive got checked against the tree's
+version instead of the tag's. That is the exact failure the check
+exists to prevent, quietly restored by a convenience. It is now
+`${2-default}`: only an **absent** argument takes the default, and an
+argument that arrived empty is a caller whose shell went wrong and
+gets an error. Verified three ways — broken workflow exits 1, an
+explicit `""` exits 1, the real workflow exits 0.
+
+The release steps were rehearsed the same way, extracted rather than
+retyped: package as `release.yml` packages, run its own unpack line,
+run its own smoke line with `GITHUB_REF_NAME` set. 2555 checks, 22 of
+22 examples, exit 0.
+
+The uncomfortable part is that 773 said, in as many words, that a
+release should never be the first place a script is tried — and then
+verified the script by a method that could not fail the way the file
+could. Putting the check in CI is what caught it, one push before a
+tag would have.

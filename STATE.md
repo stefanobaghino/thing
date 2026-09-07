@@ -1867,15 +1867,32 @@ holds only the current milestone and the standing rules.
   script of mine THIRTY HOURS earlier and still sitting on this shared
   host. Killed. NEW RULE, in the script's own comment: a harness that
   runs corpus programs closes stdin, never inherits it.
+- 774: I TESTED A TRANSCRIPTION OF THE STEP, NOT THE STEP. 773 went
+  red on all four runners over three characters: the YAML carried
+  `cut -d'\"'` (a backslash that belonged to the Python string that
+  WROTE the yaml), so cut got a two-character delimiter and the
+  version came through empty. The guard behaved perfectly — error
+  line, exit 1, everywhere. The VERIFICATION failed: I "ran the step
+  verbatim" by RETYPING it, and naturally typed what I meant.
+  THE REPAIR IS THE METHOD, NOT THE QUOTING: tools/workflow_step.py
+  prints a named step's run: block out of a workflow, and the
+  rehearsal pipes those bytes into bash. Proved both ways — a copy of
+  ci.yml with the old line exits 1, the real one exits 0.
+  AND THE FIX NEARLY HID THE BUG: moving the version lookup into
+  smoke.sh with ${2:-default} made the broken workflow line PASS,
+  checking the archive against the tree's version instead of the
+  tag's — the exact failure the check exists to prevent, restored by
+  a convenience. Now ${2-default}: only an ABSENT argument defaults;
+  an empty one is an error. Three checks: broken workflow 1, explicit
+  "" 1, real workflow 0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - watch CI: tools/smoke.sh has now run on this host only. Its first
-  macOS and Windows runs are on the next push, which is the whole
-  reason it went into ci.yml rather than only into release.yml. If it
-  is red there, the suspects in order are: cp/paths under Git Bash,
-  the debug binary's name (ting vs ting.exe), and CRLF (.gitattributes
-  forces LF on checkout, so this should be a non-issue).
+  - watch CI again: 774 fixed the quoting that reddened all four
+  runners, but smoke.sh has STILL never run on macOS or Windows. The
+  remaining suspects there are cp/paths under Git Bash and the debug
+  binary's name (ting vs ting.exe); CRLF should be a non-issue since
+  .gitattributes forces LF on checkout.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -1969,6 +1986,12 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - Edit scripts belong inside the gate chain: a heredoc python that
   failed its assertion left STATE.md unwritten and the commit went out
   anyway (645b).
+- Rehearsing a CI step means running the BYTES IN THE FILE:
+  `tools/workflow_step.py` takes a workflow path and a step name and
+  prints that step's run block; pipe it into `bash -e -o pipefail`.
+  Retyping a step tests a different step — 774's `cut -d` quoting
+  reached four runners because the retyped version was the one I
+  meant rather than the one written down.
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
   line); `set -e` is NOT honoured by the harness (377b); never a bare
   line after the gate (358, 377 pushed green records for red gates).
