@@ -1592,6 +1592,25 @@ holds only the current milestone and the standing rules.
   selftest-csv-rows-*: a failed run leaves its fixture behind, and
   under the old FIXED name that leftover could have been committed —
   one such empty directory was sitting in the tree and was removed.
+- 760: health tick, green. Bench: all nine checksums match, timings
+  at or under baseline (accum 73.5 vs 75.0, fib 515.1 vs 535.3,
+  toplevel 434.3 vs 451.1); VM ahead on all nine, -17% to -44%.
+  Fuzzers at seed 760: 50000 differential 7.66 s, 20000 formatter
+  3.62 s, 2000000 patterns 2.97 s — historical runtimes, which is
+  what says they fuzzed anything. Audit: 72 builtins, 190 stdlib
+  functions (asked of the modules), 22 selftest files, 22 examples
+  with .out, 44 ting programs, 353 Rust tests in 15 suites, 7 corpus
+  warnings, 2533 checks. Site ten paths 200.
+  FOUND: STATE's own standing shape said 188 functions, wrong since
+  754, through a release, in the file I orient from every tick.
+  docs/stdlib.md was right because 740's test guards it; STATE was
+  guarded by nothing. Extended that same test to STATE (it already
+  has the number in hand), whitespace-insensitive so a rewrap cannot
+  read as a wrong count, and made it fail on purpose with 188 put
+  back. THE LESSON: "it only misleads me" says who gets hurt, not
+  whether to guard it.
+  Housekeeping still offered, still not urgent: target/ 41 GB (a
+  cargo clean costs one full rebuild), .git 117 MB.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

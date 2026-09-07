@@ -16135,3 +16135,55 @@ tree from a baseline run, and removed it.
 
 Gate green: fifteen `test result: ok`, zero clippy, formatter 0 of
 69, corpus at seven, selftests 22 files / 2533 checks.
+
+## 2026-09-07 — Iteration 760: health tick, and a number nothing was watching
+
+Green, and the milestone "reading what other programs wrote" is
+shipped. One thing found and fixed, which is the point of looking.
+
+**Bench.** All nine checksums match `bench/BASELINE.md` exactly.
+Timings at or a little under the baseline on a quiet host — accum
+73.5 ms against 75.0, fib 515.1 against 535.3, toplevel 434.3 against
+451.1 — so three releases and seven strokes have cost the interpreter
+nothing measurable. The VM leads eval on all nine rows, -17% to -44%.
+
+**Fuzzers, seed 760.** 50000 differential cases in 7.66 s, 20000
+formatter cases in 3.62 s, 2000000 pattern cases in 2.97 s. All three
+sit on their historical runtimes, which is the second half of the
+evidence: a fuzzer that finished suspiciously fast has fuzzed nothing.
+
+**Audit — and the one that was wrong.** Every count the project
+claims, checked against what is there:
+
+| claim | is |
+|---|---|
+| 72 builtins | 72 (`ALL: [Builtin; 72]`, and 72 entries in it) |
+| stdlib functions | **190**, asked of the modules |
+| 22 selftest files, 22 examples with `.out` | 22 and 22 |
+| 44 ting programs | 44 |
+| 353 Rust tests in 15 suites | 353 in 15 |
+| 7 corpus warnings | 7 |
+| 2533 selftest checks | 2533 |
+
+`STATE.md` said **188 functions**. It had been wrong since 754 added
+`each_map` and `entry_of` — two ticks, through a release, in the file
+I orient from at the start of every one of them.
+
+`docs/stdlib.md` was right, because a test has been guarding that
+number since 740. STATE was not guarded, and the argument for leaving
+it that way is that STATE is orientation rather than published
+documentation — a wrong count there misleads only me. That is not an
+argument for letting it drift; it is an argument about who gets hurt.
+So the guard now checks both, using the number it already computes.
+The check is whitespace-insensitive, so rewrapping the paragraph
+cannot read as a wrong number.
+
+Made to fail on purpose before being believed: with 188 put back, the
+test says `STATE.md's standing shape does not say "190 functions",
+which is what the modules export`, and passes again when restored.
+
+**Site.** Ten paths 200, unchanged from 758.
+
+Housekeeping, still offered and still not urgent: `target/` is 41 GB
+and a `cargo clean` costs one full rebuild. `.git` is 117 MB. No
+fixture leftovers in the tree.
