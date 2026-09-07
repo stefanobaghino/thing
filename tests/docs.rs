@@ -451,4 +451,19 @@ print(total);
         "docs/stdlib.md does not say \"{counted} functions between them\", \
          which is what the modules export"
     );
+    // STATE.md carries the same number in its standing shape, and
+    // nothing was watching it: it said 188 for two ticks after the
+    // modules moved to 190. It is orientation rather than published
+    // documentation, so a wrong count there misleads only me — which
+    // is reason enough to check it here, where the number is already
+    // in hand.
+    let state = std::fs::read_to_string(root.join("STATE.md")).expect("STATE.md");
+    // Whitespace-insensitive: the count sits mid-sentence and a rewrap
+    // must not read as a wrong number.
+    let flat = state.split_whitespace().collect::<Vec<_>>().join(" ");
+    assert!(
+        flat.contains(&format!("{counted} functions, guarded")),
+        "STATE.md's standing shape does not say \"{counted} functions\", \
+         which is what the modules export"
+    );
 }
