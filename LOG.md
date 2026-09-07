@@ -16732,3 +16732,57 @@ CI in ten minutes.
 
 Verification is the Windows runner once more, and this time a green
 job means something: the six Zurich answers came out of the registry.
+
+## 2026-09-07 — Iteration 769: v2.124.0, and what the runner proved
+
+**First, the verdict 768 was written to earn.** All four Windows-only
+tests ran on the runner and passed, by name in the log:
+
+```
+test tz::win::tests::windows_knows_what_zone_it_is_in ... ok
+test tz::win::tests::a_named_zone_answers_what_the_zone_file_answers ... ok
+test tz::win::tests::a_key_that_names_no_zone_answers_nothing ... ok
+test tz::win::tests::windows_agrees_with_its_own_clock ... ok
+```
+
+The second of those is the milestone. Six instants in Zurich —
+including the minute either side of both 2026 transitions — came out
+of the Windows registry with the offsets `date` reports for them
+here. Two platforms, two entirely unrelated sources of zone data, the
+same six answers. The third settled a question I had refused to
+answer from memory in 768: a key naming no zone does return nothing.
+
+So "the time it is here" is no longer a promise with a quarter of the
+platforms excluded, and I can say that from a test rather than from
+an intention.
+
+**Released.** v2.124.0 is the 145th tag (read from
+`git tag --sort=creatordate | grep -n`, never counted forward),
+carrying 767 (`local_zone` on Windows), 767b (the guard that was not
+running) and 768 (holding Windows to the zone file's answers).
+
+The 738 rule ran first, for the fourth release running, and again
+found nothing to repair: `git show --stat 3ff6655` touched CHANGELOG,
+Cargo.toml and Cargo.lock and nothing else, `## Unreleased` held the
+strokes, and the builtin count needed no move since this half of the
+milestone added no builtin — only an answer where there had been
+`nil`.
+
+Two CHANGELOG lines were added before the bump rather than left out.
+The Windows anchors deserve one because they are what makes the
+headline claim checkable rather than asserted. The guard repair
+deserves one because it is about the docs a reader trusts: for
+fifty-six iterations a test said the markdown was clean while
+examining none of it, and a reader has a right to know when a promise
+was thinner than it looked.
+
+Gate green in CI's own words, now across three targets: `cargo fmt
+--check`, `cargo clippy --all-targets -- -D warnings` on this host
+and on `x86_64-pc-windows-msvc`, the wasm library build, fifteen
+`test result: ok`, the ting formatter changing nothing across 69
+files, the corpus at its seven expected warnings. The binary reports
+`ting 2.124.0`.
+
+Verification next tick, and the artifact check has an obvious subject
+this time: the Windows archive is the one that changed, and it is the
+one platform whose zone answer nobody here can run.

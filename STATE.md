@@ -1779,16 +1779,31 @@ holds only the current milestone and the standing rules.
   empty zone key (Windows falls back rather than failing, and I have
   not read how). FOUR Windows-only tests in tz.rs do not run on this
   host: the gate's count stays 362 here and is four higher there.
+- 769: THE RUNNER PROVED IT. All four Windows-only tests passed by
+  name in the log; a_named_zone_answers_what_the_zone_file_answers is
+  the milestone — six Zurich instants, both 2026 transitions bracketed
+  to the minute, out of the REGISTRY with the offsets `date` gives
+  HERE. Two platforms, two unrelated sources, the same six answers.
+  a_key_that_names_no_zone_answers_nothing settled the question 768
+  refused to answer from memory: it does return nothing.
+- v2.124.0 released (145th tag; strokes 767, 767b, 768). 738 rule ran
+  first for the fourth release running and found nothing to repair.
+  Two CHANGELOG lines added before the bump: the Windows anchors
+  (they make the headline claim checkable) and the guard repair (it
+  is about docs a reader trusts). Gate green in CI's own words across
+  THREE targets now. NOT VERIFIED YET.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - read the Windows runner's verdict on 768's three tests. THIS time
-  green means something: the six Zurich answers came out of the
-  registry. If red, the named-zone call is the first suspect
-  (at_named with a TimeZoneKeyName), then the layout guards.
-  - then release v2.124.0 (767 and 768 stand; 767b is a guard repair
-  worth its own CHANGELOG line). Check the tree against the previous
-  release commit FIRST (738).
+  - verify v2.124.0 — verdicts from the API, six assets on the tag,
+  both aarch64 archives executed cold here, site audit. THE WINDOWS
+  ARCHIVE IS THE ONE THAT CHANGED and it is the one platform whose
+  zone answer nobody here can run: say so plainly rather than
+  implying the artifact check covered it. What CAN be checked is that
+  the Windows archive is present and its size moved.
+  - then a health tick to close the milestone "the time it is here"
+  (bench vs BASELINE, 50000 differential, crash and 20000 formatter
+  fuzz cases in release), and replenishment after it.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
@@ -1859,7 +1874,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 144 (v2.123.0), 144 verified; v2.29.0 is publicly marked broken
+- Tags: 145 (v2.124.0), 144 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
