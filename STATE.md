@@ -2134,15 +2134,26 @@ holds only the current milestone and the standing rules.
   for a reader found the error. A log entry is cheap to fix; a
   release note is permanent.
   Gate green at the new version, --version reports ting 2.127.0.
+- 789: v2.127.0 VERIFIED (148th tag). TWELVE OF TWELVE executions
+  counted per target; seven jobs green; seven assets; sha256sum -c OK
+  on a fresh download of all six. Both aarch64 archives cold report
+  ting 2.127.0 AND RUN THE MILESTONE'S OWN CHANGE: 80000 appends of
+  str(i) in 0.030s (gnu) / 0.034s (musl), against 1.680s before it.
+  A number from a local cargo build is about this working copy; that
+  one is about the file on the page.
+  Site: ten paths 200, ting.wasm 843780 (was 842967 -- Pages
+  rebuilt), changelog at v2.127.0, reference serving the new cost
+  note, and EXAMPLES.JS AS SERVED IS BYTE-IDENTICAL TO THE REPO's, so
+  783's fix reached the front door and not just git.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.127.0. TWELVE EXECUTIONS, counted PER TARGET from the
-  Release log, not from job colours. SEVEN assets (the six archives
-  and SHA256SUMS), and `sha256sum -c` on a fresh download of all six
-  must say OK here. Both aarch64 archives unpacked cold must report
-  `ting 2.127.0`. Site audit on https://www.baghino.me/thing/ — the
-  ten paths from 782, changelog carrying v2.127.0.
+  - health tick closing the milestone (bench vs BASELINE's TEN rows,
+  50000 differential, crash and 20000 formatter fuzz in release,
+  timing two counts per 771; gate, corpus at seven, coverage against
+  782's enumerated seventeen misses, CI green on HEAD, assets on the
+  last two tags, ten site paths on www.baghino.me).
+  - then replenishment.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -2231,7 +2242,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 148 (v2.127.0), 147 verified; v2.29.0 is publicly marked broken
+- Tags: 148 (v2.127.0), 148 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

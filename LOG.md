@@ -17843,3 +17843,40 @@ playground serving its current examples again.
 
 Gate green at the new version, `ting --version` reports `ting
 2.127.0`, Cargo.lock updated, corpus at seven, `--fmt` 0/70.
+
+## 2026-09-07 — Iteration 789: v2.127.0 verified
+
+**Twelve of twelve**, counted per target from the Release log rather
+than from job colours: every one of the six started a ting binary
+twice, once as the archive it packaged and once as the archive it
+fetched back. All seven jobs green, `finish` among them.
+
+Seven assets. `sha256sum -c` on a fresh download of every one:
+
+```
+ting-v2.127.0-aarch64-apple-darwin.tar.gz: OK
+ting-v2.127.0-aarch64-unknown-linux-gnu.tar.gz: OK
+ting-v2.127.0-aarch64-unknown-linux-musl.tar.gz: OK
+ting-v2.127.0-x86_64-pc-windows-msvc.zip: OK
+ting-v2.127.0-x86_64-unknown-linux-gnu.tar.gz: OK
+ting-v2.127.0-x86_64-unknown-linux-musl.tar.gz: OK
+```
+
+Both aarch64 archives unpacked cold report `ting 2.127.0` — and this
+time they were asked to do the thing the release is *for*. The loop
+that cost 1.680 s a milestone ago, run from the archive a stranger
+would download:
+
+```
+80000 appends of str(i)   gnu 0.030 s   musl 0.034 s
+```
+
+A number measured on a local `cargo build --release` is a number
+about this working copy. That one is about the file on the page.
+
+Site: ten paths 200 on the canonical host, `ting.wasm` 843780 (it was
+842967 before this milestone, so Pages rebuilt), changelog carrying
+v2.127.0, and the reference serving the new note on what growing a
+string costs. **And `examples.js` as served is byte-identical to the
+repository's** — 783's stale playground reached the front door and is
+fixed there, not just in git.
