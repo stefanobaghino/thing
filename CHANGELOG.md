@@ -5,6 +5,42 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.128.0 (2026-09-08)
+
+- Reading a string a character at a time is linear rather than
+  quadratic. `s[i]` and `slice` used to decode the whole string into
+  a list of characters on every single read. A string now remembers
+  how many characters it has, counted the first time anything asks;
+  when that count equals its byte length every character is one byte,
+  so the nth character starts at byte n and the read goes straight
+  there. Scanning 320000 characters by index went from 10.3 seconds
+  to 0.13.
+- A string is shared, not copied. Binding a second name to one,
+  passing it to a function, putting it in a list or a map, returning
+  it: none of these touch the text, whatever its length. Only a write
+  copies, and only when someone else is still holding what it would
+  overwrite — which is what has always kept two names apart and is
+  now the mechanism as well as the rule. Passing a 2 MB string to a
+  function 400 times went from 0.77 seconds to 0.13.
+- `len` on a string is paid once rather than every time. It walks the
+  string the first time and remembers the answer, and appending adds
+  the piece's characters to the count instead of dropping it. `while
+  len(s) < width` no longer costs the length of `s` every turn.
+- A call on the right-hand side of an append no longer costs a copy
+  anywhere. v2.127.0 made `s += str(n)` cheap only where no function
+  in the file mentioned the name; where one did, the value was copied
+  every time round the loop. Now the old value is still read before
+  the call runs — a call that reassigns the name must see what was
+  there — and the binding lets go of it afterwards unless the call
+  did reassign it. 160000 appends with a closure naming the target
+  went from 0.52 seconds to 0.078, and the long spelling `s = s +
+  str(n)` costs the same as the short one, as it has since v2.127.0.
+- The remembered count is not free for every program: one that makes
+  very many short strings and never reads a character out of them
+  pays a little for a count nothing asks about. It is a small cost
+  against the ones above, and it is the reason the count is taken
+  lazily rather than when the string is made.
+
 ## v2.127.0 (2026-09-07)
 
 - A call on the right no longer costs a copy, where it can be shown
