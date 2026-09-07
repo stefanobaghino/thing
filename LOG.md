@@ -16969,3 +16969,55 @@ The thread from the last milestone carries into this one. There it
 was: never answer UTC when the answer is unknown. Here it is: never
 report a release verified when what was verified is a different
 build.
+
+## 2026-09-07 — Iteration 773: the release runs what it packages
+
+`tools/smoke.sh` takes an unpacked archive and a version, and does
+what somebody who downloaded it would do: starts the binary out of
+the directory it was unpacked into, checks it reports the version the
+tag claims, runs the self-hosted suite, and diffs every example
+against its recorded output. `release.yml` now unpacks each archive
+on its own runner and runs it **before the upload step**, and
+`ci.yml` runs the same script on every push against a directory laid
+out the way an archive is.
+
+**The layout is doing something on purpose.** The suites are copied
+in beside the binary, because a script imports `lib/...` relative to
+its own directory. `selftest/` finds no `lib/` next to it and falls
+through to the stdlib compiled into the binary; `examples/` imports
+`../lib/...` and gets the `lib/` the archive ships. One run therefore
+exercises **both copies of the stdlib** — which is the thing that
+cost me time in 754, when a leftover `lib/` beside a binary silently
+shadowed the embedded one and produced a "key not found" from a
+binary that had the key.
+
+**A thirty-hour finding, from the first run.** The script hung. The
+cause was `examples/pipeline.ting`, which reads standard input: a
+harness that inherits a terminal's stdin waits for a keystroke that
+is never coming. `tests/examples.rs` never hit this because
+`Command::output()` closes stdin for you. While tracking it down I
+found a second `ting` still blocked the same way — on
+`reference/06.ting`, which calls `input()` — started by an ad-hoc
+script of mine **thirty hours earlier** and still sitting on this
+shared host. Killed, and the rule is now in the script's own comment:
+close stdin, never inherit it. It cost nothing (a blocked read burns
+no CPU, and it was at `nice 19`) but it is exactly the kind of litter
+this loop is supposed to be too careful to leave.
+
+**Every failure mode was made to fail before I believed the pass.**
+A wrong expected version, a directory with no binary in it, and an
+example whose `.out` had been edited to lie: all three print an
+`::error::` line and **exit 1**, which is the part that matters —
+a guard that reports and exits zero is a guard CI ignores.
+
+Then the release path itself, rehearsed locally: package exactly as
+`release.yml` does (`tar -czf ... -C dist ting lib`), unpack it,
+smoke it. 22 selftest files, 2555 checks against the embedded stdlib,
+22 of 22 examples against the shipped `lib/`, exit 0. The CI step
+body was run verbatim too, against the debug build.
+
+What I cannot rehearse here is macOS and Windows, which is precisely
+why the same script went into CI rather than only into the release:
+CI runs on all four platforms on every push, so the script gets
+exercised on macOS and Windows long before a tag depends on it. The
+release should never be the first place a script is tried.

@@ -1845,16 +1845,37 @@ holds only the current milestone and the standing rules.
   adopting try(f, ...args) — RECOUNTED TODAY at 64 sites, up from 53,
   but overwhelmingly in selftest/ where testing a closure is the
   point: a tidy-up, not a milestone.
+- 773: THE RELEASE RUNS WHAT IT PACKAGES. tools/smoke.sh takes an
+  unpacked archive and a version and does what a downloader does:
+  starts the binary from where it was unpacked, checks --version
+  against the tag, runs --test selftest, diffs every example.
+  release.yml unpacks each archive on its own runner and runs it
+  BEFORE upload (a target that will not start leaves its archive
+  MISSING); ci.yml runs the same script on every push against an
+  archive-shaped directory.
+  THE LAYOUT IS DELIBERATE: the suites are copied in beside the
+  binary, so selftest/ (no lib/ next to it) falls through to the
+  EMBEDDED stdlib and examples/ ("../lib/...") gets the SHIPPED one.
+  One run exercises both copies — the 754 trap.
+  ALL THREE FAILURE MODES WERE MADE TO FAIL FIRST: wrong version, no
+  binary, an example whose .out was edited to lie — each prints
+  ::error:: AND EXITS 1, which is the part CI reads.
+  A THIRTY-HOUR FINDING: the first run hung on examples/pipeline.ting,
+  which reads stdin; tests/examples.rs never hit it because
+  Command::output() closes stdin. Found a second ting still blocked
+  the same way on reference/06.ting (input()), started by an ad-hoc
+  script of mine THIRTY HOURS earlier and still sitting on this shared
+  host. Killed. NEW RULE, in the script's own comment: a harness that
+  runs corpus programs closes stdin, never inherits it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - first stroke of "the archive that was run": make release.yml run
-  what it packaged, on each target's own runner, BEFORE upload —
-  unpack to a clean directory, run the binary from it, --test
-  selftest against its embedded stdlib, diff the examples. A target
-  whose archive will not start must leave that archive MISSING, not
-  uploaded. Every matrix target already builds on a runner of its own
-  architecture, so no emulation is needed.
+  - watch CI: tools/smoke.sh has now run on this host only. Its first
+  macOS and Windows runs are on the next push, which is the whole
+  reason it went into ci.yml rather than only into release.yml. If it
+  is red there, the suspects in order are: cp/paths under Git Bash,
+  the debug binary's name (ting vs ting.exe), and CRLF (.gitattributes
+  forces LF on checkout, so this should be a non-issue).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -1966,6 +1987,11 @@ Standing rules (each from a slip; the LOG entry named has the story):
   the guard (v2.29.1). A failed Pages deploy is retried only with
   `gh workflow run pages.yml --ref main`.
 - Bench on this shared host: checksums decide, timings are weather.
+- Any harness that runs corpus programs redirects stdin from
+  /dev/null. examples/pipeline.ting and the reference's input()
+  snippet read it, and an inherited terminal makes them wait forever
+  (773 found one thirty hours old). Rust's Command::output() does this
+  for you; a shell loop does not.
 - This host is shared and has four cores, and a tick saturates all of
   them for minutes. Every step runs under `nice -n 19` (plus
   `ionice -c 3` where it touches the disk), bench included: nice costs

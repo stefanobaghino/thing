@@ -5,6 +5,25 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- **Every released archive is now started before anyone is offered
+  it.** The release workflow built each archive, checked the glibc
+  floor on Linux, packaged and uploaded — and never once ran the
+  thing it packaged. Six archives a release since v2.30.0, ninety-five
+  releases, and the only ones ever executed were the two aarch64 ones
+  someone downloaded by hand afterwards: four in six went out having
+  never been started at all. Each archive is now unpacked on its own
+  runner and put to work — the binary run from where it was unpacked,
+  the self-hosted suite run against the stdlib compiled into it, and
+  every example diffed against its recorded output — before the
+  upload step is reached. A target whose archive will not start now
+  leaves that archive missing from the release rather than present
+  and broken.
+- The same check runs in CI on every push, against a directory laid
+  out the way an archive is, so a release is never the first place it
+  is tried on macOS or Windows.
+
 ## v2.124.0 (2026-09-07)
 
 - `local_zone` answers on **Windows**. Until now it was `nil` there,

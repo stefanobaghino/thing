@@ -30,6 +30,18 @@ jobs:
       # `--test` on every platform the way a user would run it.
       - name: Self-hosted suite via --test
         run: cargo run --quiet -- --test selftest
+      # The same check the release runs on the archive it packages,
+      # run here on every push against a directory laid out the way an
+      # archive is. The release should not be the first place this
+      # script is tried on macOS or Windows.
+      - name: The archive layout, run
+        shell: bash
+        run: |
+          cargo build --quiet
+          mkdir -p smoke
+          cp target/debug/ting smoke/ 2>/dev/null || cp target/debug/ting.exe smoke/
+          cp -r lib smoke/lib
+          tools/smoke.sh smoke "$(grep -m1 '^version' Cargo.toml | cut -d'\"' -f2)"
 
   # The whole integration surface again with the binary forced onto the
   # reference tree-walker (the VM is the default engine) — end-to-end

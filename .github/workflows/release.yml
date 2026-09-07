@@ -73,6 +73,22 @@ jobs:
           Copy-Item target/${{ matrix.target }}/release/ting.exe dist/
           Copy-Item -Recurse lib dist/lib
           Compress-Archive -Path dist/ting.exe, dist/lib -DestinationPath "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip"
+      # Nothing had ever started what this workflow packages. Six
+      # archives a release since v2.30.0, and the only ones anybody
+      # ran were the two aarch64 ones, downloaded by hand afterwards
+      # — so four in six went out having never been executed at all.
+      # The archive is now unpacked and put to work on its own runner
+      # BEFORE it is offered to anyone, and a target that will not
+      # start leaves its archive missing rather than broken.
+      - name: Unpack what was packaged (unix)
+        if: runner.os != 'Windows'
+        run: mkdir -p unpacked && tar -xzf "ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C unpacked
+      - name: Unpack what was packaged (windows)
+        if: runner.os == 'Windows'
+        run: Expand-Archive -Path "ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip" -DestinationPath unpacked
+      - name: Run it
+        shell: bash
+        run: tools/smoke.sh unpacked "${GITHUB_REF_NAME#v}"
       - name: Upload
         shell: bash
         run: gh release upload "$GITHUB_REF_NAME" ting-*

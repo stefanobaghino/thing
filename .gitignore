@@ -6,3 +6,5 @@ playground/ting.wasm
 # fails partway leaves one behind; it must never reach a commit.
 selftest-fs-tree-*
 selftest-csv-rows-*
+smoke/
+unpacked/
