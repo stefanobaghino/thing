@@ -17124,3 +17124,48 @@ not a number that drifts by seventy.
 None of the docs quoted the total, so nothing else needed correcting;
 STATE did, and now says which number belongs to which kind of
 machine.
+
+## 2026-09-07 — Iteration 776: the prediction was half wrong, and the file the world downloads
+
+All four runners report **`sh.ting` 15 checks, 2545 total** — the same
+number everywhere, which is better than I predicted and for a reason
+I had wrong.
+
+I predicted 2545 on Unix and **2537 on Windows**, reasoning that the
+eight checks needing a shell would stand down there. They did not:
+`sh.ting` reports 15 on Windows too, and 15 is six fixed checks plus
+eight shell checks plus the one folded `PATH` check. The shell block
+**ran**. GitHub's Windows runner has Git Bash on `PATH`, so
+`which("sh")` finds one.
+
+Which means my arithmetic for the old 88-check figure was also wrong
+in its details: I read it as 6 + 82 `PATH` entries with the block
+skipped, and it was 6 + 8 + 74 entries with the block running. Both
+decompositions give 88, I picked one and stated it as fact. The
+conclusion — that the count moved with `PATH` length — was right and
+is now fixed; the story I told about Windows was not. The
+distinguishing evidence was there to be asked for: 15 rather than 7
+proves the block runs.
+
+**The stroke: the archive the world downloads is now the one that
+gets run.** Until now the release ran the archive *this runner
+built*, which is not the same claim — everything between packaging
+and the release page is untested until something fetches it back.
+There is now a step after upload that downloads the asset by name,
+unpacks it and runs the whole smoke on it. Rehearsed here against the
+real published v2.124.0: fetched from the release page, 2545 checks,
+22 of 22 examples, exit 0.
+
+Zip is unpacked with `tar -xf` rather than `unzip`, because `tar` on
+Windows is bsdtar and reads zip, while Git Bash ships no `unzip` —
+the sort of assumption that would otherwise be discovered by a tag.
+
+**And the second copy of the stdlib is now checked.** Every archive
+carries `lib/` beside the binary, and the binary carries the same
+twelve modules compiled in. A packaging step that copied a stale or
+partial `lib/` would be invisible to everything else here: the binary
+would keep working on its embedded copy while a script unpacked
+beside the archive quietly got the other one. `smoke.sh` now diffs
+the two. Both failures were made to happen — a line appended to
+`lib/time.ting` in the archive, and `lib/csv.ting` deleted from it —
+and each exits 1, reporting the file by name.

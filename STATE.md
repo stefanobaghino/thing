@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2545 selftest checks, 2537 where
-  there is no `sh` to drive); 362 Rust tests
+  nothing on its own — and 22 examples with .out; 2545 selftest checks on all four
+  CI platforms, Windows included); 362 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1900,15 +1900,38 @@ holds only the current milestone and the standing rules.
   THE REMAINING VARIANCE IS DELIBERATE AND SINGULAR: where there is
   no `sh`, eight checks stand down, so Windows should read 2537 and
   everywhere else 2545. No doc quoted the total; STATE did.
+- 776: THE PREDICTION WAS HALF WRONG. All four runners report
+  sh.ting 15 / 2545 total — Windows included. I predicted 2537 there,
+  reasoning the eight shell checks would stand down; they did not,
+  because GitHub's Windows runner has Git Bash on PATH and
+  which("sh") finds one. So my decomposition of the old 88 was wrong
+  too: not 6 + 82 PATH entries with the block skipped, but 6 + 8 + 74
+  with it running. Both give 88; I picked one and stated it as fact.
+  The conclusion (the count moved with PATH length) was right; the
+  story about Windows was not. 15 rather than 7 is the distinguishing
+  evidence, and it was there to be asked for.
+- 776: THE ARCHIVE THE WORLD DOWNLOADS IS NOW THE ONE THAT GETS RUN.
+  The release ran the archive THIS RUNNER BUILT, which is a different
+  claim: upload, storage and asset naming were untested until
+  something fetched it back. A step after upload now downloads the
+  asset by name, unpacks and smokes it. Rehearsed against the real
+  published v2.124.0: 2545 checks, 22 of 22 examples, exit 0. Zip is
+  unpacked with `tar -xf`, not unzip — tar on Windows is bsdtar and
+  reads zip, Git Bash ships no unzip.
+- 776: THE SECOND COPY OF THE STDLIB IS CHECKED. smoke.sh diffs the
+  archive's lib/ against the tree's; a stale or partial copy would be
+  invisible otherwise, since the binary keeps working on its embedded
+  copy while a script beside the archive gets the other. Both
+  failures made to happen (a line appended to lib/time.ting, and
+  lib/csv.ting deleted): each exits 1 and names the file.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - confirm the prediction on the runners: sh.ting 15 checks and 2545
-  total everywhere with a shell, 2537 on Windows (eight checks stand
-  down where there is no `sh` to drive). If any platform reports a
-  third number, something else counts per-machine too.
-  - then the next stroke of the milestone: prove the archive's lib/
-  and the binary's embedded stdlib are the same twelve modules (754).
+  - watch CI on 776, then cut v2.125.0 (773, 774, 775, 776 stand).
+  Check the tree against the previous release commit FIRST (738).
+  THE RELEASE ITSELF IS THE TEST OF THIS MILESTONE: the smoke and the
+  download-back step have never run on a real tag. Read the Release
+  workflow's log per target, not just its colour.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

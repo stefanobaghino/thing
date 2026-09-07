@@ -40,6 +40,13 @@ fi
 echo "started: $got"
 
 rm -rf "$root/selftest" "$root/examples"
+# The lib/ in the archive and the lib/ this binary embedded at compile
+# time are two copies of the same twelve modules, and a packaging step
+# that copied a stale or partial one would be invisible to everything
+# else here: the binary would keep working on its embedded copy while
+# a script beside the archive quietly got the other. So compare them.
+diff -r lib "$root/lib"
+
 cp -r selftest examples "$root"/
 "$ting" --test "$root/selftest" </dev/null
 
