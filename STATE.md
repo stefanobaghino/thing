@@ -1952,12 +1952,31 @@ holds only the current milestone and the standing rules.
   v2.125.0 lib`.
   Six assets; both aarch64 archives cold here at 2.125.0; ten site
   paths 200, changelog.html carries v2.125.0.
+- 779: THE RELEASE PAGE SAYS WHAT WAS CHECKED. A `finish` job with
+  `needs: build` uploads SHA256SUMS and rewrites the notes — and
+  because it is reachable ONLY when all six targets built, ran their
+  packaged archive, uploaded, fetched back and ran that too, THE
+  CLAIM IS TRUE BY CONSTRUCTION. One target failing leaves the plain
+  notes `create` gave them; nobody is told a check happened that did
+  not. The notes say a checksum served from the same page proves
+  INTEGRITY, NOT PROVENANCE.
+  Rehearsed against published v2.125.0 with the two mutating commands
+  stubbed and everything else the bytes from the file; the gnu
+  checksum matched a copy downloaded an hour earlier.
+  CHECKED RATHER THAN ASSUMED: `gh release edit` DOES have
+  --notes-file (my grep anchored on the long form and missed the
+  `-F,` line — I nearly recorded that it did not).
+  v2.125.0's notes deliberately NOT back-dated: the sentence is not
+  true of that release, and back-dating it is the dishonesty the job
+  exists to prevent.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the next tag is the only place 778's Windows fix can be proven.
-  Until then the download-back step has run on five targets, not six.
-  Say "eleven of twelve" rather than rounding it up.
+  - release v2.126.0 (778 and 779 stand). Check the tree against the
+  previous release commit FIRST (738). THIS TAG IS WHERE THE WINDOWS
+  UNPACK FIX AND THE finish JOB ARE PROVEN — neither has run on a
+  tag. Expect TWELVE executions this time, and a release page
+  carrying SHA256SUMS and the new notes.
   - then a health tick to close "the archive that was run", and
   replenishment after it.
   - then: prove the archive's lib/ and the binary's embedded stdlib

@@ -17274,3 +17274,52 @@ I cannot run**. "tar on Windows is bsdtar" was a belief written as a
 comment, and a comment is not a measurement. Where a claim about
 another platform cannot be checked here, the safe move is to use the
 mechanism that platform has already been observed to accept.
+
+## 2026-09-07 — Iteration 779: the release page says what was checked
+
+Everything this milestone has built so far is visible only to me: a
+green workflow, a log I read. Somebody downloading a tarball from the
+release page sees the same sentence releases have carried for a
+hundred tags — "prebuilt binaries below". They have no way to know
+the file was ever started.
+
+A new `finish` job fixes that, and it is placed so the claim cannot
+be a lie. It declares `needs: build`, so it is reachable **only when
+every one of the six targets has built, run the archive it packaged,
+uploaded it, fetched it back and run that too**. If one target fails,
+the job never runs and the notes keep the plain text `gh release
+create` gave them. Nobody is told a check happened that did not: the
+sentence is true by construction rather than by assertion, which is
+the only kind of claim worth putting in front of a stranger.
+
+It also uploads `SHA256SUMS`, and the notes are careful about what
+that is worth:
+
+> `SHA256SUMS` lets you check that a download arrived intact. It is
+> not a signature: it says nothing about who produced these files,
+> only that the bytes you have are the bytes this page is serving.
+
+A checksum served from the same page as the file it describes proves
+integrity, not provenance. Saying so is the difference between a
+useful file and security theatre.
+
+Rehearsed against the published v2.125.0, with the two mutating
+commands stubbed out and everything else the bytes from the file: six
+assets downloaded, six checksums computed, the heredoc dedented
+through YAML into exactly the notes intended. The aarch64 gnu
+checksum matched a copy downloaded separately an hour earlier, which
+is the cheap way to confirm `sha256sum` is reading what I think and
+that a download is reproducible.
+
+**Two things I checked rather than assumed**, both of which I would
+have got wrong by memory. `gh release edit` does have `--notes-file`
+— my first grep for it found nothing because the line begins `-F,`
+and my pattern anchored on the long form; the flag was there all
+along and I nearly wrote down that it was not. And the notes are
+written to a file rather than piped, because that needs no opinion
+about whether `-` works.
+
+v2.125.0's own notes were deliberately left alone. The sentence this
+job writes is not true of that release — Windows never ran its
+downloaded copy — and back-dating a claim onto a release that did not
+earn it would be exactly the dishonesty the job is built to prevent.

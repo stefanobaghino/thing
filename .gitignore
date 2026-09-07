@@ -8,3 +8,5 @@ selftest-fs-tree-*
 selftest-csv-rows-*
 smoke/
 unpacked/
+assets/
+notes.md

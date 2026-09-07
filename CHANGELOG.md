@@ -5,6 +5,22 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- The release page now carries a `SHA256SUMS` file and says what was
+  checked. Every archive is unpacked and run on a machine of its own
+  platform before upload and again after it, and the notes say so —
+  written by a job that only runs when all six targets have done it,
+  so the claim cannot outlive the check that backs it. The checksums
+  are for arriving intact, not for provenance, and the notes say that
+  too: they tell you the bytes you have are the bytes the page
+  serves, and nothing about who made them.
+- The downloaded archive is unpacked by each platform's own tool.
+  v2.125.0's release went red on Windows because `tar` under Git Bash
+  is GNU tar rather than the bsdtar in `System32`, and GNU tar does
+  not read zip; the zip now gets PowerShell, which had already
+  unpacked the packaged copy on that same runner minutes earlier.
+
 ## v2.125.0 (2026-09-07)
 
 - **Every released archive is now started before anyone is offered

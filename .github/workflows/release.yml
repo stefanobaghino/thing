@@ -121,3 +121,41 @@ jobs:
       - name: Run it again
         shell: bash
         run: tools/smoke.sh fetched "${GITHUB_REF_NAME#v}"
+
+  # Reachable only when every target has built, run the archive it
+  # packaged, uploaded it, fetched it back and run that too — so the
+  # sentence this writes into the release notes is true by
+  # construction rather than by assertion. If one target fails, the
+  # notes keep the plain text `create` gave them and nobody is told a
+  # check happened that did not.
+  finish:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Publish checksums and say what was verified
+        shell: bash
+        run: |
+          rm -rf assets && mkdir -p assets
+          gh release download "$GITHUB_REF_NAME" --dir assets --pattern 'ting-*'
+          (cd assets && sha256sum ting-* > SHA256SUMS)
+          gh release upload "$GITHUB_REF_NAME" assets/SHA256SUMS
+          cat > notes.md <<'NOTES'
+          Prebuilt binaries below; or `cargo build --release` from source (zero
+          dependencies). See docs/reference.md for the language and LOG.md for how
+          this was built.
+
+          **Every archive here was run before you were offered it.** Each one was
+          unpacked on a machine of its own platform and put to work — the binary
+          started from the directory it was unpacked into, the self-hosted suite
+          run against the stdlib compiled into it, and every example diffed
+          against its recorded output — first as the file the build produced, then
+          again as the file this page serves.
+
+          `SHA256SUMS` lets you check that a download arrived intact. It is not a
+          signature: it says nothing about who produced these files, only that the
+          bytes you have are the bytes this page is serving.
+          NOTES
+          gh release edit "$GITHUB_REF_NAME" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}
