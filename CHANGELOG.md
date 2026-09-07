@@ -7,6 +7,13 @@ Windows are attached to each
 
 ## Unreleased
 
+- `x = x + y` costs what `x += y` costs. The long spelling read the
+  name by copying what it held, so a loop that built a string or a
+  list the obvious way paid the length of it every time round: 80000
+  appends took 7.9 seconds for a string and 47.7 for a list, and now
+  take 0.03 either way. The fusing applies only where the right-hand
+  side cannot reach the name, and an unbound name is still reported
+  as the read it is written as.
 - Growing a list with `xs += [x]` is linear. `+` copied the whole
   list every time round, so building one in a loop cost the square of
   its length: 200000 appends took 47 seconds and now take 0.02. When

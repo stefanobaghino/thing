@@ -92,6 +92,9 @@ pub enum Op {
     CheckVar(u32),
     /// UpdateSlot for a name in the environment.
     UpdateVar(u32, BinaryOp),
+    /// As CheckVar, but for the read half of `x = x + y`: the name is
+    /// written as a read there, so an unbound one is reported as one.
+    CheckVarRead(u32),
 }
 
 #[derive(Debug)]
@@ -565,6 +568,25 @@ impl Compiler {
                                     self.note_scope();
                                 }
                             }
+                        }
+                    }
+                } else if let Some((rhs, read)) = crate::eval::folds_into_append(name, value) {
+                    // The long spelling of `x += y`, fused the same
+                    // way. The operator's span rides the instruction,
+                    // so a type error still points at `x + y` rather
+                    // than at the whole statement.
+                    match slot {
+                        Some(slot) => {
+                            self.expr(rhs)?;
+                            self.emit(Op::UpdateSlot(slot, BinaryOp::Add), value.span);
+                        }
+                        None => {
+                            let i = self.name(name);
+                            self.emit(Op::CheckVarRead(i), read);
+                            self.note_scope();
+                            self.expr(rhs)?;
+                            self.emit(Op::UpdateVar(i, BinaryOp::Add), value.span);
+                            self.note_scope();
                         }
                     }
                 } else {

@@ -17620,3 +17620,79 @@ Six ting-level assertions in `selftest/compound.ting` (2545 -> 2551),
 the Windows target, and `bench/growth.ting` joins BASELINE as its
 tenth row (vm 99.7 ms, eval 239.8 ms). The other nine checksums are
 unchanged.
+
+## 2026-09-07 — Iteration 785: the long way round costs the same now
+
+`x = x + y` is the spelling people write first and the tutorial
+teaches. It was the slow one.
+
+```
+80000 appends        before      after
+  s = s + "..."      7.863 s     0.032 s      246x
+  xs = xs + [i]     47.652 s     0.036 s     1324x
+```
+
+Nothing was wrong with `binary` — 784 had already made it right. The
+cost was upstream: reading a name clones what it holds, so the add
+worked on a copy and the original was thrown away a line later. `+=`
+avoided it by moving the value out of the binding instead, and that
+path already existed. This tick just teaches both engines that
+`x = x + y` **is** that path.
+
+`eval::folds_into_append` recognises it: an `Add` whose left operand
+is `Var(name)` and whose right operand `cannot_reach` that name. It
+returns the right-hand side and the span of the `x` that was read,
+because those two spans are the whole difficulty.
+
+**The spans are the difficulty.** The two spellings report failure
+differently, and a user must not be able to tell that one has become
+the other:
+
+```
+q = q + 1   ->  1:14: undefined variable 'q'                (the read)
+q += 1      ->  1:10: cannot assign to undefined variable   (the write)
+
+t = t + 1   ->  2:5: cannot apply '+' ...   with the caret under `t + 1`
+t += 1      ->  2:1: cannot apply '+' ...   with the caret under `t += 1`
+```
+
+So the fused instruction carries `value.span` rather than the
+statement's, and the environment path gets a new `Op::CheckVarRead`
+beside `Op::CheckVar` — the same boundness check reported as a read.
+The tree-walker fuses only when `Env::bound` already says yes, which
+gets there by falling through.
+
+**Checked against the binary that came before it.** Fifteen shapes —
+the nine aliasing ones from 784 rewritten in the long form, plus
+prepending (`z = [0] + z`, which is not appending and must not fuse),
+an int, and the two type errors — run on a build from HEAD before the
+change and on the build after, in both engines. Byte-identical, and
+the two error spans above were read off both binaries.
+
+The allocation guards now hold **both** spellings to the same budget,
+and were proven against the old implementation, where both new cases
+fail at exactly four times the bytes for twice the work:
+
+```
+s = s + x     60010663 B -> 240000663 B    (x4.00)
+xs = xs + [i] 144188843 B -> 576356843 B   (x4.00)
+```
+
+Selftest 2551 -> 2555. Gate green, Windows target checked, 50000
+differential and 20000 formatter cases at seed 785 clean, all ten
+bench checksums unchanged.
+
+**What this does not reach, measured before claiming it.** The fuse
+needs the right-hand side not to mention the name, and `cannot_reach`
+says no to every call — because a call could reassign the name, and
+the fused order reads it later than the unfused one does. So the
+commonest spelling of all is still quadratic:
+
+```
+s += str(i)   n=20000 0.068 s   40000 0.272 s   80000 1.680 s
+```
+
+That is `s += format(...)` in every report-building loop, and
+`lib/time.ting:222`. It needs the compiler to know that `str` here is
+the builtin and not something the script rebound — which is a
+different piece of work, and the next one.

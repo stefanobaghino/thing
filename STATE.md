@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2551 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2555 selftest checks on all four
   CI platforms, Windows included); 364 Rust tests
   in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
   rows since bench/growth.ting joined in 784.
@@ -2065,16 +2065,37 @@ holds only the current milestone and the standing rules.
   310975 -> 601087 (x1.93). Proven by running the new guard against
   the old implementation: fails on the list, passes on the string, so
   it measures what changed rather than that something did.
+- 785: THE LONG WAY ROUND COSTS THE SAME NOW. `x = x + y` fuses into
+  the `x += y` path in both engines: 80000 appends went 7.863s ->
+  0.032s for a string and 47.652s -> 0.036s for a list. binary was
+  already right after 784; the cost was upstream, in the clone that
+  reading a name performs. eval::folds_into_append recognises an Add
+  whose left operand is Var(name) and whose right cannot_reach it.
+  THE SPANS WERE THE DIFFICULTY and are preserved exactly: `q = q + 1`
+  reports the READ ("undefined variable 'q'", at the q), `q += 1` the
+  WRITE ("cannot assign to undefined variable"); `t = t + 1` puts the
+  caret under `t + 1`, `t += 1` under the whole statement. So the
+  fused op carries value.span, and Op::CheckVarRead joins Op::CheckVar
+  to report boundness as a read. Read off BOTH binaries, not reasoned.
+  Fifteen shapes (784's nine in the long form, plus prepending, an
+  int, and two type errors) byte-identical old vs new, both engines.
+  Alloc guards now hold BOTH spellings; proven against the old
+  implementation where both new cases fail at exactly x4.00 bytes.
+  Selftest 2551 -> 2555, ten bench checksums unchanged, 50000
+  differential and 20000 formatter at seed 785 clean, Windows checked.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - now the LONG FORM: `x = x + y` still copies, because reading the
-  name clones the value before `binary` ever sees it (that clone is
-  the whole cost -- `binary` itself is already right). Make the
-  compiler fuse `x = x + <expr that cannot_reach x>` into the same
-  UpdateSlot/UpdateVar the `+=` path uses; then 783's 520x and this
-  tick's 2270x both close. Same aliasing shapes, same alloc guard
-  (extend it to the long form), differential sweep.
+  - A CALL ON THE RIGHT STILL BLOCKS THE FUSE, and that is the
+  commonest spelling there is: `s += str(i)` measured 0.068 / 0.272 /
+  1.680 s at 20000 / 40000 / 80000 (785), i.e. still quadratic, and
+  `s += format(...)` in every report loop is the same. cannot_reach
+  refuses Call because a call could reassign the name and the fused
+  order reads it later than the unfused one. The way through is for
+  the compiler to know the callee is a BUILTIN that no script binding
+  shadows -- ting already resolves names well enough to warn about
+  unknown ones, so the information is there. Sound only if shadowing
+  is ruled out; if it cannot be ruled out cheaply, say so and stop.
   - then docs/tutorial.md:196 and lib/time.ting:222, which teach and
   use the long form in a loop, and a reference note on what `+=`
   costs.

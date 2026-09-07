@@ -116,3 +116,28 @@ assert(len(snaps[0]) == 1 && len(snaps[1]) == 2 && len(snaps[2]) == 3, "each sna
 let big = [];
 for i in range(0, 1000) { big += [i]; }
 assert(len(big) == 1000 && big[0] == 0 && big[999] == 999, "a thousand appends");
+
+# The long spelling takes the same path when the right-hand side
+# cannot reach the name, so `xs = xs + [x]` costs what `xs += [x]`
+# costs -- and everyone else still keeps the list they were given.
+let slow = [1];
+let kept = slow;
+slow = slow + [2];
+assert(len(slow) == 2 && len(kept) == 1, "the long form shares nothing new");
+
+let text = "a";
+let copy = text;
+text = text + "b";
+assert(text == "ab" && copy == "a", "nor does it for strings");
+
+# What the fusing must not swallow: the read is still a read, so its
+# errors are the read's, and prepending is not appending.
+let front = [1];
+front = [0] + front;
+assert(front[0] == 0 && len(front) == 2, "prepending still builds a new list");
+
+let wrong = try(fn() {
+  let one = "a";
+  one = one + 1;
+});
+assert(contains(wrong["err"], "cannot apply '+' to string and int"), "types still checked");

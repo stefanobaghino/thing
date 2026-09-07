@@ -320,6 +320,12 @@ fn exec<W: Write>(
                     *slot = eval::binary(*op, slot.clone(), r, span)?;
                 }
             }
+            Op::CheckVarRead(i) => {
+                let name = &chunk.names[*i as usize];
+                if !interp.is_bound(name) {
+                    return Err(interp.undefined_among(name, span, chunk.in_scope_at(ip)));
+                }
+            }
             Op::CheckVar(i) => {
                 let name = &chunk.names[*i as usize];
                 if !interp.is_bound(name) {

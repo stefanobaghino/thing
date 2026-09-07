@@ -118,39 +118,43 @@ fn the_allocation_counter_sees_allocations() {
 /// apart -- both allocate about once per iteration -- so this weighs
 /// the bytes. Doubling the iterations doubles a linear appetite and
 /// quadruples a quadratic one; the budget is three times, which no
-/// quadratic run can meet and no linear one can miss.
+/// quadratic run can meet and no linear one can miss. Both spellings
+/// are held to it: `xs += [x]` and the long form it is short for.
 #[test]
 fn growing_a_list_costs_the_appends_not_the_squares() {
-    let run = |n: usize| {
-        let src = format!("let xs = []; let i = 0; while i < {n} {{ xs += [i]; i += 1; }}");
-        bytes(|| {
-            ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
-        })
-    };
-    let a = run(2000);
-    let b = run(4000);
-    assert!(
-        b < a * 3,
-        "{a} bytes for 2000 appends, {b} for 4000 — the list is being copied"
-    );
+    for append in ["xs += [i]", "xs = xs + [i]"] {
+        let run = |n: usize| {
+            let src = format!("let xs = []; let i = 0; while i < {n} {{ {append}; i += 1; }}");
+            bytes(|| {
+                ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+            })
+        };
+        let a = run(2000);
+        let b = run(4000);
+        assert!(
+            b < a * 3,
+            "`{append}`: {a} bytes for 2000 appends, {b} for 4000 — the list is being copied"
+        );
+    }
 }
 
-/// The same for a string built a piece at a time, which has been the
-/// fast spelling since compound assignment arrived but has never been
-/// held to it by a test.
+/// The same for a string built a piece at a time. `s += x` has been
+/// linear since compound assignment arrived; the long form it is
+/// short for was not, and nothing held either of them to it.
 #[test]
 fn growing_a_string_costs_the_pieces_not_the_squares() {
-    let run = |n: usize| {
-        let src =
-            format!("let s = \"\"; let i = 0; while i < {n} {{ s += \"abcdefghij\"; i += 1; }}");
-        bytes(|| {
-            ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
-        })
-    };
-    let a = run(2000);
-    let b = run(4000);
-    assert!(
-        b < a * 3,
-        "{a} bytes for 2000 appends, {b} for 4000 — the string is being copied"
-    );
+    for append in ["s += \"abcdefghij\"", "s = s + \"abcdefghij\""] {
+        let run = |n: usize| {
+            let src = format!("let s = \"\"; let i = 0; while i < {n} {{ {append}; i += 1; }}");
+            bytes(|| {
+                ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+            })
+        };
+        let a = run(2000);
+        let b = run(4000);
+        assert!(
+            b < a * 3,
+            "`{append}`: {a} bytes for 2000 appends, {b} for 4000 — the string is being copied"
+        );
+    }
 }

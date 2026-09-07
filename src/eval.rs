@@ -1155,7 +1155,26 @@ impl<W: Write> Interpreter<W> {
             }
             StmtKind::Assign(name, op, value) => {
                 let v = match op {
-                    None => self.eval(value)?,
+                    // `x = x + y` takes the `x += y` path when the
+                    // binding is already there: the same move out of
+                    // it, and the error spans of the long form, which
+                    // are the operator's own rather than the
+                    // statement's.
+                    None => match folds_into_append(name, value) {
+                        Some((rhs, _)) if Env::bound(&self.env, name) => {
+                            let r = self.eval(rhs)?;
+                            let moved = Env::with(&self.env, name, |v| appends_in_place(v, &r))
+                                == Some(true);
+                            let old = if moved {
+                                Env::take(&self.env, name)
+                            } else {
+                                Env::get(&self.env, name)
+                            }
+                            .expect("the binding was there a moment ago");
+                            binary(crate::ast::BinaryOp::Add, old, r, value.span)?
+                        }
+                        _ => self.eval(value)?,
+                    },
                     // The compound form reads first, so an undefined
                     // name is caught before the right-hand side runs.
                     //
@@ -3566,6 +3585,27 @@ pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeE
 /// Deliberately blunt: any call, any function literal and any mention
 /// of the name itself answers no, because a call can reach anything
 /// and a closure can outlive the answer.
+/// `x = x + <expr>` is the same work as `x += <expr>` whenever the
+/// expression cannot reach `x`: the read, the add and the write are
+/// the same three steps in the same order. Spelling it the long way
+/// used to cost a copy of `x` on every pass, because reading a name
+/// clones what it holds. Returns the right-hand side and the span of
+/// the `x` that was read -- an unbound name must still be reported
+/// as the read it is written as, not as the assignment it becomes.
+pub(crate) fn folds_into_append<'a>(
+    name: &str,
+    value: &'a crate::ast::Expr,
+) -> Option<(&'a crate::ast::Expr, Span)> {
+    use crate::ast::ExprKind::*;
+    let Binary(BinaryOp::Add, l, r) = &value.kind else {
+        return None;
+    };
+    match &l.kind {
+        Var(n) if n == name && cannot_reach(r, name) => Some((r, l.span)),
+        _ => None,
+    }
+}
+
 pub(crate) fn cannot_reach(e: &crate::ast::Expr, name: &str) -> bool {
     use crate::ast::ExprKind::*;
     match &e.kind {
