@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2558 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2564 selftest checks on all four
   CI platforms, Windows included); 365 Rust tests
   in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
   rows since bench/growth.ting joined in 784.
@@ -2185,16 +2185,40 @@ holds only the current milestone and the standing rules.
   9 ms; the cost is scanning); a bytes type; startup (1.1 ms for
   `ting hello.ting` against 11.7 ms for `python3 -c` and 0.6 ms for
   /bin/echo).
+- 792: first stroke of "a character at a time" — indexing and `slice`
+  walk with `chars().nth` / `char_indices` instead of collecting a
+  `Vec<char>`; new `byte_of` helper in src/eval.rs. A bound counted
+  from the START needs no length, so only a negative bound counts the
+  characters. Index scan 10x faster: 0.665 -> 0.060 / 2.430 -> 0.243
+  / 9.707 -> 1.061 / 39.404 -> 3.897 s at 20k/40k/80k/160k. STILL
+  QUADRATIC (x4 per doubling) — the remaining cost is the CLONE, not
+  the decode: `Value::Str` owns its text, so evaluating `s` copies the
+  whole string and `len(s)` in a loop condition copies it again. That
+  is the next two strokes.
+  TWO CORRECTIONS TO 791'S FRAMING, both measured: (a) CSV IS NOT
+  EXPLAINED BY INDEXING — 6.018 -> 6.453 s, unchanged, because
+  lib/csv.ting's scanner uses `for c in text`, not indexing; the
+  milestone stands on the index numbers above, not on that file.
+  (b) THE PER-CHARACTER FLOOR IS 204 ns — bare `for c in text { n +=
+  1; }` over 7.6M chars is 1.555 s; with a branch and an append
+  2.625 s (345 ns). CSV's 6 s is ~790 ns/char, ~4x the floor, so most
+  of it is the ting-level scanner, not the primitive.
+  THE GUARD COULD NOT BE A RATIO: both spellings pay the same clone,
+  so the old code passed a ratio test at x3.97. tests/alloc.rs's
+  `reading_a_string_by_index_does_not_cost_the_string_each_time`
+  measures BYTES PER CHARACTER PER READ absolutely (< 3); it reports
+  9.0 and FAILS on the old implementation, passes on the new.
+  Semantics checked byte-identical against a binary built from the
+  previous commit across fourteen shapes on both engines; six of them
+  now live in selftest/strings.ting.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - first stroke: make indexing and `slice` stop building a `Vec<char>`
-  of the whole string. Measure the is_ascii()-per-call version FIRST
-  (allocation-free, still O(n)) against the cached version, and say
-  which is worth its complexity -- 787's `len` fast path measured
-  only 15% and was reverted, so do not assume this one pays.
-  - then the cached count/ascii flag carried with the string, which
-  is where O(1) actually comes from.
+  - next stroke: the cached count/ascii flag carried with the string,
+  which is where O(1) actually comes from. 792 took the
+  allocation-free O(n) version and it paid 10x, but the scan is still
+  quadratic and a read still clones the text; measure the cached
+  version against 792's numbers below before believing it pays too.
   - then the same representation behind an Rc, closing 787's case:
   `s += str(n)` where some function mentions the name.
   - then: prove the archive's lib/ and the binary's embedded stdlib

@@ -184,3 +184,33 @@ fn a_call_on_the_right_still_appends_in_place_in_a_frame() {
         );
     }
 }
+
+/// Reading a string one character at a time must not cost the string
+/// each time. `s[i]` and `slice` used to decode the whole thing into
+/// a `Vec<char>` per call, which is four bytes per character of the
+/// WHOLE string for one character of answer; walking end to end then
+/// asked the allocator for the square. Doubling the length is what
+/// tells that apart from a walk that stops where it is asked to.
+#[test]
+fn reading_a_string_by_index_does_not_cost_the_string_each_time() {
+    for read in ["s[j]", "slice(s, j, j + 1)"] {
+        let run = |n: usize| {
+            let src = format!(
+                "let s = \"\"; let i = 0; while i < {n} {{ s += \"abcdefghij\"; i += 1; }} let j = 0; let c = 0; while j < len(s) {{ if {read} == \"e\" {{ c += 1; }} j += 1; }}"
+            );
+            bytes(|| {
+                ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+            })
+        };
+        // 2000 characters read one at a time. Each read still copies
+        // the string it indexes (`Value::Str` owns its text), so the
+        // floor is about two bytes per character per read; decoding
+        // into a `Vec<char>` as well put four more on top of it.
+        let n = 2000;
+        let per_read = run(n / 10) as f64 / (n * n) as f64;
+        assert!(
+            per_read < 3.0,
+            "`{read}`: {per_read:.1} bytes per character per read over {n} characters — the string is being decoded, not just copied"
+        );
+    }
+}

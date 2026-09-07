@@ -1830,9 +1830,17 @@ impl<W: Write> Interpreter<W> {
                 };
                 match &args[0] {
                     Value::Str(s) => {
-                        let chars: Vec<char> = s.chars().collect();
-                        let (lo, hi) = slice_bounds(lo, hi, chars.len());
-                        Ok(Value::Str(chars[lo..hi].iter().collect()))
+                        // Bounds counted from the start need no length,
+                        // so a slice near the front of a long string
+                        // does not walk the rest of it.
+                        let (lo, hi) = if lo >= 0 && hi >= 0 {
+                            (lo as usize, (hi as usize).max(lo as usize))
+                        } else {
+                            slice_bounds(lo, hi, s.chars().count())
+                        };
+                        let start = byte_of(s, lo);
+                        let end = start + byte_of(&s[start..], hi - lo);
+                        Ok(Value::Str(s[start..end].to_string()))
                     }
                     Value::List(items) => {
                         let items = items.borrow();
@@ -3801,6 +3809,15 @@ pub(crate) fn effective_index(i: i64, len: usize, span: Span) -> Result<usize, R
 
 /// A possibly negative index resolved against a length, or None when it
 /// falls outside. Negative counts from the end, the way indexing reads.
+/// Byte offset of character `n`, clamped to the end of the string.
+/// Walking there costs what it takes to reach it; the alternative in
+/// use until now was to decode the whole string into a `Vec<char>`
+/// for every single character read, which made reading a string end
+/// to end quadratic in time and in bytes asked of the allocator.
+fn byte_of(s: &str, n: usize) -> usize {
+    s.char_indices().nth(n).map_or(s.len(), |(b, _)| b)
+}
+
 fn offset(i: i64, len: usize) -> Option<usize> {
     let len = len as i64;
     let eff = if i < 0 { i + len } else { i };
@@ -3823,8 +3840,18 @@ pub(crate) fn index_opt(
         }
         (Value::Map(entries), Value::Str(k)) => Ok(entries.borrow().get(k).cloned()),
         (Value::Str(s), Value::Int(i)) => {
-            let chars: Vec<char> = s.chars().collect();
-            Ok(offset(*i, chars.len()).map(|eff| Value::Str(chars[eff].to_string())))
+            // A count from the end has to know the length; a count
+            // from the start does not, and only walks as far as it is
+            // asked to.
+            let eff = if *i < 0 {
+                match offset(*i, s.chars().count()) {
+                    Some(eff) => eff,
+                    None => return Ok(None),
+                }
+            } else {
+                *i as usize
+            };
+            Ok(s.chars().nth(eff).map(|c| Value::Str(c.to_string())))
         }
         (base, idx) => Err(error(
             format!("cannot index {} with {}", base.type_name(), idx.type_name()),

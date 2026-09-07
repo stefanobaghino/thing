@@ -53,3 +53,15 @@ assert(ord(chr(9731)) == 9731, "the two are inverses");
 assert(try(ord, "ab")["err"] != nil, "ord wants one character");
 assert(try(chr, -1)["err"] != nil, "chr wants a code point");
 assert(try(chr, 55296)["err"] != nil, "a surrogate is not a character");
+
+# Reading a character walks to it rather than decoding the whole
+# string, so the paths that count from the start and from the end are
+# now different code. Both still answer in characters.
+let mixed = "aé漢字z";
+assert(mixed[0] == "a" && mixed[2] == "漢" && mixed[-1] == "z", "index from either end");
+assert(slice(mixed, 1, 4) == "é漢字", "slice counts characters");
+assert(slice(mixed, -2, 99) == "字z", "a slice past the end stops at it");
+assert(slice(mixed, 3, 1) == "", "a backwards slice is empty");
+assert(slice(mixed, 0, 0) == "" && slice("", 0, 1) == "", "nothing to take");
+let far = try(fn() { return mixed[5]; });
+assert(contains(far["err"], "index 5 out of bounds (len 5)"), "the length is in characters");

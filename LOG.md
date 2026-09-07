@@ -18010,3 +18010,59 @@ reading); a bytes type (same, and still no measured pressure);
 startup (measured today: 1.1 ms for `ting hello.ting` against 11.7 ms
 for `python3 -c`, and 0.6 ms for `/bin/echo` — there is nothing
 there); the binary at 2.7 MB.
+
+## 2026-09-07 — Iteration 792: a character at a time, first stroke
+
+Indexing a string and slicing it no longer decode the whole thing.
+`src/eval.rs` had both arms build a `Vec<char>` of the entire subject
+for every single read; they now walk with `chars().nth` and
+`char_indices`, and a new `byte_of` helper converts a character count
+to a byte offset. A bound counted from the start needs no length, so
+a read or a slice near the front of a long string does not touch the
+rest of it; only a negative bound still counts the characters.
+
+**Measured, scanning a string end to end by index.** 0.665 -> 0.060 s
+at 20k characters, 2.430 -> 0.243, 9.707 -> 1.061, 39.404 -> 3.897 at
+160k. Ten times faster, and still quadratic (x4 per doubling), which
+is the point of the strokes after this one.
+
+**Two things 791 got wrong, corrected here.**
+
+- **CSV is not explained by indexing.** 6.018 s before, 6.453 after —
+  unchanged, because `lib/csv.ting`'s scanner iterates with
+  `for c in text`, not by index. I wrote 791's case as though the
+  scanner indexed; it does not. The milestone still holds, but on the
+  strength of the index numbers above, not on that file.
+- **The per-character floor is 204 ns.** A bare `for c in text { n +=
+  1; }` over 7.6M characters takes 1.555 s; with a branch and an
+  append, 2.625 s (345 ns). CSV's 6 s is ~790 ns per character, about
+  4x the floor — so most of its time is the ting-level scanner, not
+  the primitive.
+
+**What is left is the clone, and it is the next stroke.** After this
+change a read still costs about two bytes per character, because
+`Value::Str` owns its text: evaluating `s` copies the whole string,
+and `len(s)` in a loop condition copies it again. That is the `Rc`
+question 787 left open.
+
+**The guard.** `tests/alloc.rs` gained
+`reading_a_string_by_index_does_not_cost_the_string_each_time`, over
+both `s[j]` and `slice(s, j, j + 1)`. It could not be written as a
+ratio against the other spelling — both spellings pay the same clone,
+so the old code passed a ratio test at x3.97. It measures bytes per
+character per read absolutely instead and demands under 3. Run
+against the old implementation it reports 9.0 and fails; against the
+new one it passes. A guard nobody has seen fail is not a guard.
+
+**Semantics unchanged**, checked against a binary built from the
+commit before this one across fourteen shapes on both engines:
+positive, negative and out-of-bounds indices, the non-ASCII
+`"aé漢字z"`, empty strings, slice clamping, backwards slices, lists.
+Byte-identical output. Six of those shapes are now in
+`selftest/compound.ting`'s neighbour `selftest/strings.ting`, so the
+next person to touch these arms finds out from the suite.
+
+Gate green: fmt, clippy, 15 `test result: ok`, 70 files unchanged,
+corpus at 7 warnings, selftest 22 files / 2564 checks, Windows and
+wasm targets, and a differential sweep of 50000 cases at seed 792 —
+this changes a primitive both engines share.
