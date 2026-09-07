@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.123.0 (2026-09-07)
 
 - `local_zone()` is the 73rd builtin: the local time zone at an
   instant — a map of `offset` (milliseconds east of UTC), `abbr` and
