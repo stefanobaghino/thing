@@ -41,7 +41,11 @@ fn zone_path(tz: Option<&str>) -> Option<std::path::PathBuf> {
     if name.starts_with('/') {
         return Some(std::path::PathBuf::from(name));
     }
-    if name.is_empty() || name.split('/').any(|p| p == ".." || p == "." || p.is_empty()) {
+    if name.is_empty()
+        || name
+            .split('/')
+            .any(|p| p == ".." || p == "." || p.is_empty())
+    {
         return None;
     }
     Some(std::path::Path::new("/usr/share/zoneinfo").join(name))
@@ -157,17 +161,17 @@ mod tests {
     /// a minute either side of a transition, where a rule guessed
     /// from the month would land on the wrong side.
     const ZURICH: [(i64, i32, &str, bool); 8] = [
-        (1768478400, 3600, "CET", false),   // 2026-01-15T12:00Z
-        (1774745940, 3600, "CET", false),   // 2026-03-29T00:59Z
-        (1774746000, 7200, "CEST", true),   // 2026-03-29T01:00Z
-        (1784116800, 7200, "CEST", true),   // 2026-07-15T12:00Z
-        (1792889940, 7200, "CEST", true),   // 2026-10-25T00:59Z
-        (1792890000, 3600, "CET", false),   // 2026-10-25T01:00Z
-        (0, 3600, "CET", false),            // the epoch itself
-        (328665600, 3600, "CET", false),    // 1980-06-01, before
-                                            // Switzerland kept summer
-                                            // time at all: June, and
-                                            // still +01:00
+        (1768478400, 3600, "CET", false), // 2026-01-15T12:00Z
+        (1774745940, 3600, "CET", false), // 2026-03-29T00:59Z
+        (1774746000, 7200, "CEST", true), // 2026-03-29T01:00Z
+        (1784116800, 7200, "CEST", true), // 2026-07-15T12:00Z
+        (1792889940, 7200, "CEST", true), // 2026-10-25T00:59Z
+        (1792890000, 3600, "CET", false), // 2026-10-25T01:00Z
+        (0, 3600, "CET", false),          // the epoch itself
+        (328665600, 3600, "CET", false),  // 1980-06-01, before
+                                          // Switzerland kept summer
+                                          // time at all: June, and
+                                          // still +01:00
     ];
 
     fn zurich() -> Option<Vec<u8>> {
@@ -213,8 +217,16 @@ mod tests {
     #[test]
     fn tz_names_a_file_under_the_zone_directory_and_nowhere_else() {
         let p = |tz: Option<&str>| zone_path(tz).map(|p| p.display().to_string());
-        assert_eq!(p(None).as_deref(), Some("/etc/localtime"), "unset is the system zone");
-        assert_eq!(p(Some("")).as_deref(), Some("/etc/localtime"), "and so is empty");
+        assert_eq!(
+            p(None).as_deref(),
+            Some("/etc/localtime"),
+            "unset is the system zone"
+        );
+        assert_eq!(
+            p(Some("")).as_deref(),
+            Some("/etc/localtime"),
+            "and so is empty"
+        );
         assert_eq!(
             p(Some("Europe/Zurich")).as_deref(),
             Some("/usr/share/zoneinfo/Europe/Zurich"),

@@ -2769,10 +2769,7 @@ impl<W: Write> Interpreter<W> {
                     return Ok(Value::Nil);
                 };
                 let mut facts = std::collections::BTreeMap::new();
-                facts.insert(
-                    "offset".to_string(),
-                    Value::Int(zone.offset as i64 * 1000),
-                );
+                facts.insert("offset".to_string(), Value::Int(zone.offset as i64 * 1000));
                 facts.insert("abbr".to_string(), Value::Str(zone.abbr));
                 facts.insert("dst".to_string(), Value::Bool(zone.dst));
                 Ok(Value::map(facts))
