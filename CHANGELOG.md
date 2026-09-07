@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.124.0 (2026-09-07)
 
 - `local_zone` answers on **Windows**. Until now it was `nil` there,
   which meant a quarter of the release archives could not tell what
@@ -30,6 +30,18 @@ Windows are attached to each
   alike by making one of them say less.
 - The browser playground still answers `nil`, and now says so for the
   right reason rather than by falling through the Unix path.
+- The Windows answers are held to the answers a zone file gives. Six
+  instants in Zurich — including the minute either side of both 2026
+  transitions — are checked against the same values `date` reports,
+  through the registry rather than through a file. Windows lets a
+  caller ask for a named zone's rules rather than the machine's,
+  which is what makes that checkable on a machine sitting in UTC.
+- The guard that keeps HTML out of the markdown had been skipping
+  everything after one paragraph written in June: it took a line
+  beginning with an inline code span for a code fence, and nothing
+  closed the fence it opened. Fifty-six iterations of the log went
+  unchecked while it reported success. A fence is now a backtick run
+  that is not closed again on the same line.
 - How far back the answer reaches differs by platform, and the
   reference now says so. A zone file records a century of changes;
   Windows keeps per-year rules for a couple of decades and applies
