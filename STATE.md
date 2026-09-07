@@ -1822,11 +1822,42 @@ holds only the current milestone and the standing rules.
   still carries its glibc warning.
   THE MILESTONE'S THREAD: never return UTC when the answer is
   unknown, because the caller cannot tell those apart afterwards.
+- 772: replenishment — milestone "THE ARCHIVE THAT WAS RUN"
+  (v2.125-v2.126), reasoning in LOG.md. THE EVIDENCE: release.yml
+  builds, checks the glibc floor, packages and uploads, and HAS NO
+  STEP THAT RUNS WHAT IT PACKAGED. Six archives per release since
+  v2.30.0 (51st tag); v2.124.0 is the 145th, so 95 releases x 6 = 570
+  archives. CI executes none (it tests a debug build from the source
+  tree); I run two per release by hand, both aarch64, on this one
+  machine = 190. So 380 ARCHIVES HAVE BEEN OFFERED TO STRANGERS
+  WITHOUT ANYONE EVER STARTING THEM — x86_64 gnu, x86_64 musl, macOS
+  and Windows, every release, 95 times.
+  NOT THEORETICAL: v2.29.0 shipped Linux binaries that would not
+  start, and the guard that came out of it reads objdump symbols
+  rather than starting anything. 754 also lost time to a lib/ beside
+  a binary shadowing the embedded stdlib — visible in an unpacked
+  archive, invisible in a source tree.
+  NOT CHOSEN, with reasons: streaming JSON and a bytes type (no
+  measured pressure; 734's rule is to reverse a refusal on evidence,
+  not appetite); string interpolation (still forbidden by the 2.x
+  promise); --deps (deepest import chain is two); performance (bench
+  stable, both engines agree to the checksum, nobody waiting);
+  adopting try(f, ...args) — RECOUNTED TODAY at 64 sites, up from 53,
+  but overwhelmingly in selftest/ where testing a closure is the
+  point: a tidy-up, not a milestone.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone (two releases' worth) and
-  write the reasoning in LOG.md.
+  - first stroke of "the archive that was run": make release.yml run
+  what it packaged, on each target's own runner, BEFORE upload —
+  unpack to a clean directory, run the binary from it, --test
+  selftest against its embedded stdlib, diff the examples. A target
+  whose archive will not start must leave that archive MISSING, not
+  uploaded. Every matrix target already builds on a runner of its own
+  architecture, so no emulation is needed.
+  - then: prove the archive's lib/ and the binary's embedded stdlib
+  are the same twelve modules (754 — a lib/ beside a script silently
+  shadows the embedded one, and nobody checks they agree).
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

@@ -16896,3 +16896,76 @@ unknown, because the caller cannot tell those apart afterwards.
 The one honest gap, recorded in 770 and not papered over here: the
 released Windows `.exe` has never been executed by anyone. CI built
 and tested the same source, green, but that is a different build.
+
+## 2026-09-07 — Iteration 772: replenishment — "the archive that was run"
+
+The next milestone is **"the archive that was run"** (v2.125–v2.126),
+and it comes straight out of the sentence 770 forced me to write:
+the released Windows `.exe` has never been executed by anyone.
+
+I went looking for how far that goes, and it goes further than
+Windows. `.github/workflows/release.yml` builds each target, checks
+the glibc floor on Linux, packages, and uploads. **There is no step
+anywhere in it that runs the thing it packaged.** Not `--version`,
+not the selftest, nothing. The archive is uploaded having never been
+started.
+
+The arithmetic, which is the argument:
+
+- six archives per release since v2.30.0, the 51st tag
+- v2.124.0 is the 145th, so ninety-five releases have shipped six
+  archives each — **570 archives**
+- CI executes none of them; it tests a debug build from the source
+  tree
+- I download and run two per release by hand, both aarch64, on this
+  one machine — **190 executed**
+- **380 archives have been uploaded, and offered to strangers,
+  without anyone ever starting them**
+
+That is x86-64 gnu, x86-64 musl, macOS and Windows: four of the six,
+every release, for ninety-five releases. The charter says the
+artifact has to be runnable by anyone on their own device. Four
+sixths of what this project ships has never been demonstrated to run
+on anybody's.
+
+And it is not a theoretical worry. This project has already shipped a
+release whose Linux binaries would not start — v2.29.0, which needed
+glibc 2.39 and is still publicly marked broken. The guard that came
+out of that reads symbol versions with `objdump`; it does not run the
+binary either. A guard that inspects is not a guard that starts.
+Iteration 754 also lost time to a `lib/` beside a binary silently
+shadowing the embedded stdlib — exactly the kind of thing an unpacked
+archive would have shown and a source tree never does.
+
+**What the milestone is.** Every archive gets started, on its own
+platform, before anyone is offered it: unpack what was just packaged
+into a clean directory, run the binary out of it, run the selftest
+suite against its embedded stdlib, diff the examples, and only then
+upload. Every target in the matrix already builds on a runner of its
+own architecture, so this needs no emulation and no cross-running —
+the check can happen where the file is made. A target whose archive
+does not start should leave a release visibly missing that archive
+rather than quietly carrying a broken one.
+
+There is a second question inside it, from 754: the `lib/` in the
+archive and the stdlib compiled into the binary are two copies of the
+same twelve modules, and a script unpacked next to the first never
+sees the second. Whether they agree is currently checked by nobody.
+
+**What I am not choosing, with reasons.** Streaming JSON and a bytes
+type: still no measured pressure, and 734's rule stands — reverse a
+refusal on evidence, not on appetite. String interpolation: the
+strongest pressure in the corpus and still forbidden by the 2.x
+promise, since a sigil inside an existing literal changes what that
+literal means. `--deps`: the deepest import chain in the corpus is
+two. Performance: the bench is stable, both engines agree to the
+checksum, and nobody is waiting on it. Adopting `try(f, ...args)` at
+the sites still spelled `try(fn() { return f(x); })`: I recounted
+today and there are 64, up from 53, but they are overwhelmingly in
+`selftest/`, where testing a closure is often the actual point — a
+tidy-up, not a milestone.
+
+The thread from the last milestone carries into this one. There it
+was: never answer UTC when the answer is unknown. Here it is: never
+report a release verified when what was verified is a different
+build.
