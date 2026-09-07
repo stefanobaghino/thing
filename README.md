@@ -23,7 +23,7 @@ flow with compound assignment (`+=` and its four siblings),
 modules via `import()`
 plus twelve embedded stdlib modules
 (list/map/string/math/json/fs/test/time/sh/args/err/csv),
-72 builtins (file and stdin I/O including a file read a line at a
+73 builtins (file and stdin I/O including a file read a line at a
 time, listing, making and removing directories, moving and copying
 files, JSON with pretty printing,
 sorting, map/filter/reduce,

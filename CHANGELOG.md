@@ -5,6 +5,27 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `local_zone()` is the 73rd builtin: the local time zone at an
+  instant — a map of `offset` (milliseconds east of UTC), `abbr` and
+  `dst`, or `nil` where the platform keeps nothing to read. Until now
+  ting had no idea what time it was anywhere but UTC, and that was
+  not cosmetic: `examples/organize.ting` files each file into a
+  folder named for the day it was written, and a file written at half
+  past midnight went into yesterday's. Rust's standard library has no
+  local-time API, so this reads what the system already keeps — the
+  TZif file (RFC 8536) at `/etc/localtime`, or the one `TZ` names
+  under `/usr/share/zoneinfo`. It answers for an instant rather than
+  for now, because a report over last winter's timestamps needs last
+  winter's offset: the file records every change a zone has been
+  through, so June 1980 in Zurich is `+01:00` (the country kept no
+  summer time until 1981) and 1874 is `+00:29:46` local mean time —
+  which is why an offset is a whole number of seconds but not always
+  of minutes. A `TZ` that carries a POSIX rule rather than a name,
+  and a platform with no such file, both answer `nil` rather than a
+  guess, so a caller can tell "unknown" from a real zero.
+
 ## v2.122.0 (2026-09-07)
 
 - `lib/csv.ting` gained `each_map(path, f, sep = ",")`: what `maps`

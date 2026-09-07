@@ -352,6 +352,7 @@ scope).
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |
+| `local_zone()` / `local_zone(ms)` | the local zone at that instant, now by default: a map of `offset` (milliseconds east of UTC), `abbr` (the zone's own name for that period, e.g. `"CEST"`) and `dst`. `nil` where the platform keeps nothing to read, which a script can tell from a real zero |
 | `sleep_ms(ms)` | pauses for that many milliseconds, flushing output first; a negative count, or anything but an int, errors |
 | `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |
 | `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
@@ -437,6 +438,21 @@ The split between them is deliberate:
 `stat` answers the questions a name cannot. `size` is **bytes**,
 which `len(read_file(p))` is not — that counts characters, so a file
 with any UTF-8 in it reports short, and a file that is not text
+`local_zone` reads the zone the machine itself keeps, because there
+is no other honest source for it: the TZif file at `/etc/localtime`,
+or the one `TZ` names under `/usr/share/zoneinfo` when it is set. It
+answers for an instant rather than for the present, since a report
+over last winter's timestamps needs last winter's offset, and the
+file records every change a zone has been through — including the
+years before a country kept summer time, and the local mean time that
+predates zones altogether, which is why an offset is a whole number
+of seconds but not always of minutes. It answers `nil` on a platform
+with no such file to read, and on a `TZ` that carries a rule rather
+than a name; that is a refusal rather than a guess, because a caller
+told UTC cannot tell it apart from a caller told the truth. The
+instants after the last transition the file records take the last
+offset in it, since the POSIX rule in the file's footer is not read.
+
 cannot be read at all. `modified` is on the same clock as `time_ms()`
 and signed the same way, so `time_ms() - stat(p)["modified"]` is an
 age in milliseconds and a file older than 1970 counts backwards

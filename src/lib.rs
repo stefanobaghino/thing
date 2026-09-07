@@ -13,6 +13,7 @@ pub mod lsp;
 pub mod parser;
 pub mod regex;
 pub mod repl;
+pub mod tz;
 pub mod value;
 pub mod vm;
 pub mod wasm;

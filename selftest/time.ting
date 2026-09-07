@@ -76,3 +76,33 @@ assert(from_iso("not a date") == nil, "and what is not a date at all is nil, not
 assert(from_iso("") == nil, "including nothing");
 assert(from_iso(3) == nil, "and what is not a string");
 assert(t["digits"]("0123") && !t["digits"]("12a") && !t["digits"](""), "digits is all of them and at least one");
+
+# The local zone, which the platform keeps rather than this language.
+# A machine that keeps nothing to read — Windows today — answers nil,
+# and the point of nil is that a script can tell it apart from a real
+# zero offset. So everything below holds either way.
+let err = import("lib/err.ting")["message"];
+let here = local_zone();
+assert(here == nil || type(here) == "map", "the local zone is a map or nothing");
+if here != nil {
+  assert(type(here["offset"]) == "int", "an offset in milliseconds");
+  assert(type(here["abbr"]) == "string" && len(here["abbr"]) > 0, "the zone's own abbreviation");
+  assert(type(here["dst"]) == "bool", "and whether it is summer time");
+  # No zone has ever been more than fifteen hours from UTC, and every
+  # offset is a whole number of seconds — but NOT of minutes: an old
+  # enough instant lands in local mean time, which Zurich kept at
+  # 29 minutes 46 seconds.
+  assert(here["offset"] > -15 * 3600000 && here["offset"] < 15 * 3600000, "and it is a real offset");
+  assert(here["offset"] % 1000 == 0, "a whole number of seconds");
+  # The same instant is the same answer, whenever it is asked.
+  let at = 1784116800000;
+  assert(local_zone(at) == local_zone(at), "an instant has one answer");
+  assert(str(local_zone(at)) == str(local_zone(at)), "which does not drift between calls");
+}
+
+# What it refuses. An instant is a number of milliseconds, like the
+# one time_ms and stat hand out.
+assert(err(fn() { return local_zone("2026-01-01"); }) ==
+"local_zone expects an instant in milliseconds, got string",
+"a date is not an instant");
+assert(contains(err(fn() { return local_zone(1, 2); }), "local_zone"), "and it takes at most one");

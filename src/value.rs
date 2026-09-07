@@ -88,6 +88,7 @@ pub enum Builtin {
     Env,
     Exit,
     TimeMs,
+    LocalZone,
     SleepMs,
     Random,
     RandomInt,
@@ -103,7 +104,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 72] = [
+    pub const ALL: [Builtin; 73] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -164,6 +165,7 @@ impl Builtin {
         Builtin::Env,
         Builtin::Exit,
         Builtin::TimeMs,
+        Builtin::LocalZone,
         Builtin::SleepMs,
         Builtin::Random,
         Builtin::RandomInt,
@@ -373,6 +375,10 @@ impl Builtin {
                 "Ends the program with that status (default 0); not catchable.",
             ),
             Builtin::TimeMs => ("time_ms()", "Milliseconds since the Unix epoch, as an int."),
+            Builtin::LocalZone => (
+                "local_zone() / local_zone(ms)",
+                "The local zone at that instant (now by default): a map of offset (milliseconds east of UTC), abbr and dst. Nil where the platform keeps nothing to read, so a script can tell that from a real zero.",
+            ),
             Builtin::SleepMs => (
                 "sleep_ms(ms)",
                 "Pauses for that many milliseconds; a negative count errors.",
@@ -480,6 +486,7 @@ impl Builtin {
             Builtin::Env => "env",
             Builtin::Exit => "exit",
             Builtin::TimeMs => "time_ms",
+            Builtin::LocalZone => "local_zone",
             Builtin::SleepMs => "sleep_ms",
             Builtin::Random => "random",
             Builtin::RandomInt => "random_int",

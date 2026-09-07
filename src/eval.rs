@@ -2736,6 +2736,47 @@ impl<W: Write> Interpreter<W> {
                     .as_millis();
                 Ok(Value::Int(ms as i64))
             }
+            Builtin::LocalZone => {
+                arity(0, 1)?;
+                let at_ms = match args.first() {
+                    None => {
+                        if cfg!(target_arch = "wasm32") {
+                            return Err(error(
+                                "local_zone is not available in this environment",
+                                span,
+                            ));
+                        }
+                        match std::time::SystemTime::now().duration_since(std::time::UNIX_EPOCH) {
+                            Ok(d) => d.as_millis() as i64,
+                            Err(e) => -(e.duration().as_millis() as i64),
+                        }
+                    }
+                    Some(Value::Int(ms)) => *ms,
+                    Some(v) => {
+                        return Err(error(
+                            format!(
+                                "local_zone expects an instant in milliseconds, got {}",
+                                v.type_name()
+                            ),
+                            span,
+                        ));
+                    }
+                };
+                // Seconds, rounded towards the past, so an instant
+                // inside the second a transition lands on takes the
+                // offset that second actually had.
+                let Some(zone) = crate::tz::zone_at(at_ms.div_euclid(1000)) else {
+                    return Ok(Value::Nil);
+                };
+                let mut facts = std::collections::BTreeMap::new();
+                facts.insert(
+                    "offset".to_string(),
+                    Value::Int(zone.offset as i64 * 1000),
+                );
+                facts.insert("abbr".to_string(), Value::Str(zone.abbr));
+                facts.insert("dst".to_string(), Value::Bool(zone.dst));
+                Ok(Value::map(facts))
+            }
             Builtin::SleepMs => {
                 arity(1, 1)?;
                 let ms = match &args[0] {
