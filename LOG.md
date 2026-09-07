@@ -18291,3 +18291,35 @@ target.
 Gate green at the new version: `ting --version` reports `ting
 2.128.0`, Cargo.lock updated, fmt, clippy, 15 `test result: ok`, 71
 files unchanged, corpus at seven, selftest 22 files / 2583 checks.
+
+## 2026-09-08 — Iteration 797: v2.128.0 verified
+
+Run `34170087973`: create, all six build targets, finish — every one
+green, read per job from the API. Six archives plus SHA256SUMS.
+
+Both aarch64 archives cold-downloaded, checksums verified against
+SHA256SUMS, extracted (binary plus the twelve stdlib modules in each)
+and run here: `ting 2.128.0`, `--test selftest` 22 files / 2583
+checks from each, and a smoke script exercising this milestone's own
+claims — a 200000-character string built by appending, scanned by
+index, non-ASCII indexing and slicing, and an append whose
+right-hand side reassigns the name — identical on both engines from
+both archives.
+
+**The shipped binary was timed, not just run.** `bench/scan.ting`
+takes 0.390 s from the gnu archive and 0.512 s from the musl one,
+with the expected checksum. That is the point of the release: the
+same file took 148.89 s on the binary that shipped as v2.127.0. An
+archive that ran but had somehow been built without the milestone
+would have passed every other check here.
+
+glibc floor: the gnu builds top out at `GLIBC_2.34`, under the 2.35
+the workflow enforces; the musl builds report "none (static)".
+
+Site: the ten published paths all answer 200 — the six rendered
+pages, `index.html`, `examples.js` and `ting.wasm` in the playground
+— and `changelog.html` carries v2.128.0. The deploy ran from the
+release commit `09e335e`; the LOG/STATE commit after it does not
+match the workflow's path filter, which is expected and is why a
+missed deploy is retried with `gh workflow run pages.yml --ref main`
+rather than by pushing again.

@@ -2300,14 +2300,28 @@ holds only the current milestone and the standing rules.
   that lists only what got better is one that gets corrected later
   (788 nearly shipped a false one). Every number in the section was
   measured this milestone and is in LOG 792-795 with its shape.
+- 797: v2.128.0 VERIFIED (149th tag; strokes 792, 793, 794, 795).
+  All six targets green per job from the API; six assets plus
+  SHA256SUMS; both aarch64 archives cold-downloaded, checksummed,
+  extracted and run here (2583 checks from each, plus a smoke script
+  covering this milestone's own claims, identical on both engines).
+  THE SHIPPED BINARY WAS TIMED, NOT JUST RUN: bench/scan.ting is
+  0.390 s from the gnu archive and 0.512 s from the musl one, against
+  148.89 s on the binary that shipped as v2.127.0. An archive built
+  WITHOUT the milestone would have passed every other check.
+  glibc floor GLIBC_2.34 (under the enforced 2.35); musl static.
+  Site: ten paths 200, changelog.html carries v2.128.0, deployed from
+  the release commit 09e335e.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next: verify v2.128.0 — release run 34170087973's verdict per
-  target from the API log, six assets, cold download and execution of
-  both aarch64 archives, and the site serving the new version.
-  - then a health tick and the site audit, which closes the
-  milestone.
+  - next: a health tick, which closes the milestone "a character at a
+  time". The site audit is already done (797) — the ten paths answer
+  200 and changelog.html carries v2.128.0 — so this is issues, PRs,
+  CI, tree, the fuzz sweeps at two case counts, and whatever the tick
+  turns up.
+  - then replenishment: choose the next milestone from measured
+  evidence, as 791 did.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
