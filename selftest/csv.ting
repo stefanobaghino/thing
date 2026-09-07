@@ -98,3 +98,19 @@ assert(csv["each_map"](path, fn(_row) { return nil; }) == 0, "a header alone is 
 write_file(path, "");
 assert(csv["each_map"](path, fn(_row) { return nil; }) == 0, "and an empty file is none either");
 remove_file(path);
+
+# A spreadsheet writes a byte order mark at the head of the file it
+# exports. Behind one, a column asked for by name is not found — so
+# the scanner drops it, in the one place both readers share.
+let bom = chr(65279);
+assert(csv["parse"](bom + "a,b\n1,2\n")[0] == ["a", "b"], "a leading byte order mark is not a name");
+write_file(path, bom + "date,amount\n2026-01-05,10.50\n");
+let excel = [];
+csv["each_map"](path, fn(row) { push(excel, row); return nil; });
+assert(has(excel[0], "date"), "and the streamed reader drops the same one");
+assert(excel == csv["maps"](csv["parse"](read_file(path))), "both readers agree, mark and all");
+# Only at the head. Elsewhere it is a character in a field, and a
+# second one is too.
+assert(csv["parse"](bom + bom + "a\n")[0] == [bom + "a"], "only the first is a mark");
+assert(csv["parse"]("a," + bom + "b\n")[0][1] == bom + "b", "and only at the start of the file");
+remove_file(path);

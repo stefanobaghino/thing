@@ -29,6 +29,18 @@ Windows are attached to each
   three dates nothing could read. The one output line that moved says
   what is held while reading, which is now a row under its column
   names rather than a pair of column numbers.
+- A byte order mark at the head of a document is no longer content.
+  A spreadsheet exporting a CSV writes one, and behind it the first
+  column is called `\ufeffdate` rather than `date` — so the column
+  asked for by name is not found, and `monthly.ting` refused a
+  perfectly good export with "the header has no date and amount
+  columns". `json_parse` was worse: it reported "unexpected character
+  at offset 0" for a document that is fine apart from a mark RFC 8259
+  says a parser may ignore. Both now skip one, and only one, and only
+  at the head — inside a string, in a later field, or a second mark
+  is a character like any other. In `lib/csv.ting` the skip lives in
+  the shared scanner, so a file read whole and a file read a row at a
+  time drop the same mark.
 
 ## v2.121.0 (2026-09-07)
 

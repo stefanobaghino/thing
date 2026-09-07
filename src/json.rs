@@ -155,7 +155,12 @@ fn encode_string(s: &str, out: &mut String) {
 }
 
 pub fn decode(s: &str) -> Result<Value, String> {
-    let bytes = s.as_bytes();
+    // A document another program wrote may begin with a byte order
+    // mark. It is not part of the JSON: RFC 8259 does not allow one
+    // and says a parser may ignore it, which is better than reporting
+    // a character at offset 0 that no value can start with. Offsets
+    // in errors count from the document, so from after the mark.
+    let bytes = s.strip_prefix('\u{feff}').unwrap_or(s).as_bytes();
     let mut p = Parser { bytes, pos: 0 };
     p.skip_ws();
     let v = p.value()?;

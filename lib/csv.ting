@@ -28,9 +28,14 @@ fn quote(field, sep) {
 # field is open. Feeding a whole file to the scanner and feeding it a
 # line at a time give exactly the same rows, which is what lets
 # each_row be right rather than nearly right.
+# A byte order mark, which a spreadsheet writes at the head of the
+# file it exports. It is not a field name, and a column asked for by
+# name would not be found behind one.
+let BOM = chr(65279);
+
 fn fresh() {
   return {"rows": [], "row": [], "field": "", "quoted": false, "pending": false,
-    "started": false, "dirty": false};
+    "started": false, "dirty": false, "begun": false};
 }
 
 # One chunk of text through the scanner. The loop runs on locals
@@ -38,6 +43,13 @@ fn fresh() {
 # the hot path, and a map lookup per character costs more than the
 # two loads and stores around it.
 fn scan(st, text, sep) {
+  # Only at the very head of the document, and here rather than in
+  # parse, so a file read whole and a file read a row at a time drop
+  # the same mark.
+  if !st["begun"] {
+    st["begun"] = true;
+    if slice(text, 0, 1) == BOM { text = slice(text, 1, len(text)); }
+  }
   let rows = st["rows"];
   let row = st["row"];
   let field = st["field"];

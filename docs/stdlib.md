@@ -233,7 +233,10 @@ introduces around values is not worth the characters it saves.
 Delimited text, both directions. The usual dialect: a field is quoted
 when it holds the separator, a quote or a line break, and a quote
 inside such a field is written twice. CRLF is read as a line break
-and written as a bare newline.
+and written as a bare newline. A byte order mark at the head of the
+file — which a spreadsheet writes when it exports one — is dropped
+rather than left on the first column's name, where it would hide that
+column from anything asking for it by name.
 
 | Function | Does |
 |----------|------|
