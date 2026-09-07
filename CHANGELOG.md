@@ -5,16 +5,17 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.127.0 (2026-09-07)
 
 - A call on the right no longer costs a copy, where it can be shown
   not to matter. `s += str(i)` and `s += format(...)` are the loops
   people actually write, and they stayed quadratic because a call
-  might reassign the name. Inside a function that is decidable: a
-  local no closure mentions cannot be reached by anything a call
-  does, so there the append happens in place. 80000 pieces went from
-  1.7 seconds to 0.03. A top-level binding is still reachable by any
-  function, and still copies.
+  might reassign the name. That is decidable whenever no function in
+  the file mentions the name: nothing a call does can reach it, so
+  the append happens in place. 80000 pieces went from 1.7 seconds to
+  0.03. Where some function does mention the name it could be
+  assigned from inside the call, and there the old value is still
+  read first.
 - `x = x + y` costs what `x += y` costs. The long spelling read the
   name by copying what it held, so a loop that built a string or a
   list the obvious way paid the length of it every time round: 80000
