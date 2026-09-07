@@ -16557,3 +16557,116 @@ playground, `local_zone(ms)` answers `nil` (the wasm build has no
 `read_tzif`) and `local_zone()` errors the way `time_ms()` does. That
 is the same answer Windows gives, which is the milestone's remaining
 question and now its next tick.
+
+## 2026-09-07 — Iteration 767: the answer Windows has been keeping
+
+The milestone's open question, decided the way the backlog asked: on
+evidence, not by adding an API. **`local_zone` now answers on
+Windows.**
+
+The evidence first, because the decision turned on it. Windows keeps
+no TZif file — its zone data is in the registry, under a key named
+for each zone, as a `TZI` blob of biases and recurring transition
+rules plus per-year `Dynamic DST` entries. Nothing in that
+shape is readable the way `/etc/localtime` is, and re-implementing
+the rule evaluation would have meant writing the one part Windows
+already does correctly. So this does not read the registry at all: it
+calls `GetTimeZoneInformationForYear` for the year in question — which
+is where the dynamic per-year data is applied — and hands the result
+to `SystemTimeToTzSpecificLocalTime`. **The offset is then the
+difference between the local time the system computed and the UTC
+time it was given**, not a number derived here from a rule. The
+transitions are Windows' own, including the ones a hand-written rule
+reader would get wrong.
+
+**The instrument that made this possible without a Windows machine.**
+`rustup target add x86_64-pc-windows-msvc` and
+`cargo check --target x86_64-pc-windows-msvc` typecheck the
+`#[cfg(windows)]` path on this host — no linking needed — and
+`cargo clippy --target ... --all-targets` lints it. Before this tick
+the Windows code path could only be compiled by CI, an hour away.
+Both are now in the gate, and so is
+`cargo build --release --lib --target wasm32-unknown-unknown`, which
+is the third platform this file has to keep building for and had
+never been checked here either.
+
+**What still could not be run here, and what was done about it.** The
+three API calls. Everything else was pulled out of their way so it
+could be: the module is `#[cfg(any(windows, test))]`, the FFI and
+`zone_at` inside it are `#[cfg(windows)]`, and the broken-down-time
+conversion, the name reader and the numeric fallback are compiled and
+tested on this host. Five new Rust tests (357 → 362), whose anchors
+were read from `date -u` rather than from memory — and one of them
+caught a wrong constant on the first run: I had written day 20544 as
+2026-03-31; `date` says 2026-04-01.
+
+**The layout guard, which is the part I would have got wrong.** A
+`#[repr(C)]` struct with a field in the wrong place does not fail to
+compile; it answers the wrong hour. So the three struct sizes MSVC
+computes are asserted at compile time:
+
+```rust
+const _: () = assert!(size_of::<SystemTime>() == 16);
+const _: () = assert!(size_of::<TimeZoneInformation>() == 172);
+const _: () = assert!(size_of::<DynamicTimeZoneInformation>() == 432);
+```
+
+Each was broken on purpose and watched to fail:
+
+```
+error[E0080]: evaluation panicked: assertion failed:
+size_of::<TimeZoneInformation>() == 173
+```
+
+under the Windows target, and the `SystemTime` one under both the
+Windows target and `cargo check --all-targets` here. A guard nobody
+has seen fail is not a guard.
+
+**The decision inside the decision: what `abbr` says on Windows.**
+Windows has no abbreviations. It holds full names — "W. Europe
+Daylight Time" — and localized ones, so a German machine says
+"Mitteleuropäische Sommerzeit". The alternative was the numeric form
+this file already uses for zones the tz database never named
+("+1245" for Chatham), which would have made the platforms look
+alike. I chose the platform's own name. A program that compares
+`abbr` against a fixed string was already wrong on Chatham, so the
+uniformity was never real; a program that prints it is right
+everywhere; and handing back a number is handing back something
+`offset` already holds. The reference now says this in the place a
+caller reads before relying on it.
+
+The selftest needed no new checks and got none: `selftest/time.ting`
+was written property-wise in 762 — a map or nil, an offset that is a
+whole number of seconds, the same instant giving the same answer —
+and those assertions simply become live on the Windows runner now
+that the branch is taken. That is what writing a test as a property
+rather than as a table buys, two ticks later.
+
+Three stale comments went with it: `selftest/time.ting`,
+`examples/organize.ting` and the cookbook page generated from it all
+said "Windows today" as the example of a platform that keeps nothing.
+That is no longer true, and the wasm playground is the honest example
+now.
+
+**And the guard that was not running.** Writing the block above made
+`markdown_has_no_bare_html_tags` fail on `<SystemTime>` — from inside
+a fenced block, which that test skips. The reason: it decides a line
+opens or closes a fence by `starts_with("```")`, and iteration 711
+wrote a paragraph whose line began with an inline code span,
+` ```text``` `. That toggled the fence open and nothing closed it, so
+**the guard had been skipping everything after iteration 711 — fifty-six
+iterations of LOG.md — while reporting success**. A fence line is now
+one whose backtick run is not closed again on the same line. With
+that fixed the whole tail scans for the first time and is clean but
+for one line of my own, which is now in a block of its own.
+
+Two lessons, and the second is the uncomfortable one. A guard that
+passes is not a guard that ran. This one had no way to say "I checked
+nothing" — it counted files, not lines examined — and the only reason
+it surfaced today is that my own text happened to flip the parity
+back. The 760 guard caught two stale numbers by failing; this one hid
+for two months by passing.
+
+Verification is CI's Windows runner, next tick. What it can prove is
+exactly what the selftest asserts, and the one thing this host cannot
+show: that the branch is taken at all.

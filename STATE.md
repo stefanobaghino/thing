@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out); 357 Rust tests
+  nothing on its own — and 22 examples with .out); 362 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1724,16 +1724,48 @@ holds only the current milestone and the standing rules.
   READ FROM THE SOURCE, not the browser: in the playground
   local_zone(ms) is nil (no read_tzif on wasm) and local_zone()
   errors as time_ms() does — the same answer Windows gives.
+- 767: LOCAL_ZONE ANSWERS ON WINDOWS. Not by reading the registry —
+  its TZI blobs and per-year Dynamic DST entries are not TZif and
+  re-implementing the rule evaluation would rewrite the one part
+  Windows does correctly — but by asking the system:
+  GetTimeZoneInformationForYear for that year, applied by
+  SystemTimeToTzSpecificLocalTime, and THE OFFSET IS THE DIFFERENCE
+  THE SYSTEM COMPUTED, not one derived here from a rule.
+  THE DECISION on abbr: Windows has no abbreviations, only full
+  localized names ("W. Europe Daylight Time"), and it returns those
+  rather than the numeric form used for unnamed zones ("+1245").
+  Uniformity was never real — a program comparing abbr to a fixed
+  string was already wrong on Chatham — and a number is what offset
+  already holds. Said so in the reference where a caller reads it.
+  Five Rust tests (357 -> 362), anchors read from `date -u`, one of
+  which caught a wrong constant on its first run.
+  THE LAYOUT GUARD: three const size_of assertions for the repr(C)
+  structs, each broken on purpose and watched to fail — a field in
+  the wrong place does not fail to compile, it answers the wrong hour.
+  The selftest needed NO new checks: 762 wrote it property-wise, so
+  its assertions simply go live on the Windows runner.
+- 767b: THE GUARD THAT WAS NOT RUNNING. Writing 767's entry made
+  markdown_has_no_bare_html_tags fail from inside a fenced block,
+  which it skips. It decided a fence by starts_with("```"), and
+  iteration 711 wrote a paragraph beginning with an INLINE code span
+  (three backticks, "text", three backticks). That toggled the fence
+  open and nothing closed it, so the guard skipped everything after
+  711 — FIFTY-SIX ITERATIONS of LOG.md — while reporting success. A
+  fence line is now one whose backtick run is not closed on the same
+  line. The repaired guard was proved by appending a bare tag to the
+  END of LOG.md and watching it be reported, which the old one could
+  not have done. The tail is otherwise clean. A GUARD THAT PASSES IS
+  NOT A GUARD THAT RAN: this one counted files, not lines examined,
+  and surfaced only because my own text flipped the parity back.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the milestone's remaining question: WINDOWS HAS NO ZONE ANSWER.
-  local_zone is nil there, and "the time it is here" cannot honestly
-  close while a quarter of the release archives can never answer.
-  Decide it on evidence, not by adding an API: read what Windows
-  actually keeps (the registry's time zone data is not TZif), and if
-  the honest answer stays nil, say so in the docs where a Windows
-  user reads it rather than leaving it to be discovered.
+  - read the Windows runner's verdict on 767. The one thing this host
+  cannot show is that the branch is taken at all; selftest/time.ting's
+  properties (a map or nil, an offset a whole number of seconds, one
+  answer per instant) become live there. If it is red, the layout
+  guards or the three calls are where to look, in that order.
+  - then a third stroke toward v2.124.0, and the release.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
@@ -1831,7 +1863,10 @@ Standing rules (each from a slip; the LOG entry named has the story):
   Check a grep's result before promising a stroke on it (404).
 - After writing LOG/STATE, rerun the docs guard and gate the push on
   the literal `test result: ok` (238). No angle-bracket placeholders
-  in markdown (238, 262).
+  in markdown (238, 262) — and none in a fenced block either, since
+  767b: a guard that skips fenced blocks is one fence-detection bug
+  away from skipping everything. When a guard is repaired, prove the
+  repair by making it fail where the old one was blind.
 - A test that looks for a path must build the needle with Path::join:
   a written `a/b` passes everywhere but Windows, which is the one
   runner that catches it, an hour later (675).
@@ -1866,6 +1901,16 @@ Standing rules (each from a slip; the LOG entry named has the story):
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0.
 - Toolchain: rustc 1.98 locally; rustfmt and clippy reinstalled at 196.
+- THE GATE COVERS THREE TARGETS SINCE 767, because two of them were
+  only ever compiled by CI, an hour away: `cargo check`/`clippy
+  --target x86_64-pc-windows-msvc --all-targets` (no linker needed,
+  so the #[cfg(windows)] path typechecks and lints HERE) and
+  `cargo build --release --lib --target wasm32-unknown-unknown` (what
+  Pages builds). Both targets installed with `rustup target add`.
+  Platform-specific code is written so that everything but the
+  platform calls themselves sits under `#[cfg(any(windows, test))]`
+  (or the equivalent for another platform) and is therefore testable
+  on this host.
 - The fuzzers live where their env vars are read: TING_DIFF_* in
   tests/differential.rs, TING_FMT_* in tests/fmt.rs, TING_RE_* in
   tests/fuzz.rs beside the crash fuzzer. Naming any other target

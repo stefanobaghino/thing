@@ -131,7 +131,15 @@ fn markdown_has_no_bare_html_tags() {
         let text = std::fs::read_to_string(&path).unwrap();
         let mut fenced = false;
         for (n, line) in text.lines().enumerate() {
-            if line.trim_start().starts_with("```") {
+            // A fence opens or closes a block; a line that merely
+            // STARTS with an inline code span (```text``` at a line
+            // break) is prose. Reading the second as the first left
+            // this guard toggled open over the whole tail of LOG.md
+            // for fifty-six iterations, checking nothing (767).
+            let trimmed = line.trim_start();
+            if let Some(rest) = trimmed.strip_prefix("```")
+                && !rest.contains('`')
+            {
                 fenced = !fenced;
                 continue;
             }

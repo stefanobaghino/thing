@@ -78,9 +78,10 @@ assert(from_iso(3) == nil, "and what is not a string");
 assert(t["digits"]("0123") && !t["digits"]("12a") && !t["digits"](""), "digits is all of them and at least one");
 
 # The local zone, which the platform keeps rather than this language.
-# A machine that keeps nothing to read — Windows today — answers nil,
-# and the point of nil is that a script can tell it apart from a real
-# zero offset. So everything below holds either way.
+# A machine that keeps nothing to read — the browser playground, or a
+# TZ carrying a rule rather than a name — answers nil, and the point
+# of nil is that a script can tell it apart from a real zero offset.
+# So everything below holds either way.
 let err = import("lib/err.ting")["message"];
 let here = local_zone();
 assert(here == nil || type(here) == "map", "the local zone is a map or nothing");

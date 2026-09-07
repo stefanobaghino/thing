@@ -46,8 +46,8 @@ fn free_name(target) {
 # an instant, and an instant is not a day until you say whose: at half
 # past midnight here it is already tomorrow, and UTC still calls it
 # yesterday. The platform is the only source for that, so where it
-# keeps none — Windows today — local_zone answers nil and this falls
-# back to the UTC day, having said so. It is asked per file rather
+# keeps none local_zone answers nil and this falls back to the UTC
+# day, having said so. It is asked per file rather
 # than once, because a directory with a year of history in it spans
 # summer time changes.
 fn local_day(ms) {

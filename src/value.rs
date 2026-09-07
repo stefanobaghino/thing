@@ -377,7 +377,7 @@ impl Builtin {
             Builtin::TimeMs => ("time_ms()", "Milliseconds since the Unix epoch, as an int."),
             Builtin::LocalZone => (
                 "local_zone() / local_zone(ms)",
-                "The local zone at that instant (now by default): a map of offset (milliseconds east of UTC), abbr and dst. Nil where the platform keeps nothing to read, so a script can tell that from a real zero.",
+                "The local zone at that instant (now by default): a map of offset (milliseconds east of UTC), abbr and dst. Read from the TZif file on Unix and from the system zone data on Windows, where abbr is the full name Windows uses. Nil where the platform keeps nothing to read, so a script can tell that from a real zero.",
             ),
             Builtin::SleepMs => (
                 "sleep_ms(ms)",

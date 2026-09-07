@@ -5,6 +5,32 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- `local_zone` answers on **Windows**. Until now it was `nil` there,
+  which meant a quarter of the release archives could not tell what
+  day it was locally: `examples/organize.ting` filed every file by
+  the UTC day for every Windows user, which is the bug the example
+  had just been fixed to avoid. Windows keeps no TZif file — its zone
+  data is in the registry, in a shape of its own — so this asks the
+  system for it instead: the year's rules from
+  `GetTimeZoneInformationForYear`, applied by
+  `SystemTimeToTzSpecificLocalTime`. The offset is the difference the
+  system itself computed rather than one derived here from a rule, so
+  the transitions are Windows' own. `TZ` is not consulted there,
+  because the Windows clock does not consult it either.
+- `abbr` says what each platform calls a period, and the platforms
+  differ. A zone file holds a real abbreviation (`"CEST"`) or, for a
+  zone that never had one, the offset itself (`"+1245"`). Windows has
+  no abbreviations: it holds full names, in the language the system
+  is installed in, so `abbr` reads `"W. Europe Daylight Time"` there.
+  A program comparing `abbr` to a fixed string was already wrong on
+  Chatham; a program printing it is right everywhere. Handing back a
+  number `offset` already holds would have made the platforms look
+  alike by making one of them say less.
+- The browser playground still answers `nil`, and now says so for the
+  right reason rather than by falling through the Unix path.
+
 ## v2.123.0 (2026-09-07)
 
 - `local_zone()` is the 73rd builtin: the local time zone at an
