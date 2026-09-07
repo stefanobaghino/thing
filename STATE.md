@@ -1473,14 +1473,34 @@ holds only the current milestone and the standing rules.
   the 72nd builtin, not a 73rd. Gate green at the tag: fifteen
   `test result: ok`, zero clippy, formatter 0 of 69, corpus at seven.
   Binary reports ting 2.121.0.
+- 753: v2.121.0 VERIFIED. Four workflows green by the API; six assets.
+  The cold-downloaded aarch64 musl binary (statically linked) reports
+  2.121.0, runs the selftests from the tarball's own lib/ (22 passed,
+  2512 checks), and diffs clean on both monthly.ting and
+  logreport.ting. The release's claim checked ON THE ARTIFACT: a
+  9.4 MB export, 300000 rows in 400001 LINES (every third note wraps
+  in a quoted field) — parse(read_file(p)) 494 MB / 9.67 s,
+  each_row 10 MB / 11.74 s, both 300000 rows totalling
+  14920889.85 to the last digit. 51x the memory for a tenth less
+  time. Site: every published path 200, ting.wasm 836714 bytes (was
+  825122), changelog carries v2.121.0, stdlib has each_row and
+  from_iso, github.io still 301s to www.baghino.me/thing.
+  MY OWN PROBING WAS WRONG, NOT THE SITE: /vm.html and /playground/
+  404 because neither ever existed — pages.yml copies playground/. to
+  the site ROOT (so the playground is /) and renders six docs
+  (tutorial, reference, stdlib, cookbook, retrospective, changelog),
+  not docs/vm.md. THE WORKFLOW IS THE AUTHORITY on what the site
+  contains; a guessed URL is not evidence of a missing page.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.121.0 — verdicts from the API, six assets on the tag,
-  an aarch64 archive downloaded cold and executed here; and because
-  this milestone is about reading files a program did not write, hand
-  the released binary examples/monthly.ting and expect the same 5000
-  rows and the same three unreadable dates.
+  - lib/csv each_map(path, f, sep = ",") — the streaming counterpart
+  of maps(rows), which needs the whole list. The evidence is my own
+  example: examples/monthly.ting spends 14 of its lines on header
+  bookkeeping (a rows == 1 branch, a manual index scan, two nils
+  carried out of the callback, and a check after it) purely to find
+  two columns by name. Same scanner, no second parser — each_map is
+  each_row with the first row remembered.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

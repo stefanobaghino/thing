@@ -15754,3 +15754,50 @@ Because this milestone is about *reading files a program did not
 write*, the artifact check has an obvious subject: hand the released
 binary `examples/monthly.ting` and see the same 5000 rows and the
 same three unreadable dates come back.
+
+## 2026-09-07 — Iteration 753: v2.121.0 verified
+
+All four workflows green by the API, never by `gh run watch`: Release
+on the tag, CI twice on main, Pages once. Six assets on v2.121.0, the
+count every tag since v2.30.0 carries.
+
+The aarch64 musl archive downloaded cold into a scratch directory
+(`statically linked`, per `file`) reports `ting 2.121.0` and runs the
+whole selftest suite from the tarball's own `lib/`: **22 passed, 0
+failed, 2512 checks**, the same numbers my build gives. Both examples
+this milestone produced — `monthly.ting` and `logreport.ting` — diffed
+clean against their `.out` when run by the downloaded binary.
+
+Then the claim the release is actually about, checked on the artifact
+rather than on my build. A 9.4 MB export, 300000 rows in **400001
+lines** because every third note wraps inside a quoted field:
+
+| how | peak | time | rows | total |
+|---|---|---|---|---|
+| `parse(read_file(p))` | 494 MB | 9.67 s | 300000 | 14920889.85 |
+| `each_row(p, f)` | 10 MB | 11.74 s | 300000 | 14920889.85 |
+
+Fifty-one times the memory for a tenth less time, and the two agree
+to the last digit — which is the whole design argument of 749 made
+visible on a binary someone else could download. The 400001-vs-300000
+gap is the other half: a reader that cut on newlines would have
+reported a hundred thousand rows that do not exist.
+
+Site audit: every published path 200 — the playground at `/`,
+`examples.js`, `ting.wasm` (836714 bytes, up from 825122 as the new
+library code went in), and the six pages `pages.yml` actually builds.
+changelog.html carries v2.121.0, stdlib.html has `each_row` and
+`from_iso`, cookbook.html mentions the monthly example nine times,
+and github.io still 301s to www.baghino.me/thing.
+
+**A correction to my own probing, not to the site.** I probed
+`/vm.html` and `/playground/` and got 404s, and for a moment had a
+finding. Neither has ever existed: `pages.yml` copies `playground/.`
+to the site *root*, so the playground is `/`, and it renders six
+docs — tutorial, reference, stdlib, cookbook, retrospective,
+changelog — of which `docs/vm.md` is not one. The workflow is the
+authority on what the site contains; a guessed URL is not evidence of
+a missing page. Checked before recording, which is the only reason
+this is a note instead of a repair.
+
+Nothing to fix. The milestone's first release stands.
