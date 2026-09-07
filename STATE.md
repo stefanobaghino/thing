@@ -19,10 +19,10 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2570 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2577 selftest checks on all four
   CI platforms, Windows included); 365 Rust tests
-  in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
-  rows since bench/growth.ting joined in 784.
+  in 15 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
+  rows since bench/scan.ting joined in 794.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -2234,18 +2234,47 @@ holds only the current milestone and the standing rules.
   non-ASCII through eleven builtins, JSON round-trip and both `for`s;
   six now assert in selftest/compound.ting. All ten bench checksums
   match.
+- 794: third stroke — `value::Str` carries its CHARACTER COUNT in a
+  Cell beside the text and inside the Rc, counted on the first ask.
+  ONE NUMBER DOES BOTH JOBS: count == byte length means every
+  character is one byte, so the nth starts at byte n and indexing
+  does not walk. An append adds the piece's characters to the count
+  rather than dropping it. THE SCAN IS LINEAR AT LAST: 0.010 / 0.033
+  / 0.063 / 0.127 s at 20k/80k/160k/320k, x2 per doubling where every
+  version before was x4. bench/scan.ting (NEW, the eleventh BASELINE
+  row, and the row that would show a return to quadratic): 148.89 s
+  on 792's binary, 117.49 s on 793's, 0.40 s now — 372x, same
+  checksum on all three. `len` in a loop paid once: 200 calls over
+  800000 chars 0.035 -> 0.012 s.
+  WHAT IT COSTS, AND IT IS REAL: the first index into a string counts
+  it where before it walked only to the character asked for (0.006 ->
+  0.013 s for one index into each of 200 fresh 200k strings; the
+  count runs at ~0.17 ns/char, at most once per string). And the
+  7.6 MB CSV parse is 4% SLOWER — 4.15 -> 4.33 s over three
+  interleaved runs, reproducible, because that workload makes
+  millions of short strings and indexes almost none of them. 4%
+  against 372x is the trade; it is in the log, not in the rounding.
+  (CSV was 6.34 s on 792's binary, so the milestone is 32% ahead on
+  the file that started it.)
+  GUARD MADE TO FAIL FIRST: selftest/strings.ting asserts the count
+  survives appends of MIXED CHARACTER WIDTHS; making `grew_by` add
+  bytes instead of characters — the bug this kind of cache actually
+  gets — fails it. Plus nine strings x thirteen indices x forty-five
+  slice bound pairs x both engines, byte-identical to the 793 AND 792
+  binaries.
+  docs/reference.md said `len` walks the string and `while len(s) <
+  width` is quadratic: TRUE WHEN WRITTEN, FALSE NOW, and rewritten.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: the cached count and ascii flag, now that
-  `value::Str` is the place to put them. O(1) `len` after the first
-  ask, and an ASCII string indexes and slices by BYTE offset, which
-  is what finally makes the 792 scan linear (it is still x4 per
-  doubling, at 2.542 s for 160000 characters).
-  - then 787's case: `s += str(n)` where some function mentions the
-  name. The read is now a pointer copy, so what is left is dropping
-  the binding's reference just before the add so the buffer is
-  unshared and extends in place.
+  - next stroke, and the last of this milestone: 787's case,
+  `s += str(n)` where some function mentions the name. The read is now
+  a pointer copy, so what is left is dropping the binding's reference
+  just before the add so the buffer is unshared and extends in place.
+  Measure it first: 793 may already have moved it, and 787's own
+  repro was wrong once (see 787).
+  - then release the milestone (v2.128.0) and verify it by cold asset
+  download, as every release is.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

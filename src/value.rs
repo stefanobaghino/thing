@@ -21,7 +21,41 @@ pub type MapRef = Rc<RefCell<BTreeMap<String, Value>>>;
 /// the text first UNLESS this is the only reference to it, the same
 /// bargain `+` already strikes for lists.
 #[derive(Clone, Default)]
-pub struct Str(Rc<String>);
+pub struct Str(Rc<Repr>);
+
+#[derive(Default)]
+struct Repr {
+    text: String,
+    /// Characters, counted on the first ask and then remembered.
+    /// `NOT_COUNTED` until someone asks. It lives beside the text and
+    /// inside the `Rc`, so every name for this string gets the answer
+    /// the first one paid for.
+    chars: std::cell::Cell<usize>,
+}
+
+/// No character count has been asked for yet. A real count can never
+/// be this, since it is at most the byte length.
+const NOT_COUNTED: usize = usize::MAX;
+
+impl Repr {
+    fn new(text: String) -> Repr {
+        Repr {
+            text,
+            chars: std::cell::Cell::new(NOT_COUNTED),
+        }
+    }
+
+    /// A count already known, plus the characters in `added`. An
+    /// append keeps a count it had rather than throwing it away, so
+    /// building a string in a loop never re-walks what it built.
+    fn grew_by(was: usize, added: &str) -> usize {
+        if was == NOT_COUNTED {
+            NOT_COUNTED
+        } else {
+            was + added.chars().count()
+        }
+    }
+}
 
 /// A string prints as its text does; the wrapper is not part of what
 /// a ting value looks like (`["a"]`, never `[Str("a")]`).
@@ -33,14 +67,27 @@ impl fmt::Debug for Str {
 
 impl Str {
     pub fn as_str(&self) -> &str {
-        &self.0
+        &self.0.text
     }
 
-    /// The text as a `String` that may be appended to in place, or
-    /// `None` when someone else holds it and appending would have to
-    /// copy it first.
-    pub fn unshared_mut(&mut self) -> Option<&mut String> {
-        Rc::get_mut(&mut self.0)
+    /// How many characters this string has. Counted once, however
+    /// many times it is asked and by however many names.
+    pub fn char_len(&self) -> usize {
+        let known = self.0.chars.get();
+        if known != NOT_COUNTED {
+            return known;
+        }
+        let n = self.0.text.chars().count();
+        self.0.chars.set(n);
+        n
+    }
+
+    /// Whether every character is one byte, so the nth character
+    /// starts at byte n and indexing need not walk. Asking counts the
+    /// characters if nobody has yet, which is why it is worth asking
+    /// once and reusing the answer.
+    pub fn is_byte_indexed(&self) -> bool {
+        self.char_len() == self.0.text.len()
     }
 
     /// Whether this string shares its buffer with no one, so writing
@@ -53,31 +100,34 @@ impl Str {
 impl std::ops::Deref for Str {
     type Target = str;
     fn deref(&self) -> &str {
-        &self.0
+        &self.0.text
     }
 }
 
 impl From<String> for Str {
     fn from(s: String) -> Str {
-        Str(Rc::new(s))
+        Str(Rc::new(Repr::new(s)))
     }
 }
 
 impl From<&str> for Str {
     fn from(s: &str) -> Str {
-        Str(Rc::new(s.to_string()))
+        Str(Rc::new(Repr::new(s.to_string())))
     }
 }
 
 impl From<Str> for String {
     fn from(s: Str) -> String {
-        Rc::try_unwrap(s.0).unwrap_or_else(|rc| (*rc).clone())
+        match Rc::try_unwrap(s.0) {
+            Ok(repr) => repr.text,
+            Err(rc) => rc.text.clone(),
+        }
     }
 }
 
 impl PartialEq for Str {
     fn eq(&self, other: &Str) -> bool {
-        Rc::ptr_eq(&self.0, &other.0) || self.0 == other.0
+        Rc::ptr_eq(&self.0, &other.0) || self.as_str() == other.as_str()
     }
 }
 
@@ -166,16 +216,20 @@ impl std::ops::Add<&str> for Str {
     /// Appending copies the text unless this is the only reference to
     /// it, in which case it extends the buffer already there.
     fn add(mut self, rhs: &str) -> Str {
-        match self.unshared_mut() {
-            Some(text) => {
-                text.push_str(rhs);
+        let was = self.0.chars.get();
+        match Rc::get_mut(&mut self.0) {
+            Some(repr) => {
+                repr.text.push_str(rhs);
+                repr.chars.set(Repr::grew_by(was, rhs));
                 self
             }
             None => {
-                let mut text = String::with_capacity(self.len() + rhs.len());
-                text.push_str(&self);
+                let mut text = String::with_capacity(self.0.text.len() + rhs.len());
+                text.push_str(&self.0.text);
                 text.push_str(rhs);
-                Str::from(text)
+                let repr = Repr::new(text);
+                repr.chars.set(Repr::grew_by(was, rhs));
+                Str(Rc::new(repr))
             }
         }
     }

@@ -18126,3 +18126,74 @@ Gate green: fmt, clippy, 15 `test result: ok`, 70 files unchanged,
 corpus at 7 warnings, selftest 22 files / 2570 checks, Windows and
 wasm targets, bench checksums, and 50000 differential cases at seed
 793.
+
+## 2026-09-08 — Iteration 794: the string remembers how long it is
+
+`value::Str` now carries its character count in a `Cell` beside the
+text and inside the `Rc`, counted on the first ask and then known to
+every name for that string. One number does two jobs: when the count
+equals the byte length every character is one byte, so the nth
+character starts at byte n and indexing does not walk at all.
+Appending adds the pieces' characters to a count it already has
+rather than dropping it, so a string built in a loop never re-counts
+what it built.
+
+**Measured.** The index scan of 792 and 793, at last linear:
+
+| characters | 793 | 794 |
+|---:|---:|---:|
+| 20000 | 0.051 s | 0.010 s |
+| 80000 | 0.663 s | 0.033 s |
+| 160000 | 2.574 s | 0.063 s |
+| 320000 | 10.264 s | 0.127 s |
+
+x2 per doubling, where every version before this was x4. At 320000
+characters that is 81x, and the whole milestone from 791 to here is
+larger still: the new `bench/scan.ting` takes **148.89 s on 792's
+binary, 117.49 s on 793's, and 0.40 s now** — 372x, same checksum on
+all three.
+
+`len` in a loop is now paid once: 200 calls over 800000 characters,
+0.035 -> 0.012 s.
+
+**What it costs, honestly.** Two things get slower.
+
+- The first index into a string counts it, where before it walked
+  only as far as the character asked for. Indexing position 0 of a
+  fresh 200000-character string 200 times: 0.006 -> 0.013 s. The
+  count runs at about 0.17 ns per character, and it happens at most
+  once per string.
+- The 7.6 MB CSV parse is **4% slower**: 4.15 -> 4.33 s over three
+  interleaved runs each, reproducible, not noise. That workload makes
+  millions of short strings, indexes almost none of them, and now
+  pays a word more per string and a `Cell` check per `len`. 4% against
+  372x is a trade I will take, but it is a real cost and it belongs
+  in the record rather than in the rounding. (The same CSV parse was
+  6.34 s on 792's binary, so the milestone is still 32% ahead of
+  where it started on the file that started it.)
+
+**The guard was made to fail first.** `selftest/strings.ting` gained
+assertions that a count survives appends of mixed character widths.
+Changing `grew_by` to add BYTES instead of characters — the bug a
+cache like this actually gets — makes it fail on the first one.
+Correctness beyond that is `bench/scan.ting`'s checksum and an
+exhaustive comparison: nine strings (empty, ASCII, `"aé漢字z"`,
+`"éééé"`, `"漢"`, and three mixtures) against thirteen indices and
+forty-five slice bound pairs, on both engines, byte-identical to both
+the 793 and the 792 binaries.
+
+**BASELINE is eleven rows.** `bench/scan.ting` is the row that would
+show this going quadratic again; the ten existing checksums are
+unchanged. Regenerated under a load average of 2.5 from an unrelated
+`chessbot-engine`, so the timings sit a little high across the board;
+the checksums are what the file is for.
+
+`docs/reference.md` said `len` walks the string and `while len(s) <
+width` is quadratic. That was true when it was written and is false
+now, so it says what is true instead, plus what indexing costs and
+when.
+
+Gate green: fmt, clippy, 15 `test result: ok`, 71 files unchanged,
+corpus at 7 warnings, selftest 22 files / 2577 checks, Windows and
+wasm targets, all eleven bench checksums, and 50000 differential
+cases at seed 794.

@@ -238,10 +238,17 @@ function does mention it, the name could be assigned from inside a
 call, so the saving holds only while the right-hand side names nothing
 and calls nothing: `s += piece` stays cheap, `s += str(n)` does not.
 
-`len` on a string counts characters, so it walks the string; on a list
-or map it does not. `while len(s) < width` is therefore quadratic in
-the length of `s`, which does not matter at the widths padding uses
-and does at the size of a document.
+`len` on a string counts characters. It walks the string the first
+time and remembers the answer, so a loop that asks repeatedly — `while
+len(s) < width` — pays for one walk, not one per turn. Appending keeps
+the count rather than dropping it, so building a string in a loop
+never re-counts what it built.
+
+Reading a character out of a string, with `s[i]` or `slice`, is
+constant time when every character in it is one byte, which the count
+already knows. When it is not, the read walks to the character it
+wants: correct either way, and the difference only shows on a long
+string with something outside ASCII in it.
 
 `for` iterates over a **snapshot** taken when the loop starts, so the
 body may mutate the list or map it is iterating. Map iteration visits

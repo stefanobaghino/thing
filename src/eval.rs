@@ -1481,7 +1481,7 @@ impl<W: Write> Interpreter<W> {
                 arity(1, 1)?;
                 match &args[0] {
                     Value::List(items) => Ok(Value::Int(items.borrow().len() as i64)),
-                    Value::Str(s) => Ok(Value::Int(s.chars().count() as i64)),
+                    Value::Str(s) => Ok(Value::Int(s.char_len() as i64)),
                     Value::Map(entries) => Ok(Value::Int(entries.borrow().len() as i64)),
                     v => Err(error(
                         format!("len does not apply to {}", v.type_name()),
@@ -1836,8 +1836,13 @@ impl<W: Write> Interpreter<W> {
                         let (lo, hi) = if lo >= 0 && hi >= 0 {
                             (lo as usize, (hi as usize).max(lo as usize))
                         } else {
-                            slice_bounds(lo, hi, s.chars().count())
+                            slice_bounds(lo, hi, s.char_len())
                         };
+                        if s.is_byte_indexed() {
+                            let start = lo.min(s.len());
+                            let end = hi.min(s.len());
+                            return Ok(Value::str(s[start..end].to_string()));
+                        }
                         let start = byte_of(s, lo);
                         let end = start + byte_of(&s[start..], hi - lo);
                         Ok(Value::str(s[start..end].to_string()))
@@ -3844,13 +3849,21 @@ pub(crate) fn index_opt(
             // from the start does not, and only walks as far as it is
             // asked to.
             let eff = if *i < 0 {
-                match offset(*i, s.chars().count()) {
+                match offset(*i, s.char_len()) {
                     Some(eff) => eff,
                     None => return Ok(None),
                 }
             } else {
                 *i as usize
             };
+            // Every character one byte means the nth starts at byte
+            // n, so there is nothing to walk.
+            if s.is_byte_indexed() {
+                return Ok(s
+                    .as_bytes()
+                    .get(eff)
+                    .map(|b| Value::str((*b as char).to_string())));
+            }
             Ok(s.chars().nth(eff).map(|c| Value::str(c.to_string())))
         }
         (base, idx) => Err(error(
@@ -3882,7 +3895,7 @@ pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, Runtim
             Err(error(format!("index {i} out of bounds (len {len})"), span))
         }
         (Value::Str(s), Value::Int(i)) => {
-            let len = s.chars().count();
+            let len = s.char_len();
             Err(error(format!("index {i} out of bounds (len {len})"), span))
         }
         _ => unreachable!("index_opt errs on anything that cannot be indexed"),

@@ -1,0 +1,27 @@
+# Reading a string a character at a time -- the shape a hand-written
+# parser has. Indexing decoded the whole string on every read once,
+# then walked to the character, and now knows from the remembered
+# character count that it can go straight to the byte. A row that
+# grows by four when this file's size doubles means it is quadratic
+# again.
+let s = "";
+let i = 0;
+while i < 40000 {
+  s += "abcdefghij";
+  i += 1;
+}
+let vowels = 0;
+let n = len(s);
+let j = 0;
+while j < n {
+  let c = s[j];
+  if c == "a" || c == "e" || c == "i" { vowels += 1; }
+  j += 1;
+}
+let pairs = 0;
+let k = 0;
+while k < n - 1 {
+  if slice(s, k, k + 2) == "ij" { pairs += 1; }
+  k += 1;
+}
+print(n, vowels, pairs);
