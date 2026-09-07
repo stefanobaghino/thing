@@ -1611,14 +1611,46 @@ holds only the current milestone and the standing rules.
   whether to guard it.
   Housekeeping still offered, still not urgent: target/ 41 GB (a
   cargo clean costs one full rebuild), .git 117 MB.
+- 761: replenishment — milestone "the time it is here"
+  (v2.123-v2.124), reasoning in LOG.md. THE EVIDENCE: it is 05:50
+  here and every ting program says 03:50; env("TZ") is nil, so a
+  script has nothing to read. examples/organize.ting (SHIPPED, with a
+  recorded .out) files by tm["date"](f["modified"]) = the UTC day —
+  demonstrated: mtime 2026-09-07 00:30 +0200 is filed under
+  2026-09-06 while every other tool says the 7th. Two hours a day
+  wrong here, half a day at +12. Same error anywhere a timestamp is
+  printed (stat modified is epoch ms, iso() renders UTC).
+  WHY IT IS MISSING: Rust's std has NO local-time API. The
+  zero-dependency path is to read the platform's own data —
+  /etc/localtime is TZif v2 (1909 bytes here -> Europe/Zurich), a
+  self-contained binary format, and TZ names a file under
+  /usr/share/zoneinfo. Same kind of work as this project's regex
+  engine and JSON parser.
+  THE QUESTION IT MUST ANSWER, NOT DODGE: Windows has no TZif and we
+  ship a Windows binary. Falling back to UTC is defensible ONLY if a
+  script can tell it happened.
+  MEASURED AND NOT CHOSEN: (1) "writing what other programs read" is
+  ALREADY SOLVED — write_file(p, s, "append") exists; 300000 CSV rows
+  appended one at a time cost 16 MB / 5.36 s against 157 MB / 4.91 s
+  for the whole document, a tenth the memory for 9% more time.
+  (2) money is not a trap here — int(float(t) * 100.0 + 0.5) is exact
+  for all 100000 cent values; float sums do drift (6999.9999999921 vs
+  7000.00) but the corpus already uses cents. (3) arithmetic edges
+  are SOUND — overflow, 1/0 and int(1e30) all error rather than going
+  quietly wrong. (4) a conditional expression is real but ergonomic —
+  28 sites of `let x = A; if c { x = B; }` across six stdlib modules
+  and three examples, plus two if/else assignment pairs; kept as a
+  candidate, not chosen over a bug. (5) destructuring: ZERO sites.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then a health tick, and then REPLENISHMENT: the milestone
-  "reading what other programs wrote" closed with v2.122.0, so after
-  the coverage repair there is no milestone. Choose the next one on
-  evidence, the way 748 did — measure first, and let the measurement
-  say what is missing rather than picking a feature that sounds good.
+  - find the local offset without a dependency: read /etc/localtime
+  (TZif v2), honour TZ when it is set, and answer with the offset in
+  effect at a given instant — not just the current one, since a
+  report over last winter's logs needs last winter's offset. Prove it
+  against `date +%z` at instants either side of a DST transition.
+  Windows gets its own answer in a later stroke; until then it must
+  be possible for a script to know it is being told UTC.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

@@ -16187,3 +16187,86 @@ which is what the modules export`, and passes again when restored.
 Housekeeping, still offered and still not urgent: `target/` is 41 GB
 and a `cargo clean` costs one full rebuild. `.git` is 117 MB. No
 fixture leftovers in the tree.
+
+## 2026-09-07 — Iteration 761: replenishment — "the time it is here"
+
+No milestone stood after v2.122.0. I measured five candidates before
+choosing one, and four of them died on the measurement, which is the
+part of this tick worth keeping.
+
+### Chosen: the local time zone (v2.123–v2.124)
+
+It is 05:50 here. Every ting program says 03:50. `env("TZ")` is nil,
+which is normal, so there is nothing a script can read to find out.
+
+That is not a cosmetic gap. `examples/organize.ting` — shipped, with
+a recorded output — files each file into a folder named for the day
+it was last written, using `tm["date"](f["modified"])`, which is the
+**UTC** day. Demonstrated rather than argued:
+
+```
+local mtime:          2026-09-07 00:30:00 +0200
+ting files it under:  2026-09-06  (2026-09-06T22:30:00Z)
+and the system says:  2026-09-07
+```
+
+A file written at half past midnight goes in yesterday's folder. On
+this machine that is a two-hour window every day; at +12 it is half
+of every day. The same error runs through anything that prints a
+timestamp: `stat()["modified"]` is epoch milliseconds and `iso()`
+renders UTC, so "when was this changed" is wrong by the offset
+everywhere it appears.
+
+**Why it is missing is worth stating**: Rust's standard library has
+no local-time API at all. This is not an oversight in ting, it is a
+hole in the floor. The zero-dependency way through it is to read what
+the platform already has — `/etc/localtime` is a TZif version 2 file
+(1909 bytes here, symlinked to `Europe/Zurich`), a self-contained
+binary format of transitions and offsets, and `TZ` when set names a
+file under `/usr/share/zoneinfo`. That is the same kind of work as
+this project's own regex engine and JSON parser.
+
+**The question the milestone has to answer honestly, not dodge**:
+Windows has no TZif and no `/etc/localtime`, and this project ships a
+Windows binary. Falling back to UTC there is a defensible answer only
+if the script can *tell* — silently reporting a different day on one
+platform is worse than the bug being fixed.
+
+### Measured and not chosen
+
+**"Writing what other programs read" — already solved.** The
+symmetric-sounding mirror of the last milestone does not exist:
+`write_file(path, s, "append")` has been there all along. Writing a
+300000-row CSV, 10.4 MB:
+
+| how | peak | time |
+|---|---|---|
+| `write_file(p, csv["text"](rows))` | 157 MB | 4.91 s |
+| a row at a time, appending | **16 MB** | 5.36 s |
+
+A tenth of the memory for nine percent more time. I went looking for
+a 964 MB figure to match the read side and found a solved problem.
+
+**Money — not a trap in this corpus.** `monthly.ting` converts with
+`int(float(text) * 100.0 + 0.5)`, which looked like something waiting
+to go wrong. It is exact for all 100000 cent values from 0.00 to
+999.99. Summing floats does drift — 100000 additions of 0.07 gives
+6999.9999999921065 where cents give 7000.00 — but the corpus already
+uses integer cents, so the trap is documented by example rather than
+sprung.
+
+**Arithmetic edges — sound.** Where a scripting language usually goes
+quietly wrong, ting errors: `9223372036854775807 + 1` and
+`3037000500 * 3037000500` both say "integer overflow" rather than
+wrapping, `1 / 0` says "division by zero", `int(1.0e30)` refuses.
+Nothing to fix.
+
+**A conditional expression — real, but ergonomics.** The corpus
+writes `let x = A; if c { x = B; }` **28 times**, across six stdlib
+modules and three examples, plus two `if/else` assignment pairs;
+`let name = ""; if has(opt, "short") { name = "-" + opt["short"] + ", "; }`
+in `lib/args.ting` is the shape. It costs a line and some clarity, not
+correctness. Kept as a candidate, not chosen over a bug.
+
+**Destructuring — nobody wants it.** Zero occurrences of
+`let a = p[0]; let b = p[1];` in the whole corpus.
