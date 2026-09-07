@@ -16670,3 +16670,65 @@ for two months by passing.
 Verification is CI's Windows runner, next tick. What it can prove is
 exactly what the selftest asserts, and the one thing this host cannot
 show: that the branch is taken at all.
+
+## 2026-09-07 — Iteration 768: green is not evidence
+
+767's CI came back green on all five jobs, Windows included, and that
+is worth exactly what it says: the code compiles there, the three
+`const size_of` layout assertions hold on MSVC's own layout, and the
+Windows-only unit tests ran. **It does not say `local_zone` answered.**
+`selftest/time.ting` is written property-wise — a map or nil, an
+offset a whole number of seconds, one answer per instant — and every
+one of those properties is satisfied by `nil`. A build in which the
+whole Windows branch silently returned `None` would have been just as
+green. Reading the runner's log confirmed the shape of the gap:
+`tz::win::tests::*` all pass, and not one of them calls `zone_at`.
+
+So this tick is the evidence 767 was missing, and it turned out to
+need a second thing before it could be worth anything.
+
+**The trap: a runner that sits in UTC.** The obvious test — assert the
+machine's own zone comes back — proves little on a GitHub runner,
+because a reader that answered zero for everything would pass it. UTC
+is the one value that cannot distinguish a working reader from a
+broken one.
+
+**The way out, which Windows offers itself.** Passing
+`GetTimeZoneInformationForYear` a `DYNAMIC_TIME_ZONE_INFORMATION`
+carrying only a `TimeZoneKeyName` selects *that* zone's rules instead
+of the machine's — the same freedom `TZ` gives on Unix, and the
+reason the Unix side of this file has been testable here all along.
+So `at_named` is now the inner function and `zone_at` passes `None`
+to it; nothing outside the tests passes a key, because `local_zone`
+is about where this machine is.
+
+That buys a real test. The six 2026 rows of the Unix `ZURICH` table —
+the ones read from `date`, including the minute either side of both
+transitions — are now asserted on Windows too, through
+`"W. Europe Standard Time"`. Two platforms, two entirely different
+sources of zone data, held to the same six answers.
+
+Three tests now cover what only a Windows machine can show: that the
+machine's own zone comes back at all with a real offset and a
+terminated name; that a named zone gives the same six answers a zone
+file gives; and that the offset agrees with what PowerShell reports
+for the same moment, which is the counterpart of comparing against
+`date` here.
+
+**Two things I deliberately did not assert.** Windows keeps per-year
+rules going back a couple of decades, not the century a zone file
+records, so the 1980 and epoch rows of the Zurich table are left out:
+Switzerland kept no summer time until 1981 and Windows has no entry
+that says so, so the platforms genuinely disagree there and asserting
+agreement would be asserting something false. The reference now
+states the difference instead. And an empty zone key is not asserted
+about at all — with one, Windows falls back to the rest of the
+structure rather than failing, and a test that guessed at that would
+be a test of my memory.
+
+The Windows-target check earned its place again: `Result::filter`,
+which does not exist, was caught here in three seconds rather than in
+CI in ten minutes.
+
+Verification is the Windows runner once more, and this time a green
+job means something: the six Zurich answers came out of the registry.

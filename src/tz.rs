@@ -344,36 +344,68 @@ mod win {
 
     #[cfg(windows)]
     pub fn zone_at(at: i64) -> Option<Zone> {
-        let utc = broken_down(at);
+        at_named(at, None)
+    }
+
+    /// The zone in effect at `at`, either the machine's own (`None`)
+    /// or the one a registry key names. Windows offers the second
+    /// through the same call — a `DYNAMIC_TIME_ZONE_INFORMATION`
+    /// carrying only a key name selects that zone's rules — and it is
+    /// what makes this readable path testable on a machine that sits
+    /// in UTC, the way `TZ` makes the Unix one testable here. Nothing
+    /// outside the tests passes a key: `local_zone` is about where
+    /// this machine is.
+    #[cfg(windows)]
+    fn at_named(at: i64, key: Option<&str>) -> Option<Zone> {
         // Windows counts years in a u16 and its zone data starts in
         // 1601. Outside that it has nothing to say, and neither has
         // this.
-        let (y, ..) = civil_from_days(at.div_euclid(86400));
-        if !(1601..=30827).contains(&y) {
+        let (year, ..) = civil_from_days(at.div_euclid(86400));
+        if !(1601..=30827).contains(&year) {
             return None;
         }
+        let utc = broken_down(at);
 
-        let mut dynamic = std::mem::MaybeUninit::<DynamicTimeZoneInformation>::zeroed();
-        let mut info = std::mem::MaybeUninit::<TimeZoneInformation>::zeroed();
+        // SAFETY: every field of both structs is an integer or an
+        // array of them, so all zeroes is a value either can hold.
+        let mut dynamic: DynamicTimeZoneInformation =
+            unsafe { std::mem::MaybeUninit::zeroed().assume_init() };
+        let mut info: TimeZoneInformation =
+            unsafe { std::mem::MaybeUninit::zeroed().assume_init() };
         let mut local = SystemTime::default();
-        // SAFETY: each call is given a pointer to storage of exactly
-        // its own struct, and its result is checked before that
-        // storage is read.
-        let (info, local) = unsafe {
-            let dynamic = if get_dynamic_time_zone_information(dynamic.as_mut_ptr()) == INVALID {
-                std::ptr::null()
+
+        let named = match key {
+            Some(key) => {
+                let wide: Vec<u16> = key.encode_utf16().collect();
+                // The name has to fit with a NUL left over, and the
+                // struct is already zeroed, so the NUL is there.
+                if wide.len() >= dynamic.time_zone_key_name.len() {
+                    return None;
+                }
+                dynamic.time_zone_key_name[..wide.len()].copy_from_slice(&wide);
+                true
+            }
+            // SAFETY: the pointer is to storage of exactly this
+            // struct, and the result says whether it was written.
+            None => unsafe { get_dynamic_time_zone_information(&mut dynamic) != INVALID },
+        };
+
+        // SAFETY: each pointer is to storage of exactly the struct
+        // the call expects, and each result is checked before the
+        // storage behind it is read.
+        unsafe {
+            let zone = if named {
+                &raw const dynamic
             } else {
-                dynamic.as_ptr()
+                std::ptr::null()
             };
-            if get_time_zone_information_for_year(utc.year, dynamic, info.as_mut_ptr()) == 0 {
+            if get_time_zone_information_for_year(utc.year, zone, &mut info) == 0 {
                 return None;
             }
-            let info = info.assume_init();
             if system_time_to_tz_specific_local_time(&info, &utc, &mut local) == 0 {
                 return None;
             }
-            (info, local)
-        };
+        }
 
         let offset = (instant(&local) - at) as i32;
         // Windows biases are minutes *west* of UTC, so standard time
@@ -400,6 +432,118 @@ mod win {
     #[cfg(test)]
     mod tests {
         use super::*;
+
+        /// The one thing only a Windows machine can show: that the
+        /// answer is an answer. A green build proves the code
+        /// compiles there, and the selftest's properties hold for
+        /// `nil` as happily as for a zone, so without this nothing
+        /// separates "Windows reports its zone" from "Windows still
+        /// reports nothing".
+        #[cfg(windows)]
+        #[test]
+        fn windows_knows_what_zone_it_is_in() {
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("the clock is after 1970")
+                .as_secs() as i64;
+            let z = zone_at(now).expect("a Windows machine always has a zone");
+            // A misread struct does not fail to compile; it answers
+            // nonsense. Every one of these is nonsense a wrong field
+            // offset would produce.
+            assert!(
+                (-15 * 3600..=15 * 3600).contains(&z.offset),
+                "offset {} is not a real one",
+                z.offset
+            );
+            assert_eq!(z.offset % 60, 0, "Windows keeps whole minutes");
+            assert!(!z.abbr.is_empty(), "a period Windows did not name");
+            assert!(
+                z.abbr.len() < 128,
+                "a name that long is a string that was not terminated"
+            );
+        }
+
+        /// The same six instants the Unix test checks against `date`,
+        /// asked of the same zone through the Windows API. A machine
+        /// sitting in UTC — every GitHub runner — proves almost
+        /// nothing with its own zone, since a reader that answered
+        /// zero for everything would pass. A named zone with summer
+        /// time in it cannot be faked that way.
+        ///
+        /// Only 2026 is asked. Windows keeps per-year rules going
+        /// back a couple of decades, not the century a zone file
+        /// records, so the two platforms genuinely disagree about
+        /// 1980 — Switzerland kept no summer time then and Windows
+        /// has no entry that says so. Asserting agreement there would
+        /// be asserting something false.
+        #[cfg(windows)]
+        #[test]
+        fn a_named_zone_answers_what_the_zone_file_answers() {
+            // (instant, seconds east, summer time) — the 2026 rows of
+            // the Unix test's ZURICH table, which came from `date`.
+            for (at, offset, dst) in [
+                (1768478400i64, 3600, false), // 2026-01-15T12:00Z
+                (1774745940, 3600, false),    // a minute before the change
+                (1774746000, 7200, true),     // and a minute after it
+                (1784116800, 7200, true),     // 2026-07-15T12:00Z
+                (1792889940, 7200, true),     // a minute before the change back
+                (1792890000, 3600, false),    // and a minute after it
+            ] {
+                let z = at_named(at, Some("W. Europe Standard Time"))
+                    .expect("Windows knows the zone Zurich is in");
+                assert_eq!(z.offset, offset, "offset at {at}");
+                assert_eq!(z.dst, dst, "summer time at {at}");
+                // The name is whatever language this machine speaks,
+                // so only its presence is worth asserting.
+                assert!(!z.abbr.is_empty(), "a period Windows did not name at {at}");
+            }
+        }
+
+        /// A key naming no zone is nothing, not somebody else's zone.
+        #[cfg(windows)]
+        #[test]
+        fn a_key_that_names_no_zone_answers_nothing() {
+            assert!(at_named(1784116800, Some("No Such Standard Time")).is_none());
+            // An empty key is deliberately not asserted about: with
+            // one, Windows falls back to the rest of the structure
+            // rather than failing, and guessing at that in a test
+            // would be asserting something I have not read.
+        }
+
+        /// And that the answer is the one Windows itself would give,
+        /// asked a different way. This is the counterpart of the Unix
+        /// test comparing against `date`: a second opinion from the
+        /// system, not from this file.
+        #[cfg(windows)]
+        #[test]
+        fn windows_agrees_with_its_own_clock() {
+            let out = std::process::Command::new("powershell")
+                .args([
+                    "-NoProfile",
+                    "-Command",
+                    "[int]([datetimeoffset]::Now).Offset.TotalMinutes",
+                ])
+                .output();
+            let Some(out) = out.ok().filter(|o| o.status.success()) else {
+                eprintln!("no powershell here; nothing to compare against");
+                return;
+            };
+            let minutes: i32 = String::from_utf8_lossy(&out.stdout)
+                .trim()
+                .parse()
+                .expect("powershell prints a whole number of minutes");
+            let now = std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .expect("the clock is after 1970")
+                .as_secs() as i64;
+            let z = zone_at(now).expect("a Windows machine always has a zone");
+            assert_eq!(
+                z.offset / 60,
+                minutes,
+                "this file says {} minutes east, the system says {minutes}",
+                z.offset / 60
+            );
+        }
 
         #[test]
         fn an_instant_and_a_broken_down_time_are_the_same_thing_twice() {

@@ -30,6 +30,11 @@ Windows are attached to each
   alike by making one of them say less.
 - The browser playground still answers `nil`, and now says so for the
   right reason rather than by falling through the Unix path.
+- How far back the answer reaches differs by platform, and the
+  reference now says so. A zone file records a century of changes;
+  Windows keeps per-year rules for a couple of decades and applies
+  the earliest it has to anything older, so July 1980 in Zurich is
+  `+01:00` from a zone file and `+02:00` from Windows.
 
 ## v2.123.0 (2026-09-07)
 

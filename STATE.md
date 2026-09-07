@@ -1757,15 +1757,38 @@ holds only the current milestone and the standing rules.
   not have done. The tail is otherwise clean. A GUARD THAT PASSES IS
   NOT A GUARD THAT RAN: this one counted files, not lines examined,
   and surfaced only because my own text flipped the parity back.
+- 768: GREEN IS NOT EVIDENCE. 767's CI was green on all five jobs and
+  said only that the code compiles on Windows and the const size_of
+  layout assertions hold. selftest/time.ting is property-wise, so
+  every property is satisfied by nil: a build where the whole Windows
+  branch returned None would have been just as green, and the runner
+  log confirmed no test called zone_at.
+  THE TRAP: a runner that sits in UTC proves nothing, because a
+  reader answering zero for everything passes.
+  THE WAY OUT: GetTimeZoneInformationForYear takes a
+  DYNAMIC_TIME_ZONE_INFORMATION carrying only a TimeZoneKeyName and
+  uses THAT zone's rules — the freedom TZ gives on Unix. zone_at now
+  calls an inner at_named(at, None); only tests pass a key. The six
+  2026 rows of the Unix ZURICH table (read from `date`) are asserted
+  on Windows through "W. Europe Standard Time": two platforms, two
+  sources of zone data, the same six answers. Plus a machine's-own-
+  zone test and one comparing against PowerShell.
+  DELIBERATELY NOT ASSERTED: the 1980 and epoch rows (Windows keeps
+  per-year rules for a couple of decades, not a century, so the
+  platforms genuinely disagree and the reference says so), and an
+  empty zone key (Windows falls back rather than failing, and I have
+  not read how). FOUR Windows-only tests in tz.rs do not run on this
+  host: the gate's count stays 362 here and is four higher there.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - read the Windows runner's verdict on 767. The one thing this host
-  cannot show is that the branch is taken at all; selftest/time.ting's
-  properties (a map or nil, an offset a whole number of seconds, one
-  answer per instant) become live there. If it is red, the layout
-  guards or the three calls are where to look, in that order.
-  - then a third stroke toward v2.124.0, and the release.
+  - read the Windows runner's verdict on 768's three tests. THIS time
+  green means something: the six Zurich answers came out of the
+  registry. If red, the named-zone call is the first suspect
+  (at_named with a TimeZoneKeyName), then the layout guards.
+  - then release v2.124.0 (767 and 768 stand; 767b is a guard repair
+  worth its own CHANGELOG line). Check the tree against the previous
+  release commit FIRST (738).
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

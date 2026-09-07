@@ -454,6 +454,14 @@ years before a country kept summer time, and, on Unix, the local mean
 time that predates zones altogether, which is why an offset is a
 whole number of seconds but not always of minutes.
 
+How far back that reaches differs. A zone file records a century of
+changes; Windows keeps per-year rules going back a couple of decades
+and applies the earliest it has to anything older. So the two
+platforms agree about recent years and can disagree about distant
+ones: 1980 in Zurich is `+01:00` from a zone file, which knows
+Switzerland kept no summer time until 1981, and `+02:00` in July from
+Windows, which has no entry that says so.
+
 `abbr` is what the platform calls that period, and the two platforms
 call it different things. A zone file holds a real abbreviation
 (`"CEST"`), or, for a zone that never had one, the offset itself
