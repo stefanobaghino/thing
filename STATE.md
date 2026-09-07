@@ -1792,15 +1792,23 @@ holds only the current milestone and the standing rules.
   (they make the headline claim checkable) and the guard repair (it
   is about docs a reader trusts). Gate green in CI's own words across
   THREE targets now. NOT VERIFIED YET.
+- v2.124.0 VERIFIED (145th tag; strokes 767, 767b, 768; both aarch64
+  archives executed here). 770: three zones agree with `date` on the
+  cold binary; selftest 2555, examples 22 of 22.
+  THE HONEST LIMIT, WRITTEN DOWN: the Windows archive is the one this
+  release changed and the one nobody here can run. "Both aarch64
+  archives executed here" is the usual whole artifact check and this
+  time it OMITS the platform the release is about. What can be said:
+  the asset is there at 958584 bytes (up 3230), unzips to ting.exe
+  plus the twelve modules, and the Windows RUNNER built and tested
+  this exact source green — a different build of the same source than
+  the zip, which is not the same sentence as "this file was run".
+  ting.wasm SHRANK, 843223 -> 842947: the TZif reader is #[cfg(unix)]
+  since 767, so the playground no longer carries a parser for files
+  it cannot open.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.124.0 — verdicts from the API, six assets on the tag,
-  both aarch64 archives executed cold here, site audit. THE WINDOWS
-  ARCHIVE IS THE ONE THAT CHANGED and it is the one platform whose
-  zone answer nobody here can run: say so plainly rather than
-  implying the artifact check covered it. What CAN be checked is that
-  the Windows archive is present and its size moved.
   - then a health tick to close the milestone "the time it is here"
   (bench vs BASELINE, 50000 differential, crash and 20000 formatter
   fuzz cases in release), and replenishment after it.
@@ -1874,7 +1882,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 145 (v2.124.0), 144 verified; v2.29.0 is publicly marked broken
+- Tags: 145 (v2.124.0), 145 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

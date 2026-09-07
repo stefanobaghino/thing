@@ -16786,3 +16786,52 @@ files, the corpus at its seven expected warnings. The binary reports
 Verification next tick, and the artifact check has an obvious subject
 this time: the Windows archive is the one that changed, and it is the
 one platform whose zone answer nobody here can run.
+
+## 2026-09-07 — Iteration 770: v2.124.0 verified, and one thing it cannot claim
+
+Four workflows green **by the API**: Release, CI and Pages on
+`a7dce45`, CI again on the record commit `b56f0d3`. Six assets on the
+tag. Both aarch64 archives downloaded cold and executed here — each
+reports `ting 2.124.0`, the musl one ran the selftest suite on its
+own embedded stdlib (**22 passed, 0 failed, 2555 checks**) and the gnu
+one diffed **22 of 22 examples** clean against their `.out`.
+
+The zone check on the cold binary, against `date`:
+
+```
+TZ=Europe/Zurich     CEST 7200s dst=true    2026-07-15T14:00:00+02:00
+TZ=Pacific/Chatham   +1245 45900s dst=false 2026-07-16T00:45:00+12:45
+TZ=America/New_York  EDT -14400s dst=true   2026-07-15T08:00:00-04:00
+```
+
+`date` prints the same three, character for character.
+
+**And here is what this verification cannot claim.** The Windows
+archive is the one this release changed, and it is the one archive
+nobody here can run. Every previous release note in this log has said
+"both aarch64 archives executed here" and meant it as the whole
+artifact check; this time that sentence leaves out the platform the
+release is about, and saying so is the point.
+
+What can honestly be said about it, and no more: the asset is there
+at 958584 bytes, up 3230 from v2.123.0's 955354, which is about what
+the new code weighs; unzipping it shows `ting.exe` (2402816 bytes)
+beside the twelve stdlib modules, so the archive has the shape every
+other one has. And the Windows *runner* built and tested this exact
+source, green, with the six Zurich anchors coming out of the
+registry. That is a different build of the same source than the one
+in the zip — a fact worth stating rather than blurring, because "CI
+tested Windows" and "this file was run" are not the same sentence.
+
+Site audit: ten paths 200 — the playground at `/`, `index.html`,
+`examples.js`, `ting.wasm` and the six rendered docs. changelog.html
+carries v2.124.0 and mentions Windows four times; reference.html now
+names `GetTimeZoneInformationForYear` and shows
+`"W. Europe Daylight Time"` as what `abbr` reads there; github.io
+still 301s to www.baghino.me/thing/.
+
+One number moved the other way and it is the right one:
+**`ting.wasm` shrank**, 843223 to 842947. The TZif reader is
+`#[cfg(unix)]` since 767, so the playground no longer carries a
+parser for files it can never open. A release that adds a platform
+and takes 276 bytes off another is the cfg boundary doing its job.
