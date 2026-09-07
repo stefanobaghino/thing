@@ -15863,3 +15863,51 @@ the v2.121.0 tarball's `lib/` sitting in the scratch directory and
 reported `key "each_map" not found` against a binary that has it. The
 fix was a clean directory; the lesson is that the embedded stdlib is
 a fallback, not an override.
+
+## 2026-09-07 — Iteration 755: the example that asked for each_map
+
+`examples/monthly.ting` now reads its rows by name. This is the tick
+that pays for 754: the function was written because this example
+needed it, so the proof is the diff here, not the changelog there.
+
+Ten lines of code gone. What went: two `nil`s declared outside the
+callback to be filled in later, a `rows == 1` branch that walked the
+header comparing names and counting an index, a guard on *every*
+subsequent row in case that branch had found nothing, and the
+`rows += 1` that only existed to know which row was the first. What
+replaced them: `row["date"]` and `row["amount"]`.
+
+**Every number is unchanged**, which is the check that matters. Same
+5000 rows, same five month totals to the cent, same "dates nothing
+could read: 3". The only line of output that moved is the one that
+says what is held while reading — a row under its column names now,
+rather than a pair of column numbers.
+
+**The gap from 754, faced.** `each_map` does not hand over the
+header, so "does this file have a date column?" is asked of the
+first *row* (`has(row, "date")`), not of the header. Checked all
+three ways it can go:
+
+| file | before | now |
+|---|---|---|
+| wrong header, has rows | exit 2, "no date and amount columns" | same |
+| right header, no rows | 0 rows, empty report | same |
+| **wrong header, no rows** | **exit 2** | **0 rows, empty report** |
+
+The third row is a real behaviour change and I am not going to
+pretend otherwise. What made me accept it: for a file with no rows,
+both answers describe the same nothing. The report on an empty file
+is empty whichever way its columns are spelled, and there is no
+total that could have been wrong. The comment in the example says
+this in place rather than leaving the next reader to work out why the
+check moved.
+
+The alternative was to keep the header available — hand it to `f`, or
+return it alongside the count — and it is worth saying why I did not.
+The map's keys *are* the header. Giving it back separately would be a
+second way to ask the same question, which is exactly the thing 749
+and 754 were both about not doing.
+
+Cookbook regenerated after `--fmt`, in that order, per 744. Gate
+green: fifteen `test result: ok`, zero clippy, formatter 0 of 69,
+corpus at seven.

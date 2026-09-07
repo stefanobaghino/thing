@@ -1510,17 +1510,28 @@ holds only the current milestone and the standing rules.
   (a leftover release tarball in the bench dir gave
   `key "each_map" not found` from a binary that has it); the embedded
   stdlib is a fallback, not an override.
+- 755: examples/monthly.ting reads by name; 10 code lines gone (two
+  nils outside the callback, the rows == 1 header scan, the guard on
+  every later row, the rows += 1 that only marked the first).
+  EVERY NUMBER UNCHANGED — 5000 rows, the five month totals to the
+  cent, "dates nothing could read: 3"; only the "held while reading"
+  line moved. THE 754 GAP FACED, all three cases checked: wrong
+  header with rows still exits 2; right header with no rows still
+  reports 0; WRONG header with NO rows changed from exit 2 to a 0-row
+  report — accepted because both answers describe the same nothing
+  and no total could have been wrong, and said in a comment in place.
+  NOT DONE: handing the header to f or returning it — the map's keys
+  ARE the header, and a second way to ask one question is the thing
+  749 and 754 both avoided.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - rewrite examples/monthly.ting on each_map, which is what it was
-  written for: 14 lines of header bookkeeping go, the numbers must
-  not move (5000 rows, three unreadable dates, the five month
-  totals), and the "held while reading" line has to tell the truth
-  about what is held now. FACE THE GAP rather than paper over it: a
-  header-only file with the wrong columns currently errors and would
-  become a silent "0 rows". Regenerate the cookbook AFTER --fmt
-  (744).
+  - release v2.122.0 — two strokes stand (754 each_map, 755 the
+  example that asked for it), and the milestone "reading what other
+  programs wrote" closes with it. Check the tree against the previous
+  release commit FIRST (738): `## Unreleased` must carry both
+  entries, and README's counts (72 builtins) need no move since
+  neither stroke added one.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
