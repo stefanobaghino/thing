@@ -1977,17 +1977,29 @@ holds only the current milestone and the standing rules.
   and 779's finish job, which HAS NEVER RUN — it needs all six build
   jobs green to be reachable, which is exactly what v2.125.0 failed.
   NOT VERIFIED YET.
+- v2.126.0 VERIFIED (147th tag; strokes 778, 779). TWELVE OF TWELVE
+  EXECUTIONS, counted per target from the log: every target started a
+  ting binary twice, once as the archive it packaged and once as the
+  archive it fetched back. 778's Expand-Archive held on the
+  downloaded zip, as it had on the packaged one — the argument for
+  choosing an observed mechanism over a claim about `tar`.
+  779's finish job ran FOR THE FIRST TIME (it could not before:
+  v2.125.0 had five green builds, not six). SHA256SUMS uploaded and
+  ALL SIX LINES VERIFY HERE via `sha256sum -c` on a fresh download —
+  including the two archives this host cannot execute, which is the
+  one thing a machine of the wrong architecture can say about them.
+  The release page now states every archive was run before it was
+  offered, and that the checksums are integrity not provenance.
+  NINETY-SIX RELEASES WENT OUT WITH FOUR OF SIX ARCHIVES NEVER
+  STARTED BY ANYBODY. That is now false, and the page says so in a
+  sentence `needs: build` makes unwriteable otherwise.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.126.0. THE COUNT IS THE VERDICT: twelve executions, read
-  PER TARGET from the Release log, not from job colours. Then two
-  artefacts on the page — a SHA256SUMS whose six lines must match the
-  six archives recomputed HERE, and notes that no longer say only
-  "prebuilt binaries below". The `finish` job has never run at all
-  (v2.125.0 could not reach it), so its first run is on this tag.
-  If red there: the heredoc's dedenting through YAML (rehearsed only
-  on this host's bash) and gh release download needing the checkout.
+  - health tick closing "the archive that was run" (bench vs BASELINE,
+  50000 differential, crash and 20000 formatter fuzz in release —
+  and CHECK THE SWEEPS ARE SWEEPS by timing two counts, per 771).
+  - then replenishment.
   - then a health tick to close "the archive that was run", and
   replenishment after it.
   - then: prove the archive's lib/ and the binary's embedded stdlib
@@ -2063,7 +2075,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 147 (v2.126.0), 146 verified; v2.29.0 is publicly marked broken
+- Tags: 147 (v2.126.0), 147 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
@@ -2143,7 +2155,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
   retrospective, changelog .html (vm.md is not published).
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
-  v2.17.0, 6 from v2.30.0.
+  v2.17.0, 6 from v2.30.0, SEVEN from v2.126.0 (SHA256SUMS joins
+  them, and `sha256sum -c` on a fresh download is part of verifying
+  a release from now on).
 - Toolchain: rustc 1.98 locally; rustfmt and clippy reinstalled at 196.
 - THE GATE COVERS THREE TARGETS SINCE 767, because two of them were
   only ever compiled by CI, an hour away: `cargo check`/`clippy

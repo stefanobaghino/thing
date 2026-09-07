@@ -17361,3 +17361,56 @@ was done to them.
 If the `finish` job is red, the likely spots are the heredoc's
 dedenting through YAML (rehearsed, but rehearsed on this host's bash)
 and `gh release download` needing the checkout it now has.
+
+## 2026-09-07 — Iteration 781: twelve of twelve
+
+**The count is twelve.** Every one of the six targets started a ting
+binary twice during the release — once as the archive it had just
+packaged, once as the archive it fetched back from the release page —
+read per target from the log rather than from the job colours:
+
+```
+aarch64-unknown-linux-gnu    2 executions
+aarch64-unknown-linux-musl   2 executions
+aarch64-apple-darwin         2 executions
+x86_64-unknown-linux-gnu     2 executions
+x86_64-unknown-linux-musl    2 executions
+x86_64-pc-windows-msvc       2 executions
+```
+
+778's fix held: `Expand-Archive` on the downloaded zip behaved the way
+it had already behaved on the packaged one, which was the whole
+argument for choosing it over a claim about `tar`.
+
+779's `finish` job ran, for the first time ever — it could not have
+run before, since it needs all six build jobs green and v2.125.0 had
+five. It uploaded `SHA256SUMS`, and **all six lines verify here**:
+
+```
+ting-v2.126.0-aarch64-apple-darwin.tar.gz: OK
+ting-v2.126.0-aarch64-unknown-linux-gnu.tar.gz: OK
+ting-v2.126.0-aarch64-unknown-linux-musl.tar.gz: OK
+ting-v2.126.0-x86_64-pc-windows-msvc.zip: OK
+ting-v2.126.0-x86_64-unknown-linux-gnu.tar.gz: OK
+ting-v2.126.0-x86_64-unknown-linux-musl.tar.gz: OK
+```
+
+`sha256sum -c` on a fresh download of every asset, including the two
+this host cannot execute — which is the one thing a machine of the
+wrong architecture *can* say about them.
+
+And the release page has stopped saying only "prebuilt binaries
+below". It now says every archive was run before it was offered, and
+says plainly that the checksums are for arriving intact rather than
+for provenance. That sentence is there because seven jobs succeeded,
+not because I typed it: `needs: build` makes the claim unwriteable
+otherwise.
+
+The usual rest: six archives plus the checksums file, both aarch64
+archives downloaded cold and reporting `ting 2.126.0`, ten site paths
+200 with changelog.html carrying v2.126.0.
+
+**Ninety-six releases went out before this one with four of six
+archives never having been started by anybody.** Two releases ago
+that was still true. It is now false, and the release page says so in
+a sentence that cannot be written unless it is.
