@@ -1711,17 +1711,22 @@ holds only the current milestone and the standing rules.
   repair): cargo fmt --check, cargo clippy --all-targets -D warnings,
   fifteen `test result: ok`, ting --fmt 0 of 69, corpus at seven.
   NOT VERIFIED YET.
+- v2.123.0 VERIFIED (144th tag; strokes 762, 763, 764; both aarch64
+  archives executed here). 766: six zones checked against `date`
+  character for character on the DOWNLOADED binary, quarter-hour
+  zones included (Chatham +12:45 is already on the next day while UTC
+  is not); the nil branch shown on the artifact for a POSIX-rule TZ
+  and for a TZ climbing out of the zone directory; and the milestone
+  in three lines — two files written at one instant file into
+  2026-09-06 under America/Los_Angeles and 2026-09-07 under UTC.
+  Tarball lib/ checked byte-identical to the repo's with `diff -r`,
+  not assumed. Site: ten paths 200, wasm 843223 (was 839346).
+  READ FROM THE SOURCE, not the browser: in the playground
+  local_zone(ms) is nil (no read_tzif on wasm) and local_zone()
+  errors as time_ms() does — the same answer Windows gives.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.123.0 — verdicts from the API (never gh run watch's
-  exit code), six assets on the tag, an aarch64 archive downloaded
-  cold and executed here (musl and gnu), site audit. The artifact
-  check for THIS milestone is about the environment: run the
-  downloaded binary under a TZ this host is not in and see local_iso
-  write an offset that is not +02:00, and under a POSIX-rule TZ see
-  local_zone answer nil. The zone data belongs to the machine, not to
-  the binary.
   - the milestone's remaining question: WINDOWS HAS NO ZONE ANSWER.
   local_zone is nil there, and "the time it is here" cannot honestly
   close while a quarter of the release archives can never answer.
@@ -1799,7 +1804,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 144 (v2.123.0), 143 verified; v2.29.0 is publicly marked broken
+- Tags: 144 (v2.123.0), 144 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

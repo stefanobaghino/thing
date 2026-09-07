@@ -16488,3 +16488,72 @@ host is not in and see `local_iso` write an offset that is not
 rule rather than a zone name. The zone data belongs to the machine,
 not to the binary, so this is the one milestone whose artifact check
 is genuinely about the environment it lands in.
+
+## 2026-09-07 — Iteration 766: v2.123.0 verified
+
+Four workflows green **by the API**, never by `gh run watch`'s exit
+code: Release, CI and Pages on `3ff6655`, and CI again on the record
+commit `b4dd88e`. Six assets on the tag. Both aarch64 archives
+downloaded cold and executed here: each reports `ting 2.123.0`, the
+musl one (statically linked) ran the selftest suite on its own
+embedded stdlib — **22 passed, 0 failed, 2555 checks** — and the gnu
+one diffed **22 of 22 examples** clean against their `.out`. The
+tarball's `lib/` is byte-identical to the repository's at this tag,
+checked with `diff -r` rather than assumed.
+
+Then the check this release is actually for, and it is the first one
+whose subject is the *machine*, not the binary. The zone data is the
+platform's; the binary only reads it. So the artifact check asks the
+downloaded binary what time it is in places this host is not, and
+compares every answer with `date`:
+
+```
+TZ=Europe/Zurich    CEST 7200s dst=true    2026-07-15T14:00:00+02:00
+TZ=Asia/Kolkata     IST 19800s dst=false   2026-07-15T17:30:00+05:30
+TZ=Pacific/Chatham  +1245 45900s dst=false 2026-07-16T00:45:00+12:45
+TZ=Australia/Eucla  +0845 31500s dst=false 2026-07-15T20:45:00+08:45
+TZ=America/New_York EDT -14400s dst=true   2026-07-15T08:00:00-04:00
+TZ=UTC              UTC 0s dst=false       2026-07-15T12:00:00Z
+```
+
+`date` prints the same six, character for character, abbreviations
+included. The quarter-hour zones are in there on purpose: Chatham at
++12:45 and Eucla at +08:45 are where an offset held in whole hours,
+or a date that changes on the wrong side of midnight, comes apart —
+Chatham is already on the *16th* while UTC is on the 15th.
+
+**The nil branch, on the artifact.** A `TZ` carrying a POSIX rule
+rather than a zone name (`EST5EDT,M3.2.0,M11.1.0`) answers `nil`, and
+so does a `TZ` trying to climb out of the zone directory
+(`../../etc/passwd`). Both are honest rather than convenient: the
+first is a rule this reader does not implement, the second is a file
+it refuses to open.
+
+**And the milestone's point, in three lines.** Two files written at
+the same instant (06:02Z), filed by the released binary three times:
+
+```
+TZ=UTC                 -> 2026-09-07
+TZ=America/Los_Angeles -> 2026-09-06
+TZ=Pacific/Kiritimati  -> 2026-09-07
+TZ=POSIX rule          -> 2026-09-07, and on stderr:
+                          organize: this machine keeps no time zone
+                          data; filing by the UTC day
+```
+
+Same files, same instant, different folder — which is exactly the bug
+763 existed to fix, now demonstrated on a binary downloaded from the
+release rather than on one built here.
+
+Site audit: ten paths 200 — the playground at `/`, `index.html`,
+`examples.js`, `ting.wasm` (843223 bytes, up from 839346) and the six
+rendered docs. changelog.html carries v2.123.0, stdlib.html says 194
+functions and lists `local_date`, `local_iso` and `offset_iso`,
+reference.html has `local_zone`, and github.io still 301s to
+www.baghino.me/thing/.
+
+One thing the audit cannot reach and the source can: in the
+playground, `local_zone(ms)` answers `nil` (the wasm build has no
+`read_tzif`) and `local_zone()` errors the way `time_ms()` does. That
+is the same answer Windows gives, which is the milestone's remaining
+question and now its next tick.
