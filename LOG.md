@@ -18066,3 +18066,63 @@ Gate green: fmt, clippy, 15 `test result: ok`, 70 files unchanged,
 corpus at 7 warnings, selftest 22 files / 2564 checks, Windows and
 wasm targets, and a differential sweep of 50000 cases at seed 792 —
 this changes a primitive both engines share.
+
+## 2026-09-07 — Iteration 793: one buffer, many names
+
+`Value::Str` no longer owns its text. `src/value.rs` gains a `Str`
+type wrapping an `Rc<String>`, and copying a ting string is now a
+pointer copy. Strings stay values — `a = b` then `b += "x"` must not
+change `a` — so the one operation that writes copies the text first
+UNLESS nobody else holds it, which is the bargain `+` already struck
+for lists in 784.
+
+**I took this stroke out of order, and here is why.** The backlog
+said the cached count and ASCII flag came next and the shared
+representation after. Both want the same migration — 120 sites
+naming `Value::Str` — and doing that migration twice would be the
+larger part of both strokes. 792 measured that after the decode was
+gone the remaining cost of a read was the COPY, so the representation
+is the thing under the caches, not beside them. It goes first; the
+caches hang off it next tick and are then a small change.
+
+**Measured.**
+
+- Passing a 2 MB string to a function 400 times: 0.766 -> 0.126 s.
+  Binding a second name to a string, putting it in a list, returning
+  it — none of these touch the text any more.
+- The index scan of 792 again: 4.644 -> 2.542 s at 160000 characters,
+  1.8x. STILL QUADRATIC, and that is expected — `chars().nth(j)`
+  walks j characters. That is the cache's job, not this stroke's.
+- `tests/alloc.rs`'s per-read guard reports **0.037 bytes per
+  character per read**, against 2.02 before this change and 9.0
+  before 792. The threshold is now 0.5, and the tightened guard was
+  run against HEAD's `src/` to watch it fail at 2.02 first.
+- All ten bench checksums match BASELINE; timings within the usual
+  spread.
+
+**The tests caught a real bug I would have shipped.** Ten of them
+failed on `Str("a")` where `"a"` was expected: the derived `Debug`
+printed the wrapper, and `Debug` is what `print` uses for a string
+INSIDE a list or map. `Str` now forwards `Debug` to its text. A
+newtype changes how a value looks, and nothing but a test that reads
+output would have said so.
+
+**Semantics unchanged**, checked against the binary built from
+c8a734e on both engines over a script covering every way to take a
+second reference (a name, a list element, a map value, a parameter, a
+snapshot list), append on both spellings, `a = a + a`, the non-ASCII
+`"aé漢字z"` through indexing, slicing, `upper`, `lower`, `trim`,
+`split`, `join`, `replace`, `find`, `sort`, JSON round-trip and both
+kinds of `for`. Byte-identical, and the two engines agree with each
+other. Six of those shapes are now assertions in
+`selftest/compound.ting` (2564 -> 2570 checks).
+
+`docs/reference.md` already said a string is copied only when
+something else holds it — that was the intent before and it is the
+mechanism now. Added the sentence that says the other half out loud:
+nothing but the write costs the text.
+
+Gate green: fmt, clippy, 15 `test result: ok`, 70 files unchanged,
+corpus at 7 warnings, selftest 22 files / 2570 checks, Windows and
+wasm targets, bench checksums, and 50000 differential cases at seed
+793.

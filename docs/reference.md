@@ -225,6 +225,12 @@ onto another list — it is copied, which is what keeps the two apart.
 So a loop that appends is linear, and a loop that also keeps every
 intermediate value is not, because it cannot be.
 
+Nothing else costs the text. Binding a second name to a string,
+passing it to a function, putting it in a list or a map, returning it:
+all of these share the text rather than copy it, whatever its length.
+Only the write pays, and only when someone else is still holding what
+it would overwrite.
+
 There is one more condition, and it is about what a call could do. If
 no function in the file so much as mentions the name, nothing a call
 does can reach it, and the right-hand side may be anything. If some

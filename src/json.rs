@@ -205,7 +205,7 @@ impl<'a> Parser<'a> {
             Some(b'n') => self.expect("null").map(|_| Value::Nil),
             Some(b't') => self.expect("true").map(|_| Value::Bool(true)),
             Some(b'f') => self.expect("false").map(|_| Value::Bool(false)),
-            Some(b'"') => self.string().map(Value::Str),
+            Some(b'"') => self.string().map(Value::str),
             Some(b'[') => self.array(),
             Some(b'{') => self.object(),
             Some(c) if c == b'-' || c.is_ascii_digit() => self.number(),

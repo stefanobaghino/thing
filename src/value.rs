@@ -11,11 +11,181 @@ use std::rc::Rc;
 pub type ListRef = Rc<RefCell<Vec<Value>>>;
 pub type MapRef = Rc<RefCell<BTreeMap<String, Value>>>;
 
+/// A ting string.
+///
+/// Strings are immutable to a ting program, so two values holding the
+/// same text can hold the same buffer: copying one is a pointer copy,
+/// not a copy of the text. That is what makes reading a name cheap.
+/// A string is still a VALUE — `a = b` then `b += "x"` must not
+/// change `a` — so the one operation that writes, appending, copies
+/// the text first UNLESS this is the only reference to it, the same
+/// bargain `+` already strikes for lists.
+#[derive(Clone, Default)]
+pub struct Str(Rc<String>);
+
+/// A string prints as its text does; the wrapper is not part of what
+/// a ting value looks like (`["a"]`, never `[Str("a")]`).
+impl fmt::Debug for Str {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        fmt::Debug::fmt(self.as_str(), f)
+    }
+}
+
+impl Str {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    /// The text as a `String` that may be appended to in place, or
+    /// `None` when someone else holds it and appending would have to
+    /// copy it first.
+    pub fn unshared_mut(&mut self) -> Option<&mut String> {
+        Rc::get_mut(&mut self.0)
+    }
+
+    /// Whether this string shares its buffer with no one, so writing
+    /// to it costs the write rather than the whole text.
+    pub fn is_unshared(&self) -> bool {
+        Rc::strong_count(&self.0) == 1
+    }
+}
+
+impl std::ops::Deref for Str {
+    type Target = str;
+    fn deref(&self) -> &str {
+        &self.0
+    }
+}
+
+impl From<String> for Str {
+    fn from(s: String) -> Str {
+        Str(Rc::new(s))
+    }
+}
+
+impl From<&str> for Str {
+    fn from(s: &str) -> Str {
+        Str(Rc::new(s.to_string()))
+    }
+}
+
+impl From<Str> for String {
+    fn from(s: Str) -> String {
+        Rc::try_unwrap(s.0).unwrap_or_else(|rc| (*rc).clone())
+    }
+}
+
+impl PartialEq for Str {
+    fn eq(&self, other: &Str) -> bool {
+        Rc::ptr_eq(&self.0, &other.0) || self.0 == other.0
+    }
+}
+
+impl Eq for Str {}
+
+impl PartialEq<str> for Str {
+    fn eq(&self, other: &str) -> bool {
+        self.as_str() == other
+    }
+}
+
+impl PartialEq<&str> for Str {
+    fn eq(&self, other: &&str) -> bool {
+        self.as_str() == *other
+    }
+}
+
+impl PartialOrd for Str {
+    fn partial_cmp(&self, other: &Str) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Str {
+    fn cmp(&self, other: &Str) -> std::cmp::Ordering {
+        self.as_str().cmp(other.as_str())
+    }
+}
+
+impl std::hash::Hash for Str {
+    fn hash<H: std::hash::Hasher>(&self, state: &mut H) {
+        self.as_str().hash(state)
+    }
+}
+
+impl fmt::Display for Str {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str(self.as_str())
+    }
+}
+
+impl std::borrow::Borrow<str> for Str {
+    fn borrow(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl AsRef<str> for Str {
+    fn as_ref(&self) -> &str {
+        self.as_str()
+    }
+}
+
+impl AsRef<std::ffi::OsStr> for Str {
+    fn as_ref(&self) -> &std::ffi::OsStr {
+        self.as_str().as_ref()
+    }
+}
+
+impl AsRef<std::path::Path> for Str {
+    fn as_ref(&self) -> &std::path::Path {
+        self.as_str().as_ref()
+    }
+}
+
+impl AsRef<[u8]> for Str {
+    fn as_ref(&self) -> &[u8] {
+        self.as_str().as_bytes()
+    }
+}
+
+impl FromIterator<char> for Str {
+    fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> Str {
+        Str::from(iter.into_iter().collect::<String>())
+    }
+}
+
+impl<'a> FromIterator<&'a char> for Str {
+    fn from_iter<I: IntoIterator<Item = &'a char>>(iter: I) -> Str {
+        Str::from(iter.into_iter().copied().collect::<String>())
+    }
+}
+
+impl std::ops::Add<&str> for Str {
+    type Output = Str;
+    /// Appending copies the text unless this is the only reference to
+    /// it, in which case it extends the buffer already there.
+    fn add(mut self, rhs: &str) -> Str {
+        match self.unshared_mut() {
+            Some(text) => {
+                text.push_str(rhs);
+                self
+            }
+            None => {
+                let mut text = String::with_capacity(self.len() + rhs.len());
+                text.push_str(&self);
+                text.push_str(rhs);
+                Str::from(text)
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum Value {
     Int(i64),
     Float(f64),
-    Str(String),
+    Str(Str),
     Bool(bool),
     Nil,
     List(ListRef),
@@ -510,6 +680,10 @@ impl Value {
 
     pub fn map(entries: BTreeMap<String, Value>) -> Value {
         Value::Map(Rc::new(RefCell::new(entries)))
+    }
+
+    pub fn str(text: impl Into<Str>) -> Value {
+        Value::Str(text.into())
     }
 }
 

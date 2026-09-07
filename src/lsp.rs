@@ -21,7 +21,7 @@ fn obj(entries: Vec<(&str, Value)>) -> Value {
 }
 
 fn s(text: &str) -> Value {
-    Value::Str(text.to_string())
+    Value::str(text.to_string())
 }
 
 /// Read one framed JSON-RPC message; None on clean EOF.
@@ -93,7 +93,7 @@ fn get(v: &Value, key: &str) -> Option<Value> {
 
 fn get_str(v: &Value, key: &str) -> Option<String> {
     match get(v, key)? {
-        Value::Str(s) => Some(s),
+        Value::Str(s) => Some(s.to_string()),
         _ => None,
     }
 }

@@ -493,14 +493,14 @@ fn match_value(chars: &[char], caps: &[Option<usize>], groups: usize) -> Value {
     let (start, end) = (caps[0].unwrap_or(0), caps[1].unwrap_or(0));
     m.insert("start".to_string(), Value::Int(start as i64));
     m.insert("end".to_string(), Value::Int(end as i64));
-    m.insert("text".to_string(), Value::Str(slice(start, end)));
+    m.insert("text".to_string(), Value::str(slice(start, end)));
     let mut list = Vec::new();
     for g in 1..=groups {
         match (
             caps.get(g * 2).copied().flatten(),
             caps.get(g * 2 + 1).copied().flatten(),
         ) {
-            (Some(lo), Some(hi)) => list.push(Value::Str(slice(lo, hi))),
+            (Some(lo), Some(hi)) => list.push(Value::str(slice(lo, hi))),
             _ => list.push(Value::Nil),
         }
     }
@@ -715,7 +715,7 @@ impl<W: Write> Interpreter<W> {
         span: Span,
     ) -> Result<(String, String), RuntimeError> {
         match (&args[0], &args[1]) {
-            (Value::Str(s), Value::Str(p)) => Ok((s.clone(), p.clone())),
+            (Value::Str(s), Value::Str(p)) => Ok((s.to_string(), p.to_string())),
             (l, r) => Err(error(
                 format!(
                     "{} expects two strings, got {} and {}",
@@ -1061,7 +1061,7 @@ impl<W: Write> Interpreter<W> {
         };
         let (line, col) = span.line_col(src);
         let mut m = std::collections::BTreeMap::new();
-        m.insert("file".to_string(), Value::Str(path.to_string()));
+        m.insert("file".to_string(), Value::str(path.to_string()));
         m.insert("line".to_string(), Value::Int(line as i64));
         m.insert("col".to_string(), Value::Int(col as i64));
         m
@@ -1241,7 +1241,7 @@ impl<W: Write> Interpreter<W> {
                         Ok(Control::Normal)
                     }
                     (Value::Map(entries), Value::Str(k)) => {
-                        entries.borrow_mut().insert(k, v);
+                        entries.borrow_mut().insert(k.into(), v);
                         Ok(Control::Normal)
                     }
                     (b, i) => Err(error(
@@ -1297,8 +1297,8 @@ impl<W: Write> Interpreter<W> {
                     // Iterate a snapshot, so the body may mutate the
                     // original list/map safely.
                     Value::List(l) => l.borrow().clone(),
-                    Value::Str(s) => s.chars().map(|c| Value::Str(c.to_string())).collect(),
-                    Value::Map(m) => m.borrow().keys().cloned().map(Value::Str).collect(),
+                    Value::Str(s) => s.chars().map(|c| Value::str(c.to_string())).collect(),
+                    Value::Map(m) => m.borrow().keys().cloned().map(Value::str).collect(),
                     v => {
                         return Err(error(
                             format!("cannot iterate over {}", v.type_name()),
@@ -1519,7 +1519,7 @@ impl<W: Write> Interpreter<W> {
                 arity(1, 1)?;
                 match &args[0] {
                     Value::Map(entries) => Ok(Value::list(
-                        entries.borrow().keys().cloned().map(Value::Str).collect(),
+                        entries.borrow().keys().cloned().map(Value::str).collect(),
                     )),
                     v => Err(error(
                         format!("keys expects a map, got {}", v.type_name()),
@@ -1531,7 +1531,7 @@ impl<W: Write> Interpreter<W> {
                 arity(2, 2)?;
                 match (&args[0], &args[1]) {
                     (Value::Map(entries), Value::Str(k)) => {
-                        Ok(Value::Bool(entries.borrow().contains_key(k)))
+                        Ok(Value::Bool(entries.borrow().contains_key(k.as_str())))
                     }
                     (v, k) => Err(error(
                         format!(
@@ -1551,7 +1551,7 @@ impl<W: Write> Interpreter<W> {
             }
             Builtin::Str => {
                 arity(1, 1)?;
-                Ok(Value::Str(args[0].to_string()))
+                Ok(Value::str(args[0].to_string()))
             }
             Builtin::Int => {
                 arity(1, 1)?;
@@ -1610,7 +1610,7 @@ impl<W: Write> Interpreter<W> {
                     Value::Int(n) => {
                         let sign = if *n < 0 { "-" } else { "" };
                         let magnitude = n.unsigned_abs();
-                        Ok(Value::Str(match b {
+                        Ok(Value::str(match b {
                             Builtin::Hex => format!("{sign}0x{magnitude:x}"),
                             _ => format!("{sign}0b{magnitude:b}"),
                         }))
@@ -1623,7 +1623,7 @@ impl<W: Write> Interpreter<W> {
             }
             Builtin::Type => {
                 arity(1, 1)?;
-                Ok(Value::Str(args[0].type_name().to_string()))
+                Ok(Value::str(args[0].type_name().to_string()))
             }
             Builtin::Range => {
                 arity(1, 3)?;
@@ -1651,11 +1651,11 @@ impl<W: Write> Interpreter<W> {
                 match (&args[0], &args[1]) {
                     // Empty separator splits into single-character strings.
                     (Value::Str(s), Value::Str(sep)) if sep.is_empty() => Ok(Value::list(
-                        s.chars().map(|c| Value::Str(c.to_string())).collect(),
+                        s.chars().map(|c| Value::str(c.to_string())).collect(),
                     )),
                     (Value::Str(s), Value::Str(sep)) => Ok(Value::list(
                         s.split(sep.as_str())
-                            .map(|p| Value::Str(p.to_string()))
+                            .map(|p| Value::str(p.to_string()))
                             .collect(),
                     )),
                     (a, b) => Err(error(
@@ -1688,7 +1688,7 @@ impl<W: Write> Interpreter<W> {
                                 }
                             }
                         }
-                        Ok(Value::Str(parts.join(sep)))
+                        Ok(Value::str(parts.join(sep)))
                     }
                     (a, b) => Err(error(
                         format!(
@@ -1703,7 +1703,7 @@ impl<W: Write> Interpreter<W> {
             Builtin::Trim => {
                 arity(1, 1)?;
                 match &args[0] {
-                    Value::Str(s) => Ok(Value::Str(s.trim().to_string())),
+                    Value::Str(s) => Ok(Value::str(s.trim().to_string())),
                     v => Err(error(
                         format!("trim expects a string, got {}", v.type_name()),
                         span,
@@ -1764,7 +1764,7 @@ impl<W: Write> Interpreter<W> {
                                 span,
                             ))
                         } else {
-                            Ok(Value::Str(s.replace(from.as_str(), to)))
+                            Ok(Value::str(s.replace(from.as_str(), to)))
                         }
                     }
                     (a, b, c) => Err(error(
@@ -1802,7 +1802,7 @@ impl<W: Write> Interpreter<W> {
             Builtin::Upper | Builtin::Lower => {
                 arity(1, 1)?;
                 match &args[0] {
-                    Value::Str(s) => Ok(Value::Str(if b == Builtin::Upper {
+                    Value::Str(s) => Ok(Value::str(if b == Builtin::Upper {
                         s.to_uppercase()
                     } else {
                         s.to_lowercase()
@@ -1840,7 +1840,7 @@ impl<W: Write> Interpreter<W> {
                         };
                         let start = byte_of(s, lo);
                         let end = start + byte_of(&s[start..], hi - lo);
-                        Ok(Value::Str(s[start..end].to_string()))
+                        Ok(Value::str(s[start..end].to_string()))
                     }
                     Value::List(items) => {
                         let items = items.borrow();
@@ -1856,7 +1856,7 @@ impl<W: Write> Interpreter<W> {
             Builtin::Args => {
                 arity(0, 0)?;
                 Ok(Value::list(
-                    self.script_args.iter().cloned().map(Value::Str).collect(),
+                    self.script_args.iter().cloned().map(Value::str).collect(),
                 ))
             }
             Builtin::Input => {
@@ -1872,7 +1872,7 @@ impl<W: Write> Interpreter<W> {
                                 line.pop();
                             }
                         }
-                        Ok(Value::Str(line))
+                        Ok(Value::str(line))
                     }
                     Err(e) => Err(error(format!("input failed: {e}"), span)),
                 }
@@ -1884,11 +1884,11 @@ impl<W: Write> Interpreter<W> {
                     Value::Str(path) if path == "-" => {
                         let mut buf = String::new();
                         std::io::Read::read_to_string(&mut std::io::stdin().lock(), &mut buf)
-                            .map(|_| Value::Str(buf))
+                            .map(|_| Value::str(buf))
                             .map_err(|e| error(format!("cannot read stdin: {e}"), span))
                     }
                     Value::Str(path) => std::fs::read_to_string(path)
-                        .map(Value::Str)
+                        .map(Value::str)
                         .map_err(|e| error(format!("cannot read {path:?}: {e}"), span)),
                     v => Err(error(
                         format!("read_file expects a string path, got {}", v.type_name()),
@@ -2006,7 +2006,7 @@ impl<W: Write> Interpreter<W> {
                     }
                     count += 1;
                     if matches!(
-                        self.call_value(&f, vec![Value::Str(buf.clone())], span)?,
+                        self.call_value(&f, vec![Value::str(buf.clone())], span)?,
                         Value::Bool(false)
                     ) {
                         break;
@@ -2036,7 +2036,7 @@ impl<W: Write> Interpreter<W> {
                     // dropping it would make a walk lie about what it
                     // saw, so the whole listing says so instead.
                     match entry.file_name().into_string() {
-                        Ok(name) => names.push(Value::Str(name)),
+                        Ok(name) => names.push(Value::str(name)),
                         Err(bad) => {
                             return Err(error(
                                 format!(
@@ -2102,7 +2102,7 @@ impl<W: Write> Interpreter<W> {
                 facts.insert("size".to_string(), Value::Int(meta.len() as i64));
                 facts.insert(
                     "kind".to_string(),
-                    Value::Str(
+                    Value::str(
                         if meta.is_dir() {
                             "dir"
                         } else if meta.is_file() {
@@ -2310,7 +2310,7 @@ impl<W: Write> Interpreter<W> {
                 // Surrogates and anything past the last code point are
                 // not characters; say so rather than substituting one.
                 match u32::try_from(*n).ok().and_then(char::from_u32) {
-                    Some(c) => Ok(Value::Str(c.to_string())),
+                    Some(c) => Ok(Value::str(c.to_string())),
                     None => Err(error(format!("chr: {n} is not a code point"), span)),
                 }
             }
@@ -2448,7 +2448,7 @@ impl<W: Write> Interpreter<W> {
                                         site.insert(
                                             "fn".to_string(),
                                             match &f.name {
-                                                Some(n) => Value::Str(n.to_string()),
+                                                Some(n) => Value::str(n.to_string()),
                                                 None => Value::Nil,
                                             },
                                         );
@@ -2470,7 +2470,7 @@ impl<W: Write> Interpreter<W> {
                                     })
                                     .collect();
                                 m.insert("trace".to_string(), Value::list(trace));
-                                m.insert("err".to_string(), Value::Str(e.message));
+                                m.insert("err".to_string(), Value::str(e.message));
                             }
                         };
                         Ok(Value::map(m))
@@ -2681,7 +2681,7 @@ impl<W: Write> Interpreter<W> {
                         span,
                     ));
                 }
-                Ok(Value::Str(out))
+                Ok(Value::str(out))
             }
             Builtin::JsonParse => {
                 arity(1, 1)?;
@@ -2710,13 +2710,13 @@ impl<W: Write> Interpreter<W> {
                         ));
                     }
                 };
-                result.map(Value::Str).map_err(|m| error(m, span))
+                result.map(Value::str).map_err(|m| error(m, span))
             }
             Builtin::Env => {
                 arity(1, 1)?;
                 match &args[0] {
                     Value::Str(name) => Ok(match std::env::var(name) {
-                        Ok(v) => Value::Str(v),
+                        Ok(v) => Value::str(v),
                         Err(_) => Value::Nil,
                     }),
                     v => Err(error(
@@ -2792,7 +2792,7 @@ impl<W: Write> Interpreter<W> {
                 };
                 let mut facts = std::collections::BTreeMap::new();
                 facts.insert("offset".to_string(), Value::Int(zone.offset as i64 * 1000));
-                facts.insert("abbr".to_string(), Value::Str(zone.abbr));
+                facts.insert("abbr".to_string(), Value::str(zone.abbr));
                 facts.insert("dst".to_string(), Value::Bool(zone.dst));
                 Ok(Value::map(facts))
             }
@@ -2899,7 +2899,7 @@ impl<W: Write> Interpreter<W> {
                     return Err(error("cwd is not available in this environment", span));
                 }
                 let dir = std::env::current_dir().map_err(|e| error(format!("cwd: {e}"), span))?;
-                Ok(Value::Str(dir.to_string_lossy().into_owned()))
+                Ok(Value::str(dir.to_string_lossy().into_owned()))
             }
             Builtin::ReTest => {
                 arity(2, 2)?;
@@ -2955,7 +2955,7 @@ impl<W: Write> Interpreter<W> {
                     at = end;
                 }
                 out.extend(&chars[at..]);
-                Ok(Value::Str(out))
+                Ok(Value::str(out))
             }
             Builtin::ReSplit => {
                 arity(2, 2)?;
@@ -3041,11 +3041,11 @@ impl<W: Write> Interpreter<W> {
                 );
                 m.insert(
                     "out".to_string(),
-                    Value::Str(String::from_utf8_lossy(&done.stdout).into_owned()),
+                    Value::str(String::from_utf8_lossy(&done.stdout).into_owned()),
                 );
                 m.insert(
                     "err".to_string(),
-                    Value::Str(String::from_utf8_lossy(&done.stderr).into_owned()),
+                    Value::str(String::from_utf8_lossy(&done.stderr).into_owned()),
                 );
                 Ok(Value::map(m))
             }
@@ -3397,7 +3397,7 @@ impl<W: Write> Interpreter<W> {
         match &expr.kind {
             ExprKind::Int(n) => Ok(Value::Int(*n)),
             ExprKind::Float(x) => Ok(Value::Float(*x)),
-            ExprKind::Str(s) => Ok(Value::Str(s.clone())),
+            ExprKind::Str(s) => Ok(Value::str(s.clone())),
             ExprKind::Bool(b) => Ok(Value::Bool(*b)),
             ExprKind::Nil => Ok(Value::Nil),
             ExprKind::List(items) => {
@@ -3411,7 +3411,7 @@ impl<W: Write> Interpreter<W> {
                 let mut map = std::collections::BTreeMap::new();
                 for (k, v) in entries {
                     let key = match self.eval(k)? {
-                        Value::Str(s) => s,
+                        Value::Str(s) => String::from(s),
                         other => {
                             return Err(error(
                                 format!("map keys must be strings, got {}", other.type_name()),
@@ -3487,8 +3487,8 @@ impl<W: Write> Interpreter<W> {
 pub(crate) fn iter_snapshot(v: Value, span: Span) -> Result<Vec<Value>, RuntimeError> {
     match v {
         Value::List(l) => Ok(l.borrow().clone()),
-        Value::Str(s) => Ok(s.chars().map(|c| Value::Str(c.to_string())).collect()),
-        Value::Map(m) => Ok(m.borrow().keys().cloned().map(Value::Str).collect()),
+        Value::Str(s) => Ok(s.chars().map(|c| Value::str(c.to_string())).collect()),
+        Value::Map(m) => Ok(m.borrow().keys().cloned().map(Value::str).collect()),
         v => Err(error(
             format!("cannot iterate over {}", v.type_name()),
             span,
@@ -3838,7 +3838,7 @@ pub(crate) fn index_opt(
             let items = items.borrow();
             Ok(offset(*i, items.len()).map(|eff| items[eff].clone()))
         }
-        (Value::Map(entries), Value::Str(k)) => Ok(entries.borrow().get(k).cloned()),
+        (Value::Map(entries), Value::Str(k)) => Ok(entries.borrow().get(k.as_str()).cloned()),
         (Value::Str(s), Value::Int(i)) => {
             // A count from the end has to know the length; a count
             // from the start does not, and only walks as far as it is
@@ -3851,7 +3851,7 @@ pub(crate) fn index_opt(
             } else {
                 *i as usize
             };
-            Ok(s.chars().nth(eff).map(|c| Value::Str(c.to_string())))
+            Ok(s.chars().nth(eff).map(|c| Value::str(c.to_string())))
         }
         (base, idx) => Err(error(
             format!("cannot index {} with {}", base.type_name(), idx.type_name()),

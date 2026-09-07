@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2564 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2570 selftest checks on all four
   CI platforms, Windows included); 365 Rust tests
   in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
   rows since bench/growth.ting joined in 784.
@@ -2211,16 +2211,41 @@ holds only the current milestone and the standing rules.
   Semantics checked byte-identical against a binary built from the
   previous commit across fourteen shapes on both engines; six of them
   now live in selftest/strings.ting.
+- 793: second stroke — `Value::Str` holds a `value::Str`, an
+  `Rc<String>`, so copying a ting string is a POINTER COPY. Writing
+  still copies first unless nobody else holds the buffer (784's
+  bargain for lists). TAKEN OUT OF BACKLOG ORDER ON PURPOSE: the
+  caches and the sharing want the SAME migration of 120 `Value::Str`
+  sites, and 792 measured the leftover cost of a read to be the copy,
+  so the representation goes under the caches rather than beside
+  them. Passing a 2 MB string to a function 400 times: 0.766 ->
+  0.126 s. The 792 index scan 4.644 -> 2.542 s at 160000 chars (1.8x,
+  STILL QUADRATIC — `chars().nth` walks, and that is the cache's job).
+  The per-read guard now reports 0.037 bytes/char/read (2.02 before
+  this, 9.0 before 792) and its threshold is 0.5, watched failing at
+  2.02 against HEAD's src first.
+  THE TESTS CAUGHT A REAL BUG: the derived `Debug` on the newtype
+  printed `Str("a")`, and `Debug` is what `print` uses for a string
+  inside a list or map. Ten tests failed on it; `Str` forwards `Debug`
+  to its text. A newtype changes how a value LOOKS.
+  Semantics byte-identical against c8a734e on both engines over every
+  way to take a second reference (name, list element, map value,
+  parameter, snapshot) plus both append spellings, `a = a + a`,
+  non-ASCII through eleven builtins, JSON round-trip and both `for`s;
+  six now assert in selftest/compound.ting. All ten bench checksums
+  match.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: the cached count/ascii flag carried with the string,
-  which is where O(1) actually comes from. 792 took the
-  allocation-free O(n) version and it paid 10x, but the scan is still
-  quadratic and a read still clones the text; measure the cached
-  version against 792's numbers below before believing it pays too.
-  - then the same representation behind an Rc, closing 787's case:
-  `s += str(n)` where some function mentions the name.
+  - next stroke: the cached count and ascii flag, now that
+  `value::Str` is the place to put them. O(1) `len` after the first
+  ask, and an ASCII string indexes and slices by BYTE offset, which
+  is what finally makes the 792 scan linear (it is still x4 per
+  doubling, at 2.542 s for 160000 characters).
+  - then 787's case: `s += str(n)` where some function mentions the
+  name. The read is now a pointer copy, so what is left is dropping
+  the binding's reference just before the add so the buffer is
+  unshared and extends in place.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

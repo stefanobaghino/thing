@@ -202,15 +202,18 @@ fn reading_a_string_by_index_does_not_cost_the_string_each_time() {
                 ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
             })
         };
-        // 2000 characters read one at a time. Each read still copies
-        // the string it indexes (`Value::Str` owns its text), so the
-        // floor is about two bytes per character per read; decoding
-        // into a `Vec<char>` as well put four more on top of it.
+        // 2000 characters read one at a time. Reading the name is a
+        // pointer copy and the walk to the character allocates
+        // nothing, so the only allocation per read is the
+        // one-character answer: this measures 0.04 bytes per
+        // character per read. It measured 2 when a string owned its
+        // text and every read copied it, and 9 when each read also
+        // decoded the whole string into a `Vec<char>`.
         let n = 2000;
         let per_read = run(n / 10) as f64 / (n * n) as f64;
         assert!(
-            per_read < 3.0,
-            "`{read}`: {per_read:.1} bytes per character per read over {n} characters — the string is being decoded, not just copied"
+            per_read < 0.5,
+            "`{read}`: {per_read:.4} bytes per character per read over {n} characters — a read is copying or decoding the string, not just pointing at it"
         );
     }
 }

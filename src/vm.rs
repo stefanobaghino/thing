@@ -129,7 +129,7 @@ fn exec<W: Write>(
                 for pair in kvs.chunks(2) {
                     match &pair[0] {
                         Value::Str(k) => {
-                            m.insert(k.clone(), pair[1].clone());
+                            m.insert(k.to_string(), pair[1].clone());
                         }
                         other => {
                             return Err(eval::error(
@@ -163,7 +163,7 @@ fn exec<W: Write>(
                         items[eff] = value;
                     }
                     (Value::Map(entries), Value::Str(k)) => {
-                        entries.borrow_mut().insert(k, value);
+                        entries.borrow_mut().insert(k.into(), value);
                     }
                     (b, i) => {
                         return Err(eval::error(

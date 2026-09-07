@@ -796,7 +796,7 @@ impl Compiler {
                 self.emit(Op::Const(i), e.span);
             }
             ExprKind::Str(s) => {
-                let i = self.konst(Value::Str(s.clone()));
+                let i = self.konst(Value::str(s.clone()));
                 self.emit(Op::Const(i), e.span);
             }
             ExprKind::Bool(true) => self.emit(Op::True, e.span),

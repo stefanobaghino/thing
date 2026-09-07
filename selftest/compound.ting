@@ -170,3 +170,22 @@ fn accumulate(n) {
   return acc;
 }
 assert(join(map(accumulate(3), str), "") == "0123", "each call has its own");
+
+# Two names for the same text now hold the same buffer, so appending
+# to one has to copy before it writes. Every way of taking a second
+# reference has to be covered, not just a plain binding.
+let base = "ab";
+let held = [base, base];
+let inside = {"k": base};
+let by_call = fn(s) { s += "!"; return s; };
+assert(by_call(base) == "ab!" && base == "ab", "a parameter is a copy");
+base += "c";
+assert(base == "abc", "the name itself grew");
+assert(held[0] == "ab" && held[1] == "ab", "the list kept the old text");
+assert(inside["k"] == "ab", "so did the map");
+let taken = held[0];
+taken += "z";
+assert(held[0] == "ab" && taken == "abz", "reading out of a list copies too");
+let doubled = "xy";
+doubled = doubled + doubled;
+assert(doubled == "xyxy", "a name on both sides is not appended to itself");
