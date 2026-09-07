@@ -2108,26 +2108,47 @@ holds only the current milestone and the standing rules.
   rest of this optimisation's edge cases live.
   Selftest 2555 -> 2558, Rust 364 -> 365, ten bench checksums
   unchanged, seeds 786 clean, Windows checked.
+- 787: docs for the milestone -- and writing the rule down is what
+  found that I DID NOT HAVE THE RULE. 786's STATE entry claimed a
+  top-level binding still copies with a call on the right; measured,
+  it is LINEAR (0.008 -> 0.028s at 20000 -> 80000). The top level has
+  a frame and a capture set like any other body. Still sound, for the
+  same reason as 786, and the proving case was already pinned in
+  differential.rs and passing.
+  THE REAL RULE IS ABOUT WHETHER ANY FUNCTION MENTIONS THE NAME, not
+  about top level: no mention -> linear even with a call (x3.8); a
+  function that merely READS it -> x27.2. reference.md now says that
+  in those terms.
+  SECOND FINDING: docs/tutorial.md:196's loop is quadratic, but not
+  from the append -- `len` on a string counts characters. 80000
+  appends cost 0.016s with a counter in the condition, 0.618s with
+  len(s). Tried the ASCII fast path, measured 15%, reverted (see
+  backlog). The example stays: it is the idiom and at width 12 it is
+  instant.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - docs: docs/tutorial.md:196 teaches `text = text + fill` in a while
-  loop -- still true at TOP LEVEL, where the fuse cannot apply, so
-  the tutorial should say what a loop that builds a string costs and
-  where. A reference note on the same. (lib/time.ting:222 needed no
-  rewrite: 786 made it a slot append.)
-  - then cut v2.127.0.
-  - LEFT UNDONE ON PURPOSE (786): a TOP-LEVEL binding still copies
-  when the right-hand side has a call, because any function can
-  assign a global and the compiler cannot see them all. Closing it
-  needs either a whole-program scan for assignments to the name, or
-  Rc-backed strings so the read is cheap and the binding's reference
-  can be dropped just before the add (CPython's trick). Neither is a
-  tick; both are a milestone. NOT MEASURED as painful yet -- scripts
-  build strings inside functions.
+  - cut v2.127.0: the milestone is complete (784-787). CHANGELOG's
+  Unreleased has four entries; version, tag, watch the Release run,
+  then verify it next tick.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
+  NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
+  FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
+  copies there (x27.2 against x3.8). Closing it needs a whole-program
+  scan for ASSIGNMENTS to the name (mentions are the
+  over-approximation; assignments are what matter) or Rc-backed
+  strings so the read is cheap and the binding's reference can be
+  dropped just before the add (CPython's trick). Neither is a tick.
+  NOT DONE, with the measurement (787): `len` on a string counts
+  characters, so it WALKS the string -- 80000 appends cost 0.016s
+  with a counter in the loop condition and 0.618s with `len(s)`. The
+  ASCII fast path (s.len() when s.is_ascii()) was tried, measured
+  15%, still quadratic, and REVERTED: the scan is the cost. A real
+  fix carries the count with the string -- Value::Str and 102 sites
+  in eval.rs. NO MEASURED PAIN: every `while len(s) < width` in the
+  corpus pads to a column.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

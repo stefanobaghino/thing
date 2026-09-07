@@ -17755,3 +17755,65 @@ target checked, 50000 differential and 20000 formatter cases at seed
 786 clean, all ten bench checksums unchanged. The allocation guard
 now covers the call-on-the-right shape in both spellings, and fails
 without this change at 18943627 -> 84343243 bytes for twice the work.
+
+## 2026-09-07 — Iteration 787: writing it down, and finding out I had it wrong
+
+The docs stroke for the milestone. Writing the rule down is what
+found that I did not have the rule.
+
+**786's own record was wrong.** I wrote in STATE that a top-level
+binding still copies when the right-hand side has a call, reasoning
+from `resolve` returning None when `fn_ctx` is None. Measured, it
+does not:
+
+```
+top level, s += str(i)     20000 0.008s   80000 0.028s   linear
+```
+
+The top level has a frame and a capture set like any other body, so a
+top-level name gets a slot on the same terms. The reasoning I had
+skipped was whether that is still SOUND there, and it is, for the
+same reason: `captured_names` collects everything mentioned inside
+any fn literal, so a name with a slot is one no function names, and
+no function can assign what it cannot name. The case that proves it
+was already pinned in `tests/differential.rs` and passing —
+`fn f() { t = "z"; ... } t += f()` answers `ab`, the old value.
+
+So the real rule is not about top level at all. It is about whether
+any function mentions the name:
+
+```
+no function mentions s      20000 0.008s   80000 0.031s   x3.8
+a function READS s          20000 0.064s   80000 1.745s   x27.2
+  ... and the same with no call on the right      0.008s -> 0.046s
+```
+
+A function that only *reads* the name is enough to move it out of its
+slot and put the conservative rule back. That is what the reference
+now says, in those terms, because it is what is true.
+
+**A second thing the tutorial's own example taught me.** I set out to
+fix `docs/tutorial.md:196`, `while len(text) < width { text = text +
+fill; }`, believing the append made it quadratic. The append is
+linear now. The loop is still quadratic — because **`len` on a string
+counts characters, and that walks the string**:
+
+```
+80000 appends, counter in the condition     0.016 s
+80000 appends, len(s) in the condition      0.618 s
+```
+
+Same appends, same answer; the difference is 80000 calls to `len`
+over a string averaging 40000 characters. I tried the obvious cheap
+answer — `s.len()` when `s.is_ascii()`, which is a byte scan instead
+of a UTF-8 decode — and measured **15%**, still quadratic, because
+the scan is the cost. Reverted: a branch in the most-used builtin
+buys nothing that anyone has felt. The corpus's `while len(s) <
+width` loops are all padding to a column, where the string is tens of
+characters. The reference now says `len` walks a string, and says
+where that matters and where it does not.
+
+The example itself stays as it is: it is the idiom, it is correct,
+and at width 12 it is instant.
+
+Gate green, corpus at seven, `--fmt` 0/70.

@@ -152,6 +152,13 @@ an element too, and there the shorter spelling is also the more
 careful one: `counts[word] += 1` looks the key up once, where
 `counts[word] = counts[word] + 1` looks it up twice.
 
+For a string or a list the two spellings also cost the same, and both
+cost only what you added: building one a piece at a time in a loop
+does not copy what is already there. It copies only when something
+else is holding the same value — another name, or a list you pushed it
+onto — and then it has to, so that the other holder keeps what it was
+given.
+
 ## Functions are values
 
 `fn name(...) { ... }` defines a function; anonymous `fn(...) { ... }`

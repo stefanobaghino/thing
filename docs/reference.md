@@ -216,6 +216,27 @@ target must already exist, and reading comes first, so both a missing
 name and a missing key are errors. `m[k] = get(m, k, 0) + 1` is the way
 to write a tally, since the first sighting has nothing to add to.
 
+Growing a string or a list with `+` costs what was added, not what was
+already there. `s += piece` and `s = s + piece` are the same statement
+and cost the same: when nothing else holds the value, it is extended
+where it lies. When something else does hold it — a second name, a
+list or map it sits in, a closure that captured it, a snapshot pushed
+onto another list — it is copied, which is what keeps the two apart.
+So a loop that appends is linear, and a loop that also keeps every
+intermediate value is not, because it cannot be.
+
+There is one more condition, and it is about what a call could do. If
+no function in the file so much as mentions the name, nothing a call
+does can reach it, and the right-hand side may be anything. If some
+function does mention it, the name could be assigned from inside a
+call, so the saving holds only while the right-hand side names nothing
+and calls nothing: `s += piece` stays cheap, `s += str(n)` does not.
+
+`len` on a string counts characters, so it walks the string; on a list
+or map it does not. `while len(s) < width` is therefore quadratic in
+the length of `s`, which does not matter at the widths padding uses
+and does at the size of a document.
+
 `for` iterates over a **snapshot** taken when the loop starts, so the
 body may mutate the list or map it is iterating. Map iteration visits
 keys in sorted order. The loop variable is a fresh binding each
