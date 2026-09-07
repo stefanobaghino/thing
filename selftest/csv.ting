@@ -45,7 +45,12 @@ assert(csv["maps"]([["only", "header"]]) == [], "a header alone is no records");
 # two must agree on every input — including a field with a line break
 # in it, which is where cutting on newlines goes wrong.
 let doc = "id,note\n1,\"a note\nwith a newline\"\n2,plain\n";
-let path = "selftest-csv-rows.csv";
+# A name of its own, because this file is run twice over in one
+# process (once per engine, for the coverage comparison) while another
+# test is running it in parallel: a fixed name would have the two
+# runs writing each other's fixture out from under them. The seed is
+# the clock in nanoseconds, so two interpreters do not share one.
+let path = format("selftest-csv-rows-{}.csv", random_int(0, 1000000000));
 write_file(path, doc);
 let streamed = [];
 let n = csv["each_row"](path, fn(row) { push(streamed, row); return nil; });
