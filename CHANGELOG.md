@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.122.0 (2026-09-07)
 
 - `lib/csv.ting` gained `each_map(path, f, sep = ",")`: what `maps`
   does to a parsed document, done to a file a row at a time. The
