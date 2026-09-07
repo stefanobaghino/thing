@@ -1171,21 +1171,16 @@ impl<W: Write> Interpreter<W> {
                         }
                         if *op == crate::ast::BinaryOp::Add && cannot_reach(value, name) {
                             let r = self.eval(value)?;
-                            // Only this pair cannot fail, so only this
-                            // pair may leave the binding empty while it
-                            // is worked on. Both types are settled
-                            // before anything is moved.
-                            let append = matches!(r, Value::Str(_))
-                                && Env::with(&self.env, name, |v| matches!(v, Value::Str(_)))
-                                    == Some(true);
+                            // Only these pairs cannot fail, so only they
+                            // may leave the binding empty while they are
+                            // worked on. Both types are settled before
+                            // anything is moved.
+                            let append = Env::with(&self.env, name, |v| appends_in_place(v, &r))
+                                == Some(true);
                             if append {
                                 let old = Env::take(&self.env, name)
                                     .expect("the binding was there a moment ago");
-                                let (Value::Str(mut a), Value::Str(b)) = (old, r) else {
-                                    unreachable!("both were strings a line ago")
-                                };
-                                a.push_str(&b);
-                                Value::Str(a)
+                                binary(*op, old, r, stmt.span)?
                             } else {
                                 let old = Env::get(&self.env, name)
                                     .expect("the binding was there a moment ago");
@@ -1334,8 +1329,8 @@ impl<W: Write> Interpreter<W> {
 
     /// Whether the name is bound to a string, asked without copying
     /// one: the VM has to know before it decides to move a value out.
-    pub(crate) fn lookup_is_str(&self, name: &str) -> Option<bool> {
-        Env::with(&self.env, name, |v| matches!(v, Value::Str(_)))
+    pub(crate) fn lookup_appends_in_place(&self, name: &str, r: &Value) -> Option<bool> {
+        Env::with(&self.env, name, |v| appends_in_place(v, r))
     }
 
     /// Move a bound name's value out, leaving nil in its place; the
@@ -3587,6 +3582,18 @@ pub(crate) fn cannot_reach(e: &crate::ast::Expr, name: &str) -> bool {
     }
 }
 
+/// The operand pair `x += y` may move out of its binding for: `binary`
+/// cannot fail on it, so nothing can leave the name holding the nil
+/// that the move puts there. Both pairs then cost the right-hand side
+/// rather than the left: a `String` reuses its buffer, and a list that
+/// the move left unshared is extended in place.
+pub(crate) fn appends_in_place(old: &Value, r: &Value) -> bool {
+    matches!(
+        (old, r),
+        (Value::Str(_), Value::Str(_)) | (Value::List(_), Value::List(_))
+    )
+}
+
 pub(crate) fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, RuntimeError> {
     use BinaryOp::*;
     use Value::*;
@@ -3597,8 +3604,18 @@ pub(crate) fn binary(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Val
                 .map(Int)
                 .ok_or_else(|| error("integer overflow", span)),
             (Str(a), Str(b)) => Ok(Str(a + &b)),
-            // Concatenation builds a fresh list; neither operand is mutated.
+            // Concatenation builds a fresh list, so neither operand is
+            // mutated -- unless this reference is the only one there
+            // is, in which case extending it in place is the same
+            // list to every observer and costs the right-hand side
+            // rather than the whole left one. `xs += [x]` round a
+            // loop is what makes the difference: quadratic otherwise.
             (List(a), List(b)) => {
+                if std::rc::Rc::strong_count(&a) == 1 {
+                    let add: Vec<Value> = b.borrow().iter().cloned().collect();
+                    a.borrow_mut().extend(add);
+                    return Ok(List(a));
+                }
                 let mut out = a.borrow().clone();
                 out.extend(b.borrow().iter().cloned());
                 Ok(Value::list(out))

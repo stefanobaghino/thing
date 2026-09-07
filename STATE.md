@@ -19,9 +19,10 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2545 selftest checks on all four
-  CI platforms, Windows included); 362 Rust tests
-  in 15 suites.
+  nothing on its own — and 22 examples with .out; 2551 selftest checks on all four
+  CI platforms, Windows included); 364 Rust tests
+  in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
+  rows since bench/growth.ting joined in 784.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -2045,17 +2046,39 @@ holds only the current milestone and the standing rules.
   docs/cookbook.md never drifted. One sampled guard, not a habit.
   RULE: a guard over a generated file compares the whole file. A
   guard that samples is a guard that reports success.
+- 784: A LIST THAT STOPS COPYING ITSELF. `xs += [x]` round a loop was
+  quadratic; 200000 appends went 47.652s -> 0.021s. binary's
+  (List, List) arm extends in place when Rc::strong_count is 1, and
+  the three hard-coded string move-out sites became one predicate,
+  eval::appends_in_place, naming the two pairs binary cannot fail on.
+  The compiler's existing fuse condition (op is + AND the RHS
+  cannot_reach the name) is what makes the moved-out value unshared.
+  SEMANTICS PROVEN UNCHANGED: nine aliasing shapes run against a
+  binary built from HEAD BEFORE the change and one built after, both
+  engines, byte-identical. The `snaps` shape is the one to remember —
+  pushing the growing list onto another list shares it every
+  iteration, so that loop stays quadratic and must.
+  THE GUARD WEIGHS BYTES, NOT COUNTS: a copy-per-iteration and an
+  append-per-iteration both allocate about once round the loop; the
+  SIZE is what goes quadratic. tests/alloc.rs gained bytes() beside
+  allocations(). Old code 144188911 -> 576356719 B (x4.00); new
+  310975 -> 601087 (x1.93). Proven by running the new guard against
+  the old implementation: fails on the list, passes on the string, so
+  it measures what changed rather than that something did.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lists first: make `+` on a list extend in place when the target
-  holds the only reference (Rc count 1), so `xs += [i]` and
-  `xs = xs + [i]` reach push's cost. Aliasing must stay observable:
-  `let t = r; r += [2];` leaves t as [1]. Differential fuzzer plus
-  explicit aliasing tests; a bench row for the growing list.
-  - then the same for strings, so `s = s + x` matches `s += x`; then
-  docs/tutorial.md:196 and lib/time.ting:222, which teach and use the
-  quadratic form.
+  - now the LONG FORM: `x = x + y` still copies, because reading the
+  name clones the value before `binary` ever sees it (that clone is
+  the whole cost -- `binary` itself is already right). Make the
+  compiler fuse `x = x + <expr that cannot_reach x>` into the same
+  UpdateSlot/UpdateVar the `+=` path uses; then 783's 520x and this
+  tick's 2270x both close. Same aliasing shapes, same alloc guard
+  (extend it to the long form), differential sweep.
+  - then docs/tutorial.md:196 and lib/time.ting:222, which teach and
+  use the long form in a loop, and a reference note on what `+=`
+  costs.
+  - then cut v2.127.0.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

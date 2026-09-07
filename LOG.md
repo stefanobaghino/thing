@@ -17551,3 +17551,72 @@ Both fixed: the file regenerated, and the guard now compares each
 example's whole body. Proven inert-no-longer the way this project
 proves things — the strengthened guard was run against the stale file
 that CI had been passing for four days, and it failed.
+
+## 2026-09-07 — Iteration 784: a list that stops copying itself
+
+`xs += [x]` round a loop was quadratic. It is linear now.
+
+```
+200000 appends   before 47.652 s   after 0.021 s
+```
+
+**The change is six lines and one predicate.** `binary`'s
+`(List(a), List(b))` arm asks `Rc::strong_count(&a) == 1` first: if
+this reference is the only one there is, no one can tell the
+difference between a fresh list and the old one extended, so it
+extends. The callers had to cooperate — `x += y` only reaches
+`binary` with an unshared list if the old value was *moved* out of
+its binding rather than copied, and that move was hard-coded for
+strings in three places. It is now one shared predicate,
+`eval::appends_in_place`, naming the two pairs `binary` cannot fail
+on: two strings, two lists. The hand-rolled `push_str` branches came
+out; `String + &str` already reuses the left buffer, so `binary` does
+the same work the special case did.
+
+The compiler's existing guard does the rest: `UpdateSlot`/`UpdateVar`
+are emitted only when the operator is `+` **and** the right-hand side
+`cannot_reach` the name, so `xs += xs` never takes this path — and
+would be refused by the count anyway.
+
+**What must not change did not.** Nine aliasing shapes, run against a
+binary built from HEAD before the change and against the one built
+after, in both engines: byte-identical.
+
+```
+plain : [1, 2] [1]            a second name keeps its own
+nested: [1, 2] [[1]]          a list inside a list
+inmap : [1, 2] {"k": [1]}     a list in a map
+closed: [1, 2] [1]            a closure that captured it
+arg   : [1] [1, 9]            += inside a function does not escape
+self  : [1, 1]                xs += xs
+expr  : [1, 2] [1, 2, 3]      q + [3] leaves q alone
+snaps : [0, 1, 2] [[0], [0, 1], [0, 1, 2]]
+```
+
+`snaps` is the one worth naming: a loop that pushes the growing list
+onto another list makes it shared every iteration, so every append
+after the first copies — and each snapshot keeps its own length, as
+it always did. Correctness first; that loop is still quadratic, and
+has to be.
+
+**The guard weighs bytes, because counting allocations cannot see
+this.** A copy-per-iteration and an append-per-iteration both
+allocate about once round the loop; what goes quadratic is the SIZE
+of the one allocation. `tests/alloc.rs` gained a `bytes()` alongside
+`allocations()`, and doubling the iterations tells the two apart:
+
+```
+list, before the change   2000 appends 144188911 B   4000 appends 576356719 B   (x4.00)
+list, after               2000 appends    310975 B   4000 appends    601087 B   (x1.93)
+string (unchanged)        2000 appends     81681 B   4000 appends    142449 B   (x1.74)
+```
+
+Proven by running the new guard against the old implementation, where
+it fails on the list and passes on the string — so it is measuring
+the thing that changed and not merely the fact that something did.
+
+Six ting-level assertions in `selftest/compound.ting` (2545 -> 2551),
+50000 differential cases at seed 784 clean, the gate green including
+the Windows target, and `bench/growth.ting` joins BASELINE as its
+tenth row (vm 99.7 ms, eval 239.8 ms). The other nine checksums are
+unchanged.

@@ -7,6 +7,14 @@ Windows are attached to each
 
 ## Unreleased
 
+- Growing a list with `xs += [x]` is linear. `+` copied the whole
+  list every time round, so building one in a loop cost the square of
+  its length: 200000 appends took 47 seconds and now take 0.02. When
+  nothing else holds the list it is extended in place, and when
+  anything does — a second name, a list or map it sits in, a closure
+  that captured it, a snapshot pushed onto another list — it is
+  copied exactly as before. `bench/growth.ting` measures it and
+  `tests/alloc.rs` weighs the bytes so it cannot quietly come back.
 - The docs link in `--help` and in the README is `https`. The site
   answers on both, and nothing about a language reference should
   travel in the clear when it need not.

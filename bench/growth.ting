@@ -1,0 +1,16 @@
+# Growing a list and a string one piece at a time -- the shape a
+# report-building loop has. Both were quadratic once; `+=` on either
+# now extends what it holds when nothing else does.
+let xs = [];
+let i = 0;
+while i < 200000 {
+  xs += [i % 97];
+  i += 1;
+}
+let s = "";
+let j = 0;
+while j < 60000 {
+  s += "abcdefghij";
+  j += 1;
+}
+print(len(xs), reduce(xs, 0, fn(a, x) { return a + x; }) % 100000, len(s));

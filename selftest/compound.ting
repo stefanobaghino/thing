@@ -75,3 +75,44 @@ let mixed = try(fn() {
   t -= 1;
 });
 assert(contains(mixed["err"], "cannot apply '-' to string and int"), "types still checked");
+
+# `xs += [x]` extends the list in place when nothing else holds it, so
+# a loop that grows a list costs the appends and not the squares. What
+# must not change is what anyone else can see: every other holder of
+# the list keeps the list it was given.
+let plain = [1];
+let same = plain;
+plain += [2];
+assert(len(plain) == 2 && len(same) == 1, "a second name keeps its own");
+
+let nested = [1];
+let inside = [nested];
+nested += [2];
+assert(len(nested) == 2 && len(inside[0]) == 1, "a list inside a list keeps its own");
+
+let valued = [1];
+let held = {"k": valued};
+valued += [2];
+assert(len(valued) == 2 && len(held["k"]) == 1, "a list in a map keeps its own");
+
+fn capture(x) { return fn() { return x; }; }
+let closed = [1];
+let reader = capture(closed);
+closed += [2];
+assert(len(closed) == 2 && len(reader()) == 1, "a closure keeps what it captured");
+
+# Snapshots taken round a loop stay snapshots: each push makes the
+# list shared, so the next append copies rather than extends.
+let grown = [];
+let snaps = [];
+for i in range(0, 3) {
+  grown += [i];
+  push(snaps, grown);
+}
+assert(len(snaps[0]) == 1 && len(snaps[1]) == 2 && len(snaps[2]) == 3, "each snapshot its own length");
+
+# Growing a list a thousand times is not a thousand copies, but the
+# answer is the same either way.
+let big = [];
+for i in range(0, 1000) { big += [i]; }
+assert(len(big) == 1000 && big[0] == 0 && big[999] == 999, "a thousand appends");

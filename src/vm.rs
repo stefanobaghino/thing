@@ -313,14 +313,9 @@ fn exec<W: Write>(
                 // value may be moved out and appended to in place.
                 // Anything else is copied first, so a failed operator
                 // leaves the binding as it found it.
-                if matches!((&*slot, &r), (Value::Str(_), Value::Str(_))) {
-                    let (Value::Str(mut a), Value::Str(b)) =
-                        (std::mem::replace(slot, Value::Nil), r)
-                    else {
-                        unreachable!("both were strings a line ago")
-                    };
-                    a.push_str(&b);
-                    *slot = Value::Str(a);
+                if eval::appends_in_place(slot, &r) {
+                    let old = std::mem::replace(slot, Value::Nil);
+                    *slot = eval::binary(*op, old, r, span)?;
                 } else {
                     *slot = eval::binary(*op, slot.clone(), r, span)?;
                 }
@@ -334,17 +329,12 @@ fn exec<W: Write>(
             Op::UpdateVar(i, op) => {
                 let r = stack.pop().expect("stack underflow");
                 let name = &chunk.names[*i as usize];
-                // As UpdateSlot: only the pair that cannot fail is
-                // moved out of its binding.
-                let string_append =
-                    matches!(&r, Value::Str(_)) && matches!(interp.lookup_is_str(name), Some(true));
-                let v = if string_append {
+                // As UpdateSlot: only the pairs that cannot fail are
+                // moved out of their binding.
+                let append = interp.lookup_appends_in_place(name, &r) == Some(true);
+                let v = if append {
                     let old = interp.take(name).expect("CheckVar found the binding");
-                    let (Value::Str(mut a), Value::Str(b)) = (old, r) else {
-                        unreachable!("both were strings a line ago")
-                    };
-                    a.push_str(&b);
-                    Value::Str(a)
+                    eval::binary(*op, old, r, span)?
                 } else {
                     let old = interp.lookup(name).expect("CheckVar found the binding");
                     eval::binary(*op, old, r, span)?
