@@ -99,20 +99,25 @@ jobs:
       # same claim: everything between packaging and the release page
       # — the upload, the storage, the asset name — is untested until
       # something fetches it back and starts it.
-      - name: Run what was uploaded
+      - name: Fetch what was uploaded
         shell: bash
         run: |
           rm -rf downloaded fetched
           mkdir -p downloaded fetched
           gh release download "$GITHUB_REF_NAME" --dir downloaded \
             --pattern "ting-$GITHUB_REF_NAME-${{ matrix.target }}.*"
-          asset=$(ls downloaded/*)
-          case $asset in
-            # bsdtar, which is what `tar` is on Windows, reads zip;
-            # Git Bash has no unzip to lean on.
-            *.zip) tar -xf "$asset" -C fetched ;;
-            *) tar -xzf "$asset" -C fetched ;;
-          esac
-          tools/smoke.sh fetched "${GITHUB_REF_NAME#v}"
         env:
           GH_TOKEN: ${{ github.token }}
+      - name: Unpack the download (unix)
+        if: runner.os != 'Windows'
+        run: tar -xzf "downloaded/ting-$GITHUB_REF_NAME-${{ matrix.target }}.tar.gz" -C fetched
+      # Each platform unpacks with its own tool, and the zip gets
+      # PowerShell. `tar` under Git Bash is GNU tar, not the bsdtar in
+      # System32, and GNU tar does not read zip: v2.125.0's release
+      # went red here on "this does not look like a tar archive".
+      - name: Unpack the download (windows)
+        if: runner.os == 'Windows'
+        run: Expand-Archive -Path "downloaded/ting-$env:GITHUB_REF_NAME-${{ matrix.target }}.zip" -DestinationPath fetched
+      - name: Run it again
+        shell: bash
+        run: tools/smoke.sh fetched "${GITHUB_REF_NAME#v}"

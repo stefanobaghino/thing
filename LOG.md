@@ -17211,3 +17211,66 @@ Release job that did not, which is the mistake 768 already made once.
 If it is red, the likeliest suspects in order are the Windows zip
 path (`tar -xf` reading a zip through bsdtar, and Git Bash's `cp -r`),
 then the download step's asset pattern, then macOS.
+
+## 2026-09-07 — Iteration 778: eleven of twelve, and the twelfth was the checker
+
+**The Release workflow went red on v2.125.0, and that is the milestone
+working rather than failing.** Six archives, each unpacked and run on
+its own runner before upload; five of them fetched back from the
+release page and run a second time. The twelfth execution — the
+Windows archive, downloaded — never happened, and the reason had
+nothing to do with the archive:
+
+```
+tar: This does not look like a tar archive
+```
+
+`tar` under Git Bash is **GNU tar**, from `C:\Program Files\Git\usr\bin`,
+not the bsdtar in `System32`. GNU tar does not read zip. I had written
+the opposite in a code comment one tick earlier, confidently, and it
+reached a tag.
+
+The counting matters, so here it is per target, read from the log
+rather than from the job colour:
+
+```
+aarch64-unknown-linux-gnu    ran twice   2545 checks, 22 of 22 examples
+aarch64-unknown-linux-musl   ran twice   2545 checks, 22 of 22
+aarch64-apple-darwin         ran twice   2545 checks, 22 of 22
+x86_64-unknown-linux-gnu     ran twice   2545 checks, 22 of 22
+x86_64-unknown-linux-musl    ran twice   2545 checks, 22 of 22
+x86_64-pc-windows-msvc       ran ONCE    2545 checks, 22 of 22
+```
+
+Eleven executions of a ting binary during a release, where every
+release before this morning had zero. **Every one of the six archives
+was started and put to work on its own platform before it was
+offered.** That is the claim the milestone exists to make, and it
+held on all six, Windows included. What failed is the second, weaker
+claim — that the *downloaded* file was also run — on one target.
+
+**The fix uses a mechanism already proven in the same run.** The
+download is now unpacked by each platform's own tool, and the zip
+gets PowerShell's `Expand-Archive` — which succeeded on that very
+Windows runner, in that very run, for the packaged archive. The unix
+path was rehearsed here verbatim from the file against the published
+v2.125.0: fetch, unpack, smoke, exit 0.
+
+**And what can be said about the uploaded Windows zip, which nobody
+here can execute**: downloaded, it has thirteen entries, `ting.exe`
+at 2402816 bytes, and a `lib/` **byte-identical** to `git archive
+v2.125.0 lib`. So the file on the release page carries what the tag
+says it should. It was also run once — as the archive the runner
+packaged, which is the same bytes it uploaded.
+
+The rest of the verification, as usual: six assets, both aarch64
+archives downloaded cold and reporting `ting 2.125.0`, ten site paths
+200 with changelog.html carrying v2.125.0.
+
+The lesson is the one 774 already taught and I did not generalise far
+enough. There I stopped retyping steps and started running the file.
+The thing I did not stop doing was **asserting facts about platforms
+I cannot run**. "tar on Windows is bsdtar" was a belief written as a
+comment, and a comment is not a measurement. Where a claim about
+another platform cannot be checked here, the safe move is to use the
+mechanism that platform has already been observed to accept.
