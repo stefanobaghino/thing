@@ -15,11 +15,11 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 72 builtins; twelve embedded stdlib modules
+- 73 builtins; twelve embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 190
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out); 353 Rust tests
+  nothing on its own — and 22 examples with .out); 357 Rust tests
   in 15 suites.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -1641,16 +1641,38 @@ holds only the current milestone and the standing rules.
   28 sites of `let x = A; if c { x = B; }` across six stdlib modules
   and three examples, plus two if/else assignment pairs; kept as a
   candidate, not chosen over a bug. (5) destructuring: ZERO sites.
+- 762: local_zone() is the 73rd builtin — the local zone AT AN
+  INSTANT (offset in ms east of UTC, abbr, dst) or nil. src/tz.rs
+  reads the TZif file (RFC 8536) the machine keeps: /etc/localtime,
+  or what TZ names under /usr/share/zoneinfo. Rust's std has NO
+  local-time API, which is why this is a parser and not a call.
+  VERIFIED AGAINST `date`: a minute either side of both 2026
+  transitions; 1980-06-01 = +01:00 CET (June, and Switzerland kept no
+  summer time until 1981 — a month-based guess fails this);
+  1874 = +00:29:46 BMT local mean time (so an offset is a whole
+  number of SECONDS, not minutes — the selftest must not assume
+  minutes); TZ=America/New_York -04:00 EDT and TZ=Asia/Kolkata
+  +05:30 IST. NIL IS A REFUSAL: Windows has no TZif and a TZ holding
+  a POSIX rule names no file; reporting UTC there would be worse than
+  the bug, since the caller could not tell. Selftests hold either way
+  (everything specific behind `if here != nil`), so the Windows
+  runner passes. THREW AWAY A FAKE TEST: the first TZ test asserted a
+  COPY of the rule inline and agreed with itself; the path decision
+  is now zone_path(tz) and the test calls it. 10 selftest checks
+  (2533 -> 2543), 4 Rust tests (353 -> 357).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - find the local offset without a dependency: read /etc/localtime
-  (TZif v2), honour TZ when it is set, and answer with the offset in
-  effect at a given instant — not just the current one, since a
-  report over last winter's logs needs last winter's offset. Prove it
-  against `date +%z` at instants either side of a DST transition.
-  Windows gets its own answer in a later stroke; until then it must
-  be possible for a script to know it is being told UTC.
+  - fix examples/organize.ting to file by the LOCAL day, which is
+  what the milestone was chosen for. It currently uses
+  tm["date"](f["modified"]) = the UTC day; a file written at 00:30
+  local goes in yesterday's folder. Say in the example what happens
+  where local_zone answers nil (the report must not silently become
+  a UTC one). The .out will move; regenerate the cookbook AFTER
+  --fmt (744).
+  - then lib/time helpers on top of local_zone: local dates and an
+  ISO string that carries the offset, rather than every caller
+  writing `+ local_zone(ms)["offset"]` by hand.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

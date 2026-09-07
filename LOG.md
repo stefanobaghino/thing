@@ -16270,3 +16270,67 @@ correctness. Kept as a candidate, not chosen over a bug.
 
 **Destructuring — nobody wants it.** Zero occurrences of
 `let a = p[0]; let b = p[1];` in the whole corpus.
+
+## 2026-09-07 — Iteration 762: asking the system what time it is here
+
+`local_zone()` is the 73rd builtin, and the first stroke of "the time
+it is here". It answers the local zone at an instant — `offset` in
+milliseconds east of UTC, `abbr`, `dst` — or `nil`.
+
+**Where the answer comes from.** Rust's standard library has no
+local-time API at all, so there is nothing to call. What there is, is
+data the machine already keeps: `/etc/localtime` is a TZif file
+(RFC 8536), and `TZ` when set names one under `/usr/share/zoneinfo`.
+`src/tz.rs` reads it — header, the 64-bit data block a version 2 file
+carries, transitions, types, abbreviations — which is the same kind of
+work as this project's own regex engine and JSON parser, and keeps
+the dependency count at zero.
+
+**It answers for an instant, not for now**, and that is the whole
+design. A report over last winter's timestamps needs last winter's
+offset, and the file records every change a zone has been through.
+Checked against what `date` says, one row per line of the table in
+`src/tz.rs`:
+
+| instant (UTC) | ting | why it is the interesting one |
+|---|---|---|
+| 2026-03-29T00:59 | +01:00 CET | one minute before the spring change |
+| 2026-03-29T01:00 | +02:00 CEST | and one minute after |
+| 2026-10-25T00:59 | +02:00 CEST | the autumn one, same treatment |
+| 2026-07-15T12:00 | +02:00 CEST | plain summer |
+| 1980-06-01 | **+01:00 CET** | June, and not summer time: Switzerland kept none until 1981 |
+| 1874-12-07 | **+00:29:46 BMT** | before zones, when the offset was the town's own |
+
+The last two are the ones that matter. Anything that guessed from the
+month gets 1980 wrong, and anything that assumed whole minutes gets
+1874 wrong. `date` agrees on both, and on `TZ=America/New_York`
+(-04:00 EDT in July) and `TZ=Asia/Kolkata` (+05:30 IST), so half-hour
+zones work too.
+
+**Nil is a refusal, not a zero.** Windows has no TZif, and a `TZ`
+holding a POSIX rule (`CET-1CEST,M3.5.0`) rather than a name names no
+file. Both answer `nil`. Reporting UTC in those cases would be worse
+than the bug this milestone exists to fix, because a caller told UTC
+cannot tell it apart from a caller told the truth. The selftests are
+written so they hold either way — everything specific sits behind
+`if here != nil`, so the suite passes on the Windows runner too.
+
+**A test I had to throw away and write again.** My first version of
+the `TZ`-handling test asserted a *copy* of the rule inline:
+`let bad = name.is_empty() || name.split('/').any(...)`. That tests
+nothing — it restates the condition and agrees with itself. The path
+decision is now a function of its own, `zone_path(tz)`, and the test
+calls it: `..`, `../../etc/passwd`, `a/../../b`, `a//b` and `./x` must
+resolve to no path at all, while `Europe/Zurich`, `:Europe/Zurich`,
+an absolute `TZ` and an unset one each resolve to the right file.
+
+And the thing the milestone was chosen for, now answerable:
+
+```
+UTC day:   2026-09-06
+local day: 2026-09-07
+```
+
+Fixing `organize.ting` to use the second line is the next stroke.
+
+Ten selftest checks (2533 → 2543), four Rust tests (353 → 357).
