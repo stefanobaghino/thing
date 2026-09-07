@@ -627,7 +627,7 @@ unknown event: no transition for kick in unlocked
 
 ## monthly
 
-What a CSV says, month by month, without holding the CSV — the two things a report over exported data needs and could not have before: rows read one at a time (a row is not a line, since a quoted field may hold line breaks) and a date column that is read rather than guessed at.  ting monthly.ting                 # report on a file this makes ting monthly.ting sales.csv       # report on a file of your own cat sales.csv | ting monthly.ting -  The columns are found by name in the header row: a date column and an amount column, whatever else the file carries. With no argument it builds a file, reports on it and removes it, so the example prints the same thing every time — and that file is 5001 rows in 6001 lines, so a reader that cut on newlines would invent a thousand rows that are not there.
+What a CSV says, month by month, without holding the CSV — the two things a report over exported data needs and could not have before: rows read one at a time (a row is not a line, since a quoted field may hold line breaks) and a date column that is read rather than guessed at.  ting monthly.ting                 # report on a file this makes ting monthly.ting sales.csv       # report on a file of your own cat sales.csv | ting monthly.ting -  The columns are asked for by name — a date column and an amount column, whatever else the file carries and in whatever order. With no argument it builds a file, reports on it and removes it, so the example prints the same thing every time — and that file is 5001 rows in 6001 lines, so a reader that cut on newlines would invent a thousand rows that are not there.
 
 ```ting
 # What a CSV says, month by month, without holding the CSV — the two
@@ -640,8 +640,8 @@ What a CSV says, month by month, without holding the CSV — the two things a re
 #   ting monthly.ting sales.csv       # report on a file of your own
 #   cat sales.csv | ting monthly.ting -
 #
-# The columns are found by name in the header row: a date column and
-# an amount column, whatever else the file carries. With no argument
+# The columns are asked for by name — a date column and an amount
+# column, whatever else the file carries and in whatever order. With no argument
 # it builds a file, reports on it and removes it, so the example
 # prints the same thing every time — and that file is 5001 rows in
 # 6001 lines, so a reader that cut on newlines would invent a
@@ -687,28 +687,23 @@ if path != "-" && !exists(path) {
   exit(2);
 }
 
-# One pass. What is held: the column numbers, one counter and one
-# total per month, and the row in hand.
-let date_at = nil;
-let amount_at = nil;
+# One pass. What is held: one counter and one total per month, and the
+# row in hand — a map, because each_map reads the header row and names
+# every later row with it, so a column is asked for by the name it has
+# in the file rather than by a number this program has to find first.
 let months = {};
 let counts = {};
 let unreadable = 0;
-let rows = 0;
+let usable = nil;
 
-csv["each_row"](path, fn(row) {
-  rows += 1;
-  if rows == 1 {
-    let i = 0;
-    for name in row {
-      if name == "date" { date_at = i; }
-      if name == "amount" { amount_at = i; }
-      i += 1;
-    }
-    return nil;
-  }
-  if date_at == nil || amount_at == nil { return false; }
-  let when = tm["from_iso"](row[date_at]);
+let rows = csv["each_map"](path, fn(row) {
+  # A row's keys are the header, so the first row answers whether the
+  # file has the columns this report needs. A file with a header and
+  # no rows never gets asked, and does not need to be: the report on
+  # it is empty whatever its columns are called.
+  if usable == nil { usable = has(row, "date") && has(row, "amount"); }
+  if !usable { return false; }
+  let when = tm["from_iso"](row["date"]);
   # A date that cannot be read is counted, not guessed at, and not
   # allowed to stop the report.
   if when == nil {
@@ -716,21 +711,21 @@ csv["each_row"](path, fn(row) {
     return nil;
   }
   let month = slice(tm["date"](when), 0, 7);
-  let cents = int(float(row[amount_at]) * 100.0 + 0.5);
+  let cents = int(float(row["amount"]) * 100.0 + 0.5);
   months[month] = get(months, month, 0) + cents;
   counts[month] = get(counts, month, 0) + 1;
   return nil;
 });
 
-if date_at == nil || amount_at == nil {
+if usable == false {
   eprint("monthly: the header has no date and amount columns");
   exit(2);
 }
 
 let size = "";
 if path != "-" { size = format(", {} bytes", stat(path)["size"]); }
-print(format("{}: {} rows{}", path, rows - 1, size));
-print("held while reading: the column numbers, a total per month, and one row");
+print(format("{}: {} rows{}", path, rows, size));
+print("held while reading: a total per month, and one row under its column names");
 print("");
 
 print("by month");
@@ -747,7 +742,7 @@ if mine { remove_file(path); }
 
 ```text
 monthly-demo.csv: 5000 rows, 250966 bytes
-held while reading: the column numbers, a total per month, and one row
+held while reading: a total per month, and one row under its column names
 
 by month
   2026-01   1080 rows      59431.15

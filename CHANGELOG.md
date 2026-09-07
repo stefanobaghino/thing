@@ -20,6 +20,15 @@ Windows are attached to each
   the one place a row is given its column names, and `maps` and
   `each_map` both call it, so a file read either way is named
   identically.
+- `examples/monthly.ting` reads its rows by name. Ten lines of header
+  bookkeeping — a first-row branch scanning for two column names, the
+  two numbers it found carried out of the callback, and a guard on
+  every row after — are gone, replaced by `row["date"]` and
+  `row["amount"]`. Every number the report prints is unchanged, which
+  is the point: the same file, the same five month totals, the same
+  three dates nothing could read. The one output line that moved says
+  what is held while reading, which is now a row under its column
+  names rather than a pair of column numbers.
 
 ## v2.121.0 (2026-09-07)
 
