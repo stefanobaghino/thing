@@ -16080,3 +16080,58 @@ still 301s. (Ten, not the "nine" earlier entries say: `/` and
 rather than repeated.)
 
 Nothing to fix. The milestone is closed and shipped.
+
+## 2026-09-07 — Iteration 759: the two files the comparison never saw
+
+`both_engines_cover_the_same_lines` now runs every selftest. It used
+to hold back two, and 757 is what made me look: `csv.ting` had failed
+there for a reason that test's own comment already described about
+`fs.ting` and `sh.ting`, so the exclusion was a workaround for a bug
+that could be fixed instead.
+
+**Measured before touching anything**, because "the skip is
+unnecessary" is a claim. I removed the skip, changed nothing else,
+and ran the differential suite ten times:
+
+| | result |
+|---|---|
+| skip removed, `fs.ting` root still fixed | **6 ok, 4 failed** |
+| skip removed, root named uniquely | **10 ok, 0 failed** |
+
+The exclusion was earning its keep. What the failure said:
+
+```
+Eval: selftest/fs.ting:86: error: cannot index nil with string
+      let stamped = stat(root + "/a.ting")["modified"];
+```
+
+Two runs of `fs.ting` building and removing each other's tree —
+`fs["remove_tree"](root)` at the top of one landing between another's
+`write_file` and its `stat`. It also took down
+`selftest_programs_match_across_engines`, a test that passes today:
+the race could break something that currently works, not just the
+new comparison.
+
+The fix is 757's, applied where it belongs:
+`format("selftest-fs-tree-{}", random_int(0, 1000000000))`.
+`sh.ting` needed nothing — it spawns `sh -c` and never touches a
+file, so its exclusion was guilt by association.
+
+**What this actually buys.** Only `fs.ting` and `sh.ting` import
+`lib/fs.ting` and `lib/sh.ting` — I checked rather than assumed. So
+two of the twelve stdlib modules had never appeared in the engine
+coverage comparison at all. They do now, along with 237 lines of
+selftest.
+
+Two smaller things, both because a unique name changes what a failed
+run leaves behind. The skip block was replaced by a comment saying
+why nothing is held out and to fix the fixture rather than add a skip
+back. And `.gitignore` — which listed only `/target`,
+`playground/ting.wasm` and `.playwright-mcp/` — now covers the
+fixtures: a run that fails partway leaves its tree behind, and under
+the old fixed name that leftover could have been committed by
+accident. I found exactly one such directory sitting in the working
+tree from a baseline run, and removed it.
+
+Gate green: fifteen `test result: ok`, zero clippy, formatter 0 of
+69, corpus at seven, selftests 22 files / 2533 checks.

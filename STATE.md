@@ -1573,15 +1573,28 @@ holds only the current milestone and the standing rules.
   /index.html as one; ting.wasm 839346 bytes (was 836714); changelog
   carries v2.122.0, stdlib has each_map and says 190 functions,
   reference mentions the byte order mark, github.io still 301s.
+- 759: both_engines_cover_the_same_lines runs EVERY selftest now.
+  MEASURED FIRST (the skip might have been necessary): skip removed
+  with fs.ting's root still fixed = 6 ok / 4 FAILED in 10; with the
+  root uniquely named = 10 ok / 0 failed. The failure was
+  `fs.ting:86 cannot index nil with string` — two runs building and
+  removing each other's tree, remove_tree landing between another
+  run's write_file and its stat — and it also took down
+  selftest_programs_match_across_engines, so the race could break a
+  test that passes today. sh.ting needed NOTHING: it spawns sh -c and
+  touches no file; its exclusion was guilt by association. WHAT IT
+  BUYS (checked, not assumed): only fs.ting and sh.ting import
+  lib/fs.ting and lib/sh.ting, so two of the twelve stdlib modules
+  had never been in the engine coverage comparison at all. The skip
+  block is now a comment saying to fix the fixture rather than add a
+  skip back. .gitignore (which had only /target, playground/ting.wasm
+  and .playwright-mcp/) now covers selftest-fs-tree-* and
+  selftest-csv-rows-*: a failed run leaves its fixture behind, and
+  under the old FIXED name that leftover could have been committed —
+  one such empty directory was sitting in the tree and was removed.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - let fs.ting and sh.ting back into the coverage comparison. They
-  are skipped in both_engines_cover_the_same_lines for exactly the
-  reason csv.ting was failing in 757 — a fixed fixture name raced by
-  a parallel test — and the same fix (a name with random_int in it)
-  should work. Prove it the same way: run the differential suite ten
-  times before and after.
   - then a health tick, and then REPLENISHMENT: the milestone
   "reading what other programs wrote" closed with v2.122.0, so after
   the coverage repair there is no milestone. Choose the next one on
