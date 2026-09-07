@@ -5,7 +5,7 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
-## Unreleased
+## v2.125.0 (2026-09-07)
 
 - **Every released archive is now started before anyone is offered
   it.** The release workflow built each archive, checked the glibc
@@ -23,6 +23,22 @@ Windows are attached to each
 - The same check runs in CI on every push, against a directory laid
   out the way an archive is, so a release is never the first place it
   is tried on macOS or Windows.
+- **The archive that is run is the one you download.** Running what
+  the build produced and running what the release page serves are two
+  different claims; everything in between — the upload, the storage,
+  the asset name — was untested until something fetched it back. Each
+  archive is now downloaded from the finished release and put through
+  the same checks a second time.
+- **The `lib/` in the archive is checked against the one compiled
+  into the binary.** They are two copies of the same twelve modules,
+  and a packaging step that shipped a stale or partial copy would
+  have been invisible: the binary keeps working on its embedded copy
+  while a script unpacked beside the archive quietly gets the other.
+- `selftest/sh.ting` counted one check per entry in `PATH`, so the
+  suite reported a different total on every machine that ran it — 82
+  entries on a Windows runner against 11 on the machine this is
+  written on. It is one check now, and the four platforms agree on
+  2545.
 
 ## v2.124.0 (2026-09-07)
 
