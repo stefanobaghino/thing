@@ -141,3 +141,32 @@ let wrong = try(fn() {
   one = one + 1;
 });
 assert(contains(wrong["err"], "cannot apply '+' to string and int"), "types still checked");
+
+# A call on the right is fine when the name lives in a frame slot: no
+# closure mentions it, so nothing the call does can reach it. What the
+# call itself does must still be exactly what it always did. (A script
+# that rebinds a builtin is checked in tests/differential.rs, where the
+# shadowing does not join the corpus's counted warnings.)
+fn captured_stays_shared() {
+  let s = "a";
+  let read = fn() { return s; };
+  s += "b";
+  return [s, read()];
+}
+let pair = captured_stays_shared();
+assert(pair[0] == "ab" && pair[1] == "ab", "a captured name is one binding, not two");
+
+fn failing_call() {
+  let s = "a";
+  let err = try(fn() { s += str(fail("no")); })["err"];
+  return err + "/" + s;
+}
+assert(failing_call() == "no/a", "a call that fails leaves the binding alone");
+
+fn accumulate(n) {
+  let acc = [];
+  if n > 0 { acc = acc + accumulate(n - 1); }
+  acc += [n];
+  return acc;
+}
+assert(join(map(accumulate(3), str), "") == "0123", "each call has its own");

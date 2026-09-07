@@ -1160,7 +1160,7 @@ impl<W: Write> Interpreter<W> {
                     // it, and the error spans of the long form, which
                     // are the operator's own rather than the
                     // statement's.
-                    None => match folds_into_append(name, value) {
+                    None => match folds_into_append(name, value, false) {
                         Some((rhs, _)) if Env::bound(&self.env, name) => {
                             let r = self.eval(rhs)?;
                             let moved = Env::with(&self.env, name, |v| appends_in_place(v, &r))
@@ -3585,23 +3585,33 @@ pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeE
 /// Deliberately blunt: any call, any function literal and any mention
 /// of the name itself answers no, because a call can reach anything
 /// and a closure can outlive the answer.
-/// `x = x + <expr>` is the same work as `x += <expr>` whenever the
-/// expression cannot reach `x`: the read, the add and the write are
-/// the same three steps in the same order. Spelling it the long way
-/// used to cost a copy of `x` on every pass, because reading a name
-/// clones what it holds. Returns the right-hand side and the span of
-/// the `x` that was read -- an unbound name must still be reported
-/// as the read it is written as, not as the assignment it becomes.
+/// `x = x + <expr>` is the same work as `x += <expr>`: the read, the
+/// add and the write are the same three steps in the same order.
+/// Spelling it the long way used to cost a copy of `x` on every pass,
+/// because reading a name clones what it holds.
+///
+/// Fusing them moves the read of `x` after the right-hand side, which
+/// only shows if the right-hand side can ASSIGN to `x` -- reading it
+/// is fine, since nothing is disturbed until the value comes out.
+/// `private` says the caller has already ruled that out (a frame slot
+/// is one no closure mentions, so no call can reach it at all);
+/// otherwise the expression must not name `x`, which `cannot_reach`
+/// settles by refusing every call.
+///
+/// Returns the right-hand side and the span of the `x` that was read
+/// -- an unbound name must still be reported as the read it is
+/// written as, not as the assignment it becomes.
 pub(crate) fn folds_into_append<'a>(
     name: &str,
     value: &'a crate::ast::Expr,
+    private: bool,
 ) -> Option<(&'a crate::ast::Expr, Span)> {
     use crate::ast::ExprKind::*;
     let Binary(BinaryOp::Add, l, r) = &value.kind else {
         return None;
     };
     match &l.kind {
-        Var(n) if n == name && cannot_reach(r, name) => Some((r, l.span)),
+        Var(n) if n == name && (private || cannot_reach(r, name)) => Some((r, l.span)),
         _ => None,
     }
 }

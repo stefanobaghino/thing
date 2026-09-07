@@ -17696,3 +17696,62 @@ That is `s += format(...)` in every report-building loop, and
 `lib/time.ting:222`. It needs the compiler to know that `str` here is
 the builtin and not something the script rebound — which is a
 different piece of work, and the next one.
+
+## 2026-09-07 — Iteration 786: what a call cannot reach
+
+785 left the commonest loop of all still quadratic: `s += str(i)`,
+which is `s += format(...)` in every report. `cannot_reach` refuses
+every call, and a call is what people put there.
+
+**The refusal was aimed at the wrong thing.** Fusing moves the read
+of `x` to after the right-hand side. A right-hand side that *reads*
+`x` is harmless — nothing is disturbed until the value comes out,
+which is after. Only one that **assigns** `x` can tell the
+difference. `cannot_reach` conflates the two because for an
+environment binding it has to: any function anywhere can assign a
+global.
+
+Inside a function it does not have to. The compiler already computes
+`captured_names`, "a conservative over-approximation of what those
+closures capture", and gives a frame slot only to names it does not
+contain. **So `resolve(name) == Some(slot)` already means no nested
+closure so much as mentions the name** — and a binding no closure
+mentions is one no call can reach, whatever the call does. The
+right-hand side may then be anything.
+
+The change is two conditions: `slot.is_some() ||
+cannot_reach(value, name)`.
+
+```
+s += str(i), inside a function
+  n=20000  1.680 s -> 0.011 s     (the 80000 row)
+  n=40000            0.027 s
+  n=80000  1.680 s -> 0.030 s          56x
+```
+
+Linear now, and `xs = xs + [str(i)]` with it. `lib/time.ting:222`,
+which STATE had queued for rewriting because it built a string with a
+call on the right, needs no rewriting: `frac` is a slot.
+
+**Ten shapes run on the binary from before this change and the one
+after, both engines, byte-identical**: a closure that reads the name
+(which forces the conservative path and must still see one binding,
+not two), a call that reads the variable through an argument,
+recursion with its own frame each time, a script that rebinds `str`,
+a call that fails mid-append, snapshots, a parameter, a type error, a
+loop variable.
+
+**The corpus check caught the test.** Writing `let str = fn(x) {...}`
+in `selftest/compound.ting` added two warnings to a corpus whose
+count is pinned at seven — `str` shadows a builtin, and `x` was never
+used. That is the checker doing its job on a file that exists to be
+checked, so the case moved to
+`tests/differential.rs::a_compound_append_does_not_disturb_what_it_appends_to`,
+which is where the rest of this optimisation's edge cases already
+live, and where a shadowed builtin is just a program.
+
+Selftest 2555 -> 2558, Rust tests 364 -> 365. Gate green, Windows
+target checked, 50000 differential and 20000 formatter cases at seed
+786 clean, all ten bench checksums unchanged. The allocation guard
+now covers the call-on-the-right shape in both spellings, and fails
+without this change at 18943627 -> 84343243 bytes for twice the work.

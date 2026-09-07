@@ -535,7 +535,14 @@ impl Compiler {
                     // variable still comes first, because `x += 1` has
                     // to fail the way `x = 1` does before the
                     // right-hand side runs.
-                    let fuse = *op == BinaryOp::Add && crate::eval::cannot_reach(value, name);
+                    // A frame slot is a binding no nested closure
+                    // even mentions, so nothing a call could do
+                    // reaches it: the right-hand side may be
+                    // anything, calls included. An Env binding is
+                    // reachable by any function, so there the
+                    // expression must not name it.
+                    let fuse = *op == BinaryOp::Add
+                        && (slot.is_some() || crate::eval::cannot_reach(value, name));
                     match (slot, fuse) {
                         (Some(slot), true) => {
                             self.expr(value)?;
@@ -570,7 +577,9 @@ impl Compiler {
                             }
                         }
                     }
-                } else if let Some((rhs, read)) = crate::eval::folds_into_append(name, value) {
+                } else if let Some((rhs, read)) =
+                    crate::eval::folds_into_append(name, value, slot.is_some())
+                {
                     // The long spelling of `x += y`, fused the same
                     // way. The operator's span rides the instruction,
                     // so a type error still points at `x + y` rather

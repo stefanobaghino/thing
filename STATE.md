@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2555 selftest checks on all four
-  CI platforms, Windows included); 364 Rust tests
+  nothing on its own — and 22 examples with .out; 2558 selftest checks on all four
+  CI platforms, Windows included); 365 Rust tests
   in 15 suites. `ting --fmt .` reports 70 unchanged; BASELINE is TEN
   rows since bench/growth.ting joined in 784.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2083,23 +2083,48 @@ holds only the current milestone and the standing rules.
   implementation where both new cases fail at exactly x4.00 bytes.
   Selftest 2551 -> 2555, ten bench checksums unchanged, 50000
   differential and 20000 formatter at seed 785 clean, Windows checked.
+- 786: WHAT A CALL CANNOT REACH. `s += str(i)` inside a function is
+  linear: 1.680s -> 0.030s at 80000 (56x), and `xs = xs + [str(i)]`
+  with it. cannot_reach was aimed at the wrong thing -- fusing moves
+  the READ after the right-hand side, so a right-hand side that reads
+  the name is harmless and only one that ASSIGNS it can tell. For an
+  Env binding those cannot be separated (any function assigns a
+  global); in a frame they can, and the compiler ALREADY KNOWS:
+  captured_names is an over-approximation of what closures capture,
+  and a slot is given only to names it does not contain. So
+  resolve(name) == Some(slot) means no closure even mentions the
+  name, hence no call can reach it. The change is `slot.is_some() ||
+  cannot_reach(value, name)`.
+  Ten shapes byte-identical against the binary from before, both
+  engines (closure-forces-Env, call reading the var through an
+  argument, recursion, rebound `str`, failing call, snapshots,
+  parameter, type error, loop variable).
+  lib/time.ting:222 needed no rewrite after all -- frac is a slot.
+  THE CORPUS CHECK CAUGHT THE TEST: `let str = fn(x)` in
+  selftest/compound.ting added two warnings to a corpus pinned at
+  seven (shadows a builtin; unused parameter). Correct behaviour, so
+  the case moved to differential.rs's
+  a_compound_append_does_not_disturb_what_it_appends_to, where the
+  rest of this optimisation's edge cases live.
+  Selftest 2555 -> 2558, Rust 364 -> 365, ten bench checksums
+  unchanged, seeds 786 clean, Windows checked.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - A CALL ON THE RIGHT STILL BLOCKS THE FUSE, and that is the
-  commonest spelling there is: `s += str(i)` measured 0.068 / 0.272 /
-  1.680 s at 20000 / 40000 / 80000 (785), i.e. still quadratic, and
-  `s += format(...)` in every report loop is the same. cannot_reach
-  refuses Call because a call could reassign the name and the fused
-  order reads it later than the unfused one. The way through is for
-  the compiler to know the callee is a BUILTIN that no script binding
-  shadows -- ting already resolves names well enough to warn about
-  unknown ones, so the information is there. Sound only if shadowing
-  is ruled out; if it cannot be ruled out cheaply, say so and stop.
-  - then docs/tutorial.md:196 and lib/time.ting:222, which teach and
-  use the long form in a loop, and a reference note on what `+=`
-  costs.
+  - docs: docs/tutorial.md:196 teaches `text = text + fill` in a while
+  loop -- still true at TOP LEVEL, where the fuse cannot apply, so
+  the tutorial should say what a loop that builds a string costs and
+  where. A reference note on the same. (lib/time.ting:222 needed no
+  rewrite: 786 made it a slot append.)
   - then cut v2.127.0.
+  - LEFT UNDONE ON PURPOSE (786): a TOP-LEVEL binding still copies
+  when the right-hand side has a call, because any function can
+  assign a global and the compiler cannot see them all. Closing it
+  needs either a whole-program scan for assignments to the name, or
+  Rc-backed strings so the read is cheap and the binding's reference
+  can be dropped just before the add (CPython's trick). Neither is a
+  tick; both are a milestone. NOT MEASURED as painful yet -- scripts
+  build strings inside functions.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

@@ -158,3 +158,29 @@ fn growing_a_string_costs_the_pieces_not_the_squares() {
         );
     }
 }
+
+/// A call on the right blocks the fusing for an Env binding, because
+/// any function could assign one. A frame slot is a binding no
+/// closure mentions, so nothing a call does can reach it, and the
+/// commonest loop there is — a report built with `s += str(x)` inside
+/// a function — is linear there. This is the same weighing, on the
+/// shape that needed the slot argument to be sound.
+#[test]
+fn a_call_on_the_right_still_appends_in_place_in_a_frame() {
+    for append in ["s += str(i)", "s = s + str(i)"] {
+        let run = |n: usize| {
+            let src = format!(
+                "fn build(n) {{ let s = \"\"; let i = 0; while i < n {{ {append}; i += 1; }} return s; }} build({n});"
+            );
+            bytes(|| {
+                ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+            })
+        };
+        let a = run(2000);
+        let b = run(4000);
+        assert!(
+            b < a * 3,
+            "`{append}`: {a} bytes for 2000 appends, {b} for 4000 — the string is being copied"
+        );
+    }
+}

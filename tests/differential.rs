@@ -437,6 +437,32 @@ fn a_compound_append_does_not_disturb_what_it_appends_to() {
             "fn f() { print(\"ran\"); return 1; } print(try(fn() { nope += f(); })[\"err\"] != nil);",
             "true\n",
         ),
+        // The long spelling is the same statement and answers the same.
+        ("let a = \"a\"; a = a + a; print(a);", "aa\n"),
+        (
+            "let b = \"a\"; fn g() { b = \"z\"; return \"b\"; } b = b + g(); print(b);",
+            "ab\n",
+        ),
+        ("let c = [1]; c = [0] + c; print(c);", "[0, 1]\n"),
+        (
+            "fn h() { print(\"ran\"); return 1; } print(try(fn() { gone = gone + h(); })[\"err\"] != nil);",
+            "true\n",
+        ),
+        // A call on the right is allowed for a frame slot, where no
+        // closure can name the binding. What the call answers is still
+        // whatever the script bound the name to.
+        (
+            "fn f() { let str = fn(x) { return \"!\" + upper(x); }; let s = \"\"; s += str(\"a\"); return s; } print(f());",
+            "!A\n",
+        ),
+        (
+            "fn f() { let s = \"a\"; let read = fn() { return s; }; s += \"b\"; return s + \"/\" + read(); } print(f());",
+            "ab/ab\n",
+        ),
+        (
+            "fn f() { let s = \"a\"; let e = try(fn() { s += str(fail(\"no\")); })[\"err\"]; return e + \"/\" + s; } print(f());",
+            "no/a\n",
+        ),
     ];
     for (src, want) in cases {
         for engine in [Engine::Eval, Engine::Vm] {
