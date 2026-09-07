@@ -17323,3 +17323,41 @@ v2.125.0's own notes were deliberately left alone. The sentence this
 job writes is not true of that release — Windows never ran its
 downloaded copy — and back-dating a claim onto a release that did not
 earn it would be exactly the dishonesty the job is built to prevent.
+
+## 2026-09-07 — Iteration 780: v2.126.0, the tag that has to prove two things
+
+Released. v2.126.0 is the 147th tag, carrying 778 (each platform
+unpacks the downloaded archive with its own tool) and 779 (the
+`finish` job: `SHA256SUMS`, and notes that say what was checked).
+
+The 738 rule ran first, for the sixth release running: the v2.125.0
+release commit touched CHANGELOG, Cargo.toml and Cargo.lock and
+nothing else, and `## Unreleased` held both strokes.
+
+Gate green across three targets: `cargo fmt --check`, clippy with
+`-D warnings` here and on `x86_64-pc-windows-msvc`, the wasm library
+build, fifteen `test result: ok`, the formatter changing nothing
+across 69 files, the corpus at seven warnings, `ting 2.126.0`.
+
+**Both strokes in this release are unproven until this tag runs**,
+and they fail in different ways:
+
+- 778's Windows unpack. If `Expand-Archive` behaves on the downloaded
+  zip the way it already behaved on the packaged one, the Windows job
+  goes green and the twelfth execution finally happens. The prior
+  release stopped at eleven.
+- 779's `finish` job. It has never run at all. It needs all six build
+  jobs to succeed before it is reachable, which is precisely the
+  condition v2.125.0 failed to meet, so v2.125.0 could not have
+  exercised it even if it had existed.
+
+So the verification is a count and two artefacts. **Twelve
+executions**, read per target from the log rather than from job
+colours. A `SHA256SUMS` asset on the release, whose six lines must
+match the six archives when computed here. And release notes that
+have stopped saying "prebuilt binaries below" and started saying what
+was done to them.
+
+If the `finish` job is red, the likely spots are the heredoc's
+dedenting through YAML (rehearsed, but rehearsed on this host's bash)
+and `gh release download` needing the checkout it now has.

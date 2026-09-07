@@ -1969,14 +1969,25 @@ holds only the current milestone and the standing rules.
   v2.125.0's notes deliberately NOT back-dated: the sentence is not
   true of that release, and back-dating it is the dishonesty the job
   exists to prevent.
+- 780: v2.126.0 released (147th tag; strokes 778, 779). 738 rule ran
+  first for the sixth release running, nothing to repair. Gate green
+  across three targets. BOTH STROKES ARE UNPROVEN UNTIL THIS TAG
+  RUNS, and they fail differently: 778's Expand-Archive on the
+  downloaded zip (the previous release stopped at eleven executions),
+  and 779's finish job, which HAS NEVER RUN — it needs all six build
+  jobs green to be reachable, which is exactly what v2.125.0 failed.
+  NOT VERIFIED YET.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.126.0 (778 and 779 stand). Check the tree against the
-  previous release commit FIRST (738). THIS TAG IS WHERE THE WINDOWS
-  UNPACK FIX AND THE finish JOB ARE PROVEN — neither has run on a
-  tag. Expect TWELVE executions this time, and a release page
-  carrying SHA256SUMS and the new notes.
+  - verify v2.126.0. THE COUNT IS THE VERDICT: twelve executions, read
+  PER TARGET from the Release log, not from job colours. Then two
+  artefacts on the page — a SHA256SUMS whose six lines must match the
+  six archives recomputed HERE, and notes that no longer say only
+  "prebuilt binaries below". The `finish` job has never run at all
+  (v2.125.0 could not reach it), so its first run is on this tag.
+  If red there: the heredoc's dedenting through YAML (rehearsed only
+  on this host's bash) and gh release download needing the checkout.
   - then a health tick to close "the archive that was run", and
   replenishment after it.
   - then: prove the archive's lib/ and the binary's embedded stdlib
@@ -2052,7 +2063,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 146 (v2.125.0), 146 verified; v2.29.0 is publicly marked broken
+- Tags: 147 (v2.126.0), 146 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
