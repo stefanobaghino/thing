@@ -17930,3 +17930,83 @@ against a list rather than a total is for.
 
 CI green on HEAD, seven assets on each of the last two tags, ten site
 paths at 200.
+
+## 2026-09-07 — Iteration 791: replenishment
+
+### The milestone: a character at a time
+
+**`s[i]` builds a `Vec<char>` of the whole string. Every time.**
+
+```rust
+(Value::Str(s), Value::Int(i)) => {
+    let chars: Vec<char> = s.chars().collect();
+    ...
+```
+
+So does `slice`. Reading one character out of a string costs a full
+UTF-8 decode of it and a four-bytes-per-character allocation, and a
+loop that walks a string is quadratic in time and in bytes asked of
+the allocator:
+
+```
+scan a string one index at a time
+  20000 chars   0.665 s
+  40000 chars   2.430 s
+  80000 chars   9.707 s
+ 160000 chars  39.404 s        exactly x4 per doubling
+slice(s, j, j+1) instead of s[j]: 0.672 s and 9.687 s — the same
+```
+
+I did not set out to find this. I set out to see what ting is like on
+the size of file another program actually writes, and made a 7.6 MB
+CSV and a 10.9 MB JSON:
+
+```
+read_file 7.6 MB                        0.009 s
+json_parse 10.9 MB (a Rust builtin)     0.390 s     28 MB/s
+csv["parse"] 7.6 MB (a ting module)     6.018 s      1.2 MB/s
+the same fields via split(), in ting    0.226 s
+```
+
+CSV is the plainer format and it goes **23 times slower per byte**
+than JSON, because JSON is a builtin and CSV is a ting program — and
+a ting program that reads text character by character is standing on
+a primitive that decodes the whole string each time. Ting's own
+`split` over the same bytes is 27x faster than the scanner built on
+top of it.
+
+**The plan is not a `csv_parse` builtin.** That would paper over the
+primitive and leave every other ting program that reads text exactly
+where it is. Two versions:
+
+- **Carry what the string already knows.** A character count and an
+  is-ASCII flag computed once, lazily, and kept with the text. Then
+  `len` is O(1) after the first ask (787 measured it at 0.016 s
+  against 0.618 s for the same loop), an ASCII string indexes and
+  slices by byte offset in O(1), and a non-ASCII one walks with
+  `char_indices` without allocating anything.
+- **Then the same representation makes copying a string cheap**,
+  which is exactly what 787 left undone: `s += str(n)` is quadratic
+  wherever some function mentions the name, because the read clones
+  the text. Behind an `Rc` the read is a pointer, and the binding's
+  reference can be dropped just before the add.
+
+Nine sites in `src/eval.rs` collect a whole string into a `Vec<char>`.
+Five are the regex builtins, which need random access and pay it once
+per call; that is defensible and stays. The two that matter are
+indexing and `slice`, and `len` counts characters beside them.
+
+**693 and 695 are not this question, and this does not overturn
+them.** Both measured the `Vec<char>` the *regex* builtins build and
+found it was not where a match's time went — 341 extra characters of
+subject cost 0.70 us, about 2 ns each, because that decode happens
+once per call and the matcher then walks it. Indexing builds the same
+thing once per *character*, which is why the same construction costs
+nothing there and everything here.
+
+Not chosen, with reasons: streaming CSV or JSON (the file fits in
+memory — 7.6 MB read in 9 ms; the cost is the scanning, not the
+reading); a bytes type (same, and still no measured pressure);
+startup (measured today: 1.1 ms for `ting hello.ting` against 11.7 ms
+for `python3 -c`, and 0.6 ms for `/bin/echo` — there is nothing
+there); the binary at 2.7 MB.

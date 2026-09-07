@@ -2160,11 +2160,43 @@ holds only the current milestone and the standing rules.
   FOUR UNRELATED PROCESSES (checked they were not mine -- 773 was).
   The rule against asserting an ordering a loaded runner can reverse
   is exactly this; the answer was a second measurement.
+- 791: replenishment — milestone "A CHARACTER AT A TIME"
+  (v2.128-v2.129), reasoning in LOG.md. THE EVIDENCE: `s[i]` and
+  `slice` build a `Vec<char>` OF THE WHOLE STRING on every call
+  (src/eval.rs, the (Str, Int) index arm and the slice builtin), so
+  walking a string is quadratic in time AND in bytes asked of the
+  allocator: 0.665 / 2.430 / 9.707 / 39.404 s at 20000 / 40000 /
+  80000 / 160000 chars, exactly x4 per doubling; slice(s,j,j+1) the
+  same. FOUND BY ASKING WHAT TING IS LIKE AT THE SIZE ANOTHER PROGRAM
+  WRITES: 7.6 MB CSV and 10.9 MB JSON. read_file 0.009s; json_parse
+  0.390s (28 MB/s, a Rust builtin); csv["parse"] 6.018s (1.2 MB/s, a
+  ting module) — 23x slower per byte for the PLAINER format; ting's
+  own split over the same bytes 0.226s, i.e. 27x faster than the
+  scanner built on it.
+  NOT a csv_parse builtin: that papers over the primitive and leaves
+  every other text-reading ting program where it is.
+  Nine sites collect a whole string into a `Vec<char>`; five are the
+  regex builtins, which need random access and pay once per call —
+  those stay. THIS DOES NOT OVERTURN 693/695: they measured the SAME
+  construction in the regex builtins and rightly found it cheap (341
+  extra chars of subject, 0.70 us, ~2 ns each) because it happens
+  once per CALL. Indexing does it once per CHARACTER.
+  Measured and NOT chosen: streaming (the file fits — 7.6 MB read in
+  9 ms; the cost is scanning); a bytes type; startup (1.1 ms for
+  `ting hello.ting` against 11.7 ms for `python3 -c` and 0.6 ms for
+  /bin/echo).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone and write the reasoning
-  in LOG.md before writing any code.
+  - first stroke: make indexing and `slice` stop building a `Vec<char>`
+  of the whole string. Measure the is_ascii()-per-call version FIRST
+  (allocation-free, still O(n)) against the cached version, and say
+  which is worth its complexity -- 787's `len` fast path measured
+  only 15% and was reverted, so do not assume this one pays.
+  - then the cached count/ascii flag carried with the string, which
+  is where O(1) actually comes from.
+  - then the same representation behind an Rc, closing 787's case:
+  `s += str(n)` where some function mentions the name.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
