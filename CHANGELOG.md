@@ -5,6 +5,12 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## Unreleased
+
+- The docs link in `--help` and in the README is `https`. The site
+  answers on both, and nothing about a language reference should
+  travel in the clear when it need not.
+
 ## v2.126.0 (2026-09-07)
 
 - The release page now carries a `SHA256SUMS` file and says what was

@@ -1993,15 +1993,34 @@ holds only the current milestone and the standing rules.
   NINETY-SIX RELEASES WENT OUT WITH FOUR OF SIX ARCHIVES NEVER
   STARTED BY ANYBODY. That is now false, and the page says so in a
   sentence `needs: build` makes unwriteable otherwise.
+- 782: health tick green, milestone "the archive that was run"
+  COMPLETE. All nine bench checksums identical to BASELINE (compared
+  by parsing both tables, not by eye); timings 8-20% high across the
+  board, uniform, weather. Three sweeps at seed 781 clean, each
+  proven to be a sweep TWO ways: a case count in the output and a
+  tenfold count taking tenfold the time (diff 1.3->14.4s, fmt
+  0.4->4.2s, re 0.4->4.5s). Crash fuzzer 6 passed. Gate green,
+  coverage 2635/2652.
+  771's rule paid before the timings could: my first attempt gave
+  `--exact` three test names typed from memory, every one a PREFIX of
+  the real name, and --exact makes a prefix match NOTHING — three
+  sweeps of zero cases, exit 0, one second. Read the names out of the
+  files next time before running, not after.
+  THE SEVENTEEN COVERAGE MISSES ARE NOW ENUMERATED, not gestured at
+  (LOG 782): args 191-194,197-198 (exit paths), fs 226-227
+  (cross-device fallback), sh 42-43 (Windows PATHEXT), test 95-97
+  (the runner's own summary and exit), edge 90 (unreachable by
+  design), time 128-130 (no-zone-data branch). Compare against this
+  list, not against a total.
+  SITE AUDIT RETARGETED AND CORRECTED — see below.
+  Defect found and fixed: README and the `docs:` line in `ting --help`
+  linked the site as plain `http`. HTTPS is not enforced on that
+  domain, so http was served as http, not redirected. Both now https.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing "the archive that was run" (bench vs BASELINE,
-  50000 differential, crash and 20000 formatter fuzz in release —
-  and CHECK THE SWEEPS ARE SWEEPS by timing two counts, per 771).
-  - then replenishment.
-  - then a health tick to close "the archive that was run", and
-  replenishment after it.
+  - replenishment: choose the next milestone and write the reasoning
+  in LOG.md before writing any code.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -2154,6 +2173,14 @@ Standing rules (each from a slip; the LOG entry named has the story):
   redirects there); playground at the root — /, /examples.js,
   /ting.wasm — plus reference, tutorial, cookbook, stdlib,
   retrospective, changelog .html (vm.md is not published).
+- SITE AUDIT (corrected in 782, was wrong twice): the canonical host
+  is https://www.baghino.me/thing/ — the ACCOUNT's user site took a
+  custom domain, so stefanobaghino.github.io/thing/ now answers 301
+  on every path. And the ten paths are not guessable: they are the
+  three files in playground/ (index.html, examples.js, ting.wasm,
+  plus / itself) and the six pages tools/md2html.py renders in
+  .github/workflows/pages.yml. `playground.html`, `ting.js` and
+  `style.css` DO NOT EXIST and never did.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
   v2.17.0, 6 from v2.30.0, SEVEN from v2.126.0 (SHA256SUMS joins
   them, and `sha256sum -c` on a fresh download is part of verifying

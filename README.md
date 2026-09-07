@@ -34,7 +34,7 @@ given. Binaries for Linux (x86-64 and arm64,
 glibc and fully static musl), macOS and Windows are attached to every
 [release](https://github.com/stefanobaghino/thing/releases). **Try it
 in your browser at the
-[playground](http://www.baghino.me/thing/)** — the interpreter
+[playground](https://www.baghino.me/thing/)** — the interpreter
 compiled to WebAssembly, running entirely on your machine. Start with
 the [tutorial](docs/tutorial.md) — every snippet in it is run by CI —
 then the [language reference](docs/reference.md), the

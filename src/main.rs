@@ -49,7 +49,7 @@ fn main() -> ExitCode {
                  \x20 ting --version | --help    (also ting -V | -h)\n\n\
                  exit status: 0 ok; 1 a reported failure; 2 a usage error\n\n\
                  env: TING_ENGINE=eval|vm selects the engine\n\
-                 docs: http://www.baghino.me/thing/",
+                 docs: https://www.baghino.me/thing/",
                 env!("CARGO_PKG_VERSION")
             );
             return ExitCode::SUCCESS;

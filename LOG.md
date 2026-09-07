@@ -17414,3 +17414,71 @@ archives downloaded cold and reporting `ting 2.126.0`, ten site paths
 archives never having been started by anybody.** Two releases ago
 that was still true. It is now false, and the release page says so in
 a sentence that cannot be written unless it is.
+
+## 2026-09-07 — Iteration 782: health tick, and the sweep that nearly wasn't
+
+Milestone "the archive that was run" closes green.
+
+**Bench: all nine checksums identical to BASELINE**, compared by
+parsing both tables rather than by eye. Timings ran 8–20% above the
+recorded medians across the board — a uniform lift on a host that had
+just finished a release build, which is weather. The shape is intact:
+the VM ahead on every row, -41% to -45% on the four it was built for.
+
+**Three fuzz sweeps at seed 781, all clean**, and each was checked to
+be a sweep two ways — a case count in the output (`1 passed`, so no
+filter silently matched nothing) and a tenfold count taking tenfold
+the time:
+
+```
+differential   5000 → 1.3s     50000 → 14.4s   (11.1x)
+formatter      2000 → 0.4s     20000 →  4.2s   (10.5x)
+patterns     200000 → 0.4s   2000000 →  4.5s   (11.3x)
+```
+
+The crash fuzzer (token soup, mutated examples, cyclic values) ran as
+the whole suite: 6 passed.
+
+**771's rule earned its keep before the timings did.** My first
+attempt passed `--exact` three test names I had typed from memory —
+`generated_programs_agree`, `generated_programs_format`,
+`random_patterns_never_panic`. Every one is a prefix of the real
+name, and `--exact` makes a prefix match *nothing*: all three sweeps
+would have run zero cases, exited 0, and taken a second. I caught it
+by reading the names out of the files before the run, not after. The
+timing check would have caught it too — six near-identical durations
+— which is the point of having two.
+
+Gate green (fmt, clippy at zero, fifteen suites, `--fmt` 0/69, corpus
+at its seven). **Coverage 2635/2652**, and this tick stops writing
+"only the known misses" and says which — all seventeen, each one a
+line that cannot run here:
+
+- `lib/args.ting` 191-194, 197-198 — the two `exit()` paths.
+- `lib/fs.ting` 226-227 — the cross-device fallback after a copy.
+- `lib/sh.ting` 42-43 — the Windows `PATHEXT` branch.
+- `lib/test.ting` 95-97 — the runner's own summary and exit.
+- `selftest/edge.ting` 90 — deliberately unreachable.
+- `selftest/time.ting` 128-130 — the no-zone-data branch.
+
+CI green on HEAD, seven assets on v2.126.0 and six on v2.125.0.
+
+**The site audit was wrong twice and is now right.** First,
+`stefanobaghino.github.io/thing/` answers 301 for every path: the
+account's user site has taken a custom domain, so every project site
+under it redirects. The canonical host is `www.baghino.me/thing/`,
+which the README has linked for a long time — the audit had simply
+never been retargeted. Second, three of the ten paths I asked for
+(`playground.html`, `ting.js`, `style.css`) do not exist and never
+did; I had been carrying guessed names. The ten paths the Pages
+workflow actually publishes are the three files in `playground/`
+plus the six pages `md2html.py` renders, and all ten answer 200:
+`ting.wasm` at 842967 bytes, the stdlib page at 194 functions, the
+changelog at v2.126.0.
+
+**One defect found and fixed.** That canonical host serves https, but
+two live places linked it as plain `http`: the README, and — worse —
+the `docs:` line every user sees in `ting --help`. HTTPS is not
+enforced on that domain, so an http link is served as http rather
+than redirected. Both now say https, verified against a 200 on all
+ten paths.
