@@ -189,3 +189,33 @@ assert(held[0] == "ab" && taken == "abz", "reading out of a list copies too");
 let doubled = "xy";
 doubled = doubled + doubled;
 assert(doubled == "xyxy", "a name on both sides is not appended to itself");
+
+# When a function names the target, a call on the right could reassign
+# it, so the old value is read before the call runs and the binding is
+# only released afterwards if it still holds what was read. Every way
+# the call can interfere has to still work.
+let target = "a";
+let clobber = fn() { target = "other"; return "!"; };
+target += clobber();
+assert(target == "a!", "the value read before the call is the one added to");
+let long_form = "a";
+let clobber_long = fn() { long_form = "other"; return "!"; };
+long_form = long_form + clobber_long();
+assert(long_form == "a!", "and the long spelling does the same");
+let stashed = [];
+let source = "a";
+let stash = fn() { push(stashed, source); return "!"; };
+source += stash();
+assert(source == "a!" && stashed == ["a"], "what the call kept is not what grew");
+let reader = "ab";
+let read_it = fn() { return str(len(reader)); };
+reader += read_it();
+assert(reader == "ab2", "a call that only reads sees the value before the add");
+let nested = "a";
+let appender = fn() { nested += "X"; return "!"; };
+nested += appender();
+assert(nested == "a!", "an append from inside the call is overwritten by this one");
+let items = [1];
+let regrow = fn() { items = [9]; return [2]; };
+items += regrow();
+assert(items == [1, 2], "lists take the same path");

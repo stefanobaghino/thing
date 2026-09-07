@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2577 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
   CI platforms, Windows included); 365 Rust tests
   in 15 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794.
@@ -2264,17 +2264,42 @@ holds only the current milestone and the standing rules.
   binaries.
   docs/reference.md said `len` walks the string and `while len(s) <
   width` is quadratic: TRUE WHEN WRITTEN, FALSE NOW, and rewritten.
+- 795: fourth stroke, and 787'S CASE IS CLOSED. `s += str(n)` and
+  `s = s + str(n)` cost what they add even where a function names the
+  target. New `Op::AppendVar` folds Binary(Add) and SetVar into one
+  step and, between the call and the add, asks the binding to LET GO
+  of what was read — `Env::release_if_same`, by POINTER not equality,
+  so a call that reassigned the name leaves the binding holding
+  something else and it is left alone. The store that always follows
+  fills the hole. GATED ON `appends_in_place`: only (str,str) and
+  (list,list) cannot fail, so only they may leave a binding empty for
+  one instruction. The tree-walker does the same in its own two slow
+  paths, so the engines share the BEHAVIOUR and not only the answer.
+  0.013 / 0.022 / 0.040 / 0.078 s at 20k/40k/80k/160k against 794's
+  0.019 / 0.048 / 0.158 / 0.518 — x2 per doubling against x3.3, 6.6x
+  at 160000 and growing; the long spelling matches to the millisecond,
+  which is v2.127.0's promise kept.
+  GUARD MADE TO FAIL FIRST: tests/alloc.rs's
+  `a_call_on_the_right_appends_in_place_even_when_a_function_names_it`
+  reports 6.5 MB / 28.6 MB (x4.4) against 794's src and fails.
+  CORRECTNESS WAS THE WHOLE RISK: a call that reassigns the name, one
+  that stashes the old value, one that only reads it, one that appends
+  to the name itself, one that assigns it to itself, lists in both
+  spellings, two type errors — byte-identical to the 794 binary on
+  both engines, spans and traces included; six now assert in
+  selftest/compound.ting. CSV unchanged at 4.26 s; eleven checksums
+  match.
+  docs/reference.md said the saving "holds only while the right-hand
+  side names nothing and calls nothing": TRUE WHEN WRITTEN, FALSE NOW,
+  rewritten. Third false claim this milestone retired from the docs.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke, and the last of this milestone: 787's case,
-  `s += str(n)` where some function mentions the name. The read is now
-  a pointer copy, so what is left is dropping the binding's reference
-  just before the add so the buffer is unshared and extends in place.
-  Measure it first: 793 may already have moved it, and 787's own
-  repro was wrong once (see 787).
-  - then release the milestone (v2.128.0) and verify it by cold asset
-  download, as every release is.
+  - next: release the milestone as v2.128.0 (write the CHANGELOG
+  section from LOG 792-795, tag, verify by cold asset download and
+  execution, and check the site serves it).
+  - then a health tick and the site audit, which closes the
+  milestone.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

@@ -231,12 +231,13 @@ all of these share the text rather than copy it, whatever its length.
 Only the write pays, and only when someone else is still holding what
 it would overwrite.
 
-There is one more condition, and it is about what a call could do. If
-no function in the file so much as mentions the name, nothing a call
-does can reach it, and the right-hand side may be anything. If some
-function does mention it, the name could be assigned from inside a
-call, so the saving holds only while the right-hand side names nothing
-and calls nothing: `s += piece` stays cheap, `s += str(n)` does not.
+A call on the right-hand side does not change this. `s += str(n)`
+costs what `s += piece` costs, even where some function names `s` and
+could therefore assign it from inside that call. The old value is read
+before the call runs, as it must be, and the name is asked to let go
+of it afterwards — which it does only if the call left it alone. A
+call that does reassign the name behaves as it always did: the value
+read before it ran is the one added to, and the result overwrites.
 
 `len` on a string counts characters. It walks the string the first
 time and remembers the answer, so a loop that asks repeatedly — `while

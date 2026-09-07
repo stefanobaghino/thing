@@ -95,6 +95,11 @@ impl Str {
     pub fn is_unshared(&self) -> bool {
         Rc::strong_count(&self.0) == 1
     }
+
+    /// Whether these two are the same string, not merely equal ones.
+    pub fn is_same_buffer(&self, other: &Str) -> bool {
+        Rc::ptr_eq(&self.0, &other.0)
+    }
 }
 
 impl std::ops::Deref for Str {
@@ -738,6 +743,19 @@ impl Value {
 
     pub fn str(text: impl Into<Str>) -> Value {
         Value::Str(text.into())
+    }
+
+    /// Whether these two values are backed by the same storage, so
+    /// that letting go of one leaves the other holding it alone.
+    /// Equality is not enough: two strings that read the same may be
+    /// two strings.
+    pub fn shares_storage(&self, other: &Value) -> bool {
+        match (self, other) {
+            (Value::Str(a), Value::Str(b)) => a.is_same_buffer(b),
+            (Value::List(a), Value::List(b)) => Rc::ptr_eq(a, b),
+            (Value::Map(a), Value::Map(b)) => Rc::ptr_eq(a, b),
+            _ => false,
+        }
     }
 }
 

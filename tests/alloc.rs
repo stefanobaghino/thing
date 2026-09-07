@@ -159,12 +159,37 @@ fn growing_a_string_costs_the_pieces_not_the_squares() {
     }
 }
 
-/// A call on the right blocks the fusing for an Env binding, because
-/// any function could assign one. A frame slot is a binding no
-/// closure mentions, so nothing a call does can reach it, and the
-/// commonest loop there is — a report built with `s += str(x)` inside
-/// a function — is linear there. This is the same weighing, on the
-/// shape that needed the slot argument to be sound.
+/// Some function mentions the name, so a call on the right could
+/// reassign it and the old value has to be read before the call
+/// runs. Reading it is cheap — the text is shared — and once the call
+/// has had its chance the binding lets go of what was read, unless it
+/// no longer holds it. So the append extends the text rather than
+/// copying it, and a right-hand side that DOES reassign the name
+/// still behaves exactly as it did.
+#[test]
+fn a_call_on_the_right_appends_in_place_even_when_a_function_names_it() {
+    for append in ["s += str(i)", "s = s + str(i)"] {
+        let run = |n: usize| {
+            let src = format!(
+                "let s = \"\"; let peek = fn() {{ return len(s); }}; let i = 0; while i < {n} {{ {append}; i += 1; }} peek();"
+            );
+            bytes(|| {
+                ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+            })
+        };
+        let a = run(2000);
+        let b = run(4000);
+        assert!(
+            b < a * 3,
+            "`{append}`: {a} bytes for 2000 appends, {b} for 4000 — the string is being copied"
+        );
+    }
+}
+
+/// A frame slot is a binding no closure mentions, so nothing a call
+/// does can reach it and no read of the binding is needed at all:
+/// this is the cheaper path, and the commonest loop there is — a
+/// report built with `s += str(x)` inside a function — takes it.
 #[test]
 fn a_call_on_the_right_still_appends_in_place_in_a_frame() {
     for append in ["s += str(i)", "s = s + str(i)"] {

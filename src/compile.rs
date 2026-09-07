@@ -95,6 +95,13 @@ pub enum Op {
     /// As CheckVar, but for the read half of `x = x + y`: the name is
     /// written as a read there, so an unbound one is reported as one.
     CheckVarRead(u32),
+    /// Add the top of the stack to the value below it and store the
+    /// result in the named binding -- Binary(Add) and SetVar in one
+    /// step, so that the binding can be asked to let go of what was
+    /// read before the add happens. It lets go only if it still holds
+    /// that value, which is what keeps a right-hand side that
+    /// reassigns the name working as it did.
+    AppendVar(u32),
 }
 
 #[derive(Debug)]
@@ -556,6 +563,14 @@ impl Compiler {
                             self.emit(Op::UpdateVar(i, *op), s.span);
                             self.note_scope();
                         }
+                        (None, false) if *op == BinaryOp::Add => {
+                            let i = self.name(name);
+                            self.emit(Op::GetVarToUpdate(i), s.span);
+                            self.note_scope();
+                            self.expr(value)?;
+                            self.emit(Op::AppendVar(i), s.span);
+                            self.note_scope();
+                        }
                         (slot, false) => {
                             match slot {
                                 Some(slot) => self.emit(Op::GetSlot(slot), s.span),
@@ -577,8 +592,8 @@ impl Compiler {
                             }
                         }
                     }
-                } else if let Some((rhs, read)) =
-                    crate::eval::folds_into_append(name, value, slot.is_some())
+                } else if let Some((rhs, read)) = crate::eval::folds_into_append(name, value)
+                    .filter(|(rhs, _)| slot.is_some() || crate::eval::cannot_reach(rhs, name))
                 {
                     // The long spelling of `x += y`, fused the same
                     // way. The operator's span rides the instruction,
@@ -598,6 +613,20 @@ impl Compiler {
                             self.note_scope();
                         }
                     }
+                } else if slot.is_none()
+                    && let Some((rhs, read)) = crate::eval::folds_into_append(name, value)
+                {
+                    // `x = x + f()`, where the call could reassign
+                    // `x`. The read is an ordinary read, at its own
+                    // span, and comes first as it always did; what
+                    // follows lets the binding let go of it once the
+                    // call has had its chance.
+                    let i = self.name(name);
+                    self.emit(Op::GetVar(i), read);
+                    self.note_scope();
+                    self.expr(rhs)?;
+                    self.emit(Op::AppendVar(i), value.span);
+                    self.note_scope();
                 } else {
                     self.expr(value)?;
                     match slot {

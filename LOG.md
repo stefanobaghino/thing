@@ -18197,3 +18197,68 @@ Gate green: fmt, clippy, 15 `test result: ok`, 71 files unchanged,
 corpus at 7 warnings, selftest 22 files / 2577 checks, Windows and
 wasm targets, all eleven bench checksums, and 50000 differential
 cases at seed 794.
+
+## 2026-09-08 — Iteration 795: letting go of what was read
+
+787's case is closed. `s += str(n)` and `s = s + str(n)` now cost what
+they add, even where some function in the file names `s` and could
+therefore assign it from inside that call.
+
+**The shape of it.** The old value has to be read before the call
+runs — that is the language's own order, and a call that reassigns
+the name must still see what was there. What was NOT necessary is the
+binding keeping its own reference to that value afterwards. A new
+`Op::AppendVar` folds `Binary(Add)` and `SetVar` into one step, and
+between the call and the add it asks the binding to let go of what
+was read. `Env::release_if_same` does that only if the binding still
+holds exactly that value, by pointer, not by equality: if the call
+reassigned the name, the binding holds something else and is left
+alone. The store that always follows fills the hole, so the release
+is invisible. The tree-walker does the same thing in its own two slow
+paths, so both engines share the behaviour and not just the answer.
+
+The release is gated on `appends_in_place`, which is what keeps it
+sound rather than merely fast: only (string, string) and (list, list)
+can be added without failing, so only those may leave a binding empty
+for the length of one instruction.
+
+**Measured**, with a closure naming the target:
+
+| appends | 794 | 795 |
+|---:|---:|---:|
+| 20000 | 0.019 s | 0.013 s |
+| 40000 | 0.048 s | 0.022 s |
+| 80000 | 0.158 s | 0.040 s |
+| 160000 | 0.518 s | 0.078 s |
+
+x2 per doubling against 794's x3.3 — linear at last, 6.6x at 160000
+and growing. The long spelling matches to the millisecond (0.513 ->
+0.079), which is the promise v2.127.0 made and this keeps.
+
+**The guard was made to fail first.** `tests/alloc.rs` gained
+`a_call_on_the_right_appends_in_place_even_when_a_function_names_it`,
+over both spellings. Against 794's `src/` it reports 6.5 MB for 2000
+appends and 28.6 MB for 4000 — x4.4, quadratic — and fails.
+
+**Correctness is the whole risk here**, so: a script covering a call
+that reassigns the name, one that stashes the old value in a list,
+one that only reads it, one that appends to the name itself, one that
+assigns the name to itself, lists in both spellings, and two type
+errors. Byte-identical to the 794 binary on both engines, spans and
+traces included, and the two engines agree. Six of those are now
+assertions in `selftest/compound.ting` (2577 -> 2583 checks).
+
+`docs/reference.md` said the saving "holds only while the right-hand
+side names nothing and calls nothing: `s += piece` stays cheap,
+`s += str(n)` does not". True when written, false now, rewritten.
+That is the third false claim this milestone has retired from the
+docs, and all three were true the day they were written.
+
+The 7.6 MB CSV parse is unchanged at 4.26 s, and all eleven bench
+checksums match.
+
+Gate green: fmt, clippy, 15 `test result: ok`, 71 files unchanged,
+corpus at 7 warnings, selftest 22 files / 2583 checks, Windows and
+wasm targets, eleven bench checksums, and 100000 differential cases
+at seed 795 — twice the usual, because this changes the order two
+engines do things in.

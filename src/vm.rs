@@ -320,6 +320,23 @@ fn exec<W: Write>(
                     *slot = eval::binary(*op, slot.clone(), r, span)?;
                 }
             }
+            Op::AppendVar(i) => {
+                let r = stack.pop().expect("stack underflow");
+                let l = stack.pop().expect("stack underflow");
+                let name = &chunk.names[*i as usize];
+                // The right-hand side has run by now and may have
+                // reassigned the name. Only if the binding still holds
+                // what was read is letting go of it the same as doing
+                // nothing -- and it is what lets the add extend what
+                // it has rather than copy it.
+                if eval::appends_in_place(&l, &r) {
+                    interp.release_if_same(name, &l);
+                }
+                let v = eval::binary(crate::ast::BinaryOp::Add, l, r, span)?;
+                if !interp.assign(name, v) {
+                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
+                }
+            }
             Op::CheckVarRead(i) => {
                 let name = &chunk.names[*i as usize];
                 if !interp.is_bound(name) {

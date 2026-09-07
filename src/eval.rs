@@ -322,6 +322,31 @@ impl Env {
         }
     }
 
+    /// Let go of the binding's own reference to `held`, but only if
+    /// it still holds exactly that value. Used between reading a name
+    /// and overwriting it, when what ran in between could have
+    /// reassigned it: if it did, the binding holds something else and
+    /// is left alone; if it did not, dropping the reference is
+    /// invisible -- the store that follows fills the hole -- and it is
+    /// what lets the append extend the text instead of copying it.
+    fn release_if_same(env: &Rc<RefCell<Env>>, name: &str, held: &Value) {
+        let mut e = env.borrow_mut();
+        match e.vars.get_mut(name) {
+            Some(slot) => {
+                if slot.shares_storage(held) {
+                    *slot = Value::Nil;
+                }
+            }
+            None => {
+                let Some(parent) = e.parent.clone() else {
+                    return;
+                };
+                drop(e);
+                Env::release_if_same(&parent, name, held);
+            }
+        }
+    }
+
     /// Rebind the nearest existing binding; false if none exists.
     fn assign(env: &Rc<RefCell<Env>>, name: &str, v: Value) -> bool {
         let mut e = env.borrow_mut();
@@ -1160,8 +1185,10 @@ impl<W: Write> Interpreter<W> {
                     // it, and the error spans of the long form, which
                     // are the operator's own rather than the
                     // statement's.
-                    None => match folds_into_append(name, value, false) {
-                        Some((rhs, _)) if Env::bound(&self.env, name) => {
+                    None => match folds_into_append(name, value) {
+                        Some((rhs, _))
+                            if Env::bound(&self.env, name) && cannot_reach(rhs, name) =>
+                        {
                             let r = self.eval(rhs)?;
                             let moved = Env::with(&self.env, name, |v| appends_in_place(v, &r))
                                 == Some(true);
@@ -1171,6 +1198,20 @@ impl<W: Write> Interpreter<W> {
                                 Env::get(&self.env, name)
                             }
                             .expect("the binding was there a moment ago");
+                            binary(crate::ast::BinaryOp::Add, old, r, value.span)?
+                        }
+                        // The right-hand side could reassign the name,
+                        // so the old value is read before it runs, as
+                        // the long spelling always did. Afterwards the
+                        // binding is asked to let go of what was read,
+                        // which it does only if it still holds it.
+                        Some((rhs, _)) if Env::bound(&self.env, name) => {
+                            let old = Env::get(&self.env, name)
+                                .expect("the binding was there a moment ago");
+                            let r = self.eval(rhs)?;
+                            if appends_in_place(&old, &r) {
+                                Env::release_if_same(&self.env, name, &old);
+                            }
                             binary(crate::ast::BinaryOp::Add, old, r, value.span)?
                         }
                         _ => self.eval(value)?,
@@ -1210,6 +1251,15 @@ impl<W: Write> Interpreter<W> {
                                 return Err(self.undefined_assign(name, stmt.span));
                             };
                             let r = self.eval(value)?;
+                            // The read had to come first, but the
+                            // binding's own reference is only needed
+                            // until here: if the right-hand side did
+                            // not reassign the name, letting go of it
+                            // now is what lets the append extend in
+                            // place.
+                            if *op == crate::ast::BinaryOp::Add && appends_in_place(&old, &r) {
+                                Env::release_if_same(&self.env, name, &old);
+                            }
                             binary(*op, old, r, stmt.span)?
                         }
                     }
@@ -1350,6 +1400,11 @@ impl<W: Write> Interpreter<W> {
     /// one: the VM has to know before it decides to move a value out.
     pub(crate) fn lookup_appends_in_place(&self, name: &str, r: &Value) -> Option<bool> {
         Env::with(&self.env, name, |v| appends_in_place(v, r))
+    }
+
+    /// Let the named binding go of `held`, if it still holds it.
+    pub(crate) fn release_if_same(&self, name: &str, held: &Value) {
+        Env::release_if_same(&self.env, name, held)
     }
 
     /// Move a bound name's value out, leaving nil in its place; the
@@ -3617,14 +3672,13 @@ pub(crate) fn unary(op: UnaryOp, v: Value, span: Span) -> Result<Value, RuntimeE
 pub(crate) fn folds_into_append<'a>(
     name: &str,
     value: &'a crate::ast::Expr,
-    private: bool,
 ) -> Option<(&'a crate::ast::Expr, Span)> {
     use crate::ast::ExprKind::*;
     let Binary(BinaryOp::Add, l, r) = &value.kind else {
         return None;
     };
     match &l.kind {
-        Var(n) if n == name && (private || cannot_reach(r, name)) => Some((r, l.span)),
+        Var(n) if n == name => Some((r, l.span)),
         _ => None,
     }
 }
