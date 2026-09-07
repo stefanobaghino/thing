@@ -15801,3 +15801,65 @@ a missing page. Checked before recording, which is the only reason
 this is a note instead of a repair.
 
 Nothing to fix. The milestone's first release stands.
+
+## 2026-09-07 — Iteration 754: rows that know their own column names
+
+`lib/csv.ting` gained `each_map(path, f, sep = ",")` — what `maps`
+does to a parsed document, done to a file a row at a time.
+
+The evidence was my own example. `examples/monthly.ting` (751) spends
+fourteen of its lines on header bookkeeping: two nils declared
+outside the callback, a `rows == 1` branch that scans the header for
+two names, a guard on every later row in case the branch found
+nothing, and a check after the read to report it. All of that to say
+"the column called date". A caller who wants three columns writes it
+three times.
+
+So `each_map` remembers the first row and hands every later one over
+as a map. What makes it worth writing rather than leaving to each
+caller is the same argument 749 made about the scanner: **there is
+no second implementation**. `entry_of(header, row)` is now the one
+place a row is given its column names, and both `maps` and `each_map`
+call it — so a file read whole and a file read a row at a time are
+named identically, short rows and all.
+
+Ten selftest checks (2512 → 2522), and the three they exist to catch
+were run past a deliberately wrong `each_map` first, built in a
+scratch script out of the module's own exported pieces:
+
+| the bug | what the assertion said |
+|---|---|
+| header not skipped | count 2 — false; agrees with `maps` — false |
+| missing column dropped instead of nil | agrees with `entry_of` — false |
+| `false` from `f` ignored | stops at one — false |
+
+All four false, which is what an assertion earning its place looks
+like.
+
+**The cost, measured rather than assumed.** On the 9.4 MB export from
+753 — 300000 rows in 400001 lines — read twice each way:
+
+| | time | peak | rows | total |
+|---|---|---|---|---|
+| `each_row` | 8.07 s / 8.07 s | 10 MB | 300000 | 14920889.85 |
+| `each_map` | 8.94 s / 8.97 s | 10 MB | 300000 | 14920889.85 |
+
+About a tenth more time for the naming, the same memory, the same
+answer. Only the row in hand becomes a map, so the bound `each_row`
+established is not weakened by putting names on it.
+
+**One thing `each_map` does not give you: the header.** The map's
+keys are the header, which covers "does this file have a date
+column?" — ask `has(row, "date")` on the first record. It does not
+cover a file with a header and no data rows, where `f` is never
+called and the question is never asked. That is a real difference
+from the index-scanning version, and the next tick, which rewrites
+`monthly.ting` on top of this, is where it has to be faced honestly
+rather than papered over.
+
+Also learned, and worth remembering: a real `lib/` directory next to
+a script SHADOWS the embedded stdlib. My first bench run picked up
+the v2.121.0 tarball's `lib/` sitting in the scratch directory and
+reported `key "each_map" not found` against a binary that has it. The
+fix was a clean directory; the lesson is that the embedded stdlib is
+a fallback, not an override.

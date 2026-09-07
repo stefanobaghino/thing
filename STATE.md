@@ -1491,16 +1491,36 @@ holds only the current milestone and the standing rules.
   (tutorial, reference, stdlib, cookbook, retrospective, changelog),
   not docs/vm.md. THE WORKFLOW IS THE AUTHORITY on what the site
   contains; a guessed URL is not evidence of a missing page.
+- 754: lib/csv gained each_map(path, f, sep) + entry_of(header, row);
+  stdlib 188 -> 190 (asked of the modules, per 740). NO SECOND
+  IMPLEMENTATION, the 749 argument again: entry_of is the one place a
+  row is given its column names and BOTH maps and each_map call it,
+  so a file read whole and a row at a time is named identically.
+  10 selftest checks (2512 -> 2522), each run past a deliberately
+  wrong each_map built in a scratch script from the module's own
+  exports: header not skipped, missing column dropped instead of nil,
+  false ignored — all four assertions false. COST measured on the
+  9.4 MB / 300000-row export, twice each: each_row 8.07/8.07 s,
+  each_map 8.94/8.97 s, both 10 MB and both totalling 14920889.85.
+  ~11% for the naming, the bound unweakened. KNOWN GAP: each_map does
+  not hand over the header — the map's keys are it, so
+  has(row, "date") on the first record answers "has this file the
+  column", but a header-only file never calls f and never asks.
+  LEARNED: a real lib/ next to a script SHADOWS the embedded stdlib
+  (a leftover release tarball in the bench dir gave
+  `key "each_map" not found` from a binary that has it); the embedded
+  stdlib is a fallback, not an override.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/csv each_map(path, f, sep = ",") — the streaming counterpart
-  of maps(rows), which needs the whole list. The evidence is my own
-  example: examples/monthly.ting spends 14 of its lines on header
-  bookkeeping (a rows == 1 branch, a manual index scan, two nils
-  carried out of the callback, and a check after it) purely to find
-  two columns by name. Same scanner, no second parser — each_map is
-  each_row with the first row remembered.
+  - rewrite examples/monthly.ting on each_map, which is what it was
+  written for: 14 lines of header bookkeeping go, the numbers must
+  not move (5000 rows, three unreadable dates, the five month
+  totals), and the "held while reading" line has to tell the truth
+  about what is held now. FACE THE GAP rather than paper over it: a
+  header-only file with the wrong columns currently errors and would
+  become a silent "0 rows". Regenerate the cookbook AFTER --fmt
+  (744).
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the
