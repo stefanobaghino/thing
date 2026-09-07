@@ -1463,11 +1463,24 @@ holds only the current milestone and the standing rules.
   5000 - 3. Bounded state: two ints per month, two column numbers,
   the row in hand. Format BEFORE generating the cookbook (744's
   lesson) — the guard passed first time.
+- 752: v2.121.0 released (142nd tag, read from
+  `git tag --sort=creatordate | grep -n`; strokes 749, 750, 751),
+  the milestone's first release. The 738 rule ran first and again
+  found nothing to repair: `git show --stat 358c21a` touched only
+  CHANGELOG/Cargo.toml/Cargo.lock, so `## Unreleased` had to arrive
+  carrying all three entries, and it did. README's builtin count
+  needed no move — all three strokes are library and example work on
+  the 72nd builtin, not a 73rd. Gate green at the tag: fifteen
+  `test result: ok`, zero clippy, formatter 0 of 69, corpus at seven.
+  Binary reports ting 2.121.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.121.0 — three strokes stand (749 each_row, 750
-  from_iso, 751 the monthly example).
+  - verify v2.121.0 — verdicts from the API, six assets on the tag,
+  an aarch64 archive downloaded cold and executed here; and because
+  this milestone is about reading files a program did not write, hand
+  the released binary examples/monthly.ting and expect the same 5000
+  rows and the same three unreadable dates.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

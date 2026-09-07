@@ -15722,3 +15722,35 @@ else that reads in this language now.
 
 Formatting before generating the cookbook, which is the order 744
 taught me, meant the guard passed the first time.
+
+## 2026-09-07 — Iteration 752: v2.121.0
+
+Released. v2.121.0 is the 142nd tag (read from
+`git tag --sort=creatordate | grep -n`, never counted forward),
+carrying the three strokes of "reading what other programs wrote":
+`each_row` on a shared scanner (749), `from_iso` and its refusals
+(750), and the monthly report that reads a CSV rather than guessing
+at it (751).
+
+The 738 rule ran first again, and again found nothing to repair.
+`git show --stat 358c21a` — the v2.120.0 release commit — touched
+CHANGELOG.md, Cargo.toml and Cargo.lock and nothing else, so the tree
+has to arrive at a release with `## Unreleased` already carrying
+every stroke. It did: three entries, each written by the tick that
+earned it. The README's builtin count needed no move this time, since
+all three strokes were library and example work on top of the 72nd
+builtin rather than a 73rd. Two releases running, the check has been
+a formality — which is the point of it.
+
+Gate green before the tag: fifteen `test result: ok`, zero clippy
+findings, the formatter changing nothing across 69 files, the corpus
+at its seven expected warnings. The binary reports `ting 2.121.0`,
+and CI, Pages and Release all started on the push.
+
+Verification next tick, the way every release is verified: verdicts
+from the API rather than from `gh run watch`'s exit code, six assets
+on the tag, and an aarch64 archive downloaded cold and executed here.
+Because this milestone is about *reading files a program did not
+write*, the artifact check has an obvious subject: hand the released
+binary `examples/monthly.ting` and see the same 5000 rows and the
+same three unreadable dates come back.
