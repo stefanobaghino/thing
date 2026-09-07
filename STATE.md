@@ -1684,12 +1684,30 @@ holds only the current milestone and the standing rules.
   tests/examples.rs compares stdout to the .out and a
   platform-dependent line would fail the Windows runner. Report
   identical either way, verified under both.
+- 764: lib/time gained local_date, local_clock, local_iso and
+  offset_iso; stdlib 190 -> 194. local_iso + from_iso ROUND TRIP,
+  which is why the offset goes in the string:
+  2026-03-29T00:59Z -> ...T01:59+01:00 and 01:00Z -> ...T03:00+02:00,
+  the hour that never existed visible in the pair.
+  THE DECISION: the three that need a zone answer nil where there is
+  none, NOT a silent UTC fallback — a library that returned the UTC
+  day under the name local_date would have made 763's warning
+  impossible to write. organize.ting now does the fallback in its own
+  four lines, where a reader sees it. offset_iso TRUNCATES a
+  sub-minute offset (+00:29:46 -> +00:29, as date prints it); the
+  selftest asserts the truncation and guards the round-trip check
+  with off % 60000 == 0, because for those instants there is no round
+  trip to have. 12 checks (2543 -> 2555), run four ways: both
+  engines, TZ=Asia/Kolkata, and a POSIX-rule TZ for the nil branch.
+  THE 760 GUARD PAID FOR ITSELF: it caught STATE still saying 190 and
+  the cookbook still carrying the old example, unprompted.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then lib/time helpers on top of local_zone: local dates and an
-  ISO string that carries the offset, rather than every caller
-  writing `+ local_zone(ms)["offset"]` by hand.
+  - release v2.123.0 — three strokes stand (762 local_zone, 763 the
+  local day in organize.ting, 764 the lib/time helpers). Check the
+  tree against the previous release commit FIRST (738); README's
+  builtin count already moved to 73 in 762.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

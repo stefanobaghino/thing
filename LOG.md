@@ -16393,3 +16393,60 @@ cannot name their day still gets told.
 Gate green the new way: `cargo fmt --check` clean, clippy with
 `-D warnings` clean, fifteen `test result: ok`, ting formatter 0 of
 69, corpus at seven, selftests 2543 checks.
+
+## 2026-09-07 — Iteration 764: the local reading of an instant
+
+CI green on all four runners for 763, Windows included — which is the
+evidence that 762's nil path and 763's stdout-stable example were
+right, not just plausible.
+
+`lib/time.ting` gained four, so a caller stops writing
+`+ local_zone(ms)["offset"]` by hand: `local_date(ms)`,
+`local_clock(ms)`, `local_iso(ms)`, `offset_iso(off)`.
+
+**`local_iso` and `from_iso` are a round trip.** That is the point of
+writing the offset into the string rather than shifting the clock and
+hoping:
+
+```
+2026-03-29T00:59:00Z  ->  2026-03-29T01:59:00+01:00
+2026-03-29T01:00:00Z  ->  2026-03-29T03:00:00+02:00
+```
+
+An hour of local time that never existed, visible in the two lines,
+and `from_iso` reads both back to the instants they came from.
+
+**The three that need a zone answer `nil` where there is none**, and
+choosing that over a silent UTC fallback is the decision this stroke
+turns on. A library that quietly returned the UTC day under the name
+`local_date` would have made 763's warning impossible to write:
+`organize.ting` can only say "this machine keeps no time zone data"
+because the library told it so. The example now reads
+
+```ting
+fn local_day(ms) {
+  let day = tm["local_date"](ms);
+  if day == nil { return tm["date"](ms); }
+  return day;
+}
+```
+
+— the fallback in the caller's own code, where a reader sees it,
+which is the whole argument in four lines.
+
+**`offset_iso` truncates.** ISO 8601 has no room for seconds in an
+offset, and the local mean times before about 1900 have them, so
+Zurich's `+00:29:46` writes as `+00:29` — which is what `date` prints
+for it. The selftest asserts the truncation rather than pretending it
+does not happen, and the round-trip check is guarded by
+`off % 60000 == 0`, because for those instants there genuinely is no
+round trip to have.
+
+Twelve selftest checks (2543 → 2555), run four ways: both engines, a
+half-hour zone (`TZ=Asia/Kolkata`), and a `TZ` holding a POSIX rule,
+which takes the nil branch.
+
+The docs guard did its job twice in this tick without being asked:
+it caught `STATE.md` still saying 190 functions, and the cookbook
+still carrying the old `organize.ting`. That guard is two ticks old
+and has now paid for itself.
