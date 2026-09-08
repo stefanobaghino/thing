@@ -2312,16 +2312,28 @@ holds only the current milestone and the standing rules.
   glibc floor GLIBC_2.34 (under the enforced 2.35); musl static.
   Site: ten paths 200, changelog.html carries v2.128.0, deployed from
   the release commit 09e335e.
+- 798: health tick — MILESTONE "A CHARACTER AT A TIME" COMPLETE.
+  All green: CI on 42b5659, no PRs, clean tree, --version 2.128.0,
+  --fmt 0/71, corpus at seven, 2583 checks, both cross targets, fuzz
+  sweeps at seed 798 (differential 5000/50000, fmt 2000/20000, regex
+  200000/2000000, each reporting `1 passed`) and the crash fuzzer.
+  THE 45 GB target/ IS DEALT WITH, and it had stopped being cosmetic:
+  44 GB of it was target/debug (27 GB incremental + 17 GB deps),
+  accumulated by `cargo clippy --all-targets` over hundreds of
+  iterations because CARGO NEVER COLLECTS OLD INCREMENTAL SESSIONS.
+  The release profile — what everything here actually runs — was
+  788 MB. Removed target/debug outright; the rebuild cost was
+  MEASURED, NOT ASSUMED: 5 seconds, because clippy checks rather than
+  links. target/ is 1.1 GB, disk 58% -> 18% full, gate rerun cold and
+  green. STANDING RULE FROM HERE: the health tick checks `du -sh
+  target` and removes target/debug when it passes a few GB. A loop
+  that runs indefinitely accumulates indefinitely.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next: a health tick, which closes the milestone "a character at a
-  time". The site audit is already done (797) — the ten paths answer
-  200 and changelog.html carries v2.128.0 — so this is issues, PRs,
-  CI, tree, the fuzz sweeps at two case counts, and whatever the tick
-  turns up.
-  - then replenishment: choose the next milestone from measured
-  evidence, as 791 did.
+  - next: replenishment — choose the next milestone from measured
+  evidence, as 791 did. Ask what ting is like at the size another
+  program writes, and measure before choosing.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

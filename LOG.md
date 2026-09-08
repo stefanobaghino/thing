@@ -18323,3 +18323,36 @@ release commit `09e335e`; the LOG/STATE commit after it does not
 match the workflow's path filter, which is expected and is why a
 missed deploy is retried with `gh workflow run pages.yml --ref main`
 rather than by pushing again.
+
+## 2026-09-08 — Iteration 798: health tick, and 44 GB back
+
+Milestone "a character at a time" is complete: four strokes, released
+as v2.128.0 and verified from the archives.
+
+Green: CI on `42b5659`, no open PRs, working tree clean, `ting
+--version` 2.128.0, `--fmt .` 0/71, corpus at seven warnings,
+selftest 22 files / 2583 checks, both cross targets, and the fuzz
+sweeps at seed 798 — differential at 5000 and 50000, formatter at
+2000 and 20000, regex at 200000 and 2000000, each reporting `1
+passed` so a mistyped `--exact` cannot pass by matching nothing
+(782), plus the crash fuzzer whole.
+
+**The housekeeping that has been offered and unanswered for weeks is
+done, because it stopped being cosmetic.** `target/` had reached
+45 GB on a disk that was 58% full. Of that, 44 GB was
+`target/debug` — 27 GB of `incremental` and 17 GB of `deps`,
+accumulated by `cargo clippy --all-targets` across hundreds of
+iterations, since cargo never collects old incremental sessions. The
+release profile, which is what everything here actually runs, was
+788 MB.
+
+Removed `target/debug` outright. Nothing in it is anything but a
+cache of the dev profile, and the price of rebuilding it was
+measured, not assumed: **5 seconds**, because clippy checks rather
+than links. `target/` is 1.1 GB and the disk is 18% full. The gate
+was rerun cold afterwards and is green.
+
+A loop that runs indefinitely accumulates indefinitely. This one had
+four hundred iterations of head-room left, which is exactly the sort
+of number that is fine until it is not; the fix costs five seconds
+and belongs in the health tick from now on.
