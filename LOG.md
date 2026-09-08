@@ -19196,3 +19196,34 @@ milestones of this pair, checked on a binary this machine did not
 build.
 
 Release, CI and Pages all green, verdicts from the API.
+
+## 2026-09-08 — Iteration 821: health tick — the milestone closed
+
+**Green, at load 2.4.** 11 bench rows x 2 engines, 22 comparisons,
+none differ. 50000 differential cases at seed 821's tick (seed 820),
+20000 formatter cases, the crash fuzzer's whole suite and 2000000
+regex cases: 20 tests, no failures. Tree clean, CI green, no PRs; the
+repository has issues disabled, so the maintenance check's issue list
+is permanently empty and that is not a finding.
+
+**target is 2.4 G, up from 1.7 G at 814, and the growth is
+explained**: `target/x86_64-pc-windows-msvc` is 523 M of it, built by
+this milestone's cross-checks, and wasm adds 5 M. 88 G free, so
+nothing to clean.
+
+**Site audit.** Nine paths 200 — the root, the five doc pages, the
+changelog, examples.js and ting.wasm. The changelog page's top entry
+is v2.131.0, examples.js carries the `{:.2}` from 810's rewrite of
+stats.ting, and ting.wasm's last-modified is this afternoon's push.
+
+**What that audit does NOT prove, and 814's did not either.** The
+last-modified header says the deployed wasm was built from this
+release; it does not say the wasm ANSWERS the new hints, because this
+host has no node, deno or wasmtime and cannot instantiate it. The
+diagnostics were verified on the native aarch64 archives in 820
+instead. Saying which of the two was checked is the point — the
+standing rule is not to assert facts about platforms this host cannot
+run.
+
+**MILESTONE "THE MISTAKE YOU ACTUALLY MADE" (v2.131.0, strokes
+815-820) COMPLETE.** Backlog is down to replenishment.

@@ -2447,6 +2447,23 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 821: health tick green at load 2.4 — MILESTONE "THE MISTAKE YOU
+  ACTUALLY MADE" (v2.131.0, strokes 815-820) COMPLETE. 11 bench rows
+  x 2 engines, 22 comparisons, none differ. 50000 differential at
+  seed 820 (10.0 s), 20000 formatter (4.1 s), crash + 2000000 regex
+  (3.2 s). target 2.4 G, up from 1.7 G at 814 AND THE GROWTH IS
+  EXPLAINED: target/x86_64-pc-windows-msvc is 523 M of it, from this
+  milestone's cross-checks. 88 G free, nothing to clean.
+  SITE AUDIT: nine paths 200 (root, five doc pages, changelog,
+  examples.js, ting.wasm), changelog top entry v2.131.0, examples.js
+  carries `{:.2}`, ting.wasm last-modified is this release's push.
+  WHAT IT DOES NOT PROVE, and 814's did not either: last-modified
+  says the wasm was BUILT from this release, not that it ANSWERS the
+  new hints. This host has no node, deno or wasmtime and cannot
+  instantiate it; the diagnostics were checked on the native aarch64
+  archives in 820. Say which of the two was checked.
+  The repository has ISSUES DISABLED, so the maintenance check's
+  issue list is permanently empty — not a finding.
 - 820: v2.131.0 TAGGED AND VERIFIED (152nd tag; strokes 816, 817,
   818, 819; six archives, `sha256sum -c` OK on all six, both aarch64
   Linux archives unpacked and run here). MILESTONE "THE MISTAKE YOU
@@ -2664,11 +2681,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone: bench checksums on both
-  engines, 50000 differential / 20000 formatter / crash + 2000000
-  regex sweeps, `du -sh target`, site audit (the changelog page's top
-  entry should be v2.131.0).
-  - then replenishment: choose the next milestone. 799 counted
+  - replenishment: choose the next milestone. 799 counted
   instructions, 808 wrote a program and counted corrections, 815
   wrote fifty wrong programs and read the answers — a fourth kind of
   looking is wanted, not a fourth pass of one of those three.
