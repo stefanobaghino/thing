@@ -625,9 +625,17 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
     unbound_findings(src)
         .into_iter()
         .map(|f| {
-            let message = match f.near {
-                Some(near) => format!("`{}` is bound nowhere (did you mean `{near}`?)", f.name),
-                None => format!("`{}` is bound nowhere", f.name),
+            let message = match (crate::diag::spelt_here_as(&f.name), &f.near) {
+                (Some(here), _) => {
+                    format!(
+                        "`{}` is bound nowhere (ting writes this as `{here}`)",
+                        f.name
+                    )
+                }
+                (None, Some(near)) => {
+                    format!("`{}` is bound nowhere (did you mean `{near}`?)", f.name)
+                }
+                (None, None) => format!("`{}` is bound nowhere", f.name),
             };
             (f.start, f.end, message)
         })

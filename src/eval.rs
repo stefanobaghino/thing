@@ -1641,6 +1641,14 @@ impl<W: Write> Interpreter<W> {
     }
 
     fn undefined_msg(&self, what: &str, name: &str, span: Span, extra: &[String]) -> RuntimeError {
+        // A word from another language is not a typo, so it is asked
+        // about first: no edit distance would reach `nil` from `null`.
+        if let Some(here) = crate::diag::spelt_here_as(name) {
+            return error(
+                format!("{what} '{name}' (ting writes this as `{here}`)"),
+                span,
+            );
+        }
         let mut names = Vec::new();
         Env::names(&self.env, &mut names);
         names.extend(extra.iter().cloned());

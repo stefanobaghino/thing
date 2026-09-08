@@ -44,6 +44,22 @@ assert(contains(key["err"], "did you mean \"alpha\""), "unknown key suggests");
 let far = try(fn() { return m["zqxjw"]; });
 assert(!contains(far["err"], "did you mean"), "nothing near, nothing said");
 
+# A word another language uses for a value ting spells differently is
+# not a typo -- no edit distance reaches `nil` from `null` -- so it is
+# answered with ting's spelling rather than with a guess.
+let n1 = try(fn() { return null; });
+assert(contains(n1["err"], "ting writes this as `nil`"), "null is nil");
+let n2 = try(fn() { return None; });
+assert(contains(n2["err"], "ting writes this as `nil`"), "None is nil too");
+let n3 = try(fn() { return True; });
+assert(contains(n3["err"], "ting writes this as `true`"), "True is true");
+let n4 = try(fn() { return FALSE; });
+assert(contains(n4["err"], "ting writes this as `false`"), "FALSE is false");
+assert(!contains(n1["err"], "did you mean"), "a known word is not guessed at");
+# And a real typo is still a typo.
+let still = try(fn() { return totl; });
+assert(contains(still["err"], "did you mean 'total'"), "a typo is still a typo");
+
 # Arity errors count in plain English and name the function called.
 let one = try(len);
 assert(contains(one["err"], "len expects 1 argument, got 0"), "one argument, singular");

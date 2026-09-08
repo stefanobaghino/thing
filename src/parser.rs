@@ -95,6 +95,8 @@ impl<'a> Parser<'a> {
             && let Some(hint) = instead_of(name)
         {
             message.push_str(&format!(" ({hint})"));
+        } else if let Some(hint) = self.operator_word() {
+            message.push_str(&format!(" ({hint})"));
         } else if self.peek() == &TokenKind::Eq
             && self.peek2() == &TokenKind::Gt
             && self.tokens[self.pos + 1].span.start == self.span().end
@@ -108,10 +110,39 @@ impl<'a> Parser<'a> {
     fn expect(&mut self, kind: &TokenKind, what: &str) -> Result<(), ParseError> {
         if self.peek() == kind {
             self.advance();
-            Ok(())
-        } else {
-            Err(self.error(format!("expected {what}, found {}", describe(self.peek()))))
+            return Ok(());
         }
+        let mut message = format!("expected {what}, found {}", describe(self.peek()));
+        if let Some(hint) = self.operator_word() {
+            message.push_str(&format!(" ({hint})"));
+        }
+        Err(self.error(message))
+    }
+
+    /// `and`, `or` and `not` are ordinary names here, not operators,
+    /// so a condition written with them stops at a word the parser
+    /// cannot place. `not x` stops one token PAST the word, because
+    /// `not` was read as the whole condition and `x` is what follows
+    /// it — so the token behind is worth a look too. Nothing here can
+    /// reach a program that parses; someone whose own variable is
+    /// called `not` gets a suggestion that is merely unhelpful, on a
+    /// program that was already wrong.
+    fn operator_word(&self) -> Option<&'static str> {
+        if let TokenKind::Ident(name) = self.peek() {
+            match name.as_str() {
+                "and" => return Some("ting writes this as `&&`"),
+                "or" => return Some("ting writes this as `||`"),
+                "not" => return Some("ting writes this as `!`"),
+                _ => {}
+            }
+        }
+        if self.pos > 0
+            && let TokenKind::Ident(name) = &self.tokens[self.pos - 1].kind
+            && name == "not"
+        {
+            return Some("ting writes `not` as `!`");
+        }
+        None
     }
 
     fn statement(&mut self) -> Result<Stmt, ParseError> {
@@ -388,10 +419,11 @@ impl<'a> Parser<'a> {
     /// Parse a `{ ... }` block, with a context note for the error message.
     fn block_stmt(&mut self, context: &str) -> Result<Stmt, ParseError> {
         if self.peek() != &TokenKind::LBrace {
-            return Err(self.error(format!(
-                "expected '{{' {context}, found {}",
-                describe(self.peek())
-            )));
+            let mut message = format!("expected '{{' {context}, found {}", describe(self.peek()));
+            if let Some(hint) = self.operator_word() {
+                message.push_str(&format!(" ({hint})"));
+            }
+            return Err(self.error(message));
         }
         self.statement()
     }
@@ -879,6 +911,46 @@ mod tests {
             // fail later, at run time, for the right reason.
             "elif;",
             "var;",
+        ] {
+            assert!(
+                parse_program(&lex(src).unwrap()).is_ok(),
+                "{src} should still parse"
+            );
+        }
+    }
+
+    /// `and`, `or` and `not` are names here, so a condition written
+    /// with them stops at a word the parser cannot place. `not` is
+    /// the awkward one: it is read as the whole condition, so the
+    /// error lands one token PAST it.
+    #[test]
+    fn an_operator_word_says_what_ting_writes() {
+        for (src, want) in [
+            ("if a and b { }", "ting writes this as `&&`"),
+            ("if a or b { }", "ting writes this as `||`"),
+            ("while a and b { }", "ting writes this as `&&`"),
+            ("print(a and b);", "ting writes this as `&&`"),
+            ("a and b;", "ting writes this as `&&`"),
+            ("if not a { }", "ting writes `not` as `!`"),
+            ("if not true { }", "ting writes `not` as `!`"),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// None of the three is reserved, so a program that binds one and
+    /// uses it still parses — including `if not { }`, where `not` is
+    /// the whole condition and the block follows it properly.
+    #[test]
+    fn the_operator_hint_stays_out_of_the_way() {
+        for src in [
+            "let and = 1; print(and);",
+            "let not = 5; print(not);",
+            "let not = true; if not { print(1); }",
+            "print(true && false);",
+            "print(!true);",
+            "if a { } else { }",
         ] {
             assert!(
                 parse_program(&lex(src).unwrap()).is_ok(),

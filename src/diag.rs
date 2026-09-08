@@ -84,6 +84,20 @@ pub fn shorten(path: &str) -> String {
 /// Equal distances are settled by the longer shared start (`medain`
 /// means `median`, not `mean`) and then alphabetically, so the answer
 /// never depends on the order the candidates arrive in.
+/// A name another language uses for a value ting spells differently.
+/// These are not typos, so `nearest` will not find them — `null` is
+/// two edits from `nil` and `None` is three — and answering "did you
+/// mean" would be the wrong shape anyway. The word is known; what is
+/// wanted is ting's word for it.
+pub fn spelt_here_as(name: &str) -> Option<&'static str> {
+    Some(match name {
+        "null" | "NULL" | "None" | "undefined" | "None_" => "nil",
+        "True" | "TRUE" => "true",
+        "False" | "FALSE" => "false",
+        _ => return None,
+    })
+}
+
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
     // Under three characters every name is one edit from every other,
     // so a suggestion would be noise rather than help.

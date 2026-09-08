@@ -70,7 +70,10 @@ both.
 - Words other languages use for the same job are not keywords here,
   and writing one says what ting writes instead: `else if` rather than
   `elif`, `fn` rather than `def` or `function`, `let` rather than
-  `var` or `const`, and `fn(x) { return x; }` rather than an arrow.
+  `var` or `const`, `fn(x) { return x; }` rather than an arrow, `&&`,
+  `||` and `!` rather than `and`, `or` and `not`, and `nil`, `true`
+  and `false` rather than `null`, `None`, `True` or `False`. None of
+  them is reserved, so a program may still use one as a name.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types
