@@ -5,6 +5,32 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.129.0 (2026-09-08)
+
+- Every program runs 4 to 10 percent faster and tight loops about 20,
+  with no change to what any of them answers. The bytecode VM had
+  been spending instructions moving values it already had: read a
+  local onto the stack, push a constant beside it, compare the two,
+  push the answer, look at the answer, branch. Three new instruction
+  forms do that where the values live — a local against a literal,
+  two locals, and either of those as the test of an `if` or a `while`
+  together with the branch it decides. Parsing a megabyte of CSV now
+  runs 19.5 million instructions where it ran 26.3 million, a quarter
+  fewer for the same work.
+- Nothing about the language changed, including the errors. A
+  condition is still asked whether it is a bool, so `if x + 1 {}`
+  fails exactly as it did, at the same place; a type error inside a
+  fused comparison still points at the operator rather than at the
+  statement around it. The engines remain byte-identical, and all
+  eleven benchmark checksums are unchanged from v2.128.0.
+- Two more fusions were written, measured and removed rather than
+  shipped. Branching on a local, and applying a literal to a local in
+  place, are the next two commonest instruction pairs; both worked
+  and neither was worth 2% of any real program, though one was worth
+  7% of a loop written to contain nothing else. An instruction's
+  share of the count is not its share of the time, and a benchmark
+  built out of an instruction will say otherwise.
+
 ## v2.128.0 (2026-09-08)
 
 - Reading a string a character at a time is linear rather than
