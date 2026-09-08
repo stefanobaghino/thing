@@ -2328,12 +2328,46 @@ holds only the current milestone and the standing rules.
   green. STANDING RULE FROM HERE: the health tick checks `du -sh
   target` and removes target/debug when it passes a few GB. A loop
   that runs indefinitely accumulates indefinitely.
+- 799: replenishment — milestone "THE COST OF A STEP"
+  (v2.129-v2.130), reasoning in LOG.md. THE EVIDENCE, BY COUNTING
+  (a temporary counter in the VM dispatch loop, reverted): an empty
+  `while i < n { i += 1; }` iteration is SEVEN OPCODES and 88 ns —
+  12.6 ns per opcode, about thirty cycles here — and every ting
+  program pays it before doing anything. bench/scan.ting is 19.4 M
+  opcodes at 20.1 ns each; the CSV parse is 29 OPCODES PER CHARACTER.
+  The tree-walker is 324 ns for the same iteration, so this is the
+  FAST engine. lib/csv.ting's scan is 96% of the parse (--profile)
+  and is already written the right way, so what is left is the cost
+  of running a line of ting, not the ting.
+  ALREADY SIZED: the dispatch loop loads chunk.spans[ip] — 16 bytes
+  from a second array, bounds-checked — before EVERY instruction, for
+  an error message almost no arm needs. Replacing it with a constant
+  (experiment, reverted) is 9% off the empty loop, 3% off scan.ting,
+  6% off the CSV parse, over three interleaved runs.
+  MY FIRST GUESS WAS WRONG AND THE COUNTER SETTLED IT: `for c in
+  text` and a while loop over text[i] now cost the same to within 1%
+  (1.893 s vs 1.916 s over 7.6 MB), so the for-snapshot materialising
+  the whole string is a MEMORY cost, not a speed one.
+  NOT CHOSEN: a faster CSV in ting (the scanner is already right);
+  perf/valgrind (not on this machine, sudo is not mine to use —
+  ablation is the instrument and it answered); threading (one binary
+  anyone can run, and nothing here is parallel).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next: replenishment — choose the next milestone from measured
-  evidence, as 791 did. Ask what ting is like at the size another
-  program writes, and measure before choosing.
+  - first stroke: a histogram of opcode PAIRS and TRIPLES over
+  bench/*.ting and the CSV parse, so the superinstructions are chosen
+  from what runs rather than from what looks common. Throwaway
+  instrumentation like 799's counter, not shipped code.
+  - then: stop loading chunk.spans[ip] on every dispatch; it is for
+  the error message and almost no arm needs it. Already sized at 9%
+  of the empty loop, 3% of bench/scan.ting, 6% of the CSV parse.
+  - then: fuse the sequences the histogram names, one at a time, each
+  with its own measurement -- a superinstruction that does not pay is
+  complexity that stays forever.
+  - then: prove the archive's lib/ and the binary's embedded stdlib
+  are the same twelve modules (754 -- a lib/ beside a script silently
+  shadows the embedded one, and nobody checks they agree).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

@@ -18356,3 +18356,59 @@ A loop that runs indefinitely accumulates indefinitely. This one had
 four hundred iterations of head-room left, which is exactly the sort
 of number that is fine until it is not; the fix costs five seconds
 and belongs in the health tick from now on.
+
+## 2026-09-08 — Iteration 799: replenishment — "the cost of a step"
+
+The string milestone ended where it had to: `lib/csv.ting`'s scanner
+is 96% of the CSV parse (`--profile`, ting's own, on 900 KB: 501 ms
+of 520 ms inside `scan`), and that function is already written the
+way you would write it — locals in the loop, not map lookups, one
+pass, no indexing. There is nothing left to fix in the ting. What is
+left is what it costs to RUN a line of ting.
+
+**Measured, by counting.** A temporary counter in the VM's dispatch
+loop, and the microbenchmarks beside it:
+
+| program | opcodes | time | ns per opcode |
+|---|---:|---:|---:|
+| `while i < n { i += 1; }` | 7 per iteration | 88 ns/iter | 12.6 |
+| `... { x = 1; i += 1; }` | 9 | 100 ns | 11.1 |
+| `... { if c == "," { x = 1; } i += 1; }` | 11 | 138 ns | 12.5 |
+| `... { x = f(1); i += 1; }` | 13 | 287 ns | 22.1 |
+| `bench/scan.ting` | 19.4 M | 0.39 s | 20.1 |
+| CSV, 900 KB | 26.3 M (29 per character) | 0.50 s | 19.0 |
+
+**An empty loop iteration is seven opcodes and 88 nanoseconds**, and
+every ting program pays it before doing anything. The tree-walker
+pays 324 ns for the same iteration, so this is the fast engine.
+
+Two things follow, and they are the milestone. **Fewer opcodes for
+the same work**: seven for `i += 1` under a comparison is a lot, and
+the shapes are the same in every program — `GetSlot, GetSlot,
+Binary(Lt), JumpIfFalse` and `Const, UpdateSlot, Jump`. **And less
+work per opcode**: 12.6 ns is about thirty cycles here.
+
+**One part is already sized.** The dispatch loop loads
+`chunk.spans[ip]` — sixteen bytes from a second array, bounds-checked
+— before every instruction, and almost no instruction needs it; it is
+for the error message. Replacing that load with a constant (an
+experiment, reverted) is 9% off the empty loop, 3% off
+`bench/scan.ting` and 6% off the CSV parse, repeatably over three
+interleaved runs.
+
+**What I checked before choosing.** `for c in text` and a `while`
+loop over `text[i]` now cost the same to within 1% (1.893 s against
+1.916 s over 7.6 MB), so the `for` snapshot — which materialises the
+whole string as one-character values — is not where the time goes,
+and making iteration lazy would buy memory, not speed. That was my
+first guess and it was wrong; the counter is what settled it.
+
+Not chosen: a faster CSV in ting (the scanner is already the right
+program); native `perf` (not on this machine, and `sudo` is not mine
+to use — ablation is the instrument I have, and it answered);
+threading (the charter's artifact is one binary anyone can run, and
+nothing here is parallel).
+
+Milestone **"the cost of a step"**, v2.129-v2.130. First stroke:
+count which opcode SEQUENCES are actually hot, rather than guessing
+which to fuse — the same counter, one dimension wider.
