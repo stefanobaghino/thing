@@ -20157,3 +20157,10 @@ verdict before v2.134.0 is tagged.
 
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks.
+
+**Verdict read, same tick.** CI on 4ec3a80 is green on all four
+platforms, from the API. That run is also the first one to reach
+838's stdin checks on a Windows runner — the failing assert had been
+stopping the file before them — so `cat`, `sort`, `head` and `read`
+under git-bash do answer, and the prediction 840 refused to make is
+now a measurement. v2.134.0 can be tagged.

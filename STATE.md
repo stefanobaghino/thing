@@ -2459,9 +2459,11 @@ holds only the current milestone and the standing rules.
   ordinary nonzero exit and `ended` rightly says "exited". It now
   reads `killed["code"] != nil || contains(killmsg, "killed")`. The
   other four checks in that block were disjunctions and passed; this
-  one asserted the Unix outcome flat. Note also that 838's stdin
-  checks sit after the failing line, so NO WINDOWS RUNNER HAS EVER
-  REACHED THEM — that verdict is still owed.
+  one asserted the Unix outcome flat. VERDICT READ THE SAME TICK: CI
+  on 4ec3a80 green on all four platforms, and that run is the first
+  to reach 838's stdin checks on Windows (the failing assert had
+  stopped the file before them), so `cat`, `sort`, `head` and `read`
+  under git-bash do answer. v2.134.0 can be tagged.
 - 839: third stroke — WHAT THE BYTES ARE. Measured, the picture is a
   rule followed everywhere but one place and written down nowhere:
   `read_file`, `each_line`, `input()`, a script file, `--check` and
