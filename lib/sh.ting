@@ -52,8 +52,13 @@ fn which(name) {
   return nil;
 }
 
-# Whether the program ran and said it was happy.
-fn ok(cmd, argv) { return run(cmd, argv)["code"] == 0; }
+# Whether the program ran and said it was happy. `stdin` is what the
+# program reads there; without it it reads nothing, which is what a
+# program that wants nothing expects and what one that wants
+# everything must not be left waiting for. The parameter is not
+# called `input` because that is a builtin, and a name that shadows
+# one puts it out of reach for the whole body.
+fn ok(cmd, argv, stdin = nil) { return run(cmd, argv, stdin)["code"] == 0; }
 
 # The program's stdout, insisting on a zero exit code. A nonzero one
 # fails with the code and whatever the program said about it, since a
@@ -63,8 +68,8 @@ fn ok(cmd, argv) { return run(cmd, argv)["code"] == 0; }
 # "exited nil" is wrong twice over: it did not exit, and nil is not a
 # status. It is reported as killed, by which signal where the
 # platform names one.
-fn check(cmd, argv) {
-  let done = run(cmd, argv);
+fn check(cmd, argv, stdin = nil) {
+  let done = run(cmd, argv, stdin);
   if done["code"] != 0 {
     let why = trim(done["err"]);
     if why == "" { why = "no output on stderr"; }
@@ -83,8 +88,8 @@ fn ended(done) {
 
 # check(), split into lines, without the empty one a trailing newline
 # would otherwise leave behind.
-fn lines(cmd, argv) {
-  let text = check(cmd, argv);
+fn lines(cmd, argv, stdin = nil) {
+  let text = check(cmd, argv, stdin);
   let out = split(replace(text, "\r\n", "\n"), "\n");
   if len(out) > 0 && out[len(out) - 1] == "" { pop(out); }
   return out;

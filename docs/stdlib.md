@@ -295,10 +295,17 @@ needs it.
 
 | Function | Does |
 |----------|------|
-| `ok(cmd, argv)` | whether the program ran and exited zero |
-| `check(cmd, argv)` | the program's stdout, failing on a nonzero code with the code and its stderr — or, for a child a signal killed, with the signal, since "exited nil" is wrong twice over |
+| `ok(cmd, argv, stdin = nil)` | whether the program ran and exited zero |
+| `check(cmd, argv, stdin = nil)` | the program's stdout, failing on a nonzero code with the code and its stderr — or, for a child a signal killed, with the signal, since "exited nil" is wrong twice over |
 | `ended(done)` | how a finished child is named in a message: `exited 4`, or `was killed by signal 9` |
-| `lines(cmd, argv)` | `check` split into lines, without the empty one a trailing newline leaves |
+| `lines(cmd, argv, stdin = nil)` | `check` split into lines, without the empty one a trailing newline leaves |
+
+All three take `stdin`, which the program reads there; without it the
+program reads nothing. Not `input`, which is a builtin: a parameter
+of that name would put it out of reach for the whole body. That is the half of the boundary `run`
+was missing — output has always come back, and now something can go
+in without a temp file or a quoted string handed to `sh -c`, the very
+thing an argv list exists to avoid.
 | `which(name)` | where the program would be found on PATH, or nil; on Windows every PATHEXT suffix is tried in order |
 | `path_dirs()` | PATH as a list of directories, empty entries dropped |
 | `dir_sep()` | the separator between directories in a path |

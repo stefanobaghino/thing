@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2670 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2676 selftest checks on all four
   CI platforms, Windows included); 386 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2448,6 +2448,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 838: second stroke — SOMETHING ON THE CHILD'S STDIN.
+  `run(cmd, args, stdin)`, and `sh.ok`/`check`/`lines` too; without
+  it the child gets EOF at once, as it always did and as the docs now
+  say. THE DEADLOCK IS REAL AND WAS RUN BEFORE THE GUARD WAS WRITTEN:
+  writing the input on the calling thread hangs at 2 MB each way
+  (exit 124 under `timeout`, proved with a `sh -c` child and with a
+  ting one), so `spawn_with_input` puts the write on its own thread
+  and carries the reason in its doc comment. A child that stops
+  reading early is not an error — the broken pipe is how `head` says
+  it has enough. The test is BOUNDED (`try_wait` against a 120 s
+  deadline, kill and fail) because a deadlock must fail a test rather
+  than wedge the suite. Two things caught me: `--check` said `input`
+  SHADOWS A BUILTIN three times, so the parameter is `stdin`
+  everywhere; and the wasm lib build failed on
+  `#[cfg(not(target_arch = "wasm32"))]` over a function whose call
+  site is guarded by a runtime `cfg!`.
 - 837: first stroke — A KILLED CHILD SAYS SO. `run` hands back a
   fourth key, `signal`: the number that killed the child where the
   platform has signals, nil elsewhere and after every normal exit,
@@ -2997,11 +3013,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - something on the child's stdin: `run(cmd, args, input)`. THE TRAP
-  IS THE DEADLOCK the current code avoids by accident — writing the
-  input before reading the output hangs as soon as the child fills
-  its stdout pipe while ting is still filling its stdin — so the
-  write goes on a thread and the test is 8 MB in against 8 MB out.
   - what the bytes are: `run`'s out/err are lossy where `read_file`
   errors on the same bytes. Decide, say it in the docstring and the
   docs, pin it with a test. Bias: lossy stays, silence does not.

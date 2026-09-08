@@ -3251,6 +3251,74 @@ fn run_spawns_a_program_and_reports_what_it_did() {
     let _ = std::fs::remove_file(&child);
 }
 
+/// A child with something to read, and the deadlock that shape
+/// invites. The child echoes what it is given, so its stdout fills
+/// while its stdin is still being written; writing the input on the
+/// calling thread hangs here forever, which is why it does not.
+/// Bounded rather than trusted: a deadlock must fail this test, not
+/// wedge the suite.
+#[test]
+fn a_child_reads_what_it_is_given_without_deadlocking() {
+    let exe = env!("CARGO_BIN_EXE_ting");
+    let echo = std::env::temp_dir().join("ting-io-echo.ting");
+    let script = std::env::temp_dir().join("ting-io-feed.ting");
+    std::fs::write(
+        &echo,
+        "each_line(\"-\", fn(l) { print(l); return nil; });\n",
+    )
+    .unwrap();
+    let echo_path = echo.to_str().unwrap().replace('\\', "/");
+    let exe_path = exe.replace('\\', "/");
+    std::fs::write(
+        &script,
+        format!(
+            "let s = import(\"lib/string.ting\");\n\
+             let big = s[\"repeat\"](s[\"repeat\"](\"x\", 99) + \"\\n\", 20000);\n\
+             let d = run(\"{exe_path}\", [\"{echo_path}\"], big);\n\
+             print(len(d[\"out\"]), d[\"code\"]);\n\
+             print(run(\"{exe_path}\", [\"{echo_path}\"], \"a\\nb\\n\")[\"out\"] == \"a\\nb\\n\");\n\
+             print(run(\"{exe_path}\", [\"{echo_path}\"])[\"out\"] == \"\");\n\
+             print(run(\"{exe_path}\", [\"{echo_path}\"], nil)[\"out\"] == \"\");\n\
+             print(try(fn() {{ return run(\"{exe_path}\", [], 5); }})[\"err\"]);\n"
+        ),
+    )
+    .unwrap();
+
+    let mut child = Command::new(exe)
+        .arg(&script)
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    let deadline = std::time::Instant::now() + std::time::Duration::from_secs(120);
+    loop {
+        match child.try_wait().expect("try_wait") {
+            Some(_) => break,
+            None => {
+                if std::time::Instant::now() > deadline {
+                    let _ = child.kill();
+                    panic!("run with input deadlocked: the write must not be on this thread");
+                }
+                std::thread::sleep(std::time::Duration::from_millis(50));
+            }
+        }
+    }
+    let out = child.wait_with_output().expect("wait_with_output");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    assert_eq!(lines.next().unwrap(), "2000000 0", "unexpected:\n{text}");
+    assert_eq!(lines.next().unwrap(), "true", "short input:\n{text}");
+    assert_eq!(lines.next().unwrap(), "true", "no input is EOF:\n{text}");
+    assert_eq!(lines.next().unwrap(), "true", "nil input is EOF:\n{text}");
+    assert_eq!(
+        lines.next().unwrap(),
+        "run expects stdin as a string, got int",
+        "unexpected:\n{text}"
+    );
+    let _ = std::fs::remove_file(&script);
+    let _ = std::fs::remove_file(&echo);
+}
+
 /// A child killed by a signal: no exit code, and the number that
 /// ended it. Unix only, because `signal` is nil where the platform
 /// has no signals — which is what the selftest checks portably.

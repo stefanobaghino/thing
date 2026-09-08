@@ -66,4 +66,17 @@ if shell != nil {
   assert(sh["ended"]({"code": nil, "signal": 9}) == "was killed by signal 9", "a signal is a kill");
   assert(sh["ended"]({"code": nil, "signal": nil}) == "was killed",
   "and a kill with no number is still a kill");
+
+  # Something on the child's stdin — the half of the boundary that
+  # was missing. Output has always come back; now data can go in
+  # without a temp file or a string quoted into `sh -c`.
+  assert(sh["check"](shell, ["-c", "cat"], "hello") == "hello", "a child reads what it is given");
+  assert(sh["lines"](shell, ["-c", "sort"], "c\na\nb\n") == ["a", "b", "c"],
+  "and the wrappers pass it through");
+  assert(sh["ok"](shell, ["-c", "read x; test \"$x\" = go"], "go\n"),
+  "ok takes input too");
+  assert(sh["check"](shell, ["-c", "cat"]) == "", "no input is an immediate EOF");
+  assert(sh["check"](shell, ["-c", "cat"], nil) == "", "and nil says the same thing");
+  assert(run(shell, ["-c", "head -c 2"], "abcdef")["out"] == "ab",
+  "a child that stops reading early is not an error");
 }

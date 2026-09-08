@@ -625,10 +625,11 @@ impl Builtin {
                 "Restarts the generator at n, so a run repeats exactly.",
             ),
             Builtin::Run => (
-                "run(cmd) / run(cmd, args)",
+                "run(cmd) / run(cmd, args) / run(cmd, args, stdin)",
                 "Runs a program and waits: a map of code, out, err and signal. \
                  A signal killed it when code is nil, and signal is that \
-                 number where the platform has them.",
+                 number where the platform has them. The child reads stdin \
+                 there, and reads nothing without it.",
             ),
             Builtin::EPrint => (
                 "eprint(...)",

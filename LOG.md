@@ -20020,3 +20020,55 @@ to 195.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2670 checks (was 2661), Windows check
 and clippy, wasm release build.
+
+## 2026-09-09 — Iteration 838: something on the child's stdin
+
+Second stroke of "the other program". `run(cmd, args, stdin)` hands
+the child something to read; without it the child gets EOF at once,
+which is what it always got and is now what the docs say it gets.
+Output had always come back and nothing could go in, so a script
+that wanted `echo data | sort` wrote a temp file or handed a quoted
+string to `sh -c` — the very thing an argv list exists to avoid.
+`sh.ok`, `sh.check` and `sh.lines` take it too.
+
+**The deadlock is real, and I ran it before writing the guard
+against it.** Writing the input on the calling thread and then
+reading the output hangs the moment the child fills its stdout pipe
+while the parent is still filling its stdin: each waits for the
+other. Proved twice, at 2 MB each way — once with `sh -c 'cat; yes |
+head -c 2000000'` and once with a ting child echoing what it reads —
+both exit 124 under `timeout`, and both return in milliseconds with
+the write on its own thread. That is why `spawn_with_input` exists
+as a named function with the reason in its doc comment rather than
+four lines inline.
+
+**A child that stops reading early is not an error.** `run("head",
+["-c", "3"], big)` answers `xxx` with code 0: the broken pipe from
+the writing thread is how `head` says it has enough, and swallowing
+that write error is deliberate.
+
+**The test is bounded, because a deadlock must fail a test rather
+than wedge the suite.** tests/io.rs spawns the child, polls
+`try_wait` against a 120 s deadline, and kills and fails if it is
+still running — the shape it exercises hangs forever under the
+mutation, so a plain `output()` call would have hung CI instead of
+reporting. Locally the same work takes 56 ms.
+
+**The checker caught my parameter name.** I called it `input`, which
+is a BUILTIN, and `--check` said so three times: a stdlib parameter
+of that name puts `input()` out of reach for the whole body. Renamed
+to `stdin` everywhere — the doc line, the error message, both docs
+pages and the three sh wrappers — and the corpus went back to
+fourteen warnings. The warning that exists for exactly this found
+exactly this.
+
+**And the wasm target caught the other one.** `spawn_with_input`
+started life under `#[cfg(not(target_arch = "wasm32"))]` while its
+call site is guarded by a runtime `cfg!`, so the lib build for
+wasm32 failed on a missing function. The attribute came off: `run`
+refuses to spawn on wasm long before this is reached, and the
+std::process the sibling branch already calls compiles there too.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks (was 2670), Windows check
+and clippy, wasm release build.

@@ -418,7 +418,7 @@ scope).
 | `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |
 | `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
 | `seed(n)`      | restarts the generator at `n`; unseeded, it starts from the clock |
-| `run(cmd)` / `run(cmd, args)` | runs a program with that argv (no shell) and waits; a map of `code`, `out`, `err` and `signal`. A program that cannot be started errors; `code` is `nil` when a signal ended it, and `signal` is that number where the platform has signals — `nil` everywhere else, including after a normal exit |
+| `run(cmd)` / `run(cmd, args)` / `run(cmd, args, stdin)` | runs a program with that argv (no shell) and waits; a map of `code`, `out`, `err` and `signal`. The child reads `stdin` there and reads nothing without it. A program that cannot be started errors; `code` is `nil` when a signal ended it, and `signal` is that number where the platform has signals — `nil` everywhere else, including after a normal exit |
 | `eprint(...)`  | like `print`, but to stderr, after flushing stdout so the two stay in order |
 | `cwd()`        | the working directory, as a string                           |
 | `re_test(s, pattern)` | whether the pattern matches anywhere in the string |

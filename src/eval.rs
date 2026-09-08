@@ -3237,7 +3237,7 @@ impl<W: Write> Interpreter<W> {
                 Ok(Value::list(pieces))
             }
             Builtin::Run => {
-                arity(1, 2)?;
+                arity(1, 3)?;
                 let cmd = match &args[0] {
                     Value::Str(s) => s.clone(),
                     v => {
@@ -3279,6 +3279,20 @@ impl<W: Write> Interpreter<W> {
                         }
                     }
                 }
+                // What the child reads on its stdin. Without it the
+                // child gets EOF at once, which is what a program
+                // that reads nothing wants and what one that reads
+                // everything must not be left waiting for.
+                let input = match args.get(2) {
+                    None | Some(Value::Nil) => None,
+                    Some(Value::Str(s)) => Some(s.to_string()),
+                    Some(other) => {
+                        return Err(error(
+                            format!("run expects stdin as a string, got {}", other.type_name()),
+                            span,
+                        ));
+                    }
+                };
                 if cfg!(target_arch = "wasm32") {
                     // There is nothing to spawn inside a page.
                     return Err(error("run is not available in this environment", span));
@@ -3288,7 +3302,10 @@ impl<W: Write> Interpreter<W> {
                 self.out
                     .flush()
                     .map_err(|e| error(format!("run: flush failed: {e}"), span))?;
-                let done = std::process::Command::new(&*cmd).args(&argv).output();
+                let done = match input {
+                    None => std::process::Command::new(&*cmd).args(&argv).output(),
+                    Some(text) => spawn_with_input(&cmd, &argv, text),
+                };
                 // A program that is not there is an error, not an exit
                 // code: "not installed" must never read as "ran and
                 // failed".
@@ -3757,6 +3774,41 @@ impl<W: Write> Interpreter<W> {
 /// them and the VM's fused `for x in range(...)` counts through them
 /// without one, so the two have to agree on every error — hence one
 /// function rather than two copies of the rules.
+/// A child with something to read, and the reason this is not four
+/// lines inline: the write has to happen on its own thread. A child
+/// that fills its stdout pipe while the parent is still filling its
+/// stdin waits for the parent to read, the parent waits for the
+/// child to read, and neither ever does. Measured at 2 MB each way,
+/// which is far past the pipe buffer either side of it.
+///
+/// Not cfg'd away for wasm: `run` refuses to spawn there long before
+/// this is reached, and the same std::process the sibling branch
+/// already calls compiles for that target too.
+fn spawn_with_input(
+    cmd: &str,
+    argv: &[String],
+    text: String,
+) -> std::io::Result<std::process::Output> {
+    use std::io::Write;
+    let mut child = std::process::Command::new(cmd)
+        .args(argv)
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
+    let mut sink = child.stdin.take().expect("stdin was asked for");
+    let writer = std::thread::spawn(move || {
+        // A child that stops reading early — `head`, say — is not an
+        // error: the broken pipe is how it says it has enough.
+        // Dropping the handle closes it, which is the EOF the child
+        // is waiting for.
+        let _ = sink.write_all(text.as_bytes());
+    });
+    let out = child.wait_with_output();
+    let _ = writer.join();
+    out
+}
+
 /// The signal that killed a child, as a value: the number on the
 /// platforms that have signals, nil on the ones that do not and on
 /// every child that exited normally. Kept beside `run` rather than
