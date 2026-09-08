@@ -18412,3 +18412,61 @@ nothing here is parallel).
 Milestone **"the cost of a step"**, v2.129-v2.130. First stroke:
 count which opcode SEQUENCES are actually hot, rather than guessing
 which to fuse — the same counter, one dimension wider.
+
+## 2026-09-08 — Iteration 800: counting the steps, and the first one fused
+
+**The histogram.** A throwaway counter in the VM's dispatch loop
+(reverted), recording every instruction and every pair and triple of
+instructions that ran contiguously — not across a jump, since only
+straight-line neighbours can be fused. The top triple, in four of the
+five programs measured:
+
+| program | opcodes | top triple |
+|---|---:|---|
+| CSV parse, 900 KB | 26.3 M | `GetSlot Const Binary` 9.5% |
+| bench/scan.ting | 19.4 M | `GetSlot Const Binary` 9.9% |
+| bench/fib.ting | 11.3 M | `GetSlot Const Binary` 18.2% |
+| bench/toplevel.ting | 7.0 M | `GetSlot Const Binary` 8.6% |
+| bench/stdlib.ting | 2.7 M | `GetSlot GetSlot Binary` 10.4% |
+
+Read a local, push a constant, apply the operator: `c == ","`,
+`n < 10`, `x + 1`. In the CSV parse `GetSlot` alone is 27% of all
+instructions and `JumpIfFalse` 20%.
+
+**So `Op::BinarySlotConst` does those three in one.** Emitted from
+the AST rather than by a peephole pass over the code, so no jump can
+land in the middle of what was fused, and only a LITERAL may ride
+along: anything that has to be run could fail or have an effect, and
+the order it happens in is part of the language.
+
+Measured, three interleaved runs each: `if c == ","` in a loop
+**-9%**, `bench/scan.ting` **-6%**, the CSV parse **-9.5%**,
+`bench/fib.ting`'s VM row 355 -> 307 ms. The empty loop is unchanged,
+which is right: its condition is `i < n`, two slots and no constant,
+and that is the next fusion.
+
+**The guard is a new suite, `tests/bytecode.rs`**, because nothing
+else in the project would notice a superinstruction quietly ceasing
+to be emitted — the answers would all still be right. It asserts the
+fusion happens on five shapes and does NOT happen on four (two
+locals, a call on the left, an index, a constant on the left). Made
+to fail first, by disabling the fusion in the compiler while keeping
+the opcode.
+
+**799's estimate of the span saving was too high, and I should say
+so.** 799 measured 9% off the empty loop by replacing
+`chunk.spans[ip]` with a constant. Doing the real change — looking
+the span up only in the arms that need it — is 1-3%, and hoisting a
+length assertion so the bounds check folds is nothing at all. The
+ablation measured what deleting the whole thing is worth, which is an
+upper bound and not an estimate of any change one can actually make.
+Both versions were written, measured and reverted: two or three
+percent does not buy twenty-six sites that read `chunk.spans[ip]`
+where they used to read `span`. 787 reverted a 15% gain for less than
+that.
+
+Gate green: fmt, clippy, **16** `test result: ok` (the new suite), 71
+files unchanged, corpus at seven, selftest 2583 checks, Windows and
+wasm, all eleven bench checksums, error spans and answers identical
+to the previous binary on both engines over sixteen shapes, and
+100000 differential cases at seed 800.

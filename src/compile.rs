@@ -95,6 +95,11 @@ pub enum Op {
     /// As CheckVar, but for the read half of `x = x + y`: the name is
     /// written as a read there, so an unbound one is reported as one.
     CheckVarRead(u32),
+    /// `slot <op> literal` in one instruction. Reading a local and
+    /// pushing a constant to compare them is the commonest three
+    /// instructions in every program measured (LOG 800), and neither
+    /// half can fail, so there is nothing to see in between.
+    BinarySlotConst(u16, u32, BinaryOp),
     /// Add the top of the stack to the value below it and store the
     /// result in the named binding -- Binary(Add) and SetVar in one
     /// step, so that the binding can be asked to let go of what was
@@ -381,6 +386,20 @@ struct Compiler {
     fn_ctx: Option<FnCtx>,
     /// Emit a `Mark` before every statement, for `--coverage`.
     coverage: bool,
+}
+
+/// The value of a literal, or `None` for anything that has to be run
+/// to know. Only literals may be folded into the instruction that
+/// uses them: nothing else is guaranteed to be free of effects.
+fn literal_value(e: &Expr) -> Option<Value> {
+    match &e.kind {
+        ExprKind::Int(n) => Some(Value::Int(*n)),
+        ExprKind::Float(x) => Some(Value::Float(*x)),
+        ExprKind::Str(t) => Some(Value::str(t.clone())),
+        ExprKind::Bool(b) => Some(Value::Bool(*b)),
+        ExprKind::Nil => Some(Value::Nil),
+        _ => None,
+    }
 }
 
 impl Compiler {
@@ -876,9 +895,21 @@ impl Compiler {
                 self.patch(patch, target);
             }
             ExprKind::Binary(op, lhs, rhs) => {
-                self.expr(lhs)?;
-                self.expr(rhs)?;
-                self.emit(Op::Binary(*op), e.span);
+                let slot = match &lhs.kind {
+                    ExprKind::Var(n) => self.resolve(n),
+                    _ => None,
+                };
+                match (slot, literal_value(rhs)) {
+                    (Some(slot), Some(v)) => {
+                        let k = self.konst(v);
+                        self.emit(Op::BinarySlotConst(slot, k, *op), e.span);
+                    }
+                    _ => {
+                        self.expr(lhs)?;
+                        self.expr(rhs)?;
+                        self.emit(Op::Binary(*op), e.span);
+                    }
+                }
             }
             ExprKind::Index(base, idx) => {
                 self.expr(base)?;

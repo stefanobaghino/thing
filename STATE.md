@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
-  CI platforms, Windows included); 365 Rust tests
-  in 15 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
+  CI platforms, Windows included); 369 Rust tests
+  in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
@@ -50,7 +50,7 @@ current orientation.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); before every push run what CI runs, in CI's own words —
    `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
-   `cargo test` — plus `ting --fmt .` and the corpus check. NO
+   `cargo test` (16 suites) — plus `ting --fmt .` and the corpus check. NO
    EXCEPTIONS (clippy skipped once, iteration 182, cost a red CI;
    `cargo fmt --check` was never in this list at all until 763, and
    the first hand-written Rust in a while turned CI red on all four
@@ -2352,19 +2352,48 @@ holds only the current milestone and the standing rules.
   perf/valgrind (not on this machine, sudo is not mine to use —
   ablation is the instrument and it answered); threading (one binary
   anyone can run, and nothing here is parallel).
+- 800: first stroke — `Op::BinarySlotConst` does `GetSlot Const
+  Binary` in ONE instruction. Chosen from a histogram, not a guess: a
+  throwaway counter (reverted) over every contiguous pair and triple
+  — NOT across jumps, since only straight-line neighbours can be
+  fused — made it the top triple in FOUR OF FIVE programs (csv 9.5%,
+  scan 9.9%, fib 18.2%, toplevel 8.6%; stdlib's top is `GetSlot
+  GetSlot Binary` at 10.4%). In the CSV parse GetSlot alone is 27% of
+  all instructions and JumpIfFalse 20%.
+  EMITTED FROM THE AST, never by a peephole over the code, so no jump
+  can land in the middle of what was fused; and ONLY A LITERAL may
+  ride along, because anything that has to be run could fail or have
+  an effect and its order is part of the language.
+  Measured, three interleaved runs each: `if c == ","` in a loop -9%,
+  bench/scan.ting -6%, the CSV parse -9.5%, fib's VM row 355 -> 307
+  ms. The empty loop is UNCHANGED and that is right — its condition
+  is two slots, which is the next fusion.
+  NEW SUITE tests/bytecode.rs (now 16 suites): nothing else here
+  would notice a superinstruction quietly ceasing to be emitted,
+  since every answer would still be right. Five shapes that must fuse,
+  four that must not. Made to fail first by disabling the fusion while
+  keeping the opcode.
+  799'S SPAN ESTIMATE WAS TOO HIGH AND IS WITHDRAWN: the real change
+  (look the span up only where an arm needs it) is 1-3%, and hoisting
+  a length assertion is nothing. 799's 9% came from replacing the
+  span with a CONSTANT, which measures what deleting the whole thing
+  is worth — AN UPPER BOUND, NOT AN ESTIMATE OF ANY AVAILABLE CHANGE.
+  Both versions written, measured, REVERTED: 2-3% does not buy
+  twenty-six sites reading `chunk.spans[ip]` where they read `span`.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - first stroke: a histogram of opcode PAIRS and TRIPLES over
-  bench/*.ting and the CSV parse, so the superinstructions are chosen
-  from what runs rather than from what looks common. Throwaway
-  instrumentation like 799's counter, not shipped code.
-  - then: stop loading chunk.spans[ip] on every dispatch; it is for
-  the error message and almost no arm needs it. Already sized at 9%
-  of the empty loop, 3% of bench/scan.ting, 6% of the CSV parse.
-  - then: fuse the sequences the histogram names, one at a time, each
-  with its own measurement -- a superinstruction that does not pay is
-  complexity that stays forever.
+  - next stroke: `GetSlot GetSlot Binary` in one instruction, the
+  other half of what 800's histogram named (stdlib 10.4%, the empty
+  `while i < n` condition, csv 3.4%). Same rule as BinarySlotConst:
+  emitted from the AST, never by a peephole over the code, so no jump
+  can land inside what was fused. Extend tests/bytecode.rs and
+  measure on its own.
+  - then whatever the histogram names next -- `Const Binary
+  JumpIfFalse` (csv 6.1%, fib 9.1%) is a compare-and-branch, and
+  `Const UpdateSlot` is `i += 1` (14.3% of the empty loop). One at a
+  time, each with its own measurement; a superinstruction that does
+  not pay is complexity that stays forever.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 -- a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
