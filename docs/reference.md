@@ -158,7 +158,7 @@ Tightest first; binary operators associate left.
 |-----------|-------------------------------|-----------------------------------------------|
 | postfix   | `f(args)`, `x[i]`             | calls and indexing chain freely               |
 | unary     | `-`, `!`, `~`                 | `-` on numbers, `!` on bools, `~` on ints     |
-| factor    | `*`, `/`, `%`                 | numbers; int `/` truncates; `/ 0` on ints errors |
+| factor    | `*`, `/`, `%`                 | numbers; int `/` truncates; `/ 0` and `% 0` on ints error |
 | term      | `+`, `-`                      | `+` also concatenates strings and lists       |
 | shift     | `<<`, `>>`                    | ints; count 0 to 63; `>>` keeps the sign      |
 | bit and   | `&`                           | ints                                          |
@@ -172,6 +172,20 @@ Tightest first; binary operators associate left.
 Mixed int/float arithmetic promotes to float. There is no implicit
 conversion anywhere else: `1 + "x"` is a type error, `if 1 { }` is a
 type error.
+
+Dividing by zero therefore answers in two different ways, and which
+one you get is decided by the operands, not by the zero. Two ints
+error — `1 / 0` and `1 % 0` both raise `division by zero`. If either
+side is a float the result is a float, and floats follow IEEE 754:
+`1.0 / 0.0` is `inf`, `-1.0 / 0.0` is `-inf`, and `0.0 / 0.0` and
+`1.0 % 0.0` are `NaN`. Mixing the two promotes first, so `1 / 0.0` is
+`inf` and not an error.
+
+Those values then travel: `str` prints them (`inf`, `-inf`, `NaN`),
+and they are refused where nothing sensible could be written —
+`int(1.0 / 0.0)` and `json_str(1.0 / 0.0)` both error. `NaN` is not
+equal to itself, as IEEE requires, so `x == x` is `false` for it and
+a `NaN` in a list makes that list unequal to a copy of itself.
 
 The bit operators are int-only — `1.5 & 2` is a type error, not a
 rounded promotion — and they bind tighter than every comparison, so

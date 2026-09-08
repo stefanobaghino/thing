@@ -83,3 +83,19 @@ assert(contains(overflow["err"], "overflow"), "overflow message");
 let div0 = try(fn() { return 1 / 0; });
 assert(div0["err"] == "division by zero", "int division by zero");
 assert(1.0 / 0.0 > 9999999.0, "float division gives infinity");
+# Which answer you get is decided by the operands, not by the zero.
+let mod0 = try(fn() { return 1 % 0; });
+assert(mod0["err"] == "division by zero", "int remainder by zero too");
+assert(1.0 / 0.0 == 0.0 - (-1.0 / 0.0), "and the sign is kept");
+assert(-1.0 / 0.0 < -9999999.0, "negative infinity");
+let nan = 0.0 / 0.0;
+assert(nan != nan, "NaN is not equal to itself, as IEEE requires");
+let nanmod = 1.0 % 0.0;
+assert(nanmod != nanmod, "float remainder by zero is NaN");
+assert([nan] != [nan], "and a NaN in a list unequals a copy of it");
+# One float on either side promotes, so the whole thing is IEEE.
+assert(1 / 0.0 > 9999999.0, "an int over a float zero is infinity");
+assert(1.0 / 0 > 9999999.0, "and a float over an int zero is too");
+# The two places a non-finite float is refused rather than written.
+assert(contains(err(fn() { return json_str(1.0 / 0.0); }), "non-finite"), "json refuses infinity");
+assert(str(1.0 / 0.0) == "inf", "but str writes it");
