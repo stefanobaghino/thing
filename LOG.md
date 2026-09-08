@@ -18983,3 +18983,45 @@ and the comment hint — released, and verified from the archives. Two
 of its findings were about the project's own code rather than the
 language: an example that asked for two decimal places and printed
 one, and a test that passed for the wrong reason.
+
+## 2026-09-08 — Iteration 815: replenishment — "the mistake you actually made"
+
+**A third way of looking, as the backlog asked for.** 799 counted
+instructions; 808 wrote a program and counted the corrections. This
+tick wrote fifty programs that are WRONG — the mistakes a person
+makes — and read what ting says back.
+
+**Most of the answers are good**, and that is worth saying first.
+Thirty ordinary mistakes were probed and twenty-five name the cause
+plainly: `cannot apply '+' to string and int`, `f expects 2
+arguments, got 1`, `index 5 out of bounds (len 2)`, `undefined
+variable 'lenght' (did you mean 'len'?)`, `stack overflow (max call
+depth 4096)`, and an import error that lists both places it looked.
+
+**The seam is syntax carried in from another language.** Twenty of
+those were probed on their own, and twenty of twenty produce a
+message about ting's grammar rather than about the mistake. NINE
+produce the SAME message — `expected ';', found identifier 'x'`:
+
+    elif    elseif    elsif    def    function    var    const
+    let f = (x) => x + 1;    a `let` line with no `;` at its end
+
+The rest are each their own shape: `s.len()` says `expected ')',
+found '.'`; `'hi'` says `unexpected character '''`; a backtick
+template says `unexpected character '`'`; `if not true` and `if a and
+b` say `expected '{' after 'if' condition`; `null`, `None` and `True`
+say `undefined variable`, which is true and one word short of useful.
+
+**811 already proved the fix and its cost.** The `//` hint is twelve
+lines at a single error site, fires only when the parse has already
+failed, and cannot change a program that runs. Every item above has
+the same shape.
+
+**Milestone: "the mistake you actually made" (v2.131.0).** Three
+strokes, grouped by where the hint has to live: the statement-start
+keywords, the operators and literals, and the quoting and access
+syntax.
+
+**Noticed on the way, not part of the milestone**: `1 / 0` errors and
+`1.0 / 0.0` gives `inf`, and docs/reference.md says neither. That is a
+docs gap and goes on the backlog under the milestone.

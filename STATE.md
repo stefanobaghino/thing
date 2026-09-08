@@ -2447,6 +2447,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 815: replenishment — MILESTONE "THE MISTAKE YOU ACTUALLY MADE"
+  (v2.131.0), chosen by a THIRD kind of looking: 799 counted
+  instructions, 808 wrote a program and counted corrections, 815
+  wrote fifty programs that are WRONG and read what ting says back.
+  MOST ANSWERS ARE GOOD and that is the first finding — 25 of 30
+  ordinary mistakes name the cause plainly, including a `did you
+  mean` for a misspelled builtin and an import error listing both
+  places it looked.
+  THE SEAM IS FOREIGN SYNTAX: 20 of 20 such mistakes produce a
+  message about ting's grammar rather than about the mistake, and
+  NINE produce the SAME one, `expected ';', found identifier 'x'`
+  (elif/elseif/elsif/def/function/var/const, an arrow function, and a
+  missing semicolon). 811 already proved the fix and its cost: twelve
+  lines at one site, firing only on an already-failed parse.
 - 814: health tick + site audit green — MILESTONE "WHAT A NUMBER
   LOOKS LIKE" (v2.130.0, strokes 808-813) COMPLETE. Load 3.2, so read
   on checksums: 11 bench rows x 2 engines, 22 comparisons, none
@@ -2578,10 +2592,21 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: replenishment — choose the next milestone from
-  counted evidence. 799 counted instructions; 808 wrote a program and
-  counted the corrections. Pick a THIRD way to look rather than
-  repeating either.
+  - next stroke: statement-start keywords from other languages.
+  `elif`/`elseif`/`elsif` -> `else if`, `def`/`function` -> `fn`,
+  `var`/`const` -> `let`. All nine cases reach ONE site, the
+  `expect(';')` after an expression statement, and all nine say
+  `expected ';', found identifier 'x'` today. Same shape as 811: the
+  parse has already failed, so no program that runs can change.
+  - then: operators and literals. `and`/`or`/`not` -> `&&`/`||`/`!`,
+  `null`/`None` -> `nil`, `True`/`False` -> `true`/`false`. The `did
+  you mean` machinery exists but searches BOUND NAMES only, so it
+  cannot reach a keyword — that is what needs extending.
+  - then: quoting and access. `'hi'` and a backtick template should
+  say ting's strings use `"`; `s.len()` should say `len(s)`.
+  - then release as v2.131.0, and a docs line for something noticed
+  on the way: `1 / 0` errors, `1.0 / 0.0` gives `inf`, and
+  reference.md says neither.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
