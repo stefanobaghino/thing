@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2635 selftest checks on all four
-  CI platforms, Windows included); 382 Rust tests
+  nothing on its own — and 22 examples with .out; 2649 selftest checks on all four
+  CI platforms, Windows included); 386 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2448,6 +2448,27 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 834: health tick green at load 1.4 — MILESTONE "THE LOOP THAT DOES
+  NOT BUILD A LIST" (v2.133.0, strokes 829-833) COMPLETE. Sweeps:
+  50000 differential at seed 834, 20000 formatter, crash + 2000000
+  regex, all ok. Bench: 22 comparisons, no mismatches, against the
+  BASELINE regenerated at 832. Site audit: nine paths 200, the
+  changelog page's HEADINGS reading v2.133.0/v2.132.0/v2.131.0 (as
+  headings, per 828), reference.html carrying the range caveat.
+  THE DISK NUMBER BECAME A DECISION: `target` had reached 3.9 G and
+  all the growth was `target/debug` (2.4 G, one `cargo test` per
+  tick), so I deleted it and priced the deletion — a cold `cargo
+  test` rebuilds and runs all 16 suites in 107 s, and `target` came
+  back at 2.1 G. The debug tree is a cache, not a resource to
+  protect. THREE STALE COUNTS in the standing shape corrected against
+  the tools that know them (corpus warnings THIRTEEN -> FOURTEEN,
+  selftest checks 2635 -> 2649, Rust tests 382 -> 386); a fourth
+  "correction" to 193 functions was wrong and the docs guard caught
+  it, because lib/list.ting re-exports the builtin `sort_with` and
+  counting `^fn ` is not counting exports.
+  Unchanged caveat from 821 and 828: last-modified proves
+  the wasm was BUILT from this release, not that it ANSWERS
+  anything.
 - 833: v2.133.0 TAGGED AND VERIFIED (154th tag; strokes 830, 831,
   832; six archives, `sha256sum -c` OK on all six, both aarch64 Linux
   archives unpacked and run here). MILESTONE "THE LOOP THAT DOES NOT
@@ -2931,10 +2952,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone: bench checksums on both
-  engines, 50000 differential / 20000 formatter / crash + 2000000
-  regex sweeps, `du -sh target`, site audit (the changelog page's top
-  entry should be v2.133.0).
   - `csv.maps` on ragged rows: decide between keeping the extras,
   erroring, and documenting the drop (829 has the evidence).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
@@ -3091,8 +3108,10 @@ Standing rules (each from a slip; the LOG entry named has the story):
   engines run at the same nice level in one bench invocation, so the
   eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  THIRTEEN warnings since 818 (was seven before 817), guarded by a test since 499,
-  all on purpose:
+  FOURTEEN warnings since 830 (was thirteen since 818, seven before
+  817), guarded by a test since 499, all on purpose:
+  collections.ting shadows `range` (830), because the selftest proving
+  a shadowed `range` beats the fused loop has to shadow one, and
   edge.ting shadows `len` (451), repeats a map key and writes a
   statement after a return (507), errors.ting reads the unbound
   `totl` (495) and, since 680, `amonut` and `volme`, and

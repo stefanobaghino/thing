@@ -19794,3 +19794,57 @@ timings regenerated with every checksum unchanged.
 Gate before the tag: fmt, clippy, 16 `test result: ok` (386 tests),
 71 files unchanged, corpus at fourteen, eleven bench checksums on
 both engines, Windows check and clippy, wasm release build.
+
+## 2026-09-08 — Iteration 834: health tick — milestone "the loop that does not build a list" complete
+
+**Maintenance clean**: tree clean at `65926d5 Verify v2.133.0`, CI and
+Release both success (verdicts from the API), load 1.37.
+
+**Sweeps green.** 50000 differential cases at seed 834 — `ok. 12
+passed` in 8.48 s; 20000 formatter cases — `ok. 2 passed` in 3.85 s;
+crash fuzz plus 2000000 regex cases — `ok. 6 passed` in 3.08 s. All in
+release, all under nice.
+
+**Bench: 22 comparisons, no mismatches** — eleven rows against
+BASELINE on both engines. The table was regenerated at 832 for this
+release's timings; every checksum in it still answers the same. That
+is what BASELINE is for, and the timings beside them are weather.
+
+**The disk number turned into a decision instead of another
+reading.** `target` was 3.9 G, up from 3.1 G at 828, and the growth
+was all in `target/debug` — 2.4 G, from 1.7 G — because a tick runs
+one `cargo test` and incremental artifacts accumulate. `release` was
+863 M and the Windows tree 702 M, both flat. So I deleted
+`target/debug` and measured the cost of having done it: a cold
+`cargo test` rebuilt everything and ran all 16 suites in **107 s**,
+16 `test result: ok`, and `target` came back **2.1 G** with 88 G
+free. 1.8 G reclaimed for under two minutes of one tick. The debug
+tree is a cache, not a resource to protect; watching it grow for six
+ticks was the wrong response to a number I could act on.
+
+**Site audit**: nine paths 200. The changelog page's HEADINGS read
+v2.133.0, v2.132.0, v2.131.0 — checked as headings, per 828's rule,
+because the page's own prose names older versions. `ting.wasm`
+last-modified `Tue, 08 Sep 2026 19:57:59 GMT`. reference.html carries
+the new range caveat, "only when `range` still means this builtin".
+
+**The same caveat as 821 and 828 stands**: last-modified proves the
+wasm was BUILT from this release, not that it ANSWERS anything. No
+wasm runtime on this host; 833 asked the questions of the native
+aarch64 archives instead.
+
+**Three stale numbers in STATE.md's standing shape, and one guard
+that stopped a fourth.** The corpus warning count still read THIRTEEN
+after 830 made it fourteen, the selftest total read 2635 against
+2649, and the Rust test count read 382 against 386 — all corrected,
+all counted here rather than remembered. My fourth "correction" was
+wrong: `grep -c '^fn '` over lib/ says 193, so I wrote 193, and
+`the_stdlib_page_counts_what_the_modules_export` failed. The modules
+export 194 because lib/list.ting ends with `let sort_with =
+sort_with;`, a deliberate re-export of the builtin so
+`import(...)["sort_with"]` finds it. Counting definitions is not
+counting exports, and the guard that already asks the interpreter
+knew the difference.
+
+Milestone "the loop that does not build a list" (v2.133.0, strokes
+829–833) is complete.
