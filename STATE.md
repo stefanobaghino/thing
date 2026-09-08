@@ -2447,6 +2447,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 814: health tick + site audit green — MILESTONE "WHAT A NUMBER
+  LOOKS LIKE" (v2.130.0, strokes 808-813) COMPLETE. Load 3.2, so read
+  on checksums: 11 bench rows x 2 engines, 22 comparisons, none
+  differ; BASELINE not regenerated at this release and did not need
+  to be. 50000 differential at seed 814 (10.1 s), 20000 formatter
+  (4.4 s), crash + 2000000 regex (3.4 s). target 1.7 G, debug 442 M.
+  SITE AUDIT WENT FURTHER THAN USUAL because a release that changes
+  what format prints has to reach the PLAYGROUND: ten paths 200,
+  changelog top entry v2.130.0, reference carries the new "Format
+  specs" section, examples.js contains the rewritten stats.ting with
+  `{:.2}` in it, and ting.wasm's last-modified is the v2.130.0 push.
+  The wasm the playground runs is this release.
 - v2.130.0 VERIFIED (151st tag; strokes 809, 810, 811; seven assets,
   `sha256sum -c` OK on all six, both aarch64 archives executed here,
   2618 checks from each on both engines). The probe asked about what
@@ -2566,7 +2578,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then: a health tick to close the milestone.
+  - next stroke: replenishment — choose the next milestone from
+  counted evidence. 799 counted instructions; 808 wrote a program and
+  counted the corrections. Pick a THIRD way to look rather than
+  repeating either.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

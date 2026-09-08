@@ -18953,3 +18953,33 @@ same twelve modules as the repository's.
 
 The 151st tag is done: seven assets, checksums verified, two
 architectures executed here.
+
+## 2026-09-08 — Iteration 814: health tick, milestone closed
+
+Host at load 3.2 again, so this reads on checksums: all eleven bench
+rows compared on BOTH engines, 22 comparisons by script, none differ
+from BASELINE — which was NOT regenerated at this release, and did not
+need to be.
+
+Fuzz sweeps in release, all green: 50000 differential cases at seed
+814 (10.1 s), 20000 formatter cases (4.4 s), the crash fuzzer and
+2000000 regex cases (3.4 s).
+
+Disk: `target` 1.7 G, `target/debug` 442 M — under 798's threshold.
+
+**Site audit went one step further than usual, because a release that
+changes what `format` prints has to reach the playground too.** All
+ten paths answer 200; the changelog page's top entry is v2.130.0; the
+reference page carries the new "Format specs" section; `examples.js`
+contains the rewritten `stats.ting` with `{:.2}` in it; and
+`ting.wasm` was last modified at 10:13:58 local, which is the
+v2.130.0 push. The wasm the playground runs is this release, not the
+one before it.
+
+**Milestone "what a number looks like" (v2.130.0, strokes 808-813) is
+complete.** It was chosen by writing a program and counting what that
+cost, executed as three strokes — width and alignment, decimal places,
+and the comment hint — released, and verified from the archives. Two
+of its findings were about the project's own code rather than the
+language: an example that asked for two decimal places and printed
+one, and a test that passed for the wrong reason.
