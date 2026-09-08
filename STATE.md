@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2618 selftest checks on all four
-  CI platforms, Windows included); 373 Rust tests
+  CI platforms, Windows included); 375 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2447,6 +2447,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 811: third stroke — `// a note` now says `expected expression,
+  found '/' (a comment starts with `#`)`, in every position a comment
+  is written and for `/* */` too. One site (the parser's only
+  "expected expression"), and the hint fires only when the two tokens
+  are ADJACENT, so a division that lost its operand keeps the plain
+  message and no program that parses can be affected.
+  THE GUARD WAS WRONG FIRST AND THE MUTATION SAID SO: removing the
+  adjacency rule left all 39 parser tests passing, because in `a / /
+  b` the parser is already past the second slash when it fails, so
+  peek2 is `b` and the branch is never reached. `/ / x` — the same two
+  tokens with a space — is what discriminates. A TEST THAT PASSES FOR
+  THE WRONG REASON IS WORSE THAN NO TEST, and only running the change
+  backwards finds one. 375 Rust tests.
 - 810: second stroke — DECIMAL PLACES, `{:.2}` and `{:>8.2}`.
   examples/monthly.ting's hand-written `money(cents)` IS GONE and the
   example no longer imports lib/string.ting; output byte-identical.
@@ -2534,10 +2547,11 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then: the `//` hint. `expected expression, found '/'` says
-  nothing about `#`; the lexer knows enough to say it.
-  - then release as v2.130.0, docs (reference.md's format row,
-  stdlib.md, tutorial) updated in the same stroke as the code.
+  - next stroke: release as v2.130.0 (CHANGELOG from LOG 809-811,
+  tag, verify by cold asset download and `sha256sum -c`). Docs were
+  updated in the same strokes as the code, so this is the release
+  alone.
+  - then: a health tick to close the milestone.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

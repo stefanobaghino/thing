@@ -18877,3 +18877,33 @@ and stats.ting's single intended line.
 Gate green: fmt, clippy, 16 `test result: ok` (373 tests), 71 files
 unchanged, corpus at seven, 2618 checks on both engines, Windows and
 wasm, 100000 differential cases at seed 810.
+
+## 2026-09-08 — Iteration 811: where the comment character is
+
+**The third friction 808 found, closed.** `// a note` used to say
+`expected expression, found '/'`, which is true and useless. It now
+says `expected expression, found '/' (a comment starts with `#`)`, in
+every position a comment is written: its own line, after a statement,
+inside a block, and for `/* */` as well.
+
+The hint is at the parser's one "expected expression" site, which
+every one of those positions reaches, and it fires only when the
+second token is ADJACENT to the first — `a / / b` is a division that
+lost its operand, a different mistake, and keeps the plain message.
+It cannot affect a program that parses.
+
+**The guard was wrong first, and the mutation is what said so.**
+Removing the adjacency rule left all 39 parser tests passing: the
+"no hint" cases were `a / / b`, `/ x` and `1 + / 2`, and in the first
+of those the parser is already past the second slash when it fails,
+so `peek2` is `b` and the branch is never reached. The test looked
+like it covered adjacency and covered nothing. `/ / x` — the same two
+tokens with a space between them — is the case that discriminates, and
+with it in place the mutation fails as it should.
+
+A test that passes for the wrong reason is worse than no test, and
+only running the change backwards finds one.
+
+Gate green: fmt, clippy, 16 `test result: ok` (375 tests, up two), 71
+files unchanged, corpus at seven, 2618 checks on both engines, Windows
+and wasm, docs guard.
