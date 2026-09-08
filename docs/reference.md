@@ -67,6 +67,10 @@ both.
 - UTF-8 text. Whitespace is insignificant except as a token separator.
 - Comments run from `#` to the end of the line. There is no `//` and
   no `/* */`; writing either says so in the error.
+- Words other languages use for the same job are not keywords here,
+  and writing one says what ting writes instead: `else if` rather than
+  `elif`, `fn` rather than `def` or `function`, `let` rather than
+  `var` or `const`, and `fn(x) { return x; }` rather than an arrow.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types

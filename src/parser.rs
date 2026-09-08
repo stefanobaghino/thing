@@ -39,6 +39,20 @@ struct Parser<'a> {
 /// (params, body, byte offset just past the closing brace)
 type FnParts = (Vec<crate::ast::Param>, Rc<Vec<Stmt>>, usize);
 
+/// A word another language uses where ting uses something else.
+/// `elif`, `def` and `var` all parse as a bare name here, so the
+/// message is about the missing `;` after it — true, and about the
+/// wrong thing. The hint is only ever added to a message the parser
+/// was already going to produce.
+fn instead_of(name: &str) -> Option<&'static str> {
+    Some(match name {
+        "elif" | "elseif" | "elsif" => "ting writes this as `else if`",
+        "def" | "function" | "func" | "fun" => "a function is `fn name(...) { ... }`",
+        "var" | "const" | "local" => "a binding is `let name = ...;`",
+        _ => return None,
+    })
+}
+
 impl<'a> Parser<'a> {
     fn peek(&self) -> &TokenKind {
         &self.tokens[self.pos].kind
@@ -68,6 +82,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// The `;` at the end of a statement, with a word about the
+    /// statement's FIRST token when that token is a keyword from
+    /// another language — which is where the mistake actually is.
+    fn expect_semi(&mut self, first: usize) -> Result<(), ParseError> {
+        if self.peek() == &TokenKind::Semi {
+            self.advance();
+            return Ok(());
+        }
+        let mut message = format!("expected ';', found {}", describe(self.peek()));
+        if let TokenKind::Ident(name) = &self.tokens[first].kind
+            && let Some(hint) = instead_of(name)
+        {
+            message.push_str(&format!(" ({hint})"));
+        } else if self.peek() == &TokenKind::Eq
+            && self.peek2() == &TokenKind::Gt
+            && self.tokens[self.pos + 1].span.start == self.span().end
+        {
+            // `(x) => x + 1` — an arrow where the value should end.
+            message.push_str(" (a function is `fn(x) { return x; }`)");
+        }
+        Err(self.error(message))
+    }
+
     fn expect(&mut self, kind: &TokenKind, what: &str) -> Result<(), ParseError> {
         if self.peek() == kind {
             self.advance();
@@ -79,6 +116,7 @@ impl<'a> Parser<'a> {
 
     fn statement(&mut self) -> Result<Stmt, ParseError> {
         let start = self.span().start;
+        let first = self.pos;
         match self.peek() {
             TokenKind::Let => {
                 self.advance();
@@ -96,7 +134,7 @@ impl<'a> Parser<'a> {
                 self.expect(&TokenKind::Eq, "'='")?;
                 let init = self.expr_bp(0)?;
                 let end = self.span().end;
-                self.expect(&TokenKind::Semi, "';'")?;
+                self.expect_semi(first)?;
                 Ok(Stmt {
                     kind: StmtKind::Let(name, init),
                     span: Span::new(start, end),
@@ -171,7 +209,7 @@ impl<'a> Parser<'a> {
                     Some(self.expr_bp(0)?)
                 };
                 let end = self.span().end;
-                self.expect(&TokenKind::Semi, "';'")?;
+                self.expect_semi(first)?;
                 Ok(Stmt {
                     kind: StmtKind::Return(value),
                     span: Span::new(start, end),
@@ -212,7 +250,7 @@ impl<'a> Parser<'a> {
             TokenKind::Break => {
                 self.advance();
                 let end = self.span().end;
-                self.expect(&TokenKind::Semi, "';'")?;
+                self.expect_semi(first)?;
                 Ok(Stmt {
                     kind: StmtKind::Break,
                     span: Span::new(start, end),
@@ -221,7 +259,7 @@ impl<'a> Parser<'a> {
             TokenKind::Continue => {
                 self.advance();
                 let end = self.span().end;
-                self.expect(&TokenKind::Semi, "';'")?;
+                self.expect_semi(first)?;
                 Ok(Stmt {
                     kind: StmtKind::Continue,
                     span: Span::new(start, end),
@@ -245,14 +283,14 @@ impl<'a> Parser<'a> {
                         _ => return Err(self.error("invalid assignment target")),
                     };
                     let end = self.span().end;
-                    self.expect(&TokenKind::Semi, "';'")?;
+                    self.expect_semi(first)?;
                     return Ok(Stmt {
                         kind,
                         span: Span::new(start, end),
                     });
                 }
                 let end = self.span().end;
-                self.expect(&TokenKind::Semi, "';'")?;
+                self.expect_semi(first)?;
                 Ok(Stmt {
                     kind: StmtKind::Expr(expr),
                     span: Span::new(start, end),
@@ -790,6 +828,62 @@ mod tests {
     fn a_divide_that_lost_its_operand_gets_no_comment_hint() {
         for src in ["/ / x", "/ * x", "a / / b", "/ x", "1 + / 2"] {
             assert_eq!(err(src), "expected expression, found '/'", "{src}");
+        }
+    }
+
+    /// `elif`, `def` and `var` parse as a bare name, so the parser
+    /// complains about the `;` that should follow it. True, and about
+    /// the wrong thing: the mistake is the word.
+    #[test]
+    fn a_keyword_from_another_language_says_what_ting_writes() {
+        for (src, want) in [
+            ("if a { } elif b { }", "ting writes this as `else if`"),
+            ("if a { } elseif b { }", "ting writes this as `else if`"),
+            ("if a { } elsif b { }", "ting writes this as `else if`"),
+            (
+                "def f(x): return x;",
+                "a function is `fn name(...) { ... }`",
+            ),
+            ("function f(x) { }", "a function is `fn name(...) { ... }`"),
+            ("var x = 1;", "a binding is `let name = ...;`"),
+            ("const x = 1;", "a binding is `let name = ...;`"),
+            ("local x = 1;", "a binding is `let name = ...;`"),
+            ("let f = (x) => x;", "a function is `fn(x) { return x; }`"),
+        ] {
+            let got = prog_err(src);
+            assert!(got.starts_with("expected ';', found "), "{src}: {got}");
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// None of those words is reserved, so a program that uses one as
+    /// a name still parses — and a statement that simply lost its
+    /// semicolon gets the plain message, since the hint is about the
+    /// FIRST token of the statement, not the one the parser stopped
+    /// at. `= >` with a space is not an arrow.
+    #[test]
+    fn the_keyword_hint_stays_out_of_the_way() {
+        for src in ["let x = 1\nprint(x);", "let f = (x) = > x;"] {
+            let got = prog_err(src);
+            assert!(
+                got.starts_with("expected ';', found ") && !got.contains('('),
+                "{src}: {got}"
+            );
+        }
+        for src in [
+            "let var = 1; print(var);",
+            "let function = fn(x) { return x; }; print(function(2));",
+            "let def = 3; print(def + 1);",
+            "if a { } else if b { }",
+            // A bare name is a whole statement, so these parse and
+            // fail later, at run time, for the right reason.
+            "elif;",
+            "var;",
+        ] {
+            assert!(
+                parse_program(&lex(src).unwrap()).is_ok(),
+                "{src} should still parse"
+            );
         }
     }
 
