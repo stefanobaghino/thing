@@ -18561,3 +18561,50 @@ all eleven bench checksums, five scripts — including one written for
 this change, covering non-bool conditions, type errors inside a
 condition, and both `while` and `if`/`else` — byte-identical to 801's
 binary on both engines, and 150000 differential cases at seed 802.
+
+## 2026-09-08 — Iteration 803: the fusion that did not pay
+
+**A measured negative result, and the end of the fusion work.** The
+backlog named two last pairs and set the bar in advance: `GetSlot
+JumpIfFalse` (9.2% of the CSV parse) and `Const UpdateSlot` (`i +=
+1`), with the instruction "if neither reaches 3% end to end, say so
+and stop fusing rather than adding opcodes that do not pay". Both
+were written, both work, and neither reaches it.
+
+`Op::JumpIfFalseSlot` branches on a local without pushing it.
+`Op::UpdateSlotConst` applies `slot op= literal` without the constant
+travelling through the stack. Both were clean under clippy and both
+kept all 2583 selftest checks passing on both engines.
+
+**Measured** against 802's binary, four interleaved runs of each of
+three programs, best of four, on a quiet host (load 0.4):
+
+| | CSV parse | `bench/scan.ting` | tight loop |
+|---|---|---|---|
+| `JumpIfFalseSlot` | -0.1% | -0.5% | -1.8% |
+| plus `UpdateSlotConst` | +0.6% | +1.3% | +7.1% |
+
+The first bought nothing at all. The second is worth 7% of a loop
+that is nothing but the two instructions it fuses, and under 2% of
+either real program.
+
+**A benchmark built out of the instruction is not an end-to-end
+measurement.** That 7.1% is the same mistake as 801's and 802's,
+turned around: there the instruction share overpromised the time,
+here a microbenchmark overpromises the program. A loop whose whole body is
+`if i > 0 { n += 1; }` weights the fused pair far above what any
+program does with it, and the two programs that do real work say
+1.3% and 0.6%.
+
+So both were reverted — `git checkout src/compile.rs src/vm.rs`, and
+the rebuilt binary is byte-identical to 802's. The opcode table stays
+at the six fusions that paid. The same discipline as 787's `len`
+ASCII fast path and 800's span lookup: written, measured, reverted,
+and the number written down so nobody has to write it again.
+
+**What the milestone bought, end to end**: the empty loop went 0.176
+-> 0.140 s across 800-802, and the CSV parse's instruction count fell
+a quarter. What is left on the table is not in the dispatch loop.
+
+No gate: the tree is identical to 802's commit, verified by `cmp` of
+the release binaries.

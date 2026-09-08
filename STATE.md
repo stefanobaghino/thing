@@ -2424,21 +2424,31 @@ holds only the current milestone and the standing rules.
   `if c == ","` no longer emits BinarySlotConst at all. Working as
   intended; the tests now say which shape belongs where, with a fourth
   case for conditions that must NOT fuse.
+- 803: fourth stroke — A MEASURED NEGATIVE RESULT, and the end of the
+  fusion work. The backlog named the last two pairs and set the bar in
+  advance at 3% end to end. Both were written, both work, neither
+  reaches it. `Op::JumpIfFalseSlot` (branch on a local without pushing
+  it): -0.1% CSV, -0.5% scan, -1.8% tight loop — nothing anywhere.
+  `Op::UpdateSlotConst` (`slot op= literal` without the constant on
+  the stack) on top of it: +0.6% CSV, +1.3% scan, +7.1% tight loop.
+  Four interleaved runs of each of three programs, best of four, host
+  at load 0.4. Both kept all 2583 selftest checks passing on both
+  engines, so this is what an opcode that WORKS and does not PAY looks
+  like.
+  A BENCHMARK BUILT OUT OF THE INSTRUCTION IS NOT AN END-TO-END
+  MEASUREMENT — 801 and 802's lesson turned around. A loop whose body
+  is `if i > 0 { n += 1; }` weights the fused pair far above what any
+  program does with it; the two programs that do real work said 1.3%
+  and 0.6%. Both reverted (`git checkout src/compile.rs src/vm.rs`),
+  the rebuilt binary byte-identical to 802's by `cmp`. The opcode
+  table stays at the six fusions that paid.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: `GetSlot JumpIfFalse` (9.2% of the CSV parse, the
-  largest single pair left: `if pending {`) and `Const UpdateSlot`
-  (`i += 1`). MEASURE BOTH AND EXPECT LITTLE — 801 and 802 both bought
-  a third or less of what their instruction share suggested. If
-  neither reaches 3% end to end, say so and stop fusing rather than
-  adding opcodes that do not pay.
-  - then release the milestone as v2.129.0 (CHANGELOG from LOG
-  800-802, regenerate BASELINE in one go on the quietest machine
-  available, tag, verify by cold asset download).
-  - then: prove the archive's lib/ and the binary's embedded stdlib
-  are the same twelve modules (754 -- a lib/ beside a script silently
-  shadows the embedded one, and nobody checks they agree).
+  - next stroke: release the milestone as v2.129.0 (CHANGELOG from LOG
+  800-803, regenerate BASELINE in one go on the quietest machine
+  available — the host is quiet now — tag, verify by cold asset
+  download and `sha256sum -c`).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
