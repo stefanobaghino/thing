@@ -2442,13 +2442,24 @@ holds only the current milestone and the standing rules.
   and 0.6%. Both reverted (`git checkout src/compile.rs src/vm.rs`),
   the rebuilt binary byte-identical to 802's by `cmp`. The opcode
   table stays at the six fusions that paid.
+- 804: v2.129.0 TAGGED (150th tag; strokes 800, 801, 802, 803).
+  BASELINE regenerated in one go at load 0.15, all eleven checksums
+  identical to v2.128.0's.
+  AND THE BASELINE DELTA IS NOT THE MILESTONE'S GAIN — I nearly wrote
+  it down as one. The eval column moved too (json 190.8 -> 154.3 ms)
+  and eval saw none of these changes: the two BASELINEs were recorded
+  on different days on a machine whose weather differs. TIMINGS ARE
+  WEATHER, CHECKSUMS DECIDE, and that applies to BASELINE against
+  BASELINE just as much as to a single run. The CHANGELOG's number
+  instead comes from a binary built from 1bff6df (v2.128.0's code) in
+  a worktree, run head to head against HEAD, interleaved, best of
+  five, same quiet host: CSV -9.7%, scan -7.5%, fib -6.5%, growth
+  -7.4%, toplevel -4.2%, tight loop -19.5%.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: release the milestone as v2.129.0 (CHANGELOG from LOG
-  800-803, regenerate BASELINE in one go on the quietest machine
-  available — the host is quiet now — tag, verify by cold asset
-  download and `sha256sum -c`).
+  - next stroke: verify v2.129.0 by cold asset download — seven
+  assets, `sha256sum -c`, both aarch64 archives executed here.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

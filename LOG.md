@@ -18608,3 +18608,40 @@ a quarter. What is left on the table is not in the dispatch loop.
 
 No gate: the tree is identical to 802's commit, verified by `cmp` of
 the release binaries.
+
+## 2026-09-08 — Iteration 804: v2.129.0
+
+**The milestone released**, and the number in the CHANGELOG measured
+rather than inferred.
+
+**BASELINE regenerated in one go** on a host at load 0.15, the
+quietest it has been this session. All eleven checksums are identical
+to v2.128.0's — the same answers, and the vm column moved: fib 355.4
+-> 301.7 ms, growth 106.9 -> 90.9, maps 156.2 -> 132.4, scan 384.9 ->
+355.1.
+
+**But that delta is not the milestone's gain, and I nearly wrote it
+down as one.** The eval column moved too — json 190.8 -> 154.3 ms —
+and eval saw none of these changes. The two BASELINEs were recorded
+on different days on a machine whose weather differs; the timings are
+weather, and only the checksums decide. So the CHANGELOG's number
+comes from a binary built from 1bff6df (v2.128.0's code) in a
+worktree and run head to head against HEAD, interleaved, best of five,
+on the same quiet host:
+
+| | CSV parse | scan | fib | growth | toplevel | tight loop |
+|---|---|---|---|---|---|---|
+| | -9.7% | -7.5% | -6.5% | -7.4% | -4.2% | -19.5% |
+
+That is what "4 to 10 percent faster, and tight loops about 20" in the
+CHANGELOG rests on.
+
+The entry's third bullet is 803: two fusions written, measured and
+removed. A release note that says what was taken out, and why the
+7% figure it did not ship was misleading, is worth as much as one
+that lists what went in.
+
+Gate green: fmt, clippy, 16 `test result: ok` (371 tests), 71 files
+unchanged, corpus at seven, selftest 2583 checks on both engines,
+Windows and wasm, eleven bench checksums. Tagged v2.129.0, the 150th
+tag.
