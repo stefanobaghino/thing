@@ -13,7 +13,6 @@
 # grows with the file.
 
 let fs = import("../lib/fs.ting");
-let st = import("../lib/string.ting");
 let tm = import("../lib/time.ting");
 
 fn build(path) {
@@ -90,13 +89,13 @@ print("");
 
 print("by level");
 for row in ranked(by_level) {
-  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+  print(format("  {:>5} {}", row["n"], row["name"]));
 }
 print("");
 
 print("by source");
 for row in ranked(by_source) {
-  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+  print(format("  {:>5} {}", row["n"], row["name"]));
 }
 print("");
 

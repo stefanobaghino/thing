@@ -381,7 +381,7 @@ scope).
 | `abs(n)`       | absolute value of an int or float                            |
 | `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
-| `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors |
+| `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors. A placeholder may carry a spec — `{:[[fill]align][width]}`, see below |
 | `json_parse(s)` | JSON text to ting values (object→map, array→list, null→nil); malformed input errors with an offset. A byte order mark at the head of the document is skipped — another program may have written one — but only there |
 | `json_str(v)` / `json_str(v, indent)` | ting value to JSON — compact, or pretty with `indent` spaces per level (map keys sorted); functions and non-finite floats error |
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
@@ -400,6 +400,36 @@ scope).
 | `re_find_all(s, pattern)` | every non-overlapping match, left to right, as a list of those maps |
 | `re_replace(s, pattern, repl)` | every match replaced; `$0` is the whole match, `$1` to `$9` its groups, `$$` a literal `$`. A reference to a group the pattern does not have errors |
 | `re_split(s, pattern)` | the string cut at every match; leading and trailing empty pieces are kept, as `split` keeps them |
+
+### Format specs
+
+A `format` placeholder is `{}` on its own, or `{:spec}` where the spec
+lays the value out in a column:
+
+    {:[[fill]align][width]}
+
+`align` is `<` for left, `>` for right and `^` for centred; `fill` is
+any single character placed before it, and defaults to a space;
+`width` is the number of CHARACTERS the result should occupy, counted
+the way `len` counts them. A value already that wide is written
+unchanged — a spec pads, it never truncates.
+
+    format("{:>5}", 42)        # "   42"
+    format("{:<8}|", "hi")     # "hi      |"
+    format("{:^9}", "hi")      # "   hi    "
+    format("{:0>2}", 7)        # "07"
+    format("{:.^10}", "mid")   # "...mid...."
+
+A width with no alignment puts numbers to the right and everything
+else to the left, which is what a column of figures wants:
+
+    format("{:5}", 42)         # "   42"
+    format("{:5}", "ab")       # "ab   "
+
+When a centred value cannot be centred exactly, the extra character
+goes on the right, as `lib/string.ting`'s `center` puts it. `{}` and
+`{:}` mean the same thing. Widths are capped at 100000 characters, so
+a mistyped spec reports an error rather than exhausting memory.
 
 ### Patterns
 

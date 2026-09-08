@@ -631,6 +631,113 @@ fn millis(ns: u128) -> String {
     format!("{:.3}ms", ns as f64 / 1_000_000.0)
 }
 
+/// How a value is laid out in one `format` placeholder: `{:>8}`,
+/// `{:<16}`, `{:^10}`, `{:0>2}`. Width counts CHARACTERS, the way
+/// `len` does, and a value already that wide is left alone — the
+/// same rule `lib/string.ting`'s pad_left and center follow.
+struct Spec {
+    fill: char,
+    align: Option<Align>,
+    width: usize,
+}
+
+#[derive(Clone, Copy, PartialEq)]
+enum Align {
+    Left,
+    Right,
+    Centre,
+}
+
+/// A width with no alignment lays numbers out to the right and
+/// everything else to the left, which is what a column of figures
+/// wants and what every other language with this syntax does.
+fn default_align(v: &Value) -> Align {
+    match v {
+        Value::Int(_) | Value::Float(_) => Align::Right,
+        _ => Align::Left,
+    }
+}
+
+impl Spec {
+    fn apply(&self, v: &Value) -> String {
+        let text = v.to_string();
+        let have = text.chars().count();
+        if have >= self.width {
+            return text;
+        }
+        let gap = self.width - have;
+        let fill = |n: usize| -> String { std::iter::repeat_n(self.fill, n).collect() };
+        match self.align.unwrap_or_else(|| default_align(v)) {
+            Align::Left => text + &fill(gap),
+            Align::Right => fill(gap) + &text,
+            // The odd character goes on the right, as center() does.
+            Align::Centre => fill(gap / 2) + &text + &fill(gap - gap / 2),
+        }
+    }
+}
+
+/// Widths are capped so that a typo asks for a diagnostic rather
+/// than for a gigabyte.
+const MAX_WIDTH: usize = 100_000;
+
+/// `[':' [[fill] align] [width]]` — the text between the braces. An
+/// empty spec, and a bare `:`, mean "just the value".
+fn parse_spec(spec: &str) -> Result<Spec, String> {
+    let mut out = Spec {
+        fill: ' ',
+        align: None,
+        width: 0,
+    };
+    if spec.is_empty() {
+        return Ok(out);
+    }
+    let Some(rest) = spec.strip_prefix(':') else {
+        return Err(format!(
+            "format: `{{{spec}}}` is not a placeholder — write `{{}}` for the next value, \
+             `{{:{spec}}}` for a spec, or `{{{{` for a literal brace"
+        ));
+    };
+    let mut chars: Vec<char> = rest.chars().collect();
+    let align_of = |c: char| match c {
+        '<' => Some(Align::Left),
+        '>' => Some(Align::Right),
+        '^' => Some(Align::Centre),
+        _ => None,
+    };
+    // The fill is whatever sits before the alignment, so `{:0>2}`
+    // pads with zeroes and `{:>2}` with spaces. Reading the SECOND
+    // character first is what tells the two apart.
+    if chars.len() >= 2
+        && let Some(align) = align_of(chars[1])
+    {
+        out.fill = chars[0];
+        out.align = Some(align);
+        chars.drain(..2);
+    } else if !chars.is_empty()
+        && let Some(align) = align_of(chars[0])
+    {
+        out.align = Some(align);
+        chars.remove(0);
+    }
+    if chars.is_empty() {
+        return Ok(out);
+    }
+    let digits: String = chars.iter().collect();
+    let Ok(width) = digits.parse::<usize>() else {
+        return Err(format!(
+            "format: `{digits}` is not a width — a spec is `{{:}}`, an alignment \
+             (`<`, `>`, `^`, optionally after a fill character) and a number of characters"
+        ));
+    };
+    if width > MAX_WIDTH {
+        return Err(format!(
+            "format: width {width} is above the limit of {MAX_WIDTH}"
+        ));
+    }
+    out.width = width;
+    Ok(out)
+}
+
 /// The standard library, baked into the binary at build time (always
 /// in sync with lib/ by construction). import() falls back to these
 /// when no matching file exists.
@@ -2705,22 +2812,31 @@ impl<W: Write> Interpreter<W> {
                             chars.next();
                             out.push('}');
                         }
-                        '{' if chars.peek() == Some(&'}') => {
-                            chars.next();
+                        '{' => {
+                            let mut spec = String::new();
+                            let mut closed = false;
+                            for c in chars.by_ref() {
+                                if c == '}' {
+                                    closed = true;
+                                    break;
+                                }
+                                spec.push(c);
+                            }
+                            if !closed {
+                                return Err(error(
+                                    "format: unclosed '{' (write '{{' for a literal brace)",
+                                    span,
+                                ));
+                            }
                             if next >= args.len() {
                                 return Err(error(
                                     "format: more {} placeholders than value arguments",
                                     span,
                                 ));
                             }
-                            out.push_str(&args[next].to_string());
+                            let spec = parse_spec(&spec).map_err(|m| error(m, span))?;
+                            out.push_str(&spec.apply(&args[next]));
                             next += 1;
-                        }
-                        '{' => {
-                            return Err(error(
-                                "format: '{' must be followed by '}' (write '{{' for a literal brace)",
-                                span,
-                            ));
                         }
                         '}' => {
                             return Err(error(

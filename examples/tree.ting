@@ -62,7 +62,7 @@ print("");
 print("largest");
 let by_size = sort_with(rows, fn(a, b) { return b["size"] - a["size"]; });
 for row in slice(by_size, 0, 3) {
-  print(format("  {} {}", st["pad_left"](human(row["size"]), 9, " "), row["path"]));
+  print(format("  {:>9} {}", human(row["size"]), row["path"]));
 }
 print("");
 
@@ -75,7 +75,7 @@ for row in rows {
   bytes[e] = get(bytes, e, 0) + row["size"];
 }
 for e in keys(bytes) {
-  print(format("  {} {}", st["pad_left"](human(bytes[e]), 9, " "), e));
+  print(format("  {:>9} {}", human(bytes[e]), e));
 }
 print("");
 

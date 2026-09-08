@@ -398,7 +398,6 @@ What a log says, without holding the log — a report that costs the same nine m
 # grows with the file.
 
 let fs = import("../lib/fs.ting");
-let st = import("../lib/string.ting");
 let tm = import("../lib/time.ting");
 
 fn build(path) {
@@ -475,13 +474,13 @@ print("");
 
 print("by level");
 for row in ranked(by_level) {
-  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+  print(format("  {:>5} {}", row["n"], row["name"]));
 }
 print("");
 
 print("by source");
 for row in ranked(by_source) {
-  print(format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"]));
+  print(format("  {:>5} {}", row["n"], row["name"]));
 }
 print("");
 
@@ -1394,7 +1393,7 @@ print("");
 print("largest");
 let by_size = sort_with(rows, fn(a, b) { return b["size"] - a["size"]; });
 for row in slice(by_size, 0, 3) {
-  print(format("  {} {}", st["pad_left"](human(row["size"]), 9, " "), row["path"]));
+  print(format("  {:>9} {}", human(row["size"]), row["path"]));
 }
 print("");
 
@@ -1407,7 +1406,7 @@ for row in rows {
   bytes[e] = get(bytes, e, 0) + row["size"];
 }
 for e in keys(bytes) {
-  print(format("  {} {}", st["pad_left"](human(bytes[e]), 9, " "), e));
+  print(format("  {:>9} {}", human(bytes[e]), e));
 }
 print("");
 

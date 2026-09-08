@@ -37,6 +37,33 @@ let many = try(format, "{}", 1, 2);
 assert(contains(many["err"], "placeholder"), "too many values errors");
 let stray = try(format, "oops }");
 assert(contains(stray["err"], "stray"), "stray brace errors");
+let unclosed = try(format, "{:>4", 1);
+assert(contains(unclosed["err"], "unclosed"), "unclosed brace errors");
+
+# format specs: [[fill] align] width. Width counts characters, and a
+# value already that wide is left alone.
+assert(format("{:>8}", "hi") == "      hi", "right align");
+assert(format("{:<8}", "hi") == "hi      ", "left align");
+assert(format("{:^9}", "hi") == "   hi    ", "centre, odd character to the right");
+assert(format("{:0>2}", 7) == "07", "fill before the alignment");
+assert(format("{:.^10}", "mid") == "...mid....", "any character fills");
+assert(format("{:2}", "abcdef") == "abcdef", "a wider value is left alone");
+assert(format("{:}", 9) == "9", "an empty spec is just the value");
+assert(format("{:0}", 9) == "9", "width zero is just the value");
+# A width with no alignment lays numbers right and everything else left.
+assert(format("{:5}", 42) == "   42", "a number goes right");
+assert(format("{:5}", 4.5) == "  4.5", "a float goes right too");
+assert(format("{:5}", "ab") == "ab   ", "a string goes left");
+assert(format("{:5}", true) == "true ", "a bool goes left");
+assert(format("{:>4}", "\u00e9\u20ac") == "  \u00e9\u20ac", "width counts characters, not bytes");
+assert(format("{{{:>3}}}", 1) == "{  1}", "specs survive escaped braces");
+assert(format("{} {:>4} {}", "a", 12, "b") == "a   12 b", "specs mix with plain placeholders");
+let bad_spec = try(format, "{x}", 1);
+assert(contains(bad_spec["err"], "not a placeholder"), "a spec must start with a colon");
+let bad_width = try(format, "{:qq}", 1);
+assert(contains(bad_width["err"], "not a width"), "a spec's tail must be a number");
+let huge = try(format, "{:>999999999}", 1);
+assert(contains(huge["err"], "above the limit"), "widths are capped");
 
 # \r escape (added in 2.11): a real carriage return, one char.
 assert(len("\r") == 1, "cr is one char");
