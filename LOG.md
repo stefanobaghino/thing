@@ -19632,3 +19632,54 @@ them is a question worth its own tick, not a rider on this one.
 
 **Also noticed**: `read_file` on invalid UTF-8 says "stream did not
 contain valid UTF-8", which is Rust's phrasing rather than ting's.
+
+## 2026-09-08 — Iteration 830: the counting loop
+
+**`for i in range(...)` no longer builds the list, in the VM.**
+Measured on the same programs 829 measured: `for i in range(10000000)`
+went from 307 MB peak to 3 MB, and from 1.19 s to 0.85 s — the memory
+was the point and the time came free, since nothing is allocated.
+`for i in range(100000000000)`, which 829 watched the kernel kill
+(exit 137, no message), now answers.
+
+**The decision is made at run time, and that is the whole design.**
+`range` is an ordinary name a program may bind — `fn range(n)` and
+`let range = fn(n)` are both legal, and the REPL can bind it in an
+earlier chunk than the loop, so no compile-time scan is sound. The
+compiler emits the callee, the arguments and one new instruction;
+that instruction looks at what the callee turned out to be. The
+builtin gives a counter, a limit and a step; anything else is CALLED,
+exactly as before, and the loop reads a snapshot. One loop body, one
+`IterNext`, two shapes.
+
+**The loop now owns three stack slots either way** — snapshot, nil,
+index or counter, limit, step — so both shapes clean up with the same
+three pops, and the test compares the two against each other rather
+than against a number, because the body pops too.
+
+**The errors had to stay identical, so there is now one copy of the
+rules.** `range_bounds` in eval.rs does the arity, type and step-zero
+checks; the builtin uses it to build its list and the instruction
+uses it to start counting. `range()`, `range(1,2,3,4)`, `range("a")`
+and `range(1,2,0)` all say what they said before, at the same span.
+
+**Three mutations, three caught**: fusing without the runtime check
+(a shadowed `range` then loses, and the selftest says so), dropping
+the compiler's shape test, and fusing through a spread — where the
+argument count is a runtime fact and the fusion has no business
+firing.
+
+**The corpus warning guard did its job again.** The selftest that
+proves a shadowed `range` wins has to shadow one, so the count went
+13 to 14 and the build went red until the guard's table was told. The
+unused parameter it also raised was answered by naming it `_n`, which
+is the convention this corpus already uses.
+
+The tree-walker still builds the list; the engines agree on every
+output, which is what the differential tests compare, so this is a
+memory divergence and not a behavioural one. It is the next stroke.
+
+Gate green: fmt, clippy, 16 `test result: ok` (386 tests, up one), 71
+files unchanged, corpus at fourteen, eleven bench checksums on both
+engines, Windows check and clippy, wasm release build, 100000
+differential cases at seed 830.

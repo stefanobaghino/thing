@@ -2447,6 +2447,32 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 830: first stroke — THE COUNTING LOOP, IN THE VM. 307 MB -> 3 MB
+  and 1.19 s -> 0.85 s on `for i in range(10000000)`; the
+  100000000000 case that 829 watched the kernel kill now ANSWERS.
+  THE DECISION IS AT RUN TIME AND THAT IS THE DESIGN: `range` is a
+  name a program may bind, and the REPL binds it in an earlier chunk
+  than the loop, so no compile-time scan is sound. The compiler emits
+  callee + args + IterStart; IterStart looks at what the callee turned
+  out to be — the builtin gives counter/limit/step, anything else is
+  CALLED and gives a snapshot. One loop body, one IterNext, two
+  shapes.
+  THE LOOP NOW OWNS THREE STACK SLOTS EITHER WAY, so both clean up
+  with three pops; the test compares the two shapes against each
+  other, not against a number, because the body pops too.
+  ONE COPY OF THE RULES: `range_bounds` in eval.rs does arity, type
+  and step-zero; the builtin builds its list from it and IterStart
+  counts from it, so every error is identical at the same span.
+  Three mutations, three caught: no runtime check (a shadowed range
+  loses), the compiler's shape test dropped, and fusing through a
+  spread.
+  THE CORPUS WARNING GUARD SPOKE AGAIN: the selftest proving a
+  shadowed `range` wins has to shadow one — 13 -> 14, red until the
+  table was told. The unused parameter it also raised was answered
+  with `_n`, this corpus's convention.
+  The tree-walker still builds the list. Outputs agree, which is what
+  the differential compares, so this is a MEMORY divergence, not a
+  behavioural one — the next stroke.
 - 829: replenishment — MILESTONE "THE LOOP THAT DOES NOT BUILD A
   LIST" (v2.133.0), the fifth kind of looking: THE INPUT, NOT THE
   PROGRAM. Fed the readers invalid UTF-8, a BOM, CRLF, NUL bytes, an
@@ -2853,9 +2879,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the VM: `for NAME in range(...)` compiles to a counting loop, the
-  list never built; must NOT fire when `range` is shadowed.
-  - then the tree-walker, the same.
+  - the tree-walker, the same.
   - then measure: peak memory flat in n, the OOM case answering,
   eleven checksums on both engines, no speed regression.
   - then release as v2.133.0.
