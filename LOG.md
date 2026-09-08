@@ -18707,3 +18707,34 @@ point of writing two.
 
 Gate green: fmt, clippy, 16 `test result: ok` (373 tests, up two), 71
 files unchanged, corpus at seven, Windows and wasm.
+
+## 2026-09-08 — Iteration 807: health tick, milestone closed
+
+**Green, and read the way the rules say to read it.** The host was
+NOT quiet — load 2.74, with three unrelated workloads on it — so
+every bench timing came in above BASELINE on both engines (scan's vm
+586 ms against 355, fib 533 against 302). That is the weather, and it
+is why the gate is a comparison of checksums rather than a reading of
+a clock: all eleven rows were compared on BOTH engines, twenty-two
+comparisons in all, by a script rather than by eye, and none differ
+from BASELINE.
+
+Fuzz sweeps in release, all green: 50000 differential cases at seed
+807 (10.0 s), 20000 formatter cases (4.3 s), the crash fuzzer and
+2000000 regex cases (3.9 s). Each runtime is the evidence the knob
+was read at all — 700's lesson, that naming the wrong target passes
+in no time having fuzzed nothing.
+
+Disk: `target` is 1.7 G, `target/debug` 405 M — well under the few-GB
+mark where 798's rule says to remove it. Nothing to do.
+
+Site audit: all ten published paths answer 200, and the changelog
+page's top entry is v2.129.0 — the release reached the site, not just
+the tag.
+
+**Milestone "the cost of a step" (v2.129.0, strokes 799-806) is
+complete.** It was chosen from a histogram, executed as four fusions
+of which three shipped and one was measured and thrown away, released
+with a head-to-head number rather than a BASELINE delta, verified
+from the archives, and finished by closing an unguarded gap between
+the binary's stdlib and the archive's.

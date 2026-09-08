@@ -2447,6 +2447,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 807: health tick + site audit green — MILESTONE "THE COST OF A
+  STEP" (v2.129.0, strokes 799-806) COMPLETE. Host was NOT quiet
+  (load 2.74, three unrelated workloads), so every bench timing came
+  in above BASELINE on both engines — the weather, and the reason the
+  gate compares CHECKSUMS: all eleven rows on both engines, 22
+  comparisons by script, none differ. 50000 differential at seed 807
+  (10.0 s), 20000 formatter (4.3 s), crash + 2000000 regex (3.9 s);
+  each runtime is the evidence the knob was read. target 1.7 G,
+  target/debug 405 M — under 798's threshold, nothing removed. All
+  ten site paths 200 and the changelog page's top entry is v2.129.0.
 - 806: 754 CLOSED. A lib/ beside a script shadows the binary's
   embedded stdlib, and a release archive ships exactly such a lib/
   next to ting — so an unpacked release runs the ARCHIVE's copy.
@@ -2477,12 +2487,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: a health tick to close the milestone (bench vs
-  BASELINE, 50000 differential, crash and 20000 formatter fuzz cases
-  in release, `du -sh target` and remove target/debug if it has
-  passed a few GB).
-  - then: replenishment — choose the next milestone from counted
-  evidence, as 799 did.
+  - next stroke: replenishment — choose the next milestone from
+  counted evidence, as 799 did.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
