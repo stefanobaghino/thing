@@ -18738,3 +18738,53 @@ of which three shipped and one was measured and thrown away, released
 with a head-to-head number rather than a BASELINE delta, verified
 from the archives, and finished by closing an unguarded gap between
 the binary's stdlib and the archive's.
+
+## 2026-09-08 — Iteration 808: replenishment — "what a number looks like"
+
+**Chosen by writing a program, not by reading a histogram.** 799
+picked its milestone from an instruction count; that seam is closed,
+and counting instructions again would only find smaller ones. So this
+tick asked a different question — what does it cost to WRITE something
+in ting — by writing an 60-line log report against a 4000-line access
+log: parse, count by path, error rate per hour, slowest requests.
+
+It works, and it took four corrections to get there. Three were mine
+to make and one is the language's:
+
+- `//` is not a comment. The error is `expected expression, found
+  '/'`, which says nothing about `#`. Small, and fixable in the lexer.
+- `pad_left(s, n)` needs a third argument; there are no default
+  parameters.
+- `sort_by` takes a key, not a comparator. My assumption; the error
+  said so clearly.
+- **`format` has no format specs at all.** `format("{:.1f}%", pct)`
+  is an error, and a percentage printed the only way there is comes
+  out `33.333333333333336`.
+
+**The counted case, from the project's own corpus**: 47 `format`
+calls, and the fix for the missing width is visible in four of them —
+`format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"])`,
+a format call whose arguments are padded by hand before it sees them.
+Fourteen hand-pad calls in all across five files. Three places round
+by hand — `ma["round"](stddev * 100) / 100.0`. And `examples/monthly.ting`,
+the money example, carries a hand-written function that exists for no
+other reason:
+
+    fn money(cents) {
+      return str(cents / 100) + "." + st["pad_left"](str(cents % 100), 2, "0");
+    }
+
+**Milestone: "what a number looks like" (v2.130.0).** Give `format`
+the specs its own examples work around — width, alignment and fill,
+and fixed decimal places — in the shape everyone already knows,
+`{:>5}`, `{:<16}`, `{:^10}`, `{:0>2}`, `{:.2}`. It is additive under
+the 2.x promise for the best possible reason: every one of those is
+an error today, so nothing that runs now can change meaning.
+
+`pad_left` and friends stay. They are good functions and 14 call
+sites use them; the point is that `format` should not need them.
+
+Nothing changed on disk this tick beyond LOG and STATE. The program
+that produced the evidence is not committed — the corpus already has
+`examples/logreport.ting`, which does the same job and shows the same
+workaround.

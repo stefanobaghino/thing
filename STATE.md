@@ -2447,6 +2447,23 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 808: replenishment — MILESTONE "WHAT A NUMBER LOOKS LIKE"
+  (v2.130.0), CHOSEN BY WRITING A PROGRAM RATHER THAN READING A
+  HISTOGRAM (799's seam is closed; counting instructions again would
+  only find smaller ones). A 60-line log report over a 4000-line
+  access log took four corrections: `//` is not a comment and the
+  error says nothing about `#`; `pad_left(s, n)` needs a third
+  argument (no default parameters); `sort_by` takes a key, not a
+  comparator; and FORMAT HAS NO SPECS AT ALL — `format("{:.1f}%",
+  pct)` is an error and a percentage prints as 33.333333333333336.
+  COUNTED: 47 format calls in the corpus, four of which pad their own
+  arguments before calling it (`format("  {} {}",
+  st["pad_left"](str(row["n"]), 5, " "), row["name"])`); 14 hand-pad
+  calls across five files; three hand-rounds; and monthly.ting, the
+  money example, carries `fn money(cents)` that exists for no other
+  reason. ADDITIVE FOR THE BEST REASON: every spec is an error today.
+  pad_left and friends STAY — the point is that format should not
+  need them.
 - 807: health tick + site audit green — MILESTONE "THE COST OF A
   STEP" (v2.129.0, strokes 799-806) COMPLETE. Host was NOT quiet
   (load 2.74, three unrelated workloads), so every bench timing came
@@ -2487,8 +2504,19 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: replenishment — choose the next milestone from
-  counted evidence, as 799 did.
+  - next stroke: format specs for width, alignment and fill —
+  `{:>5}`, `{:<16}`, `{:^10}`, `{:0>2}`. Parse the spec in the
+  format builtin; every one of these is an ERROR today, so nothing
+  that runs now can change meaning. Then rewrite the four format
+  calls that pad their own arguments.
+  - then: fixed decimal places — `{:.2}`. This is the one that
+  earns the milestone: `examples/monthly.ting`'s hand-written
+  `money(cents)` goes away, and a percentage stops printing as
+  33.333333333333336.
+  - then: the `//` hint. `expected expression, found '/'` says
+  nothing about `#`; the lexer knows enough to say it.
+  - then release as v2.130.0, docs (reference.md's format row,
+  stdlib.md, tutorial) updated in the same stroke as the code.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
