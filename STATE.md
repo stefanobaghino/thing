@@ -2448,6 +2448,24 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 836: REPLENISHMENT — MILESTONE "THE OTHER PROGRAM" (v2.134.0),
+  reasoning in LOG.md. A seventh kind of looking: RUN TING THE WAY A
+  SHELL RUNS IT — piped, redirected, killed, driving other programs.
+  It is a good citizen everywhere I pushed (a broken pipe ends the
+  loop in 2 ms and exits 0 where the script alone takes 656 ms;
+  output through a pipe is incremental; data on stdout and
+  diagnostics on stderr with no ANSI escapes; argv, `-` for stdin,
+  the piped REPL, the documented exit codes, and a full disk that
+  says `print failed: No space left on device` with a line number).
+  The boundary that is thin is where ting IS the shell: `run()`.
+  Three strokes — a killed child reports `code: nil` and throws the
+  signal away (`sh.check` says "exited nil", wrong twice); nothing
+  can be sent to a child's stdin, so `echo data | sort` needs a temp
+  file or the `sh -c` quoting that argv exists to avoid; and a
+  child's bytes are decoded lossily where `read_file` on the same
+  bytes is an error, neither documented. Measured and NOT wrong: 8 MB
+  on stdout and stderr at once do not deadlock, and a missing program
+  is an error rather than a nonzero code.
 - 835: THE RAGGED ROW, DECIDED — first stroke banked. 829 left the
   choice open; the answer is DROPPED BY DEFAULT, DOCUMENTED, AND
   OPTIONAL TO KEEP. The invariant decides it: every entry from `maps`
@@ -2967,14 +2985,19 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone. The last one closed at
-  834 and 835 spent the item it left behind, so the backlog is empty
-  and the next tick picks the next thing to build. Six kinds of
-  looking are spent: instruction counts (799), writing a program and
-  counting the corrections (808), fifty wrong programs (815), the
-  same program twice in two languages (822), dirty input (829), and
-  the one 835 stands on — a finding held back on purpose until it
-  could be decided rather than shipped in a hurry.
+  - a killed child says so: `run` gains a `signal` key (the number on
+  Unix, nil elsewhere and on a normal exit), the docstring says
+  `code` is nil then, and `sh.check` says "killed by signal 9"
+  instead of "exited nil".
+  - something on the child's stdin: `run(cmd, args, input)`. THE TRAP
+  IS THE DEADLOCK the current code avoids by accident — writing the
+  input before reading the output hangs as soon as the child fills
+  its stdout pipe while ting is still filling its stdin — so the
+  write goes on a thread and the test is 8 MB in against 8 MB out.
+  - what the bytes are: `run`'s out/err are lossy where `read_file`
+  errors on the same bytes. Decide, say it in the docstring and the
+  docs, pin it with a test. Bias: lossy stays, silence does not.
+  - release v2.134.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

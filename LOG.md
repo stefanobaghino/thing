@@ -19900,3 +19900,76 @@ rather than erroring, and where the fields are if you want them —
 
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2661 checks (was 2649).
+
+## 2026-09-08 — Iteration 836: replenishment — "the other program"
+
+**A seventh kind of looking: run ting the way a SHELL runs it.** The
+six before held up the program (799, 808, 815), the same program in
+another language (822), the input (829), and a finding held back
+until it could be decided (835). None of them ever piped ting into
+anything, redirected it, killed it, or asked it to drive another
+program. A one-binary toolchain lives in a pipeline; nothing had ever
+put it in one.
+
+**It is a good citizen in every direction I pushed, and that is the
+first half of the finding.** `ting many.ting | head -3` stops in 2 ms
+and exits 0, where the same script alone takes 656 ms — the broken
+pipe ends the loop instead of raising. Output through a pipe is
+incremental, not batched at exit (a print, a 1.2 s sleep, a print,
+and the reader sees them 1.2 s apart). stdout carries data and
+stderr carries diagnostics, with no ANSI escapes when either is a
+pipe. `ting script.ting --flag -x -- a b` hands all five to `args()`
+and keeps none. A file script reading `"-"` gets the pipe. The REPL
+driven from a pipe answers without a prompt or a banner. Exit status
+is documented in `--help` and obeyed: 0 ok, 1 a reported failure, 2 a
+usage error, and `--check` warnings are not failures until
+`--strict`. Even a full disk is a proper error — `ting ok.ting >
+/dev/full` says `print failed: No space left on device` and points at
+the line, and `write_file` to the same place says it too.
+
+**The place it is not a good citizen is where ting is the shell.**
+`run()` drives another program, and that boundary is thinner than
+the rest:
+
+- **A child killed by a signal reports `code: nil`.** The
+  implementation knows — src/eval.rs says "No code at all means a
+  signal killed it" — but nothing above it does. The docstring
+  promises "a map of code, out and err" and never mentions nil, and
+  `sh.check` on a killed child says `sh exited nil: no output on
+  stderr`, which is wrong twice: it did not exit, and nil is not a
+  status. Which signal it was is thrown away.
+- **Nothing can be sent to the child.** `run` gives it an empty
+  stdin (measured: `run("cat", [])` comes back with `""` and the
+  parent's own stdin is untouched, which is the right default) and
+  there is no way to hand it anything. Output flows back; nothing
+  flows in. A script that wants `echo data | sort` must write a
+  temp file or hand a quoted string to `sh -c` — the very thing
+  `run`'s argv list exists to avoid.
+- **A child's bytes are decoded lossily where a file's are an
+  error.** `run` on a program printing `\377\376` comes back with
+  replacement characters and code 0; `read_file` on the same two
+  bytes fails with "stream did not contain valid UTF-8" (829). Same
+  bytes, two different answers, neither documented.
+
+**Two things it does right that I expected to be wrong**, both
+measured rather than assumed: 8 MB on the child's stdout and 8 MB on
+its stderr at the same time do not deadlock (`Command::output`
+reads both), and a program that is missing is an ERROR rather than a
+nonzero code, so "not installed" cannot read as "ran and failed".
+
+**Milestone: "the other program" (v2.134.0).** Three strokes.
+
+- A killed child says so: `run` gains a `signal` key — the number on
+  Unix, nil elsewhere and on a normal exit — the docstring says
+  `code` is nil then, and `sh.check` says "killed by signal 9"
+  instead of "exited nil".
+- Something on the child's stdin: `run(cmd, args, input)`. THE TRAP
+  IS THE DEADLOCK the current code avoids by accident — writing the
+  input before reading the output hangs as soon as the child fills
+  its stdout pipe while ting is still filling its stdin — so the
+  write goes on a thread, and the test is 8 MB in against 8 MB out.
+- What the bytes are: decide lossy-or-error, say it in the docstring
+  and the docs, and pin it with a test. The bias is that lossy stays
+  — a child's output is not a source file and `run` must not become
+  unusable on a program that prints a byte — but silence is not a
+  decision.
