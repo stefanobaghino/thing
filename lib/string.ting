@@ -1,17 +1,26 @@
 # String helpers, written in ting. Use them via
 #   let s = import("lib/string.ting");
 
+# s written n times end to end; n of zero or less gives "".
 fn repeat(s, n) {
   let out = "";
   for i in range(n) { out = out + s; }
   return out;
 }
 
+# s padded with fill on the LEFT until it is width characters, which
+# right-aligns it in a column of that width. A string already that
+# long is returned unchanged. format's `{:>5}` does the same inside
+# a template.
 fn pad_left(s, width, fill) {
   while len(s) < width { s = fill + s; }
   return s;
 }
 
+# s padded with fill on the RIGHT until it is width characters, which
+# left-aligns it in a column of that width. A string already that
+# long is returned unchanged. format's `{:<5}` does the same inside
+# a template.
 fn pad_right(s, width, fill) {
   while len(s) < width { s = s + fill; }
   return s;
@@ -26,8 +35,12 @@ fn center(s, width, fill) {
   return repeat(fill, gap / 2) + s + repeat(fill, gap - gap / 2);
 }
 
+# The text cut into its lines at every newline. A trailing newline
+# leaves a final empty string, as split does.
 fn lines(s) { return split(s, "\n"); }
 
+# Each space-separated word with its first character upper-cased;
+# the rest of every word is left exactly as it was.
 fn title(s) {
   let out = [];
   for w in split(s, " ") {

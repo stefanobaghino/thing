@@ -1,8 +1,11 @@
 # Math helpers, written in ting. Use them via
 #   let ma = import("lib/math.ting");
 
+# x held between lo and hi: lo when it is below, hi when it is above,
+# x itself otherwise.
 fn clamp(x, lo, hi) { return min([max([x, lo]), hi]); }
 
+# -1, 0 or 1, as x is negative, zero or positive.
 fn sign(x) {
   if x > 0 { return 1; }
   if x < 0 { return -1; }
@@ -23,6 +26,8 @@ fn pow(base, n) {
   return result;
 }
 
+# The greatest common divisor of two ints, by Euclid. Signs are
+# ignored, and gcd(0, 0) is 0.
 fn gcd(a, b) {
   let x = abs(a);
   let y = abs(b);

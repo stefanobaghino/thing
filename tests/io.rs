@@ -2438,7 +2438,9 @@ fn repl_doc_searches_exactly_as_the_flag_does() {
 
     // A word that neither names nor describes anything: the REPL says
     // so on stdout and the flag on stderr, so only the suggestion is
-    // comparable.
+    // comparable. 826 gave `top` the word "frequency", which used to
+    // be this case and is now a hit — a typo of a name is what stays
+    // one.
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
@@ -2449,13 +2451,55 @@ fn repl_doc_searches_exactly_as_the_flag_does() {
         .stdin
         .take()
         .unwrap()
-        .write_all(b":doc frequency\n")
+        .write_all(b":doc medain\n")
         .unwrap();
     let out = child.wait_with_output().unwrap();
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(
-        stdout.contains("matches frequency; did you mean frequencies?"),
+        stdout.contains("matches medain; did you mean median?"),
         "{stdout}"
+    );
+}
+
+/// A search can only find words that were written: 825 measured the
+/// search and found 19 of 266 entries carrying a signature and
+/// nothing else, `list.unique` among them — invisible by
+/// construction, however good the matching. Nothing kept them in
+/// step with the rest, so this does.
+#[test]
+fn every_documented_entry_says_what_it_does() {
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+
+    // The index is one line per entry: two spaces, the signature,
+    // then two spaces and the first sentence — or, when that will not
+    // fit in eighty columns, the sentence wrapped underneath at six.
+    let lines: Vec<&str> = stdout.lines().collect();
+    let mut entries = 0;
+    let mut bare = Vec::new();
+    for (i, line) in lines.iter().enumerate() {
+        let Some(rest) = line.strip_prefix("  ") else {
+            continue;
+        };
+        if rest.starts_with(' ') || !rest.contains('(') {
+            continue;
+        }
+        entries += 1;
+        let described = rest.split_once(")  ").is_some()
+            || lines.get(i + 1).is_some_and(|n| n.starts_with("      "));
+        if !described {
+            bare.push(*line);
+        }
+    }
+    assert!(entries > 250, "the index shrank: {entries} entries");
+    assert!(
+        bare.is_empty(),
+        "{} entries carry a signature and nothing else: {bare:#?}",
+        bare.len()
     );
 }
 

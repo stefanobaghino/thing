@@ -1,6 +1,8 @@
 # Map helpers, written in ting. Use them via
 #   let m = import("lib/map.ting");
 
+# The two maps in one. Where a key is in both, b's value wins;
+# neither input is changed.
 fn merge(a, b) {
   let out = {};
   for k in a { out[k] = a[k]; }
@@ -28,12 +30,16 @@ fn merge_with(a, b, f) {
   return out;
 }
 
+# The map as [key, value] pairs in sorted key order, matching keys()
+# and values().
 fn items(m) {
   let out = [];
   for k in m { push(out, [k, m[k]]); }
   return out;
 }
 
+# A map built from [key, value] pairs — the inverse of items(). A
+# repeated key keeps the last pair's value.
 fn from_items(pairs) {
   let out = {};
   for p in pairs { out[p[0]] = p[1]; }
@@ -128,7 +134,9 @@ fn update(m, k, f) {
 }
 
 # The n entries with the largest values as [key, value] pairs, largest
-# first; ties keep key order. Values must be numbers.
+# first; ties keep key order. Values must be numbers. The most
+# frequent entries of a frequency count come out this way: count_by
+# or frequencies, then top.
 fn top(m, n) {
   if n < 0 { fail("top: negative count"); }
   let ranked = sort_by(items(m), fn(p) { return 0 - p[1]; });

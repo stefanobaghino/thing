@@ -33,6 +33,9 @@ fn quote(field, sep) {
 # name would not be found behind one.
 let BOM = chr(65279);
 
+# A new scanner state for parse_with and each_map: the map they
+# thread through a document, holding the rows finished so far, the
+# row and field being read, and whether a quote is open.
 fn fresh() {
   return {"rows": [], "row": [], "field": "", "quoted": false, "pending": false,
     "started": false, "dirty": false, "begun": false};

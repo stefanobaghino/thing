@@ -133,6 +133,8 @@ fn local_date(ms) {
   return date(ms + z["offset"]);
 }
 
+# The time of day in the local zone at that instant, as clock()
+# writes it; nil where the platform keeps no zone data to read.
 fn local_clock(ms) {
   let z = local_zone(ms);
   if z == nil { return nil; }

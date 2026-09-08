@@ -2,8 +2,10 @@
 #   let l = import("lib/list.ting");
 # (the path is relative to the importing file).
 
+# The sum of a list of numbers; 0 for an empty list.
 fn sum(xs) { return reduce(xs, 0, fn(a, x) { return a + x; }); }
 
+# The list back to front, as a fresh list.
 fn reverse(xs) {
   let out = [];
   let i = len(xs) - 1;
@@ -41,6 +43,7 @@ fn zip(a, b) {
   return out;
 }
 
+# Each element paired with its index: [[0, first], [1, second], ...].
 fn enumerate(xs) {
   let out = [];
   let i = 0;
@@ -51,6 +54,10 @@ fn enumerate(xs) {
   return out;
 }
 
+# Duplicates removed, the first occurrence of each kept and the
+# order preserved. Equality is structural, so any value type works.
+# The scan compares against everything kept so far, which is
+# quadratic; unique_by with a key is the way out when that matters.
 fn unique(xs) {
   let out = [];
   for x in xs {
@@ -73,6 +80,8 @@ fn flatten(xs) {
   return out;
 }
 
+# Whether pred(x) is true for at least one element, stopping at the
+# first; false for an empty list.
 fn any(xs, pred) {
   for x in xs {
     if pred(x) { return true; }
@@ -105,6 +114,8 @@ fn find_index(xs, pred) {
   return nil;
 }
 
+# Whether pred(x) is true for every element, stopping at the first
+# that is not; true for an empty list.
 fn all(xs, pred) {
   for x in xs {
     if !pred(x) { return false; }
