@@ -101,8 +101,19 @@ Stack machine. Working set, subject to growth:
 - `if`/`while`/`for` compile to conditional jumps; jump targets are
   back-patched (emit placeholder, patch after the block ends).
 - `for` keeps snapshot semantics: compile to
-  `[eval iterable, snapshot, index=0]` + a loop reading `snapshot[i]`,
-  with the loop variable `Define`d fresh each iteration.
+  `[eval iterable, snapshot, nil, index=0]` + a loop reading
+  `snapshot[i]`, with the loop variable `Define`d fresh each
+  iteration.
+- Since v2.133.0, `for x in range(...)` takes three slots of a
+  different kind — a counter, a limit and a step — and never builds
+  the list. The compiler only recognises the SHAPE; the instruction
+  decides at run time, because `range` is an ordinary name a program
+  may bind (`fn range(n)` is legal, and the REPL can bind it in an
+  earlier chunk than the loop). When the callee turns out to be
+  something else it is called and the snapshot path resumes, so one
+  loop body serves both. The tree-walker does the same thing with an
+  enum, and one `range_bounds` serves the builtin and both engines so
+  that every error stays identical.
 - `break`/`continue` are jumps recorded per enclosing loop during
   compilation (a loop-context stack in the compiler); using them
   outside a loop is a compile error carrying the same message the

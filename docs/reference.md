@@ -370,7 +370,7 @@ scope).
 | `float(v)`     | from int/float/numeric string; a string that would be infinite or is not a number errors |
 | `hex(n)` / `bin(n)` | an int as a `0x` or `0b` literal, sign kept (`hex(-255)` is `-0xff`); `int` reads them back |
 | `type(v)`      | the type name as a string, e.g. `"list"`                    |
-| `range(hi)` / `range(lo, hi)` / `range(lo, hi, step)` | list of ints, half-open; `step` may be negative, never 0 |
+| `range(hi)` / `range(lo, hi)` / `range(lo, hi, step)` | list of ints, half-open; `step` may be negative, never 0. `for x in range(...)` counts through the bounds rather than building that list, so a loop costs nothing per element — but only when `range` still means this builtin |
 | `split(s, sep)` | list of pieces; `split(s, "")` splits into characters |
 | `join(xs, sep)` | joins a list of strings; non-string elements error     |
 | `trim(s)`      | the string without leading/trailing whitespace              |
