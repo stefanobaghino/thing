@@ -526,7 +526,22 @@ impl<'a> Parser<'a> {
                     span: Span::new(span.start, end),
                 });
             }
-            k => return Err(self.error(format!("expected expression, found {}", describe(&k)))),
+            k => {
+                // `//` and `/*` are the commonest way to write a
+                // comment in a language that looks like this one, and
+                // `expected expression, found '/'` says nothing about
+                // where the real one is. Two adjacent tokens, not
+                // merely two nearby ones: `a / /b` is a different
+                // mistake and gets the plain message.
+                let hint = matches!(k, TokenKind::Slash)
+                    && matches!(self.peek2(), TokenKind::Slash | TokenKind::Star)
+                    && self.tokens[self.pos + 1].span.start == self.span().end;
+                let mut message = format!("expected expression, found {}", describe(&k));
+                if hint {
+                    message.push_str(" (a comment starts with `#`)");
+                }
+                return Err(self.error(message));
+            }
         };
         self.advance();
         Ok(Expr { kind, span })
@@ -743,6 +758,43 @@ mod tests {
     #[test]
     fn unclosed_paren_is_an_error() {
         assert_eq!(err("(1 + 2"), "expected ')', found end of input");
+    }
+
+    /// `#` is the comment character, and a language that looks like
+    /// this one draws `//` out of the fingers. The hint costs nothing
+    /// on a program that parses and saves a search of the reference
+    /// on one that does not.
+    #[test]
+    fn a_c_style_comment_says_where_the_real_one_is() {
+        let want = "expected expression, found '/' (a comment starts with `#`)";
+        for src in ["// note", "/* note */"] {
+            assert_eq!(err(src), want, "{src}");
+        }
+        // And in the places a comment is actually written: on its own
+        // line, after a statement, and inside a block.
+        for src in [
+            "// note\nprint(1);",
+            "print(1); // note",
+            "fn f() {\n  // note\n  return 1;\n}",
+            "print(1); /* note */",
+        ] {
+            assert_eq!(prog_err(src), want, "{src}");
+        }
+    }
+
+    /// Only two ADJACENT slashes are a comment someone meant to
+    /// write. `/ / x` has the same two tokens with a space between
+    /// them and is a different mistake, so it keeps the plain
+    /// message — as does a division that simply lost its operand.
+    #[test]
+    fn a_divide_that_lost_its_operand_gets_no_comment_hint() {
+        for src in ["/ / x", "/ * x", "a / / b", "/ x", "1 + / 2"] {
+            assert_eq!(err(src), "expected expression, found '/'", "{src}");
+        }
+    }
+
+    fn prog_err(src: &str) -> String {
+        parse_program(&lex(src).unwrap()).unwrap_err().message
     }
 
     fn program(src: &str) -> String {

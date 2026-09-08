@@ -65,7 +65,8 @@ both.
 ## Source form
 
 - UTF-8 text. Whitespace is insignificant except as a token separator.
-- Comments run from `#` to the end of the line.
+- Comments run from `#` to the end of the line. There is no `//` and
+  no `/* */`; writing either says so in the error.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types
