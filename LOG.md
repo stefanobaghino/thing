@@ -18788,3 +18788,46 @@ Nothing changed on disk this tick beyond LOG and STATE. The program
 that produced the evidence is not committed — the corpus already has
 `examples/logreport.ting`, which does the same job and shows the same
 workaround.
+
+## 2026-09-08 — Iteration 809: a width and an alignment
+
+**The first stroke of "what a number looks like".** `format` now
+takes a spec: `{:[[fill]align][width]}`, where align is `<`, `>` or
+`^`, fill is any single character before it, and width is a number of
+CHARACTERS counted the way `len` counts them. `{:>5}`, `{:<16}`,
+`{:^9}`, `{:0>2}`, `{:.^10}`.
+
+Three decisions worth recording, each made to agree with something
+that already existed rather than invented fresh:
+
+- **A width with no alignment puts numbers right and everything else
+  left.** It is what a column of figures wants, and what everyone
+  arriving from another language expects `{:5}` to do.
+- **A value already wider than the width is written unchanged.** A
+  spec pads; it never truncates — the rule `pad_left` and `center`
+  already follow.
+- **A centred value that cannot be centred exactly puts the odd
+  character on the right**, because `lib/string.ting`'s `center` does.
+
+Widths are capped at 100000 so a mistyped spec reports an error
+rather than eating the machine.
+
+**Additive, with the receipts**: every corpus program was run under
+808's binary and under this one, on BOTH engines — 71 files, 142
+runs — and the only three that differ are the three this stroke
+edited. Those were re-run old-source-on-old-binary against
+new-source-on-new-binary: identical on both engines.
+
+**Four format calls stopped padding their own arguments.**
+`format("  {} {}", st["pad_left"](str(row["n"]), 5, " "), row["name"])`
+is now `format("  {:>5} {}", row["n"], row["name"])`, and
+examples/logreport.ting no longer imports lib/string.ting at all. Both
+examples produce output identical to their committed .out files.
+
+Nineteen new selftest checks (2602 now). Two were made to fail on
+purpose first, by flipping the centring rule and by dropping floats
+from the right-aligned types — both caught.
+
+Gate green: fmt, clippy, 16 `test result: ok` (373 tests), 71 files
+unchanged, corpus at seven, 2602 checks on both engines, Windows and
+wasm, 100000 differential cases at seed 809.

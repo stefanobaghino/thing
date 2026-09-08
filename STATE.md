@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2602 selftest checks on all four
   CI platforms, Windows included); 373 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 809: first stroke — FORMAT TAKES A SPEC, `{:[[fill]align][width]}`.
+  Three decisions, each made to agree with something that already
+  existed: a width with no alignment puts NUMBERS RIGHT and
+  everything else left (what a column of figures wants); a value
+  already wider than the width is written unchanged (a spec pads,
+  never truncates, as pad_left does); a centred value puts the odd
+  character on the RIGHT, as lib/string.ting's center does. Width
+  counts CHARACTERS, capped at 100000 so a typo errors rather than
+  eating the machine.
+  ADDITIVE WITH RECEIPTS: all 71 corpus programs run under 808's
+  binary and this one on BOTH engines, 142 runs, and the only three
+  that differ are the three this stroke edited — those re-run
+  old-source-on-old-binary vs new-on-new, identical.
+  Four format calls stopped padding their own arguments and
+  examples/logreport.ting no longer imports lib/string.ting.
+  2602 selftest checks (+19); two made to fail on purpose first.
 - 808: replenishment — MILESTONE "WHAT A NUMBER LOOKS LIKE"
   (v2.130.0), CHOSEN BY WRITING A PROGRAM RATHER THAN READING A
   HISTOGRAM (799's seam is closed; counting instructions again would
@@ -2504,11 +2520,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: format specs for width, alignment and fill —
-  `{:>5}`, `{:<16}`, `{:^10}`, `{:0>2}`. Parse the spec in the
-  format builtin; every one of these is an ERROR today, so nothing
-  that runs now can change meaning. Then rewrite the four format
-  calls that pad their own arguments.
   - then: fixed decimal places — `{:.2}`. This is the one that
   earns the milestone: `examples/monthly.ting`'s hand-written
   `money(cents)` goes away, and a percentage stops printing as
