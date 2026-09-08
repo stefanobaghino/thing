@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
-  CI platforms, Windows included); 369 Rust tests
+  CI platforms, Windows included); 370 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2380,20 +2380,39 @@ holds only the current milestone and the standing rules.
   is worth — AN UPPER BOUND, NOT AN ESTIMATE OF ANY AVAILABLE CHANGE.
   Both versions written, measured, REVERTED: 2-3% does not buy
   twenty-six sites reading `chunk.spans[ip]` where they read `span`.
+- 801: second stroke — `Op::BinarySlots` does `GetSlot GetSlot
+  Binary` in one. Empty loop `while i < n { i += 1; }` -13% (0.170 ->
+  0.148 s for 2M iterations), CSV -2%, scan and stdlib unchanged
+  within noise.
+  THE LESSON, AND IT IS ABOUT THE HISTOGRAM ITSELF: stdlib's top
+  triple was this at 10.4% of instructions and the clock says
+  NOTHING, because bench/stdlib.ting waits on allocation, not
+  dispatch. A SHARE OF THE INSTRUCTION COUNT IS NOT A SHARE OF THE
+  TIME. Weigh that before choosing the next fusion from the same
+  table.
+  Both fusions together against 794's BASELINE (VM column): accum -9,
+  fib -13, growth -15, json -14, lists -7, maps -15, regex -3, scan
+  -5, stdlib -9, strings -16, toplevel -5 percent; every row
+  improved, all eleven checksums match. BASELINE is regenerated at
+  the release, in one go, not row by row.
+  THE GUARD HAD A HOLE: tests/bytecode.rs only read the TOP-LEVEL
+  chunk, so a fusion inside `fn f(x, y)` looked absent — every fn
+  compiles to a chunk of its own and most code lives in one. ops()
+  now gathers protos recursively, which also widens what 800's tests
+  were checking.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: `GetSlot GetSlot Binary` in one instruction, the
-  other half of what 800's histogram named (stdlib 10.4%, the empty
-  `while i < n` condition, csv 3.4%). Same rule as BinarySlotConst:
-  emitted from the AST, never by a peephole over the code, so no jump
-  can land inside what was fused. Extend tests/bytecode.rs and
-  measure on its own.
-  - then whatever the histogram names next -- `Const Binary
-  JumpIfFalse` (csv 6.1%, fib 9.1%) is a compare-and-branch, and
-  `Const UpdateSlot` is `i += 1` (14.3% of the empty loop). One at a
-  time, each with its own measurement; a superinstruction that does
-  not pay is complexity that stays forever.
+  - next stroke: `Const UpdateSlot` (`i += 1`, 14.3% of the empty
+  loop's instructions) or the compare-and-branch that folds a
+  JumpIfFalse into the fused compare (csv 6.1%, fib 9.1%). Take the
+  compare-and-branch first: it is the larger share and it removes a
+  branch, not just a dispatch. Re-run 800's histogram against the
+  CURRENT binary before choosing, since two fusions have changed what
+  the table says.
+  - then: measure again and decide whether the milestone is done. 801
+  is the warning: a share of the INSTRUCTION COUNT is not a share of
+  the TIME (stdlib 10.4% of instructions, 0% of the clock).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 -- a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

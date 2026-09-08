@@ -119,6 +119,11 @@ fn exec<W: Write>(
                 let r = chunk.consts[*k as usize].clone();
                 stack.push(eval::binary(*op, l, r, span)?);
             }
+            Op::BinarySlots(a, b, op) => {
+                let l = locals[*a as usize].clone();
+                let r = locals[*b as usize].clone();
+                stack.push(eval::binary(*op, l, r, span)?);
+            }
             Op::Binary(op) => {
                 let r = stack.pop().expect("stack underflow");
                 let l = stack.pop().expect("stack underflow");

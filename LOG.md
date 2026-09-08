@@ -18470,3 +18470,45 @@ files unchanged, corpus at seven, selftest 2583 checks, Windows and
 wasm, all eleven bench checksums, error spans and answers identical
 to the previous binary on both engines over sixteen shapes, and
 100000 differential cases at seed 800.
+
+## 2026-09-08 — Iteration 801: two locals, one instruction
+
+`Op::BinarySlots` does `GetSlot GetSlot Binary` in one, the other
+half of what 800's histogram named. `i < n` is the condition of every
+`while` loop there is, and it was three of the seven instructions an
+empty iteration ran.
+
+**Measured**, three interleaved runs each against 800's binary: the
+empty loop `while i < n { i += 1; }` **-13%** (0.170 -> 0.148 s for
+two million iterations), the CSV parse **-2%**, `bench/scan.ting` and
+`bench/stdlib.ting` unchanged within noise.
+
+**stdlib is the interesting one, because the histogram said 10.4%
+and the clock says nothing.** A tenth of its instructions are this
+triple, and removing two dispatches in three of them is about 7%
+fewer instructions — but `bench/stdlib.ting` spends its time
+allocating lists and maps, not dispatching, so the instructions saved
+were not the ones it was waiting on. A share of the instruction count
+is not a share of the time, and that is worth remembering before the
+next fusion is chosen from the same table.
+
+Both fusions together, against the eleven-row BASELINE recorded in
+794, VM column: accum -9%, fib -13%, growth -15%, json -14%, lists
+-7%, maps -15%, regex -3%, scan -5%, stdlib -9%, strings -16%,
+toplevel -5%. Every row improved and all eleven checksums match.
+BASELINE itself stays as it is until the release, since it is meant
+to be regenerated in one go on a quiet machine.
+
+**The guard grew a hole and it is closed now.** `tests/bytecode.rs`
+only looked at the top-level chunk, so `fn f(x, y) { return x * y; }`
+appeared not to fuse — every `fn` compiles to a chunk of its own, and
+most code lives in one. `ops()` now gathers protos recursively, which
+also widens what 800's tests were really checking. The new case was
+made to fail first by disabling the fusion arm.
+
+Gate green: fmt, clippy, 16 `test result: ok`, 71 files unchanged,
+corpus at seven, selftest 2583 checks, Windows and wasm, four
+scripts (error spans, string aliasing, appends whose right-hand side
+reassigns the name, and the index/slice edge grid) byte-identical to
+800's binary on both engines with the engines agreeing, and 100000
+differential cases at seed 801.

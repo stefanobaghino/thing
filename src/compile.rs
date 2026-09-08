@@ -100,6 +100,10 @@ pub enum Op {
     /// instructions in every program measured (LOG 800), and neither
     /// half can fail, so there is nothing to see in between.
     BinarySlotConst(u16, u32, BinaryOp),
+    /// `slot <op> slot`, the same bargain with two locals: `i < n` in
+    /// every loop, and the commonest three instructions in
+    /// bench/stdlib.ting (LOG 801).
+    BinarySlots(u16, u16, BinaryOp),
     /// Add the top of the stack to the value below it and store the
     /// result in the named binding -- Binary(Add) and SetVar in one
     /// step, so that the binding can be asked to let go of what was
@@ -899,10 +903,17 @@ impl Compiler {
                     ExprKind::Var(n) => self.resolve(n),
                     _ => None,
                 };
-                match (slot, literal_value(rhs)) {
-                    (Some(slot), Some(v)) => {
+                let right = match &rhs.kind {
+                    ExprKind::Var(n) => self.resolve(n),
+                    _ => None,
+                };
+                match (slot, right, literal_value(rhs)) {
+                    (Some(slot), _, Some(v)) => {
                         let k = self.konst(v);
                         self.emit(Op::BinarySlotConst(slot, k, *op), e.span);
+                    }
+                    (Some(a), Some(b), None) => {
+                        self.emit(Op::BinarySlots(a, b, *op), e.span);
                     }
                     _ => {
                         self.expr(lhs)?;
