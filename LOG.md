@@ -19025,3 +19025,35 @@ syntax.
 **Noticed on the way, not part of the milestone**: `1 / 0` errors and
 `1.0 / 0.0` gives `inf`, and docs/reference.md says neither. That is a
 docs gap and goes on the backlog under the milestone.
+
+## 2026-09-08 — Iteration 816: the keyword, not the semicolon
+
+**Nine mistakes that all said the same wrong thing now say nine
+different right ones.** `elif`, `elseif`, `elsif`, `def`, `function`,
+`var`, `const`, `local` and an arrow function all parsed as a bare
+name, so the parser complained about the `;` that should have
+followed it — true, and about the wrong thing. Each now carries what
+ting writes instead: `else if`, `fn name(...) { ... }`,
+`let name = ...;`, `fn(x) { return x; }`.
+
+**The hint is keyed on the statement's FIRST token, not on the one
+the parser stopped at**, which is the whole point: the mistake is at
+the start of the line and the failure is at the end of it. One helper
+replaces the six places a statement expected a `;`, and it only ever
+adds to a message the parser was already going to produce.
+
+None of these words is reserved. `let var = 1; print(var);` still
+runs, so do `function` and `def` as names, and `elif;` on its own is
+a perfectly good statement that fails later, at run time, for the
+right reason. `else if` is untouched. The arrow case wants `=` and
+`>` ADJACENT, so `= >` with a space is a different mistake and keeps
+the plain message.
+
+**Both guards were run backwards.** Dropping the arrow's adjacency
+rule fails the test; keying the hint on `self.peek()` instead of the
+statement's first token fails it too. 811's lesson applied before the
+mistake rather than after it.
+
+Gate green: fmt, clippy, 16 `test result: ok` (377 tests, up two), 71
+files unchanged, corpus at seven, 2618 checks on both engines, Windows
+and wasm, 100000 differential cases at seed 816, docs guard.

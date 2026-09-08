@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2618 selftest checks on all four
-  CI platforms, Windows included); 375 Rust tests
+  CI platforms, Windows included); 377 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2447,6 +2447,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 816: first stroke — NINE MISTAKES THAT ALL SAID THE SAME WRONG
+  THING now say nine different right ones. elif/elseif/elsif ->
+  `else if`, def/function -> `fn name(...) { ... }`,
+  var/const/local -> `let name = ...;`, `(x) => x` ->
+  `fn(x) { return x; }`. THE HINT IS KEYED ON THE STATEMENT'S FIRST
+  TOKEN, not the one the parser stopped at — the mistake is at the
+  start of the line and the failure is at the end of it. One helper
+  (expect_semi) replaces the six places a statement expected a `;`.
+  None of the words is reserved: `let var = 1; print(var);` still
+  runs, `elif;` is a valid statement, `else if` untouched. The arrow
+  wants `=` and `>` ADJACENT.
+  Both guards run backwards: dropping the adjacency rule fails the
+  test, and so does keying the hint on self.peek(). 377 Rust tests.
 - 815: replenishment — MILESTONE "THE MISTAKE YOU ACTUALLY MADE"
   (v2.131.0), chosen by a THIRD kind of looking: 799 counted
   instructions, 808 wrote a program and counted corrections, 815
@@ -2592,12 +2605,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: statement-start keywords from other languages.
-  `elif`/`elseif`/`elsif` -> `else if`, `def`/`function` -> `fn`,
-  `var`/`const` -> `let`. All nine cases reach ONE site, the
-  `expect(';')` after an expression statement, and all nine say
-  `expected ';', found identifier 'x'` today. Same shape as 811: the
-  parse has already failed, so no program that runs can change.
   - then: operators and literals. `and`/`or`/`not` -> `&&`/`||`/`!`,
   `null`/`None` -> `nil`, `True`/`False` -> `true`/`false`. The `did
   you mean` machinery exists but searches BOUND NAMES only, so it
