@@ -1733,7 +1733,7 @@ fn doc_flag_lists_everything_or_a_module() {
     assert_eq!(out.status.code(), Some(1));
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
-        stderr.contains("no builtin, stdlib function, module or file named nosuch"),
+        stderr.contains("no builtin, stdlib function, module or file matches nosuch"),
         "{stderr}"
     );
 }
@@ -2044,6 +2044,54 @@ fn unknown_options_suggest_the_nearest_option() {
     }
 }
 
+/// 822 wrote the top-five-words program with a four-line hand-rolled
+/// loop instead of `lib/map.ting`'s `top(m, n)`, because `--doc` was
+/// an exact-name lookup and there was no way to ask for a function by
+/// what it does. A word that names nothing is now searched for.
+#[test]
+fn doc_flag_searches_descriptions_when_a_word_names_nothing() {
+    let doc = |arg: &str| {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--doc", arg])
+            .output()
+            .expect("failed to run ting");
+        (
+            out.status.code(),
+            String::from_utf8_lossy(&out.stdout).into_owned(),
+        )
+    };
+
+    // The search the milestone was chosen for.
+    let (code, stdout) = doc("largest");
+    assert_eq!(code, Some(0), "{stdout}");
+    assert!(stdout.starts_with("matching largest:\n"), "{stdout}");
+    assert!(stdout.contains("\n  max_by(xs, key)"), "{stdout}");
+    assert!(stdout.contains("\nlib/map.ting:\n  top(m, n)"), "{stdout}");
+
+    // A name that IS a function is still answered in full, and first,
+    // and then followed by what else the word finds.
+    let (code, stdout) = doc("sort");
+    assert_eq!(code, Some(0), "{stdout}");
+    assert!(stdout.starts_with("sort(xs)\n"), "{stdout}");
+    assert!(stdout.contains("\nalso matching sort:\n"), "{stdout}");
+    assert!(stdout.contains("\n  sort_with(xs, cmp)"), "{stdout}");
+    // The exact entry is not repeated underneath itself.
+    assert_eq!(stdout.matches("A fresh sorted list").count(), 1, "{stdout}");
+
+    // A comment matches only where a WORD of it starts with the
+    // query: "arge" is inside "largest" and finds nothing, or every
+    // search would drown in the middle of other words.
+    let (code, stdout) = doc("arge");
+    assert_eq!(code, Some(1), "{stdout}");
+    assert!(stdout.is_empty(), "{stdout}");
+
+    // A module keeps its index; searching for "list" would bury it.
+    let (code, stdout) = doc("math");
+    assert_eq!(code, Some(0), "{stdout}");
+    assert!(stdout.starts_with("lib/math.ting:\n"), "{stdout}");
+    assert!(!stdout.contains("matching"), "{stdout}");
+}
+
 #[test]
 fn doc_flag_suggests_the_nearest_documented_name() {
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
@@ -2054,7 +2102,7 @@ fn doc_flag_suggests_the_nearest_documented_name() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
         stderr.contains(
-            "no builtin, stdlib function, module or file named medain (did you mean median?)"
+            "no builtin, stdlib function, module or file matches medain (did you mean median?)"
         ),
         "{stderr}"
     );
@@ -2247,7 +2295,7 @@ fn doc_flag_explains_several_names_at_once() {
         "{stdout}"
     );
     assert!(
-        stderr.contains("no builtin, stdlib function, module or file named nosuch"),
+        stderr.contains("no builtin, stdlib function, module or file matches nosuch"),
         "{stderr}"
     );
 }
@@ -2281,7 +2329,7 @@ fn doc_flag_explains_a_name_from_the_shell() {
     assert_eq!(out.status.code(), Some(1));
     assert!(
         String::from_utf8_lossy(&out.stderr)
-            .contains("no builtin, stdlib function, module or file named nosuchthing")
+            .contains("no builtin, stdlib function, module or file matches nosuchthing")
     );
 }
 

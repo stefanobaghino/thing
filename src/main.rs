@@ -38,9 +38,10 @@ fn main() -> ExitCode {
                  \x20   [--slow N]                list the N slowest files after the summary\n\
                  \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
                  \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
-                 \x20 ting --doc [NAMES...]       explain builtins or stdlib functions;\n\
+                 \x20 ting --doc [WORDS...]       explain builtins or stdlib functions;\n\
+                 \x20                             a word naming none of them is searched for;\n\
                  \x20                             a module or a .ting file lists its members,\n\
-                 \x20                             no name lists all\n\
+                 \x20                             no word lists all\n\
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
                  \x20 ting --coverage <paths...>  run each, then report which lines ran (dirs recurse)\n\
                  \x20 ting --bundle <script>      print the script and its local modules as one file\n\
@@ -97,14 +98,44 @@ fn main() -> ExitCode {
         }
         let mut printed = 0;
         let mut missing = false;
+        let only = names.len() == 1;
         for name in &names {
-            match doc_lookup(name) {
-                Some(text) => {
-                    // Entries are separated by a blank line.
-                    if printed > 0 {
-                        repl::say("");
-                    }
-                    repl::say(&text);
+            // Entries are separated by a blank line.
+            let separate = || {
+                if printed > 0 {
+                    repl::say("");
+                }
+            };
+            // A function is answered in full, and then with whatever
+            // else the same word finds: `--doc sort` used to leave
+            // `sort_with` and `max_by` unmentioned.
+            if let Some(text) = repl::doc_text(name) {
+                separate();
+                repl::say(&text);
+                printed += 1;
+                // Only when one word was asked. Several names is a
+                // lookup of names already known; one word is a
+                // question, and the only one worth answering twice.
+                if let Some(more) = only.then(|| repl::doc_search(name, Some(name))).flatten() {
+                    repl::say("");
+                    repl::say(&format!("also matching {name}:"));
+                    repl::say(&more);
+                }
+                continue;
+            }
+            // A module or a file: its index, which a search would
+            // only bury.
+            if let Some(text) = doc_lookup(name) {
+                separate();
+                repl::say(&text);
+                printed += 1;
+                continue;
+            }
+            match repl::doc_search(name, None) {
+                Some(found) => {
+                    separate();
+                    repl::say(&format!("matching {name}:"));
+                    repl::say(&found);
                     printed += 1;
                 }
                 None => {
@@ -112,10 +143,10 @@ fn main() -> ExitCode {
                     let near = ting::diag::nearest(name, names.iter().map(String::as_str));
                     match near {
                         Some(n) => eprintln!(
-                            "ting: no builtin, stdlib function, module or file named {name} (did you mean {n}?)"
+                            "ting: no builtin, stdlib function, module or file matches {name} (did you mean {n}?)"
                         ),
                         None => eprintln!(
-                            "ting: no builtin, stdlib function, module or file named {name}"
+                            "ting: no builtin, stdlib function, module or file matches {name}"
                         ),
                     }
                     missing = true;

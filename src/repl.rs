@@ -288,6 +288,79 @@ fn member_line(sig: &str, comment: &str) -> String {
     lines.join("\n")
 }
 
+/// Every entry `--doc` can print: the module path (empty for a
+/// builtin), the name, the signature and the comment.
+fn doc_entries() -> Vec<(&'static str, String, String, String)> {
+    let mut out: Vec<(&'static str, String, String, String)> = crate::value::Builtin::ALL
+        .iter()
+        .map(|b| {
+            let (sig, text) = b.doc();
+            ("", b.name().to_string(), sig.to_string(), text.to_string())
+        })
+        .collect();
+    let everything: String = crate::eval::embedded_stdlib()
+        .iter()
+        .map(|(path, _)| format!("import(\"{path}\");\n"))
+        .collect();
+    out.extend(crate::lsp::imported_stdlib_functions(&everything));
+    out
+}
+
+/// Whether a query finds an entry. A name matches on any substring,
+/// so `sort` finds `sort_with`. A comment matches only where a WORD
+/// of it starts with the query, so `len` finds "length" and not
+/// "silently", and `sort` finds "sorted" and "sorting".
+fn doc_matches(query: &str, name: &str, comment: &str) -> bool {
+    if name.to_lowercase().contains(query) {
+        return true;
+    }
+    comment
+        .to_lowercase()
+        .split(|c: char| !c.is_alphanumeric())
+        .any(|word| word.starts_with(query))
+}
+
+/// `--doc TEXT` and `:doc TEXT` searching for TEXT rather than
+/// looking it up: every entry whose name or comment matches, grouped
+/// and formatted the way the index is. `skip` is a name already
+/// printed in full, so an exact hit is not repeated underneath
+/// itself. None when nothing matches.
+pub fn doc_search(query: &str, skip: Option<&str>) -> Option<String> {
+    let query = query.to_lowercase();
+    if query.is_empty() {
+        return None;
+    }
+    let mut builtins = Vec::new();
+    let mut modules: Vec<(&'static str, Vec<String>)> = Vec::new();
+    for (path, name, sig, comment) in doc_entries() {
+        if Some(name.as_str()) == skip || !doc_matches(&query, &name, &comment) {
+            continue;
+        }
+        let line = member_line(&sig, &comment);
+        if path.is_empty() {
+            builtins.push(line);
+        } else if let Some((_, lines)) = modules.iter_mut().find(|(p, _)| *p == path) {
+            lines.push(line);
+        } else {
+            modules.push((path, vec![line]));
+        }
+    }
+    let mut out = Vec::new();
+    if !builtins.is_empty() {
+        builtins.sort();
+        out.push("builtins:".to_string());
+        out.extend(builtins);
+    }
+    for (path, lines) in modules {
+        if !out.is_empty() {
+            out.push(String::new());
+        }
+        out.push(format!("{path}:"));
+        out.extend(lines);
+    }
+    (!out.is_empty()).then(|| out.join("\n"))
+}
+
 /// `--doc FILE.ting` — the file's own top-level functions, one line
 /// each, the way a stdlib module is listed. None when the file cannot
 /// be read.

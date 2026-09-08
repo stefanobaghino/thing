@@ -17,7 +17,7 @@ ting --test --watch dirs...  # and again on every change (--check too)
 ting --coverage paths...     # run each, then report which lines ran
 ting --bundle script.ting    # print it and its local modules as one file
 ting --bundle s.ting -o one  # write it there instead of to stdout
-ting --doc [NAMES...]        # explain functions, list a module, or list all
+ting --doc [WORDS...]        # explain, search, list a module, or list all
 ting --lsp                   # language server on stdio
 ting --version | -V          # the version
 ting --help | -h             # every option
@@ -948,8 +948,17 @@ The `ting` binary is the whole toolchain — no separate installs:
   comments above them); no name at all lists every builtin and every
   stdlib function. Several names are allowed (`ting --doc len median
   slug`): the entries are printed in the order asked, separated by a
-  blank line. Exit 1 for an unknown name — the others are still
-  printed, and a name close to a documented one is suggested.
+  blank line. A word that names nothing is SEARCHED for instead:
+  every entry whose name contains it, or whose comment uses a word
+  starting with it, listed the way a module's members are — so
+  `ting --doc largest` finds `max_by` and `lib/map.ting`'s
+  `top`. ONE word that IS a function is answered in full and then
+  followed by whatever else that word finds, since `--doc sort`
+  should not leave `sort_with` unmentioned; several names are a
+  lookup of names you already know and are answered one entry each,
+  and a module or a file is answered with its index alone. Exit 1 when a word neither names
+  nor describes anything — the other names are still printed, and
+  one close to a documented name is suggested.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
   diagnostics as you type (syntax errors; an error on an `import` of
   a local file that has one, with the module's position; and warnings
