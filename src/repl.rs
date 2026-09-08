@@ -117,21 +117,38 @@ pub fn say(text: &str) {
 
 /// `:doc NAME` — a builtin's signature and doc line, or a stdlib
 /// function's module, signature and leading comment (every embedded
-/// module is searched, imported or not).
+/// module is searched, imported or not). A word that names nothing is
+/// SEARCHED for, and a function is followed by what else its name
+/// finds, exactly as `--doc` does: the same question typed two ways
+/// has to give the same answer, and a module index here is already
+/// forty lines, so the length of a search is nothing new.
 fn print_doc(name: &str) {
-    match doc_text(name).or_else(|| doc_index(Some(name))) {
-        Some(text) => say(&text),
-        None => {
-            let names = doc_names();
-            match crate::diag::nearest(name, names.iter().map(String::as_str)) {
-                Some(near) => say(&format!(
-                    "(no builtin, stdlib function or module named {name}; did you mean {near}?)"
-                )),
-                None => say(&format!(
-                    "(no builtin, stdlib function or module named {name})"
-                )),
-            }
+    if let Some(text) = doc_text(name) {
+        say(&text);
+        if let Some(more) = doc_search(name, Some(name)) {
+            say("");
+            say(&format!("also matching {name}:"));
+            say(&more);
         }
+        return;
+    }
+    if let Some(text) = doc_index(Some(name)) {
+        say(&text);
+        return;
+    }
+    if let Some(found) = doc_search(name, None) {
+        say(&format!("matching {name}:"));
+        say(&found);
+        return;
+    }
+    let names = doc_names();
+    match crate::diag::nearest(name, names.iter().map(String::as_str)) {
+        Some(near) => say(&format!(
+            "(no builtin, stdlib function or module matches {name}; did you mean {near}?)"
+        )),
+        None => say(&format!(
+            "(no builtin, stdlib function or module matches {name})"
+        )),
     }
 }
 

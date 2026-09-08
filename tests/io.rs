@@ -2085,11 +2085,14 @@ fn doc_flag_searches_descriptions_when_a_word_names_nothing() {
     assert_eq!(code, Some(1), "{stdout}");
     assert!(stdout.is_empty(), "{stdout}");
 
-    // A module keeps its index; searching for "list" would bury it.
-    let (code, stdout) = doc("math");
+    // A module keeps its index, and `list` is the module that proves
+    // it: half the comments in the library say "list", so a search
+    // would bury it if the branches were the other way round.
+    let (code, stdout) = doc("list");
     assert_eq!(code, Some(0), "{stdout}");
-    assert!(stdout.starts_with("lib/math.ting:\n"), "{stdout}");
-    assert!(!stdout.contains("matching"), "{stdout}");
+    assert!(stdout.starts_with("lib/list.ting:\n"), "{stdout}");
+    // Not "matching" alone: `find_index`'s own comment says it.
+    assert!(!stdout.contains("matching list:"), "{stdout}");
 }
 
 #[test]
@@ -2360,10 +2363,85 @@ fn repl_doc_explains_builtins_and_stdlib_functions() {
         "{stdout}"
     );
     assert!(
-        stdout.contains("(no builtin, stdlib function or module named nosuchthing)"),
+        stdout.contains("(no builtin, stdlib function or module matches nosuchthing)"),
         "{stdout}"
     );
     assert_eq!(out.status.code(), Some(0));
+}
+
+/// The same question typed two ways has to give the same answer:
+/// `:doc WORD` in the REPL is `ting --doc WORD` on the command line,
+/// character for character, search included.
+#[test]
+fn repl_doc_searches_exactly_as_the_flag_does() {
+    use std::io::Write as _;
+    let both = |word: &str| {
+        let flag = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--doc", word])
+            .output()
+            .expect("failed to run ting");
+        let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .stdin(Stdio::piped())
+            .stdout(Stdio::piped())
+            .stderr(Stdio::piped())
+            .spawn()
+            .expect("failed to spawn repl");
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(format!(":doc {word}\n").as_bytes())
+            .unwrap();
+        let repl = child.wait_with_output().unwrap();
+        (
+            String::from_utf8_lossy(&flag.stdout).into_owned(),
+            String::from_utf8_lossy(&repl.stdout).into_owned(),
+        )
+    };
+
+    // A word that names nothing: the search, grouped by module.
+    let (flag, repl) = both("largest");
+    assert!(flag.starts_with("matching largest:\n"), "{flag}");
+    assert!(flag.contains("\nlib/map.ting:\n  top(m, n)"), "{flag}");
+    assert_eq!(flag, repl, "the flag and the REPL disagree");
+
+    // A name that is a function: the entry, then what else it finds.
+    let (flag, repl) = both("sort");
+    assert!(flag.contains("\nalso matching sort:\n"), "{flag}");
+    assert!(flag.contains("\n  sort_with(xs, cmp)"), "{flag}");
+    assert_eq!(flag, repl, "the flag and the REPL disagree");
+
+    // A module keeps its index in both, and `list` is the module
+    // that proves it: half the comments in the library say "list", so
+    // a search would answer instead of the index if the two branches
+    // were the other way round.
+    let (flag, repl) = both("list");
+    assert!(flag.starts_with("lib/list.ting:\n"), "{flag}");
+    // Not "matching" alone: `find_index`'s own comment says it.
+    assert!(!flag.contains("matching list:"), "{flag}");
+    assert_eq!(flag, repl, "the flag and the REPL disagree");
+
+    // A word that neither names nor describes anything: the REPL says
+    // so on stdout and the flag on stderr, so only the suggestion is
+    // comparable.
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":doc frequency\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(
+        stdout.contains("matches frequency; did you mean frequencies?"),
+        "{stdout}"
+    );
 }
 
 #[test]
