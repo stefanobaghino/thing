@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2618 selftest checks on all four
-  CI platforms, Windows included); 377 Rust tests
+  nothing on its own — and 22 examples with .out; 2624 selftest checks on all four
+  CI platforms, Windows included); 379 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 817: second stroke — and/or/not say `&&`/`||`/`!`;
+  null/None/undefined/True/FALSE say `nil`/`true`/`false`. TWO SITES,
+  because the two mistakes fail in different places: the operator
+  words are unexpected TOKENS (parser `expect` and `block_stmt`,
+  where `if not a {` stops ONE TOKEN PAST the word because `not` was
+  read as the whole condition — the look-behind is what makes that
+  case work), the literals are unbound NAMES (diag::spelt_here_as,
+  read by BOTH the runtime and --check). The word table sits IN FRONT
+  of `nearest` deliberately: `null` is two edits from `nil` and
+  `None` is three, so no edit distance would find them, and these are
+  known words rather than typos.
+  None of the seven is reserved; `let not = true; if not { }` parses.
+  THE CORPUS WARNING GUARD DID ITS JOB ON ME: the new selftest cases
+  add four deliberate unbound names, so THE COUNT IS NOW TWELVE, NOT
+  SEVEN, and the build was red until the guard's table said so.
+  Three mutations, all caught. 379 Rust tests, 2624 checks.
 - 816: first stroke — NINE MISTAKES THAT ALL SAID THE SAME WRONG
   THING now say nine different right ones. elif/elseif/elsif ->
   `else if`, def/function -> `fn name(...) { ... }`,
@@ -2605,10 +2621,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then: operators and literals. `and`/`or`/`not` -> `&&`/`||`/`!`,
-  `null`/`None` -> `nil`, `True`/`False` -> `true`/`false`. The `did
-  you mean` machinery exists but searches BOUND NAMES only, so it
-  cannot reach a keyword — that is what needs extending.
   - then: quoting and access. `'hi'` and a backtick template should
   say ting's strings use `"`; `s.len()` should say `len(s)`.
   - then release as v2.131.0, and a docs line for something noticed
@@ -2771,11 +2783,14 @@ Standing rules (each from a slip; the LOG entry named has the story):
   engines run at the same nice level in one bench invocation, so the
   eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  seven warnings, guarded by a test since 499, all on purpose:
+  TWELVE warnings since 817 (was seven), guarded by a test since 499,
+  all on purpose:
   edge.ting shadows `len` (451), repeats a map key and writes a
   statement after a return (507), errors.ting reads the unbound
   `totl` (495) and, since 680, `amonut` and `volme`, and
-  functions.ting calls `add(1)` to prove arity (498). A file's
+  functions.ting calls `add(1)` to prove arity (498), and errors.ting
+  names `null`, `None`, `True` and `FALSE` plus a second `totl` since
+  817, to prove each is answered with ting's spelling. A file's
   warnings come in line order (507).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,

@@ -19057,3 +19057,42 @@ mistake rather than after it.
 Gate green: fmt, clippy, 16 `test result: ok` (377 tests, up two), 71
 files unchanged, corpus at seven, 2618 checks on both engines, Windows
 and wasm, 100000 differential cases at seed 816, docs guard.
+
+## 2026-09-08 — Iteration 817: the operators and the literals
+
+**Seven more foreign shapes now name ting's spelling.** `and`, `or`
+and `not` say `&&`, `||` and `!`; `null`, `None`, `undefined`, `True`
+and `FALSE` say `nil`, `true` and `false`.
+
+Two sites, because the two mistakes fail in different places. The
+operator words are unexpected TOKENS, so the hint lives in the
+parser's `expect` and in `block_stmt` — `if a and b {` stops at the
+word itself, but `if not a {` stops ONE TOKEN PAST it, because `not`
+was read as the whole condition. So the token behind is worth a look
+too, and that look-behind is what makes the `not` case work at all.
+
+The literals are unbound NAMES, so the hint lives beside the "did you
+mean" machinery — and deliberately in front of it. `null` is two
+edits from `nil` and `None` is three, so no edit distance would ever
+have found them: these are known words, not typos, and the answer is
+ting's word rather than a guess. `--check` says the same thing, since
+both read one table in diag.rs.
+
+**None of the seven is reserved.** `let and = 1; print(and);` runs,
+`let not = 5; print(not);` runs, and `let not = true; if not { }`
+parses and does what it says.
+
+**The corpus warning guard did its job on me.** The new selftest
+cases add four deliberate unbound names, so the count went from seven
+to twelve and the build went red until I said so in the guard's own
+table. That is the guard asking to be told, which is exactly what it
+is for — and the table now spells out the whole message for the four
+new ones, not just a phrase from it.
+
+Three mutations, all caught: dropping the look-behind for `not`,
+dropping `True` from the word table, and taking the hint out of
+`block_stmt`.
+
+Gate green: fmt, clippy, 16 `test result: ok` (379 tests, up two), 71
+files unchanged, corpus at TWELVE (was seven), 2624 checks on both
+engines, Windows and wasm, 100000 differential cases at seed 817.
