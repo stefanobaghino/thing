@@ -5,6 +5,40 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.132.0 (2026-09-08)
+
+- `--doc` and the REPL's `:doc` SEARCH when a word names nothing.
+  There are 266 documented entries and, until this release, the only
+  way to reach one was to already know its name: `ting --doc
+  frequency` answered "did you mean frequencies?" and `ting --doc
+  largest` answered nothing at all. It now answers with `max`,
+  `list.max_by`, `list.extent`, `list.argmax` and `map.top`. A name
+  matches on any substring; a description matches where one of its
+  WORDS STARTS WITH the query, so `len` finds "length" and not
+  "silently".
+- A word that IS a function is answered in full and then followed by
+  whatever else that word finds, because `--doc sort` leaving
+  `sort_with` and `sort_by` unmentioned was the complaint that
+  started this. That second half is printed only when ONE word was
+  asked for — `--doc len median slug` is a lookup of three names you
+  already know. A module or a file keeps its index alone.
+- `:doc WORD` in the REPL is `ting --doc WORD` on the command line,
+  character for character, and a test asserts the two outputs are
+  equal rather than checking each separately.
+- Every documented entry now says what it does. Nineteen of the 266
+  carried a signature and nothing else — `list.unique`, `map.merge`,
+  `math.clamp`, `string.pad_left` among them — which made them
+  invisible to any search however good the matching. A guard fails
+  the build if an entry ever ships with an empty description again.
+  The words are chosen for someone searching: `unique` says
+  "duplicates removed", `top` says "the most frequent entries".
+- `format`'s own doc line still described v2.129's format, so
+  everything v2.130.0 shipped was unfindable under "width", "align"
+  or "decimal". It now describes the specs, and `ting --doc width`
+  answers with `format`.
+- Nothing about the language changed. This release is the toolchain
+  answering a question it could not answer before.
+
 ## v2.131.0 (2026-09-08)
 
 - Syntax carried in from another language now names ting's spelling
