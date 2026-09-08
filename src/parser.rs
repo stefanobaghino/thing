@@ -136,6 +136,32 @@ impl<'a> Parser<'a> {
                 _ => {}
             }
         }
+        // A `.` is never part of anything the parser accepts, so
+        // saying what it was probably reaching for costs nothing.
+        // `s.len()` wants a call, `m.key` wants a key.
+        if self.peek() == &TokenKind::Dot {
+            return Some(
+                match (
+                    self.peek2(),
+                    &self.tokens[(self.pos + 2).min(self.tokens.len() - 1)].kind,
+                ) {
+                    (TokenKind::Ident(_), TokenKind::LParen) => {
+                        "ting has no methods — a call is `f(x)`"
+                    }
+                    (TokenKind::Ident(_), _) => "ting has no fields — a map key is `m[\"key\"]`",
+                    _ => "ting has no `.`",
+                },
+            );
+        }
+        // `f"..."` is one token immediately after another, which
+        // nothing valid ever is.
+        if matches!(self.peek(), TokenKind::Str(_))
+            && self.pos > 0
+            && matches!(&self.tokens[self.pos - 1].kind, TokenKind::Ident(_))
+            && self.tokens[self.pos - 1].span.end == self.span().start
+        {
+            return Some("ting has no f-strings — build text with `format(\"{} ...\", x)`");
+        }
         if self.pos > 0
             && let TokenKind::Ident(name) = &self.tokens[self.pos - 1].kind
             && name == "not"
@@ -609,6 +635,8 @@ impl<'a> Parser<'a> {
                 let mut message = format!("expected expression, found {}", describe(&k));
                 if hint {
                     message.push_str(" (a comment starts with `#`)");
+                } else if let Some(hint) = self.operator_word() {
+                    message.push_str(&format!(" ({hint})"));
                 }
                 return Err(self.error(message));
             }
@@ -951,6 +979,55 @@ mod tests {
             "print(true && false);",
             "print(!true);",
             "if a { } else { }",
+        ] {
+            assert!(
+                parse_program(&lex(src).unwrap()).is_ok(),
+                "{src} should still parse"
+            );
+        }
+    }
+
+    /// A `.` is never part of anything the parser accepts, so the
+    /// hint costs nothing and can say which of the two shapes was
+    /// probably meant. An `f"..."` is two tokens with nothing
+    /// between them, which nothing valid ever is.
+    #[test]
+    fn borrowed_access_syntax_says_what_ting_writes() {
+        for (src, want) in [
+            ("print(s.len());", "ting has no methods — a call is `f(x)`"),
+            ("let n = s.len();", "ting has no methods — a call is `f(x)`"),
+            (
+                "print(m.a);",
+                "ting has no fields — a map key is `m[\"key\"]`",
+            ),
+            ("print(.);", "ting has no `.`"),
+            (
+                "print(f\"n is\");",
+                "ting has no f-strings — build text with `format(\"{} ...\", x)`",
+            ),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// A `.` inside a number is part of the number, and an
+    /// identifier with a SPACE before a string is an ordinary call
+    /// that happens to fail elsewhere.
+    #[test]
+    fn the_access_hint_stays_out_of_the_way() {
+        // `f "x"` is the same two tokens with a space between them:
+        // a missing operator or comma, not an f-string.
+        let spaced = prog_err("print(f \"n is\");");
+        assert!(
+            spaced.ends_with("found string literal"),
+            "a space is not an f-string: {spaced}"
+        );
+        for src in [
+            "print(1.5 + 2.25);",
+            "print(0.5);",
+            "let m = {\"a\": 1}; print(m[\"a\"]);",
+            "let f = fn(x) { return x; }; print(f(\"hi\"));",
         ] {
             assert!(
                 parse_program(&lex(src).unwrap()).is_ok(),

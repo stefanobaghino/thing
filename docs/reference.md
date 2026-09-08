@@ -74,6 +74,10 @@ both.
   `||` and `!` rather than `and`, `or` and `not`, and `nil`, `true`
   and `false` rather than `null`, `None`, `True` or `False`. None of
   them is reserved, so a program may still use one as a name.
+- Strings are written with double quotes only. A `'` or a backtick
+  says so, and there are no template literals; text is built with
+  `format`. There is no `.`: a call is `f(x)` and a map key is
+  `m["key"]`, and writing `s.len()` or `m.a` says which.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types

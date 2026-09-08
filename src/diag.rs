@@ -84,16 +84,24 @@ pub fn shorten(path: &str) -> String {
 /// Equal distances are settled by the longer shared start (`medain`
 /// means `median`, not `mean`) and then alphabetically, so the answer
 /// never depends on the order the candidates arrive in.
-/// A name another language uses for a value ting spells differently.
+/// A word another language uses where ting writes something else.
 /// These are not typos, so `nearest` will not find them — `null` is
 /// two edits from `nil` and `None` is three — and answering "did you
 /// mean" would be the wrong shape anyway. The word is known; what is
 /// wanted is ting's word for it.
+///
+/// `and`, `or` and `not` are here as well as in the parser, because
+/// they only reach the parser where a token cannot go: `1 + and`
+/// parses perfectly well, as the sum of a number and a name nothing
+/// has bound.
 pub fn spelt_here_as(name: &str) -> Option<&'static str> {
     Some(match name {
-        "null" | "NULL" | "None" | "undefined" | "None_" => "nil",
+        "null" | "NULL" | "None" | "undefined" => "nil",
         "True" | "TRUE" => "true",
         "False" | "FALSE" => "false",
+        "and" => "&&",
+        "or" => "||",
+        "not" => "!",
         _ => return None,
     })
 }

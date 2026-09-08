@@ -41,7 +41,7 @@ fn selftests_pass_silently() {
 /// The whole corpus under `--check`: the warnings it may print are
 /// enumerated here, so a new false positive fails the build. Every one
 /// is deliberate — a shadowed builtin, a duplicate key, a statement
-/// after a return, eight unbound names and a wrong-arity call — and
+/// after a return, nine unbound names and a wrong-arity call — and
 /// each was written to test the runtime that catches it.
 #[test]
 fn corpus_check_warnings_are_the_expected_seven() {
@@ -55,7 +55,7 @@ fn corpus_check_warnings_are_the_expected_seven() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 12, "{stderr}");
+    assert_eq!(warnings.len(), 13, "{stderr}");
     // File names only: Windows prints the paths with backslashes. A
     // file's warnings come in the order its lines do.
     let expected = [
@@ -86,6 +86,10 @@ fn corpus_check_warnings_are_the_expected_seven() {
         (
             "errors.ting",
             "`totl` is bound nowhere (did you mean `total`?)",
+        ),
+        (
+            "errors.ting",
+            "`and` is bound nowhere (ting writes this as `&&`)",
         ),
         ("functions.ting", "called with 1"),
     ];

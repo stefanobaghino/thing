@@ -59,6 +59,11 @@ assert(!contains(n1["err"], "did you mean"), "a known word is not guessed at");
 # And a real typo is still a typo.
 let still = try(fn() { return totl; });
 assert(contains(still["err"], "did you mean 'total'"), "a typo is still a typo");
+# `and`, `or` and `not` reach the parser only where a token cannot
+# go; `1 + and` parses perfectly well, as the sum of a number and a
+# name nothing has bound, so the answer has to come from here too.
+let op = try(fn() { return 1 + and; });
+assert(contains(op["err"], "ting writes this as `&&`"), "and is &&");
 
 # Arity errors count in plain English and name the function called.
 let one = try(len);

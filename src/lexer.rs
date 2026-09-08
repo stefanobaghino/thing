@@ -212,7 +212,16 @@ impl<'a> Lexer<'a> {
                         self.pos += 1;
                     }
                     let ch = &self.src[start..self.pos];
-                    return Err(self.error(format!("unexpected character '{ch}'"), start));
+                    // Two of these are how other languages quote text,
+                    // and saying so is more use than naming the byte.
+                    let hint = match ch {
+                        "'" => " (ting's strings are written with double quotes)",
+                        "`" => {
+                            " (ting's strings are written with double quotes, and have no ${...})"
+                        }
+                        _ => "",
+                    };
+                    return Err(self.error(format!("unexpected character '{ch}'{hint}"), start));
                 }
             };
             tokens.push(Token {
@@ -683,6 +692,28 @@ mod tests {
     fn unexpected_character_errors_with_char() {
         let err = lex("let x = €").unwrap_err();
         assert_eq!(err.message, "unexpected character '€'");
+    }
+
+    /// Two characters that are how other languages quote text. The
+    /// hint says where ting keeps its own quotes; every other
+    /// character is still named plainly.
+    #[test]
+    fn a_borrowed_quote_says_where_tings_are() {
+        for (src, want) in [
+            (
+                "'hi'",
+                "unexpected character ''' (ting's strings are written with double quotes)",
+            ),
+            (
+                "`hi`",
+                "unexpected character '`' (ting's strings are written with double quotes, and have no ${...})",
+            ),
+            ("€", "unexpected character '€'"),
+        ] {
+            assert_eq!(lex(src).unwrap_err().message, want, "{src}");
+        }
+        // Inside a string they are ordinary characters.
+        assert!(lex("\"it's `fine`\"").is_ok());
     }
 
     #[test]
