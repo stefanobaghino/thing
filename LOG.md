@@ -19504,3 +19504,33 @@ in it.
 Gate green: fmt, clippy, 16 `test result: ok` (385 tests, up one), 71
 files unchanged, corpus at thirteen, Windows check and clippy, wasm
 release build, cookbook and playground generators clean.
+
+## 2026-09-08 — Iteration 827: v2.132.0 — "finding the function you need"
+
+**Released and verified.** 153rd tag; strokes 823, 824, 825, 826.
+Release, CI and Pages all green, verdicts from the API. All six
+archives `sha256sum -c` OK; both aarch64 Linux archives unpacked and
+run here.
+
+**The probe asked the shipped binaries about what THIS release
+shipped, and both answered the same.** `--doc largest` reaches
+`map.top`; `--doc sort` carries an "also matching" half listing
+`sort_with`; `--doc width` answers with `format` and `--doc format`
+carries `{:>5}`; `--doc len median slug` carries NO also-matching, so
+the single-word rule survived the build; "duplicate" reaches `unique`
+and "frequent" reaches `top`, the two misses 825 counted; `:doc
+largest` is byte-identical to `--doc largest`; and the shipped index
+is 266 entries with 0 undescribed.
+
+**Six changelog entries**, the last of them saying what did not
+change: nothing about the language. This release is the toolchain
+answering a question it could not answer before.
+
+**BASELINE NOT REGENERATED**, per 812's rule — a milestone about
+finding functions is not a milestone about running them. The eleven
+rows were checked instead of assumed: 11 rows x 2 engines, 22
+comparisons, no mismatches.
+
+Gate before the tag: fmt, clippy, 16 `test result: ok` (385 tests),
+71 files unchanged, corpus at thirteen, Windows check and clippy,
+wasm release build.

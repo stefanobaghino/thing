@@ -2447,6 +2447,23 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 827: v2.132.0 TAGGED AND VERIFIED (153rd tag; strokes 823, 824,
+  825, 826; six archives, `sha256sum -c` OK on all six, both aarch64
+  Linux archives unpacked and run here). MILESTONE "FINDING THE
+  FUNCTION YOU NEED" COMPLETE.
+  THE PROBE ASKED THE SHIPPED BINARIES ABOUT THIS RELEASE and gnu and
+  musl answered alike: `--doc largest` reaches map.top; `--doc sort`
+  has an also-matching half with sort_with; `--doc width` answers
+  format and `--doc format` carries `{:>5}`; `--doc len median slug`
+  has NO also-matching, so the single-word rule survived the build;
+  "duplicate" reaches unique and "frequent" reaches top; `:doc
+  largest` is byte-identical to `--doc largest`; the shipped index is
+  266 entries, 0 undescribed.
+  Six changelog entries, the last saying what did NOT change:
+  nothing about the language.
+  NO BASELINE REGENERATION, per 812: a milestone about finding
+  functions is not one about running them. 11 rows x 2 engines, 22
+  comparisons, no mismatches.
 - 826: fourth stroke — WORDS THE SEARCH CAN FIND. The 19 entries now
   say what they do; 0 of 266 undescribed. Both 825 misses are hits:
   "duplicate" -> `list.unique`, "frequent" -> `map.top`.
@@ -2785,8 +2802,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release as v2.132.0 (CHANGELOG from LOG 823-826, tag, verify by
-  cold asset download).
+  - health tick closing the milestone: bench checksums on both
+  engines, 50000 differential / 20000 formatter / crash + 2000000
+  regex sweeps, `du -sh target`, site audit (the changelog page's top
+  entry should be v2.132.0).
+  - then replenishment: choose the next milestone. Four kinds of
+  looking are spent — instruction counts (799), writing a program and
+  counting corrections (808), fifty wrong programs (815), the same
+  program twice in two languages (822). A fifth is wanted.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
