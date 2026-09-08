@@ -2447,6 +2447,43 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 829: replenishment — MILESTONE "THE LOOP THAT DOES NOT BUILD A
+  LIST" (v2.133.0), the fifth kind of looking: THE INPUT, NOT THE
+  PROGRAM. Fed the readers invalid UTF-8, a BOM, CRLF, NUL bytes, an
+  empty file, a directory, JSON with a trailing comma / duplicate
+  keys / 100000-deep nesting, CSV with an unterminated quote and
+  ragged rows, and the arithmetic edges.
+  MOST OF IT HELD, which is the first finding: BOM skipped in JSON
+  and CSV, CRLF parsed, empty file gives empty, a directory says so,
+  a trailing comma names its offset, duplicate keys take the last,
+  100000 levels parse without touching the stack, INTEGER OVERFLOW IS
+  A REAL ERROR AND NOT A WRAP, negative indices and clamping slices
+  behave as documented.
+  THE EVIDENCE: `for i in range(10000000)` peaks at 307 MB where the
+  same loop with `while` peaks at 3 MB — a hundredfold. Time is a
+  wash (1.19 s vs 1.35 s; the list actually WINS, because while
+  interprets more per step). AND THE FAILURE MODE IS THE KERNEL:
+  `for i in range(100000000000)` is OOM-killed, exit 137, no message,
+  no line — the only bad input in the whole sweep that produces a
+  corpse rather than a ting error.
+  STROKES: (a) the VM recognises `for NAME in range(...)` and emits a
+  counting loop — THE TRAP IS SHADOWING, `fn range(n)` and `let range
+  = fn(n)` are both legal and both were checked here, and the fusion
+  must not fire for them; (b) the tree-walker likewise, or the
+  engines diverge; (c) measure as 803 did — peak memory flat in n,
+  the OOM case answering, eleven checksums unchanged on both engines,
+  no speed regression (the list is FASTER today, so the fusion must
+  justify itself on memory).
+  COMPATIBLE BY CONSTRUCTION: `range(...)` as a value still returns a
+  list; nothing observable changes. Same shape as the v2.129.0 opcode
+  fusions.
+  HELD, NOT CHOSEN, WITH THE EVIDENCE: `csv.maps` on a ragged row
+  SILENTLY DROPS extra fields (`3,4,5,6` under a three-name header
+  gives three entries) and fills a short row with nil; `parse` keeps
+  every field, and `maps` documents neither case. Python's DictReader
+  keeps the extras. Its own tick, not a rider.
+  ALSO NOTICED: read_file on invalid UTF-8 says "stream did not
+  contain valid UTF-8" — Rust's phrasing, not ting's.
 - 828: health tick green at load 2.4 — MILESTONE "FINDING THE
   FUNCTION YOU NEED" (v2.132.0, strokes 822-827) COMPLETE. 11 bench
   rows x 2 engines, 22 comparisons, none differ. 50000 differential
@@ -2816,10 +2853,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone. Four kinds of
-  looking are spent — instruction counts (799), writing a program and
-  counting corrections (808), fifty wrong programs (815), the same
-  program twice in two languages (822). A fifth is wanted.
+  - the VM: `for NAME in range(...)` compiles to a counting loop, the
+  list never built; must NOT fire when `range` is shadowed.
+  - then the tree-walker, the same.
+  - then measure: peak memory flat in n, the OOM case answering,
+  eleven checksums on both engines, no speed regression.
+  - then release as v2.133.0.
+  - `csv.maps` on ragged rows: decide between keeping the extras,
+  erroring, and documenting the drop (829 has the evidence).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

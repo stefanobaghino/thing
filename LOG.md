@@ -19563,3 +19563,72 @@ behaviour was checked on the native aarch64 archives in 827.
 
 **MILESTONE "FINDING THE FUNCTION YOU NEED" (v2.132.0, strokes
 822-827) COMPLETE.** Backlog is down to replenishment.
+
+## 2026-09-08 — Iteration 829: replenishment — "the loop that does not build a list"
+
+**A fifth kind of looking: the INPUT, not the program.** The four
+before it all held the program up to the light — instructions (799),
+writing one (808), writing fifty wrong ones (815), writing the same
+one twice in two languages (822). Every corpus program is fed data
+that is clean. This tick fed the readers data that is not: invalid
+UTF-8, a byte order mark, CRLF, NUL bytes, an empty file, a
+directory where a file belongs, JSON with a trailing comma and with
+duplicate keys and nested a hundred thousand deep, CSV with an
+unterminated quote and with ragged rows, and the arithmetic edges —
+overflow, a literal past the range, an out-of-range slice, a negative
+index.
+
+**Most of it held, and that is the first finding.** The BOM is
+skipped in JSON and in CSV; CRLF parses; an empty file gives an empty
+result rather than a row of nothing; a directory says "Is a
+directory"; a trailing comma names its offset; duplicate keys take
+the last, as JSON asks; a hundred thousand levels of nesting parse
+without touching the stack. Integer overflow is a REAL ERROR and not
+a wrap — `9223372036854775807 + 1` says "integer overflow" and stops.
+Negative indices and clamping slices are documented and behave as
+documented.
+
+**But `for i in range(n)` builds the list.** `range` returns a real
+list of ints — its docstring says so — and the counting loop everyone
+writes therefore pays for one. Measured here: `for i in range(10000000)`
+peaks at 307 MB where the same loop written with `while` peaks at 3
+MB, a hundredfold. Time is a wash (1.19 s against 1.35 s: the while
+loop interprets more per step, so the list actually wins).
+
+**And the failure mode is the kernel.** `for i in range(100000000000)`
+is not an error. The process is OOM-killed — exit 137, no message, no
+line number, nothing a script can catch. Every other bad input in
+this sweep produced a ting error naming the line; this one produces a
+corpse.
+
+**Milestone: "the loop that does not build a list" (v2.133.0).**
+Three strokes.
+
+- The VM: recognise `for NAME in range(...)` at compile time and emit
+  a counting loop, so the list is never built. THE TRAP IS
+  SHADOWING: `fn range(n) { return ["a", "b"]; }` is legal and so is
+  `let range = fn(n) { ... }`, and both were checked here — they
+  work, and the fusion must not fire for them.
+- The tree-walker: the same, because the two engines are held
+  byte-identical and a fusion in one is a divergence.
+- Then measure it, as 803 measured its fusions and threw one away:
+  peak memory flat in n, the OOM case running to an answer, the
+  eleven bench checksums unchanged on both engines, and no speed
+  regression — the list is FASTER today, so a fusion that costs time
+  has to justify itself on memory alone.
+
+This is compatible by construction: `range(...)` used as a value
+still returns a list, so nothing observable changes. It is the same
+shape as the v2.129.0 opcode fusions — a form the compiler can see,
+made cheaper without being made different.
+
+**Held, not chosen, with the evidence**: `csv.maps` on a ragged row
+SILENTLY DROPS the extra fields (`3,4,5,6` under a three-name header
+becomes three entries) and fills a short row with nil. `parse` keeps
+every field, so nothing is lost until `maps` is asked; and `maps`
+says nothing about either case. Python's DictReader keeps the extras.
+Whether ting should keep them, error, or say plainly that it drops
+them is a question worth its own tick, not a rider on this one.
+
+**Also noticed**: `read_file` on invalid UTF-8 says "stream did not
+contain valid UTF-8", which is Rust's phrasing rather than ting's.
