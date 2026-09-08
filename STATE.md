@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 820: v2.131.0 TAGGED AND VERIFIED (152nd tag; strokes 816, 817,
+  818, 819; six archives, `sha256sum -c` OK on all six, both aarch64
+  Linux archives unpacked and run here). MILESTONE "THE MISTAKE YOU
+  ACTUALLY MADE" COMPLETE: the twenty foreign shapes 815 probed all
+  name ting's spelling now. Five changelog entries, the fifth stating
+  the compatibility argument rather than assuming it — every hint
+  fires on a program that had ALREADY failed, and none of the words
+  is reserved, so nothing that ran can behave differently.
+  NO BASELINE REGENERATION, per 812's rule: this milestone changes
+  what ting says when a program is WRONG, not how fast a correct one
+  runs. The eleven rows were CHECKED instead of assumed — 11 rows x 2
+  engines, 22 comparisons, no mismatches.
+  The shipped gnu binary was asked about what THIS pair of releases
+  shipped: `if x and 2 {` answers `&&`, `null` answers `nil`,
+  `{:>8.2}` of a third writes `    0.33`. Release, CI and Pages all
+  green, verdicts from the API.
 - 819: fourth stroke — WHAT DIVIDING BY ZERO ANSWERS, written as one
   rule: which answer you get is decided by the OPERANDS, not by the
   zero. Ints error (`/` AND `%`); either side a float means IEEE
@@ -2648,11 +2664,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then release as v2.131.0 (CHANGELOG from LOG 816-818, tag, verify
-  by cold asset download).
-  - then: prove the archive's lib/ and the binary's embedded stdlib
-  are the same twelve modules (754 — a lib/ beside a script silently
-  shadows the embedded one, and nobody checks they agree).
+  - health tick closing the milestone: bench checksums on both
+  engines, 50000 differential / 20000 formatter / crash + 2000000
+  regex sweeps, `du -sh target`, site audit (the changelog page's top
+  entry should be v2.131.0).
+  - then replenishment: choose the next milestone. 799 counted
+  instructions, 808 wrote a program and counted corrections, 815
+  wrote fifty wrong programs and read the answers — a fourth kind of
+  looking is wanted, not a fourth pass of one of those three.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

@@ -19157,3 +19157,42 @@ three false ones already this month.
 
 Gate green: fmt, clippy, 16 `test result: ok`, 71 files unchanged,
 corpus at thirteen, 2635 checks on both engines.
+
+## 2026-09-08 — Iteration 820: v2.131.0 — "the mistake you actually made"
+
+**The milestone 815 chose, released.** Fifty wrong programs were
+probed then; twenty of them answered with a description of ting's
+grammar rather than with the mistake, and nine of those twenty gave
+the SAME answer. All twenty now name ting's spelling: the
+statement-start keywords (816), the operators and literals (817),
+and the quoting, the dot and the f-string (818). 819 wrote down what
+dividing by zero answers, the docs gap the probe turned up on the
+way.
+
+**The compatibility argument is the same one 811 made and it is
+worth restating, because it is why a milestone of this size costs
+nothing.** Every hint added here fires on a program that had ALREADY
+failed — a parse that stopped, or a name nothing bound. None of the
+words is reserved: `let var = 1; print(var);` runs, so do
+`function`, `def`, `and` and `not` as names. No program that ran
+before this release can behave differently after it.
+
+**BASELINE was not regenerated**, per 812's rule: this milestone
+changes what ting says when a program is wrong, not how fast a
+correct one runs. The eleven checksums were verified on both engines
+against the existing table instead, and all eleven match.
+
+Gate green before the tag: fmt, clippy, 16 `test result: ok` (382
+tests), 71 files unchanged, corpus at thirteen, Windows check and
+clippy, wasm release build, eleven bench checksums on vm and eval.
+
+152nd tag.
+
+**Verified from the archives, not from the tree.** All six SHA256SUMS
+check; both aarch64 Linux archives were unpacked and run here. The
+shipped gnu binary answers `if x and 2 {` with ting's `&&`, `null`
+with `nil`, and writes `{:>8.2}` of a third as `    0.33` — the two
+milestones of this pair, checked on a binary this machine did not
+build.
+
+Release, CI and Pages all green, verdicts from the API.
