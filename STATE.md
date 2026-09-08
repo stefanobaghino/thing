@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 831: second stroke — THE TREE-WALKER COUNTS TOO. Head to head on
+  ONE binary, fused against not fused (the list bound to a name so the
+  loop cannot see the call): vm 0.74 s / 3 MB against 1.26 s / 308 MB;
+  eval 6.48 s / 2 MB against 6.56 s / 307 MB. A hundredfold on both,
+  no time lost on either — the tree-walker's cost is interpretation,
+  not allocation, which is why MEMORY was the point.
+  One enum (`ForItems`) carries both shapes so the loop body is
+  written once; its snapshot arm now calls the same `iter_snapshot`
+  the VM uses, deleting an inlined copy of "cannot iterate over X".
+  Evaluation order preserved deliberately: callee then arguments, as
+  ExprKind::Call does them.
+  NINE DIFFERENTIAL CASES pin it across engines (three-argument,
+  negative step, empty, `let range` inside a function, `fn range` at
+  top level, all three error shapes, a spread). Three mutations,
+  three caught: no runtime check, `>` where `>=` belongs in the
+  counter's bound, and ignoring the spread guard.
 - 830: first stroke — THE COUNTING LOOP, IN THE VM. 307 MB -> 3 MB
   and 1.19 s -> 0.85 s on `for i in range(10000000)`; the
   100000000000 case that 829 watched the kernel kill now ANSWERS.
@@ -2879,8 +2895,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the tree-walker, the same.
-  - then measure: peak memory flat in n, the OOM case answering,
+  - measure: peak memory flat in n, the OOM case answering,
   eleven checksums on both engines, no speed regression.
   - then release as v2.133.0.
   - `csv.maps` on ragged rows: decide between keeping the extras,

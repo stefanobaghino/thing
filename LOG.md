@@ -19683,3 +19683,42 @@ Gate green: fmt, clippy, 16 `test result: ok` (386 tests, up one), 71
 files unchanged, corpus at fourteen, eleven bench checksums on both
 engines, Windows check and clippy, wasm release build, 100000
 differential cases at seed 830.
+
+## 2026-09-08 — Iteration 831: the same loop in the tree-walker
+
+**Both engines now count.** The measurement is head to head on ONE
+binary, fused against not fused, by binding the list to a name so the
+loop cannot see the call:
+
+    for i in range(10000000)          vm  0.74 s   3 MB
+    let xs = range(10000000); for i in xs   vm  1.26 s  308 MB
+    for i in range(10000000)        eval  6.48 s   2 MB
+    let xs = range(10000000); for i in xs eval  6.56 s  307 MB
+
+A hundredfold on both, and no time lost on either. The tree-walker
+was 7 s before and after — its cost is interpretation, not
+allocation, which is why the memory was the point.
+
+**One enum carries both shapes**, so the loop body is written once:
+`ForItems` is either a snapshot's iterator or a counter, limit and
+step. The snapshot arm now calls the same `iter_snapshot` the VM
+uses, which deletes a copy of "cannot iterate over X" that had been
+inlined here since before the VM existed.
+
+**The order of evaluation is preserved deliberately**: callee first,
+then arguments, exactly as `ExprKind::Call` does them, so anything
+they print or assign happens when it always did.
+
+**Nine differential cases now pin the loop across the engines** — the
+three-argument and negative-step forms, the empty range, a `range`
+bound by `let` INSIDE a function, a `range` shadowed by `fn` at the
+top level, all three error shapes, and a spread. Three mutations,
+three caught: fusing without the runtime check, an off-by-one in the
+counter's bound (`>` where `>=` belongs), and ignoring the spread
+guard. The first two were caught by the differential suite AND by the
+selftest comparison, which is the point of having both.
+
+Gate green: fmt, clippy, 16 `test result: ok` (386 tests), 71 files
+unchanged, corpus at fourteen, eleven bench checksums on both
+engines, Windows check and clippy, wasm release build, 100000
+differential cases at seed 831.
