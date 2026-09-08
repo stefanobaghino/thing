@@ -22,7 +22,8 @@ current orientation.
   nothing on its own — and 22 examples with .out; 2635 selftest checks on all four
   CI platforms, Windows included); 382 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
-  rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
+  rows since bench/scan.ting joined in 794, regenerated at 832 for
+  v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -2447,6 +2448,27 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 832: third stroke — WHAT IT IS WORTH, measured against c0bb1fe
+  built in a worktree at load 0.33 (the 804 rule, not a BASELINE
+  delta). PEAK MEMORY IS FLAT: before it grows 1.1 / 33.1 / 307.6 MB
+  with n; after it is 2.1 MB at every size and STILL 2.1 MB at a
+  hundred million on both engines. The range(100000000000) loop 829
+  watched the kernel kill answers on both; the old binary is still
+  killed at 137 under the same timeout.
+  TIME, best of five interleaved at ten million: vm -25.8%, eval
+  -3.2% — the VM's loop was spending a quarter of itself building a
+  list it read once; the tree-walker's cost is interpretation.
+  THE CORPUS BENCHES SAY NOTHING CHANGED and that is right: eleven
+  scripts, best of three interleaved, all within +-6%, and the
+  largest single number (fib +5.7%) is a script with NO range loop —
+  a noise band you can name.
+  BASELINE REGENERATED, 812's rule in the other direction: this
+  milestone IS about speed and memory. Every checksum unchanged, only
+  timings moved.
+  Documented in both places: docs/vm.md's control-flow section (three
+  slots, and why the decision is at run time) and the `range` row in
+  docs/reference.md ("but only when `range` still means this
+  builtin").
 - 831: second stroke — THE TREE-WALKER COUNTS TOO. Head to head on
   ONE binary, fused against not fused (the list bound to a name so the
   loop cannot see the call): vm 0.74 s / 3 MB against 1.26 s / 308 MB;
@@ -2895,9 +2917,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - measure: peak memory flat in n, the OOM case answering,
-  eleven checksums on both engines, no speed regression.
-  - then release as v2.133.0.
+  - release as v2.133.0 (CHANGELOG from LOG 830-832, tag, verify by
+  cold asset download).
   - `csv.maps` on ragged rows: decide between keeping the extras,
   erroring, and documenting the drop (829 has the evidence).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME

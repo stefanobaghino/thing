@@ -19722,3 +19722,49 @@ Gate green: fmt, clippy, 16 `test result: ok` (386 tests), 71 files
 unchanged, corpus at fourteen, eleven bench checksums on both
 engines, Windows check and clippy, wasm release build, 100000
 differential cases at seed 831.
+
+## 2026-09-08 — Iteration 832: what the counting loop is worth
+
+**Head to head against the pre-milestone commit, built in a worktree,
+on a host at load 0.33 — the 804 rule, not a BASELINE delta.**
+`c0bb1fe` against HEAD, same script, interleaved, both engines:
+
+    n            engine   before             after
+    100000       vm       0.02 s    1.1 MB   0.02 s   0.5 MB
+    100000       eval     0.07 s    5.6 MB   0.07 s   2.1 MB
+    1000000      vm       0.09 s   33.1 MB   0.07 s   2.1 MB
+    1000000      eval     0.55 s   33.1 MB   0.53 s   2.1 MB
+    10000000     vm       0.78 s  307.6 MB   0.59 s   2.1 MB
+    10000000     eval     5.32 s  307.6 MB   5.06 s   2.1 MB
+
+**Peak memory is FLAT, which is the claim worth making.** Before, it
+grows with n — 1.1, 33.1, 307.6 MB. After, it is 2.1 MB at every
+size, and still 2.1 MB at a hundred million on both engines, where
+before would have wanted three gigabytes. And the loop 829 watched
+the kernel kill — `range(100000000000)` — answers on both: the old
+binary is still killed at exit 137 under the same `timeout`.
+
+**Time, best of five interleaved at ten million: vm -25.8%, eval
+-3.2%.** The tree-walker's cost is interpretation, so removing the
+allocation barely shows; the VM's loop was spending a quarter of
+itself building a list it then read once.
+
+**The corpus benches say nothing changed, and that is the right
+answer.** Eleven scripts, best of three interleaved, all within
+±6% — and the largest single number, fib at +5.7%, is a script with
+NO range loop at all, which is what a noise band looks like when you
+can name it.
+
+**BASELINE regenerated, per 812's rule in the other direction**: this
+milestone IS about speed and memory, so the record of them should be
+rewritten, and the host was quiet when it was. Every checksum in the
+table is unchanged; only the timings moved.
+
+**Documented in both places it belongs.** docs/vm.md's control-flow
+section now describes the three slots and why the decision is made at
+run time; the `range` row in docs/reference.md says a `for` over it
+counts rather than building the list — "but only when `range` still
+means this builtin", because that caveat is the whole design.
+
+Gate green: fmt, 16 `test result: ok`, 71 files unchanged, corpus at
+fourteen, docs guard.
