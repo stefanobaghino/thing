@@ -2447,6 +2447,26 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 825: third stroke — WHAT THE SEARCH IS WORTH, COUNTED. Ten small
+  tasks written naively BEFORE any --doc was run, each query a word
+  from the TASK's vocabulary rather than the function's name.
+  3 OF 10 ARE HITS THE OLD EXACT LOOKUP COULD NOT MAKE: count ->
+  count_by/frequencies, split -> split_once (the builtin used to match
+  first and stop), column -> string.table/args.pad/list.transpose
+  (was "no such name"). 5 OF 10 WERE ALREADY EXACT NAMES (median,
+  wrap, size, slug, percentile) and the search changes nothing there
+  — said plainly, not counted as a win.
+  2 OF 10 STILL MISS AND IT IS NOT THE SEARCH'S FAULT: "duplicate"
+  does not reach `unique`, "frequent" does not reach `top`. `unique`
+  HAS NO COMMENT AT ALL; `top` says "the largest values".
+  SO "SEE ALSO" IS ANSWERED: NO. Cross-references would not have
+  helped any of the ten. THE AUDIT IT PROMPTED FOUND THE NUMBER: of
+  266 documented entries, 19 HAVE NO DESCRIPTION and are unreachable
+  by search by construction.
+  AND A DEFECT FROM TWO RELEASES AGO: `format`'s doc line still
+  described v2.129's format, so v2.130.0's specs could not be found
+  under "width", "align" or "decimal". Fixed here with a test on both
+  halves; `--doc width` now answers with `format`.
 - 824: second stroke — `:doc` IS `--doc`, CHARACTER FOR CHARACTER.
   The test asserts EQUALITY of the two outputs, so the spellings
   cannot drift. NO CAP ON THE SEARCH IN THE REPL, on purpose: `:doc
@@ -2743,8 +2763,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - measure it: fresh small tasks written naively, counting how
-  often the search finds the function the naive version hand-rolled.
+  - the 19 entries with no description at all, plus the vocabulary
+  the two misses name (`unique` should say duplicates, `top` should
+  say most common), plus a guard so an entry cannot ship without a
+  description.
   - then release as v2.132.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

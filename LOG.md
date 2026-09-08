@@ -19400,3 +19400,59 @@ module MATCHES x", the did-you-mean unchanged.
 Gate green: fmt, clippy, 16 `test result: ok` (384 tests, up one), 71
 files unchanged, corpus at thirteen, Windows check and clippy, wasm
 release build.
+
+## 2026-09-08 — Iteration 825: what the search is worth, counted
+
+**Ten small tasks, written naively first, searched afterwards.** The
+programs were written before any `--doc` was run, so the queries could
+not be chosen to flatter the answer: for each hand-rolled block the
+query is a word from THE TASK's vocabulary, not from the function's
+name. All ten run.
+
+**Three of ten are hits the old exact lookup could not have made.**
+`count` (lines by level) reaches `list.count_by` and
+`list.frequencies`; `split` (key=value lines) reaches
+`string.split_once`, which the old `--doc split` never mentioned
+because the builtin `split` matched first; `column` (a right-aligned
+report) reaches `string.table`, `args.pad` and `list.transpose`, where
+the old answer was "no such name".
+
+**Five of ten were already exact names** — `median`, `wrap`, `size`,
+`slug`, `percentile` — and the search changes nothing for them, which
+is worth saying plainly rather than counting as a win. One of those
+five is still the best moment of the exercise: my naive program sized
+files with `len(read_file(name))`, and `fs.size`'s docstring says in
+so many words that this is the wrong way, because it counts characters
+and refuses a file that is not text.
+
+**Two of ten still miss, and neither is the search's fault.**
+"duplicate" does not reach `list.unique`, and "frequent" does not
+reach `map.top`. `unique` HAS NO COMMENT AT ALL, and `top` describes
+itself as "the largest values". No matching rule can find words that
+were never written.
+
+**So the "see also" question the milestone held open is answered: no.**
+Cross-references between entries would not have helped any of the ten.
+What the two misses need is vocabulary in the docstrings, and the
+audit that question prompted found the real number: OF 266 DOCUMENTED
+ENTRIES, 19 HAVE NO DESCRIPTION — `list.unique`, `list.any`,
+`list.all`, `list.sum`, `list.reverse`, `list.enumerate`, `map.merge`,
+`map.items`, `map.from_items`, `math.clamp`, `math.sign`, `math.gcd`,
+`string.repeat`, `string.pad_left`, `string.pad_right`,
+`string.lines`, `string.title`, `csv.fresh`, `time.local_clock`. They
+are unreachable by search by construction.
+
+**And the measurement found a documentation defect from two releases
+ago.** `format`'s own doc line still described v2.129's format — "fills
+{} placeholders left-to-right" and nothing else — so the whole spec
+feature v2.130.0 shipped could not be found by anyone searching for
+"width", "align" or "decimal". Fixed here, since a doc line that
+describes a version we no longer ship is a bug and not a task for
+later: `--doc width` now answers with `format`, and a test pins both
+halves.
+
+Next stroke: the 19 empty descriptions, the vocabulary the two misses
+name, and a guard so an entry cannot ship without a description.
+
+Gate green: fmt, clippy, 16 `test result: ok` (384 tests), 71 files
+unchanged, corpus at thirteen, Windows check, wasm release build.
