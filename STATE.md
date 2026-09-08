@@ -2447,6 +2447,38 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 822: replenishment — MILESTONE "FINDING THE FUNCTION YOU NEED"
+  (v2.132.0), the fourth kind of looking: WRITE THE SAME PROGRAM
+  TWICE, once in ting and once in another language, and compare.
+  THE EVIDENCE IS AGAINST ME: top five words in a file is 4 lines of
+  python and was 8 of mine, and 4 of those 8 hand-rolled what
+  `lib/map.ting`'s `top(m, n)` already does — a function I wrote,
+  whose docstring says "the largest values, largest first".
+  THE CAUSE IS ONE SITE: `--doc` is an EXACT NAME lookup. `--doc top`
+  works, `--doc frequency` is a did-you-mean, `--doc sort` prints the
+  builtin and not `sort_with`, `max_by` or `top`. 266 documented
+  names, reachable only by knowing them; good docstrings nothing can
+  search.
+  STROKES: (a) `--doc` searches names AND descriptions when the
+  argument names nothing, printing name + summary per hit, keeping
+  the did-you-mean for an empty search; (b) the REPL's `:doc` gets
+  the same; (c) MEASURE IT as 803 measured its fusions — fresh tasks
+  written naively, counting how often the search finds what the naive
+  version hand-rolled. "See also" cross-references HELD, not chosen:
+  stroke (c) answers whether they are needed.
+  THREE LENSES CAME UP THIN AND THAT IS RECORDED TOO: the corpus does
+  not repeat itself (`let out = [];` 35 times is the only weight, and
+  41 of those are not a loop); an `unused function` warning would be
+  wrong 125 times over, because a top-level `fn` IS a module's
+  export; and the surface audit is clean (all 193 stdlib functions in
+  docs/stdlib.md, 10 unused outside lib/ and all of them internal
+  helpers).
+  THE DEAD-CODE SCAN WAS WRONG FIRST: a regex that blanked strings
+  AFTER stripping comments swallowed whole files at the first `#`
+  inside a string literal, and reported 128 dead functions including
+  two that are called five lines later. Rewritten as a one-pass
+  character scanner: 0. A measurement that flatters the milestone you
+  are hoping for is the one to re-run.
 - 821: health tick green at load 2.4 — MILESTONE "THE MISTAKE YOU
   ACTUALLY MADE" (v2.131.0, strokes 815-820) COMPLETE. 11 bench rows
   x 2 engines, 22 comparisons, none differ. 50000 differential at
@@ -2681,10 +2713,12 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone. 799 counted
-  instructions, 808 wrote a program and counted corrections, 815
-  wrote fifty wrong programs and read the answers — a fourth kind of
-  looking is wanted, not a fourth pass of one of those three.
+  - `--doc` searches names and descriptions when the argument names
+  nothing (main.rs's --doc arm; entries behind repl::doc_names()).
+  - then the REPL's `:doc` gets the same search.
+  - then measure it: fresh small tasks written naively, counting how
+  often the search finds the function the naive version hand-rolled.
+  - then release as v2.132.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

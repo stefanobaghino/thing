@@ -19227,3 +19227,93 @@ run.
 
 **MILESTONE "THE MISTAKE YOU ACTUALLY MADE" (v2.131.0, strokes
 815-820) COMPLETE.** Backlog is down to replenishment.
+
+## 2026-09-08 — Iteration 822: replenishment — "finding the function you need"
+
+**A fourth kind of looking, found by trying four and keeping the one
+that yielded.** 799 counted instructions, 808 wrote a program and
+counted corrections, 815 wrote fifty wrong programs and read the
+answers. This tick tried three more lenses on the corpus itself and
+they came up thin, which is worth recording, because each would have
+made a plausible milestone out of nothing.
+
+**Lens 1, repetition: the corpus does not repeat itself.** Every
+`.ting` file was normalised (comments and string contents removed,
+names abstracted) and scanned for identical lines, identical shapes
+and repeating 3- and 4-line skeletons. The only line with real weight
+is `let out = [];` — 35 times in 9 files — and when each occurrence is
+classified by what follows it, 41 are not an accumulating loop at
+all, 14 are, and exactly one is a filter. There is no hand-rolled
+abstraction waiting to be lifted. The multi-line skeletons are all
+function boundaries.
+
+**Lens 2, dead code: there is none, and an `unused` warning would be
+wrong.** A top-level `fn` in a ting file IS the module's export —
+`import()` hands back the top-level bindings — so "defined and never
+called in this file" describes all 125 stdlib functions correctly and
+uselessly. Outside `lib/`, the scan found nothing but one
+deliberately underscored `let _ins` in a selftest. A `--check`
+warning for unused functions would fire 125 times on the standard
+library and zero times on a real mistake.
+
+**That second scan was WRONG the first time and I caught it before it
+became a milestone.** The first version blanked string literals with
+a regex applied after comment-stripping; a `#` inside a string left an
+unterminated quote, and the regex then paired quotes across dozens of
+lines and swallowed them. It reported `build` and `human` in
+examples/tree.ting as dead code. They are called on lines 49 and 59.
+Rewritten as a character scanner that removes strings and comments in
+one pass, the number went from a promising 128 to an honest 0. A
+measurement that flatters the milestone you are hoping for is the one
+to re-run.
+
+**Lens 3, surface audit: everything is documented and almost
+everything is used.** 73 builtins and 193 stdlib functions; all 193
+appear in docs/stdlib.md, and only 10 are never called outside
+`lib/` — every one of them an internal helper (`csv:fresh`,
+`csv:finish`, `args:flag_of`, `time:civil_from_days` and so on). The
+surface has no dark corners.
+
+**Lens 4 yielded, and it yielded against ME.** Write the same small
+program twice — once in ting, once in another language — and compare.
+Task: the five most frequent words in a file. Python takes four
+lines. My ting version took eight, and four of those eight were this:
+
+    let pairs = [];
+    for w in keys(freq) { push(pairs, [w, freq[w]]); }
+    let top = sort_with(pairs, fn(a, b) { return b[1] - a[1]; });
+    for i in range(5) { ... }
+
+`lib/map.ting` has had `top(m, n)` for months. Its docstring reads
+"The n entries with the largest values as [key, value] pairs, largest
+first". It does exactly that job, and I wrote all 193 of these
+functions, and I still hand-rolled it.
+
+**The reason is one line of `main.rs`.** `--doc` is an EXACT NAME
+lookup. `ting --doc top` finds `map.top`; `ting --doc frequency`
+answers "no builtin, stdlib function, module or file named frequency
+(did you mean frequencies?)"; and `ting --doc sort` prints the
+builtin `sort` and nothing else — not `sort_with`, not `max_by`, not
+`top`, though all three are about ordering by size. There are 266
+documented names and the only way to reach one is to already know it.
+The docstrings are good and nothing can search them.
+
+**Milestone: "finding the function you need" (v2.132.0).** Three
+strokes.
+
+- `--doc` searches when the argument names nothing: match the text
+  against names AND descriptions, print each hit as its name and
+  summary line. The did-you-mean stays for when the search is empty
+  too. One site in main.rs, and the entries already exist behind
+  `repl::doc_names()`.
+- The REPL's `:doc` gets the same search, since a name you cannot
+  remember is most often a name you are looking for mid-session.
+- Then MEASURE IT, the way 803 measured its fusions: write fresh
+  small tasks, write each naively, and count how many times the
+  search finds the function the naive version hand-rolled. If it does
+  not find them, the search is the wrong shape and says so.
+
+**Held, not chosen**: cross-references between related entries ("see
+also") are the other half of the same problem, and whether they are
+needed is a question the third stroke answers rather than one I
+should guess at now.
