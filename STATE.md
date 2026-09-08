@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2624 selftest checks on all four
-  CI platforms, Windows included); 379 Rust tests
+  nothing on its own — and 22 examples with .out; 2625 selftest checks on all four
+  CI platforms, Windows included); 382 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 818: third stroke — `'hi'` and a backtick say ting's strings use
+  double quotes (lexer); `s.len()` says there are no methods, `m.a`
+  says there are no fields, `f"..."` says to use format (parser).
+  A `.` IS NEVER PART OF ANYTHING THE PARSER ACCEPTS — lexed, then
+  only ever printed in an error — so the hint is riskless and can
+  afford to say WHICH shape was meant, from whether an ident and a
+  `(` follow. A `.` in a number never reaches that path.
+  `1 + and` NEVER REACHES THE PARSER: it parses as the sum of a
+  number and an unbound name, so and/or/not joined the same word
+  table null/True live in. ONE TABLE now serves parser, runtime and
+  --check.
+  A MUTATION CAUGHT WHAT THE TESTS HAD NOT, again: dropping the
+  f-string adjacency left all 45 parser tests passing, because
+  `f "n is"` WITH A SPACE was missing from the cases and is the only
+  thing that tells an f-string from a missing comma. Corpus warnings
+  now THIRTEEN. 382 Rust tests, 2625 checks.
 - 817: second stroke — and/or/not say `&&`/`||`/`!`;
   null/None/undefined/True/FALSE say `nil`/`true`/`false`. TWO SITES,
   because the two mistakes fail in different places: the operator
@@ -2621,11 +2637,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - then: quoting and access. `'hi'` and a backtick template should
-  say ting's strings use `"`; `s.len()` should say `len(s)`.
-  - then release as v2.131.0, and a docs line for something noticed
-  on the way: `1 / 0` errors, `1.0 / 0.0` gives `inf`, and
-  reference.md says neither.
+  - next stroke: a docs line for something noticed in 815 — `1 / 0`
+  errors, `1.0 / 0.0` gives `inf`, and reference.md says neither.
+  - then release as v2.131.0 (CHANGELOG from LOG 816-818, tag, verify
+  by cold asset download).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
@@ -2783,14 +2798,14 @@ Standing rules (each from a slip; the LOG entry named has the story):
   engines run at the same nice level in one bench invocation, so the
   eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  TWELVE warnings since 817 (was seven), guarded by a test since 499,
+  THIRTEEN warnings since 818 (was seven before 817), guarded by a test since 499,
   all on purpose:
   edge.ting shadows `len` (451), repeats a map key and writes a
   statement after a return (507), errors.ting reads the unbound
   `totl` (495) and, since 680, `amonut` and `volme`, and
   functions.ting calls `add(1)` to prove arity (498), and errors.ting
-  names `null`, `None`, `True` and `FALSE` plus a second `totl` since
-  817, to prove each is answered with ting's spelling. A file's
+  names `null`, `None`, `True`, `FALSE` and `and` plus a second
+  `totl` since 817-818, to prove each is answered with ting's spelling. A file's
   warnings come in line order (507).
 - Site audit paths: https://www.baghino.me/thing/ (github.io
   redirects there); playground at the root — /, /examples.js,

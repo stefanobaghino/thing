@@ -19096,3 +19096,37 @@ dropping `True` from the word table, and taking the hint out of
 Gate green: fmt, clippy, 16 `test result: ok` (379 tests, up two), 71
 files unchanged, corpus at TWELVE (was seven), 2624 checks on both
 engines, Windows and wasm, 100000 differential cases at seed 817.
+
+## 2026-09-08 — Iteration 818: the quoting and the dot
+
+**The last of the foreign shapes.** `'hi'` and a backtick template
+say ting's strings are written with double quotes; `s.len()` says
+there are no methods and a call is `f(x)`; `m.a` says there are no
+fields and a map key is `m["key"]`; `f"n is {n}"` says to build text
+with `format`.
+
+**A `.` is never part of anything the parser accepts** — it is lexed,
+and then only ever printed in an error — so the hint is free of risk
+and can afford to say WHICH of the two shapes was meant, by looking
+at whether an identifier and a `(` follow it. A `.` inside a number
+belongs to the number and never reaches this path.
+
+**`1 + and` never reaches the parser at all.** It parses perfectly
+well, as the sum of a number and a name nothing has bound, so the
+answer had to come from the runtime as well: `and`, `or` and `not`
+joined the same word table `null` and `True` live in, and one table
+now serves the parser, the runtime and `--check`.
+
+**A mutation caught what the tests had not.** Dropping the f-string
+rule's adjacency check left all 45 parser tests passing — `f "n is"`
+with a space was missing from the cases, and it is the only thing
+that tells an f-string from a missing comma. Added; the mutation now
+fails. Second time this milestone that running a change backwards
+found a test asserting less than it looked like it asserted.
+
+The corpus warning count is thirteen: `and` joined the deliberate
+unbound names, and the guard's table says so.
+
+Gate green: fmt, clippy, 16 `test result: ok` (382 tests), 71 files
+unchanged, corpus at thirteen, 2625 checks on both engines, Windows
+and wasm, 100000 differential cases at seed 818, docs guard.
