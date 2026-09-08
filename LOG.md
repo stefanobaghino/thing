@@ -19456,3 +19456,51 @@ name, and a guard so an entry cannot ship without a description.
 
 Gate green: fmt, clippy, 16 `test result: ok` (384 tests), 71 files
 unchanged, corpus at thirteen, Windows check, wasm release build.
+
+## 2026-09-08 — Iteration 826: words the search can find
+
+**The 19 entries 825 counted now say what they do, and both of that
+tick's misses are hits.** "duplicate" reaches `list.unique`;
+"frequent" reaches `map.top`. The audit is 0 of 266 undescribed.
+
+**Which needs one correction to 825, made here rather than left
+standing.** Those 19 were undescribed IN THE BINARY, not in the
+project: docs/stdlib.md has always carried a line for every one of
+them — `pad_left` "prepends fill until at least width chars", `sign`
+"-1, 0, or 1", and so on. The site was fine; `--doc` was the half
+that had nothing to print, because it reads the `#` comment above the
+function and there was none. Two places describe the same function
+and only one of them was ever checked.
+
+**The words were chosen for a searcher, not for a reader.** `unique`
+says "DUPLICATES removed", because that is what someone looking for
+it would type; `top` says "the most FREQUENT entries of a frequency
+count come out this way: count_by or frequencies, then top", which
+names the two functions that come before it in that job. Writing
+"most-common-first" first was not enough — the word rule matches a
+word that STARTS WITH the query, and "frequency" does not start with
+"frequent", so the sentence had to use the searcher's word itself.
+
+**A guard, so this cannot come back.** `every_documented_entry_says_
+what_it_does` parses `--doc`'s own index and fails on any line that
+is a signature and nothing else. Run backwards — `unique`'s comment
+deleted again — it fails; with its `described` test forced true it
+passes while the defect is present, which is what says the check
+itself is load-bearing rather than decoration.
+
+**One test went stale for the right reason and was retargeted.** 824
+used `:doc frequency` as its example of a word that names and
+describes nothing. It describes something now. The case is real, so
+it moved to `medain` — a typo of a name is what stays one.
+
+**And a mistake of my own worth writing down: `git checkout
+tests/io.rs` to undo a mutation threw away the tick's uncommitted
+test work as well.** Restoring one file with git restores ALL of it,
+mutation and new tests alike. Re-applied from the same script that
+wrote them; the lesson is to copy the file aside before mutating it,
+as I do for src/, and never to reach for checkout on a file with work
+in it.
+
+Gate green: fmt, clippy, 16 `test result: ok` (385 tests, up one), 71
+files unchanged, corpus at thirteen, Windows check and clippy, wasm
+release build, cookbook and playground generators clean.

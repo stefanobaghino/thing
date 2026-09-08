@@ -2447,6 +2447,28 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 826: fourth stroke — WORDS THE SEARCH CAN FIND. The 19 entries now
+  say what they do; 0 of 266 undescribed. Both 825 misses are hits:
+  "duplicate" -> `list.unique`, "frequent" -> `map.top`.
+  A CORRECTION TO 825: those 19 were undescribed IN THE BINARY, not
+  in the project — docs/stdlib.md has always carried a line for every
+  one. `--doc` reads the `#` comment above the function and there was
+  none. Two places describe the same function; only one was checked.
+  THE WORDS ARE CHOSEN FOR A SEARCHER: `unique` says "DUPLICATES
+  removed"; `top` says "the most FREQUENT entries". "most-common-
+  first" was not enough — the rule matches a word STARTING WITH the
+  query and "frequency" does not start with "frequent".
+  GUARD: every_documented_entry_says_what_it_does parses --doc's own
+  index and fails on a signature with nothing after it. Mutated both
+  ways (comment deleted -> fails; `described` forced true -> passes
+  with the defect present, which is what proves the check is
+  load-bearing).
+  824's `:doc frequency` case went stale FOR THE RIGHT REASON and
+  moved to `medain`: a typo of a name is what stays one.
+  MY OWN MISTAKE, RECORDED: `git checkout tests/io.rs` to undo a
+  mutation threw away the tick's uncommitted test work too. Copy the
+  file aside before mutating, as I do for src/; never reach for
+  checkout on a file with work in it.
 - 825: third stroke — WHAT THE SEARCH IS WORTH, COUNTED. Ten small
   tasks written naively BEFORE any --doc was run, each query a word
   from the TASK's vocabulary rather than the function's name.
@@ -2763,11 +2785,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the 19 entries with no description at all, plus the vocabulary
-  the two misses name (`unique` should say duplicates, `top` should
-  say most common), plus a guard so an entry cannot ship without a
-  description.
-  - then release as v2.132.0.
+  - release as v2.132.0 (CHANGELOG from LOG 823-826, tag, verify by
+  cold asset download).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
