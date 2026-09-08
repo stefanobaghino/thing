@@ -1863,18 +1863,7 @@ impl<W: Write> Interpreter<W> {
                 Ok(Value::str(args[0].type_name().to_string()))
             }
             Builtin::Range => {
-                arity(1, 3)?;
-                let (lo, hi, step) = match args.as_slice() {
-                    [Value::Int(hi)] => (0, *hi, 1),
-                    [Value::Int(lo), Value::Int(hi)] => (*lo, *hi, 1),
-                    [Value::Int(lo), Value::Int(hi), Value::Int(step)] => (*lo, *hi, *step),
-                    _ => {
-                        return Err(error("range expects int arguments", span));
-                    }
-                };
-                if step == 0 {
-                    return Err(error("range step must not be 0", span));
-                }
+                let (lo, hi, step) = range_bounds(&args, span)?;
                 let mut out = Vec::new();
                 let mut i = lo;
                 while if step > 0 { i < hi } else { i > hi } {
@@ -3736,6 +3725,29 @@ impl<W: Write> Interpreter<W> {
 }
 
 /// The for-loop snapshot conversion (mirrors StmtKind::For exactly).
+/// `range`'s three bounds, checked. The builtin builds a list from
+/// them and the VM's fused `for x in range(...)` counts through them
+/// without one, so the two have to agree on every error — hence one
+/// function rather than two copies of the rules.
+pub(crate) fn range_bounds(args: &[Value], span: Span) -> Result<(i64, i64, i64), RuntimeError> {
+    if args.is_empty() || args.len() > 3 {
+        return Err(error(
+            format!("range expects 1 to 3 arguments, got {}", args.len()),
+            span,
+        ));
+    }
+    let (lo, hi, step) = match args {
+        [Value::Int(hi)] => (0, *hi, 1),
+        [Value::Int(lo), Value::Int(hi)] => (*lo, *hi, 1),
+        [Value::Int(lo), Value::Int(hi), Value::Int(step)] => (*lo, *hi, *step),
+        _ => return Err(error("range expects int arguments", span)),
+    };
+    if step == 0 {
+        return Err(error("range step must not be 0", span));
+    }
+    Ok((lo, hi, step))
+}
+
 pub(crate) fn iter_snapshot(v: Value, span: Span) -> Result<Vec<Value>, RuntimeError> {
     match v {
         Value::List(l) => Ok(l.borrow().clone()),

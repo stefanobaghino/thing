@@ -139,3 +139,47 @@ fn nothing_else_is_folded_into_the_instruction() {
         );
     }
 }
+
+/// 829 measured `for i in range(10000000)` at 307 MB against 3 MB for
+/// the same loop written with `while`, and `range(100000000000)` was
+/// OOM-killed — exit 137, no message, no line. The counting loop is
+/// emitted for the shape that causes it, and only for that shape.
+#[test]
+fn a_for_over_range_counts_instead_of_building_a_list() {
+    let started = |src: &str| count(src, |o| matches!(o, Op::IterStart(_)));
+    let snapshot = |src: &str| count(src, |o| matches!(o, Op::IterNew));
+
+    for src in [
+        "for i in range(3) { print(i); }",
+        "for i in range(2, 5) { print(i); }",
+        "for i in range(9, 0, -1) { print(i); }",
+        "fn f(n) { for i in range(n) { print(i); } }",
+    ] {
+        assert_eq!(started(src), 1, "{src}");
+        assert_eq!(snapshot(src), 0, "{src}");
+    }
+
+    // Everything else keeps the snapshot: another iterable, another
+    // call, a wrong argument count, and a spread — which makes the
+    // count a runtime fact.
+    for src in [
+        "for x in [1, 2] { print(x); }",
+        "for c in \"ab\" { print(c); }",
+        "for x in sort([2, 1]) { print(x); }",
+        "for i in range() { print(i); }",
+        "for i in range(1, 2, 3, 4) { print(i); }",
+        "let a = [1, 3]; for i in range(...a) { print(i); }",
+    ] {
+        assert_eq!(started(src), 0, "{src}");
+        assert_eq!(snapshot(src), 1, "{src}");
+    }
+
+    // The loop owns three stack slots either way, so the two shapes
+    // clean up identically — counted against each other rather than
+    // against a number, since the body pops too.
+    let pops = |src: &str| count(src, |o| matches!(o, Op::Pop));
+    assert_eq!(
+        pops("for i in range(3) { print(i); }"),
+        pops("for x in [1] { print(x); }")
+    );
+}

@@ -395,29 +395,59 @@ fn exec<W: Write>(
             Op::IterNew => {
                 let v = stack.pop().expect("stack underflow");
                 stack.push(Value::list(eval::iter_snapshot(v, span)?));
+                stack.push(Value::Nil);
+                stack.push(Value::Int(0));
+            }
+            Op::IterStart(n) => {
+                let at = stack.len() - *n as usize;
+                let args: Vec<Value> = stack.drain(at..).collect();
+                let callee = stack.pop().expect("stack underflow");
+                if matches!(callee, Value::Builtin(crate::value::Builtin::Range)) {
+                    let (lo, hi, step) = eval::range_bounds(&args, span)?;
+                    stack.push(Value::Int(lo));
+                    stack.push(Value::Int(hi));
+                    stack.push(Value::Int(step));
+                } else {
+                    let v = interp.call_value(&callee, args, span)?;
+                    stack.push(Value::list(eval::iter_snapshot(v, span)?));
+                    stack.push(Value::Nil);
+                    stack.push(Value::Int(0));
+                }
             }
             Op::IterNext(o) => {
                 let len = stack.len();
-                let idx = match &stack[len - 1] {
-                    Value::Int(i) => *i as usize,
-                    _ => unreachable!("iter index is always an int"),
-                };
-                let item = {
-                    let Value::List(snap) = &stack[len - 2] else {
-                        unreachable!("iter snapshot is always a list");
-                    };
-                    let snap = snap.borrow();
-                    if idx >= snap.len() {
-                        None
-                    } else {
-                        Some(snap[idx].clone())
+                let item = match &stack[len - 3] {
+                    Value::List(snap) => {
+                        let idx = match &stack[len - 1] {
+                            Value::Int(i) => *i as usize,
+                            _ => unreachable!("iter index is always an int"),
+                        };
+                        let snap = snap.borrow();
+                        let item = (idx < snap.len()).then(|| snap[idx].clone());
+                        drop(snap);
+                        if item.is_some() {
+                            stack[len - 1] = Value::Int(idx as i64 + 1);
+                        }
+                        item
                     }
+                    // The fused range: the counter itself is the item.
+                    Value::Int(cur) => {
+                        let cur = *cur;
+                        let (hi, step) = match (&stack[len - 2], &stack[len - 1]) {
+                            (Value::Int(h), Value::Int(s)) => (*h, *s),
+                            _ => unreachable!("range slots are always ints"),
+                        };
+                        if if step > 0 { cur < hi } else { cur > hi } {
+                            stack[len - 3] = Value::Int(cur + step);
+                            Some(Value::Int(cur))
+                        } else {
+                            None
+                        }
+                    }
+                    _ => unreachable!("iter slot is a snapshot or a counter"),
                 };
                 match item {
-                    Some(item) => {
-                        stack[len - 1] = Value::Int(idx as i64 + 1);
-                        stack.push(item);
-                    }
+                    Some(item) => stack.push(item),
                     None => {
                         ip = offset(ip, *o);
                         continue;

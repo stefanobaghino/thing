@@ -40,11 +40,12 @@ fn selftests_pass_silently() {
 
 /// The whole corpus under `--check`: the warnings it may print are
 /// enumerated here, so a new false positive fails the build. Every one
-/// is deliberate — a shadowed builtin, a duplicate key, a statement
-/// after a return, nine unbound names and a wrong-arity call — and
+/// is deliberate — two shadowed builtins, a duplicate key, a
+/// statement after a return, nine unbound names and a wrong-arity
+/// call — and
 /// each was written to test the runtime that catches it.
 #[test]
-fn corpus_check_warnings_are_the_expected_seven() {
+fn corpus_check_warnings_are_the_expected_fourteen() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
@@ -55,10 +56,13 @@ fn corpus_check_warnings_are_the_expected_seven() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 13, "{stderr}");
+    assert_eq!(warnings.len(), 14, "{stderr}");
     // File names only: Windows prints the paths with backslashes. A
     // file's warnings come in the order its lines do.
     let expected = [
+        // 830: the selftest that proves a shadowed `range` beats the
+        // fused counting loop has to shadow one to do it.
+        ("collections.ting", "`range` shadows a builtin"),
         ("edge.ting", "shadows a builtin"),
         ("edge.ting", "duplicate key `a`"),
         ("edge.ting", "can never run"),

@@ -66,10 +66,21 @@ pub enum Op {
     PushScope,
     /// Leave the current scope.
     PopScope,
-    /// Pop the iterable, push its snapshot list (for-loop semantics).
+    /// Pop the iterable, push the three loop slots: its snapshot
+    /// list, nil, and an index of 0.
     IterNew,
-    /// stack: [snap, idx]. If idx == len(snap): jump. Else: bump idx
-    /// and push snap[idx].
+    /// A for-loop over a call of n arguments whose callee is on the
+    /// stack beneath them. When that callee turns out to BE the
+    /// `range` builtin, the three loop slots become the counter, the
+    /// limit and the step, and no list is built; otherwise the call
+    /// happens and IterNew's slots are pushed instead. The check is at
+    /// run time because `range` is an ordinary name a program may
+    /// bind, and the REPL binds it in an earlier chunk than the loop.
+    IterStart(u8),
+    /// stack: [snap, nil, idx] or [cur, hi, step]. List: if idx ==
+    /// len(snap) jump, else bump idx and push snap[idx]. Range: if the
+    /// counter is past hi jump, else bump it by step and push what it
+    /// was.
     IterNext(i32),
     /// Create a closure from protos[i], capturing the current env.
     MakeFn(u32),
@@ -742,10 +753,28 @@ impl Compiler {
                 }
             }
             StmtKind::For(var, iterable, body) => {
-                self.expr(iterable)?;
-                self.emit(Op::IterNew, iterable.span);
-                let zero = self.konst(Value::Int(0));
-                self.emit(Op::Const(zero), s.span);
+                // `for x in range(...)` counts instead of building the
+                // list, when the callee turns out to be the builtin —
+                // which IterStart decides, because `range` is a name a
+                // program may bind. A spread makes the argument count a
+                // runtime fact, so those keep the general path.
+                match &iterable.kind {
+                    ExprKind::Call(callee, args)
+                        if (1..=3).contains(&args.len())
+                            && !args.iter().any(|a| matches!(a.kind, ExprKind::Spread(_)))
+                            && matches!(&callee.kind, ExprKind::Var(n) if n == "range") =>
+                    {
+                        self.expr(callee)?;
+                        for a in args {
+                            self.expr(a)?;
+                        }
+                        self.emit(Op::IterStart(args.len() as u8), iterable.span);
+                    }
+                    _ => {
+                        self.expr(iterable)?;
+                        self.emit(Op::IterNew, iterable.span);
+                    }
+                }
                 let next_ip = self.chunk.code.len();
                 self.emit(Op::IterNext(0), s.span);
                 self.loops.push(LoopCtx {
@@ -782,8 +811,9 @@ impl Compiler {
                 for at in ctx.break_patches {
                     self.patch(at, end);
                 }
-                // The loop owned [snapshot, index] on the stack; both
+                // The loop owned three slots on the stack; both
                 // jump-to-end paths (done and break) land here.
+                self.emit(Op::Pop, s.span);
                 self.emit(Op::Pop, s.span);
                 self.emit(Op::Pop, s.span);
             }
