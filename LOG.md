@@ -19768,3 +19768,29 @@ means this builtin", because that caveat is the whole design.
 
 Gate green: fmt, 16 `test result: ok`, 71 files unchanged, corpus at
 fourteen, docs guard.
+
+## 2026-09-08 — Iteration 833: v2.133.0 — "the loop that does not build a list"
+
+**Released and verified.** 154th tag; strokes 830, 831, 832.
+Release, CI and Pages all green, verdicts from the API. All six
+archives `sha256sum -c` OK; both aarch64 Linux archives unpacked and
+run here.
+
+**The probe asked the shipped binaries the four questions this
+release exists to answer, and gnu and musl both answered.** The loop
+829 watched the kernel kill — `for i in range(100000000000)` — prints
+4. Ten million iterations peak at 2.1 MB on the VM and 2.5 MB on the
+tree-walker from the gnu archive, and 1.0 MB from the musl one, which
+is a different allocator and not a different answer. A `range`
+shadowed by `fn` still wins, in the loop and as a value. And
+`range(2, 9, 3)` is still `[2, 5, 8]`, because nothing about the
+value changed.
+
+**Four changelog entries**: the memory, the speed that came free, the
+compatibility argument written out (the decision is made at run time
+BECAUSE `range` is a name a program may bind), and BASELINE's
+timings regenerated with every checksum unchanged.
+
+Gate before the tag: fmt, clippy, 16 `test result: ok` (386 tests),
+71 files unchanged, corpus at fourteen, eleven bench checksums on
+both engines, Windows check and clippy, wasm release build.

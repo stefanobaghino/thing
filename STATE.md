@@ -2448,6 +2448,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 833: v2.133.0 TAGGED AND VERIFIED (154th tag; strokes 830, 831,
+  832; six archives, `sha256sum -c` OK on all six, both aarch64 Linux
+  archives unpacked and run here). MILESTONE "THE LOOP THAT DOES NOT
+  BUILD A LIST" COMPLETE.
+  THE PROBE ASKED THE SHIPPED BINARIES THE FOUR QUESTIONS THIS
+  RELEASE EXISTS TO ANSWER, and gnu and musl both answered: the
+  range(100000000000) loop prints 4; ten million iterations peak at
+  2.1 MB (vm) and 2.5 MB (eval) from the gnu archive and 1.0 MB from
+  musl — a different allocator, not a different answer; a `range`
+  shadowed by `fn` still wins in the loop and as a value; and
+  `range(2, 9, 3)` is still [2, 5, 8].
+  Four changelog entries: the memory, the speed that came free, the
+  compatibility argument written out, and BASELINE's timings
+  regenerated with every checksum unchanged.
 - 832: third stroke — WHAT IT IS WORTH, measured against c0bb1fe
   built in a worktree at load 0.33 (the 804 rule, not a BASELINE
   delta). PEAK MEMORY IS FLAT: before it grows 1.1 / 33.1 / 307.6 MB
@@ -2917,8 +2931,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release as v2.133.0 (CHANGELOG from LOG 830-832, tag, verify by
-  cold asset download).
+  - health tick closing the milestone: bench checksums on both
+  engines, 50000 differential / 20000 formatter / crash + 2000000
+  regex sweeps, `du -sh target`, site audit (the changelog page's top
+  entry should be v2.133.0).
   - `csv.maps` on ragged rows: decide between keeping the extras,
   erroring, and documenting the drop (829 has the evidence).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
