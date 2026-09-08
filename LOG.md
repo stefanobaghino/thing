@@ -18831,3 +18831,49 @@ from the right-aligned types — both caught.
 Gate green: fmt, clippy, 16 `test result: ok` (373 tests), 71 files
 unchanged, corpus at seven, 2602 checks on both engines, Windows and
 wasm, 100000 differential cases at seed 809.
+
+## 2026-09-08 — Iteration 810: decimal places, and the money example
+
+**The stroke the milestone was named for.** A spec's tail is now
+`.places`: `{:.2}` writes two digits after the point, `{:>8.2}` writes
+them in a column eight wide.
+
+**`examples/monthly.ting` no longer carries a `money()` function.**
+
+    fn money(cents) {
+      return str(cents / 100) + "." + st["pad_left"](str(cents % 100), 2, "0");
+    }
+
+is gone, and the row that used it is now
+`format("  {}  {:>5} rows  {:>12.2}", month, counts[month], float(months[month]) / 100.0)`.
+The example no longer imports lib/string.ting at all, and its output
+is byte-identical to the committed .out.
+
+**Halves go away from zero, on purpose and against the grain.** Rust's
+own float formatting takes them to even — `{:.2}` of 0.125 is 0.12
+there — but `lib/math.ting`'s round() promises away from zero, and a
+language should not disagree with itself about what a half is. So the
+value is scaled, rounded with `f64::round`, and scaled back before it
+is written. `{:.2}` of 0.125 is 0.13 here.
+
+**An int is written digit for digit**, not through a float:
+`format("{:.2}", 9007199254740993)` is `9007199254740993.00`, where a
+float would have lost the last digit before the point was reached.
+
+**A finding worth the ink: rounding a number and writing one are
+different jobs, and one example had been quietly doing the wrong one.**
+`examples/stats.ting` said `round(stddev * 100) / 100.0` — two decimal
+places — and printed `stddev = 17.3`. It asked for two digits and got
+one, because a rounded float still prints as short as it can. With
+`{:.2}` it prints 17.30. The .out is updated and the docs now say when
+to reach for which.
+
+Sixteen new selftest checks (2618 now); two made to fail on purpose by
+truncating instead of rounding and by routing ints through a float.
+Every corpus program run under 809's binary and this one on both
+engines: the only differences are the three files this stroke edited,
+and stats.ting's single intended line.
+
+Gate green: fmt, clippy, 16 `test result: ok` (373 tests), 71 files
+unchanged, corpus at seven, 2618 checks on both engines, Windows and
+wasm, 100000 differential cases at seed 810.
