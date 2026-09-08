@@ -2447,6 +2447,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 812: v2.130.0 TAGGED (151st tag; strokes 809, 810, 811). Five
+  changelog entries; the fifth states the compatibility argument
+  rather than assuming it (every spec was an ERROR before, so no
+  program that ran can change meaning).
+  NO BASELINE REGENERATION, ON PURPOSE: 804 regenerated it because
+  that milestone was about speed; this one changes what text comes
+  out of format and nothing about how fast anything runs. The eleven
+  rows stand — and were CHECKED, not assumed: all eleven checksums on
+  both engines, 22 comparisons, no mismatches. A release that does
+  not touch performance should not rewrite the record of it,
+  especially at load 3.4.
 - 811: third stroke — `// a note` now says `expected expression,
   found '/' (a comment starts with `#`)`, in every position a comment
   is written and for `/* */` too. One site (the parser's only
@@ -2547,10 +2558,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: release as v2.130.0 (CHANGELOG from LOG 809-811,
-  tag, verify by cold asset download and `sha256sum -c`). Docs were
-  updated in the same strokes as the code, so this is the release
-  alone.
+  - next stroke: verify v2.130.0 by cold asset download — seven
+  assets, `sha256sum -c`, both aarch64 archives executed here.
   - then: a health tick to close the milestone.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently

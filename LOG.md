@@ -18907,3 +18907,27 @@ only running the change backwards finds one.
 Gate green: fmt, clippy, 16 `test result: ok` (375 tests, up two), 71
 files unchanged, corpus at seven, 2618 checks on both engines, Windows
 and wasm, docs guard.
+
+## 2026-09-08 — Iteration 812: v2.130.0
+
+**The milestone released**, 151st tag, strokes 809-811.
+
+Five changelog entries. The fourth is the `//` hint, the smallest
+change of the three and the one a newcomer meets first. The fifth is
+the compatibility argument stated rather than assumed: every spec was
+an ERROR before this release, so no program that ran can change
+meaning, and `pad_left`, `pad_right` and `center` are unchanged and
+still worth using.
+
+**No BASELINE regeneration this time, on purpose.** 804 regenerated it
+because that milestone was about speed and the numbers were the
+point. This one changes what text comes out of `format` and nothing
+about how fast anything runs, so the eleven rows still stand — and
+they were checked rather than assumed: all eleven checksums compared
+on BOTH engines, 22 comparisons, no mismatches. A release that does
+not touch performance should not rewrite the record of it, especially
+with the host at load 3.4.
+
+Gate green: fmt, clippy, 16 `test result: ok` (375 tests), 71 files
+unchanged, corpus at seven, 2618 checks on both engines, Windows and
+wasm, eleven bench checksums on both engines.
