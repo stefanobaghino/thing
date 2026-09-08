@@ -18645,3 +18645,28 @@ Gate green: fmt, clippy, 16 `test result: ok` (371 tests), 71 files
 unchanged, corpus at seven, selftest 2583 checks on both engines,
 Windows and wasm, eleven bench checksums. Tagged v2.129.0, the 150th
 tag.
+
+## 2026-09-08 — Iteration 805: v2.129.0 verified
+
+**Verified from the archives, not from the build tree.** Seven assets
+downloaded cold into an empty directory; `sha256sum -c SHA256SUMS`
+answers OK for all six archives. Both aarch64 archives were unpacked
+and run here: `--version` says 2.129.0, and the whole selftest suite —
+22 files, 2583 checks — passes from each of them on both engines,
+four runs in all.
+
+A probe script placed OUTSIDE the unpacked directory checked the
+embedded stdlib specifically: it builds a 5000-character string,
+scans it by index, and imports `lib/csv.ting` with no `lib/` beside
+it, so the module can only come from inside the binary. Both archives
+answer `5000 500 3 4` on both engines.
+
+**Noted for the next stroke**: the archives' `lib/` is twelve modules
+and `diff -r` says it is identical to the repository's, and to the
+other archive's. That is not yet a proof that the BINARY's embedded
+copy agrees with them — both are made from the same checkout, so they
+agree by construction and nothing would say so if that ever stopped
+being true. That is what the next stroke is for.
+
+The 150th tag is done: seven assets, checksums verified, two
+architectures executed here.

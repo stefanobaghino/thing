@@ -2442,7 +2442,12 @@ holds only the current milestone and the standing rules.
   and 0.6%. Both reverted (`git checkout src/compile.rs src/vm.rs`),
   the rebuilt binary byte-identical to 802's by `cmp`. The opcode
   table stays at the six fusions that paid.
-- 804: v2.129.0 TAGGED (150th tag; strokes 800, 801, 802, 803).
+- v2.129.0 VERIFIED (150th tag; strokes 800, 801, 802, 803; seven
+  assets, `sha256sum -c` OK on all six archives, both aarch64
+  archives executed here, 2583 checks from each on both engines, and
+  a probe outside the unpacked directory proving the EMBEDDED stdlib
+  answers).
+- 804: v2.129.0 tagged.
   BASELINE regenerated in one go at load 0.15, all eleven checksums
   identical to v2.128.0's.
   AND THE BASELINE DELTA IS NOT THE MILESTONE'S GAIN — I nearly wrote
@@ -2458,8 +2463,15 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: verify v2.129.0 by cold asset download — seven
-  assets, `sha256sum -c`, both aarch64 archives executed here.
+  - next stroke: prove the archive's lib/ and the binary's embedded
+  stdlib are the same twelve modules (754 — a lib/ beside a script
+  silently shadows the embedded one, and nobody checks they agree).
+  805 found them identical by `diff -r`, but by construction: both
+  come from one checkout. The guard has to compare what the BINARY
+  carries against what the archive ships, and fail if either moves.
+  - then: a health tick to close the milestone (bench vs BASELINE,
+  50000 differential, crash and 20000 formatter fuzz cases in
+  release, `du -sh target`).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).
