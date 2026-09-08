@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2625 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2635 selftest checks on all four
   CI platforms, Windows included); 382 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
@@ -2447,6 +2447,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 819: fourth stroke — WHAT DIVIDING BY ZERO ANSWERS, written as one
+  rule: which answer you get is decided by the OPERANDS, not by the
+  zero. Ints error (`/` AND `%`); either side a float means IEEE
+  (inf, -inf, NaN); mixing promotes first, so `1 / 0.0` is inf. Plus
+  where those values go: str writes them, int() and json_str() refuse
+  them, NaN != NaN so a NaN in a list unequals a copy of itself.
+  CORRECTION TO 815: it said reference.md documented NEITHER half.
+  The table already said `/ 0` on ints errors; what was missing was
+  the floats and `%`.
+  Ten new checks pin every sentence (2635 now). A docs paragraph that
+  nothing tests is a claim.
 - 818: third stroke — `'hi'` and a backtick say ting's strings use
   double quotes (lexer); `s.len()` says there are no methods, `m.a`
   says there are no fields, `f"..."` says to use format (parser).
@@ -2637,8 +2648,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: a docs line for something noticed in 815 — `1 / 0`
-  errors, `1.0 / 0.0` gives `inf`, and reference.md says neither.
   - then release as v2.131.0 (CHANGELOG from LOG 816-818, tag, verify
   by cold asset download).
   - then: prove the archive's lib/ and the binary's embedded stdlib

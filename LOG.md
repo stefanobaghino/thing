@@ -19130,3 +19130,30 @@ unbound names, and the guard's table says so.
 Gate green: fmt, clippy, 16 `test result: ok` (382 tests), 71 files
 unchanged, corpus at thirteen, 2625 checks on both engines, Windows
 and wasm, 100000 differential cases at seed 818, docs guard.
+
+## 2026-09-08 — Iteration 819: the two answers to dividing by zero
+
+**A correction first: 815 said reference.md documented neither half
+of this, and that was wrong.** The operator table already said `/ 0`
+on ints errors. What was missing was everything the floats do, and
+`%`.
+
+Both are now written down, as one rule rather than two facts: which
+answer you get is decided by the OPERANDS, not by the zero. Two ints
+error — `1 / 0` and `1 % 0` both raise `division by zero`. If either
+side is a float the result is a float and follows IEEE 754: `inf`,
+`-inf`, `NaN` for `0.0 / 0.0` and for `1.0 % 0.0`. Mixing promotes
+first, so `1 / 0.0` is `inf` and not an error.
+
+And where those values go afterwards, since that is the part that
+surprises: `str` writes them, `int()` and `json_str()` refuse them,
+and `NaN` is not equal to itself — so a `NaN` in a list makes the
+list unequal to a copy of itself.
+
+**Every sentence of the new paragraph is pinned by a check.** Ten new
+ones in selftest/arithmetic.ting (2635 now), on both engines. A docs
+paragraph that nothing tests is a claim, and this file has retired
+three false ones already this month.
+
+Gate green: fmt, clippy, 16 `test result: ok`, 71 files unchanged,
+corpus at thirteen, 2635 checks on both engines.
