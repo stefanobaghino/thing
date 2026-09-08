@@ -648,7 +648,6 @@ What a CSV says, month by month, without holding the CSV — the two things a re
 
 let csv = import("../lib/csv.ting");
 let tm = import("../lib/time.ting");
-let st = import("../lib/string.ting");
 
 fn build(path) {
   let rows = [["date", "customer", "note", "amount"]];
@@ -669,10 +668,6 @@ fn build(path) {
   }
   write_file(path, csv["text"](rows));
   return path;
-}
-
-fn money(cents) {
-  return str(cents / 100) + "." + st["pad_left"](str(cents % 100), 2, "0");
 }
 
 let given = args();
@@ -729,9 +724,8 @@ print("");
 
 print("by month");
 for month in keys(months) {
-  print(format("  {}  {} rows  {}", month,
-  st["pad_left"](str(counts[month]), 5, " "),
-  st["pad_left"](money(months[month]), 12, " ")));
+  print(format("  {}  {:>5} rows  {:>12.2}", month, counts[month],
+  float(months[month]) / 100.0));
 }
 print("");
 print(format("dates nothing could read: {}", unreadable));
@@ -1138,7 +1132,7 @@ let stddev = ma["stddev"](sample);
 print("n      =", n);
 print("min    =", min(sample), " max =", max(sample));
 print("mean   =", mean, " median =", li["median"](sample));
-print("stddev =", ma["round"](stddev * 100) / 100.0);
+print(format("stddev = {:.2}", stddev));
 print("gcd of extremes =", ma["gcd"](min(sample), max(sample)));
 ```
 
@@ -1146,7 +1140,7 @@ print("gcd of extremes =", ma["gcd"](min(sample), max(sample)));
 n      = 20
 min    = 2  max = 59
 mean   = 30.5  median = 30.5
-stddev = 17.3
+stddev = 17.30
 gcd of extremes = 1
 ```
 

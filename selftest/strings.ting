@@ -65,6 +65,33 @@ assert(contains(bad_width["err"], "not a width"), "a spec's tail must be a numbe
 let huge = try(format, "{:>999999999}", 1);
 assert(contains(huge["err"], "above the limit"), "widths are capped");
 
+# format specs: decimal places. Halves go AWAY FROM ZERO, the way
+# lib/math.ting's round() promises -- Rust's own float formatting
+# takes them to even, so this is a deliberate difference.
+assert(format("{:.2}", 0.125) == "0.13", "a half rounds away from zero");
+assert(format("{:.1}", 0.25) == "0.3", "and again one place up");
+assert(format("{:.0}", 2.5) == "3", "no places still rounds away from zero");
+assert(format("{:.0}", -2.5) == "-3", "negative halves go away from zero too");
+assert(format("{:.2}", 100.0 / 3.0) == "33.33", "a third to two places");
+assert(format("{:.3}", 1.5) == "1.500", "places are padded with zeroes");
+# An int is written digit for digit, so a value past a float's exact
+# range keeps every digit it had.
+assert(format("{:.2}", 3) == "3.00", "an int takes decimal places");
+assert(format("{:.0}", 7) == "7", "no places leaves an int alone");
+assert(format("{:.2}", 9007199254740993) == "9007199254740993.00", "big ints keep every digit");
+# Width and places together: the money column this was written for.
+assert(format("{:>8.2}", 1234.5) == " 1234.50", "width and places");
+assert(format("{:0>8.2}", 3.5) == "00003.50", "fill, width and places");
+assert(format("{:8.2}", 1.5) == "    1.50", "a number with places still goes right");
+let no_number = try(format, "{:.2}", "text");
+assert(contains(no_number["err"], "needs a number"), "places need a number");
+let no_places = try(format, "{:>4.}", 1);
+assert(contains(no_places["err"], "no number of decimal places"), "a bare dot errors");
+let bad_places = try(format, "{:.x}", 1);
+assert(contains(bad_places["err"], "not a number of decimal places"), "places must be a number");
+let deep = try(format, "{:.200}", 1.5);
+assert(contains(deep["err"], "above the limit"), "places are capped");
+
 # \r escape (added in 2.11): a real carriage return, one char.
 assert(len("\r") == 1, "cr is one char");
 assert("a\rb" != "a\nb", "cr is not lf");

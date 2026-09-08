@@ -17,7 +17,6 @@
 
 let csv = import("../lib/csv.ting");
 let tm = import("../lib/time.ting");
-let st = import("../lib/string.ting");
 
 fn build(path) {
   let rows = [["date", "customer", "note", "amount"]];
@@ -38,10 +37,6 @@ fn build(path) {
   }
   write_file(path, csv["text"](rows));
   return path;
-}
-
-fn money(cents) {
-  return str(cents / 100) + "." + st["pad_left"](str(cents % 100), 2, "0");
 }
 
 let given = args();
@@ -98,9 +93,8 @@ print("");
 
 print("by month");
 for month in keys(months) {
-  print(format("  {}  {} rows  {}", month,
-  st["pad_left"](str(counts[month]), 5, " "),
-  st["pad_left"](money(months[month]), 12, " ")));
+  print(format("  {}  {:>5} rows  {:>12.2}", month, counts[month],
+  float(months[month]) / 100.0));
 }
 print("");
 print(format("dates nothing could read: {}", unreadable));

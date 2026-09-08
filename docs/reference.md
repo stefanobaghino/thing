@@ -406,7 +406,7 @@ scope).
 A `format` placeholder is `{}` on its own, or `{:spec}` where the spec
 lays the value out in a column:
 
-    {:[[fill]align][width]}
+    {:[[fill]align][width][.places]}
 
 `align` is `<` for left, `>` for right and `^` for centred; `fill` is
 any single character placed before it, and defaults to a space;
@@ -430,6 +430,26 @@ When a centred value cannot be centred exactly, the extra character
 goes on the right, as `lib/string.ting`'s `center` puts it. `{}` and
 `{:}` mean the same thing. Widths are capped at 100000 characters, so
 a mistyped spec reports an error rather than exhausting memory.
+
+`.places` writes a number with exactly that many digits after the
+point, and needs a number to write — a spec with decimal places on a
+string or a list is an error:
+
+    format("{:.2}", 100.0 / 3.0)   # "33.33"
+    format("{:.2}", 3)             # "3.00"
+    format("{:.0}", 2.5)           # "3"
+    format("{:>8.2}", 1234.5)      # " 1234.50"
+
+Halves go away from zero, which is what `lib/math.ting`'s `round`
+promises — `{:.2}` of 0.125 is `0.13`. An int is written digit for
+digit rather than through a float, so a value past a float's exact
+range keeps every digit it had. Places are capped at 100.
+
+Rounding a number and writing one are different jobs, and only the
+second is a spec's: `{:.2}` always writes two digits after the point,
+where `round(x * 100) / 100` gives back a number that prints as `17.3`
+when the second digit is a zero. Reach for `round` when the VALUE
+should change, and for a spec when only the writing should.
 
 ### Patterns
 

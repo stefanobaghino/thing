@@ -639,6 +639,7 @@ struct Spec {
     fill: char,
     align: Option<Align>,
     width: usize,
+    precision: Option<usize>,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -659,26 +660,70 @@ fn default_align(v: &Value) -> Align {
 }
 
 impl Spec {
-    fn apply(&self, v: &Value) -> String {
-        let text = v.to_string();
+    fn apply(&self, v: &Value) -> Result<String, String> {
+        let text = match self.precision {
+            None => v.to_string(),
+            Some(places) => fixed(v, places)?,
+        };
         let have = text.chars().count();
         if have >= self.width {
-            return text;
+            return Ok(text);
         }
         let gap = self.width - have;
         let fill = |n: usize| -> String { std::iter::repeat_n(self.fill, n).collect() };
-        match self.align.unwrap_or_else(|| default_align(v)) {
+        Ok(match self.align.unwrap_or_else(|| default_align(v)) {
             Align::Left => text + &fill(gap),
             Align::Right => fill(gap) + &text,
             // The odd character goes on the right, as center() does.
             Align::Centre => fill(gap / 2) + &text + &fill(gap - gap / 2),
+        })
+    }
+}
+
+/// A number written with exactly `places` digits after the point.
+///
+/// Halves go AWAY FROM ZERO, which is what `lib/math.ting`'s round()
+/// promises; Rust's own float formatting takes them to even, so
+/// `{:.2}` of 0.125 is 0.13 here and 0.12 there. An int is written
+/// digit for digit rather than through a float, so a value past a
+/// float's exact range keeps every digit it had.
+fn fixed(v: &Value, places: usize) -> Result<String, String> {
+    match v {
+        Value::Int(n) => Ok(if places == 0 {
+            n.to_string()
+        } else {
+            format!("{n}.{}", "0".repeat(places))
+        }),
+        Value::Float(x) => {
+            if !x.is_finite() {
+                return Ok(x.to_string());
+            }
+            let scale = 10f64.powi(places as i32);
+            let scaled = x * scale;
+            // Scaling can leave the finite numbers behind; when it
+            // does, the digits are past anything a decimal place
+            // could change, so ask Rust for them as they are.
+            let x = if scaled.is_finite() {
+                scaled.round() / scale
+            } else {
+                *x
+            };
+            Ok(format!("{x:.places$}"))
         }
+        v => Err(format!(
+            "format: a spec with decimal places needs a number, got {}",
+            v.type_name()
+        )),
     }
 }
 
 /// Widths are capped so that a typo asks for a diagnostic rather
 /// than for a gigabyte.
 const MAX_WIDTH: usize = 100_000;
+
+/// A float carries about seventeen significant digits; past that a
+/// decimal place is asking about noise.
+const MAX_PLACES: usize = 100;
 
 /// `[':' [[fill] align] [width]]` — the text between the braces. An
 /// empty spec, and a bare `:`, mean "just the value".
@@ -687,6 +732,7 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
         fill: ' ',
         align: None,
         width: 0,
+        precision: None,
     };
     if spec.is_empty() {
         return Ok(out);
@@ -719,22 +765,43 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
         out.align = Some(align);
         chars.remove(0);
     }
-    if chars.is_empty() {
-        return Ok(out);
-    }
-    let digits: String = chars.iter().collect();
-    let Ok(width) = digits.parse::<usize>() else {
-        return Err(format!(
-            "format: `{digits}` is not a width — a spec is `{{:}}`, an alignment \
-             (`<`, `>`, `^`, optionally after a fill character) and a number of characters"
-        ));
+    let rest: String = chars.iter().collect();
+    let (width, places) = match rest.split_once('.') {
+        Some((w, p)) => (w, Some(p)),
+        None => (rest.as_str(), None),
     };
-    if width > MAX_WIDTH {
-        return Err(format!(
-            "format: width {width} is above the limit of {MAX_WIDTH}"
-        ));
+    if !width.is_empty() {
+        let Ok(n) = width.parse::<usize>() else {
+            return Err(format!(
+                "format: `{width}` is not a width — a spec is `{{:}}`, an alignment \
+                 (`<`, `>`, `^`, optionally after a fill character), a number of \
+                 characters, and `.` and a number of decimal places"
+            ));
+        };
+        if n > MAX_WIDTH {
+            return Err(format!(
+                "format: width {n} is above the limit of {MAX_WIDTH}"
+            ));
+        }
+        out.width = n;
     }
-    out.width = width;
+    if let Some(places) = places {
+        if places.is_empty() {
+            return Err("format: `.` with no number of decimal places after it".to_string());
+        }
+        let Ok(n) = places.parse::<usize>() else {
+            return Err(format!(
+                "format: `{places}` is not a number of decimal places — write `.2` \
+                 for two, or `.0` for none"
+            ));
+        };
+        if n > MAX_PLACES {
+            return Err(format!(
+                "format: {n} decimal places is above the limit of {MAX_PLACES}"
+            ));
+        }
+        out.precision = Some(n);
+    }
     Ok(out)
 }
 
@@ -2835,7 +2902,8 @@ impl<W: Write> Interpreter<W> {
                                 ));
                             }
                             let spec = parse_spec(&spec).map_err(|m| error(m, span))?;
-                            out.push_str(&spec.apply(&args[next]));
+                            let piece = spec.apply(&args[next]).map_err(|m| error(m, span))?;
+                            out.push_str(&piece);
                             next += 1;
                         }
                         '}' => {
