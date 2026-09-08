@@ -46,4 +46,24 @@ if shell != nil {
   # shell between the list and the program.
   assert(sh["lines"](shell, ["-c", "printf '%s\n' \"$0\" \"$1\"", "a b", "c"]) == ["a b", "c"],
   "argv is not re-split by anyone");
+
+  # A child that a signal killed has no exit code at all. Which
+  # signals a platform has is not this suite's business, so the two
+  # checks are written to be true on every one of them: either the
+  # code is there, or it is nil and the signal names why.
+  let killed = run(shell, ["-c", "kill -9 $$"]);
+  assert(has(killed, "signal"), "every finished child says whether a signal ended it");
+  assert(killed["code"] == nil || killed["code"] != 0, "a killed child does not look happy");
+  assert(killed["code"] != nil || killed["signal"] == 9, "and where signals exist it names one");
+  assert(run(shell, ["-c", "exit 0"])["signal"] == nil, "a child that exits has no signal");
+
+  # The message a caller sees. "exited nil" was wrong twice over: it
+  # did not exit, and nil is not a status.
+  let killmsg = err(fn() { return sh["check"](shell, ["-c", "kill -9 $$"]); });
+  assert(!contains(killmsg, "nil"), "no failure reports a nil status");
+  assert(contains(killmsg, "killed"), "a killed child is reported as killed");
+  assert(sh["ended"]({"code": 4, "signal": nil}) == "exited 4", "a code is an exit");
+  assert(sh["ended"]({"code": nil, "signal": 9}) == "was killed by signal 9", "a signal is a kill");
+  assert(sh["ended"]({"code": nil, "signal": nil}) == "was killed",
+  "and a kill with no number is still a kill");
 }

@@ -3251,6 +3251,43 @@ fn run_spawns_a_program_and_reports_what_it_did() {
     let _ = std::fs::remove_file(&child);
 }
 
+/// A child killed by a signal: no exit code, and the number that
+/// ended it. Unix only, because `signal` is nil where the platform
+/// has no signals — which is what the selftest checks portably.
+#[cfg(unix)]
+#[test]
+fn a_signalled_child_has_no_code_and_names_the_signal() {
+    let script = std::env::temp_dir().join("ting-io-signal.ting");
+    std::fs::write(
+        &script,
+        "let d = run(\"sh\", [\"-c\", \"kill -9 $$\"]);\n\
+         print(d[\"code\"], d[\"signal\"]);\n\
+         let sh = import(\"lib/sh.ting\");\n\
+         print(try(fn() { return sh[\"check\"](\"sh\", [\"-c\", \"kill -9 $$\"]); })[\"err\"]);\n\
+         let fine = run(\"sh\", [\"-c\", \"exit 5\"]);\n\
+         print(fine[\"code\"], fine[\"signal\"]);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    assert_eq!(lines.next().unwrap(), "nil 9", "unexpected:\n{text}");
+    let msg = lines.next().unwrap();
+    assert!(
+        msg.contains("was killed by signal 9"),
+        "check must say what killed it, not \"exited nil\":\n{text}"
+    );
+    assert!(
+        !msg.contains("nil"),
+        "no nil status reaches a message:\n{text}"
+    );
+    assert_eq!(lines.next().unwrap(), "5 nil", "unexpected:\n{text}");
+    let _ = std::fs::remove_file(&script);
+}
+
 /// eprint goes to the other stream, and stays behind the stdout it
 /// was written after.
 #[test]

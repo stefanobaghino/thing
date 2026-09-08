@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 73 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2661 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2670 selftest checks on all four
   CI platforms, Windows included); 386 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2448,6 +2448,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 837: first stroke — A KILLED CHILD SAYS SO. `run` hands back a
+  fourth key, `signal`: the number that killed the child where the
+  platform has signals, nil elsewhere and after every normal exit,
+  from a `signal_of` helper whose two cfg branches are one line each
+  so the split does not straddle the map. `sh.check` reports through
+  a new `ended(done)` — `exited 4`, `was killed by signal 9`, or
+  `was killed` — instead of the old `exited nil`, and splitting it
+  out makes the three shapes checkable without spawning anything.
+  Portable selftest checks (the key is always there, a killed child
+  never looks happy, code-or-signal, no message says "nil") plus a
+  `#[cfg(unix)]` test in tests/io.rs for the specifics. Two
+  mutations, two caught. Stdlib count 194 -> 195.
 - 836: REPLENISHMENT — MILESTONE "THE OTHER PROGRAM" (v2.134.0),
   reasoning in LOG.md. A seventh kind of looking: RUN TING THE WAY A
   SHELL RUNS IT — piped, redirected, killed, driving other programs.
@@ -2985,10 +2997,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a killed child says so: `run` gains a `signal` key (the number on
-  Unix, nil elsewhere and on a normal exit), the docstring says
-  `code` is nil then, and `sh.check` says "killed by signal 9"
-  instead of "exited nil".
   - something on the child's stdin: `run(cmd, args, input)`. THE TRAP
   IS THE DEADLOCK the current code avoids by accident — writing the
   input before reading the output hangs as soon as the child fills

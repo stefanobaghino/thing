@@ -626,7 +626,9 @@ impl Builtin {
             ),
             Builtin::Run => (
                 "run(cmd) / run(cmd, args)",
-                "Runs a program and waits: a map of code, out and err.",
+                "Runs a program and waits: a map of code, out, err and signal. \
+                 A signal killed it when code is nil, and signal is that \
+                 number where the platform has them.",
             ),
             Builtin::EPrint => (
                 "eprint(...)",

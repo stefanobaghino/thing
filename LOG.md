@@ -19973,3 +19973,50 @@ nonzero code, so "not installed" cannot read as "ran and failed".
   — a child's output is not a source file and `run` must not become
   unusable on a program that prints a byte — but silence is not a
   decision.
+
+## 2026-09-09 — Iteration 837: a killed child says so
+
+First stroke of "the other program". `run` knew and would not say:
+src/eval.rs has carried the comment "No code at all means a signal
+killed it" for as long as `run` has existed, while the docstring
+promised "a map of code, out and err" and `sh.check` reported a
+killed child as `sh exited nil: no output on stderr` — wrong twice,
+since it did not exit and nil is not a status.
+
+**`run` now hands back a fourth key.** `signal` is the number that
+killed the child on the platforms that have signals, and nil
+everywhere else and after every normal exit. It sits in a
+`signal_of` helper beside `run` with the two cfg branches one line
+each, so the platform split does not straddle the map being built —
+`#[cfg(unix)]` reads `ExitStatusExt::signal()`, `#[cfg(not(unix))]`
+answers nil, and the Windows and wasm targets in the gate compile
+both.
+
+**`sh.check` names what happened**, through a new `ended(done)` that
+turns a finished child into the phrase a message wants: `exited 4`,
+or `was killed by signal 9`, or `was killed` where there is no
+number. Splitting it out means the three shapes can be checked
+without spawning anything, which is what makes them checkable on
+every platform.
+
+**Portable checks, honest ones.** Which signals a machine has is not
+this suite's business, so selftest/sh.ting asserts what is true
+everywhere: the key is always present, a killed child never looks
+happy, the code is either there or the signal names why, a normal
+exit has no signal, and — the defect itself — no failure message
+contains "nil". The Unix specifics (`nil 9`, then `was killed by
+signal 9`) are a `#[cfg(unix)]` test in tests/io.rs, where a
+platform-specific assertion belongs.
+
+**Two mutations, two caught.** `signal_of` returning nil
+unconditionally: the Rust test fails on `nil 9`. Dropping `ended`'s
+signal branch: it fails on "check must say what killed it".
+
+docs/reference.md already said `code` is nil when a signal ended it —
+the reference knew what the docstring did not — and now names
+`signal` too; docs/stdlib.md gains the `ended` row and the count goes
+to 195.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2670 checks (was 2661), Windows check
+and clippy, wasm release build.

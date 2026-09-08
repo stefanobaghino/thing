@@ -58,14 +58,27 @@ fn ok(cmd, argv) { return run(cmd, argv)["code"] == 0; }
 # The program's stdout, insisting on a zero exit code. A nonzero one
 # fails with the code and whatever the program said about it, since a
 # message on stderr is usually the only explanation there is.
+#
+# A child killed by a signal has no code at all, and saying it
+# "exited nil" is wrong twice over: it did not exit, and nil is not a
+# status. It is reported as killed, by which signal where the
+# platform names one.
 fn check(cmd, argv) {
   let done = run(cmd, argv);
   if done["code"] != 0 {
     let why = trim(done["err"]);
     if why == "" { why = "no output on stderr"; }
-    fail(cmd + " exited " + str(done["code"]) + ": " + why);
+    fail(cmd + " " + ended(done) + ": " + why);
   }
   return done["out"];
+}
+
+# How a finished child is named in a message: exited with its code,
+# or killed by its signal.
+fn ended(done) {
+  if done["code"] != nil { return "exited " + str(done["code"]); }
+  if done["signal"] != nil { return "was killed by signal " + str(done["signal"]); }
+  return "was killed";
 }
 
 # check(), split into lines, without the empty one a trailing newline

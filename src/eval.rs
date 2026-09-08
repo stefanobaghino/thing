@@ -3303,6 +3303,11 @@ impl<W: Write> Interpreter<W> {
                         None => Value::Nil,
                     },
                 );
+                // Which signal it was, where signals exist. A child
+                // that died of one has no code, and "it was killed"
+                // without saying by what leaves the caller nothing to
+                // tell apart an interrupt from a segfault.
+                m.insert("signal".to_string(), signal_of(&done.status));
                 m.insert(
                     "out".to_string(),
                     Value::str(String::from_utf8_lossy(&done.stdout).into_owned()),
@@ -3752,6 +3757,25 @@ impl<W: Write> Interpreter<W> {
 /// them and the VM's fused `for x in range(...)` counts through them
 /// without one, so the two have to agree on every error — hence one
 /// function rather than two copies of the rules.
+/// The signal that killed a child, as a value: the number on the
+/// platforms that have signals, nil on the ones that do not and on
+/// every child that exited normally. Kept beside `run` rather than
+/// inside it so the two branches are one line each and the cfg does
+/// not straddle the map being built.
+#[cfg(unix)]
+fn signal_of(status: &std::process::ExitStatus) -> Value {
+    use std::os::unix::process::ExitStatusExt;
+    match status.signal() {
+        Some(n) => Value::Int(n as i64),
+        None => Value::Nil,
+    }
+}
+
+#[cfg(not(unix))]
+fn signal_of(_status: &std::process::ExitStatus) -> Value {
+    Value::Nil
+}
+
 pub(crate) fn range_bounds(args: &[Value], span: Span) -> Result<(i64, i64, i64), RuntimeError> {
     if args.is_empty() || args.len() > 3 {
         return Err(error(

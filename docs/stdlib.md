@@ -1,7 +1,7 @@
 # The ting standard library
 
 Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 194 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err and csv, 195 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -296,7 +296,8 @@ needs it.
 | Function | Does |
 |----------|------|
 | `ok(cmd, argv)` | whether the program ran and exited zero |
-| `check(cmd, argv)` | the program's stdout, failing on a nonzero code with the code and its stderr |
+| `check(cmd, argv)` | the program's stdout, failing on a nonzero code with the code and its stderr — or, for a child a signal killed, with the signal, since "exited nil" is wrong twice over |
+| `ended(done)` | how a finished child is named in a message: `exited 4`, or `was killed by signal 9` |
 | `lines(cmd, argv)` | `check` split into lines, without the empty one a trailing newline leaves |
 | `which(name)` | where the program would be found on PATH, or nil; on Windows every PATHEXT suffix is tried in order |
 | `path_dirs()` | PATH as a list of directories, empty entries dropped |
