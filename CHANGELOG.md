@@ -5,6 +5,32 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.133.0 (2026-09-08)
+
+- `for x in range(...)` no longer builds the list it counts through.
+  Peak memory for `for i in range(10000000)` goes from 307 MB to
+  2 MB, and stays at 2 MB at a hundred million, where before wanted
+  three gigabytes. `for i in range(100000000000)` used to be killed
+  by the kernel — exit 137, no message, no line number, nothing a
+  script could catch; it now runs.
+- It is faster too, though that was not the point: measured against
+  the previous release built in a worktree, interleaved, best of
+  five, ten million iterations — 25.8% off the bytecode VM and 3.2%
+  off the tree-walker. The VM's loop had been spending a quarter of
+  itself building a list it read once; the tree-walker's cost is
+  interpretation, so removing an allocation barely shows.
+- Nothing observable changed. `range(...)` used as a value still
+  returns a list, half-open, with the same negative steps and the
+  same three errors at the same spans — the builtin and the loop read
+  one copy of those rules. The decision to count is made at RUN TIME,
+  because `range` is an ordinary name a program may bind: `fn
+  range(n) { ... }` still wins, so does `let range = fn(n) { ... }`,
+  and so does one bound in an earlier REPL line than the loop.
+- The eleven benchmark scripts are unchanged within noise — the
+  largest single number among them is a script with no range loop at
+  all. BASELINE's timings are regenerated; every checksum in it is
+  the same.
+
 ## v2.132.0 (2026-09-08)
 
 - `--doc` and the REPL's `:doc` SEARCH when a word names nothing.
