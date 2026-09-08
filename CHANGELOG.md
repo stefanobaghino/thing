@@ -5,6 +5,46 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.131.0 (2026-09-08)
+
+- Syntax carried in from another language now names ting's spelling
+  instead of describing ting's grammar. `elif`, `elseif` and `elsif`
+  say `else if`; `def`, `function`, `func` and `fun` say
+  `fn name(...) { ... }`; `var`, `const` and `local` say
+  `let name = ...;`; `(x) => x + 1` says `fn(x) { return x; }`. All
+  nine used to produce the same message — `expected ';', found
+  identifier` — because each parsed as a bare name and the parser
+  complained about the semicolon that should have followed it. The
+  hint is keyed on the statement's FIRST token, which is where the
+  mistake is; the failure is at the end of the line.
+- `and`, `or` and `not` say `&&`, `||` and `!`, and `null`, `None`,
+  `undefined`, `True` and `FALSE` say `nil`, `true` and `false`. The
+  words answer in three places from one table: the parser (`if a and
+  b {`), the runtime (`1 + and`, an unbound name) and `--check`.
+  Deliberately in front of the "did you mean" search rather than
+  behind it — `null` is two edits from `nil` and `None` is three, so
+  no edit distance was ever going to find them. These are known
+  words, not typos.
+- `'hi'` and a backtick template say ting's strings are written with
+  double quotes; `s.len()` says there are no methods and a call is
+  `f(x)`; `m.a` says there are no fields and a map key is
+  `m["key"]`; `f"n is {n}"` says to build text with `format`. A `.`
+  is never part of anything the parser accepts, so the hint can
+  afford to say which of the two shapes was meant.
+- docs/reference.md now says what dividing by zero answers, as one
+  rule rather than a list of facts: the OPERANDS decide, not the
+  zero. Two ints error, `/` and `%` alike; either side a float gives
+  IEEE 754 — `inf`, `-inf`, `NaN`; mixing promotes first, so
+  `1 / 0.0` is `inf`. And where those values travel: `str` writes
+  them, `int()` and `json_str()` refuse them, and `NaN` is not equal
+  to itself, so a `NaN` in a list makes the list unequal to a copy of
+  itself.
+- None of these words is reserved and nothing that ran can change.
+  `let var = 1; print(var);` still runs, so do `function`, `def`,
+  `and` and `not` as names. Every hint in this release only ever
+  appears on a program that was already failing to parse or already
+  failing at run time.
+
 ## v2.130.0 (2026-09-08)
 
 - `format` placeholders take a spec, so a report no longer builds its
