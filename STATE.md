@@ -20,9 +20,9 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
-  CI platforms, Windows included); 371 Rust tests
+  CI platforms, Windows included); 373 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
-  rows since bench/scan.ting joined in 794.
+  rows since bench/scan.ting joined in 794, regenerated at v2.129.0.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
@@ -2447,6 +2447,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 806: 754 CLOSED. A lib/ beside a script shadows the binary's
+  embedded stdlib, and a release archive ships exactly such a lib/
+  next to ting — so an unpacked release runs the ARCHIVE's copy.
+  include_str! keeps each entry's TEXT in step for free and the
+  archive is `cp -r lib dist/lib` from one checkout, but THE TABLE IS
+  NOT GUARDED: a thirteenth module added to lib/ and forgotten in
+  EMBEDDED_STDLIB ships in the archive and is missing from the
+  binary, and `("lib/map.ting", include_str!("../lib/list.ting"))`
+  compiles. Two guards in tests/selftest.rs — the table against the
+  directory as sets plus each entry's text against its file, and a
+  probe run from a directory WITH a copy of lib/ and one WITHOUT,
+  whose outputs must be equal. Both failed on purpose first; the
+  mispairing failed them independently, on text and on behaviour.
+  373 Rust tests now.
 - 804: v2.129.0 tagged.
   BASELINE regenerated in one go at load 0.15, all eleven checksums
   identical to v2.128.0's.
@@ -2463,15 +2477,12 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: prove the archive's lib/ and the binary's embedded
-  stdlib are the same twelve modules (754 — a lib/ beside a script
-  silently shadows the embedded one, and nobody checks they agree).
-  805 found them identical by `diff -r`, but by construction: both
-  come from one checkout. The guard has to compare what the BINARY
-  carries against what the archive ships, and fail if either moves.
-  - then: a health tick to close the milestone (bench vs BASELINE,
-  50000 differential, crash and 20000 formatter fuzz cases in
-  release, `du -sh target`).
+  - next stroke: a health tick to close the milestone (bench vs
+  BASELINE, 50000 differential, crash and 20000 formatter fuzz cases
+  in release, `du -sh target` and remove target/debug if it has
+  passed a few GB).
+  - then: replenishment — choose the next milestone from counted
+  evidence, as 799 did.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

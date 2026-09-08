@@ -18670,3 +18670,40 @@ being true. That is what the next stroke is for.
 
 The 150th tag is done: seven assets, checksums verified, two
 architectures executed here.
+
+## 2026-09-08 — Iteration 806: the twelve modules, in two places
+
+**What 754 left unguarded, closed.** A `lib/` beside a script shadows
+the stdlib compiled into the binary, and a release archive ships
+exactly such a `lib/` next to `ting` — so an unpacked release runs the
+archive's copy, not the binary's, and nothing has ever checked they
+agree.
+
+805 found them identical, but by construction: `include_str!` keeps
+each entry's TEXT in step with its file for free, and the archive is
+`cp -r lib dist/lib` from the same checkout. What is NOT free is the
+TABLE. Two drifts compile and pass every existing test:
+
+- a thirteenth module added to `lib/` and forgotten in
+  `EMBEDDED_STDLIB` ships in the archive and is missing from the
+  binary, so the same script works unpacked and fails installed;
+- `("lib/map.ting", include_str!("../lib/list.ting"))` is a valid
+  pair of strings, and `import("lib/map.ting")` then answers with
+  list's functions everywhere except beside a real `lib/`.
+
+Two guards in tests/selftest.rs. The first compares the table against
+the directory as sets, holds the count at twelve, and compares each
+entry's text with the file it names. The second is the runtime
+property people actually care about: the same probe run from a
+directory holding a copy of `lib/` and from one holding none — so the
+answer can only come from inside the binary — asking every module for
+its function names, and the two outputs must be equal byte for byte.
+
+**Both made to fail on purpose first.** Dropping a thirteenth module
+into `lib/` failed the first (and the corpus warning guard, which
+also reads the directory). Mispairing map with list failed the first
+on text AND the second on behaviour, independently — which is the
+point of writing two.
+
+Gate green: fmt, clippy, 16 `test result: ok` (373 tests, up two), 71
+files unchanged, corpus at seven, Windows and wasm.
