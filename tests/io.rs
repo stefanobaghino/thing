@@ -2085,6 +2085,21 @@ fn doc_flag_searches_descriptions_when_a_word_names_nothing() {
     assert_eq!(code, Some(1), "{stdout}");
     assert!(stdout.is_empty(), "{stdout}");
 
+    // 825: `format`'s own doc line still described v2.129's format,
+    // so the feature v2.130.0 shipped could not be found by the word
+    // anyone would look for it under.
+    let (code, stdout) = doc("width");
+    assert_eq!(code, Some(0), "{stdout}");
+    // An index line carries the first sentence only, so the search
+    // shows that `format` is the answer and `--doc format` says how.
+    assert!(stdout.contains("format(fmt, ...)"), "{stdout}");
+    let (code, stdout) = doc("format");
+    assert_eq!(code, Some(0), "{stdout}");
+    assert!(
+        stdout.contains("{:>5}") && stdout.contains("{:.2}"),
+        "{stdout}"
+    );
+
     // A module keeps its index, and `list` is the module that proves
     // it: half the comments in the library say "list", so a search
     // would bury it if the branches were the other way round.

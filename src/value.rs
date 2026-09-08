@@ -585,7 +585,10 @@ impl Builtin {
             ),
             Builtin::Format => (
                 "format(fmt, ...)",
-                "Fills {} placeholders left-to-right; {{ and }} escape braces.",
+                "Fills {} placeholders left-to-right; {{ and }} escape braces. A \
+                 placeholder may carry a spec after a colon: width and \
+                 alignment ({:>5} right, {:<5} left, {:^5} centred, {:0>2} \
+                 zero-filled) and decimal places ({:.2}, {:>8.2}).",
             ),
             Builtin::JsonParse => (
                 "json_parse(s)",
