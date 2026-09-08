@@ -19534,3 +19534,32 @@ comparisons, no mismatches.
 Gate before the tag: fmt, clippy, 16 `test result: ok` (385 tests),
 71 files unchanged, corpus at thirteen, Windows check and clippy,
 wasm release build.
+
+## 2026-09-08 — Iteration 828: health tick — the milestone closed
+
+**Green at load 2.4.** 11 bench rows x 2 engines, 22 comparisons,
+none differ. 50000 differential at seed 828, 20000 formatter, the
+crash fuzzer's whole suite and 2000000 regex cases: 20 tests, no
+failures. Tree clean, CI green, no PRs.
+
+**target is 3.1 G, up from 2.4 G at 821, and the growth is in
+`debug`** — 1.7 G against 991 M a week of ticks ago, which is what a
+`cargo test` per tick leaves behind. Windows adds 612 M, release 855
+M. 88 G free, so this is a number to watch rather than a number to
+act on; a `cargo clean` costs a full rebuild and buys nothing today.
+
+**Site audit.** Nine paths 200. The changelog page's headings run
+v2.132.0, v2.131.0, v2.130.0 — checked as HEADINGS, not as a text
+match, because the v2.132.0 entry MENTIONS v2.130.0 twice and a
+careless grep would have read that mention as the next release and
+found nothing wrong with a missing one. reference.html carries the
+new `ting --doc largest` example, and ting.wasm's last-modified is
+this evening's push.
+
+**The same caveat as 821, unchanged**: last-modified says the
+deployed wasm was BUILT from this release, not that it answers
+anything. This host has no node, deno or wasmtime. The release's own
+behaviour was checked on the native aarch64 archives in 827.
+
+**MILESTONE "FINDING THE FUNCTION YOU NEED" (v2.132.0, strokes
+822-827) COMPLETE.** Backlog is down to replenishment.

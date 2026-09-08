@@ -2447,6 +2447,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 828: health tick green at load 2.4 — MILESTONE "FINDING THE
+  FUNCTION YOU NEED" (v2.132.0, strokes 822-827) COMPLETE. 11 bench
+  rows x 2 engines, 22 comparisons, none differ. 50000 differential
+  at seed 828 (10.8 s), 20000 formatter (4.1 s), crash + 2000000
+  regex (3.6 s). target 3.1 G (was 2.4 G at 821) and THE GROWTH IS IN
+  debug: 1.7 G against 991 M, one `cargo test` per tick. Windows 612
+  M, release 855 M, 88 G free — a number to watch, not to act on.
+  SITE AUDIT: nine paths 200; the changelog HEADINGS run v2.132.0,
+  v2.131.0, v2.130.0 — checked as headings because the v2.132.0 entry
+  MENTIONS v2.130.0 twice and a text grep would have read the mention
+  as the next release; reference.html carries the `ting --doc
+  largest` example; ting.wasm last-modified is this release's push,
+  which still says BUILT FROM and not ANSWERS (no wasm runtime on
+  this host; 827 checked the native archives).
 - 827: v2.132.0 TAGGED AND VERIFIED (153rd tag; strokes 823, 824,
   825, 826; six archives, `sha256sum -c` OK on all six, both aarch64
   Linux archives unpacked and run here). MILESTONE "FINDING THE
@@ -2802,11 +2816,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone: bench checksums on both
-  engines, 50000 differential / 20000 formatter / crash + 2000000
-  regex sweeps, `du -sh target`, site audit (the changelog page's top
-  entry should be v2.132.0).
-  - then replenishment: choose the next milestone. Four kinds of
+  - replenishment: choose the next milestone. Four kinds of
   looking are spent — instruction counts (799), writing a program and
   counting corrections (808), fifty wrong programs (815), the same
   program twice in two languages (822). A fifth is wanted.
