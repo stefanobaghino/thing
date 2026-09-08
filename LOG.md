@@ -19317,3 +19317,46 @@ strokes.
 also") are the other half of the same problem, and whether they are
 needed is a question the third stroke answers rather than one I
 should guess at now.
+
+## 2026-09-08 — Iteration 823: a word that names nothing is searched for
+
+**The gap 822 found in myself, closed.** `--doc` was an exact-name
+lookup over 266 documented names, so the only way to reach a function
+was to already know what it is called. `ting --doc largest` now
+answers with `max(xs)`, `list.max_by`, `list.extent`, `list.argmax`
+and `map.top` — the last being the function I hand-rolled four lines
+of loop instead of, while writing the program that produced this
+milestone.
+
+**Two rules keep the search from drowning.** A NAME matches on any
+substring, so `sort` finds `sort_with` and `sort_by`. A COMMENT
+matches only where one of its WORDS STARTS WITH the query, so `len`
+finds "length" and not "silently", and `sort` still finds "sorted"
+and "sorting". Substring matching on comments was tried first and is
+what the mutation now proves is wrong: it makes `arge` a hit on
+everything that says "largest".
+
+**A name that IS a function is answered in full and then followed by
+what else that word finds**, because the complaint in 822 was
+precisely that `--doc sort` printed the builtin and left `sort_with`,
+`max_by` and `top` unmentioned. That second half is printed only when
+ONE word was asked for: `--doc len median slug` is a lookup of three
+names already known, and appending three search dumps to it helps
+nobody. A module or a file keeps its index alone, for the same
+reason — searching for "list" would bury `lib/list.ting`.
+
+**Four mutations, four caught**: comments matching by plain substring,
+the exact hit no longer skipped so it repeats underneath itself, the
+module branch removed so `--doc math` searches instead of indexing,
+and the single-word gate removed so multi-name output grows search
+dumps.
+
+The miss message changed with the behaviour — "no builtin, stdlib
+function, module or file MATCHES x", since a name is no longer the
+only thing tried. The did-you-mean is unchanged and still fires:
+`--doc frequency` still answers "did you mean frequencies?", because
+"frequencies" does not start with "frequency".
+
+Gate green: fmt, clippy, 16 `test result: ok` (383 tests, up one), 71
+files unchanged, corpus at thirteen, Windows check and clippy, wasm
+release build, 100000 differential cases at seed 823.

@@ -2447,6 +2447,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 823: first stroke — A WORD THAT NAMES NOTHING IS SEARCHED FOR.
+  `--doc largest` now answers max, list.max_by, list.extent,
+  list.argmax and map.top — the function 822 caught me hand-rolling.
+  TWO RULES: a NAME matches on any substring (`sort` finds
+  `sort_with`); a COMMENT matches only where one of its WORDS STARTS
+  WITH the query (`len` finds "length" and not "silently", `sort`
+  still finds "sorted"). A function name is answered IN FULL and then
+  followed by what else that word finds, but ONLY when one word was
+  asked — several names is a lookup of names already known. A module
+  or file keeps its index alone; searching "list" would bury
+  lib/list.ting.
+  Four mutations, four caught: substring comment matching, the skip
+  dropped so the exact hit repeats under itself, the module branch
+  removed, the single-word gate removed.
+  The miss message is now "... MATCHES x", since a name is no longer
+  the only thing tried; the did-you-mean is unchanged.
 - 822: replenishment — MILESTONE "FINDING THE FUNCTION YOU NEED"
   (v2.132.0), the fourth kind of looking: WRITE THE SAME PROGRAM
   TWICE, once in ting and once in another language, and compare.
@@ -2713,9 +2729,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--doc` searches names and descriptions when the argument names
-  nothing (main.rs's --doc arm; entries behind repl::doc_names()).
-  - then the REPL's `:doc` gets the same search.
+  - the REPL's `:doc` gets the same search.
   - then measure it: fresh small tasks written naively, counting how
   often the search finds the function the naive version hand-rolled.
   - then release as v2.132.0.
