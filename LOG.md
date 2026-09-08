@@ -19360,3 +19360,43 @@ only thing tried. The did-you-mean is unchanged and still fires:
 Gate green: fmt, clippy, 16 `test result: ok` (383 tests, up one), 71
 files unchanged, corpus at thirteen, Windows check and clippy, wasm
 release build, 100000 differential cases at seed 823.
+
+## 2026-09-08 — Iteration 824: the same question, typed two ways
+
+**`:doc` in the REPL is now `--doc` on the command line, character
+for character.** A word that names nothing is searched for; a
+function is answered in full and then followed by what else its name
+finds; a module keeps its index. The test asserts EQUALITY of the two
+outputs rather than checking each separately, so the two spellings
+cannot drift apart without a failure.
+
+**The REPL does not cap the search, and that is a decision, not an
+omission.** A search for "file" is 28 entry lines, which sounds like
+a lot to paste into a session — but `:doc list` has always printed a
+forty-line module index, so the length is nothing new, and a REPL
+that answered a question differently from the flag would be a worse
+trap than a long paste. The `--doc` rule about several names does not
+apply here: `:doc` takes one word.
+
+**A mutation survived, and the test was the thing at fault.** Putting
+the module branch AFTER the search left every test passing, because
+the module I had chosen to prove the order was `math` — and nothing
+in the library's comments says "math", so the search finds nothing
+for it and the order cannot matter. `list` is the module that
+discriminates: half the comments in the library say "list", so with
+the branches the wrong way round `:doc list` answers with a search
+instead of the index. Swapped, and both mutations now fail. Third
+time this month that running a change backwards found a test
+asserting less than it appeared to.
+
+**And the corrected test was wrong once more before it was right.**
+`!contains("matching")` fails on the real index, because
+`find_index`'s own comment contains the word. The assertion is on
+`"matching list:"` — the heading, not the word.
+
+The miss message follows `--doc`: "no builtin, stdlib function or
+module MATCHES x", the did-you-mean unchanged.
+
+Gate green: fmt, clippy, 16 `test result: ok` (384 tests, up one), 71
+files unchanged, corpus at thirteen, Windows check and clippy, wasm
+release build.

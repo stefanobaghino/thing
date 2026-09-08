@@ -2447,6 +2447,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 824: second stroke — `:doc` IS `--doc`, CHARACTER FOR CHARACTER.
+  The test asserts EQUALITY of the two outputs, so the spellings
+  cannot drift. NO CAP ON THE SEARCH IN THE REPL, on purpose: `:doc
+  list` has always printed a forty-line index, so 28 lines is nothing
+  new, and a REPL answering differently from the flag is the worse
+  trap.
+  A MUTATION SURVIVED AND THE TEST WAS AT FAULT: the module chosen to
+  prove the branch order was `math`, and nothing in the library says
+  "math", so the search finds nothing and the order cannot matter.
+  `list` discriminates — half the comments say "list". Swapped; both
+  orderings now fail when mutated. Then the corrected assertion was
+  wrong too: `!contains("matching")` fails on the real index because
+  `find_index`'s comment says it. Assert the HEADING, "matching
+  list:", not the word.
 - 823: first stroke — A WORD THAT NAMES NOTHING IS SEARCHED FOR.
   `--doc largest` now answers max, list.max_by, list.extent,
   list.argmax and map.top — the function 822 caught me hand-rolling.
@@ -2729,8 +2743,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the REPL's `:doc` gets the same search.
-  - then measure it: fresh small tasks written naively, counting how
+  - measure it: fresh small tasks written naively, counting how
   often the search finds the function the naive version hand-rolled.
   - then release as v2.132.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
