@@ -1517,19 +1517,7 @@ impl<W: Write> Interpreter<W> {
                 Ok(Control::Normal)
             }
             StmtKind::For(var, iterable, body) => {
-                let items: Vec<Value> = match self.eval(iterable)? {
-                    // Iterate a snapshot, so the body may mutate the
-                    // original list/map safely.
-                    Value::List(l) => l.borrow().clone(),
-                    Value::Str(s) => s.chars().map(|c| Value::str(c.to_string())).collect(),
-                    Value::Map(m) => m.borrow().keys().cloned().map(Value::str).collect(),
-                    v => {
-                        return Err(error(
-                            format!("cannot iterate over {}", v.type_name()),
-                            iterable.span,
-                        ));
-                    }
-                };
+                let items = self.for_items(iterable)?;
                 for item in items {
                     // A fresh scope per iteration: closures made in the
                     // body capture that iteration's binding.
@@ -1559,6 +1547,41 @@ impl<W: Write> Interpreter<W> {
                 Ok(Control::Return(v, stmt.span))
             }
         }
+    }
+
+    /// What a for-loop walks. `for x in range(...)` counts through the
+    /// three bounds instead of building the list they describe, which
+    /// is what the VM's IterStart does — and, as there, the callee is
+    /// checked at RUN TIME, because `range` is an ordinary name a
+    /// program may bind. A spread makes the argument count a runtime
+    /// fact, so those take the general path.
+    fn for_items(&mut self, iterable: &Expr) -> Result<ForItems, RuntimeError> {
+        if let ExprKind::Call(callee, args) = &iterable.kind
+            && (1..=3).contains(&args.len())
+            && !args.iter().any(|a| matches!(a.kind, ExprKind::Spread(_)))
+            && matches!(&callee.kind, ExprKind::Var(n) if n == "range")
+        {
+            // Callee first, then the arguments, as a call evaluates
+            // them: whatever they print or assign has to happen in the
+            // same order it did before.
+            let f = self.eval(callee)?;
+            let mut vals = Vec::with_capacity(args.len());
+            for a in args {
+                vals.push(self.eval(a)?);
+            }
+            if matches!(f, Value::Builtin(crate::value::Builtin::Range)) {
+                let (cur, hi, step) = range_bounds(&vals, iterable.span)?;
+                return Ok(ForItems::Counting { cur, hi, step });
+            }
+            let v = self.call_value(&f, vals, iterable.span)?;
+            return Ok(ForItems::Snapshot(
+                iter_snapshot(v, iterable.span)?.into_iter(),
+            ));
+        }
+        let v = self.eval(iterable)?;
+        Ok(ForItems::Snapshot(
+            iter_snapshot(v, iterable.span)?.into_iter(),
+        ))
     }
 
     pub(crate) fn lookup(&self, name: &str) -> Option<Value> {
@@ -3746,6 +3769,33 @@ pub(crate) fn range_bounds(args: &[Value], span: Span) -> Result<(i64, i64, i64)
         return Err(error("range step must not be 0", span));
     }
     Ok((lo, hi, step))
+}
+
+/// A for-loop's items: a snapshot of the iterable — taken so the body
+/// may mutate the original safely — or, for `for x in range(...)`, the
+/// bounds counted through without a list ever existing.
+enum ForItems {
+    Snapshot(std::vec::IntoIter<Value>),
+    Counting { cur: i64, hi: i64, step: i64 },
+}
+
+impl Iterator for ForItems {
+    type Item = Value;
+
+    fn next(&mut self) -> Option<Value> {
+        match self {
+            ForItems::Snapshot(items) => items.next(),
+            ForItems::Counting { cur, hi, step } => {
+                let past = if *step > 0 { *cur >= *hi } else { *cur <= *hi };
+                if past {
+                    return None;
+                }
+                let now = *cur;
+                *cur += *step;
+                Some(Value::Int(now))
+            }
+        }
+    }
 }
 
 pub(crate) fn iter_snapshot(v: Value, span: Span) -> Result<Vec<Value>, RuntimeError> {

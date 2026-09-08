@@ -166,6 +166,19 @@ fn control_flow_matches_across_engines() {
         "let i = 0; while i < 5 { i = i + 1; { let t = i * 10; if t > 20 { break; } print(t); } } print(\"end\", i);",
         // runtime errors inside loops keep their spans
         "for i in range(3) { print(1 / (1 - i)); }",
+        // 830/831: both engines count through `for x in range(...)`
+        // instead of building the list, and both decide that at RUN
+        // TIME — a bound `range` has to win in each.
+        "for i in range(2, 9, 3) { print(i); }",
+        "for i in range(3, 0, -1) { print(i); }",
+        "for i in range(5, 5) { print(i); }",
+        "fn f() { let range = fn(_n) { return [\"a\", \"b\"]; }; \
+          for i in range(3) { print(i); } } f();",
+        "fn range(n) { return [n]; } for i in range(7) { print(i); }",
+        "for i in range(1, 2, 0) { print(i); }",
+        "for i in range(\"a\") { print(i); }",
+        "for i in range() { print(i); }",
+        "let a = [0, 3]; for i in range(...a) { print(i); }",
     ];
     for src in corpus {
         same(src);
