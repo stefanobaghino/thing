@@ -249,9 +249,22 @@ column from anything asking for it by name.
 | `text(rows, sep = ",")` | delimited text from rows of fields, ending in a line break |
 | `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
 | `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |
-| `maps(rows)` | the first row read as a header, the rest as maps; a short row leaves those columns nil |
-| `each_map(path, f, sep = ",")` | `maps` over a file, without holding it: the first row is the header and every later row reaches `f` as a map, so a column is asked for by name rather than by a number the caller has to find and carry. Answers how many maps `f` was given — one less than the rows |
-| `entry_of(header, row)` | one row named by a header, the map both `maps` and `each_map` hand out |
+| `maps(rows, extras = nil)` | the first row read as a header, the rest as maps; a short row leaves those columns nil, and a field past the end of the header is dropped unless `extras` names a key to collect such fields under |
+| `each_map(path, f, sep = ",", extras = nil)` | `maps` over a file, without holding it: the first row is the header and every later row reaches `f` as a map, so a column is asked for by name rather than by a number the caller has to find and carry. Names `extras` as `maps` does — the streaming reader needs it most, since it never sees the whole file to check afterwards. Answers how many maps `f` was given — one less than the rows |
+| `entry_of(header, row, extras = nil)` | one row named by a header, the map both `maps` and `each_map` hand out |
+
+Every entry carries the same keys as every other: a short row leaves
+its missing columns nil rather than absent, so a column can be asked
+for without checking first. That invariant is why a field past the end
+of the header is dropped by default — it has no name, and inventing
+one would put a key on some rows and not others. Dropping rather than
+erroring, because the trailing separator a spreadsheet writes
+(`a,b,c,` under a three-name header) is one empty extra field, and a
+reader that refuses such a file refuses a great many real ones.
+Nothing need be lost either way: `parse` and `each_row` keep every
+field, and `extras` names a key for them in the maps — an empty list
+on the rows that have none, so the keys still match across rows. The
+key may not be a column name, since it would then hide that column.
 | `quote(field, sep)` | a field, quoted if it needs to be — spaces at either end included, so they survive a round trip |
 
 ## lib/err.ting

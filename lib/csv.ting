@@ -188,25 +188,46 @@ fn text(rows, sep = ",") {
 fn text_with(rows, sep) { return text(rows, sep); }
 
 # One row named by a header: the map that maps and each_map both hand
-# out, so the two cannot disagree about what a row is called. A row
-# shorter than the header leaves those columns nil; extra fields have
-# no name and are dropped.
-fn entry_of(header, row) {
+# out, so the two cannot disagree about what a row is called.
+#
+# A row shorter than the header leaves those columns nil rather than
+# absent, so every entry has the same keys as every other and a
+# column can be asked for without checking first. That invariant is
+# the reason a field past the end of the header is DROPPED by
+# default: it has no name, and inventing one would put a key on some
+# rows and not others. A trailing separator is why dropping is the
+# default rather than an error — `a,b,c,` under a three-name header
+# is one empty extra field, and a reader that refuses such a file
+# refuses a great many real ones.
+#
+# Nothing has to be lost, though. Name a key as `extras` and the
+# fields past the header arrive there as a list — empty on the rows
+# that have none, so the keys still match across rows. The key must
+# not be a column name, since it would then hide that column.
+fn entry_of(header, row, extras = nil) {
   let entry = {};
   for c in range(0, len(header)) {
     if c < len(row) { entry[header[c]] = row[c]; }
     else { entry[header[c]] = nil; }
   }
+  if extras != nil {
+    if type(extras) != "string" { fail("entry_of: extras must be a string, got " + type(extras)); }
+    if contains(header, extras) { fail("entry_of: extras key " + extras + " is already a column"); }
+    if len(row) > len(header) { entry[extras] = slice(row, len(header), len(row)); }
+    else { entry[extras] = []; }
+  }
   return entry;
 }
 
 # The first row read as a header, the rest as maps from column name to
-# field.
-fn maps(rows) {
+# field. A short row leaves its missing columns nil; a field past the
+# end of the header is dropped unless `extras` names a key to collect
+# such fields under. See entry_of for why that is the default.
+fn maps(rows, extras = nil) {
   if len(rows) == 0 { return []; }
   let header = rows[0];
   let out = [];
-  for i in range(1, len(rows)) { push(out, entry_of(header, rows[i])); }
+  for i in range(1, len(rows)) { push(out, entry_of(header, rows[i], extras)); }
   return out;
 }
 
@@ -217,8 +238,10 @@ fn maps(rows) {
 # maps(parse(read_file(path))), one row at a time. "-" is stdin and
 # false from f stops the read, as each_row does. Answers how many maps
 # f was given, which is one less than the rows: the header is not one
-# of them.
-fn each_map(path, f, sep = ",") {
+# of them. `extras` names a key for the fields past the end of the
+# header, exactly as in maps — the streaming reader is the one that
+# needs it most, since it never sees the whole file to check.
+fn each_map(path, f, sep = ",", extras = nil) {
   let header = nil;
   let n = 0;
   each_row(path, fn(row) {
@@ -227,7 +250,7 @@ fn each_map(path, f, sep = ",") {
       return nil;
     }
     n += 1;
-    return f(entry_of(header, row));
+    return f(entry_of(header, row, extras));
   }, sep);
   return n;
 }

@@ -19848,3 +19848,55 @@ knew the difference.
 
 Milestone "the loop that does not build a list" (v2.133.0, strokes
 829–833) is complete.
+
+## 2026-09-08 — Iteration 835: the ragged row, decided
+
+829 found that `csv.maps` SILENTLY DROPS a field past the end of the
+header and left the choice open: keep the extras, error, or document
+the drop. Decided here, with the reason written down where the code
+is.
+
+**The invariant decides it.** Every entry `maps` and `each_map` hand
+out carries the same keys as every other — a short row leaves its
+missing columns nil rather than absent, which is why `row["price"]`
+can be written without checking first. Keeping an unnamed extra
+field under an invented name would put a key on some rows and not
+others, and break the one property that makes the maps usable.
+
+**Erroring is worse than it looks.** `a,b,c,` under a three-name
+header is a row of FOUR fields — the trailing separator a spreadsheet
+writes. A reader that refuses that file refuses a great many real
+ones, and the arithmetic precedent (overflow is an error, not a wrap)
+does not carry: an empty extra field loses nothing when it goes.
+
+**So: dropped by default, and nothing need be lost.** `entry_of`,
+`maps` and `each_map` take an `extras` key; name one and the fields
+past the header arrive there as a list — an empty list on the rows
+that have none, so the keys still match across rows and the
+invariant survives being opted out of. The key may not be a column
+name (that would hide the column) and must be a string; both are
+errors that say so. `parse` and `each_row` were always lossless, and
+still are.
+
+**each_map is the one that needed it.** The streaming reader never
+sees the whole file, so a caller cannot check afterwards what it
+threw away — a check `maps` at least makes possible. It takes
+`extras` in the same position-free way, and a selftest asserts the
+streamed maps EQUAL the parsed ones with the same key, on the same
+file, as the other each_map checks do.
+
+**Three mutations, three caught.** Dropping the empty-list branch:
+`kept[1]["rest"]` says `key "rest" not found`. Dropping the
+collision guard: the error check gets nil where it wanted a message.
+Dropping `extras` from `each_map`'s call to `entry_of`: streamed and
+parsed stop agreeing. A test that passes for the wrong reason is
+worse than no test, and only running the change backwards finds one.
+
+**Documented where a reader looks.** The module comment carries the
+reasoning; docs/stdlib.md's csv section gains the three signatures
+and a paragraph under the table saying what is dropped, why dropping
+rather than erroring, and where the fields are if you want them —
+829's finding was as much that `maps` SAID NOTHING as that it drops.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2661 checks (was 2649).

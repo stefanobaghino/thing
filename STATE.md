@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 194
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2649 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2661 selftest checks on all four
   CI platforms, Windows included); 386 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2448,6 +2448,21 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 835: THE RAGGED ROW, DECIDED — first stroke banked. 829 left the
+  choice open; the answer is DROPPED BY DEFAULT, DOCUMENTED, AND
+  OPTIONAL TO KEEP. The invariant decides it: every entry from `maps`
+  and `each_map` carries the same keys, which is why a column can be
+  read without checking, and an unnamed extra field under an invented
+  name would break that. Erroring is worse than it looks — `a,b,c,`
+  under a three-name header is FOUR fields, the trailing separator a
+  spreadsheet writes, and refusing that file refuses many real ones.
+  So `entry_of`/`maps`/`each_map` take an `extras` key: name one and
+  the fields past the header arrive there as a list, empty on the rows
+  that have none so the keys still match; the key may not be a column
+  name and must be a string. Three mutations, three caught. The
+  reasoning lives in the module comment and in docs/stdlib.md's csv
+  section, because 829's finding was as much that `maps` SAID NOTHING
+  as that it drops.
 - 834: health tick green at load 1.4 — MILESTONE "THE LOOP THAT DOES
   NOT BUILD A LIST" (v2.133.0, strokes 829-833) COMPLETE. Sweeps:
   50000 differential at seed 834, 20000 formatter, crash + 2000000
@@ -2952,8 +2967,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `csv.maps` on ragged rows: decide between keeping the extras,
-  erroring, and documenting the drop (829 has the evidence).
+  - replenishment: choose the next milestone. The last one closed at
+  834 and 835 spent the item it left behind, so the backlog is empty
+  and the next tick picks the next thing to build. Six kinds of
+  looking are spent: instruction counts (799), writing a program and
+  counting the corrections (808), fifty wrong programs (815), the
+  same program twice in two languages (822), dirty input (829), and
+  the one 835 stands on — a finding held back on purpose until it
+  could be decided rather than shipped in a hurry.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

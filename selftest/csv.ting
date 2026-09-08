@@ -40,6 +40,36 @@ assert(records[1]["name"] == nil, "a short row leaves the rest nil");
 assert(csv["maps"]([]) == [], "no rows, no records");
 assert(csv["maps"]([["only", "header"]]) == [], "a header alone is no records");
 
+# A field past the end of the header has no name. It is dropped, so
+# that every entry carries the same keys and a column can be asked
+# for without checking first; `extras` names a key to keep it under
+# when the caller would rather have it.
+let wide = csv["parse"]("a,b,c\n1,2,3,4,5\n6,7,8\n");
+let dropped = csv["maps"](wide);
+assert(len(keys(dropped[0])) == 3, "the extras are dropped by default");
+assert(dropped[0] == {"a": "1", "b": "2", "c": "3"}, "and the named columns are untouched");
+let kept = csv["maps"](wide, "rest");
+assert(kept[0]["rest"] == ["4", "5"], "extras arrive in order under the named key");
+assert(kept[1]["rest"] == [], "a row with none gets an empty list, not a missing key");
+assert(keys(kept[0]) == keys(kept[1]), "so every entry still has the same keys");
+assert(csv["maps"](csv["parse"]("a,b,c\n1,2\n"), "rest")[0]["rest"] == [],
+"a short row has no extras either");
+
+# The trailing separator every spreadsheet writes is one empty extra
+# field, which is why dropping is the default and an error is not.
+assert(csv["maps"](csv["parse"]("a,b,c\n1,2,3,\n"))[0] == {"a": "1", "b": "2", "c": "3"},
+"a trailing separator reads as the three named columns");
+assert(csv["maps"](csv["parse"]("a,b,c\n1,2,3,\n"), "rest")[0]["rest"] == [""],
+"and the empty field is there for anyone who asks");
+
+# A key that is already a column would hide that column, and a key
+# that is not a string cannot be a key at all.
+let errmsg = import("lib/err.ting")["message"];
+assert(contains(errmsg(fn() { return csv["maps"](wide, "b"); }),
+"extras key b is already a column"), "an extras key may not name a column");
+assert(contains(errmsg(fn() { return csv["maps"](wide, 3); }),
+"extras must be a string, got int"), "and it must be a string");
+
 # A row is not a line. The scanner that reads a whole string and the
 # one that reads a file a line at a time are the same scanner, so the
 # two must agree on every input — including a field with a line break
@@ -91,6 +121,17 @@ csv["each_map"](path, fn(row) { push(short, row); return nil; });
 assert(short == csv["maps"](csv["parse"](ragged_doc)), "a short row is short the same way");
 assert(short[0]["c"] == nil, "the missing column is nil");
 assert(len(keys(short[0])) == 3, "and it is there to be asked for");
+
+# The streaming reader is the one that needs extras most: it never
+# sees the whole file, so it cannot be checked afterwards. It names
+# them exactly as maps does, on the same file.
+let wide_doc = "a,b,c\n1,2,3,4\n";
+write_file(path, wide_doc);
+let streamed = [];
+csv["each_map"](path, fn(row) { push(streamed, row); return nil; }, ",", "rest");
+assert(streamed == csv["maps"](csv["parse"](wide_doc), "rest"),
+"streamed extras and parsed extras agree");
+assert(streamed[0]["rest"] == ["4"], "and the field past the header is kept");
 
 # Stopping, and the two files that have nothing to hand over.
 write_file(path, doc);
