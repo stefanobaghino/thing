@@ -5,6 +5,38 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.130.0 (2026-09-08)
+
+- `format` placeholders take a spec, so a report no longer builds its
+  own columns. `{:>5}` writes the value in five characters, right;
+  `{:<16}` left; `{:^9}` centred; `{:0>2}` pads with zeroes instead of
+  spaces. Width counts characters, the way `len` counts them, and a
+  value already that wide is written unchanged — a spec pads, it never
+  truncates. A width with no alignment puts numbers to the right and
+  everything else to the left, which is what a column of figures
+  wants.
+- `{:.2}` writes exactly two digits after the point, and `{:>8.2}`
+  writes them in a column. This is the one that removes a workaround
+  the examples had been carrying: `examples/monthly.ting` used to
+  define its own `money(cents)` out of division, remainder and
+  `pad_left`, and now writes `{:>12.2}`. Halves go away from zero, as
+  `lib/math.ting`'s `round` promises — `{:.2}` of 0.125 is `0.13`. An
+  int is written digit for digit rather than through a float, so a
+  value past a float's exact range keeps every digit it had.
+- Rounding a number and writing one are different jobs, and the docs
+  now say which is which. `round(x * 100) / 100` gives back a NUMBER,
+  which still prints as short as it can: `examples/stats.ting` asked
+  for two decimal places that way and printed `17.3`. A spec always
+  writes the digits you asked for.
+- Writing `// a note` says so. The error was `expected expression,
+  found '/'`, which is true and unhelpful; it now adds that a comment
+  starts with `#`. `/* */` says the same, and a division that lost its
+  operand still gets the plain message.
+- Every spec was an error before this release, so no program that ran
+  can change meaning. `pad_left`, `pad_right` and `center` are
+  unchanged and still worth using; the point is that `format` no
+  longer needs them.
+
 ## v2.129.0 (2026-09-08)
 
 - Every program runs 4 to 10 percent faster and tight loops about 20,
