@@ -61,7 +61,12 @@ if shell != nil {
   # did not exit, and nil is not a status.
   let killmsg = err(fn() { return sh["check"](shell, ["-c", "kill -9 $$"]); });
   assert(!contains(killmsg, "nil"), "no failure reports a nil status");
-  assert(contains(killmsg, "killed"), "a killed child is reported as killed");
+  # Windows has no signals: `kill -9` there is an ordinary nonzero
+  # exit, and the message rightly says "exited". The check is on the
+  # platforms where the code really is nil — asserting "killed"
+  # everywhere is what turned CI red at 837.
+  assert(killed["code"] != nil || contains(killmsg, "killed"),
+  "where a signal ends a child the message says killed");
   assert(sh["ended"]({"code": 4, "signal": nil}) == "exited 4", "a code is an exit");
   assert(sh["ended"]({"code": nil, "signal": 9}) == "was killed by signal 9", "a signal is a kill");
   assert(sh["ended"]({"code": nil, "signal": nil}) == "was killed",

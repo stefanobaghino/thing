@@ -47,7 +47,12 @@ current orientation.
 
 ## Working rhythm (per LOOP.md, incl. the no-idle rule)
 
-1. Maintenance check every tick: issues, PRs, CI, tree.
+1. Maintenance check every tick: issues, PRs, CI, tree. NOT DONE
+   UNTIL A CI VERDICT FOR THE CURRENT HEAD HAS BEEN READ FROM THE
+   API. At 838 and 839 `git status` + `git log` + `uptime` stood in
+   for it and CI stayed red from 837 for three ticks while two more
+   commits went on top. A green local gate is a REASON to look at
+   CI, not a substitute: four platforms run it and this host is one.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); before every push run what CI runs, in CI's own words —
    `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
@@ -2448,6 +2453,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 840: RED CI SINCE 837, FOUND AND FIXED; the release waits for a
+  green verdict. 837's `assert(contains(killmsg, "killed"))` is not
+  portable — Windows has no signals, so `kill -9 $$` there is an
+  ordinary nonzero exit and `ended` rightly says "exited". It now
+  reads `killed["code"] != nil || contains(killmsg, "killed")`. The
+  other four checks in that block were disjunctions and passed; this
+  one asserted the Unix outcome flat. Note also that 838's stdin
+  checks sit after the failing line, so NO WINDOWS RUNNER HAS EVER
+  REACHED THEM — that verdict is still owed.
 - 839: third stroke — WHAT THE BYTES ARE. Measured, the picture is a
   rule followed everywhere but one place and written down nowhere:
   `read_file`, `each_line`, `input()`, a script file, `--check` and

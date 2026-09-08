@@ -20116,3 +20116,44 @@ strictly and fall back to empty: the child's output stops matching.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, Windows check and clippy,
 wasm release build.
+
+## 2026-09-09 — Iteration 840: red CI, and why I did not see it
+
+The release was next on the backlog. It is not this tick's work,
+because CI has been RED SINCE 837 and I pushed twice more on top of
+it without looking.
+
+**What broke.** 837's selftest check `assert(contains(killmsg,
+"killed"))` is not portable and I called it portable in the same
+breath as the checks around it that are. Windows has no signals:
+`sh -c 'kill -9 $$'` there is an ordinary nonzero exit, so `ended`
+rightly says "exited", and the assertion asking for "killed" fails —
+taking `selftest_programs_match_across_engines` and
+`both_engines_cover_the_same_lines` with it, on windows-latest only.
+The other four checks in that block were written as disjunctions and
+passed everywhere; this one asserted the Unix outcome flat. Now it
+reads `killed["code"] != nil || contains(killmsg, "killed")` — the
+message must say "killed" exactly where the code really is nil.
+
+**Why three ticks passed before I noticed.** The rhythm's first step
+is "maintenance check every tick: issues, PRs, CI, tree", and at 838
+and 839 I ran `git status`, `git log` and `uptime` and called that
+the maintenance check. The local gate was green both times, which is
+exactly the condition under which the remote one is the only thing
+that can tell you anything new — four platforms, and this host is
+one of them. A green local gate is a REASON to look at CI, not a
+substitute for it.
+
+**The rule, sharpened, in STATE.md**: the maintenance check is not
+done until a CI verdict for the CURRENT HEAD has been read from the
+API. Every tick, before any other work.
+
+**Held for the same reason**: 838's stdin checks sit AFTER the
+failing line, so no Windows runner has ever reached them. `cat`,
+`sort`, `head` and `read` under git-bash should answer, and
+`sh.lines` already folds CRLF, but that is a prediction about a
+platform this host cannot run — 840 pushes the fix and reads the
+verdict before v2.134.0 is tagged.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks.
