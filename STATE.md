@@ -2447,7 +2447,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
-- 812: v2.130.0 TAGGED (151st tag; strokes 809, 810, 811). Five
+- v2.130.0 VERIFIED (151st tag; strokes 809, 810, 811; seven assets,
+  `sha256sum -c` OK on all six, both aarch64 archives executed here,
+  2618 checks from each on both engines). The probe asked about what
+  THIS release shipped — every spec form, 0.125 rounding to 0.13 with
+  the binary's own round() agreeing, a big int keeping its last digit,
+  the `//` hint — from outside the unpacked directory so the stdlib
+  could only come from inside the binary. 806's guard held across a
+  release: the archives' lib/ is still the same twelve modules.
+- 812: v2.130.0 tagged. Five
   changelog entries; the fifth states the compatibility argument
   rather than assuming it (every spec was an ERROR before, so no
   program that ran can change meaning).
@@ -2558,8 +2566,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: verify v2.130.0 by cold asset download — seven
-  assets, `sha256sum -c`, both aarch64 archives executed here.
   - then: a health tick to close the milestone.
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 — a lib/ beside a script silently

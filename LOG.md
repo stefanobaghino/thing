@@ -18931,3 +18931,25 @@ with the host at load 3.4.
 Gate green: fmt, clippy, 16 `test result: ok` (375 tests), 71 files
 unchanged, corpus at seven, 2618 checks on both engines, Windows and
 wasm, eleven bench checksums on both engines.
+
+## 2026-09-08 — Iteration 813: v2.130.0 verified
+
+Seven assets downloaded cold; `sha256sum -c` OK on all six archives.
+Both aarch64 archives unpacked and run here: `--version` says
+2.130.0, and the whole selftest suite — 22 files, 2618 checks —
+passes from each on both engines, four runs.
+
+**The probe asked about what THIS release shipped**, not about ting in
+general, and was placed outside the unpacked directory so the stdlib
+could only come from inside the binary: `{:>8}`, `{:0>2}`, `{:^9}`,
+`{:.2}` of 0.125 (0.13, and `lib/math.ting`'s round() agrees from the
+same binary), `{:.2}` of an int, `{:>12.2}` of a money value, a big
+int keeping its last digit, and a spec with decimal places on a
+string reporting the error it should. Identical on both archives and
+both engines. `// a note` gives the hint from the archive too.
+
+806's guard held across a release: the archives' `lib/` is still the
+same twelve modules as the repository's.
+
+The 151st tag is done: seven assets, checksums verified, two
+architectures executed here.
