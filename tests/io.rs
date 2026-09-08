@@ -3251,6 +3251,84 @@ fn run_spawns_a_program_and_reports_what_it_did() {
     let _ = std::fs::remove_file(&child);
 }
 
+/// Bytes that are not text, both ways round: a file ting is asked to
+/// read as text FAILS, in ting's words rather than std's; a child's
+/// output is decoded lossily, because there is no bytes type to hand
+/// back and failing would throw away the code, the stderr and the
+/// signal with it. The rule is written down in docs/reference.md;
+/// this is what holds it.
+#[test]
+fn bytes_that_are_not_text_fail_on_the_way_in_and_are_replaced_on_the_way_out() {
+    let exe = env!("CARGO_BIN_EXE_ting").replace('\\', "/");
+    let dir = std::env::temp_dir();
+    let bad = dir.join("ting-io-bad-bytes.bin");
+    std::fs::write(&bad, [0xff, 0xfe, b'h', b'i', b'\n']).unwrap();
+    let bad_path = bad.to_str().unwrap().replace('\\', "/");
+    let script = dir.join("ting-io-bad-bytes.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "print(try(fn() {{ return read_file(\"{bad_path}\"); }})[\"err\"]);\n\
+             print(try(fn() {{ return each_line(\"{bad_path}\", fn(l) {{ return nil; }}); }})[\"err\"]);\n\
+             let d = run(\"{exe}\", [\"--fmt\", \"-\"], \"print( 1 );\\n\");\n\
+             print(d[\"out\"] == \"print(1);\\n\", d[\"code\"]);\n"
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    for whose in ["read_file", "each_line"] {
+        let line = lines.next().unwrap();
+        assert!(
+            line.ends_with("not UTF-8 text"),
+            "{whose} must say it in ting's words:\n{text}"
+        );
+        assert!(
+            !line.contains("stream"),
+            "std's phrasing calls a named file a stream:\n{text}"
+        );
+    }
+    assert_eq!(lines.next().unwrap(), "true 0", "unexpected:\n{text}");
+
+    let _ = std::fs::remove_file(&bad);
+    let _ = std::fs::remove_file(&script);
+}
+
+/// The other half of the rule, where a child prints bytes that are
+/// not text: they come back REPLACED and the exit code survives.
+/// Unix only, because it needs a program that will print arbitrary
+/// bytes and `cat` is the one POSIX guarantees — no ting program can
+/// stand in, since a ting string is UTF-8 by construction.
+#[cfg(unix)]
+#[test]
+fn a_childs_bytes_are_replaced_rather_than_refused() {
+    let dir = std::env::temp_dir();
+    let bad = dir.join("ting-io-bad-out.bin");
+    std::fs::write(&bad, [0xff, 0xfe, b'h', b'i']).unwrap();
+    let bad_path = bad.to_str().unwrap();
+    let script = dir.join("ting-io-bad-out.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "let d = run(\"cat\", [\"{bad_path}\"]);\n\
+             print(d[\"out\"] == chr(65533) + chr(65533) + \"hi\", d[\"code\"], len(d[\"out\"]));\n"
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(text.trim(), "true 0 4", "unexpected:\n{text}");
+    let _ = std::fs::remove_file(&bad);
+    let _ = std::fs::remove_file(&script);
+}
+
 /// A child with something to read, and the deadlock that shape
 /// invites. The child echoes what it is given, so its stdout fills
 /// while its stdin is still being written; writing the input on the

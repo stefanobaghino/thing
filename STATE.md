@@ -2448,6 +2448,22 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 839: third stroke — WHAT THE BYTES ARE. Measured, the picture is a
+  rule followed everywhere but one place and written down nowhere:
+  `read_file`, `each_line`, `input()`, a script file, `--check` and
+  `-` FAIL on bytes that are not text; `run`'s out/err replace them.
+  THE RULE STANDS AND NOW SAYS WHY — a file is offered to ting as
+  text so mojibake would be a wrong answer, while a child's output is
+  whatever the child printed, there is no bytes type to hand back,
+  and refusing would throw away the code, the stderr and the signal
+  with it. 829's other loose end closed on the way past: `read_why`
+  in diag.rs turns std's "stream did not contain valid UTF-8" into
+  `not UTF-8 text` and EVERY "cannot read" now goes through it
+  (read_file, each_line, input, the script loader, :load, --bundle),
+  while non-encoding errors are untouched. Pinned both ways — a
+  portable test for the reading side, a `#[cfg(unix)]` one using
+  `cat` for the child side, since no ting program can print bytes
+  that are not UTF-8. Two mutations, two caught.
 - 838: second stroke — SOMETHING ON THE CHILD'S STDIN.
   `run(cmd, args, stdin)`, and `sh.ok`/`check`/`lines` too; without
   it the child gets EOF at once, as it always did and as the docs now
@@ -3013,9 +3029,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - what the bytes are: `run`'s out/err are lossy where `read_file`
-  errors on the same bytes. Decide, say it in the docstring and the
-  docs, pin it with a test. Bias: lossy stays, silence does not.
   - release v2.134.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

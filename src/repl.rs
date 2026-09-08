@@ -569,7 +569,7 @@ fn run_inner() -> ExitCode {
                         say(&format!("(loaded {path}: {added} new binding(s))"));
                     }
                 }
-                Err(e) => eprintln!("ting: cannot read {path}: {e}"),
+                Err(e) => eprintln!("ting: cannot read {path}: {}", crate::diag::read_why(&e)),
             }
             continue;
         }

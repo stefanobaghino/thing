@@ -20072,3 +20072,47 @@ std::process the sibling branch already calls compiles there too.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks (was 2670), Windows check
 and clippy, wasm release build.
+
+## 2026-09-09 — Iteration 839: what the bytes are
+
+Third stroke of "the other program". 829 noticed `run` decodes a
+child's output lossily while `read_file` on the same two bytes
+fails, and called it undocumented on both sides. Measured properly
+this tick, the picture is a RULE followed everywhere but one place
+and written down nowhere: `read_file`, `each_line`, `input()`, a
+script file, `--check` and `-` all FAIL on bytes that are not text;
+`run`'s `out` and `err` replace them.
+
+**The rule stands, and now it says why.** A file is offered to ting
+as text, so mojibake would be a wrong answer to a question that was
+asked in good faith. A child's output is whatever the child printed —
+ting has no bytes type to hand back instead, and refusing would
+throw away the exit code, the stderr and the signal along with the
+output. The asymmetry is in the `run` docstring and in
+docs/reference.md, in those words.
+
+**829's other loose end, closed on the way past.** The failure said
+"stream did not contain valid UTF-8" — std's phrasing, calling a
+file a stream one clause after naming its path, and never saying
+what the trouble is. A new `diag::read_why` turns an `InvalidData`
+error into `not UTF-8 text` and every "cannot read" in the program
+now goes through it: read_file, each_line, input(), the script
+loader, the REPL's `:load`, `--bundle`. Errors that are not about
+encoding are untouched — a missing file still says "No such file or
+directory (os error 2)".
+
+**Pinned in both directions.** A portable test asserts the reading
+side fails with ting's words and never the word "stream"; a
+`#[cfg(unix)]` one asserts a child's bad bytes come back as two
+replacement characters with code 0 — it needs a program that will
+print arbitrary bytes, `cat` is the one POSIX guarantees, and no
+ting program can stand in because a ting string is UTF-8 by
+construction.
+
+**Two mutations, two caught.** Dropping the `InvalidData` branch:
+"read_file must say it in ting's words". Making `run` decode
+strictly and fall back to empty: the child's output stops matching.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, Windows check and clippy,
+wasm release build.

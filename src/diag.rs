@@ -2,6 +2,19 @@
 
 use crate::lexer::Span;
 
+/// What went wrong reading something, in ting's words rather than
+/// std's. `read_to_string` on bytes that are not text hands back an
+/// `InvalidData` error spelled "stream did not contain valid UTF-8",
+/// which says "stream" about a file the message has just named and
+/// never says what the trouble is. Every "cannot read" in the
+/// program goes through here so they all say the same thing.
+pub fn read_why(e: &std::io::Error) -> String {
+    if e.kind() == std::io::ErrorKind::InvalidData {
+        return "not UTF-8 text".to_string();
+    }
+    e.to_string()
+}
+
 /// Render a `path:line:col` header plus the offending line with a caret
 /// underline covering the span (clamped to that line).
 ///

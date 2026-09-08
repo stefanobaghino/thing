@@ -165,8 +165,13 @@ impl Bundler {
             ));
         }
         let display = self.show(path);
-        let src = std::fs::read_to_string(path)
-            .map_err(|e| format!("ting: cannot read {}: {e}", path.display()))?;
+        let src = std::fs::read_to_string(path).map_err(|e| {
+            format!(
+                "ting: cannot read {}: {}",
+                path.display(),
+                crate::diag::read_why(&e)
+            )
+        })?;
         self.open.push(path.to_path_buf());
         let body = self.inline(&display, &src, path)?;
         self.open.pop();
@@ -256,9 +261,13 @@ pub struct Bundle {
 /// imports, directly or through another module, inlined once and in
 /// dependency order, then the script itself.
 pub fn bundle(path: &Path) -> Result<Bundle, String> {
-    let path = path
-        .canonicalize()
-        .map_err(|e| format!("ting: cannot read {}: {e}", path.display()))?;
+    let path = path.canonicalize().map_err(|e| {
+        format!(
+            "ting: cannot read {}: {}",
+            path.display(),
+            crate::diag::read_why(&e)
+        )
+    })?;
     let root = path.parent().unwrap_or(Path::new(".")).to_path_buf();
     let mut bundler = Bundler {
         root,
@@ -267,8 +276,13 @@ pub fn bundle(path: &Path) -> Result<Bundle, String> {
         out: Vec::new(),
     };
     let display = bundler.show(&path);
-    let src = std::fs::read_to_string(&path)
-        .map_err(|e| format!("ting: cannot read {}: {e}", path.display()))?;
+    let src = std::fs::read_to_string(&path).map_err(|e| {
+        format!(
+            "ting: cannot read {}: {}",
+            path.display(),
+            crate::diag::read_why(&e)
+        )
+    })?;
     // The entry is parsed for the same reasons a module is: a file
     // that does not parse cannot be bundled, and saying so here beats
     // handing back something that only fails when it is run.

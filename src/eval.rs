@@ -2128,7 +2128,10 @@ impl<W: Write> Interpreter<W> {
                         }
                         Ok(Value::str(line))
                     }
-                    Err(e) => Err(error(format!("input failed: {e}"), span)),
+                    Err(e) => Err(error(
+                        format!("input failed: {}", crate::diag::read_why(&e)),
+                        span,
+                    )),
                 }
             }
             Builtin::ReadFile => {
@@ -2139,11 +2142,21 @@ impl<W: Write> Interpreter<W> {
                         let mut buf = String::new();
                         std::io::Read::read_to_string(&mut std::io::stdin().lock(), &mut buf)
                             .map(|_| Value::str(buf))
-                            .map_err(|e| error(format!("cannot read stdin: {e}"), span))
+                            .map_err(|e| {
+                                error(
+                                    format!("cannot read stdin: {}", crate::diag::read_why(&e)),
+                                    span,
+                                )
+                            })
                     }
-                    Value::Str(path) => std::fs::read_to_string(path)
-                        .map(Value::str)
-                        .map_err(|e| error(format!("cannot read {path:?}: {e}"), span)),
+                    Value::Str(path) => {
+                        std::fs::read_to_string(path).map(Value::str).map_err(|e| {
+                            error(
+                                format!("cannot read {path:?}: {}", crate::diag::read_why(&e)),
+                                span,
+                            )
+                        })
+                    }
                     v => Err(error(
                         format!("read_file expects a string path, got {}", v.type_name()),
                         span,
@@ -2235,8 +2248,12 @@ impl<W: Write> Interpreter<W> {
                 let mut reader: Box<dyn BufRead> = if path == "-" {
                     Box::new(std::io::stdin().lock())
                 } else {
-                    let file = std::fs::File::open(&path)
-                        .map_err(|e| error(format!("cannot read {whose}: {e}"), span))?;
+                    let file = std::fs::File::open(&path).map_err(|e| {
+                        error(
+                            format!("cannot read {whose}: {}", crate::diag::read_why(&e)),
+                            span,
+                        )
+                    })?;
                     Box::new(std::io::BufReader::new(file))
                 };
                 // One buffer for the whole read, reused: the point of
@@ -2249,7 +2266,10 @@ impl<W: Write> Interpreter<W> {
                         Ok(0) => break,
                         Ok(_) => {}
                         Err(e) => {
-                            return Err(error(format!("cannot read {whose}: {e}"), span));
+                            return Err(error(
+                                format!("cannot read {whose}: {}", crate::diag::read_why(&e)),
+                                span,
+                            ));
                         }
                     }
                     if buf.ends_with('\n') {

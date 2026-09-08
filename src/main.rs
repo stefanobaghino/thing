@@ -442,7 +442,7 @@ fn read_tool_source(f: &str) -> Result<String, ExitCode> {
         std::fs::read_to_string(f)
     };
     read.map_err(|e| {
-        eprintln!("ting: cannot read {f}: {e}");
+        eprintln!("ting: cannot read {f}: {}", ting::diag::read_why(&e));
         ExitCode::FAILURE
     })
 }

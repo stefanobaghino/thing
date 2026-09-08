@@ -629,7 +629,9 @@ impl Builtin {
                 "Runs a program and waits: a map of code, out, err and signal. \
                  A signal killed it when code is nil, and signal is that \
                  number where the platform has them. The child reads stdin \
-                 there, and reads nothing without it.",
+                 there, and reads nothing without it. Bytes that are not \
+                 UTF-8 come back as replacement characters, where reading \
+                 a file would be an error.",
             ),
             Builtin::EPrint => (
                 "eprint(...)",
