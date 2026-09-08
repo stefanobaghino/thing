@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2583 selftest checks on all four
-  CI platforms, Windows included); 370 Rust tests
+  CI platforms, Windows included); 371 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2400,19 +2400,42 @@ holds only the current milestone and the standing rules.
   compiles to a chunk of its own and most code lives in one. ops()
   now gathers protos recursively, which also widens what 800's tests
   were checking.
+- 802: third stroke — `Op::JumpIfFalseSlotConst` and
+  `Op::JumpIfFalseSlots` do the comparison AND the branch, from one
+  new `jump_if_false` helper that `if` and `while` now share. The
+  condition is still asked whether it is a bool, so `if x + 1 {}` is
+  the same error at the same span.
+  HISTOGRAM RE-RUN FIRST (two fusions had changed it): the CSV parse
+  now runs 19.5 M instructions where it ran 26.3 M — A QUARTER FEWER
+  — and JumpIfFalse is now 26.6% of all instructions, ahead of GetSlot
+  at 14.7%.
+  Measured against 801: empty loop -6%, `if c == ","` in a loop -8%,
+  scan -1%, CSV -2%. SMALLER THAN THE INSTRUCTION COUNT PROMISED,
+  AGAIN: fusing 12.8% of the parse's instructions in pairs removes ~6%
+  of them and buys 2% of the clock. Instructions are not what the
+  machine waits on; the loop shapes, where the saved instruction sits
+  on a dependency chain, are where it shows.
+  KEPT ON TWO GROUNDS, not one: the empty loop is 0.140 s against
+  0.176 at 799 (-20% across the milestone), AND `if` and `while` now
+  share a method where they duplicated four lines each. For
+  complexity alone it would be a poor trade.
+  THE GUARD CAUGHT THE CHANGE BEFORE THE CLOCK DID: two
+  tests/bytecode.rs cases failed the moment the fusion landed, because
+  `if c == ","` no longer emits BinarySlotConst at all. Working as
+  intended; the tests now say which shape belongs where, with a fourth
+  case for conditions that must NOT fuse.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - next stroke: `Const UpdateSlot` (`i += 1`, 14.3% of the empty
-  loop's instructions) or the compare-and-branch that folds a
-  JumpIfFalse into the fused compare (csv 6.1%, fib 9.1%). Take the
-  compare-and-branch first: it is the larger share and it removes a
-  branch, not just a dispatch. Re-run 800's histogram against the
-  CURRENT binary before choosing, since two fusions have changed what
-  the table says.
-  - then: measure again and decide whether the milestone is done. 801
-  is the warning: a share of the INSTRUCTION COUNT is not a share of
-  the TIME (stdlib 10.4% of instructions, 0% of the clock).
+  - next stroke: `GetSlot JumpIfFalse` (9.2% of the CSV parse, the
+  largest single pair left: `if pending {`) and `Const UpdateSlot`
+  (`i += 1`). MEASURE BOTH AND EXPECT LITTLE — 801 and 802 both bought
+  a third or less of what their instruction share suggested. If
+  neither reaches 3% end to end, say so and stop fusing rather than
+  adding opcodes that do not pay.
+  - then release the milestone as v2.129.0 (CHANGELOG from LOG
+  800-802, regenerate BASELINE in one go on the quietest machine
+  available, tag, verify by cold asset download).
   - then: prove the archive's lib/ and the binary's embedded stdlib
   are the same twelve modules (754 -- a lib/ beside a script silently
   shadows the embedded one, and nobody checks they agree).

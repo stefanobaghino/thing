@@ -104,6 +104,12 @@ pub enum Op {
     /// every loop, and the commonest three instructions in
     /// bench/stdlib.ting (LOG 801).
     BinarySlots(u16, u16, BinaryOp),
+    /// The two above with the branch that follows them folded in:
+    /// the answer to `c == ","` in an `if` or a `while` is looked at
+    /// once and never reaches the stack. `JumpIfFalse` is a quarter
+    /// of every instruction the CSV parse runs (LOG 802).
+    JumpIfFalseSlotConst(u16, u32, BinaryOp, i32),
+    JumpIfFalseSlots(u16, u16, BinaryOp, i32),
     /// Add the top of the stack to the value below it and store the
     /// result in the named binding -- Binary(Add) and SetVar in one
     /// step, so that the binding can be asked to let go of what was
@@ -699,9 +705,7 @@ impl Compiler {
                 self.leave_scope();
             }
             StmtKind::If(cond, then, els) => {
-                self.expr(cond)?;
-                let to_else = self.chunk.code.len();
-                self.emit(Op::JumpIfFalse(0), cond.span);
+                let to_else = self.jump_if_false(cond)?;
                 self.stmt(then)?;
                 match els {
                     Some(els) => {
@@ -721,9 +725,7 @@ impl Compiler {
             }
             StmtKind::While(cond, body) => {
                 let loop_start = self.chunk.code.len();
-                self.expr(cond)?;
-                let to_end = self.chunk.code.len();
-                self.emit(Op::JumpIfFalse(0), cond.span);
+                let to_end = self.jump_if_false(cond)?;
                 self.loops.push(LoopCtx {
                     continue_target: loop_start,
                     break_patches: vec![to_end],
@@ -994,12 +996,49 @@ impl Compiler {
         Ok(())
     }
 
+    /// Emit the test for a condition and the jump that skips the body
+    /// when it is false, and answer where to patch the offset. A
+    /// comparison against a local or a literal becomes ONE
+    /// instruction: the answer is looked at where it is made instead
+    /// of being pushed, popped and asked whether it is true. It is
+    /// still asked -- `if x + 1 {}` is an error, and the same one.
+    fn jump_if_false(&mut self, cond: &Expr) -> Result<usize, CompileError> {
+        if let ExprKind::Binary(op, lhs, rhs) = &cond.kind
+            && !matches!(op, BinaryOp::And | BinaryOp::Or)
+            && let ExprKind::Var(n) = &lhs.kind
+            && let Some(a) = self.resolve(n)
+        {
+            let right = match &rhs.kind {
+                ExprKind::Var(n) => self.resolve(n),
+                _ => None,
+            };
+            let at = self.chunk.code.len();
+            if let Some(v) = literal_value(rhs) {
+                let k = self.konst(v);
+                self.emit(Op::JumpIfFalseSlotConst(a, k, *op, 0), cond.span);
+                return Ok(at);
+            }
+            if let Some(b) = right {
+                self.emit(Op::JumpIfFalseSlots(a, b, *op, 0), cond.span);
+                return Ok(at);
+            }
+        }
+        self.expr(cond)?;
+        let at = self.chunk.code.len();
+        self.emit(Op::JumpIfFalse(0), cond.span);
+        Ok(at)
+    }
+
     fn patch(&mut self, at: usize, target: i32) {
         let rel = target - at as i32 - 1;
         match &mut self.chunk.code[at] {
-            Op::Jump(o) | Op::JumpIfFalse(o) | Op::OrJump(o) | Op::AndJump(o) | Op::IterNext(o) => {
-                *o = rel
-            }
+            Op::Jump(o)
+            | Op::JumpIfFalse(o)
+            | Op::OrJump(o)
+            | Op::AndJump(o)
+            | Op::IterNext(o)
+            | Op::JumpIfFalseSlotConst(_, _, _, o)
+            | Op::JumpIfFalseSlots(_, _, _, o) => *o = rel,
             _ => unreachable!("patched op is not a jump"),
         }
     }

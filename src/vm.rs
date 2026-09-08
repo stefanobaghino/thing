@@ -233,6 +233,22 @@ fn exec<W: Write>(
                 ip = offset(ip, *o);
                 continue;
             }
+            Op::JumpIfFalseSlotConst(a, k, op, o) => {
+                let l = locals[*a as usize].clone();
+                let r = chunk.consts[*k as usize].clone();
+                if !eval::as_bool(eval::binary(*op, l, r, span)?, span)? {
+                    ip = offset(ip, *o);
+                    continue;
+                }
+            }
+            Op::JumpIfFalseSlots(a, b, op, o) => {
+                let l = locals[*a as usize].clone();
+                let r = locals[*b as usize].clone();
+                if !eval::as_bool(eval::binary(*op, l, r, span)?, span)? {
+                    ip = offset(ip, *o);
+                    continue;
+                }
+            }
             Op::JumpIfFalse(o) => {
                 let v = stack.pop().expect("stack underflow");
                 if !eval::as_bool(v, span)? {

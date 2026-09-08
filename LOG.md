@@ -18512,3 +18512,52 @@ scripts (error spans, string aliasing, appends whose right-hand side
 reassigns the name, and the index/slice edge grid) byte-identical to
 800's binary on both engines with the engines agreeing, and 100000
 differential cases at seed 801.
+
+## 2026-09-08 — Iteration 802: the test and the branch in one
+
+**The histogram, re-run against the current binary**, because two
+fusions had changed what it says. The CSV parse now runs **19.5 M
+instructions where it ran 26.3 M** — a quarter fewer for the same
+work — and the table has a new shape: `JumpIfFalse` is **26.6% of
+every instruction**, ahead of `GetSlot` at 14.7%. Its three sources
+are `BinarySlotConst` (8.2% as a pair), `GetSlot` (9.2%) and
+`BinarySlots` (4.6%).
+
+So `Op::JumpIfFalseSlotConst` and `Op::JumpIfFalseSlots` do the
+comparison and the branch together: the answer is looked at where it
+is made and never reaches the stack. Both come from one new
+`jump_if_false` helper that `if` and `while` now share, and the
+condition is still asked whether it is a bool — `if x + 1 {}` is an
+error, and the same one, at the same span.
+
+**Measured** against 801's binary, three interleaved runs each: the
+empty loop **-6%** (0.148 -> 0.140 s), `if c == ","` in a loop
+**-8%** (0.225 -> 0.206), `bench/scan.ting` -1%, the CSV parse -2%.
+
+**That is smaller than the instruction count promised, and it is the
+same lesson as 801.** Fusing 12.8% of the CSV parse's instructions in
+pairs removes about 6% of them and buys 2% of the time. Instructions
+are not what the machine is waiting on; some of them are nearly free
+and these were among the cheaper ones. The loop shapes, where the
+saved instruction is on the critical path of a dependency chain, are
+where it shows.
+
+Kept rather than reverted, on two grounds: the empty loop is now
+0.140 s against 0.176 at 799, **-20% across the milestone**, and the
+change makes `if` and `while` share one method where they had
+duplicated four lines each. It would be a poor trade for complexity
+alone; it is not one for less code.
+
+**The guard caught the change before the clock did.** Two of
+`tests/bytecode.rs`'s cases failed the moment the fusion landed,
+because `if c == ","` no longer emits `BinarySlotConst` at all — it
+emits the fused branch. That is the guard working, not a bug: the
+tests now say which shape belongs where, with a fourth case for
+conditions that must NOT fuse (a bare local, a call, a `&&`).
+
+Gate green: fmt, clippy, 16 `test result: ok` (371 tests), 71 files
+unchanged, corpus at seven, selftest 2583 checks, Windows and wasm,
+all eleven bench checksums, five scripts — including one written for
+this change, covering non-bool conditions, type errors inside a
+condition, and both `while` and `if`/`else` — byte-identical to 801's
+binary on both engines, and 150000 differential cases at seed 802.
