@@ -20649,3 +20649,31 @@ helper calls, so the measuring and the measured are separate.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, Windows check and clippy,
 wasm release build.
+
+## 853 — health tick: "the program that got big" closed
+
+Bench against BASELINE: all eleven checksums match on both engines.
+Timings run 5-15% above the recorded rows at load 2.2 with five
+sessions on the host, which is weather — the checksums decide, and
+nothing in this milestone touched the engines' speed.
+
+Sweeps in release, all green: 50000 differential cases (both engines
+byte-identical on generated programs), the crash fuzzer at 50000, and
+20000 formatter cases.
+
+Site audit, the ten paths that exist: www.baghino.me/thing/ answers
+200 on /, reference, tutorial, cookbook, stdlib, retrospective and
+changelog .html, and on the three playground files at the root —
+/, /examples.js, /ting.wasm. github.io still 301s to it. The
+published changelog names v2.135.0, so Pages deployed from the tag.
+
+Probing /thing/playground/ first was my own mistake and 782's
+already-recorded one: the playground IS the root page. The note in
+STATE says so and I read it after, not before.
+
+**Milestone "the program that got big" (v2.135.0, strokes 843-853)
+is complete.** Four quadratics out of the checker, the compiler, the
+diagnostics and the resolver; eleven more places in the LSP; a
+nesting limit that answers instead of aborting; every command on a
+stack this process chose; and the guards that watch all of it made
+noise-proof.

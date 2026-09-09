@@ -2453,6 +2453,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 853: HEALTH TICK GREEN — MILESTONE "THE PROGRAM THAT GOT BIG"
+  (v2.135.0, strokes 843-853) COMPLETE. Bench: all eleven checksums
+  match on both engines (timings 5-15% high at load 2.2, weather).
+  Sweeps in release: 50000 differential, crash fuzzer at 50000,
+  20000 formatter — all green. Site audit: the ten paths that exist
+  answer 200 at www.baghino.me/thing/ and the published changelog
+  names v2.135.0. I probed /thing/playground/ first, which 404s
+  because THE PLAYGROUND IS THE ROOT PAGE — 782 recorded that and I
+  read the note after rather than before. Next tick: replenishment.
 - 852: THE PERFORMANCE GUARDS STOP MEASURING THE RUNNER. macOS
   failed the resolver guard at 3.8 on a LOG-only commit — the second
   flake in five ticks, same cause both times: five runs of the small
@@ -3213,9 +3222,6 @@ holds only the current milestone and the standing rules.
   `a + b + c + ...` parses in a loop but compiles and evaluates by
   recursion, so length is depth for them and MAX_NESTING does not
   bound it (849 overflowed a debug test thread at 12000 terms).
-  - health tick: bench against BASELINE, plus 50000 differential,
-  crash and 20000 formatter fuzz cases in release, to close the
-  milestone.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
