@@ -20164,3 +20164,37 @@ platforms, from the API. That run is also the first one to reach
 stopping the file before them — so `cat`, `sort`, `head` and `read`
 under git-bash do answer, and the prediction 840 refused to make is
 now a measurement. v2.134.0 can be tagged.
+
+## 2026-09-09 — Iteration 841: v2.134.0 — "the other program"
+
+**Released and verified.** 155th tag; strokes 837, 838, 839, plus
+840's fix. Release, CI and Pages all green on b435b1f, verdicts from
+the API. Seven assets; all six archives `sha256sum -c` OK on a cold
+download; both aarch64 Linux archives unpacked and run here, 2676
+checks from each on both engines.
+
+**The probe asked the shipped binaries the three questions this
+release exists to answer, from a directory with no lib/ in it, so
+the EMBEDDED stdlib is what answered.** gnu and musl agree on all of
+them. A child killed by `kill -9` reports `code: nil`, `signal: 9`,
+and `sh.check` says `sh was killed by signal 9` — not `exited nil`.
+`sort` reads three lines given to it and hands back three sorted
+ones; `head -c 2` given six characters answers `ab` without an
+error; 2 MB through `cat` comes back 2 MB with no deadlock. And the
+byte rule holds both ways: `read_file` on `\377\376hi` says `cannot
+read "probe.bin": not UTF-8 text`, while the same bytes through
+`cat` come back as two replacement characters with code 0.
+
+**BASELINE not regenerated, per 812's rule.** Nothing in this
+release touches the interpreter's speed, and all eleven checksums
+matched it on both engines before the tag — run.py asserts the two
+engines agree per script, so that is 22 comparisons.
+
+**Four changelog entries**: the signal and `sh.ended`; the child's
+stdin with the deadlock and why the write is on a thread; the stated
+rule for bytes that are not text; and `not UTF-8 text` replacing
+std's phrasing everywhere.
+
+Gate before the tag: fmt, clippy, 16 `test result: ok` (392 tests),
+71 files unchanged, corpus at fourteen, eleven bench checksums on
+both engines, Windows check and clippy, wasm release build.

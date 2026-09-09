@@ -2453,6 +2453,21 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 841: v2.134.0 TAGGED AND VERIFIED (155th tag; strokes 837, 838,
+  839 plus 840's fix; seven assets, `sha256sum -c` OK on all six,
+  both aarch64 Linux archives unpacked and run here, 2676 checks from
+  each on both engines). MILESTONE "THE OTHER PROGRAM" COMPLETE bar
+  its health tick.
+  THE PROBE ASKED THE SHIPPED BINARIES THE THREE QUESTIONS THIS
+  RELEASE EXISTS TO ANSWER, from a directory with no lib/ so the
+  EMBEDDED stdlib answered, and gnu and musl agree: `kill -9` gives
+  code nil / signal 9 and `sh was killed by signal 9`; `sort` sorts
+  what it is given, `head -c 2` answers `ab` without an error, and
+  2 MB through `cat` returns 2 MB with no deadlock; `read_file` on
+  bad bytes says `not UTF-8 text` while the same bytes through `cat`
+  come back replaced with code 0.
+  BASELINE NOT REGENERATED, per 812: nothing here touches speed, and
+  all eleven checksums matched on both engines before the tag.
 - 840: RED CI SINCE 837, FOUND AND FIXED; the release waits for a
   green verdict. 837's `assert(contains(killmsg, "killed"))` is not
   portable — Windows has no signals, so `kill -9 $$` there is an
@@ -3045,7 +3060,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.134.0.
+  - health tick closing the milestone: bench checksums on both
+  engines, 50000 differential / 20000 formatter / crash + 2000000
+  regex sweeps, `du -sh target`, site audit (the changelog page's top
+  entry should be v2.134.0).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
