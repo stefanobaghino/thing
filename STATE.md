@@ -2453,6 +2453,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 851: v2.135.0 VERIFIED (156th tag; strokes 844-848 plus 849's
+  fix; seven assets, `sha256sum -c` OK on all six, both aarch64
+  archives unpacked and run here, 2676 checks from each on both
+  engines, and from a directory holding only selftest/ so the
+  EMBEDDED stdlib answered). THE PROBE ASKED THE SHIPPED BINARIES
+  WHAT THIS RELEASE EXISTS TO ANSWER: the 20000-deep program is
+  `deep.ting:1:201: error: nested too deeply (the limit is 200
+  levels)`, exit 1, INCLUDING under `ulimit -s 1024`; `--check` on
+  8000 functions is 575 ms (gnu) / 498 (musl) against v2.134.0's 29
+  seconds. MILESTONE "THE PROGRAM THAT GOT BIG" COMPLETE bar its
+  health tick.
 - 850: v2.135.0 TAGGED (156th tag, adaf446; strokes 844-848 plus
   849's fix). HEAD-TO-HEAD against a v2.134.0 worktree, best of
   three, interleaved: `--check` over 500-8000 functions 58/228/997/
@@ -3192,8 +3203,9 @@ holds only the current milestone and the standing rules.
   `a + b + c + ...` parses in a loop but compiles and evaluates by
   recursion, so length is depth for them and MAX_NESTING does not
   bound it (849 overflowed a debug test thread at 12000 terms).
-  - verify v2.135.0: six archives, `sha256sum -c`, both aarch64
-  archives unpacked and run here from a directory with no lib/.
+  - health tick: bench against BASELINE, plus 50000 differential,
+  crash and 20000 formatter fuzz cases in release, to close the
+  milestone.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

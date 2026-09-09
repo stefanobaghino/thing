@@ -20595,3 +20595,25 @@ which is weather; checksums decide). BASELINE not regenerated, per
 Verification — six archives, `sha256sum -c`, both aarch64 Linux
 archives unpacked and run from a directory with no lib/ — is the next
 tick's, once the Release workflow finishes.
+
+## 851 — v2.135.0 verified
+
+Seven assets, `sha256sum -c` OK on all six archives from a cold
+download into an empty directory. Both aarch64 Linux archives
+unpacked and run here: 2676 checks from each, on both engines, with
+the archive's own lib/ beside them and again from a directory holding
+nothing but selftest/ — where the EMBEDDED stdlib is the only one
+that can answer, and does.
+
+The probe asked the shipped binaries the two questions this release
+exists to answer, gnu and musl agreeing on both:
+
+- The 20000-deep program says `deep.ting:1:201: error: nested too
+  deeply (the limit is 200 levels)` and exits 1 — including under
+  `ulimit -s 1024`, the main stack Windows promises, which is the
+  shape that killed 848's build.
+- `--check` on the 8000-function file takes 575 ms (gnu) and 498
+  (musl), against 29 seconds from v2.134.0's binary on the same file
+  an hour ago.
+
+Milestone "the program that got big" is complete bar its health tick.
