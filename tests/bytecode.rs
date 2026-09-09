@@ -197,18 +197,21 @@ fn a_for_over_range_counts_instead_of_building_a_list() {
 fn the_pools_are_not_searched_by_scanning_them() {
     // Distinct literals, few names: the pools grow with n while the
     // resolver's scopes do not, so this measures the pools alone.
+    // One statement per literal rather than one long sum, because a
+    // chain of `+` is a left-leaning tree and the compiler walks it
+    // by recursion: at 12000 terms the tree alone overflowed the test
+    // thread, which measures the wrong thing loudly.
     fn source(n: usize) -> String {
-        let mut src = String::from("let s = \"\"");
+        let mut src = String::new();
         for i in 0..n {
-            src.push_str(&format!(" + \"lit{i}\" + str({i})"));
+            src.push_str(&format!("print(\"lit{i}\", {i});\n"));
         }
-        src.push_str(";\nprint(len(s));\n");
         src
     }
-    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
         let tokens = ting::lexer::lex(src).expect("lex");
         let program = ting::parser::parse_program(&tokens).expect("parse");
-        (0..3)
+        (0..5)
             .map(|_| {
                 let t0 = std::time::Instant::now();
                 let Ok(chunk) = ting::compile::compile_program(&program) else {
@@ -227,8 +230,16 @@ fn the_pools_are_not_searched_by_scanning_them() {
             .min()
             .unwrap()
     }
-    let small = best_of_three(&source(1500), 1500);
-    let large = best_of_three(&source(3000), 3000);
+    // Three times 845's sizes, and five runs rather than three: at
+    // 1500 the small measurement was five milliseconds, and on a
+    // shared CI runner a co-tenant is worth more than that — the
+    // ratio said 3.5 on a run where nothing had regressed (848).
+    // Not larger than this: the mutation these numbers exist to
+    // catch is quadratic, so ten times the size is a hundred times
+    // the failing run, and a guard that takes ten minutes to fail is
+    // a guard nobody waits for.
+    let small = best_of_five(&source(5000), 5000);
+    let large = best_of_five(&source(10000), 10000);
     let ratio = large.as_secs_f64() / small.as_secs_f64();
     assert!(
         ratio < 3.0,
@@ -253,10 +264,10 @@ fn the_resolver_does_not_walk_the_scope_per_name() {
         }
         src
     }
-    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
         let tokens = ting::lexer::lex(src).expect("lex");
         let program = ting::parser::parse_program(&tokens).expect("parse");
-        (0..3)
+        (0..5)
             .map(|_| {
                 let t0 = std::time::Instant::now();
                 let Ok(chunk) = ting::compile::compile_program(&program) else {
@@ -269,8 +280,8 @@ fn the_resolver_does_not_walk_the_scope_per_name() {
             .min()
             .unwrap()
     }
-    let small = best_of_three(&source(1500), 1500);
-    let large = best_of_three(&source(3000), 3000);
+    let small = best_of_five(&source(1500), 1500);
+    let large = best_of_five(&source(3000), 3000);
     let ratio = large.as_secs_f64() / small.as_secs_f64();
     assert!(
         ratio < 3.0,

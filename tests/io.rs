@@ -4078,3 +4078,43 @@ fn a_program_nested_too_deeply_is_told_so_rather_than_killed() {
     }
     let _ = std::fs::remove_file(&script);
 }
+
+/// The same program, on a main thread the size Windows promises: one
+/// megabyte. 848's limit was not enough by itself, because `--check`
+/// parsed on the main thread, and an unoptimized parse at the limit
+/// wants three and a half megabytes — so CI died on windows-latest
+/// with exit 0xC00000FD, "has overflowed its stack", while this host
+/// printed a clean error from its eight. `ulimit -s` builds the same
+/// small main thread here, which is the only way a Linux host gets to
+/// check what Windows will do.
+#[cfg(unix)]
+#[test]
+fn a_deep_program_is_told_so_on_a_main_stack_the_size_windows_gives() {
+    let script = std::env::temp_dir().join("ting-nested-small-stack.ting");
+    let deep = format!("{}let x = 1;{}\n", "{".repeat(20000), "}".repeat(20000));
+    std::fs::write(&script, deep).expect("write deep script");
+    let bin = env!("CARGO_BIN_EXE_ting");
+    let path = script.to_str().expect("path is text");
+    // Both routes into the parser: the checker and the runner. The
+    // formatter is not here because it never parses.
+    for args in ["--check", ""] {
+        let out = Command::new("sh")
+            .arg("-c")
+            .arg(format!("ulimit -s 1024; exec '{bin}' {args} '{path}'"))
+            .output()
+            .expect("failed to run ting under a small stack");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(
+            out.status.code(),
+            Some(1),
+            "`{args}` on a 1 MB main stack: {}",
+            &err[..err.len().min(200)]
+        );
+        assert!(
+            err.contains("nested too deeply"),
+            "`{args}` on a 1 MB main stack said: {}",
+            &err[..err.len().min(200)]
+        );
+    }
+    let _ = std::fs::remove_file(&script);
+}

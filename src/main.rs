@@ -1,7 +1,27 @@
 use std::process::ExitCode;
 use ting::{Engine, Reports, repl, run_source_reported};
 
+/// The stack every command runs on. Parsing recurses with the
+/// program's nesting and running recurses with the program's calls,
+/// and neither fits in what a platform promises its main thread —
+/// Windows promises one megabyte, and an unoptimized parse of a
+/// program at `parser::MAX_NESTING` wants three and a half. Before
+/// 849 only the runner and the REPL moved off the main thread, so
+/// `--check` on a deeply nested file DIED on Windows (exit
+/// 0xC00000FD, "has overflowed its stack") while the same file got a
+/// proper error here. A command's stack is this process's to choose,
+/// so it chooses once, here, for all of them.
 fn main() -> ExitCode {
+    ting::eval::set_stack_budget(INTERPRETER_STACK);
+    std::thread::Builder::new()
+        .stack_size(INTERPRETER_STACK)
+        .spawn(run_cli)
+        .expect("failed to spawn the ting thread")
+        .join()
+        .expect("the ting thread panicked")
+}
+
+fn run_cli() -> ExitCode {
     // The bytecode VM is the default (see docs/vm.md for the numbers);
     // the tree-walker remains available as the reference engine.
     let mut engine = match std::env::var("TING_ENGINE").as_deref() {
@@ -200,7 +220,7 @@ fn main() -> ExitCode {
             paths.extend(args);
             run_covered_files(engine, &expand_paths(&paths))
         }
-        Some(path) => run_file(engine, path, args.collect(), reports),
+        Some(path) => run_file_inner(engine, &path, args.collect(), reports),
     }
 }
 
@@ -373,23 +393,9 @@ fn unknown_option(a: &str) -> ExitCode {
     ExitCode::from(2)
 }
 
-/// The stack the interpreter thread gets, and the number the
+/// The stack the command's thread gets, and the number the
 /// call-depth cap is derived from (see eval::max_depth).
 const INTERPRETER_STACK: usize = 32 * 1024 * 1024;
-
-fn run_file(engine: Engine, path: String, script_args: Vec<String>, reports: Reports) -> ExitCode {
-    // The AST holds Rc (not Send), so the whole pipeline runs on one
-    // dedicated thread, sized generously because deep ting recursion
-    // consumes host stack. Telling the interpreter how much it has is
-    // what lifts the call-depth cap above the default.
-    ting::eval::set_stack_budget(INTERPRETER_STACK);
-    std::thread::Builder::new()
-        .stack_size(INTERPRETER_STACK)
-        .spawn(move || run_file_inner(engine, &path, script_args, reports))
-        .expect("failed to spawn interpreter thread")
-        .join()
-        .expect("interpreter thread panicked")
-}
 
 fn run_file_inner(
     engine: Engine,

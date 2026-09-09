@@ -1141,8 +1141,8 @@ fn the_unused_checks_do_not_walk_the_file_once_per_name() {
         src.push_str("print(f0(1));\n");
         src
     }
-    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
-        (0..3)
+    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
+        (0..5)
             .map(|_| {
                 let t0 = std::time::Instant::now();
                 let found = ting::lsp::warnings(src);
@@ -1156,8 +1156,8 @@ fn the_unused_checks_do_not_walk_the_file_once_per_name() {
             .min()
             .unwrap()
     }
-    let small = best_of_three(&source(1500), 1500);
-    let large = best_of_three(&source(3000), 3000);
+    let small = best_of_five(&source(1500), 1500);
+    let large = best_of_five(&source(3000), 3000);
     let ratio = large.as_secs_f64() / small.as_secs_f64();
     assert!(
         ratio < 3.0,
@@ -1184,8 +1184,8 @@ fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
         src.push_str("print(g0(1));\n");
         src
     }
-    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
-        (0..3)
+    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
+        (0..5)
             .map(|_| {
                 let t0 = std::time::Instant::now();
                 let rendered = ting::check_warnings("big.ting", src);
@@ -1203,8 +1203,8 @@ fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
             .min()
             .unwrap()
     }
-    let small = best_of_three(&source(1500), 1500);
-    let large = best_of_three(&source(3000), 3000);
+    let small = best_of_five(&source(1500), 1500);
+    let large = best_of_five(&source(3000), 3000);
     let ratio = large.as_secs_f64() / small.as_secs_f64();
     assert!(
         ratio < 3.0,

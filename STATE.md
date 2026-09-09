@@ -2453,6 +2453,24 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 849: CI RED AFTER 848, ON TWO PLATFORMS, BOTH WORTH HAVING.
+  (a) windows-latest: `--check` on the deep program still died (exit
+  0xC00000FD) — the limit was right, the STACK was wrong. Only the
+  runner and the REPL spawned the 32 MB thread; every tool flag
+  parsed on a main thread, which Windows promises one megabyte and
+  an unoptimized parse at MAX_NESTING wants 3.5. `main` now declares
+  the budget and spawns the thread ONCE for every command;
+  `run_file`'s spawn is gone. Reproduced here first with `sh -c
+  'ulimit -s 1024; exec ting --check ...'` — 134 before, 1 after —
+  and that is now a #[cfg(unix)] test: A LINUX HOST CAN CHECK WHAT A
+  SMALL MAIN STACK DOES. (b) ubuntu-latest: 845's pool guard scored
+  3.5 with nothing regressed, comparing 4.9 ms against 17.2 — five
+  milliseconds on a shared runner is a co-tenant. Sizes 3x, best of
+  five (all four ratio guards), and the source is one statement per
+  literal, because a `+` chain is a left spine the COMPILER walks by
+  recursion and 12000 terms overflowed the test thread. Mutation
+  rerun: 4.0, fails in 166 s — which is why 3x and not 10x, since a
+  quadratic mutation costs the square.
 - 848: fifth stroke — A PROGRAM TOO DEEP TO PARSE IS TOLD SO.
   843's abort (exit 134, no line, nothing catchable) is now
   `nested too deeply (the limit is 200 levels)` with a caret and exit
@@ -3162,6 +3180,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - the left spine is deep for the compiler and the tree-walker:
+  `a + b + c + ...` parses in a loop but compiles and evaluates by
+  recursion, so length is depth for them and MAX_NESTING does not
+  bound it (849 overflowed a debug test thread at 12000 terms).
   - release v2.135.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

@@ -20514,3 +20514,53 @@ and bench matches BASELINE on all eleven checksums.
 Gate: fmt, clippy, 16 `test result: ok` (399 tests), `--fmt .` 71
 unchanged, corpus at fourteen, selftest 2676 checks, Windows check
 and clippy, wasm release build, bench 22 comparisons.
+
+## 849 — the limit was not the whole of it: CI red on two platforms
+
+848's CI came back red, and both failures were worth having.
+
+**windows-latest: the limit did not save the checker.** `ting --check`
+on the 20000-deep program died with exit 0xC00000FD, "has overflowed
+its stack", while the same file on this host printed a clean error.
+The limit was doing its job; the stack was the wrong one. The runner
+and the REPL each spawn a 32 MB thread — the parser had none, because
+`--check`, `--fmt-check`, `--doc`, `--lsp` and `--test` all ran on
+the main thread, and a main thread is promised one megabyte on
+Windows while an unoptimized parse at MAX_NESTING wants three and a
+half.
+
+The stack a command runs on is this process's to choose, so `main`
+now chooses once for all of them: it declares the budget and spawns
+the sized thread, and `run_file`'s own spawn is gone as redundant.
+
+**Reproduced here before it was fixed.** `sh -c 'ulimit -s 1024;
+exec ting --check deep.ting'` gives this host the main thread Windows
+gives: exit 134 before, exit 1 and the diagnostic after. That is now
+a `#[cfg(unix)]` test in tests/io.rs covering the checker and the
+runner — a Linux host CAN check what a small main stack does, which
+is the answer to why CI found this and the local gate did not.
+
+**ubuntu-latest: a guard that measured the runner.** 845's pool guard
+failed at 3.5 with nothing regressed: it compared 4.9 ms against
+17.2 ms, and five milliseconds on a shared runner is a co-tenant, not
+a measurement. Sizes are three times larger, best of five rather than
+three, and the source is now one statement per literal instead of one
+long sum — a `+` chain is a left-leaning tree the compiler walks by
+recursion, and at 12000 terms it overflowed the test thread, which
+is a loud way to measure the wrong thing. The other three ratio
+guards take five runs now too.
+
+Mutation rerun on the resized guard: the pool scan restored scores
+4.0 (6.5 s then 25.9 s) and fails. It takes 166 s to fail in a debug
+build, which is why the sizes stopped at three times rather than ten:
+a quadratic mutation costs the square, and a guard nobody waits for
+is not a guard.
+
+**Found, not fixed** (on the backlog): the compiler and the
+tree-walker recurse down the left spine of an operator chain, so
+length IS depth for them even though the parser reads it in a loop.
+MAX_NESTING does not bound it.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, Windows check and clippy,
+wasm release build.
