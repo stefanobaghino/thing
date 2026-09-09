@@ -21401,3 +21401,42 @@ Selftest 2690 -> 2739 checks over 23 files.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 73 unchanged,
 corpus at fourteen, selftest 2739 checks, Windows check and clippy,
 wasm release build.
+
+## 872 — the matcher names the construct it cannot compile
+
+Maintenance: tree clean, no PRs, CI green for e2c8f45 from the API.
+
+870 found this while porting md2html.py: a pattern using a Python
+construct ting does not have — `(?<!\\)\|` for the table splitter,
+`(?i)` for a case-insensitive scan — was refused with "nothing to
+repeat at 2". True in the sense that the `?` had nothing before it,
+and useless: the message talks about a character the pattern never
+meant to write, and says nothing about the construct that is
+actually missing.
+
+Now `(` looks at what follows before deciding. `(?:` is still the
+non-capturing group; every other `(?` spelling is named and refused:
+lookahead, negative lookahead, lookbehind, negative lookbehind,
+named groups (`(?<n>`, `(?P<n>`, `(?'n'`), atomic groups, group
+comments, inline flags (a run of option letters closed by `)` or
+`:`, so `(?i)`, `(?im:` and `(?-i)` all land there), and anything
+else as "this group option is not supported".
+
+`\1` went the same way, and it was worse: a backreference was read
+as the digit, so `(a)\1` quietly matched the two characters `a1`
+rather than failing. It now errors too. Nothing in the corpus wrote
+either, which is why neither had been noticed.
+
+The position stays the one the other messages use — just past the
+offending text — so `(?<!a)b` answers "at 4" and `(a)\1` "at 5".
+
+The reference already listed backreferences, lookaround, named
+groups and flags as deliberate omissions with the linear-time reason;
+it now says a pattern asking for one is refused by name. Fifteen new
+unit tests beside the existing bad-pattern table, three checks in
+selftest/regex.ting so the message is visible from the language
+(2739 -> 2742).
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 73 unchanged,
+corpus at fourteen, selftest 2742 checks on both engines, Windows
+check and clippy, wasm release build.

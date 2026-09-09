@@ -61,6 +61,14 @@ assert(err(fn() { return re_test("x", "[z-a]"); }) == "re_test: a range runs the
 "a backwards range");
 assert(err(fn() { return re_test("x", "*a"); }) == "re_test: nothing to repeat at 1",
 "a quantifier with nothing before it");
+# A construct this engine does not have is named, not read as
+# something else: `(?i)` used to come back as "nothing to repeat".
+assert(err(fn() { return re_test("x", "(?i)a"); }) == "re_test: inline flags are not supported at 3",
+"inline flags");
+assert(err(fn() { return re_test("x", "(?<!a)b"); }) == "re_test: negative lookbehind is not supported at 4",
+"lookbehind");
+assert(err(fn() { return re_test("aa", "(a)\\1"); }) == "re_test: backreferences are not supported at 5",
+"a backreference");
 assert(err(fn() { return re_replace("a", "a", "$3"); }) == "re_replace: the pattern has no group 3",
 "a reference to a group that does not exist");
 assert(err(fn() { return re_test(1, "a"); }) == "re_test expects two strings, got int and string",

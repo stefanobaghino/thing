@@ -539,7 +539,9 @@ groups, and flags. The engine runs every alternative in lockstep
 rather than backtracking, which is what makes matching linear in the
 length of the string — `(a+)+b` against a long line of `a`s answers
 at once instead of hanging — and backreferences cannot be had that
-way.
+way. A pattern that asks for one of them is refused by name —
+`re_find: negative lookbehind is not supported at 4` — rather than
+read as something else.
 
 The rest of the semantics:
 

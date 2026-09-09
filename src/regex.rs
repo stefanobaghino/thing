@@ -240,6 +240,49 @@ impl<'a> Parser<'a> {
             .map_err(|_| self.error("repetition count is too large"))
     }
 
+    /// `(?` opens a construct, and `(?:` is the only one ting has.
+    /// Every other spelling used to reach the atom parser as a bare
+    /// `?`, which called it a repetition with nothing to repeat — an
+    /// answer about a character the pattern never asked about. Name
+    /// what was asked for instead, so the message points at the thing
+    /// to take out.
+    fn unsupported_group(&mut self) -> String {
+        let after = |i: usize| self.src.get(self.pos + i).copied();
+        let (skip, what) = match (after(1), after(2)) {
+            (Some('='), _) => (2, "lookahead is not supported"),
+            (Some('!'), _) => (2, "negative lookahead is not supported"),
+            (Some('<'), Some('=')) => (3, "lookbehind is not supported"),
+            (Some('<'), Some('!')) => (3, "negative lookbehind is not supported"),
+            (Some('<' | '\'' | 'P'), _) => (2, "named groups are not supported"),
+            (Some('>'), _) => (2, "atomic groups are not supported"),
+            (Some('#'), _) => (2, "group comments are not supported"),
+            _ => match self.flag_run() {
+                Some(skip) => (skip, "inline flags are not supported"),
+                None => (1, "this group option is not supported"),
+            },
+        };
+        self.pos += skip;
+        self.error(what)
+    }
+
+    /// `(?i)`, `(?im:` and `(?-i)` all spell flags the same way: a run
+    /// of option letters closed by `)` or `:`.
+    fn flag_run(&self) -> Option<usize> {
+        let mut i = self.pos + 1;
+        let mut letters = 0;
+        while let Some(c) = self.src.get(i) {
+            match c {
+                'i' | 'm' | 's' | 'x' | 'u' | 'U' | 'a' | 'L' | '-' => {
+                    letters += 1;
+                    i += 1;
+                }
+                ')' | ':' if letters > 0 => return Some(i - self.pos),
+                _ => return None,
+            }
+        }
+        None
+    }
+
     fn atom(&mut self) -> Result<Node, String> {
         let c = match self.peek() {
             Some(c) => c,
@@ -251,12 +294,13 @@ impl<'a> Parser<'a> {
             '^' => Ok(Node::Start),
             '$' => Ok(Node::End),
             '(' => {
-                let index = if self.pos + 1 < self.src.len()
-                    && self.src[self.pos] == '?'
-                    && self.src[self.pos + 1] == ':'
-                {
-                    self.pos += 2;
-                    None
+                let index = if self.peek() == Some('?') {
+                    if self.src.get(self.pos + 1) == Some(&':') {
+                        self.pos += 2;
+                        None
+                    } else {
+                        return Err(self.unsupported_group());
+                    }
                 } else {
                     self.groups += 1;
                     Some(self.groups)
@@ -293,6 +337,12 @@ impl<'a> Parser<'a> {
                 negated: false,
                 items: vec![(item, negated)],
             }));
+        }
+        // `\1` is a backreference everywhere it is written, and this
+        // engine has none: reading it as the digit would match a
+        // string the pattern never described.
+        if c.is_ascii_digit() && c != '0' {
+            return Err(self.error("backreferences are not supported"));
         }
         Ok(Node::Char(match c {
             'n' => '\n',
@@ -829,6 +879,23 @@ mod tests {
             ("a{1001}", "repetition count is too large at 7"),
             ("a\\", "a backslash needs something after it at 2"),
             ("^*", "an anchor cannot be repeated at 2"),
+            // A construct ting does not have is named, not mistaken
+            // for a repetition of the `?` that spells it.
+            ("(?=x)a", "lookahead is not supported at 3"),
+            ("a(?!b)", "negative lookahead is not supported at 4"),
+            ("(?<=a)b", "lookbehind is not supported at 4"),
+            ("(?<!a)b", "negative lookbehind is not supported at 4"),
+            ("(?<name>a)", "named groups are not supported at 3"),
+            ("(?P<n>a)", "named groups are not supported at 3"),
+            ("(?'n'a)", "named groups are not supported at 3"),
+            ("(?>a)", "atomic groups are not supported at 3"),
+            ("(?# hi)a", "group comments are not supported at 3"),
+            ("(?i)a", "inline flags are not supported at 3"),
+            ("(?im:a)", "inline flags are not supported at 4"),
+            ("(?-i)a", "inline flags are not supported at 4"),
+            ("(?", "this group option is not supported at 2"),
+            ("(?)", "this group option is not supported at 2"),
+            ("(a)\\1", "backreferences are not supported at 5"),
         ] {
             assert_eq!(Regex::new(pattern).unwrap_err(), message, "for {pattern}");
         }

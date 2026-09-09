@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2739 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2742 selftest checks on all four
   CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2453,6 +2453,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 872: second stroke — THE MATCHER NAMES THE CONSTRUCT IT CANNOT
+  COMPILE. `(?` now looks at what follows: `(?:` is the group, every
+  other spelling is refused by name (lookahead, lookbehind and their
+  negatives, named groups in all three spellings, atomic groups,
+  group comments, inline flags, and a fallback), instead of falling
+  through to the atom parser and coming back "nothing to repeat at
+  2" — a message about a character the pattern never meant to write.
+  `\1` went with it, and it was worse than a bad message: a
+  backreference was READ AS THE DIGIT, so `(a)\1` quietly matched
+  `a1`. Fifteen unit tests, three selftest checks (2739 -> 2742) so
+  the message is visible from ting, one sentence in the reference.
+  Nothing in the corpus wrote either construct, which is why neither
+  had been noticed.
 - 871: first stroke — lib/base64.ting, THE THIRTEENTH MODULE. Both
   alphabets (standard padded, URL-safe unpadded), decoding either,
   and `bytes`/`from_bytes`/`decode_bytes` exported because ting has
@@ -3438,8 +3451,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the matcher names the construct it cannot compile, instead of
-  "nothing to repeat" for `(?<!...)` and `(?i)`.
   - tools/workflow_step.py in ting, output compared against it.
   - tools/playground_examples.py in ting (tests/docs.rs already
   checks examples.js is in sync).
