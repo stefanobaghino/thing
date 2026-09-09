@@ -147,23 +147,48 @@ pub struct Chunk {
     /// spans[i] belongs to code[i]; used for diagnostics.
     pub spans: Vec<Span>,
     /// For each instruction that can raise "undefined variable", the
-    /// slot-allocated names in scope there. The tree-walker finds
-    /// those in its environment and names the nearest one; a slot
-    /// holds no name at runtime, so the compiler writes down what was
-    /// in scope and the two engines say the same thing.
-    pub in_scope: Vec<(u32, Vec<String>)>,
+    /// innermost scope node there — the names in scope are that node
+    /// and its ancestors. The tree-walker finds those in its
+    /// environment and names the nearest one; a slot holds no name at
+    /// runtime, so the compiler writes down what was in scope and the
+    /// two engines say the same thing.
+    ///
+    /// A chain rather than a list per instruction: the list was
+    /// copied for every instruction that can fail, so a program with
+    /// n bindings and n statements copied n names n times. Nobody
+    /// walks the chain until a diagnostic actually needs it.
+    pub in_scope: Vec<(u32, Option<u32>)>,
+    /// The chain itself: one node per slot-allocated binding, each
+    /// naming the binding and pointing at the one enclosing it.
+    pub scope_nodes: Vec<ScopeNode>,
+}
+
+/// One binding in the chain `in_scope` points into.
+#[derive(Debug)]
+pub struct ScopeNode {
+    pub parent: Option<u32>,
+    pub name: String,
 }
 
 impl Chunk {
-    /// The slot-allocated names in scope at `ip`, for a diagnostic.
-    pub fn in_scope_at(&self, ip: usize) -> &[String] {
-        match self
+    /// The slot-allocated names in scope at `ip`, for a diagnostic,
+    /// outermost first as they were declared.
+    pub fn in_scope_at(&self, ip: usize) -> Vec<String> {
+        let Ok(i) = self
             .in_scope
             .binary_search_by_key(&(ip as u32), |(at, _)| *at)
-        {
-            Ok(i) => &self.in_scope[i].1,
-            Err(_) => &[],
+        else {
+            return Vec::new();
+        };
+        let mut names = Vec::new();
+        let mut at = self.in_scope[i].1;
+        while let Some(node) = at {
+            let node = &self.scope_nodes[node as usize];
+            names.push(node.name.clone());
+            at = node.parent;
         }
+        names.reverse();
+        names
     }
 }
 
@@ -223,6 +248,15 @@ struct FnCtx {
     captured: std::collections::HashSet<String>,
     next_slot: u16,
     uses_env: bool,
+    /// Where each name in scope is bound, innermost last, so
+    /// resolving one is a lookup rather than a walk of every scope.
+    /// A name can appear more than once: an inner binding shadows an
+    /// outer one until its scope is left.
+    at: std::collections::HashMap<String, Vec<Option<u16>>>,
+    /// The innermost node of the scope chain, and the node each
+    /// enclosing scope was left at.
+    head: Option<u32>,
+    heads: Vec<Option<u32>>,
 }
 
 fn compile_stmts(
@@ -251,6 +285,9 @@ fn compile_stmts(
                 captured,
                 next_slot: 0,
                 uses_env: false,
+                at: std::collections::HashMap::new(),
+                head: None,
+                heads: Vec::new(),
             };
             (Vec::new(), Some(ctx))
         }
@@ -266,6 +303,7 @@ fn compile_stmts(
             protos: Vec::new(),
             spans: Vec::new(),
             in_scope: Vec::new(),
+            scope_nodes: Vec::new(),
         },
         loops: Vec::new(),
         scope_depth: 0,
@@ -481,18 +519,9 @@ impl Compiler {
     /// which is one that can fail with "undefined variable".
     fn note_scope(&mut self) {
         let Some(ctx) = &self.fn_ctx else { return };
-        let names: Vec<String> = ctx
-            .scopes
-            .iter()
-            .flatten()
-            .filter(|(_, loc)| loc.is_some())
-            .map(|(n, _)| n.clone())
-            .collect();
-        if names.is_empty() {
-            return;
-        }
+        let Some(head) = ctx.head else { return };
         let at = (self.chunk.code.len() - 1) as u32;
-        self.chunk.in_scope.push((at, names));
+        self.chunk.in_scope.push((at, Some(head)));
     }
 
     fn name(&mut self, n: &str) -> u32 {
@@ -523,31 +552,57 @@ impl Compiler {
             .last_mut()
             .expect("resolver scope")
             .push((n.to_string(), loc));
+        ctx.at.entry(n.to_string()).or_default().push(loc);
+        // Only a slot-allocated name joins the chain a diagnostic
+        // reads: the others are in the environment, where the
+        // tree-walker finds them by name anyway.
+        if loc.is_some() {
+            self.chunk.scope_nodes.push(ScopeNode {
+                parent: self.fn_ctx.as_ref().expect("resolver context").head,
+                name: n.to_string(),
+            });
+            let node = (self.chunk.scope_nodes.len() - 1) as u32;
+            self.fn_ctx.as_mut().expect("resolver context").head = Some(node);
+        }
         loc
     }
 
     /// Resolve a name: innermost local first, else Env (outer/global).
+    /// A name bound nowhere and a name bound in the environment both
+    /// answer None, as they did when this walked the scopes.
     fn resolve(&self, n: &str) -> Option<u16> {
         let ctx = self.fn_ctx.as_ref()?;
-        for scope in ctx.scopes.iter().rev() {
-            for (name, loc) in scope.iter().rev() {
-                if name == n {
-                    return *loc;
-                }
-            }
-        }
-        None
+        ctx.at.get(n).and_then(|bound| bound.last().copied())?
     }
 
     fn enter_scope(&mut self) {
         if let Some(ctx) = &mut self.fn_ctx {
             ctx.scopes.push(Vec::new());
+            ctx.heads.push(ctx.head);
         }
     }
 
     fn leave_scope(&mut self) {
         if let Some(ctx) = &mut self.fn_ctx {
-            ctx.scopes.pop();
+            // Every name this scope bound stops shadowing whatever it
+            // hid, and the chain goes back to where the scope began.
+            if let Some(gone) = ctx.scopes.pop() {
+                for (name, _) in gone {
+                    let empty = match ctx.at.get_mut(&name) {
+                        Some(bound) => {
+                            bound.pop();
+                            bound.is_empty()
+                        }
+                        None => false,
+                    };
+                    if empty {
+                        ctx.at.remove(&name);
+                    }
+                }
+            }
+            if let Some(head) = ctx.heads.pop() {
+                ctx.head = head;
+            }
         }
     }
 
@@ -1046,6 +1101,9 @@ impl Compiler {
             captured,
             next_slot: 0,
             uses_env: false,
+            at: std::collections::HashMap::new(),
+            head: None,
+            heads: Vec::new(),
         };
         let chunk = compile_stmts(body, Some((params, ctx)), self.coverage, false)?;
         self.chunk.protos.push(FnProto {

@@ -2453,6 +2453,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 847: fourth stroke — THE RESOLVER STOPS SCANNING THE SCOPE.
+  `resolve` walked the scope vectors per name and `note_scope` cloned
+  every name in scope per fallible instruction. `FnCtx::at` maps a
+  name to its binding stack (a hash lookup, popped on leave_scope) and
+  `Chunk::in_scope` is now `(ip, Option<u32>)` into `scope_nodes`, a
+  parent-linked chain — recording a scope is O(1) and `in_scope_at`
+  walks the chain and reverses it, so callers still see outermost
+  first. `--check` over 500-8000 functions with calls: 34/73/170/301/
+  602 ms, against 807 before the stroke and 13120 at 843 — doubling
+  doubles. Guard in tests/bytecode.rs (1500 vs 3000, best of three,
+  ratio < 3); both mutations score 4.0 and fail it.
 - 846: third stroke — A DIAGNOSTIC FINDS ITS LINE. `lexer::Lines`
   holds each line's start offset and answers by binary search;
   `diag::render_level_at` takes one and `check_warnings` builds a
@@ -3139,11 +3150,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the resolver stops scanning the scope: `resolve` walks the scope
-  vectors per name and `note_scope` clones every name in scope per
-  fallible instruction (845). The bar is the many-functions,
-  many-calls program, which still scores 3.9 on the ratio the pools
-  guard uses.
   - a program too deep to parse is TOLD so: a depth limit in the
   parser with a real error at a documented depth, well under the
   cliff, so nesting gets a line number instead of a signal.

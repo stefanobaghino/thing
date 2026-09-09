@@ -236,3 +236,45 @@ fn the_pools_are_not_searched_by_scanning_them() {
          ({small:?} then {large:?}): the pool scan is back"
     );
 }
+
+/// The resolver finds a name by lookup and notes the scope by
+/// reference, not by walking or copying it. 845 measured this shape —
+/// many functions, many calls, so the top level's own resolver holds
+/// every binding — at a ratio of 3.9 with the pools already indexed.
+#[test]
+fn the_resolver_does_not_walk_the_scope_per_name() {
+    fn source(n: usize) -> String {
+        let mut src = String::new();
+        for i in 0..n {
+            src.push_str(&format!("fn f{i}(a) {{ return a + {i}; }}\n"));
+        }
+        for i in 0..n {
+            src.push_str(&format!("print(f{i}(1));\n"));
+        }
+        src
+    }
+    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+        let tokens = ting::lexer::lex(src).expect("lex");
+        let program = ting::parser::parse_program(&tokens).expect("parse");
+        (0..3)
+            .map(|_| {
+                let t0 = std::time::Instant::now();
+                let Ok(chunk) = ting::compile::compile_program(&program) else {
+                    panic!("compile failed");
+                };
+                let elapsed = t0.elapsed();
+                assert!(chunk.names.len() >= n, "names went missing");
+                elapsed
+            })
+            .min()
+            .unwrap()
+    }
+    let small = best_of_three(&source(1500), 1500);
+    let large = best_of_three(&source(3000), 3000);
+    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    assert!(
+        ratio < 3.0,
+        "doubling the program multiplied compilation by {ratio:.1} \
+         ({small:?} then {large:?}): the scope walk is back"
+    );
+}

@@ -20423,3 +20423,43 @@ and `note_scope`, which is the next stroke and already measured.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, Windows check and clippy,
 wasm release build.
+
+## 847 — fourth stroke: the resolver stops scanning the scope
+
+843 measured a compiler that got slower than linear as a program got
+bigger. Three quadratics have come out of it (844, 845, 846); this is
+the fourth and last of the ones that stroke found, and it is in the
+compiler's own name lookup.
+
+**Two scans, both per name.** `Compiler::resolve` walked the scope
+vectors from the innermost outwards comparing strings, so a file with
+n names in scope cost O(n) per mention. `note_scope`, which records
+what is in scope at each fallible instruction so a runtime error can
+say what was live, CLONED EVERY NAME IN SCOPE per instruction — the
+same list, over and over, into `Chunk::in_scope`.
+
+**A map and a chain.** `FnCtx::at` maps a name to its stack of
+bindings, so `resolve` is a hash lookup and `leave_scope` pops the
+names the scope bound (dropping entries that go empty, so the map
+stays the size of what is live). `Chunk::in_scope` is now
+`(ip, Option<u32>)` pointing into `scope_nodes`, a parent-linked chain
+of `{parent, name}`: `bind` pushes one node, `note_scope` pushes one
+pair, and `in_scope_at` walks the chain and reverses it, so callers
+still get outermost-first. Recording a scope is O(1) instead of O(n),
+and the names are shared rather than copied.
+
+**Measured.** `--check` over 500 to 8000 functions with calls: 34, 73,
+170, 301, 602 ms, where the last was 807 before this stroke and 13120
+at 843. Doubling now doubles. `manynames` checks in 191 ms and runs in
+81; `manylocals` 96 and 26.
+
+**Guarded and mutated.** tests/bytecode.rs compiles n functions and n
+calls at 1500 and 3000, best of three, and fails above a ratio of 3.
+Restoring the scan in `resolve` scores 4.0 and the test says so;
+restoring the copy in `note_scope` scores 4.0 as well. Both mutations
+were run and both were caught.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, Windows check and clippy,
+wasm release build, bench 22 comparisons with every checksum matching
+BASELINE.

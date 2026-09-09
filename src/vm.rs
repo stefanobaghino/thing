@@ -83,7 +83,7 @@ fn exec<W: Write>(
                 let name = &chunk.names[*i as usize];
                 match interp.lookup(name) {
                     Some(v) => stack.push(v),
-                    None => return Err(interp.undefined_among(name, span, chunk.in_scope_at(ip))),
+                    None => return Err(interp.undefined_among(name, span, &chunk.in_scope_at(ip))),
                 }
             }
             Op::GetVarToUpdate(i) => {
@@ -94,7 +94,7 @@ fn exec<W: Write>(
                         return Err(interp.undefined_assign_among(
                             name,
                             span,
-                            chunk.in_scope_at(ip),
+                            &chunk.in_scope_at(ip),
                         ));
                     }
                 }
@@ -107,7 +107,7 @@ fn exec<W: Write>(
                 let v = stack.pop().expect("stack underflow");
                 let name = &chunk.names[*i as usize];
                 if !interp.assign(name, v) {
-                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
+                    return Err(interp.undefined_assign_among(name, span, &chunk.in_scope_at(ip)));
                 }
             }
             Op::Unary(op) => {
@@ -360,19 +360,19 @@ fn exec<W: Write>(
                 }
                 let v = eval::binary(crate::ast::BinaryOp::Add, l, r, span)?;
                 if !interp.assign(name, v) {
-                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
+                    return Err(interp.undefined_assign_among(name, span, &chunk.in_scope_at(ip)));
                 }
             }
             Op::CheckVarRead(i) => {
                 let name = &chunk.names[*i as usize];
                 if !interp.is_bound(name) {
-                    return Err(interp.undefined_among(name, span, chunk.in_scope_at(ip)));
+                    return Err(interp.undefined_among(name, span, &chunk.in_scope_at(ip)));
                 }
             }
             Op::CheckVar(i) => {
                 let name = &chunk.names[*i as usize];
                 if !interp.is_bound(name) {
-                    return Err(interp.undefined_assign_among(name, span, chunk.in_scope_at(ip)));
+                    return Err(interp.undefined_assign_among(name, span, &chunk.in_scope_at(ip)));
                 }
             }
             Op::UpdateVar(i, op) => {
