@@ -49,7 +49,7 @@ fn corpus_check_warnings_are_the_expected_fourteen() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
-        .args(["lib", "selftest", "examples", "bench"])
+        .args(["lib", "selftest", "examples", "bench", "tools"])
         .current_dir(root)
         .output()
         .expect("failed to run ting");

@@ -21440,3 +21440,47 @@ selftest/regex.ting so the message is visible from the language
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 73 unchanged,
 corpus at fourteen, selftest 2742 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 873 — tools/workflow_step.ting: the first tool that builds itself
+
+Maintenance: tree clean, no PRs, CI green for 3a7be06 from the API.
+
+The rehearsal tool, ported. It takes a workflow and a step name and
+prints that step's run block, so a CI step can be rehearsed by
+running the bytes in the file rather than what I would retype — the
+method 774 arrived at after a retyped `cut -d` quoting bug reached
+four runners.
+
+Nothing exotic in the port: read_file, split, trim, slice, find,
+join, and lib/string's trim_start and trim_end. The one real
+difference from Python is that `print` adds the newline the Python
+appended by hand, so the ting version prints the block with its
+trailing whitespace already stripped.
+
+PROVED BEFORE THE PYTHON WENT AWAY: every named step in every
+workflow, both implementations, byte for byte — 24 steps across
+ci.yml and release.yml, 0 differ, exit codes equal, including the
+absent-step case where both leave 1. pages.yml's steps are unnamed,
+so neither tool sees them, which is the same answer from both.
+Rehearsed ci.yml's Format step through the ting version into
+`bash -e -o pipefail` to be sure the method still works end to end.
+
+tests/tools.rs is new, the seventeenth suite, and the home the next
+two ports will use. Its guard could not compare the block against a
+copy of the block — a copy is the mistake the tool exists to prevent
+— so it checks the block against ITS PLACE IN THE FILE: the lines
+come back adjacent and in order at some indentation, introduced by
+the `run:` that opens them, and followed by a line that leaves the
+block. THE FIRST VERSION OF THAT GUARD WAS WORTHLESS and I found out
+by mutating the tool: it only asked whether each printed line
+existed somewhere in the file, so dropping the last line of a block
+still passed. The version that shipped fails all three mutations —
+drop the last line, drop the first, add a character.
+
+tools/ now joins lib, selftest, examples and bench under `--check`,
+so a ting tool in this repo is checked like everything else. Still
+fourteen warnings.
+
+Gate: fmt, clippy, 17 `test result: ok`, `--fmt .` 74 unchanged,
+corpus at fourteen over five directories, selftest 2742 checks,
+Windows check and clippy, wasm release build.

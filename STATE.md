@@ -20,8 +20,9 @@ current orientation.
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2742 selftest checks on all four
-  CI platforms, Windows included); 399 Rust tests
-  in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
+  CI platforms, Windows included); 414 Rust tests
+  in 17 suites (counted at 873; the 399 written here had been
+  stale for a while). `ting --fmt .` reports 74 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2453,6 +2454,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 873: third stroke — tools/workflow_step.ting, THE FIRST TOOL THAT
+  BUILDS ITSELF. The rehearsal tool ported and the Python deleted,
+  after proving the two byte for byte on every named step in every
+  workflow (24 across ci.yml and release.yml, exit codes included;
+  pages.yml's steps are unnamed, so neither sees them). tests/tools.rs
+  is the seventeenth suite and the home for the next two ports. THE
+  GUARD CANNOT COMPARE THE BLOCK AGAINST A COPY OF THE BLOCK — that
+  copy is the mistake the tool exists to prevent — so it checks the
+  block against its place in the file: adjacent, in order, opened by
+  the `run:` above it, closed by a line that leaves it. The first
+  version only asked whether each line existed somewhere and passed a
+  tool that dropped the last one; the shipped version fails all three
+  mutations. tools/ now joins the `--check` corpus.
 - 872: second stroke — THE MATCHER NAMES THE CONSTRUCT IT CANNOT
   COMPILE. `(?` now looks at what follows: `(?:` is the group, every
   other spelling is refused by name (lookahead, lookbehind and their
@@ -3451,7 +3465,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - tools/workflow_step.py in ting, output compared against it.
   - tools/playground_examples.py in ting (tests/docs.rs already
   checks examples.js is in sync).
   - tools/md2html.py in ting: the six pages byte for byte, then
@@ -3563,8 +3576,9 @@ Standing rules (each from a slip; the LOG entry named has the story):
   failed its assertion left STATE.md unwritten and the commit went out
   anyway (645b).
 - Rehearsing a CI step means running the BYTES IN THE FILE:
-  `tools/workflow_step.py` takes a workflow path and a step name and
-  prints that step's run block; pipe it into `bash -e -o pipefail`.
+  `ting tools/workflow_step.ting` takes a workflow path and a step
+  name and prints that step's run block; pipe it into
+  `bash -e -o pipefail`.
   Retyping a step tests a different step — 774's `cut -d` quoting
   reached four runners because the retyped version was the one I
   meant rather than the one written down.

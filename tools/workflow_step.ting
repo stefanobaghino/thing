@@ -1,0 +1,55 @@
+# Pull a named step's `run:` body out of a workflow, verbatim. Reading
+# the file beats retyping it: a retyped step is a different step, which
+# is how `cut -d'"'` reached four runners.
+let text = import("lib/string.ting");
+
+let argv = args();
+if len(argv) != 2 {
+  eprint("usage: ting tools/workflow_step.ting WORKFLOW STEP-NAME");
+  exit(2);
+}
+let path = argv[0];
+let wanted = format("- name: {}", argv[1]);
+let lines = split(read_file(path), "\n");
+
+let i = 0;
+while i < len(lines) && trim(lines[i]) != wanted {
+  i += 1;
+}
+if i == len(lines) {
+  fail(format("{}: no step named {}", path, argv[1]));
+}
+while i < len(lines) && !contains(lines[i], "run:") {
+  i += 1;
+}
+if i == len(lines) {
+  fail(format("{}: step {} has no run:", path, argv[1]));
+}
+
+let at = find(lines[i], "run:");
+let step = trim(slice(lines[i], at + 4, len(lines[i])));
+# A block scalar keeps its lines; the indentation the first one carries
+# is the block's, and the first line with less of it ends the block.
+if step == "|" || step == ">" {
+  let body = [];
+  let indent = nil;
+  i += 1;
+  while i < len(lines) {
+    let line = lines[i];
+    if trim(line) == "" {
+      push(body, "");
+    } else {
+      let here = len(line) - len(text["trim_start"](line));
+      if indent == nil {
+        indent = here;
+      }
+      if here < indent {
+        break;
+      }
+      push(body, slice(line, indent, len(line)));
+    }
+    i += 1;
+  }
+  step = text["trim_end"](join(body, "\n"));
+}
+print(step);
