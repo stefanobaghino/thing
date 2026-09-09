@@ -2453,6 +2453,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 854: REPLENISHMENT — MILESTONE "HOW DEEP THE MACHINERY GOES"
+  (v2.136.0), reasoning in LOG.md. A ninth kind of looking: the DATA
+  the program handles, and its SHAPE rather than its size. HEALTHY,
+  measured: each_line streams (2 MB peak over a 200 MB file),
+  read_file is one copy, 5M-element list 78 MB, 1M-key map 209 MB,
+  json_parse+json_str linear (196 ms on 4.2 MB, 563 on 13.8), and no
+  backtracking bomb in the matcher (2 ms). NOT HEALTHY: Rust
+  recursion over a user-controlled shape, unbounded everywhere —
+  json_parse on a nested document, str()/printing, dropping,
+  `a + b + c + ...` in compile and eval, and `==`. Fine at 100000,
+  ABORTS at 200000 (exit 134, no line, nothing catchable); drop
+  survives to 500000 and dies at a million. THE FIRST ROW IS INPUT,
+  not program text: a script cannot defend itself, the abort is
+  inside the builtin. MAX_NESTING bounds none of it.
 - 853: HEALTH TICK GREEN — MILESTONE "THE PROGRAM THAT GOT BIG"
   (v2.135.0, strokes 843-853) COMPLETE. Bench: all eleven checksums
   match on both engines (timings 5-15% high at load 2.2, weather).
@@ -3218,10 +3232,20 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - json_parse refuses a document nested past a stated depth: the
+  reader recurses per level and a 200000-deep document aborts the
+  process, and that document is INPUT rather than program text.
+  A real error naming the limit, well under the cliff.
+  - a deep value can be printed, or says why not: str(), print() and
+  the Display walker recurse per level and die at 200000.
   - the left spine is deep for the compiler and the tree-walker:
   `a + b + c + ...` parses in a loop but compiles and evaluates by
   recursion, so length is depth for them and MAX_NESTING does not
-  bound it (849 overflowed a debug test thread at 12000 terms).
+  bound it (849 overflowed a debug test thread at 12000 terms, and
+  the release binary aborts at 200000).
+  - dropping a deep value walks the chain in Rust: a list nested a
+  million deep aborts on the way out, after the program is done.
+  - release v2.136.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

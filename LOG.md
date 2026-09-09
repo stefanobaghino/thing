@@ -20677,3 +20677,45 @@ diagnostics and the resolver; eleven more places in the LSP; a
 nesting limit that answers instead of aborting; every command on a
 stack this process chose; and the guards that watch all of it made
 noise-proof.
+
+## 854 — replenishment: "how deep the machinery goes" (v2.136.0)
+
+A ninth kind of looking: not the program's text but the DATA it
+handles, and not its size but its SHAPE. Everything here was measured
+on this host, release, on the 32 MB thread the binary gives itself.
+
+**What is healthy, and I checked before assuming**: `each_line` over
+a 200 MB file peaks at 2 MB of RSS — it streams; `read_file` costs
+one copy (192 MB) and 0.3 s; a five-million-element list is 78 MB and
+a million-key map 209; `s += ...` to 20 MB is linear; `json_parse`
+plus `json_str` is 196 ms on 4.2 MB and 563 on 13.8, so it is linear
+too; and the matcher has no backtracking bomb — `^(a|aa)*b$` and
+`^(a*)*b$` against thirty a's answer in 2 ms, which is what a
+Thompson NFA is for.
+
+**What is not.** Rust recursion over a shape the user controls, with
+no bound anywhere. Every one of these ABORTS: exit 134, `fatal
+runtime error: stack overflow`, no line, nothing catchable — the
+corpse class 848 removed for the parser and 829 for memory.
+
+| what recurses | fine at | aborts at |
+|---|---|---|
+| `json_parse` on a nested document | 100000 | 200000 |
+| `str()` / printing a nested list | 100000 | 200000 |
+| dropping a nested list | 500000 | 1000000 |
+| `a + b + c + ...` in compile and eval | 100000 terms | 200000 |
+| `==` on two distinct nested lists | 150000 | not found |
+
+The first row is the one that matters most: that document is not the
+program, it is INPUT — a file, or whatever someone handed the script.
+A ting program cannot defend itself against it, because the abort
+happens inside the builtin.
+
+`MAX_NESTING` does not help with any of them: it bounds what the
+parser reads, and every one of these shapes is built at runtime.
+
+**The milestone**: give each of these the treatment the parser got —
+a bound with a real error, or an iterative walk where a bound would
+be wrong. The limits cannot all be one number: 200 is right for
+source nesting and absurd for a list a loop built, so each stroke
+picks and states its own, measured against its own cliff.
