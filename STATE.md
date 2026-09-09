@@ -2453,6 +2453,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 846: third stroke — A DIAGNOSTIC FINDS ITS LINE. `lexer::Lines`
+  holds each line's start offset and answers by binary search;
+  `diag::render_level_at` takes one and `check_warnings` builds a
+  single index per file. `--check` over 1000-8000 unused functions:
+  38/116/424/1566 -> 16/34/77/181 ms (8.6x on the largest, doubling
+  now 2.2x); the 8000-name file 1563 -> 163 ms. THE SAME BUG WAS IN
+  THE EDITOR IN ELEVEN PLACES — every `lsp::position` call is inside
+  a loop (symbols, definitions, references, highlights, renames,
+  links, diagnostics, code actions, formatting) and `folding_ranges`
+  called `line_col` twice per brace pair; all counted from the top on
+  every keystroke. Guard in tests/lsp.rs is a ratio (1500 vs 3000
+  warnings, best of three, under 3.0) that ALSO asserts the last
+  warning's line number, so a fast wrong answer fails; the old shape
+  scores 3.4.
 - 845: second stroke — THE COMPILER'S POOLS, AND TWO MORE QUADRATICS
   FOUND. `konst` and `name` carry HashMap indexes (a `ConstKey` of
   Int/Str/Float, the three kinds the pool ever deduped). 8000
@@ -3125,10 +3139,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a diagnostic finds its line without counting from byte zero:
-  `Span::line_col` walks the source per rendered diagnostic, so a
-  file of warnings is quadratic (38, 116, 424, 1566 ms over 1000-8000
-  of them, 845). One line-start table per file, built once.
   - the resolver stops scanning the scope: `resolve` walks the scope
   vectors per name and `note_scope` clones every name in scope per
   fallible instruction (845). The bar is the many-functions,

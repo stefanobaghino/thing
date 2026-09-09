@@ -1165,3 +1165,50 @@ fn the_unused_checks_do_not_walk_the_file_once_per_name() {
          ({small:?} then {large:?}): the per-name scan is back"
     );
 }
+
+/// A diagnostic finds its line by binary search into a table built
+/// once per file, not by counting characters from byte zero. 845
+/// measured the old shape at 38, 116, 424 and 1566 ms for 1000 to
+/// 8000 warnings in one file — quadratic in the number of warnings,
+/// which an editor pays on every keystroke.
+///
+/// A ratio again, best of three: doubling the warnings can only
+/// double linear work.
+#[test]
+fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
+    fn source(n: usize) -> String {
+        let mut src = String::new();
+        for i in 0..n {
+            src.push_str(&format!("fn g{i}(a) {{ return a; }}\n"));
+        }
+        src.push_str("print(g0(1));\n");
+        src
+    }
+    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+        (0..3)
+            .map(|_| {
+                let t0 = std::time::Instant::now();
+                let rendered = ting::check_warnings("big.ting", src);
+                let elapsed = t0.elapsed();
+                assert_eq!(rendered.len(), n - 1, "unexpected warning count");
+                // The last one names a line near the end of the file:
+                // the index has to be right, not just quick.
+                assert!(
+                    rendered[n - 2].starts_with(&format!("big.ting:{n}:4: warning:")),
+                    "wrong line: {}",
+                    rendered[n - 2]
+                );
+                elapsed
+            })
+            .min()
+            .unwrap()
+    }
+    let small = best_of_three(&source(1500), 1500);
+    let large = best_of_three(&source(3000), 3000);
+    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    assert!(
+        ratio < 3.0,
+        "doubling the warnings multiplied the work by {ratio:.1} \
+         ({small:?} then {large:?}): each is counting from the top again"
+    );
+}

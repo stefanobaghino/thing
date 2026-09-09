@@ -98,9 +98,13 @@ fn get_str(v: &Value, key: &str) -> Option<String> {
     }
 }
 
-/// 0-based LSP position for a byte offset.
-fn position(src: &str, offset: usize) -> Value {
-    let (line, col) = lexer::Span::new(offset, offset).line_col(src);
+/// 0-based LSP position for a byte offset, against a line index its
+/// caller built once. Every one of these is inside a loop over
+/// symbols, tokens or warnings, and finding each position by counting
+/// from the top of the file made the editor's work quadratic in the
+/// size of what it was reporting.
+fn position(lines: &lexer::Lines, src: &str, offset: usize) -> Value {
+    let (line, col) = lines.line_col(src, offset);
     obj(vec![
         ("line", Value::Int(line as i64 - 1)),
         ("character", Value::Int(col as i64 - 1)),
@@ -110,6 +114,7 @@ fn position(src: &str, offset: usize) -> Value {
 /// Top-level `let` bindings as a flat DocumentSymbol list: functions
 /// get SymbolKind Function (12), everything else Variable (13).
 fn document_symbols(src: &str) -> Value {
+    let lines = lexer::Lines::new(src);
     let Ok(tokens) = lexer::lex(src) else {
         return Value::list(vec![]);
     };
@@ -124,8 +129,8 @@ fn document_symbols(src: &str) -> Value {
                 _ => 13,
             };
             let range = obj(vec![
-                ("start", position(src, stmt.span.start)),
-                ("end", position(src, stmt.span.end)),
+                ("start", position(&lines, src, stmt.span.start)),
+                ("end", position(&lines, src, stmt.span.end)),
             ]);
             symbols.push(obj(vec![
                 ("name", s(name)),
@@ -145,6 +150,7 @@ fn workspace_symbols(docs: &BTreeMap<String, String>, query: &str) -> Value {
     let q = query.to_lowercase();
     let mut out = Vec::new();
     for (uri, src) in docs {
+        let lines = lexer::Lines::new(src);
         let Ok(tokens) = lexer::lex(src) else {
             continue;
         };
@@ -169,8 +175,8 @@ fn workspace_symbols(docs: &BTreeMap<String, String>, query: &str) -> Value {
                             (
                                 "range",
                                 obj(vec![
-                                    ("start", position(src, stmt.span.start)),
-                                    ("end", position(src, stmt.span.end)),
+                                    ("start", position(&lines, src, stmt.span.start)),
+                                    ("end", position(&lines, src, stmt.span.end)),
                                 ]),
                             ),
                         ]),
@@ -185,6 +191,7 @@ fn workspace_symbols(docs: &BTreeMap<String, String>, query: &str) -> Value {
 /// Definition of the identifier at (line, character): the top-level
 /// `let` (or fn sugar) binding that name, as a Location in `uri`.
 fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Value {
+    let lines = lexer::Lines::new(src);
     let Some(name) = ident_at(src, line, character) else {
         return Value::Nil;
     };
@@ -203,8 +210,8 @@ fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Val
                 (
                     "range",
                     obj(vec![
-                        ("start", position(src, stmt.span.start)),
-                        ("end", position(src, stmt.span.end)),
+                        ("start", position(&lines, src, stmt.span.start)),
+                        ("end", position(&lines, src, stmt.span.end)),
                     ]),
                 ),
             ]);
@@ -216,6 +223,7 @@ fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Val
 /// Every occurrence of the identifier at (line, character), as
 /// Locations in `uri` — token-level, so shadowing is not resolved.
 fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Value {
+    let lines = lexer::Lines::new(src);
     let Some(name) = ident_at(src, line, character) else {
         return Value::Nil;
     };
@@ -232,8 +240,8 @@ fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Val
                 (
                     "range",
                     obj(vec![
-                        ("start", position(src, tok.span.start)),
-                        ("end", position(src, tok.span.end)),
+                        ("start", position(&lines, src, tok.span.start)),
+                        ("end", position(&lines, src, tok.span.end)),
                     ]),
                 ),
             ]));
@@ -247,6 +255,7 @@ fn references_result(src: &str, uri: &str, line: usize, character: usize) -> Val
 /// Write (3) and any other as Read (2) — what an editor lights up on
 /// every cursor move. Same token-level scan as references.
 fn highlight_result(src: &str, line: usize, character: usize) -> Value {
+    let lines = lexer::Lines::new(src);
     let Some(name) = ident_at(src, line, character) else {
         return Value::Nil;
     };
@@ -286,8 +295,8 @@ fn highlight_result(src: &str, line: usize, character: usize) -> Value {
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, tok.span.start)),
-                    ("end", position(src, tok.span.end)),
+                    ("start", position(&lines, src, tok.span.start)),
+                    ("end", position(&lines, src, tok.span.end)),
                 ]),
             ),
             ("kind", Value::Int(if binding { 3 } else { 2 })),
@@ -379,6 +388,7 @@ fn rename_result(
     };
     let mut changes = Vec::new();
     for (doc_uri, doc_src) in docs {
+        let lines = lexer::Lines::new(doc_src);
         let Ok(tokens) = lexer::lex(doc_src) else {
             continue;
         };
@@ -390,8 +400,8 @@ fn rename_result(
                     (
                         "range",
                         obj(vec![
-                            ("start", position(doc_src, tok.span.start)),
-                            ("end", position(doc_src, tok.span.end)),
+                            ("start", position(&lines, doc_src, tok.span.start)),
+                            ("end", position(&lines, doc_src, tok.span.end)),
                         ]),
                     ),
                     ("newText", s(new_name)),
@@ -414,6 +424,7 @@ fn rename_result(
 /// link (there is nothing to open); `..` and `.` segments normalise
 /// lexically.
 fn document_links(src: &str, uri: &str) -> Value {
+    let lines = lexer::Lines::new(src);
     let Ok(tokens) = lexer::lex(src) else {
         return Value::list(vec![]);
     };
@@ -426,8 +437,8 @@ fn document_links(src: &str, uri: &str) -> Value {
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, span.start)),
-                    ("end", position(src, span.end)),
+                    ("start", position(&lines, src, span.start)),
+                    ("end", position(&lines, src, span.end)),
                 ]),
             ),
             ("target", s(&path_to_uri(&target))),
@@ -478,7 +489,8 @@ fn folding_ranges(src: &str) -> Value {
     let Ok(tokens) = lexer::lex(src) else {
         return Value::list(vec![]);
     };
-    let line_of = |offset: usize| lexer::Span::new(offset, offset).line_col(src).0 as i64 - 1;
+    let lines = lexer::Lines::new(src);
+    let line_of = |offset: usize| lines.line_col(src, offset).0 as i64 - 1;
     let mut open: Vec<usize> = Vec::new();
     let mut ranges: Vec<(i64, i64)> = Vec::new();
     for tok in &tokens {
@@ -516,6 +528,7 @@ fn folding_ranges(src: &str) -> Value {
 /// compile, carrying the module's file name, position and message —
 /// so a broken import shows in the importer without opening it.
 fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
+    let lines = lexer::Lines::new(src);
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
     };
@@ -549,8 +562,8 @@ fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, span.start)),
-                    ("end", position(src, span.end)),
+                    ("start", position(&lines, src, span.start)),
+                    ("end", position(&lines, src, span.end)),
                 ]),
             ),
             ("severity", Value::Int(1)),
@@ -562,6 +575,7 @@ fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
 }
 
 fn diagnostics(src: &str, uri: &str) -> Value {
+    let lines = lexer::Lines::new(src);
     let err = match lexer::lex(src) {
         Err(e) => Some((e.message, e.span)),
         Ok(tokens) => match parser::parse_program(&tokens) {
@@ -578,8 +592,8 @@ fn diagnostics(src: &str, uri: &str) -> Value {
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, span.start)),
-                    ("end", position(src, span.end.max(span.start))),
+                    ("start", position(&lines, src, span.start)),
+                    ("end", position(&lines, src, span.end.max(span.start))),
                 ]),
             ),
             ("severity", Value::Int(1)),
@@ -593,8 +607,8 @@ fn diagnostics(src: &str, uri: &str) -> Value {
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, start)),
-                    ("end", position(src, end)),
+                    ("start", position(&lines, src, start)),
+                    ("end", position(&lines, src, end)),
                 ]),
             ),
             ("severity", Value::Int(2)), // Warning
@@ -1600,6 +1614,7 @@ fn levenshtein(a: &str, b: &str) -> usize {
 /// one of the requested lines: replace the key with the nearest export
 /// when it is close enough to be a plausible typo.
 fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize) -> Value {
+    let lines = lexer::Lines::new(src);
     let mut actions = Vec::new();
     let fix = |start: usize, end: usize, best: &str, actions: &mut Vec<Value>| {
         let line = src[..start].matches('\n').count();
@@ -1610,8 +1625,8 @@ fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize)
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, start)),
-                    ("end", position(src, end)),
+                    ("start", position(&lines, src, start)),
+                    ("end", position(&lines, src, end)),
                 ]),
             ),
             ("newText", s(best)),
@@ -1652,8 +1667,8 @@ fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize)
             (
                 "range",
                 obj(vec![
-                    ("start", position(src, f.start)),
-                    ("end", position(src, f.end)),
+                    ("start", position(&lines, src, f.start)),
+                    ("end", position(&lines, src, f.end)),
                 ]),
             ),
             ("newText", s(best)),
@@ -2360,7 +2375,10 @@ pub fn run() -> i32 {
                                                 ("character", Value::Int(0)),
                                             ]),
                                         ),
-                                        ("end", position(&src, src.len())),
+                                        (
+                                            "end",
+                                            position(&lexer::Lines::new(&src), &src, src.len()),
+                                        ),
                                     ]),
                                 ),
                                 ("newText", s(&formatted)),

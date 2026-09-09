@@ -12,6 +12,13 @@ impl Span {
     }
 
     /// 1-based (line, column) of the span's start, for diagnostics.
+    ///
+    /// This counts from the beginning of the source, which is the
+    /// right thing for the one diagnostic a run usually produces and
+    /// the wrong thing for a file full of them: N of them cost N
+    /// walks of the file. Use `Lines` where there is more than one
+    /// (845 measured 38, 116, 424 and 1566 ms for 1000 to 8000
+    /// warnings in one file).
     pub fn line_col(&self, src: &str) -> (usize, usize) {
         let mut line = 1;
         let mut col = 1;
@@ -27,6 +34,33 @@ impl Span {
             }
         }
         (line, col)
+    }
+}
+
+/// Where every line of a source starts, so an offset can name its
+/// line and column by binary search rather than by counting from the
+/// beginning. Built once and asked many times: rendering a file's
+/// worth of diagnostics, or an editor turning every warning into a
+/// position, is quadratic without it.
+pub struct Lines {
+    starts: Vec<usize>,
+}
+
+impl Lines {
+    pub fn new(src: &str) -> Lines {
+        let mut starts = vec![0];
+        starts.extend(src.match_indices('\n').map(|(i, _)| i + 1));
+        Lines { starts }
+    }
+
+    /// The 1-based line and column of a byte offset, counting the
+    /// column in characters exactly as `Span::line_col` does. An
+    /// offset past the end belongs to the last line.
+    pub fn line_col(&self, src: &str, at: usize) -> (usize, usize) {
+        let at = at.min(src.len());
+        let line = self.starts.partition_point(|&start| start <= at);
+        let start = self.starts[line - 1];
+        (line, src[start..at].chars().count() + 1)
     }
 }
 

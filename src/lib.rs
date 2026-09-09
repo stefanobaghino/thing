@@ -75,10 +75,21 @@ pub fn check_source(path: &str, src: &str) -> Result<(), String> {
 /// are never used. Shared with the LSP, which publishes the same
 /// findings as warnings.
 pub fn check_warnings(path: &str, src: &str) -> Vec<String> {
+    // One line index for the whole file: a file with a warning per
+    // binding has thousands, and each used to find its line by
+    // counting from the top.
+    let lines = lexer::Lines::new(src);
     lsp::warnings(src)
         .into_iter()
         .map(|(start, end, message)| {
-            diag::render_level(path, src, "warning", &message, lexer::Span { start, end })
+            diag::render_level_at(
+                path,
+                src,
+                &lines,
+                "warning",
+                &message,
+                lexer::Span { start, end },
+            )
         })
         .collect()
 }

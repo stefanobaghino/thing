@@ -20385,3 +20385,41 @@ story until this tick measured it.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, eleven bench checksums on
 both engines, Windows check and clippy, wasm release build.
+
+## 2026-09-09 — Iteration 846: a diagnostic finds its line
+
+Third stroke of "the program that got big". `Span::line_col` counts
+characters from byte zero, so N diagnostics in one file cost N walks
+of it. A new `lexer::Lines` holds the byte offset where each line
+starts and answers by binary search; `diag::render_level_at` takes
+one, and `check_warnings` builds a single index for the whole file.
+
+**Measured on 845's files**: `--check` over 1000 to 8000 unused
+functions was 38, 116, 424, 1566 ms and is now 16, 34, 77, 181 ms —
+**8.6x** on the largest, and doubling costs 2.2x rather than 3.7x.
+The 8000-name file went from 1563 ms to 163 ms.
+
+**The same bug was in the editor, in eleven places.** `lsp::position`
+turns a byte offset into an LSP position, and every call sits inside
+a loop — document symbols, workspace symbols, definitions,
+references, highlights, renames, links, import diagnostics,
+diagnostics, code actions, formatting — plus `folding_ranges`, which
+called `line_col` twice per brace pair. All of them counted from the
+top of the file, on every keystroke. `position` now takes the index
+its caller builds once, which the compiler enforced site by site.
+
+**Guarded and mutated.** tests/lsp.rs renders the warnings of 1500
+and 3000 bindings, best of three, and fails above a ratio of 3; it
+also asserts the LAST warning's line number, so a fast wrong answer
+fails too. Rendering each from the top scores 3.4 and the test says
+so.
+
+**Where the curve stands now.** The 8000-function file: 13120 ms at
+843, 931 after 844, 717 after 845, 807 here — the last number is
+noise on a busy host, not a regression, since nothing in this stroke
+touches a file with no warnings. What is left in it is the resolver
+and `note_scope`, which is the next stroke and already measured.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, Windows check and clippy,
+wasm release build.

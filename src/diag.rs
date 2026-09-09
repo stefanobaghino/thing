@@ -29,7 +29,28 @@ pub fn render(path: &str, src: &str, message: &str, span: Span) -> String {
 
 /// `render` with an explicit level word ("error", "warning").
 pub fn render_level(path: &str, src: &str, level: &str, message: &str, span: Span) -> String {
-    let (line, col) = span.line_col(src);
+    render_level_at(
+        path,
+        src,
+        &crate::lexer::Lines::new(src),
+        level,
+        message,
+        span,
+    )
+}
+
+/// `render_level` against a line index built once by the caller. A
+/// file's warnings are rendered together, and finding each one's line
+/// from the top of the file made that quadratic.
+pub fn render_level_at(
+    path: &str,
+    src: &str,
+    lines: &crate::lexer::Lines,
+    level: &str,
+    message: &str,
+    span: Span,
+) -> String {
+    let (line, col) = lines.line_col(src, span.start);
     let line_start = src[..span.start.min(src.len())]
         .rfind('\n')
         .map_or(0, |i| i + 1);
