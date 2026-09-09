@@ -1,0 +1,198 @@
+# Render one of this repo's markdown docs to a styled HTML page.
+#
+# Deliberately limited to the markdown this repo actually writes:
+# one to three hashes for headers, paragraphs, fenced code blocks,
+# tables, unordered lists, inline code, bold and links.
+#
+# Usage: ting tools/md2html.ting input.md output.html
+let b64 = import("lib/base64.ting");
+
+let STYLE = "\n  * { box-sizing: border-box; }\n  body { margin: 0; background: #14161a; color: #e6e6e6;\n         font: 16px/1.6 system-ui, sans-serif; }\n  nav { display: flex; gap: 1.2rem; align-items: baseline;\n        padding: .6rem 1.2rem; border-bottom: 1px solid #2a2f38; }\n  nav .name { font-weight: 600; }\n  nav a { color: #8a919e; text-decoration: none; }\n  nav a:hover { color: #e6e6e6; }\n  main { max-width: 46rem; margin: 0 auto; padding: 1.5rem 1.2rem 4rem; }\n  h1, h2, h3 { line-height: 1.25; }\n  h1 { font-size: 1.7rem; } h2 { margin-top: 2.2rem; }\n  a { color: #7fb4e0; }\n  code { background: #1d2026; padding: .1em .35em; border-radius: 4px;\n         font: .92em ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; }\n  pre { background: #101216; border: 1px solid #2a2f38; border-radius: 8px;\n        padding: .9rem 1rem; overflow-x: auto; }\n  pre code { background: none; padding: 0; }\n  table { border-collapse: collapse; width: 100%; margin: 1rem 0; }\n  th, td { border: 1px solid #2a2f38; padding: .4rem .6rem;\n           text-align: left; vertical-align: top; }\n  th { background: #1d2026; }\n  .runlink { text-align: right; margin: -0.6rem 0 1rem; }\n  .runlink a { font-size: .85rem; color: #9fd89f; text-decoration: none; }\n";
+let NAV = "<nav><span class=\"name\">ting</span><a href=\"./\">playground</a><a href=\"tutorial.html\">tutorial</a><a href=\"reference.html\">reference</a><a href=\"stdlib.html\">stdlib</a><a href=\"cookbook.html\">cookbook</a><a href=\"retrospective.html\">story</a><a href=\"changelog.html\">changelog</a><a href=\"https://github.com/stefanobaghino/thing\">github</a></nav>";
+
+fn escape(s) {
+  return replace(replace(replace(s, "&", "&amp;"), "<", "&lt;"), ">", "&gt;");
+}
+
+fn escape_attr(s) {
+  return replace(replace(escape(s), "\"", "&quot;"), "'", "&#x27;");
+}
+
+# A link's target is rewritten as it is written out, so this cannot be
+# one re_replace: a repository path becomes the page it is published
+# as, docs/x.md becoming x.html.
+fn links(s) {
+  let pieces = [];
+  let at = 0;
+  for m in re_find_all(s, "\\[([^\\]]+)\\]\\(([^)]+)\\)") {
+    push(pieces, slice(s, at, m["start"]));
+    let href = m["groups"][1];
+    if starts_with(href, "docs/") {
+      href = slice(href, 5, len(href));
+    }
+    if ends_with(href, ".md") {
+      href = slice(href, 0, len(href) - 3) + ".html";
+    }
+    push(pieces, format("<a href=\"{}\">{}</a>", href, m["groups"][0]));
+    at = m["end"];
+  }
+  push(pieces, slice(s, at, len(s)));
+  return join(pieces, "");
+}
+
+fn inline(s) {
+  let done = escape(s);
+  done = re_replace(done, "`([^`]+)`", "<code>$1</code>");
+  done = re_replace(done, "\\*\\*([^*]+)\\*\\*", "<strong>$1</strong>");
+  return links(done);
+}
+
+# A table row, cut at every pipe that is not escaped.
+fn cells_of(line) {
+  let s = trim(line);
+  while starts_with(s, "|") {
+    s = slice(s, 1, len(s));
+  }
+  while ends_with(s, "|") {
+    s = slice(s, 0, len(s) - 1);
+  }
+  let cells = [];
+  let cur = "";
+  let j = 0;
+  while j < len(s) {
+    if s[j] == "\\" && j + 1 < len(s) && s[j + 1] == "|" {
+      cur += "\\|";
+      j += 2;
+    } else if s[j] == "|" {
+      push(cells, cur);
+      cur = "";
+      j += 1;
+    } else {
+      cur += s[j];
+      j += 1;
+    }
+  }
+  push(cells, cur);
+  return map(cells, fn(c) { return replace(trim(c), "\\|", "|"); });
+}
+
+fn row(cells, tag) {
+  let out = "<tr>";
+  for c in cells {
+    out += format("<{}>{}</{}>", tag, inline(c), tag);
+  }
+  return out + "</tr>";
+}
+
+# How many hashes open the line, when one to three of them do and a
+# space follows; 0 for anything else, including a deeper heading.
+fn heading_level(line) {
+  let level = 0;
+  while level < len(line) && line[level] == "#" {
+    level += 1;
+  }
+  if level < 1 || level > 3 || level >= len(line) || line[level] != " " {
+    return 0;
+  }
+  return level;
+}
+
+fn convert(md) {
+  let lines = split(md, "\n");
+  if len(lines) > 0 && lines[len(lines) - 1] == "" {
+    pop(lines);
+  }
+  let out = [];
+  let para = [];
+  fn flush() {
+    if len(para) > 0 {
+      push(out, format("<p>{}</p>", inline(join(para, " "))));
+      para = [];
+    }
+  }
+  let i = 0;
+  while i < len(lines) {
+    let line = lines[i];
+    let level = heading_level(line);
+    if starts_with(line, "```") {
+      let lang = trim(slice(line, 3, len(line)));
+      flush();
+      i += 1;
+      let block = [];
+      while i < len(lines) && !starts_with(lines[i], "```") {
+        push(block, lines[i]);
+        i += 1;
+      }
+      let raw = join(block, "\n");
+      push(out, format("<pre><code>{}</code></pre>", escape(raw)));
+      if lang == "ting" {
+        # The fragment the playground's share button writes: base64url
+        # of the UTF-8 source, unpadded.
+        push(out, format(
+          "<div class=\"runlink\"><a href=\"./#code={}\">run it in the playground &#9656;</a></div>",
+          b64["encode_url"](raw + "\n")));
+      }
+    } else if level > 0 {
+      flush();
+      push(out, format("<h{}>{}</h{}>", level, inline(slice(line, level + 1, len(line))), level));
+    } else if starts_with(line, "|") {
+      flush();
+      let rows = [];
+      while i < len(lines) && starts_with(lines[i], "|") {
+        push(rows, cells_of(lines[i]));
+        i += 1;
+      }
+      i -= 1;
+      let table = "<table><thead>" + row(rows[0], "th") + "</thead><tbody>";
+      for r in slice(rows, 2, len(rows)) {
+        table += row(r, "td");
+      }
+      push(out, table + "</tbody></table>");
+    } else if starts_with(line, "- ") {
+      flush();
+      let items = [];
+      while i < len(lines) && (starts_with(lines[i], "- ") || starts_with(lines[i], "  ")) {
+        if starts_with(lines[i], "- ") {
+          push(items, slice(lines[i], 2, len(lines[i])));
+        } else {
+          items[len(items) - 1] += " " + trim(lines[i]);
+        }
+        i += 1;
+      }
+      i -= 1;
+      let list = "<ul>";
+      for it in items {
+        list += format("<li>{}</li>", inline(it));
+      }
+      push(out, list + "</ul>");
+    } else if trim(line) == "" {
+      flush();
+    } else {
+      push(para, trim(line));
+    }
+    i += 1;
+  }
+  flush();
+  return join(out, "\n");
+}
+
+let argv = args();
+if len(argv) != 2 {
+  eprint("usage: ting tools/md2html.ting input.md output.html");
+  exit(2);
+}
+let md = read_file(argv[0]);
+let title = nil;
+for line in split(md, "\n") {
+  if title == nil && starts_with(line, "# ") && len(line) > 2 {
+    title = slice(line, 2, len(line));
+  }
+}
+if title == nil {
+  title = "ting";
+}
+write_file(argv[1], "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
++ "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
++ format("<title>{}</title>\n<style>{}</style>\n</head>\n", escape_attr(title), STYLE)
++ format("<body>\n{}\n<main>\n{}\n</main>\n</body>\n</html>\n", NAV, convert(md)));
+print(format("wrote {}", argv[1]));

@@ -10,7 +10,8 @@ on:
       - "src/**"
       - "docs/**"
       - "examples/**"
-      - "tools/md2html.py"
+      - "lib/**"
+      - "tools/md2html.ting"
       - "CHANGELOG.md"
       - "Cargo.toml"
       - ".github/workflows/pages.yml"
@@ -36,15 +37,19 @@ jobs:
       - run: rustup target add wasm32-unknown-unknown
       - run: cargo build --release --lib --target wasm32-unknown-unknown
       - run: cp target/wasm32-unknown-unknown/release/ting.wasm playground/
-      - run: |
+      # The site's own renderer is a ting program, so the pages are
+      # built by the binary this repo builds.
+      - run: cargo build --release
+      - name: Build the site
+        run: |
           mkdir -p _site
           cp -r playground/. _site/
-          python3 tools/md2html.py docs/tutorial.md _site/tutorial.html
-          python3 tools/md2html.py docs/reference.md _site/reference.html
-          python3 tools/md2html.py docs/stdlib.md _site/stdlib.html
-          python3 tools/md2html.py docs/cookbook.md _site/cookbook.html
-          python3 tools/md2html.py docs/retrospective.md _site/retrospective.html
-          python3 tools/md2html.py CHANGELOG.md _site/changelog.html
+          ./target/release/ting tools/md2html.ting docs/tutorial.md _site/tutorial.html
+          ./target/release/ting tools/md2html.ting docs/reference.md _site/reference.html
+          ./target/release/ting tools/md2html.ting docs/stdlib.md _site/stdlib.html
+          ./target/release/ting tools/md2html.ting docs/cookbook.md _site/cookbook.html
+          ./target/release/ting tools/md2html.ting docs/retrospective.md _site/retrospective.html
+          ./target/release/ting tools/md2html.ting CHANGELOG.md _site/changelog.html
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:

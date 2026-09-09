@@ -172,3 +172,116 @@ fn the_playground_generator_writes_the_file_that_is_committed() {
         "the generator and playground/examples.js have parted ways"
     );
 }
+
+/// The site's pages are rendered by a ting program, so the renderer
+/// has no second implementation to be compared against any more.
+/// What it is held to instead is the document: every fenced block
+/// becomes a `<pre>`, every ting block also a run link, every header
+/// its own tag, and the title comes from the first `# ` line — a
+/// renderer that loses a section or stops escaping fails here.
+#[test]
+fn the_site_renderer_answers_for_every_page() {
+    let root = root();
+    let base = std::env::temp_dir().join(format!("ting-site-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&base);
+    std::fs::create_dir_all(&base).expect("temp dir");
+    for page in [
+        "docs/tutorial.md",
+        "docs/reference.md",
+        "docs/stdlib.md",
+        "docs/cookbook.md",
+        "docs/retrospective.md",
+        "CHANGELOG.md",
+    ] {
+        let md = std::fs::read_to_string(root.join(page)).expect("page missing");
+        let out = base.join(format!("{}.html", page.replace('/', "-")));
+        let run = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .arg("tools/md2html.ting")
+            .arg(page)
+            .arg(&out)
+            .current_dir(&root)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(
+            run.status.code(),
+            Some(0),
+            "{page}\n{}",
+            String::from_utf8_lossy(&run.stderr)
+        );
+        let html = std::fs::read_to_string(&out).expect("nothing written");
+
+        // Counted the way the renderer reads the document: a fence
+        // opens, the lines inside it are code, the next fence closes.
+        let mut fences = 0;
+        let mut runlinks = 0;
+        let mut headers = [0usize; 3];
+        let mut inside = false;
+        for line in md.lines() {
+            if let Some(lang) = line.strip_prefix("```") {
+                if !inside {
+                    fences += 1;
+                    if lang.trim() == "ting" {
+                        runlinks += 1;
+                    }
+                }
+                inside = !inside;
+                continue;
+            }
+            if inside {
+                continue;
+            }
+            let hashes = line.len() - line.trim_start_matches('#').len();
+            if (1..=3).contains(&hashes) && line[hashes..].starts_with(' ') {
+                headers[hashes - 1] += 1;
+            }
+        }
+        assert!(!inside, "{page} has an unclosed fence");
+        assert_eq!(
+            html.matches("<pre><code>").count(),
+            fences,
+            "{page}: one code block in, one out"
+        );
+        assert_eq!(
+            html.matches("class=\"runlink\"").count(),
+            runlinks,
+            "{page}: every ting block gets a playground link"
+        );
+        for level in 1..=3 {
+            assert_eq!(
+                html.matches(&format!("<h{level}>")).count(),
+                headers[level - 1],
+                "{page}: h{level} count"
+            );
+        }
+        let title = md
+            .lines()
+            .find(|l| l.starts_with("# "))
+            .map(|l| &l[2..])
+            .expect("no title");
+        assert!(
+            html.contains(&format!("<title>{title}</title>")),
+            "{page}: the title comes from the first header"
+        );
+        assert!(
+            html.starts_with("<!doctype html>") && html.ends_with("</html>\n"),
+            "{page}: a whole document"
+        );
+    }
+    let _ = std::fs::remove_dir_all(&base);
+}
+
+/// Nothing the workflows run needs a Python interpreter any more:
+/// the site, the playground list and the step reader are ting
+/// programs. A workflow that reaches for python3 again is a
+/// dependency this project decided not to have.
+#[test]
+fn no_workflow_reaches_for_python() {
+    for workflow in workflows() {
+        let text = std::fs::read_to_string(&workflow).expect("workflow unreadable");
+        assert!(
+            !text.contains("python"),
+            "{} runs python",
+            workflow.display()
+        );
+    }
+}

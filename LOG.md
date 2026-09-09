@@ -21524,3 +21524,51 @@ and now names the ting tool in its failure messages.
 Gate: fmt, clippy, 17 `test result: ok`, `--fmt .` 75 unchanged,
 corpus at fourteen, selftest 2744 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 875 — tools/md2html.ting: the site is rendered by the language it documents
+
+Maintenance: tree clean, no PRs, CI green for feef1f1 from the API.
+
+The last and largest of the three ports, 172 lines of Python for 198
+of ting, and the milestone's point: the pages that document ting are
+now built by ting.
+
+Everything it needed was already there. `re_find_all` returns each
+match with start, end and groups, which is how links are rewritten
+one at a time — `re_replace` has no callback, and a link's target
+has to change as it is written out (docs/x.md becomes x.html).
+lib/base64's `encode_url` is the run-link fragment, which is why 871
+built it. The two constructs ting does not have were the ones the
+Python leaned on: a lookbehind for `(?<!\\)\|` when splitting a table
+row, and a replacement callback. The table splitter is a character
+walk instead, six lines, and it reads better than the regex did.
+
+PROOF, in three widening circles: the six published pages byte for
+byte (tutorial, reference, stdlib, cookbook, retrospective,
+changelog) — identical on the first run; then five hostile documents
+— escaped pipes in tables, a four-hash line that is not a header,
+list continuations, unclosed bold, links containing parentheses, an
+empty ting fence, a file with no header at all, an empty file — all
+identical, exit codes included; then the workflow step itself,
+extracted with 873's tools/workflow_step.ting and piped into `bash -e
+-o pipefail`, whose six pages match the Python's six.
+
+pages.yml now builds the host binary and runs the ting renderer, and
+the step has a name so it can be rehearsed at all. NO WORKFLOW RUNS
+PYTHON ANY MORE, and tests/tools.rs holds them to it. The renderer
+has no second implementation to be compared against now, so its
+guard holds it to the DOCUMENT: a `<pre>` per fenced block, a run
+link per ting block, a header tag per header line — counted the way
+the renderer reads the file, fences skipped, which the first version
+did not do and failed on eleven `# ` comments inside tutorial code.
+
+AND THE GATE LIED FOR ONE COMMAND: `cargo clippy ... | tail -1` in a
+`&&` chain reports tail's status, so a real clippy error (a manual
+strip in the new test) printed one line and the chain sailed on to
+report 17 suites green. The rule was already written for printed
+numbers; it holds for exit codes just as much. The gate now runs
+inside `set -o pipefail` with output to files.
+
+Gate: fmt, clippy, 17 `test result: ok`, `--fmt .` 76 unchanged,
+corpus at fourteen, selftest 2744 checks on both engines, Windows
+check and clippy, wasm release build.

@@ -20,9 +20,9 @@ current orientation.
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2744 selftest checks on all four
-  CI platforms, Windows included); 415 Rust tests
+  CI platforms, Windows included); 417 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 75 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 76 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2454,6 +2454,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 875: fifth stroke — tools/md2html.ting, THE SITE IS RENDERED BY THE
+  LANGUAGE IT DOCUMENTS. The six published pages byte for byte on the
+  first run, then five hostile documents (escaped pipes, a four-hash
+  line, list continuations, unclosed bold, links with parentheses, an
+  empty file), then the workflow step itself pulled out with 873's
+  tool and piped into bash. pages.yml builds the host binary and runs
+  the ting renderer; NO WORKFLOW RUNS PYTHON ANY MORE and
+  tests/tools.rs holds them to it. `re_find_all` carries start/end/
+  groups, which is how links are rewritten without a replacement
+  callback; the lookbehind the table splitter used is a character
+  walk now, and reads better. The renderer's guard holds it to the
+  DOCUMENT (a pre per fence, a run link per ting block, a tag per
+  header), counted the way the renderer reads the file — the first
+  version forgot fences and tripped on `# ` comments inside code.
 - 874: fourth stroke — tools/playground_examples.ting, and THE TWO
   ESCAPES TING NEVER WROTE. The port is shorter than the Python
   because `json_str(entries, 2)` already is `json.dumps(indent=2,
@@ -3479,8 +3493,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - tools/md2html.py in ting: the six pages byte for byte, then
-  pages.yml switched over and python3 dropped from it.
+  - tools/cookbook.py in ting, docs/cookbook.md byte for byte — the
+  last Python in the repository.
   - release v2.138.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
@@ -3595,7 +3609,10 @@ Standing rules (each from a slip; the LOG entry named has the story):
   reached four runners because the retyped version was the one I
   meant rather than the one written down.
 - A tick's shell chain is ONE `&&` list (heredoc bodies follow the
-  line); `set -e` is NOT honoured by the harness (377b); never a bare
+  line); `set -e` is NOT honoured by the harness (377b); A COMMAND
+  PIPED INTO `tail` REPORTS TAIL'S STATUS, so a gate step whose
+  output is trimmed must run under `set -o pipefail` or write to a
+  file — 875 sailed past a real clippy error that way; never a bare
   line after the gate (358, 377 pushed green records for red gates).
   Read the smoke output before writing prose that quotes it (370).
   Check a grep's result before promising a stroke on it (404).
@@ -3657,7 +3674,7 @@ Standing rules (each from a slip; the LOG entry named has the story):
   custom domain, so stefanobaghino.github.io/thing/ now answers 301
   on every path. And the ten paths are not guessable: they are the
   three files in playground/ (index.html, examples.js, ting.wasm,
-  plus / itself) and the six pages tools/md2html.py renders in
+  plus / itself) and the six pages tools/md2html.ting renders in
   .github/workflows/pages.yml. `playground.html`, `ting.js` and
   `style.css` DO NOT EXIST and never did.
 - Distribution audit expectation: 3 assets up to v2.16.0, 4 from
