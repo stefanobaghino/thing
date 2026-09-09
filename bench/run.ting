@@ -1,0 +1,100 @@
+# Time the release binary on every bench/*.ting.
+#
+# Usage: ting bench/run.ting [--write], from the repository root.
+#   --write  also rewrite bench/BASELINE.md with these numbers
+#
+# Each script prints a checksum line; a changed checksum means the
+# interpreter broke, not just slowed down. Medians of 5 runs, timed
+# on the monotonic clock, which is what mono_ms() is for.
+let sh = import("lib/sh.ting");
+let text = import("lib/string.ting");
+
+let RUNS = 5;
+let BINARY = "target/release/ting";
+
+# A number with one decimal, the way the table has always written it.
+fn one_decimal(x) {
+  let tenths = int(x * 10.0 + 0.5);
+  return format("{}.{}", tenths / 10, tenths % 10);
+}
+
+# A signed whole percentage, as "+3%" or "-12%".
+fn percent(x) {
+  let whole = int(x + 0.5);
+  if x < 0.0 {
+    whole = int(x - 0.5);
+  }
+  if whole >= 0 {
+    return format("+{}%", whole);
+  }
+  return format("{}%", whole);
+}
+
+# One script on one engine: the median of RUNS timings, and the
+# checksum every bench program prints as its last word.
+fn measure(script, engine) {
+  let times = [];
+  let checksum = nil;
+  let i = 0;
+  while i < RUNS {
+    let started = mono_ms();
+    let done = run(BINARY, [engine, script]);
+    push(times, mono_ms() - started);
+    if done["code"] != 0 {
+      fail(format("{} on {}: {}", script, engine, sh["ended"](done)));
+    }
+    checksum = trim(done["out"]);
+    i += 1;
+  }
+  return {"ms": sort(times)[RUNS / 2], "checksum": checksum};
+}
+
+let built = run("cargo", ["build", "--release", "--quiet"]);
+if built["code"] != 0 {
+  fail("cargo build failed");
+}
+
+let rows = [];
+for name in list_dir("bench") {
+  if ends_with(name, ".ting") && name != "run.ting" {
+    let script = "bench/" + name;
+    let slow = measure(script, "--eval");
+    let fast = measure(script, "--vm");
+    if slow["checksum"] != fast["checksum"] {
+      fail(format("{}: engines disagree!", name));
+    }
+    push(rows, {"name": name, "eval": slow["ms"], "vm": fast["ms"], "checksum": fast["checksum"]});
+    print(format("{} eval {} ms   vm {} ms ({})   [{}]",
+    text["pad_right"](name, 15, " "),
+    text["pad_left"](one_decimal(slow["ms"]), 7, " "),
+    text["pad_left"](one_decimal(fast["ms"]), 7, " "),
+    percent((fast["ms"] - slow["ms"]) / slow["ms"] * 100.0),
+    fast["checksum"]));
+  }
+}
+
+if contains(args(), "--write") {
+  let lines = [
+    "# Benchmark baseline",
+    "",
+    "Median of 5 runs of the release binary (`ting bench/run.ting`),",
+    "for both engines. Not a CI gate; regenerate with `--write` on",
+    "the machine named below and compare like with like.",
+    "",
+    "| script | eval | vm | checksum |",
+    "|--------|-----:|---:|----------|",
+  ];
+  for r in rows {
+    push(lines, format("| {} | {} ms | {} ms | `{}` |",
+    r["name"], one_decimal(r["eval"]), one_decimal(r["vm"]), r["checksum"]));
+  }
+  let host = "unknown";
+  if sh["which"]("uname") != nil {
+    host = trim(sh["check"]("uname", ["-srm"]));
+  }
+  push(lines, "");
+  push(lines, format("Recorded on: {}", host));
+  push(lines, "");
+  write_file("bench/BASELINE.md", join(lines, "\n"));
+  print("wrote bench/BASELINE.md");
+}

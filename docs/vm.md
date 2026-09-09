@@ -13,7 +13,7 @@ suite on the reference engine. Closures, module imports, error
 origins and the call-site note are shared code paths: a function
 body is either an AST or a chunk, and one `Interpreter::call` runs
 both. The numbers live in `bench/BASELINE.md`, regenerated with
-`python3 bench/run.py --write` on the machine named there; on the
+`ting bench/run.ting --write` on the machine named there; on the
 shared host the loop runs on, checksums decide and timings are
 weather.
 

@@ -322,18 +322,27 @@ fn the_cookbook_generator_writes_the_page_that_is_committed() {
     );
 }
 
-/// The tools that build this project are ting programs, and the only
-/// other language left in tools/ is the shell script that smoke-tests
-/// a release archive. A .py file here again means something this
-/// repository builds needs an interpreter it does not ship.
+/// The tools that build this project are ting programs: the site,
+/// the playground list, the cookbook, the step reader and the
+/// benchmark harness. A .py anywhere in the tree means something
+/// this repository does needs an interpreter it does not ship.
 #[test]
-fn nothing_in_tools_is_written_in_python() {
-    let mut strays = Vec::new();
-    for entry in std::fs::read_dir(root().join("tools")).expect("tools/ missing") {
-        let path = entry.unwrap().path();
-        if path.extension().and_then(|e| e.to_str()) == Some("py") {
-            strays.push(path.file_name().unwrap().to_string_lossy().into_owned());
+fn nothing_in_this_repository_is_written_in_python() {
+    fn walk(dir: &Path, strays: &mut Vec<String>) {
+        for entry in std::fs::read_dir(dir).expect("unreadable directory") {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            if path.is_dir() {
+                // Build output and git's own storage are not ours.
+                if name != "target" && name != ".git" {
+                    walk(&path, strays);
+                }
+            } else if path.extension().and_then(|e| e.to_str()) == Some("py") {
+                strays.push(path.to_string_lossy().into_owned());
+            }
         }
     }
-    assert!(strays.is_empty(), "python left in tools/: {strays:?}");
+    let mut strays = Vec::new();
+    walk(&root(), &mut strays);
+    assert!(strays.is_empty(), "python left in the tree: {strays:?}");
 }

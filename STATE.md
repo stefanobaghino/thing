@@ -22,7 +22,7 @@ current orientation.
   nothing on its own — and 22 examples with .out; 2748 selftest checks on all four
   CI platforms, Windows included); 419 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 77 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 78 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 878: eighth stroke — bench/run.ting, NO PYTHON LEFT IN THE TREE.
+  `--eval`/`--vm` replace the TING_ENGINE variable, ting's `run`
+  taking no environment. THE COMPARISON CANNOT BE BYTE FOR BYTE — two
+  harnesses timing the same programs disagree by definition — so it
+  was checksums, shape, and numbers within noise: four passes
+  alternating which ran first, all eleven checksums identical every
+  time, every median within 3.9% with the differences going BOTH WAYS
+  (accum -1.8%, maps +2.2%), which noise looks like and bias does not.
+  The printed table matched column for column without aiming for it.
+  BASELINE regenerated: eleven checksums unchanged, timings tonight's
+  at load 1.1. The python guard is now the whole tree, not tools/.
 - 877: seventh stroke — `mono_ms()`, THE CLOCK A BENCHMARK NEEDS.
   Started porting bench/run.py and stopped at its first line: ting's
   only clock was `time_ms()`, the WALL CLOCK, an integer that can step
@@ -3516,8 +3527,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - bench/run.py in ting on top of mono_ms: same checksums and table
-  shape, timings within noise — the last Python in the repository.
   - release v2.138.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
