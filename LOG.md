@@ -21263,3 +21263,24 @@ both aarch64 archives unpacked and run from a directory holding only
 the probe, and asked what this release answers — 300000 calls to a
 function with a recursive helper, and 300000 returned closures, both
 of which should now cost nothing.
+
+## 868 — v2.137.0 verified
+
+Maintenance: tree clean, no PRs, CI and Release green for c43561e
+and the tag, read from the API.
+
+Seven assets, `sha256sum -c` OK on all six archives from a cold
+download. Both aarch64 archives unpacked and run here: 2690 checks
+from each on both engines.
+
+The shipped binaries were asked what THIS release exists to answer,
+from a directory holding only the probe so the EMBEDDED stdlib is
+what answers (it did: 6). 300000 calls to a function defining a
+recursive helper, PLUS 300000 returned closures, in one loop: peak
+RSS 1.6 to 3.1 MB across gnu and musl, vm and eval. v2.136.0 would
+have held some 300 MB for the same program. Cycles still print as
+`[[...]]` and `xs[0] = nil` still frees them, which is the sentence
+the reference now carries.
+
+Site: the published changelog names v2.137.0, the reference page
+carries the Memory section, and all nine paths answer 200.
