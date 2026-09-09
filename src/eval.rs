@@ -276,6 +276,41 @@ impl Env {
         }))
     }
 
+    /// Let a dead frame go, breaking the cycle it makes with the
+    /// functions defined in it. `fn helper` inside a function binds
+    /// the closure IN the frame while the closure holds the frame, so
+    /// an Rc count that only counts itself never reaches zero: 863
+    /// measured 428 bytes lost per call, on both engines, and the
+    /// helper never had to be called.
+    ///
+    /// This is trial deletion, one level deep and by the counts alone.
+    /// A closure the frame holds the ONLY reference to dies with the
+    /// frame, so its reference back is not a reason to keep the frame
+    /// alive; if what is left over is exactly those, nothing outside
+    /// can see this frame again and its bindings can go. A closure
+    /// that escaped — returned, stored in a list, captured by a
+    /// sibling — has a count above one, the sums do not match, and
+    /// nothing is touched. Anything else that kept a reference (a
+    /// child scope, a closure inside a container) lands the same way.
+    fn release(frame: Rc<RefCell<Env>>) {
+        if Rc::strong_count(&frame) == 1 {
+            return;
+        }
+        let held = frame
+            .borrow()
+            .vars
+            .values()
+            .filter(|v| match v {
+                Value::Fn(f) => Rc::strong_count(f) == 1 && Rc::ptr_eq(&f.env, &frame),
+                _ => false,
+            })
+            .count();
+        if Rc::strong_count(&frame) == 1 + held {
+            let dead = std::mem::take(&mut frame.borrow_mut().vars);
+            drop(dead);
+        }
+    }
+
     /// Every name visible from here outwards, innermost first.
     fn names(env: &Rc<RefCell<Env>>, out: &mut Vec<String>) {
         let e = env.borrow();
@@ -1296,7 +1331,7 @@ impl<W: Write> Interpreter<W> {
             .parent
             .clone()
             .expect("pop_scope at global scope");
-        self.env = parent;
+        Env::release(std::mem::replace(&mut self.env, parent));
     }
 
     /// Rebind an existing name; false if it doesn't exist.
@@ -1498,7 +1533,7 @@ impl<W: Write> Interpreter<W> {
                     let saved = Rc::clone(&self.env);
                     self.env = Env::child(&saved);
                     let result = self.run_block(stmts);
-                    self.env = saved;
+                    Env::release(std::mem::replace(&mut self.env, saved));
                     result
                 } else {
                     self.run_block(stmts)
@@ -1535,7 +1570,7 @@ impl<W: Write> Interpreter<W> {
                         .vars
                         .insert(Rc::from(var.as_str()), item);
                     let result = self.exec(body);
-                    self.env = saved;
+                    Env::release(std::mem::replace(&mut self.env, saved));
                     match result? {
                         Control::Normal | Control::Continue(_) => {}
                         Control::Break(_) => break,
@@ -3609,6 +3644,12 @@ impl<W: Write> Interpreter<W> {
                 span,
             ));
         }
+        // `fresh` says whether this call allocated the frame it runs
+        // in. A compiled body that captures nothing runs directly in
+        // the DEFINING env — the global one, most of the time — and
+        // releasing that would walk every binding in the program on
+        // every call: 45% of fib.ting, measured.
+        let mut fresh = true;
         let (frame, mut locals) = match &func.body {
             FnBody::Ast(_) => {
                 let mut vars = HashMap::with_capacity(func.params.len());
@@ -3643,6 +3684,7 @@ impl<W: Write> Interpreter<W> {
                         parent: Some(Rc::clone(&func.env)),
                     }))
                 } else {
+                    fresh = false;
                     Rc::clone(&func.env)
                 };
                 (frame, locals)
@@ -3669,7 +3711,10 @@ impl<W: Write> Interpreter<W> {
         };
         self.call_origins.pop();
         self.depth -= 1;
-        self.env = saved;
+        let frame = std::mem::replace(&mut self.env, saved);
+        if fresh {
+            Env::release(frame);
+        }
         crate::vm::give_buf(locals);
         if let Some(started) = clock {
             let key = Self::profile_key(func);

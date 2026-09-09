@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2683 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2690 selftest checks on all four
   CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2453,6 +2453,24 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 864: first stroke — THE FRAME LETS GO. tests/alloc.rs subtracts
+  frees now, so `live_bytes(f)` is what a run STILL HOLDS when it
+  ends; the guard runs 1000 and 10000 calls on each engine and
+  requires the second not to keep four times the first (before: 435
+  KB against 4.29 MB, 428 bytes a call). `Env::release` is trial
+  deletion by the counts: at the end of a call, block or loop
+  iteration, functions bound in the frame that nothing else holds
+  (`strong_count == 1`) and whose env IS the frame are not a reason
+  to keep it, so if the counts add up exactly the bindings go.
+  IT COST 45% OF fib.ting UNTIL THE SECOND MEASUREMENT: a compiled
+  body capturing nothing runs in the DEFINING env — the global one —
+  so releasing walked every binding in the program per call; a
+  `fresh` flag releases only frames the call allocated (fib 363/359,
+  lists 147/146, stdlib 159/160, interleaved against the previous
+  commit). The 300000-call shapes now hold 2.6 MB instead of 145 and
+  180. Seven selftest checks for what must survive (2683 -> 2690).
+  Both new names had to change: `fn get` added a fifteenth corpus
+  warning and `fn add` DELETED one by masking the arity check.
 - 863: REPLENISHMENT — MILESTONE "WHAT A LONG-RUNNING PROGRAM KEEPS"
   (v2.137.0), reasoning in LOG.md. A tenth kind of looking: DURATION
   — every lens before it measured a run that ENDS. Numbers and time
@@ -3342,11 +3360,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a harness that can see LIVE bytes: tests/alloc.rs counts
-  allocations, not frees. Then a guard that N calls to a function
-  defining a recursive helper leave live bytes flat.
-  - break the frame's self-cycle where the frame dies, tree-walker.
-  - the same for the VM.
   - what is still not reclaimed, said out loud: the reference on
   cyclic data, with a selftest.
   - release v2.137.0.

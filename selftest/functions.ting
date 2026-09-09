@@ -59,3 +59,61 @@ assert(join(chars, "") == "héllo", "for over chars");
 let seen = [];
 for k in {"b": 1, "a": 2} { push(seen, k); }
 assert(seen == ["a", "b"], "for over sorted keys");
+
+# A frame whose closures only reference each other is released when
+# the call ends (863: a recursive helper leaked its frame per call).
+# What must survive it: everything that escaped the frame.
+fn maker(n) {
+  fn helper(k) { if k <= 0 { return n; } return helper(k - 1) + 1; }
+  return helper;
+}
+assert(maker(10)(3) == 13, "a returned recursive closure keeps its frame");
+
+fn pair() {
+  let count = 0;
+  fn bump() { count += 1; return count; }
+  fn read() { return count; }
+  return [bump, read];
+}
+let both = pair();
+both[0]();
+both[0]();
+assert(both[1]() == 2, "closures returned together share one frame");
+
+fn boxed(n) {
+  let box = [];
+  fn inner(k) { if k <= 0 { return n; } return inner(k - 1); }
+  push(box, inner);
+  return box;
+}
+assert(boxed(7)[0](2) == 7, "a closure escaping inside a list keeps its frame");
+
+fn mutual() {
+  fn even(k) { if k == 0 { return true; } return odd(k - 1); }
+  fn odd(k) { if k == 0 { return false; } return even(k - 1); }
+  return even;
+}
+assert(mutual()(10) && !mutual()(7), "mutually recursive helpers survive the return");
+
+fn mapped(n) {
+  let m = {};
+  fn fetch() { return n; }
+  m["get"] = fetch;
+  return m;
+}
+assert(mapped(42)["get"]() == 42, "a closure escaping inside a map keeps its frame");
+
+let counted = 0;
+{
+  let inside = 5;
+  fn nudge() { inside += 1; return inside; }
+  counted = nudge() + nudge();
+}
+assert(counted == 13, "a block's closures see the block's bindings");
+
+let per = [];
+for step in [1, 2, 3] {
+  fn each() { return step; }
+  push(per, each);
+}
+assert([per[0](), per[1](), per[2]()] == [1, 2, 3], "one frame per iteration");

@@ -22,6 +22,11 @@ thread_local! {
     /// allocates once per iteration either way, and it is the SIZE of
     /// that one allocation that goes quadratic.
     static BYTES: Cell<Option<usize>> = const { Cell::new(None) };
+    /// Bytes asked for MINUS bytes handed back — what a run is still
+    /// holding when it is over. Signed, because a run may free
+    /// something older than the measurement, and the answer is a
+    /// difference either way.
+    static LIVE: Cell<Option<isize>> = const { Cell::new(None) };
 }
 
 struct Counting;
@@ -38,10 +43,20 @@ unsafe impl GlobalAlloc for Counting {
                 c.set(Some(n + layout.size()));
             }
         });
+        LIVE.with(|c| {
+            if let Some(n) = c.get() {
+                c.set(Some(n + layout.size() as isize));
+            }
+        });
         unsafe { System.alloc(layout) }
     }
 
     unsafe fn dealloc(&self, ptr: *mut u8, layout: Layout) {
+        LIVE.with(|c| {
+            if let Some(n) = c.get() {
+                c.set(Some(n - layout.size() as isize));
+            }
+        });
         unsafe { System.dealloc(ptr, layout) }
     }
 }
@@ -61,6 +76,15 @@ fn bytes(f: impl FnOnce()) -> usize {
     BYTES.with(|c| c.set(Some(0)));
     f();
     BYTES.with(|c| c.replace(None)).unwrap_or(0)
+}
+
+/// What `f` is still holding when it returns: everything it asked
+/// for, less everything it gave back. A leak is the only way this
+/// grows with the work done, since a run that ends owns nothing.
+fn live_bytes(f: impl FnOnce()) -> isize {
+    LIVE.with(|c| c.set(Some(0)));
+    f();
+    LIVE.with(|c| c.replace(None)).unwrap_or(0)
 }
 
 /// A search over ten times the input must not allocate ten times as
@@ -239,6 +263,50 @@ fn reading_a_string_by_index_does_not_cost_the_string_each_time() {
         assert!(
             per_read < 0.5,
             "`{read}`: {per_read:.4} bytes per character per read over {n} characters — a read is copying or decoding the string, not just pointing at it"
+        );
+    }
+}
+
+/// A function that defines a recursive helper leaks its frame on
+/// every call, and 863 measured 145 MB on the VM and 180 on the
+/// tree-walker for 300000 calls — linear in the calls, and the
+/// helper never has to be CALLED for it to happen. The name is
+/// Env-allocated because a nested function mentions it, so the frame
+/// holds the closure and the closure holds the frame: an Rc cycle
+/// counts itself and nothing frees it.
+///
+/// Ten times the calls must not keep ten times the memory. Live
+/// bytes rather than a count, and a ratio rather than a number: a
+/// run keeps interned strings and a compiled chunk whatever it does,
+/// and neither grows with the loop.
+#[test]
+fn a_recursive_helper_does_not_leak_its_frame() {
+    fn source(calls: usize) -> String {
+        format!(
+            "fn make(n) {{\n  \
+             fn helper(k) {{ if k <= 0 {{ return 0; }} return helper(k - 1) + n; }}\n  \
+             return helper(1);\n\
+             }}\n\
+             let i = 0;\n\
+             let t = 0;\n\
+             while i < {calls} {{ t += make(1); i += 1; }}\n"
+        )
+    }
+    fn run(engine: ting::Engine, src: &str) {
+        let mut out = Vec::new();
+        ting::run_source_engine(engine, "leak.ting", src, &mut out, Vec::new()).expect("runs");
+    }
+    for engine in [ting::Engine::Vm, ting::Engine::Eval] {
+        let (small, large) = (source(1000), source(10000));
+        // Once through first: the first run of either engine fills
+        // caches that the second does not pay for again.
+        run(engine, &small);
+        let kept_small = live_bytes(|| run(engine, &small));
+        let kept_large = live_bytes(|| run(engine, &large));
+        assert!(
+            kept_large < kept_small.max(4096) * 4,
+            "{engine:?} kept {kept_large} bytes for 10000 calls against \
+             {kept_small} for 1000: the frame is still holding itself"
         );
     }
 }

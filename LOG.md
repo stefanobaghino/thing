@@ -21089,3 +21089,58 @@ counts allocations — it needs frees too), then the frame's self-cycle
 broken where it dies, on each engine, and last what is still not
 reclaimed said out loud in the reference rather than left to be
 discovered.
+
+## 864 — the frame lets go: live bytes, and the leak closed
+
+Maintenance: tree clean, no PRs, CI green for 214aace from the API.
+
+Two backlog items in one stroke, because the harness and the fix are
+one measurement: tests/alloc.rs's counting allocator now subtracts
+what it hands back, so `live_bytes(f)` is what `f` is STILL HOLDING
+when it returns — the only thing that can grow with the work done,
+since a run that ends owns nothing. The guard runs a program that
+calls a function defining a recursive helper 1000 and 10000 times on
+each engine and requires the second not to keep four times the first.
+Before the fix it read 435 KB against 4.29 MB — 428 bytes a call,
+exactly linear.
+
+`Env::release` is trial deletion by the counts alone, one level deep.
+At the end of a call, block or loop iteration, if the frame's
+reference count is more than one, count the functions bound IN the
+frame that nothing else holds (`Rc::strong_count(f) == 1`) and whose
+env IS this frame. If the total is exactly those plus our own, no one
+outside can reach the frame again and its bindings go. A closure that
+escaped has a count above one and the sums do not match; a child
+scope or a closure inside a list lands the same way. Nothing is
+touched unless the arithmetic proves it dead.
+
+**It cost 45% of fib.ting until the second measurement.** A compiled
+body that captures nothing runs directly in the DEFINING env — the
+global one, usually — so releasing the frame walked every binding in
+the program on every call. A `fresh` flag now says whether the call
+allocated the frame it ran in, and only those are released: fib 363
+against 359 ms, lists 147/146, stdlib 159/160, interleaved best of
+five and seven against a build of the previous commit.
+
+Measured after: the 300000-call shapes that held 145 MB (vm) and 180
+(eval) now hold 2.6 MB, both engines, including the one that only
+DEFINES the helper. Cyclic data a program builds itself still leaks
+(42 MB per 300000 self-referencing lists) — that is the next item,
+and it is a sentence in the reference rather than a collector.
+
+selftest/functions.ting gained seven checks for what must survive a
+released frame: a returned recursive closure, two closures sharing
+one frame, a closure escaping inside a list and inside a map,
+mutually recursive helpers, a block's bindings, one frame per loop
+iteration. 2683 checks becomes 2690.
+
+TWO NAMES IN THAT TEST WERE THE WHOLE CORPUS GUARD'S BUSINESS: `fn
+get` made a fifteenth `--check` warning (it shadows a builtin), and
+`fn add` REMOVED one — functions.ting proves arity with `add(1)`, and
+a second `add` with no parameters made the checker let it pass. The
+count is fourteen because each of the fourteen is deliberate; renamed
+to `fetch` and `nudge`.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2690 checks, Windows check and clippy,
+wasm release build.
