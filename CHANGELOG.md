@@ -5,6 +5,39 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.137.0 (2026-09-09)
+
+- **A helper defined inside a function no longer leaks the call.**
+  A `fn` that names itself — the ordinary way to write a recursive
+  helper — was bound in the frame while holding that same frame, and
+  reference counting cannot free a cycle. Every call lost about 430
+  bytes, whether or not the helper was ever called: 300000 calls held
+  145 MB on the default engine and 180 on the tree-walker, and a
+  program that ran for a day lost the memory for good. A frame with
+  nothing left pointing at it from outside now lets its bindings go
+  when the call ends, and the same 300000 calls hold 2.6 MB.
+- **A closure that escapes takes its scope with it, and gives it back.**
+  `fn maker(n) { fn add(x) { return x + n; } return add; }` kept
+  `maker`'s frame alive forever on `--eval` — 180 MB per 300000 —
+  because the frame held the name `add` while `add` held the frame.
+  The binding is dropped now when nothing can call it by that name
+  again, so the closure and its scope are freed with the last
+  reference to them. Recursive helpers that escape are still a cycle,
+  by construction, and the reference says so.
+- **What a program keeps is documented.** A new Memory section in the
+  reference: values are freed when the last reference lets go, with
+  no collector and no pause; data that refers to itself is never
+  reclaimed, and breaking the link — `xs[0] = nil;` — frees it. Both
+  claims are held to by tests.
+- **Freeing deep values is back at full speed.** v2.136.0 made
+  dropping iterative so that a million-deep list could not kill the
+  process on the way out, and that cost 20% on a JSON-heavy program:
+  the map path allocated per map freed, and moving every element into
+  a worklist cost more than looking at it in place. Dropping now
+  recurses the way the compiler would for the first hundred levels
+  and only then takes the iterative path, so ordinary shapes pay
+  nothing and deep ones are still safe.
+
 ## v2.136.0 (2026-09-09)
 
 - **A JSON document nested too deeply is refused rather than
