@@ -2453,6 +2453,26 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 843: REPLENISHMENT — MILESTONE "THE PROGRAM THAT GOT BIG"
+  (v2.135.0), reasoning in LOG.md. An eighth kind of looking: the
+  SIZE of the program. The largest ting program in the repo is 438
+  lines; generated ones of 500-8000 functions (up to 1.3 MB) say
+  `--check` IS QUADRATIC — 45, 152, 572, 2737, 13120 ms as the input
+  doubles — while the formatter (4-40 ms) and the tree-walker
+  (6-80 ms) stay linear. Isolated: it is the NUMBER OF NAMES, not the
+  file size (8000 names 1 call = 4175 ms; 1 name 8000 calls = 70 ms;
+  8000 locals in one function = 964 ms), and the cause is in
+  src/lsp.rs, where `unused_top_level_lets` counts matching
+  identifier tokens in the WHOLE FILE per binding and
+  `unused_local_lets` rescans the block per local. The compiler has
+  the same shape under a comment that says "the pool stays tiny so a
+  scan is fine" — `konst` and `name` in src/compile.rs — worth 650 ms
+  against the tree-walker's 80 ms on the same file. And past 30000
+  nested parens (or between 5000 and 20000 nested blocks) the process
+  ABORTS with `has overflowed its stack`, exit 134, no line and
+  nothing catchable — the same corpse class as 829's OOM.
+  Not wrong, and checked: 20000 nested list literals, a 50000-term
+  expression, and an error on line 8001 pointing at the right line.
 - 842: health tick green at load 0.1 — MILESTONE "THE OTHER PROGRAM"
   (v2.134.0, strokes 836-841) COMPLETE. Sweeps: 50000 differential at
   seed 842, 20000 formatter, crash + 2000000 regex, all ok. Bench: 22
@@ -3073,12 +3093,17 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone. Seven kinds of looking
-  are spent: instruction counts (799), writing a program and counting
-  the corrections (808), fifty wrong programs (815), the same program
-  twice in two languages (822), dirty input (829), a finding held
-  back until it could be decided (835), and running ting the way a
-  shell runs it (836).
+  - the checker stops rescanning: index the identifier tokens once by
+  name so every unused-check is a lookup. The bar is the 8000-name
+  file, 4175 ms today.
+  - the compiler stops scanning its pools: `konst` and `name` get an
+  index, and the comment saying a scan is fine goes with it. The bar
+  is the 8000-function file, 650 ms on the VM against 80 ms on the
+  tree-walker.
+  - a program too deep to parse is TOLD so: a depth limit in the
+  parser with a real error at a documented depth, well under the
+  cliff, so nesting gets a line number instead of a signal.
+  - release v2.135.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

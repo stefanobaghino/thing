@@ -20237,3 +20237,64 @@ answer them in a page anyway, since there is nothing to spawn there.
 
 Milestone "the other program" (v2.134.0, strokes 836-841) is
 complete.
+
+## 2026-09-09 — Iteration 843: replenishment — "the program that got big"
+
+**An eighth kind of looking: the SIZE of the program.** 799 counted
+instructions, 829 fed the readers dirty data, 836 ran ting the way a
+shell runs it. Every ting program that has ever been measured here is
+small: the largest in the repository is selftest/stdlib.ting at 438
+lines. This tick generated programs of 500 to 8000 functions — up to
+1.3 MB of source — and timed the toolchain on each.
+
+**`--check` is QUADRATIC, and it is not subtle.** 500 functions
+45 ms, 1000 152 ms, 2000 572 ms, 4000 2737 ms, 8000 **13120 ms**:
+doubling the input roughly quadruples the time. Thirteen seconds to
+check one file. The formatter over the same files is linear
+(4, 7, 12, 20, 40 ms) and so is the tree-walker (6, 13, 24, 38,
+80 ms), so it is not the lexer or the parser.
+
+**Isolated: it is the number of NAMES, not the size of the file.**
+8000 functions with one call between them takes 4175 ms to check;
+one function called 8000 times takes 70 ms. 8000 `let`s inside a
+single function take 964 ms. The cause is in src/lsp.rs, where the
+warnings live: `unused_top_level_lets` counts, FOR EVERY top-level
+binding, how many identifier tokens in the whole file bear that name,
+and `unused_local_lets` rescans the enclosing block for every local.
+Name by name, over the whole token stream.
+
+**The compiler has the same shape, written down as an assumption.**
+`konst` and `name` in src/compile.rs intern by scanning the pool,
+under the comment "the pool stays tiny so a scan is fine". It stays
+tiny in every program in the corpus. The 8000-function file takes
+650 ms on the VM against 80 ms on the tree-walker, and the VM has
+nothing to do at run time that the tree-walker does not — the gap is
+interning. A comment that is true of every test and false of a real
+program is exactly the kind of assumption this loop exists to find.
+
+**And past a certain depth, ting aborts instead of complaining.**
+`print((((...1...))))` nested 30000 deep runs; at 50000 the process
+dies with `thread has overflowed its stack` and exit 134 — no line,
+no message from ting, nothing a script can catch. Nested blocks abort
+between 5000 and 20000. It is the same failure class 829 found in
+`range(100000000000)` and v2.133.0 fixed: a corpse instead of an
+error.
+
+**Not wrong, and checked**: nested list literals at 20000 parse fine,
+a single expression of 50000 terms parses and runs, and an error on
+line 8001 of a big file still points at the right line with the
+caret aligned.
+
+**Milestone: "the program that got big" (v2.135.0).** Three strokes.
+
+- The checker stops rescanning: index the identifier tokens once by
+  name, then every unused-check is a lookup. The bar is the 8000-name
+  file, 4175 ms today.
+- The compiler stops scanning its pools: `konst` and `name` get an
+  index, and the comment that says a scan is fine goes with it. The
+  bar is the 8000-function file, 650 ms on the VM against 80 ms on
+  the tree-walker.
+- A program too deep to parse is TOLD so: a depth limit in the
+  parser with a real error at a documented depth, well under the
+  cliff, so nesting joins every other bad input in getting a line
+  number instead of a signal.
