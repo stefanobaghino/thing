@@ -2453,6 +2453,13 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 860: v2.136.0 TAGGED (157th tag, 087c490; strokes 855-859).
+  CHANGELOG section written in the release commit as always; the
+  release tick's first act (738) found nothing else owed — no count
+  in README or the docs moved this milestone, and Limits already
+  carried the two new numbers. Four entries for five strokes: 857
+  and 858 are one thing from outside. Gate green on the release
+  build, `ting --version` 2.136.0. NOT YET VERIFIED.
 - 859: fifth stroke — THE DROP, THE LAST THING THAT RECURSED. Both
   types that nest have an iterative `Drop` now: `Expr` takes each
   child's kind out by `mem::replace` into a worklist, and
@@ -3292,7 +3299,9 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.136.0.
+  - verify v2.136.0: cold download of the seven assets,
+  `sha256sum -c`, both aarch64 archives run here from a directory
+  holding only selftest/, and asked what this release answers.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

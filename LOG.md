@@ -20919,3 +20919,35 @@ looked at stdout would have passed all along.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2683 checks, Windows check and clippy,
 wasm release build.
+
+## 860 — v2.136.0 tagged: "how deep the machinery goes"
+
+Maintenance: tree clean, no PRs, CI green for 08240ba read from the
+API first.
+
+The release tick's first act, since 738: diff the previous release
+commit against HEAD and see what the strokes left undone.
+`git diff v2.135.0..HEAD` names sixteen files and no CHANGELOG entry
+was owed — the section is written here, as it always is — and no
+count in README or the docs moved this milestone: still 73 builtins,
+195 stdlib functions, 71 files the formatter leaves alone. The
+reference's Limits already carries the two new numbers, written by
+855 and 856 and guarded by tests/docs.rs.
+
+Four entries, one per stroke that a user can feel: a JSON document
+too deep is refused, printing stops at 1000 levels (and stops being
+quadratic), a long operator chain costs no stack, and a program that
+finished no longer dies freeing what it built. 857 and 858 are one
+entry, because from outside they are one thing: the chain that used
+to abort.
+
+157th tag, 087c490, strokes 855-859. Gate before the tag, on the
+release build: fmt, clippy, 16 `test result: ok`, `--fmt .` 71
+unchanged, corpus at fourteen, selftest 2683 checks, Windows check
+and clippy, wasm release build, and `ting --version` says 2.136.0.
+
+Next tick verifies it the way every release is verified: cold
+download of all seven assets, `sha256sum -c`, both aarch64 archives
+unpacked and run here from a directory holding only selftest/, so
+the embedded stdlib is what answers — and asked what THIS release
+exists to answer, a million-deep list and a million-term chain.
