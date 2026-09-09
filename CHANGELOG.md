@@ -5,6 +5,43 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.135.0 (2026-09-09)
+
+- **`--check` is linear again.** A generated program of 8000
+  functions took 29 seconds to check and now takes 0.6 — 49 times
+  faster, and the curve doubles when the input doubles instead of
+  quadrupling. Nothing was wrong with the answers; four separate
+  places counted from the top of the file for every name they looked
+  at. The checker matched each binding against every identifier
+  token; the compiler scanned its constant and name pools; every
+  diagnostic found its line by counting newlines from byte zero; and
+  the resolver walked the open scopes comparing strings, while
+  recording what was in scope copied every name in it per fallible
+  instruction. Each is now an index built once. The largest ting
+  program anyone had run through it was 438 lines, which is why this
+  went unnoticed for 130 releases.
+- **The editor got the same fix in eleven places.** `--lsp` turned a
+  byte offset into a line and column by counting from the top of the
+  file, inside a loop, for document symbols, workspace symbols,
+  definitions, references, highlights, renames, links, import
+  diagnostics, diagnostics, code actions and folding ranges — on
+  every keystroke.
+- **A program nested too deeply is told so.** Past about 15000 nested
+  blocks the process aborted with `has overflowed its stack`: no
+  line, no message, nothing a caller could catch. The parser now
+  refuses past 200 levels with `nested too deeply (the limit is 200
+  levels)`, a line and a caret. The limit is fixed rather than
+  derived from the host stack, so every command and both engines
+  refuse exactly the same programs; the number is in the reference's
+  Limits. Length is not depth: a sum of fifty thousand terms parses
+  as it always did.
+- **Every command now runs on a stack this process chose.** The
+  runner and the REPL each spawned a 32 MB thread; `--check`,
+  `--fmt-check`, `--doc`, `--test` and `--lsp` ran on the main
+  thread, which is promised one megabyte on Windows. A deep program
+  reported cleanly on Linux and killed the process on Windows. The
+  thread is spawned once, for all of them.
+
 ## v2.134.0 (2026-09-09)
 
 - `run` says what killed a child. The map it hands back has a fourth
