@@ -2453,6 +2453,12 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 867: v2.137.0 TAGGED (158th tag, 85c9b58; strokes 862, 864, 865,
+  866). Nothing owed at release time; the CHANGELOG's four entries
+  are the leak closed, the escaping closure freed, the Memory
+  section, and 862's drop repair (v2.136.0 shipped the slow drop).
+  Gate green on the release build, `ting --version` 2.137.0.
+  NOT YET VERIFIED.
 - 866: third stroke — THE TREE-WALKER KEEPS WHAT THE VM LETS GO.
   `Env::release` decides per binding now: the functions bound in the
   frame whose env IS the frame are counted, the frame's count must be
@@ -3386,7 +3392,9 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.137.0.
+  - verify v2.137.0: seven assets cold, `sha256sum -c`, both aarch64
+  archives run here, and asked what this release answers — 300000
+  calls with a recursive helper and 300000 returned closures.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

@@ -21236,3 +21236,30 @@ Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2690 checks, Windows check and clippy,
 wasm release build. `cargo fmt` reflowed one `if` in the new walker,
 which is the third time this tick's edits have been rewritten by it.
+
+## 867 — v2.137.0 tagged: "what a long-running program keeps"
+
+Maintenance: tree clean, no PRs, CI green for af7c94a from the API.
+
+The release tick's first act (738): `git diff v2.136.0..HEAD` names
+six files and nothing was owed — no count in README or the docs moved
+(no builtin was added this milestone), and the reference's Memory
+section arrived with 865 rather than at release time.
+
+Four entries for four strokes, each written as what a user would
+notice rather than what changed: a recursive helper no longer leaks
+the call (864), a closure that escapes gives its scope back (866),
+what a program keeps is documented (865), and freeing deep values is
+back at full speed (862 — v2.136.0 shipped the slow drop, so the
+repair is news).
+
+158th tag, 85c9b58, strokes 862, 864, 865, 866. Gate before the tag
+on the release build: fmt, clippy, 16 `test result: ok`, `--fmt .`
+71 unchanged, corpus at fourteen, selftest 2690 checks, Windows check
+and clippy, wasm release build, `ting --version` 2.137.0.
+
+Next tick verifies it: seven assets cold-downloaded, `sha256sum -c`,
+both aarch64 archives unpacked and run from a directory holding only
+the probe, and asked what this release answers — 300000 calls to a
+function with a recursive helper, and 300000 returned closures, both
+of which should now cost nothing.
