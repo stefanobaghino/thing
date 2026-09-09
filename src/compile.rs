@@ -378,49 +378,54 @@ fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
             }
         }
     }
-    fn walk_expr(e: &Expr, in_fn: bool, out: &mut std::collections::HashSet<String>) {
-        match &e.kind {
-            ExprKind::Var(n) => {
-                if in_fn {
-                    out.insert(n.clone());
-                }
-            }
-            ExprKind::List(xs) => xs.iter().for_each(|x| walk_expr(x, in_fn, out)),
-            ExprKind::Map(kvs) => kvs.iter().for_each(|(k, v)| {
-                walk_expr(k, in_fn, out);
-                walk_expr(v, in_fn, out);
-            }),
-            ExprKind::Unary(_, x) => walk_expr(x, in_fn, out),
-            ExprKind::Binary(_, a, b) => {
-                walk_expr(a, in_fn, out);
-                walk_expr(b, in_fn, out);
-            }
-            ExprKind::Index(a, b) => {
-                walk_expr(a, in_fn, out);
-                walk_expr(b, in_fn, out);
-            }
-            ExprKind::Call(c, args) => {
-                walk_expr(c, in_fn, out);
-                args.iter().for_each(|a| walk_expr(a, in_fn, out));
-            }
-            ExprKind::Spread(x) => walk_expr(x, in_fn, out),
-            // Everything inside a nested fn literal is "captured".
-            ExprKind::Fn(params, body) => {
-                if in_fn {
-                    out.extend(params.iter().map(|p| p.name.clone()));
-                }
-                // A default is evaluated at the call, against the
-                // closure's env, so whatever it names has to live
-                // there rather than in a slot of the frame that made
-                // the closure.
-                for p in params {
-                    if let Some(d) = &p.default {
-                        walk_expr(d, true, out);
+    /// Every name an expression mentions, by worklist rather than by
+    /// recursion. Statements nest no deeper than the parser allows,
+    /// but an operator chain does not nest at all syntactically and
+    /// still leans left as a tree, so a long enough one walked this
+    /// by 500000 host frames and killed the process (854, 857).
+    fn walk_expr(root: &Expr, root_in_fn: bool, out: &mut std::collections::HashSet<String>) {
+        let mut todo = vec![(root, root_in_fn)];
+        while let Some((e, in_fn)) = todo.pop() {
+            match &e.kind {
+                ExprKind::Var(n) => {
+                    if in_fn {
+                        out.insert(n.clone());
                     }
                 }
-                body.iter().for_each(|s| walk_stmt(s, true, out));
+                ExprKind::List(xs) => todo.extend(xs.iter().map(|x| (x, in_fn))),
+                ExprKind::Map(kvs) => {
+                    for (k, v) in kvs {
+                        todo.push((k, in_fn));
+                        todo.push((v, in_fn));
+                    }
+                }
+                ExprKind::Unary(_, x) | ExprKind::Spread(x) => todo.push((x, in_fn)),
+                ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+                    todo.push((a, in_fn));
+                    todo.push((b, in_fn));
+                }
+                ExprKind::Call(c, args) => {
+                    todo.push((c, in_fn));
+                    todo.extend(args.iter().map(|a| (a, in_fn)));
+                }
+                // Everything inside a nested fn literal is "captured".
+                ExprKind::Fn(params, body) => {
+                    if in_fn {
+                        out.extend(params.iter().map(|p| p.name.clone()));
+                    }
+                    // A default is evaluated at the call, against the
+                    // closure's env, so whatever it names has to live
+                    // there rather than in a slot of the frame that
+                    // made the closure.
+                    for p in params {
+                        if let Some(d) = &p.default {
+                            todo.push((d, true));
+                        }
+                    }
+                    body.iter().for_each(|s| walk_stmt(s, true, out));
+                }
+                _ => {}
             }
-            _ => {}
         }
     }
     stmts.iter().for_each(|s| walk_stmt(s, false, out));

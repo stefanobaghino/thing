@@ -754,29 +754,35 @@ pub fn duplicate_map_keys(src: &str) -> Vec<(usize, usize, String)> {
 /// that judge one node at a time.
 fn visit_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)) {
     use crate::ast::{ExprKind as E, StmtKind as S};
-    fn expr(e: &crate::ast::Expr, f: &mut impl FnMut(&crate::ast::Expr)) {
-        f(e);
-        match &e.kind {
-            E::List(items) => items.iter().for_each(|i| expr(i, f)),
-            E::Map(entries) => entries.iter().for_each(|(k, v)| {
-                expr(k, f);
-                expr(v, f);
-            }),
-            E::Unary(_, a) => expr(a, f),
-            E::Binary(_, a, b) => {
-                expr(a, f);
-                expr(b, f);
+    /// Pre-order, by worklist: children are pushed in reverse so they
+    /// come back off the stack left to right, and the visit reads as
+    /// it did when it recursed. It cannot recurse: an operator chain
+    /// leans left however flat the source looks, and 858 measured
+    /// this walk dying on a 200000-term one.
+    fn expr(root: &crate::ast::Expr, f: &mut impl FnMut(&crate::ast::Expr)) {
+        let mut todo = vec![root];
+        while let Some(e) = todo.pop() {
+            f(e);
+            match &e.kind {
+                E::List(items) => todo.extend(items.iter().rev()),
+                E::Map(entries) => {
+                    for (k, v) in entries.iter().rev() {
+                        todo.push(v);
+                        todo.push(k);
+                    }
+                }
+                E::Unary(_, a) => todo.push(a),
+                E::Binary(_, a, b) | E::Index(a, b) => {
+                    todo.push(b);
+                    todo.push(a);
+                }
+                E::Call(callee, args) => {
+                    todo.extend(args.iter().rev());
+                    todo.push(callee);
+                }
+                E::Fn(_, body) => visit_exprs(body, f),
+                _ => {}
             }
-            E::Call(callee, args) => {
-                expr(callee, f);
-                args.iter().for_each(|a| expr(a, f));
-            }
-            E::Index(base, idx) => {
-                expr(base, f);
-                expr(idx, f);
-            }
-            E::Fn(_, body) => visit_exprs(body, f),
-            _ => {}
         }
     }
     for stmt in stmts {
@@ -867,32 +873,34 @@ fn collect_rebindings(
     out: &mut std::collections::HashSet<String>,
 ) {
     use crate::ast::{ExprKind as E, StmtKind as S};
-    fn expr(e: &crate::ast::Expr, out: &mut std::collections::HashSet<String>) {
-        match &e.kind {
-            E::Fn(params, body) => {
-                out.extend(params.iter().map(|p| p.name.clone()));
-                collect_rebindings(body, false, out);
+    // By worklist, like every other expression walk here: a chain of
+    // operators leans left however flat it reads (858).
+    fn expr(root: &crate::ast::Expr, out: &mut std::collections::HashSet<String>) {
+        let mut todo = vec![root];
+        while let Some(e) = todo.pop() {
+            match &e.kind {
+                E::Fn(params, body) => {
+                    out.extend(params.iter().map(|p| p.name.clone()));
+                    collect_rebindings(body, false, out);
+                }
+                E::List(items) => todo.extend(items.iter()),
+                E::Map(entries) => {
+                    for (k, v) in entries {
+                        todo.push(k);
+                        todo.push(v);
+                    }
+                }
+                E::Unary(_, a) | E::Spread(a) => todo.push(a),
+                E::Binary(_, a, b) | E::Index(a, b) => {
+                    todo.push(a);
+                    todo.push(b);
+                }
+                E::Call(callee, args) => {
+                    todo.push(callee);
+                    todo.extend(args.iter());
+                }
+                _ => {}
             }
-            E::List(items) => items.iter().for_each(|i| expr(i, out)),
-            E::Map(entries) => entries.iter().for_each(|(k, v)| {
-                expr(k, out);
-                expr(v, out);
-            }),
-            E::Unary(_, a) => expr(a, out),
-            E::Binary(_, a, b) => {
-                expr(a, out);
-                expr(b, out);
-            }
-            E::Call(callee, args) => {
-                expr(callee, out);
-                args.iter().for_each(|a| expr(a, out));
-            }
-            E::Spread(a) => expr(a, out),
-            E::Index(base, idx) => {
-                expr(base, out);
-                expr(idx, out);
-            }
-            _ => {}
         }
     }
     for stmt in stmts {
@@ -942,54 +950,58 @@ fn check_calls(
     out: &mut Vec<(usize, usize, String)>,
 ) {
     use crate::ast::{ExprKind as E, StmtKind as S};
+    // By worklist; `out` is sorted by position afterwards, so the
+    // order findings arrive in does not matter here.
     fn expr(
-        e: &crate::ast::Expr,
+        root: &crate::ast::Expr,
         arities: &std::collections::HashMap<String, (usize, Option<usize>)>,
         out: &mut Vec<(usize, usize, String)>,
     ) {
-        match &e.kind {
-            E::Call(callee, args) => {
-                // A spread argument makes the count a runtime fact,
-                // so this pass has nothing to say about the call.
-                let spread = args.iter().any(|a| matches!(a.kind, E::Spread(_)));
-                if let E::Var(name) = &callee.kind
-                    && !spread
-                    && let Some((required, most)) = arities.get(name).copied()
-                    && (args.len() < required || most.is_some_and(|m| args.len() > m))
-                {
-                    // A range only when there is one: a function with no
-                    // defaults reads exactly as it did before.
-                    let takes = match most {
-                        None => format!("at least {}", crate::diag::plural(required, "argument")),
-                        Some(m) if m == required => crate::diag::plural(m, "argument"),
-                        Some(m) => format!("{required} to {m} arguments"),
-                    };
-                    out.push((
-                        callee.span.start,
-                        callee.span.end,
-                        format!("`{name}` takes {takes}, called with {}", args.len()),
-                    ));
+        let mut todo = vec![root];
+        while let Some(e) = todo.pop() {
+            match &e.kind {
+                E::Call(callee, args) => {
+                    // A spread argument makes the count a runtime fact,
+                    // so this pass has nothing to say about the call.
+                    let spread = args.iter().any(|a| matches!(a.kind, E::Spread(_)));
+                    if let E::Var(name) = &callee.kind
+                        && !spread
+                        && let Some((required, most)) = arities.get(name).copied()
+                        && (args.len() < required || most.is_some_and(|m| args.len() > m))
+                    {
+                        // A range only when there is one: a function with no
+                        // defaults reads exactly as it did before.
+                        let takes = match most {
+                            None => {
+                                format!("at least {}", crate::diag::plural(required, "argument"))
+                            }
+                            Some(m) if m == required => crate::diag::plural(m, "argument"),
+                            Some(m) => format!("{required} to {m} arguments"),
+                        };
+                        out.push((
+                            callee.span.start,
+                            callee.span.end,
+                            format!("`{name}` takes {takes}, called with {}", args.len()),
+                        ));
+                    }
+                    todo.push(callee);
+                    todo.extend(args.iter());
                 }
-                expr(callee, arities, out);
-                args.iter().for_each(|a| expr(a, arities, out));
+                E::Spread(a) | E::Unary(_, a) => todo.push(a),
+                E::Fn(_, body) => check_calls(body, arities, out),
+                E::List(items) => todo.extend(items.iter()),
+                E::Map(entries) => {
+                    for (k, v) in entries {
+                        todo.push(k);
+                        todo.push(v);
+                    }
+                }
+                E::Binary(_, a, b) | E::Index(a, b) => {
+                    todo.push(a);
+                    todo.push(b);
+                }
+                _ => {}
             }
-            E::Spread(a) => expr(a, arities, out),
-            E::Fn(_, body) => check_calls(body, arities, out),
-            E::List(items) => items.iter().for_each(|i| expr(i, arities, out)),
-            E::Map(entries) => entries.iter().for_each(|(k, v)| {
-                expr(k, arities, out);
-                expr(v, arities, out);
-            }),
-            E::Unary(_, a) => expr(a, arities, out),
-            E::Binary(_, a, b) => {
-                expr(a, arities, out);
-                expr(b, arities, out);
-            }
-            E::Index(base, idx) => {
-                expr(base, arities, out);
-                expr(idx, arities, out);
-            }
-            _ => {}
         }
     }
     for stmt in stmts {
@@ -1118,52 +1130,50 @@ fn walk_stmt(
     }
 }
 
+/// Left to right, by worklist rather than by recursion — children go
+/// on the stack in reverse so they come back off in source order, and
+/// the findings read as they did. A function literal still recurses
+/// through `walk_block`, which is safe: statements nest no deeper
+/// than the parser allows, while an operator chain has no syntactic
+/// depth at all and still leans left.
 fn walk_expr(
-    expr: &crate::ast::Expr,
+    root: &crate::ast::Expr,
     tokens: &[lexer::Token],
     scopes: &mut Scopes,
     out: &mut Findings,
 ) {
     use crate::ast::ExprKind as E;
-    match &expr.kind {
-        E::Var(name) => {
-            if !bound(scopes, name) {
-                report(name, expr.span.start, tokens, scopes, out);
+    let mut todo = vec![root];
+    while let Some(expr) = todo.pop() {
+        match &expr.kind {
+            E::Var(name) => {
+                if !bound(scopes, name) {
+                    report(name, expr.span.start, tokens, scopes, out);
+                }
             }
-        }
-        E::List(items) => {
-            for e in items {
-                walk_expr(e, tokens, scopes, out);
+            E::List(items) => todo.extend(items.iter().rev()),
+            E::Spread(e) | E::Unary(_, e) => todo.push(e),
+            E::Map(entries) => {
+                for (k, v) in entries.iter().rev() {
+                    todo.push(v);
+                    todo.push(k);
+                }
             }
-        }
-        E::Spread(e) => walk_expr(e, tokens, scopes, out),
-        E::Map(entries) => {
-            for (k, v) in entries {
-                walk_expr(k, tokens, scopes, out);
-                walk_expr(v, tokens, scopes, out);
+            E::Binary(_, a, b) | E::Index(a, b) => {
+                todo.push(b);
+                todo.push(a);
             }
-        }
-        E::Unary(_, e) => walk_expr(e, tokens, scopes, out),
-        E::Binary(_, a, b) => {
-            walk_expr(a, tokens, scopes, out);
-            walk_expr(b, tokens, scopes, out);
-        }
-        E::Call(callee, args) => {
-            walk_expr(callee, tokens, scopes, out);
-            for a in args {
-                walk_expr(a, tokens, scopes, out);
+            E::Call(callee, args) => {
+                todo.extend(args.iter().rev());
+                todo.push(callee);
             }
+            E::Fn(params, body) => {
+                scopes.push(params.iter().map(|p| p.name.clone()).collect());
+                walk_block(body, tokens, scopes, out);
+                scopes.pop();
+            }
+            E::Int(_) | E::Float(_) | E::Str(_) | E::Bool(_) | E::Nil => {}
         }
-        E::Index(base, idx) => {
-            walk_expr(base, tokens, scopes, out);
-            walk_expr(idx, tokens, scopes, out);
-        }
-        E::Fn(params, body) => {
-            scopes.push(params.iter().map(|p| p.name.clone()).collect());
-            walk_block(body, tokens, scopes, out);
-            scopes.pop();
-        }
-        E::Int(_) | E::Float(_) | E::Str(_) | E::Bool(_) | E::Nil => {}
     }
 }
 

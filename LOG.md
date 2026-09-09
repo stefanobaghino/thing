@@ -20841,3 +20841,40 @@ shape in `compile::walk_expr` and `eval::expr`.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2683 checks, Windows check and clippy,
 wasm release build, bench matching BASELINE on all eleven checksums.
+
+## 858 — fourth stroke: five more walkers, and what is left is the drop
+
+857 left the two engines walking a chain iteratively and `--check`
+still aborting at 500000 terms. Rather than guess which of the
+checker's nine passes was at fault, a throwaway test called each one
+on a 200000-term chain from a thread of known size: `unbound_names`,
+`arity_mismatches` and `duplicate_map_keys` overflowed; the other six
+did not.
+
+Five walks are worklists now — `compile::walk_expr` and
+`eval::statement_offsets`' inner walk (the name and offset
+collectors), and in the checker `visit_exprs`, `walk_expr` and the
+inner walks of `collect_rebindings` and `check_calls`. Where the
+order of findings is visible, children go onto the stack in reverse
+so they come off it in source order and the output is unchanged; the
+two that sort their findings afterwards do not need it.
+
+Function literals still recurse, through `walk_block` and friends,
+and that is right: statements nest no deeper than the parser allows,
+while an expression's LENGTH has no syntactic depth at all.
+
+**Where the cliff is now**: 500000 terms runs, checks and formats on
+both engines; a million still aborts — and the program PRINTS ITS
+ANSWER FIRST. What dies is the AST's own drop, walking a chain of
+boxes on the way out, which is the same shape as the value drop
+already on the backlog. `--fmt-check` at a million is fine, since it
+never builds a tree.
+
+tests/lsp.rs runs every checker pass over a 100000-term chain, on a
+thread of declared stack, and asserts an unbound name at the FAR END
+of the chain is still reported — a walk that stops early would find
+nothing and look healthy.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2683 checks, Windows check and clippy,
+wasm release build.

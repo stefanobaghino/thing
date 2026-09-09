@@ -174,24 +174,31 @@ pub(crate) fn spread_values(v: Value, span: Span) -> Result<Vec<Value>, RuntimeE
 /// a `Mark` in front of, so what could run and what did are counted
 /// against the same set.
 fn statement_offsets(stmts: &[Stmt], out: &mut std::collections::HashSet<usize>) {
-    fn expr(e: &Expr, out: &mut std::collections::HashSet<usize>) {
-        match &e.kind {
-            ExprKind::Fn(_, body) => statement_offsets(body, out),
-            ExprKind::List(xs) => xs.iter().for_each(|x| expr(x, out)),
-            ExprKind::Map(kvs) => kvs.iter().for_each(|(k, v)| {
-                expr(k, out);
-                expr(v, out);
-            }),
-            ExprKind::Unary(_, a) | ExprKind::Spread(a) => expr(a, out),
-            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
-                expr(a, out);
-                expr(b, out);
+    /// By worklist, for the reason compile::walk_expr is: an operator
+    /// chain leans left however flat it looks.
+    fn expr(root: &Expr, out: &mut std::collections::HashSet<usize>) {
+        let mut todo = vec![root];
+        while let Some(e) = todo.pop() {
+            match &e.kind {
+                ExprKind::Fn(_, body) => statement_offsets(body, out),
+                ExprKind::List(xs) => todo.extend(xs.iter()),
+                ExprKind::Map(kvs) => {
+                    for (k, v) in kvs {
+                        todo.push(k);
+                        todo.push(v);
+                    }
+                }
+                ExprKind::Unary(_, a) | ExprKind::Spread(a) => todo.push(a),
+                ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+                    todo.push(a);
+                    todo.push(b);
+                }
+                ExprKind::Call(callee, args) => {
+                    todo.push(callee);
+                    todo.extend(args.iter());
+                }
+                _ => {}
             }
-            ExprKind::Call(callee, args) => {
-                expr(callee, out);
-                args.iter().for_each(|a| expr(a, out));
-            }
-            _ => {}
         }
     }
     for s in stmts {

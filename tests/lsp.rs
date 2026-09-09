@@ -1195,3 +1195,37 @@ fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
          each is counting from the top again"
     );
 }
+
+/// The checker's passes walk the AST, and an operator chain leans
+/// left however flat the source reads: three of the nine — unbound
+/// names, arity mismatches and duplicate map keys — died on a
+/// 200000-term chain (858), one host frame per term, while the file
+/// itself parsed and ran. They walk by worklist now, so the length of
+/// an expression is not a depth any of them pays for.
+///
+/// On a thread of declared stack, because what is left of the recursion
+/// in this program is the AST's own drop, and an unoptimized build
+/// pays several times what a release one does for it.
+#[test]
+fn the_checker_walks_a_long_chain_without_recursing_down_it() {
+    let out = std::thread::Builder::new()
+        .stack_size(32 * 1024 * 1024)
+        .spawn(|| {
+            let src = format!("let x = 0{};\nprint(x);\n", " + 1".repeat(100_000));
+            // Every pass, through the one entry point the checker uses.
+            let warnings = ting::lsp::warnings(&src);
+            // And a chain that ends in something to report, so the
+            // walk is known to have reached the far end of it.
+            let named = format!("let y = 0{} + nope;\nprint(y);\n", " + 1".repeat(100_000));
+            let found = ting::lsp::warnings(&named);
+            (
+                warnings.len(),
+                found.iter().any(|(_, _, m)| m.contains("nope")),
+            )
+        })
+        .expect("spawn")
+        .join()
+        .expect("the checker died on a long chain");
+    assert_eq!(out.0, 0, "a chain of ones has nothing to warn about");
+    assert!(out.1, "the unbound name at the end of the chain is found");
+}

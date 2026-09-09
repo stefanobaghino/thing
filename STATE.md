@@ -2453,6 +2453,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 858: fourth stroke — FIVE MORE WALKERS, AND WHAT IS LEFT IS THE
+  DROP. A throwaway test called each of the checker's nine passes on
+  a 200000-term chain: `unbound_names`, `arity_mismatches` and
+  `duplicate_map_keys` overflowed, six did not. Worklists now in
+  `compile::walk_expr`, `eval::statement_offsets`, and the checker's
+  `visit_exprs`, `walk_expr`, `collect_rebindings` and `check_calls`
+  — children pushed in REVERSE where finding order is visible. Fn
+  literals still recurse (statements are bounded by the parser;
+  length is not). NOW: 500000 terms runs, checks and formats on both
+  engines; a million prints its answer AND THEN aborts, so what is
+  left is the AST's own drop — same shape as the value drop already
+  on the backlog. Guarded in tests/lsp.rs, which asserts a name at
+  the FAR END of the chain is still reported.
 - 857: third stroke — THE LEFT SPINE, WALKED RATHER THAN RECURSED.
   Both engines collect `(op, rhs, span)` down the left side with an
   explicit stack; the compiler stops descending wherever a node could
@@ -3264,11 +3277,10 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the small AST walkers recurse per node: `compile::walk_expr` and
-  `eval::expr` collect names, and a 500000-term chain aborts the VM
-  and `--check` in them (857 fixed the two engines proper).
-  - dropping a deep value walks the chain in Rust: a list nested a
-  million deep aborts on the way out, after the program is done.
+  - dropping deep things walks them in Rust, and the program is
+  already finished when it dies: a list nested a million deep, and
+  the AST of a million-term chain, which prints its answer and then
+  aborts (858). One shape, two types.
   - release v2.136.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
