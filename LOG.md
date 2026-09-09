@@ -21680,3 +21680,24 @@ sentence — the project builds itself, with the binary it builds.
 Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2748 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 879 — v2.138.0, "the project builds itself"
+
+Maintenance: tree clean, no PRs, CI and Pages green for 9a549e9 from
+the API.
+
+`git diff v2.137.0..HEAD` first, as a release tick should: eight
+commits, five of them ports, and 354 lines of Python gone. The
+CHANGELOG's five entries are what a reader of the language cares
+about, in that order — the base64 module, the matcher naming what it
+cannot compile, `mono_ms`, the two JSON escapes — and then the story
+the milestone was named for.
+
+The section is dated 2026-09-10: the tick crossed midnight local
+time, and the first draft said the 9th because that is when the work
+was done. The date on a release is the day it is cut.
+
+Gate before tagging: fmt, clippy, 17 `test result: ok`, `--fmt .` 78
+unchanged, corpus at fourteen, selftest 2748 checks on both engines,
+Windows check and clippy, wasm release build, docs guard after the
+version bump.

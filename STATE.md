@@ -2454,6 +2454,12 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 879: v2.138.0 TAGGED, milestone "the project builds itself" — five
+  ports, one new builtin, one stdlib module, one matcher repair, one
+  JSON fix, and no Python left in the tree. Release tick started with
+  `git diff v2.137.0..HEAD` as it should. The CHANGELOG section is
+  dated the day the release was CUT, not the day the work was done —
+  the tick crossed midnight and the first draft had yesterday.
 - 878: eighth stroke — bench/run.ting, NO PYTHON LEFT IN THE TREE.
   `--eval`/`--vm` replace the TING_ENGINE variable, ting's `run`
   taking no environment. THE COMPARISON CANNOT BE BYTE FOR BYTE — two
@@ -3527,7 +3533,9 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.138.0.
+  - verify v2.138.0: cold download, `sha256sum -c`, both aarch64
+  archives run from a directory holding only the probe.
+  - health tick.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

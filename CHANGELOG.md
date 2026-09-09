@@ -5,6 +5,44 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.138.0 (2026-09-10)
+
+- **base64, the thirteenth stdlib module.** `import("lib/base64.ting")`
+  encodes and decodes both alphabets — standard with padding,
+  URL-safe without — and decoding takes either, padded or not,
+  skipping the line breaks a wrapped document carries. Strings go in
+  as their UTF-8 bytes and come back as the text those bytes spell;
+  `bytes`, `from_bytes` and `decode_bytes` are exported for the
+  formats that are not text at all. Checked against another
+  implementation's output byte for byte, emoji included.
+- **A pattern that asks for a construct ting does not have is refused
+  by name.** `(?i)a` and `(?<!x)y` both used to come back "nothing to
+  repeat at 2" — a message about the `?`, not about the lookbehind or
+  the flags. Lookahead, lookbehind and their negatives, named groups
+  in all three spellings, atomic groups, group comments and inline
+  flags each say what they are now. `\1` was worse than a bad
+  message: a backreference was read as the digit, so `(a)\1` quietly
+  matched `a1`; it errors too.
+- **`mono_ms()`, the clock for measuring.** `time_ms()` reads the wall
+  clock, which steps when the machine adjusts it, so a duration
+  measured with it can come out negative. `mono_ms()` is milliseconds
+  since the process started, as a float, from a clock that only moves
+  forward — subtract two readings to learn how long something took.
+- **JSON writes the short escapes for backspace and form feed.**
+  `json_str` spelled them as six-character `\u` escapes, which is
+  valid JSON that its own decoder has always read back and that no
+  other writer produces. They are `\b` and `\f` now.
+- **The tools that build this project are ting programs.** The site
+  renderer, the playground's example list, the cookbook page, the
+  workflow-step reader and the benchmark harness were 354 lines of
+  Python; they are ting now, and no `.py` file is left in the
+  repository. Each port was held to its predecessor before the
+  original was deleted: the six published pages byte for byte, the
+  generated files byte for byte, every named workflow step byte for
+  byte, and the benchmark's eleven checksums with medians within
+  noise across four alternating passes. GitHub Pages builds the site
+  with the binary this repository builds.
+
 ## v2.137.0 (2026-09-09)
 
 - **A helper defined inside a function no longer leaks the call.**
