@@ -1,6 +1,8 @@
 //! Drives `ting --lsp` over real pipes with LSP traffic: lifecycle,
 //! diagnostics on open, cleared diagnostics after a fixing change.
 
+mod common;
+
 use std::io::{BufRead, BufReader, Read, Write};
 use std::process::{Child, ChildStdin, ChildStdout, Command, Stdio};
 
@@ -1141,28 +1143,18 @@ fn the_unused_checks_do_not_walk_the_file_once_per_name() {
         src.push_str("print(f0(1));\n");
         src
     }
-    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
-        (0..5)
-            .map(|_| {
-                let t0 = std::time::Instant::now();
-                let found = ting::lsp::warnings(src);
-                let elapsed = t0.elapsed();
-                // Keep the work, and say what it should be: every
-                // function but the one that is called is unused, so
-                // the count is the answer as well as the ballast.
-                assert_eq!(found.len(), n - 1, "unexpected warning count");
-                elapsed
-            })
-            .min()
-            .unwrap()
+    // Keep the work, and say what it should be: every function but
+    // the one that is called is unused, so the count is the answer as
+    // well as the ballast.
+    fn check(src: &str, n: usize) {
+        assert_eq!(ting::lsp::warnings(src).len(), n - 1, "wrong count");
     }
-    let small = best_of_five(&source(1500), 1500);
-    let large = best_of_five(&source(3000), 3000);
-    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    let (small, large) = (source(1500), source(3000));
+    let ratio = common::doubling_ratio(|| check(&small, 1500), || check(&large, 3000));
     assert!(
         ratio < 3.0,
-        "doubling the bindings multiplied the work by {ratio:.1} \
-         ({small:?} then {large:?}): the per-name scan is back"
+        "doubling the bindings multiplied the work by {ratio:.1}: \
+         the per-name scan is back"
     );
 }
 
@@ -1184,31 +1176,22 @@ fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
         src.push_str("print(g0(1));\n");
         src
     }
-    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
-        (0..5)
-            .map(|_| {
-                let t0 = std::time::Instant::now();
-                let rendered = ting::check_warnings("big.ting", src);
-                let elapsed = t0.elapsed();
-                assert_eq!(rendered.len(), n - 1, "unexpected warning count");
-                // The last one names a line near the end of the file:
-                // the index has to be right, not just quick.
-                assert!(
-                    rendered[n - 2].starts_with(&format!("big.ting:{n}:4: warning:")),
-                    "wrong line: {}",
-                    rendered[n - 2]
-                );
-                elapsed
-            })
-            .min()
-            .unwrap()
+    fn check(src: &str, n: usize) {
+        let rendered = ting::check_warnings("big.ting", src);
+        assert_eq!(rendered.len(), n - 1, "unexpected warning count");
+        // The last one names a line near the end of the file: the
+        // index has to be right, not just quick.
+        assert!(
+            rendered[n - 2].starts_with(&format!("big.ting:{n}:4: warning:")),
+            "wrong line: {}",
+            rendered[n - 2]
+        );
     }
-    let small = best_of_five(&source(1500), 1500);
-    let large = best_of_five(&source(3000), 3000);
-    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    let (small, large) = (source(1500), source(3000));
+    let ratio = common::doubling_ratio(|| check(&small, 1500), || check(&large, 3000));
     assert!(
         ratio < 3.0,
-        "doubling the warnings multiplied the work by {ratio:.1} \
-         ({small:?} then {large:?}): each is counting from the top again"
+        "doubling the warnings multiplied the work by {ratio:.1}: \
+         each is counting from the top again"
     );
 }

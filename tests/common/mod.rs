@@ -204,3 +204,36 @@ impl Gen {
         }
     }
 }
+
+/// How much a doubling of the input multiplies the work, measured as
+/// robustly as a shared runner allows.
+///
+/// The four guards that use this exist to catch a quadratic coming
+/// back: broken scores near four, healthy near two, and the line is
+/// drawn at three. That gap is wide enough for the work and too
+/// narrow for the machine — 848 failed on ubuntu at 3.5 and 851 on
+/// macOS at 3.8 with nothing regressed, both times because a
+/// co-tenant landed on the larger size and not the smaller.
+///
+/// So the two sizes are timed ALTERNATELY, which puts a slow patch
+/// of the machine on both; the best of five stands for each size;
+/// and the whole measurement is repeated three times, keeping the
+/// SMALLEST ratio. A quadratic scores four in every attempt, so the
+/// minimum still catches it, while noise now has to strike all three.
+pub fn doubling_ratio(mut small: impl FnMut(), mut large: impl FnMut()) -> f64 {
+    let mut best = f64::INFINITY;
+    for _ in 0..3 {
+        let mut small_best = std::time::Duration::MAX;
+        let mut large_best = std::time::Duration::MAX;
+        for _ in 0..5 {
+            let at = std::time::Instant::now();
+            small();
+            small_best = small_best.min(at.elapsed());
+            let at = std::time::Instant::now();
+            large();
+            large_best = large_best.min(at.elapsed());
+        }
+        best = best.min(large_best.as_secs_f64() / small_best.as_secs_f64());
+    }
+    best
+}

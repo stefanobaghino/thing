@@ -20617,3 +20617,35 @@ exists to answer, gnu and musl agreeing on both:
   an hour ago.
 
 Milestone "the program that got big" is complete bar its health tick.
+
+## 852 — the guards stop measuring the runner
+
+macOS failed 847's resolver guard on a LOG-and-STATE-only commit:
+3.8, with nothing regressed. That is the second flake in five ticks
+(848 was ubuntu at 3.5), and both had the same cause. The guards
+timed the small size five times, then the large size five times: a
+co-tenant that arrives during the second block inflates only the
+large one, and the ratio is what the test asserts.
+
+**A shared measurement instead of four copies.** `common::doubling_
+ratio` in tests/common/mod.rs times the two sizes ALTERNATELY, so a
+slow patch of the machine lands on both; best of five stands for each
+size; and the whole measurement runs three times, keeping the
+SMALLEST ratio. Noise now has to strike all three attempts.
+
+**The margin, measured rather than assumed.** All four guards score
+1.9 to 2.1 healthy, twice over. The resolver's mutation — the scope
+walk restored — scores 3.8 and fails. So the line at 3.0 sits between
+2.1 and 3.8 with room on both sides, which is what it never had while
+one attempt could be spoiled.
+
+Also checked against a busy host, which is what CI is: three CPU
+hogs running, both suites pass.
+
+The four guards are now the same shape as each other, and the work
+they measure (with its correctness assertions) is a closure the
+helper calls, so the measuring and the measured are separate.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, Windows check and clippy,
+wasm release build.

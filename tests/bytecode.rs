@@ -3,6 +3,8 @@
 //! quietly stops being emitted costs nothing but speed, so nothing
 //! else in the suite would notice.
 
+mod common;
+
 use ting::compile::Op;
 
 /// Every instruction in the program, function bodies included: each
@@ -208,43 +210,34 @@ fn the_pools_are_not_searched_by_scanning_them() {
         }
         src
     }
-    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
-        let tokens = ting::lexer::lex(src).expect("lex");
-        let program = ting::parser::parse_program(&tokens).expect("parse");
-        (0..5)
-            .map(|_| {
-                let t0 = std::time::Instant::now();
-                let Ok(chunk) = ting::compile::compile_program(&program) else {
-                    panic!("compile failed");
-                };
-                let elapsed = t0.elapsed();
-                // Keep the work, and pin what dedup means: one name
-                // per function plus the ones the calls share.
-                assert!(
-                    chunk.consts.len() >= 2 * n,
-                    "constants went missing: {}",
-                    chunk.consts.len()
-                );
-                elapsed
-            })
-            .min()
-            .unwrap()
+    // Keep the work, and pin what dedup means: one constant per
+    // literal, and the pools are what grows with n.
+    fn compile(program: &[ting::ast::Stmt], n: usize) {
+        let Ok(chunk) = ting::compile::compile_program(program) else {
+            panic!("compile failed");
+        };
+        assert!(
+            chunk.consts.len() >= 2 * n,
+            "constants went missing: {}",
+            chunk.consts.len()
+        );
     }
-    // Three times 845's sizes, and five runs rather than three: at
-    // 1500 the small measurement was five milliseconds, and on a
-    // shared CI runner a co-tenant is worth more than that — the
-    // ratio said 3.5 on a run where nothing had regressed (848).
-    // Not larger than this: the mutation these numbers exist to
-    // catch is quadratic, so ten times the size is a hundred times
-    // the failing run, and a guard that takes ten minutes to fail is
-    // a guard nobody waits for.
-    let small = best_of_five(&source(5000), 5000);
-    let large = best_of_five(&source(10000), 10000);
-    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    fn parsed(src: &str) -> Vec<ting::ast::Stmt> {
+        let tokens = ting::lexer::lex(src).expect("lex");
+        ting::parser::parse_program(&tokens).expect("parse")
+    }
+    // Three times 845's sizes: at 1500 the small measurement was five
+    // milliseconds, and on a shared runner a co-tenant is worth more
+    // than that. Not larger than this — the mutation these numbers
+    // exist to catch is quadratic, so ten times the size is a hundred
+    // times the failing run, and a guard nobody waits for is not a
+    // guard.
+    let (small, large) = (parsed(&source(5000)), parsed(&source(10000)));
+    let ratio = common::doubling_ratio(|| compile(&small, 5000), || compile(&large, 10000));
     assert!(
         ratio < 3.0,
-        "doubling the program multiplied compilation by {ratio:.1} \
-         ({small:?} then {large:?}): the pool scan is back"
+        "doubling the program multiplied compilation by {ratio:.1}: \
+         the pool scan is back"
     );
 }
 
@@ -264,28 +257,21 @@ fn the_resolver_does_not_walk_the_scope_per_name() {
         }
         src
     }
-    fn best_of_five(src: &str, n: usize) -> std::time::Duration {
-        let tokens = ting::lexer::lex(src).expect("lex");
-        let program = ting::parser::parse_program(&tokens).expect("parse");
-        (0..5)
-            .map(|_| {
-                let t0 = std::time::Instant::now();
-                let Ok(chunk) = ting::compile::compile_program(&program) else {
-                    panic!("compile failed");
-                };
-                let elapsed = t0.elapsed();
-                assert!(chunk.names.len() >= n, "names went missing");
-                elapsed
-            })
-            .min()
-            .unwrap()
+    fn compile(program: &[ting::ast::Stmt], n: usize) {
+        let Ok(chunk) = ting::compile::compile_program(program) else {
+            panic!("compile failed");
+        };
+        assert!(chunk.names.len() >= n, "names went missing");
     }
-    let small = best_of_five(&source(1500), 1500);
-    let large = best_of_five(&source(3000), 3000);
-    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    fn parsed(src: &str) -> Vec<ting::ast::Stmt> {
+        let tokens = ting::lexer::lex(src).expect("lex");
+        ting::parser::parse_program(&tokens).expect("parse")
+    }
+    let (small, large) = (parsed(&source(1500)), parsed(&source(3000)));
+    let ratio = common::doubling_ratio(|| compile(&small, 1500), || compile(&large, 3000));
     assert!(
         ratio < 3.0,
-        "doubling the program multiplied compilation by {ratio:.1} \
-         ({small:?} then {large:?}): the scope walk is back"
+        "doubling the program multiplied compilation by {ratio:.1}: \
+         the scope walk is back"
     );
 }

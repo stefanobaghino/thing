@@ -2453,6 +2453,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 852: THE PERFORMANCE GUARDS STOP MEASURING THE RUNNER. macOS
+  failed the resolver guard at 3.8 on a LOG-only commit — the second
+  flake in five ticks, same cause both times: five runs of the small
+  size THEN five of the large, so a co-tenant arriving in the second
+  block inflates only the numerator. `common::doubling_ratio` times
+  the two sizes ALTERNATELY, best of five each, whole thing three
+  times, keeping the SMALLEST ratio. Measured: all four guards 1.9-
+  2.1 healthy (twice), the resolver mutation 3.8 and failing, both
+  suites green with three CPU hogs running. The line at 3.0 now has
+  room on both sides.
 - 851: v2.135.0 VERIFIED (156th tag; strokes 844-848 plus 849's
   fix; seven assets, `sha256sum -c` OK on all six, both aarch64
   archives unpacked and run here, 2676 checks from each on both
