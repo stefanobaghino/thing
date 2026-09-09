@@ -2453,6 +2453,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 869: HEALTH TICK GREEN — MILESTONE "WHAT A LONG-RUNNING PROGRAM
+  KEEPS" (v2.137.0, strokes 862-868) COMPLETE. Eleven checksums
+  match on both engines, and the interleaved A/B against a v2.136.0
+  build (now standing practice) shows the VM FASTER across the board
+  — maps 145/170, regex 192/207, lists 126/131, json 112/116, fib
+  312/326 — because v2.136.0 shipped 862's slow drop; the
+  tree-walker is mixed within a few per cent. Toplevel looked 8%
+  slower on three samples and was 1% on seven: GO BACK FOR MORE
+  SAMPLES BEFORE BELIEVING A SINGLE PASS. 863's duration probes
+  re-run: churn flat at 19.5 MB on both engines, LSP flat at 3.1 MB
+  over a thousand edits. Sweeps green (50000 differential twice,
+  2000000 patterns, crash, 20000 formatter). Next tick:
+  replenishment.
 - 868: v2.137.0 VERIFIED (158th tag; strokes 862, 864, 865, 866;
   seven assets, `sha256sum -c` OK on all six, both aarch64 archives
   unpacked and run here, 2690 checks from each on both engines, from
@@ -3402,9 +3415,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench against BASELINE on both engines and
-  interleaved against v2.136.0, sweeps in release, site audit —
-  closing milestone "what a long-running program keeps".
+  - replenishment: choose the next milestone.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

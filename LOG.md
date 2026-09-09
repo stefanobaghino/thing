@@ -21284,3 +21284,39 @@ the reference now carries.
 
 Site: the published changelog names v2.137.0, the reference page
 carries the Memory section, and all nine paths answer 200.
+
+## 869 — health tick: milestone "what a long-running program keeps" complete
+
+Maintenance: tree clean, no PRs, CI green for a87951a from the API.
+
+Bench: all eleven checksums match BASELINE on both engines, at load
+2.5. Then the comparison BASELINE cannot make, now standing practice
+since 862 — a worktree at v2.136.0, built here, interleaved best of
+three over all eleven and best of seven where the first pass looked
+off:
+
+- VM: maps 145 against 170, regex 192/207, lists 126/131, json
+  112/116, fib 312/326, growth 97/102 — the drop repair from 862 is
+  most of that, since v2.136.0 shipped the slow one. Nothing slower:
+  toplevel read 253 against 235 on three samples and 235 against 232
+  on seven, which is what noise looks like when you go back for more.
+- Tree-walker: maps 236/251, toplevel 512/516, fib 588/578, stdlib
+  279/268. Mixed inside a few per cent, which is the price of
+  `Env::release` looking at a frame that had a closure in it.
+
+Duration probes from 863, re-run: the eight-million-map churn peaks
+at 19.5 MB on BOTH engines and stays there, and the LSP is flat at
+3.1 MB with 3 descriptors over a thousand edits.
+
+Sweeps in release: 50000 differential at the default seed and again
+at a fresh one, 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases — all green. Site audited at 868: nine paths 200,
+changelog names v2.137.0, the reference page carries Memory.
+
+The milestone closes with the thing it set out to fix measured on
+the SHIPPED binaries at 868: 600000 closure-creating calls in 3 MB,
+where the same program held some 300 before. What is left is written
+down rather than hidden — a cycle a program builds itself, and a
+recursive closure that escapes, still live to the end of the process.
+
+Next tick: replenishment.
