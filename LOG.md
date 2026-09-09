@@ -21572,3 +21572,35 @@ inside `set -o pipefail` with output to files.
 Gate: fmt, clippy, 17 `test result: ok`, `--fmt .` 76 unchanged,
 corpus at fourteen, selftest 2744 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 876 — tools/cookbook.ting: nothing in tools/ is written in Python
+
+Maintenance: tree clean, no PRs, CI and Pages both green for c618b33
+from the API — the first site built by the ting renderer is live.
+
+The smallest of the four ports, and the one that finishes the
+directory. docs/cookbook.md is every example with its output, and the
+page it wrote is byte for byte the page that was committed.
+
+The one thing worth care: Python's `rstrip("\n")` takes newlines and
+nothing else, while ting's `trim_end` takes all whitespace. An
+example ending in a line of spaces would have come out different, so
+the port has its own three-line `without_trailing_newlines`. That
+case is in the comparison: eight generated examples — no blurb,
+several blurbs, a hash on its own, trailing spaces in source and
+output, an empty file, a file with no final newline, unicode, and an
+example that is nothing but comments — identical from both tools.
+
+tests/tools.rs guards the generator the way it guards the
+playground's: run in a directory holding only a copy of examples/, it
+has to write the committed page. And a second guard says what the
+milestone means — no .py file in tools/ at all.
+
+Not everything Python is gone: bench/run.py still writes
+bench/BASELINE.md. It is not part of any build and it decides what a
+release publishes as its timings, so it goes in the backlog on its
+own rather than as an afterthought here.
+
+Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 77
+unchanged, corpus at fourteen, selftest 2744 checks on both engines,
+Windows check and clippy, wasm release build.

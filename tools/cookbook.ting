@@ -1,0 +1,50 @@
+# Render examples/*.ting and their .out files into docs/cookbook.md.
+#
+# Usage: ting tools/cookbook.ting, from the repository root.
+# Commit the result; tests/docs.rs checks the page carries every
+# example's source and output verbatim, so a stale page fails CI.
+let path = import("lib/fs.ting");
+
+let HEADER = "# Cookbook\n"
++ "\n"
++ "Every program under `examples/` in the repository, with the output it\n"
++ "prints — the same pairs CI runs on every commit, so these never drift.\n"
++ "Copy one, run it with `ting name.ting`, change it.\n"
++ "\n";
+
+# Only the newlines come off, the way Python's rstrip("\n") does: an
+# example ending in a line of spaces keeps them.
+fn without_trailing_newlines(s) {
+  let out = s;
+  while ends_with(out, "\n") {
+    out = slice(out, 0, len(out) - 1);
+  }
+  return out;
+}
+
+let parts = [HEADER];
+for name in list_dir("examples") {
+  if ends_with(name, ".ting") {
+    let stem = path["stem"](name);
+    let body = read_file("examples/" + name);
+    # The comment lines an example opens with become its blurb.
+    let intro = [];
+    let lines = split(body, "\n");
+    let i = 0;
+    while i < len(lines) && starts_with(lines[i], "#") {
+      let head = lines[i];
+      while starts_with(head, "#") {
+        head = slice(head, 1, len(head));
+      }
+      push(intro, trim(head));
+      i += 1;
+    }
+    push(parts, format("## {}\n\n", stem));
+    if len(intro) > 0 {
+      push(parts, join(intro, " ") + "\n\n");
+    }
+    push(parts, "```ting\n" + without_trailing_newlines(body) + "\n```\n\n");
+    push(parts, "```text\n" + without_trailing_newlines(read_file("examples/" + stem + ".out")) + "\n```\n\n");
+  }
+}
+write_file("docs/cookbook.md", without_trailing_newlines(join(parts, "")) + "\n");

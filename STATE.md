@@ -20,9 +20,9 @@ current orientation.
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2744 selftest checks on all four
-  CI platforms, Windows included); 417 Rust tests
+  CI platforms, Windows included); 419 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 76 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 77 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 876: sixth stroke — tools/cookbook.ting, and NOTHING IN tools/ IS
+  WRITTEN IN PYTHON. docs/cookbook.md byte for byte, plus eight
+  generated examples (no blurb, several, a lone hash, trailing spaces
+  in source and output, empty, no final newline, unicode, comments
+  only). THE CARE POINT: Python's `rstrip("\n")` takes newlines,
+  ting's `trim_end` takes all whitespace, so the port carries its own
+  `without_trailing_newlines`. tests/tools.rs guards the generator
+  against the committed page and forbids a .py in tools/. bench/run.py
+  survives — it writes BASELINE.md, is in no build, and decides what a
+  release publishes, so it is its own stroke.
 - 875: fifth stroke — tools/md2html.ting, THE SITE IS RENDERED BY THE
   LANGUAGE IT DOCUMENTS. The six published pages byte for byte on the
   first run, then five hostile documents (escaped pipes, a four-hash
@@ -3493,8 +3503,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - tools/cookbook.py in ting, docs/cookbook.md byte for byte — the
-  last Python in the repository.
+  - bench/run.py in ting: BASELINE.md byte for byte on a quiet host,
+  the last Python in the repository.
   - release v2.138.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

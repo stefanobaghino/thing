@@ -285,3 +285,55 @@ fn no_workflow_reaches_for_python() {
         );
     }
 }
+
+/// docs/cookbook.md is generated too, and tests/docs.rs checks its
+/// content. This checks the generator the same way the playground's
+/// is checked: given nothing but a copy of examples/, it has to
+/// write the page that is committed here, byte for byte.
+#[test]
+fn the_cookbook_generator_writes_the_page_that_is_committed() {
+    let root = root();
+    let base = std::env::temp_dir().join(format!("ting-cookbook-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&base);
+    std::fs::create_dir_all(base.join("examples")).expect("temp dir");
+    std::fs::create_dir_all(base.join("docs")).expect("temp dir");
+    for entry in std::fs::read_dir(root.join("examples")).expect("examples/ missing") {
+        let path = entry.unwrap().path();
+        std::fs::copy(&path, base.join("examples").join(path.file_name().unwrap()))
+            .expect("copy example");
+    }
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(root.join("tools/cookbook.ting"))
+        .current_dir(&base)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let written = std::fs::read(base.join("docs/cookbook.md")).expect("nothing written");
+    let committed = std::fs::read(root.join("docs/cookbook.md")).expect("cookbook.md");
+    let _ = std::fs::remove_dir_all(&base);
+    assert!(
+        written == committed,
+        "the generator and docs/cookbook.md have parted ways"
+    );
+}
+
+/// The tools that build this project are ting programs, and the only
+/// other language left in tools/ is the shell script that smoke-tests
+/// a release archive. A .py file here again means something this
+/// repository builds needs an interpreter it does not ship.
+#[test]
+fn nothing_in_tools_is_written_in_python() {
+    let mut strays = Vec::new();
+    for entry in std::fs::read_dir(root().join("tools")).expect("tools/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) == Some("py") {
+            strays.push(path.file_name().unwrap().to_string_lossy().into_owned());
+        }
+    }
+    assert!(strays.is_empty(), "python left in tools/: {strays:?}");
+}
