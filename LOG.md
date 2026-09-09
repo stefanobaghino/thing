@@ -20198,3 +20198,42 @@ std's phrasing everywhere.
 Gate before the tag: fmt, clippy, 16 `test result: ok` (392 tests),
 71 files unchanged, corpus at fourteen, eleven bench checksums on
 both engines, Windows check and clippy, wasm release build.
+
+## 2026-09-09 — Iteration 842: health tick — milestone "the other program" complete
+
+**Maintenance clean**: tree clean at `7f88ce2 Verify v2.134.0`, CI
+green ON THIS HEAD read from the API — the step 840 caught me
+skipping.
+
+**Sweeps green.** 50000 differential cases at seed 842 — `ok. 12
+passed` in 7.79 s; 20000 formatter cases — `ok. 2 passed` in 3.61 s;
+crash fuzz plus 2000000 regex cases — `ok. 6 passed` in 3.02 s. All
+in release, all under nice, load 0.06 at the start.
+
+**Bench: 22 comparisons, no mismatches** — eleven scripts, both
+engines, against a BASELINE last regenerated at 832 and deliberately
+not touched by v2.134.0.
+
+**Disk, and 834's decision holding.** `target` is 3.0 G against 2.1 G
+right after 834 cleared the debug tree, and `target/debug` is 1.3 G
+of that — eight ticks of incremental artifacts, growing at roughly
+150 MB a tick, exactly as before. Nothing to do this time: 834
+priced the cure at 107 s and the tree is half what it was when that
+was worth paying. `release` 871 M, the Windows tree 858 M, wasm
+5.4 M, 87 G free.
+
+**Site audit**: nine paths 200. The changelog page's HEADINGS read
+v2.134.0, v2.133.0, v2.132.0, v2.131.0 — checked as headings, per
+828. reference.html carries `run(cmd, args, stdin)` and stdlib.html
+carries `was killed by signal 9`, so both pages are this release's,
+not the last one's. `ting.wasm` last-modified `Wed, 09 Sep 2026
+00:20:18 GMT`.
+
+**The same caveat as 821, 828 and 834**: last-modified proves the
+wasm was BUILT from this release, not that it ANSWERS anything. No
+wasm runtime on this host; 841 asked the questions of the native
+aarch64 archives instead — and `run` is the one builtin that cannot
+answer them in a page anyway, since there is nothing to spawn there.
+
+Milestone "the other program" (v2.134.0, strokes 836-841) is
+complete.

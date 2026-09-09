@@ -2453,6 +2453,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 842: health tick green at load 0.1 — MILESTONE "THE OTHER PROGRAM"
+  (v2.134.0, strokes 836-841) COMPLETE. Sweeps: 50000 differential at
+  seed 842, 20000 formatter, crash + 2000000 regex, all ok. Bench: 22
+  comparisons, no mismatches. Site audit: nine paths 200, the
+  changelog HEADINGS reading v2.134.0/v2.133.0/v2.132.0/v2.131.0,
+  reference.html carrying `run(cmd, args, stdin)` and stdlib.html
+  `was killed by signal 9` — both pages are this release's. Disk:
+  `target` 3.0 G against the 2.1 G 834 left, `target/debug` 1.3 G of
+  it, about 150 MB a tick; nothing done, because 834 priced the cure
+  at 107 s and the tree is half the size that made it worth paying.
+  Unchanged caveat: last-modified proves the wasm was BUILT from this
+  release, not that it ANSWERS anything — and `run` could not answer
+  in a page regardless, there being nothing to spawn there.
 - 841: v2.134.0 TAGGED AND VERIFIED (155th tag; strokes 837, 838,
   839 plus 840's fix; seven assets, `sha256sum -c` OK on all six,
   both aarch64 Linux archives unpacked and run here, 2676 checks from
@@ -3060,10 +3073,12 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone: bench checksums on both
-  engines, 50000 differential / 20000 formatter / crash + 2000000
-  regex sweeps, `du -sh target`, site audit (the changelog page's top
-  entry should be v2.134.0).
+  - replenishment: choose the next milestone. Seven kinds of looking
+  are spent: instruction counts (799), writing a program and counting
+  the corrections (808), fifty wrong programs (815), the same program
+  twice in two languages (822), dirty input (829), a finding held
+  back until it could be decided (835), and running ting the way a
+  shell runs it (836).
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
