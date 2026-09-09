@@ -15,11 +15,11 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 73 builtins; thirteen embedded stdlib modules
+- 74 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2744 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2748 selftest checks on all four
   CI platforms, Windows included); 419 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
   stale for a while). `ting --fmt .` reports 77 unchanged; BASELINE is ELEVEN
@@ -2454,6 +2454,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 877: seventh stroke — `mono_ms()`, THE CLOCK A BENCHMARK NEEDS.
+  Started porting bench/run.py and stopped at its first line: ting's
+  only clock was `time_ms()`, the WALL CLOCK, an integer that can step
+  backwards, so a duration measured with it can come out negative. The
+  74th builtin is milliseconds since the process started, as a float,
+  zeroed at the first call, refusing on wasm32 as time_ms does. Four
+  selftest checks on both engines. A BUILTIN IS COUNTED IN A THIRD
+  PLACE: editor/ting.tmLanguage.json carries the alternation
+  tests/grammar.rs holds src/value.rs to — the test caught it. README
+  had also been claiming thirteen modules while listing twelve since
+  871. NOTE FOR THE PORT: BASELINE cannot be compared byte for byte,
+  timings differ every run; checksums and shape can, timings only
+  within noise.
 - 876: sixth stroke — tools/cookbook.ting, and NOTHING IN tools/ IS
   WRITTEN IN PYTHON. docs/cookbook.md byte for byte, plus eight
   generated examples (no blurb, several, a lone hash, trailing spaces
@@ -3503,8 +3516,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - bench/run.py in ting: BASELINE.md byte for byte on a quiet host,
-  the last Python in the repository.
+  - bench/run.py in ting on top of mono_ms: same checksums and table
+  shape, timings within noise — the last Python in the repository.
   - release v2.138.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

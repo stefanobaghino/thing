@@ -448,6 +448,7 @@ scope).
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
 | `exit()` / `exit(code)` | ends the program with that status (default 0); not catchable by `try` |
 | `time_ms()`    | milliseconds since the Unix epoch, as an int                 |
+| `mono_ms()`    | milliseconds since the process started, as a float, from a clock that only moves forward — subtract two readings to time something |
 | `local_zone()` / `local_zone(ms)` | the local zone at that instant, now by default: a map of `offset` (milliseconds east of UTC), `abbr` (what the platform calls that period — `"CEST"` on Unix, `"W. Europe Daylight Time"` on Windows) and `dst`. `nil` where the platform keeps nothing to read, which a script can tell from a real zero |
 | `sleep_ms(ms)` | pauses for that many milliseconds, flushing output first; a negative count, or anything but an int, errors |
 | `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |

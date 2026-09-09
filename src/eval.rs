@@ -3164,6 +3164,21 @@ impl<W: Write> Interpreter<W> {
                     .as_millis();
                 Ok(Value::Int(ms as i64))
             }
+            Builtin::MonoMs => {
+                arity(0, 0)?;
+                if cfg!(target_arch = "wasm32") {
+                    // Instant::now() panics on wasm32-unknown-unknown,
+                    // the same way SystemTime::now() does.
+                    return Err(error("mono_ms is not available in this environment", span));
+                }
+                // The zero point is the first call, so the answer is
+                // small and its differences are what matter.
+                thread_local! {
+                    static START: std::time::Instant = std::time::Instant::now();
+                }
+                let since = START.with(|start| start.elapsed());
+                Ok(Value::Float(since.as_secs_f64() * 1000.0))
+            }
             Builtin::LocalZone => {
                 arity(0, 1)?;
                 let at_ms = match args.first() {

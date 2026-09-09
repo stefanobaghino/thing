@@ -21604,3 +21604,42 @@ own rather than as an afterthought here.
 Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 77
 unchanged, corpus at fourteen, selftest 2744 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 877 — mono_ms(): the clock a benchmark needs, which the port asked for
+
+Maintenance: tree clean, no PRs, CI green for 0356b57 from the API.
+
+Started the last port and stopped at the first line of it. bench/run.py
+times each script with `time.perf_counter()`; ting's only clock is
+`time_ms()`, which is the WALL CLOCK and an integer. Two problems, and
+the smaller one is the resolution: a wall clock steps when the machine
+adjusts it, so a duration measured that way can come out negative. Any
+ting program timing itself has that bug today, and the REPL's `:time`
+does it right internally with `Instant`, from inside the binary where
+scripts cannot reach.
+
+So the 74th builtin: `mono_ms()`, milliseconds since the process
+started, as a float, from a clock that only moves forward. Zeroed at
+the first call, because what matters is differences. It refuses on
+wasm32 exactly as `time_ms` does — `Instant::now()` panics there too.
+
+Cheap in the language and honest about what it is: the reference row
+sits under time_ms and says which is for dates and which is for
+measuring. Four selftest checks: it is a float, a pause shows up in
+it, the number is not absurd, and two readings never come back out of
+order. Both engines.
+
+THE THIRD PLACE A BUILTIN IS COUNTED bit again, and the test caught
+it: editor/ting.tmLanguage.json carries the same alternation
+tests/grammar.rs holds src/value.rs to. Also found README claiming
+thirteen stdlib modules while listing twelve — base64 never made it
+into that line at 871.
+
+Next tick ports bench/run.py on top of this. Note for it: BASELINE's
+numbers cannot be compared byte for byte with the Python's, because
+timings differ every run — the checksums and the table's shape are
+what can be compared, and the timings only within noise.
+
+Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 77
+unchanged, corpus at fourteen, selftest 2748 checks on both engines,
+Windows check and clippy, wasm release build.

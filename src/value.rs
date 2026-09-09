@@ -474,6 +474,7 @@ pub enum Builtin {
     Env,
     Exit,
     TimeMs,
+    MonoMs,
     LocalZone,
     SleepMs,
     Random,
@@ -490,7 +491,7 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 73] = [
+    pub const ALL: [Builtin; 74] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -551,6 +552,7 @@ impl Builtin {
         Builtin::Env,
         Builtin::Exit,
         Builtin::TimeMs,
+        Builtin::MonoMs,
         Builtin::LocalZone,
         Builtin::SleepMs,
         Builtin::Random,
@@ -764,6 +766,10 @@ impl Builtin {
                 "Ends the program with that status (default 0); not catchable.",
             ),
             Builtin::TimeMs => ("time_ms()", "Milliseconds since the Unix epoch, as an int."),
+            Builtin::MonoMs => (
+                "mono_ms()",
+                "Milliseconds since this process started, as a float, from a clock that only moves forward — what to subtract to learn how long something took. time_ms() reads the wall clock, which can step backwards.",
+            ),
             Builtin::LocalZone => (
                 "local_zone() / local_zone(ms)",
                 "The local zone at that instant (now by default): a map of offset (milliseconds east of UTC), abbr and dst. Read from the TZif file on Unix and from the system zone data on Windows, where abbr is the full name Windows uses. Nil where the platform keeps nothing to read, so a script can tell that from a real zero.",
@@ -880,6 +886,7 @@ impl Builtin {
             Builtin::Env => "env",
             Builtin::Exit => "exit",
             Builtin::TimeMs => "time_ms",
+            Builtin::MonoMs => "mono_ms",
             Builtin::LocalZone => "local_zone",
             Builtin::SleepMs => "sleep_ms",
             Builtin::Random => "random",

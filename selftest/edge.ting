@@ -99,6 +99,18 @@ assert(sleep_ms(0) == nil, "and returns nil");
 let slept = try(sleep_ms, -1);
 assert(contains(slept["err"], "negative"), "a negative pause is an error");
 
+# 877: the clock for measuring, as opposed to the clock for dates. It
+# is a float, it never goes backwards, and a pause shows up in it.
+let mark = mono_ms();
+assert(type(mark) == "float", "mono_ms is a float");
+sleep_ms(10);
+let waited = mono_ms() - mark;
+assert(waited >= 5.0, "a pause costs time on the monotonic clock");
+assert(waited < 60000.0, "and not absurdly much");
+let first = mono_ms();
+let second = mono_ms();
+assert(second >= first, "readings never go backwards");
+
 let err = import("lib/err.ting")["message"];
 
 # run() refuses what it cannot make sense of. Which programs exist is
