@@ -484,3 +484,31 @@ fn a_compound_append_does_not_disturb_what_it_appends_to() {
         }
     }
 }
+
+/// A long flat expression is deep for everything downstream of the
+/// parser: an operator chain leans left, so the compiler and the
+/// tree-walker each spent one host frame per term. 854 measured the
+/// tree-walker dying between 50000 and 100000 terms in release —
+/// while the VM ran the same program and printed an answer, which is
+/// two engines disagreeing about what a program does. Both walk the
+/// spine iteratively now, and this holds them to the same answer at a
+/// length neither could have survived unoptimized.
+#[test]
+fn a_long_operator_chain_says_the_same_thing_on_both_engines() {
+    for (n, op, want) in [(20_000usize, " + ", 20_000), (20_000, " - ", -20_000)] {
+        let src = format!("let x = 0{};\nprint(x);\n", format!("{op}1").repeat(n));
+        assert_eq!(run(Engine::Vm, &src), Ok(format!("{want}\n")));
+        same(&src);
+    }
+    // Mixed precedence and a short-circuit in the middle: the spine
+    // stops where the operators stop being plain, and the answer is
+    // still the same on both sides.
+    let mixed = format!(
+        "let a = 2;\nlet x = 1{}{};\nprint(x);\n",
+        " + a * 2".repeat(5_000),
+        " + 0"
+    );
+    same(&mixed);
+    let short = format!("let x = true{};\nprint(x);\n", " && true".repeat(2_000));
+    same(&short);
+}

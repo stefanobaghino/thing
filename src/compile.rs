@@ -575,6 +575,14 @@ impl Compiler {
         ctx.at.get(n).and_then(|bound| bound.last().copied())?
     }
 
+    /// Whether a binary node with this left side is one the
+    /// superinstructions below fuse: both of them want a left side
+    /// that is a local, so anything else is compiled the long way and
+    /// is safe to walk iteratively.
+    fn fusible(&self, lhs: &Expr) -> bool {
+        matches!(&lhs.kind, ExprKind::Var(n) if self.resolve(n).is_some())
+    }
+
     fn enter_scope(&mut self) {
         if let Some(ctx) = &mut self.fn_ctx {
             ctx.scopes.push(Vec::new());
@@ -1019,6 +1027,33 @@ impl Compiler {
                 self.emit(Op::CheckBool, rhs.span);
                 let target = self.chunk.code.len() as i32;
                 self.patch(patch, target);
+            }
+            // A left spine of plain binaries, emitted without
+            // recursing down it: `a + b + c + ...` leans left, and one
+            // host frame per term is what killed an unoptimized build
+            // at 10000 terms (854). The descent stops wherever a node
+            // could fuse, so the superinstructions below still see the
+            // shapes they match on.
+            ExprKind::Binary(op, lhs, rhs)
+                if !matches!(op, BinaryOp::And | BinaryOp::Or)
+                    && !self.fusible(lhs)
+                    && matches!(&lhs.kind, ExprKind::Binary(op, l, _)
+                        if !matches!(op, BinaryOp::And | BinaryOp::Or) && !self.fusible(l)) =>
+            {
+                let mut spine = vec![(*op, rhs, e.span)];
+                let mut node = lhs;
+                while let ExprKind::Binary(op, l, r) = &node.kind {
+                    if matches!(op, BinaryOp::And | BinaryOp::Or) || self.fusible(l) {
+                        break;
+                    }
+                    spine.push((*op, r, node.span));
+                    node = l;
+                }
+                self.expr(node)?;
+                while let Some((op, rhs, span)) = spine.pop() {
+                    self.expr(rhs)?;
+                    self.emit(Op::Binary(op), span);
+                }
             }
             ExprKind::Binary(op, lhs, rhs) => {
                 let slot = match &lhs.kind {

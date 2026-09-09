@@ -2453,6 +2453,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 857: third stroke — THE LEFT SPINE, WALKED RATHER THAN RECURSED.
+  Both engines collect `(op, rhs, span)` down the left side with an
+  explicit stack; the compiler stops descending wherever a node could
+  fuse, so the superinstructions still match. Tree-walker: died
+  50000-100000 release and under 5000 unoptimized, now 500000 and
+  100000. VM unoptimized: died 5000-10000, now 20000. NO BOUND HERE
+  ON PURPOSE — a 300-term sum runs today, so any limit safe in an
+  unoptimized build would break working programs, and 2.x does not.
+  The point was an INVARIANT: at 100000 terms the VM printed and the
+  tree-walker aborted. Costs nothing (interleaved A/B: 0.996x,
+  1.001x, 1.000x). Still standing: 500000 terms aborts in the small
+  name-collecting walkers, `compile::walk_expr` and `eval::expr`.
 - 856: second stroke — PRINTING STOPS WHERE IT SAYS IT DOES.
   `value::MAX_PRINT_DEPTH` is 1000; past it `str()`/`print()` write
   the `[...]` / `{...}` marker a CYCLE already gets. That kills two
@@ -3252,11 +3264,9 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the left spine is deep for the compiler and the tree-walker:
-  `a + b + c + ...` parses in a loop but compiles and evaluates by
-  recursion, so length is depth for them and MAX_NESTING does not
-  bound it (849 overflowed a debug test thread at 12000 terms, and
-  the release binary aborts at 200000).
+  - the small AST walkers recurse per node: `compile::walk_expr` and
+  `eval::expr` collect names, and a 500000-term chain aborts the VM
+  and `--check` in them (857 fixed the two engines proper).
   - dropping a deep value walks the chain in Rust: a list nested a
   million deep aborts on the way out, after the program is done.
   - release v2.136.0.

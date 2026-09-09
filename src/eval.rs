@@ -3774,9 +3774,38 @@ impl<W: Write> Interpreter<W> {
                         }
                     }
                     _ => {
-                        let l = self.eval(lhs)?;
-                        let r = self.eval(rhs)?;
-                        binary(*op, l, r, expr.span)
+                        // The left spine without recursing down it.
+                        // `a + b + c + ...` is a left-leaning tree, so
+                        // one host frame per term killed the
+                        // tree-walker past about 60000 terms while the
+                        // VM ran the same program — engines that
+                        // disagree about which programs run (854).
+                        // Order is unchanged: the innermost left
+                        // first, then each right in turn.
+                        // The ordinary `a + b` keeps the direct path:
+                        // only a chain pays for the stack.
+                        if !matches!(&lhs.kind, ExprKind::Binary(op, ..)
+                            if !matches!(op, BinaryOp::And | BinaryOp::Or))
+                        {
+                            let l = self.eval(lhs)?;
+                            let r = self.eval(rhs)?;
+                            return binary(*op, l, r, expr.span);
+                        }
+                        let mut spine = vec![(*op, rhs, expr.span)];
+                        let mut node = lhs;
+                        while let ExprKind::Binary(op, l, r) = &node.kind {
+                            if matches!(op, BinaryOp::And | BinaryOp::Or) {
+                                break;
+                            }
+                            spine.push((*op, r, node.span));
+                            node = l;
+                        }
+                        let mut acc = self.eval(node)?;
+                        while let Some((op, rhs, span)) = spine.pop() {
+                            let r = self.eval(rhs)?;
+                            acc = binary(op, acc, r, span)?;
+                        }
+                        Ok(acc)
                     }
                 }
             }

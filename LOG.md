@@ -20793,3 +20793,51 @@ against both constants.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2683 checks, Windows check and clippy,
 wasm release build, bench matching BASELINE on all eleven checksums.
+
+## 857 — third stroke: the left spine, walked rather than recursed
+
+854's fourth row, and the one where a limit would have been the wrong
+answer. A chain of operators parses in a loop but leans LEFT as a
+tree, so everything downstream spent one host frame per term.
+
+**Why not a bound.** The parser refuses nesting past 200 and that
+broke nothing, because a program nested deeper than that aborted
+anyway. A 300-term sum RUNS today — the VM printed an answer at
+150000 terms — so any bound low enough to be safe in an unoptimized
+build (the tree-walker died under 5000 there) would stop programs
+that work. That is a breaking change, and 2.x does not make those.
+
+So both engines walk the spine with an explicit stack: `eval`
+collects `(op, rhs, span)` down the left side and folds back, and
+`Compiler::expr` does the same, stopping wherever a node could fuse
+into a superinstruction so the shapes the peephole matches on are
+untouched. Order of evaluation, spans and errors are unchanged, and
+`&&`/`||` keep their own arms because they must not evaluate a right
+side they might not need.
+
+**Measured, release then unoptimized:**
+
+| | before | after |
+|---|---|---|
+| tree-walker, release | died 50000-100000 | 500000 ok |
+| tree-walker, unoptimized | died under 5000 | 100000 ok |
+| VM, unoptimized | died 5000-10000 | 20000 ok |
+
+The ordinary `a + b` keeps the direct path — the stack is only built
+when the left side is itself a chain — and the tree-walker pays
+nothing for it: interleaved against the previous commit's binary,
+best of five, lists 0.996x, accum 1.001x, toplevel 1.000x.
+
+**What this was really about.** At 100000 terms the VM printed
+100000 and the tree-walker aborted: two engines disagreeing about
+what a program does, which is the one thing this project holds as an
+invariant. tests/differential.rs now runs 20000-term chains, plain,
+mixed-precedence and short-circuiting, through both.
+
+**Still standing** (backlog): at 500000 terms the VM and `--check`
+still abort, in the small AST walkers that collect names — the same
+shape in `compile::walk_expr` and `eval::expr`.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2683 checks, Windows check and clippy,
+wasm release build, bench matching BASELINE on all eleven checksums.
