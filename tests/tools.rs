@@ -132,3 +132,43 @@ fn an_unknown_step_name_is_refused() {
     let err = String::from_utf8_lossy(&out.stderr);
     assert!(err.contains("no step named"), "{err}");
 }
+
+/// playground/examples.js is generated, and tests/docs.rs checks its
+/// CONTENT against examples/. This checks the GENERATOR: run in a
+/// directory holding nothing but a copy of examples/, it has to
+/// write the file that is committed here, byte for byte — which also
+/// proves the tool's `import("lib/fs.ting")` reaches the embedded
+/// stdlib, there being no lib/ beside it to answer.
+#[test]
+fn the_playground_generator_writes_the_file_that_is_committed() {
+    let root = root();
+    let base = std::env::temp_dir().join(format!("ting-playground-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&base);
+    std::fs::create_dir_all(base.join("examples")).expect("temp dir");
+    std::fs::create_dir_all(base.join("playground")).expect("temp dir");
+    for entry in std::fs::read_dir(root.join("examples")).expect("examples/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) == Some("ting") {
+            std::fs::copy(&path, base.join("examples").join(path.file_name().unwrap()))
+                .expect("copy example");
+        }
+    }
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(root.join("tools/playground_examples.ting"))
+        .current_dir(&base)
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(
+        out.status.code(),
+        Some(0),
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    let written = std::fs::read(base.join("playground/examples.js")).expect("nothing written");
+    let committed = std::fs::read(root.join("playground/examples.js")).expect("examples.js");
+    let _ = std::fs::remove_dir_all(&base);
+    assert!(
+        written == committed,
+        "the generator and playground/examples.js have parted ways"
+    );
+}

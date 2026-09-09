@@ -19,10 +19,10 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2742 selftest checks on all four
-  CI platforms, Windows included); 414 Rust tests
+  nothing on its own — and 22 examples with .out; 2744 selftest checks on all four
+  CI platforms, Windows included); 415 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 74 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 75 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2454,6 +2454,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 874: fourth stroke — tools/playground_examples.ting, and THE TWO
+  ESCAPES TING NEVER WROTE. The port is shorter than the Python
+  because `json_str(entries, 2)` already is `json.dumps(indent=2,
+  ensure_ascii=False)`: first run rewrote playground/examples.js byte
+  for byte. Fourteen generated examples of hostile text then found
+  the difference the real data could not: `json_str` spelled
+  backspace and form feed as long escapes THE DECODER HAS ALWAYS READ
+  BACK and no other writer produces — fixed in src/json.rs, two
+  selftest checks. One difference stands on purpose: Python's
+  text-mode read translates CR, `read_file` hands over the bytes, and
+  the bytes are what the playground should run. tests/tools.rs runs
+  the generator in a directory holding only examples/ and demands the
+  committed file back, which also proves its import reaches the
+  embedded stdlib.
 - 873: third stroke — tools/workflow_step.ting, THE FIRST TOOL THAT
   BUILDS ITSELF. The rehearsal tool ported and the Python deleted,
   after proving the two byte for byte on every named step in every
@@ -3465,8 +3479,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - tools/playground_examples.py in ting (tests/docs.rs already
-  checks examples.js is in sync).
   - tools/md2html.py in ting: the six pages byte for byte, then
   pages.yml switched over and python3 dropped from it.
   - release v2.138.0.

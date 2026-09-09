@@ -5,6 +5,10 @@ assert(json_parse("[1, 2.5, \"x\", true]") == [1, 2.5, "x", true], "array");
 assert(json_parse("{\"a\": {\"b\": [1]}}")["a"]["b"][0] == 1, "nesting");
 assert(json_str({"b": 2, "a": [1, nil]}) == "{\"a\":[1,null],\"b\":2}", "encode sorts keys");
 assert(json_str("hé\"llo\n") == "\"hé\\\"llo\\n\"", "string escapes");
+# 874: the decoder always read \b and \f; the encoder wrote them as
+# \u0008 and \u000c, which no other JSON writer does.
+assert(json_str("\u0008\u000c") == "\"\\b\\f\"", "backspace and form feed take their short escapes");
+assert(json_parse(json_str("\u0008\u000c")) == "\u0008\u000c", "and read back");
 assert(json_str(2.0) == "2.0", "floats stay floats");
 
 # Full round trip through a realistic document.
