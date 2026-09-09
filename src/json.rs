@@ -154,6 +154,16 @@ fn encode_string(s: &str, out: &mut String) {
     out.push('"');
 }
 
+/// How deep a document may nest, arrays and objects together. The
+/// reader descends one host frame per level, so a deep enough
+/// document overflowed the stack and killed the process — no line,
+/// no message, and nothing a ting program could catch, on INPUT
+/// rather than on program text (854 measured the cliff between
+/// 100000 and 200000 levels, about 220 bytes a level). A thousand is
+/// a hundred times what documents in the wild carry and a hundred
+/// times under the cliff, so the answer is an error either way.
+pub const MAX_DEPTH: usize = 1000;
+
 pub fn decode(s: &str) -> Result<Value, String> {
     // A document another program wrote may begin with a byte order
     // mark. It is not part of the JSON: RFC 8259 does not allow one
@@ -161,7 +171,11 @@ pub fn decode(s: &str) -> Result<Value, String> {
     // a character at offset 0 that no value can start with. Offsets
     // in errors count from the document, so from after the mark.
     let bytes = s.strip_prefix('\u{feff}').unwrap_or(s).as_bytes();
-    let mut p = Parser { bytes, pos: 0 };
+    let mut p = Parser {
+        bytes,
+        pos: 0,
+        depth: 0,
+    };
     p.skip_ws();
     let v = p.value()?;
     p.skip_ws();
@@ -174,6 +188,8 @@ pub fn decode(s: &str) -> Result<Value, String> {
 struct Parser<'a> {
     bytes: &'a [u8],
     pos: usize,
+    /// Arrays and objects open at this point, against MAX_DEPTH.
+    depth: usize,
 }
 
 impl<'a> Parser<'a> {
@@ -214,7 +230,29 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// One level deeper, or the error that says the document is
+    /// nested past what the reader will follow. Arrays and objects
+    /// share the count, because a host frame does not care which
+    /// bracket it came from.
+    fn nested<T>(
+        &mut self,
+        inner: impl FnOnce(&mut Self) -> Result<T, String>,
+    ) -> Result<T, String> {
+        self.depth += 1;
+        let out = if self.depth > MAX_DEPTH {
+            Err(self.err(&format!("nested deeper than {MAX_DEPTH}")))
+        } else {
+            inner(self)
+        };
+        self.depth -= 1;
+        out
+    }
+
     fn array(&mut self) -> Result<Value, String> {
+        self.nested(Self::array_inner)
+    }
+
+    fn array_inner(&mut self) -> Result<Value, String> {
         self.pos += 1; // [
         let mut items = Vec::new();
         self.skip_ws();
@@ -238,6 +276,10 @@ impl<'a> Parser<'a> {
     }
 
     fn object(&mut self) -> Result<Value, String> {
+        self.nested(Self::object_inner)
+    }
+
+    fn object_inner(&mut self) -> Result<Value, String> {
         self.pos += 1; // {
         let mut entries = BTreeMap::new();
         self.skip_ws();
@@ -388,6 +430,38 @@ mod tests {
 
     fn roundtrip(json: &str) -> String {
         encode(&decode(json).unwrap()).unwrap()
+    }
+
+    /// A document nested past MAX_DEPTH is an error, not a dead
+    /// process. Both brackets count towards the same limit, and a
+    /// document AT the limit still parses — the boundary is where it
+    /// is said to be.
+    #[test]
+    fn nesting_past_the_limit_is_an_error() {
+        let deep = |n: usize, open: &str, close: &str, leaf: &str| {
+            format!("{}{leaf}{}", open.repeat(n), close.repeat(n))
+        };
+        for (open, close, leaf) in [("[", "]", "1"), ("{\"a\":", "}", "1")] {
+            assert!(
+                decode(&deep(MAX_DEPTH, open, close, leaf)).is_ok(),
+                "a document at the limit should parse"
+            );
+            let over = decode(&deep(MAX_DEPTH + 1, open, close, leaf)).unwrap_err();
+            assert!(
+                over.contains(&format!("nested deeper than {MAX_DEPTH}")),
+                "wrong error: {over}"
+            );
+            // Far past the cliff, where the process used to die.
+            let far = decode(&deep(200_000, open, close, leaf)).unwrap_err();
+            assert!(far.contains("nested deeper than"), "wrong error: {far}");
+        }
+        // Arrays and objects share the count, because a host frame
+        // does not care which bracket it came from.
+        let mixed: String = std::iter::repeat_n("[{\"a\":", MAX_DEPTH).collect::<String>()
+            + "1"
+            + &"}]".repeat(MAX_DEPTH);
+        let e = decode(&mixed).unwrap_err();
+        assert!(e.contains("nested deeper than"), "wrong error: {e}");
     }
 
     #[test]

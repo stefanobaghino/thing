@@ -592,7 +592,7 @@ impl Builtin {
             ),
             Builtin::JsonParse => (
                 "json_parse(s)",
-                "JSON text to ting values; malformed input errors with an offset. A byte order mark at the head of the document is skipped, since another program may have written one.",
+                "JSON text to ting values; malformed input errors with an offset, and so does a document nested deeper than 1000. A byte order mark at the head of the document is skipped, since another program may have written one.",
             ),
             Builtin::JsonStr => (
                 "json_str(v)",

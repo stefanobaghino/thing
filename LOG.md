@@ -20719,3 +20719,38 @@ a bound with a real error, or an iterative walk where a bound would
 be wrong. The limits cannot all be one number: 200 is right for
 source nesting and absurd for a list a loop built, so each stroke
 picks and states its own, measured against its own cliff.
+
+## 855 — first stroke: a JSON document too deep is refused
+
+854's table has five rows and this is the one that is not the
+program's fault: a document nested past about 150000 levels killed
+the process from inside `json_parse`, and a document is INPUT — a
+file, an API's answer, whatever someone hands the script. Nothing a
+ting program could write would defend against it.
+
+`json::MAX_DEPTH` is 1000, counting arrays and objects together, and
+a deeper document is `json_parse: nested deeper than 1000 at offset
+1000` — the offset of the bracket that went too far. `Parser::nested`
+wraps `array` and `object`, the same shape as the parser's own
+`Parser::nested` from 848.
+
+**Why a thousand here and two hundred there.** The parser's limit is
+a promise about a LANGUAGE and 200 is twenty-five times the deepest
+nesting in this repository. A JSON document is data someone else
+wrote: a hundred times what documents in the wild carry is the right
+order, and a thousand is still a hundred times under the cliff (the
+reader spends about 220 bytes a level, so a thousand levels is a
+fifth of a megabyte).
+
+Checked at the boundary rather than near it: 1000 parses, 1001 is the
+error, in arrays, in objects, and in the two interleaved — the count
+is shared, because a host frame does not care which bracket opened
+it. 200000 is now the same error instead of exit 134. The selftest
+carries the same three checks so all four CI platforms answer them
+(2676 checks becomes 2679), the reference's Limits states the number
+beside the parser's, and tests/docs.rs asks the constant whether the
+page still tells the truth.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2679 checks, Windows check and clippy,
+wasm release build.

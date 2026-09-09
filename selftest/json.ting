@@ -44,3 +44,23 @@ let twice = try(json_parse, bom + bom + "1");
 assert(contains(twice["err"], "offset 0"), "a second mark is a character, at offset 0");
 let after = try(json_parse, "1" + bom);
 assert(contains(after["err"], "trailing"), "and one at the end is trailing");
+
+# A document nested deeper than the reader will follow is an error a
+# program can catch. It used to be a dead process: the reader recursed
+# per level and a deep enough document overflowed the host stack, with
+# no line and nothing to catch — on INPUT, which a script does not
+# choose. The limit is stated in the reference.
+fn nest(n) {
+  let s = "";
+  for i in range(0, n) { s = s + "["; }
+  s = s + "1";
+  for i in range(0, n) { s = s + "]"; }
+  return s;
+}
+assert(json_parse(nest(1000)) != nil, "a document at the limit is read");
+let too_deep = try(json_parse, nest(1001));
+assert(contains(too_deep["err"], "nested deeper than 1000"),
+"one level past it says so");
+let far = try(json_parse, nest(50000));
+assert(contains(far["err"], "nested deeper than 1000"),
+"and so does one far past the old cliff");

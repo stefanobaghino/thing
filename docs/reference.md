@@ -1006,6 +1006,11 @@ tests.
 
 - Call depth: derived from the interpreter's stack budget, not fixed
   (see Functions); the `ting` binary allows a few thousand frames.
+- JSON nesting: 1000 levels of arrays and objects together.
+  `json_parse` refuses a deeper document with `nested deeper than
+  1000 at offset N` rather than following it. A document is input,
+  not program text, so this is a limit a script is protected by
+  rather than one it chose.
 - Nesting: 200 levels, counting every block, bracket and unary
   operator a construct sits inside. A program past it is refused
   with `nested too deeply (the limit is 200 levels)` at the token

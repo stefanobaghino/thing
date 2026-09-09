@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2676 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2679 selftest checks on all four
   CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2453,6 +2453,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 855: first stroke — A JSON DOCUMENT TOO DEEP IS REFUSED.
+  `json::MAX_DEPTH` is 1000 (arrays and objects share the count) and
+  a deeper document is `json_parse: nested deeper than 1000 at
+  offset N` instead of exit 134 from inside the builtin. A THOUSAND
+  here against the parser's TWO HUNDRED on purpose: one is a promise
+  about a language, the other a bound on data someone else wrote —
+  100x what real documents carry, 100x under the cliff (220 bytes a
+  level). Boundary checked at 1000/1001 in arrays, objects and the
+  two interleaved. Selftest carries it too, so 2676 checks becomes
+  2679; reference Limits states it; tests/docs.rs guards the number.
 - 854: REPLENISHMENT — MILESTONE "HOW DEEP THE MACHINERY GOES"
   (v2.136.0), reasoning in LOG.md. A ninth kind of looking: the DATA
   the program handles, and its SHAPE rather than its size. HEALTHY,
@@ -3232,10 +3242,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - json_parse refuses a document nested past a stated depth: the
-  reader recurses per level and a 200000-deep document aborts the
-  process, and that document is INPUT rather than program text.
-  A real error naming the limit, well under the cliff.
   - a deep value can be printed, or says why not: str(), print() and
   the Display walker recurse per level and die at 200000.
   - the left spine is deep for the compiler and the tree-walker:

@@ -495,3 +495,20 @@ fn the_reference_states_the_nesting_limit_the_parser_enforces() {
         "docs/reference.md does not quote the message the parser raises"
     );
 }
+
+/// The same for the JSON reader's own limit, which is a different
+/// number for a different reason and stated on the same page.
+#[test]
+fn the_reference_states_the_json_depth_the_reader_enforces() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page = std::fs::read_to_string(root.join("docs/reference.md")).expect("docs/reference.md");
+    let limit = ting::json::MAX_DEPTH;
+    assert!(
+        page.contains(&format!("JSON nesting: {limit} levels")),
+        "docs/reference.md does not say \"JSON nesting: {limit} levels\""
+    );
+    assert!(
+        page.contains(&format!("nested deeper than\n  {limit} at offset N")),
+        "docs/reference.md does not quote the message json_parse raises"
+    );
+}
