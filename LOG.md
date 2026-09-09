@@ -20951,3 +20951,34 @@ download of all seven assets, `sha256sum -c`, both aarch64 archives
 unpacked and run here from a directory holding only selftest/, so
 the embedded stdlib is what answers — and asked what THIS release
 exists to answer, a million-deep list and a million-term chain.
+
+## 861 — v2.136.0 verified
+
+Maintenance: tree clean, no PRs, CI green for cf7e7c0 from the API,
+and the release workflow completed success.
+
+Seven assets. Cold download into an empty directory, `sha256sum -c`
+OK on all six archives. Both aarch64 archives unpacked and run here:
+2683 checks from each on both engines, over a copy of selftest/ made
+outside the repository.
+
+The shipped binaries were asked what THIS release exists to answer,
+from a directory holding nothing but the probe — so `import("lib/
+list.ting")` is answered by the EMBEDDED module, and it was (6):
+
+- a list nested a million deep and a map nested a million deep both
+  print their answer and the process exits 0, where v2.135.0 printed
+  and then died;
+- a million-term chain runs, evaluates and checks at exit 0;
+- 2000 levels of `[` is `json_parse: nested deeper than 1000 at
+  offset 1000`, not an abort;
+- a 3000-deep list prints as 2005 characters, and `json_str` refuses
+  it rather than writing half a document.
+
+Both binaries answered identically. The published site names
+v2.136.0 in the changelog and all nine paths answer 200.
+
+Two spellings cost me three probe runs: modules are `import("lib/
+list.ting")` and a module's functions come off the map it returns
+(`list["sum"]`), not `use` and not `list.sum` — ting has no methods,
+and the error said so.

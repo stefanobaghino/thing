@@ -2453,6 +2453,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 861: v2.136.0 VERIFIED (157th tag; strokes 855-859; seven assets,
+  `sha256sum -c` OK on all six, both aarch64 archives unpacked and
+  run here, 2683 checks from each on both engines, from a directory
+  holding only the probe so the EMBEDDED stdlib answered). THE
+  SHIPPED BINARIES WERE ASKED WHAT THE RELEASE ANSWERS: million-deep
+  list and map print and EXIT 0, million-term chain runs/evaluates/
+  checks, 2000 levels of `[` is `json_parse: nested deeper than 1000
+  at offset 1000`, a 3000-deep list prints as 2005 characters and
+  `json_str` refuses it. Site names v2.136.0, nine paths 200.
 - 860: v2.136.0 TAGGED (157th tag, 087c490; strokes 855-859).
   CHANGELOG section written in the release commit as always; the
   release tick's first act (738) found nothing else owed — no count
@@ -3299,9 +3308,9 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.136.0: cold download of the seven assets,
-  `sha256sum -c`, both aarch64 archives run here from a directory
-  holding only selftest/, and asked what this release answers.
+  - health tick: bench against BASELINE on both engines, sweeps in
+  release (50000 differential, crash fuzzer, 20000 formatter), site
+  audit — closing milestone "how deep the machinery goes".
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
