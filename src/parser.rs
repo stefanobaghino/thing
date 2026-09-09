@@ -10,9 +10,28 @@ pub struct ParseError {
     pub span: Span,
 }
 
+/// How deep one program may nest — braces inside braces, parentheses
+/// inside parentheses, a list inside a list inside a call. The parser
+/// descends one host frame per level, so past a certain depth the
+/// process dies of a stack overflow with no line, no message and
+/// nothing a caller can catch (843 found the cliff at about 15000
+/// nested blocks and 30000 nested parentheses on a 32 MB stack: the
+/// frames measure 2176 and 1088 bytes). This limit is a plain number
+/// rather than one derived from whatever stack the process happens to
+/// have, so `--check`, `--lsp`, the REPL, the runner and both engines
+/// all refuse exactly the same programs. At 200 the parser spends
+/// under half a megabyte on the worst shape, which is inside the
+/// budget even a wasm build has, and it is twenty-five times the
+/// deepest nesting anything in this repository reaches.
+pub const MAX_NESTING: usize = 200;
+
 /// Parse a whole program: a sequence of statements up to Eof.
 pub fn parse_program(tokens: &[Token]) -> Result<Vec<Stmt>, ParseError> {
-    let mut p = Parser { tokens, pos: 0 };
+    let mut p = Parser {
+        tokens,
+        pos: 0,
+        depth: 0,
+    };
     let mut stmts = Vec::new();
     while p.peek() != &TokenKind::Eof {
         stmts.push(p.statement()?);
@@ -23,7 +42,11 @@ pub fn parse_program(tokens: &[Token]) -> Result<Vec<Stmt>, ParseError> {
 /// Parse a complete expression; every token before Eof must be consumed.
 /// Used by the REPL to echo expression results.
 pub fn parse_expr(tokens: &[Token]) -> Result<Expr, ParseError> {
-    let mut p = Parser { tokens, pos: 0 };
+    let mut p = Parser {
+        tokens,
+        pos: 0,
+        depth: 0,
+    };
     let expr = p.expr_bp(0)?;
     match p.peek() {
         TokenKind::Eof => Ok(expr),
@@ -34,6 +57,8 @@ pub fn parse_expr(tokens: &[Token]) -> Result<Expr, ParseError> {
 struct Parser<'a> {
     tokens: &'a [Token],
     pos: usize,
+    /// Levels of nesting open at this point, against MAX_NESTING.
+    depth: usize,
 }
 
 /// (params, body, byte offset just past the closing brace)
@@ -171,7 +196,32 @@ impl<'a> Parser<'a> {
         None
     }
 
+    /// One level deeper, or the error that says the program is nested
+    /// past what the parser will follow. Both recursive descents —
+    /// statements into blocks, expressions into anything bracketed —
+    /// go through a wrapper like this one, so the count covers every
+    /// shape that costs a host frame.
+    fn nested<T>(
+        &mut self,
+        inner: impl FnOnce(&mut Self) -> Result<T, ParseError>,
+    ) -> Result<T, ParseError> {
+        self.depth += 1;
+        let out = if self.depth > MAX_NESTING {
+            Err(self.error(format!(
+                "nested too deeply (the limit is {MAX_NESTING} levels)"
+            )))
+        } else {
+            inner(self)
+        };
+        self.depth -= 1;
+        out
+    }
+
     fn statement(&mut self) -> Result<Stmt, ParseError> {
+        self.nested(Self::statement_inner)
+    }
+
+    fn statement_inner(&mut self) -> Result<Stmt, ParseError> {
         let start = self.span().start;
         let first = self.pos;
         match self.peek() {
@@ -472,6 +522,16 @@ impl<'a> Parser<'a> {
     }
 
     fn unary(&mut self) -> Result<Expr, ParseError> {
+        self.nested(Self::unary_inner)
+    }
+
+    /// Every descent into a deeper expression passes here: `expr_bp`
+    /// starts with it, and so does everything bracketed, since a
+    /// parenthesis, a list element, a map value and an argument all
+    /// re-enter through `expr_bp`. A unary chain (`!!!!x`) recurses
+    /// here directly, which is why the count sits on this function
+    /// rather than on `expr_bp`.
+    fn unary_inner(&mut self) -> Result<Expr, ParseError> {
         let op = match self.peek() {
             TokenKind::Minus => Some(UnaryOp::Neg),
             TokenKind::Bang => Some(UnaryOp::Not),
@@ -1059,6 +1119,81 @@ mod tests {
             program("let x = 1; x = x + 1; print(x);"),
             "(let x 1) (= x (+ x 1)) (call print x)"
         );
+    }
+
+    /// A deep parse costs host stack — 2.2 KB per nested block in
+    /// release and about eight times that unoptimized — so these run
+    /// on a thread whose stack is declared, rather than on whatever
+    /// the test harness happens to hand out.
+    fn parsing<T: Send + 'static>(f: impl FnOnce() -> T + Send + 'static) -> T {
+        std::thread::Builder::new()
+            .stack_size(32 * 1024 * 1024)
+            .spawn(f)
+            .expect("spawn")
+            .join()
+            .expect("the parse panicked")
+    }
+
+    /// The same nesting written four ways: blocks, parentheses, list
+    /// literals and a unary chain. Each recurses by its own route.
+    fn deep_shapes(n: usize) -> Vec<String> {
+        vec![
+            format!("{}let x = 1;{}", "{".repeat(n), "}".repeat(n)),
+            format!("print({}1{});", "(".repeat(n), ")".repeat(n)),
+            format!("let x = {}1{};", "[".repeat(n), "]".repeat(n)),
+            format!("let x = {}1;", "!".repeat(n)),
+        ]
+    }
+
+    #[test]
+    fn nesting_within_the_limit_parses() {
+        parsing(|| {
+            for src in deep_shapes(150) {
+                assert!(
+                    parse_program(&lex(&src).unwrap()).is_ok(),
+                    "150 levels should parse: {}",
+                    &src[..20]
+                );
+            }
+        });
+    }
+
+    #[test]
+    fn nesting_past_the_limit_is_an_error_and_not_a_dead_process() {
+        parsing(|| {
+            // Blocks, brackets and a unary chain each recurse by a
+            // different route; every one of them is counted, and 843
+            // measured the cliff each of them runs into.
+            let mut deep = deep_shapes(400);
+            // Far past the cliff, where the process used to die with
+            // no line and nothing to catch.
+            deep.push(format!(
+                "{}let x = 1;{}",
+                "{".repeat(60000),
+                "}".repeat(60000)
+            ));
+            for src in deep {
+                let e = parse_program(&lex(&src).unwrap()).unwrap_err();
+                assert_eq!(
+                    e.message,
+                    format!("nested too deeply (the limit is {MAX_NESTING} levels)")
+                );
+                assert!(e.span.start > 0, "the error points at a token");
+            }
+        });
+    }
+
+    #[test]
+    fn a_long_flat_expression_is_not_deep() {
+        // The limit is on nesting, not on length: a sum of 50000
+        // terms is one level, and a chain of calls and indexes is
+        // read by a loop rather than by recursion.
+        parsing(|| {
+            let src = format!("let x = {};", vec!["1"; 50000].join(" + "));
+            assert!(parse_program(&lex(&src).unwrap()).is_ok());
+            let src = format!("let x = a{};", "(0)[1]".repeat(5000));
+            assert!(parse_program(&lex(&src).unwrap()).is_ok());
+        });
     }
 
     #[test]

@@ -476,3 +476,22 @@ print(total);
          which is what the modules export"
     );
 }
+
+/// The nesting limit is a number in three places: the parser
+/// enforces it, the reference states it, and the message names it.
+/// A change to the constant that left the page saying 200 would be
+/// a documented promise the parser no longer keeps.
+#[test]
+fn the_reference_states_the_nesting_limit_the_parser_enforces() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page = std::fs::read_to_string(root.join("docs/reference.md")).expect("docs/reference.md");
+    let limit = ting::parser::MAX_NESTING;
+    assert!(
+        page.contains(&format!("Nesting: {limit} levels")),
+        "docs/reference.md does not say \"Nesting: {limit} levels\""
+    );
+    assert!(
+        page.contains(&format!("nested too deeply (the limit is {limit} levels)")),
+        "docs/reference.md does not quote the message the parser raises"
+    );
+}

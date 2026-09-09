@@ -1006,6 +1006,13 @@ tests.
 
 - Call depth: derived from the interpreter's stack budget, not fixed
   (see Functions); the `ting` binary allows a few thousand frames.
+- Nesting: 200 levels, counting every block, bracket and unary
+  operator a construct sits inside. A program past it is refused
+  with `nested too deeply (the limit is 200 levels)` at the token
+  that went too far. Unlike the call-depth cap this number is fixed,
+  so every command and both engines refuse exactly the same
+  programs. Length is not depth: a sum of fifty thousand terms, or a
+  chain of calls and indexes, is flat.
 - Integers: i64 range; overflow raises an error rather than wrapping.
 - Shift counts: 0 to 63.
 - Floats: IEEE 754 doubles. `1.0 / 0.0` is infinity and `0.0 / 0.0` is

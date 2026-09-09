@@ -20463,3 +20463,54 @@ Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, Windows check and clippy,
 wasm release build, bench 22 comparisons with every checksum matching
 BASELINE.
+
+## 848 — a program too deep to parse is told so
+
+The last thing 843 found, and the only one that was not a slowness:
+past about 15000 nested blocks (or 30000 nested parentheses) the
+process ABORTED with `has overflowed its stack`, exit 134 — killed by
+a signal, no line, no message, nothing a caller could catch. The same
+corpse class as 829's OOM.
+
+**Measured first, on this host.** The three recursive walkers were
+probed by reading the address of a frame-local at successive depths,
+the way eval's FRAME_COST was measured: release costs **2176 bytes**
+per nested block and **1088** per bracketed expression in the parser,
+against 224 in the compiler and 640 in the tree-walker; an
+unoptimized build costs 17664 and 9392. The parser is the deepest
+recursion by an order of magnitude, and 32 MB divided by those two
+numbers is 15400 blocks and 30800 parens — which is exactly where 843
+saw the cliff.
+
+**A fixed limit, not a derived one.** `parser::MAX_NESTING` is 200.
+The call-depth cap next door is derived from the stack the process
+was given, which is right for a running program and wrong here: a
+file that `--check` accepts on a 32 MB thread and `--lsp` refuses on
+whatever the editor spawns would be a worse bug than the one being
+fixed. 200 levels costs the parser under half a megabyte on the worst
+shape — within the budget the wasm build has — and the deepest
+nesting anywhere in this repository is 7.
+
+**Counted where the recursion is.** `Parser::nested` wraps
+`statement` and `unary`. Not `expr_bp`: a unary chain (`!!!!x`)
+recurses through `unary` directly, and everything bracketed — a
+parenthesis, a list element, a map value, an argument — re-enters
+through it anyway. Length is not depth, and the tests say so: a sum
+of 50000 terms and 5000 chained calls-and-indexes are one level, as
+they were before.
+
+**What a reader gets now**: `nested too deeply (the limit is 200
+levels)` with a line, a column and a caret, exit 1, from the runner
+on both engines and from `--check`. tests/io.rs runs a 20000-deep
+program all three ways and reads the status; the parser's own tests
+walk both sides of the boundary on a thread of declared stack, since
+an unoptimized parse at the limit wants 3.5 MB. The number is in
+docs/reference.md's Limits, and tests/docs.rs asks the constant
+whether the page is still telling the truth.
+
+No cost: `--check` over 500-8000 functions is 14, 30, 72, 145, 314 ms
+and bench matches BASELINE on all eleven checksums.
+
+Gate: fmt, clippy, 16 `test result: ok` (399 tests), `--fmt .` 71
+unchanged, corpus at fourteen, selftest 2676 checks, Windows check
+and clippy, wasm release build, bench 22 comparisons.

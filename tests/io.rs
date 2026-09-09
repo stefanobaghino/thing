@@ -4035,3 +4035,46 @@ fn each_line_reads_stdin_where_input_left_off() {
     );
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// A program nested past what the parser will follow is TOLD so.
+/// Before 848 it died of a host stack overflow: killed by a signal,
+/// no line, no message, nothing a caller could catch — the same
+/// corpse a driving script gets from a real crash. Every route into
+/// the parser is checked, because they are what a user actually
+/// runs.
+#[test]
+fn a_program_nested_too_deeply_is_told_so_rather_than_killed() {
+    let script = std::env::temp_dir().join("ting-nested-too-deeply.ting");
+    let deep = format!("{}let x = 1;{}\n", "{".repeat(20000), "}".repeat(20000));
+    std::fs::write(&script, deep).expect("write deep script");
+    let path = script.to_str().expect("path is text");
+    for (engine, args) in [
+        ("vm", vec![path]),
+        ("eval", vec![path]),
+        ("vm", vec!["--check", path]),
+    ] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(&args)
+            .env("TING_ENGINE", engine)
+            .output()
+            .expect("failed to run ting");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert_eq!(
+            out.status.code(),
+            Some(1),
+            "{engine} {args:?} did not report a failure: {}",
+            &err[..err.len().min(200)]
+        );
+        assert!(
+            err.contains("nested too deeply (the limit is 200 levels)"),
+            "{engine} {args:?} said: {}",
+            &err[..err.len().min(200)]
+        );
+        assert!(
+            err.contains(":1:"),
+            "{engine} {args:?} named no line: {}",
+            &err[..err.len().min(200)]
+        );
+    }
+    let _ = std::fs::remove_file(&script);
+}

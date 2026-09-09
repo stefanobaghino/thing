@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2676 selftest checks on all four
-  CI platforms, Windows included); 386 Rust tests
+  CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2453,6 +2453,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 848: fifth stroke — A PROGRAM TOO DEEP TO PARSE IS TOLD SO.
+  843's abort (exit 134, no line, nothing catchable) is now
+  `nested too deeply (the limit is 200 levels)` with a caret and exit
+  1, from both engines and `--check`. `parser::MAX_NESTING` is a
+  FIXED 200, not derived from the stack like the call-depth cap:
+  every command must refuse the same programs. Probed per-level
+  stack: parser 2176 B a block and 1088 B a bracket (17664/9392
+  unoptimized), compiler 224, tree-walker 640 — 32 MB over those is
+  15400 and 30800, exactly where 843 saw the cliff. `Parser::nested`
+  wraps `statement` and `unary` (not `expr_bp`: a unary chain
+  recurses through `unary`). Length is not depth — 50000 terms still
+  parse. Guarded in docs.rs against the constant.
 - 847: fourth stroke — THE RESOLVER STOPS SCANNING THE SCOPE.
   `resolve` walked the scope vectors per name and `note_scope` cloned
   every name in scope per fallible instruction. `FnCtx::at` maps a
@@ -3150,9 +3162,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a program too deep to parse is TOLD so: a depth limit in the
-  parser with a real error at a documented depth, well under the
-  cliff, so nesting gets a line number instead of a signal.
   - release v2.135.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
