@@ -1120,3 +1120,48 @@ fn signature_help_inside_a_builtin_call() {
     send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
     assert_eq!(child.wait().unwrap().code(), Some(0));
 }
+
+/// The unused-checks answer "does this name appear anywhere else?"
+/// from an index built once, not by walking the token stream per
+/// name. Measured at 843, the old shape made `--check` quadratic in
+/// the number of bindings: 8000 of them took 4.2 s where 8000 uses
+/// of one name took 70 ms.
+///
+/// A ratio rather than a number, and best-of-three at each size: a
+/// shared runner makes any single wall-clock reading weather, but
+/// doubling the input can only double linear work. Quadratic work
+/// lands near 4; the bound is 3.
+#[test]
+fn the_unused_checks_do_not_walk_the_file_once_per_name() {
+    fn source(n: usize) -> String {
+        let mut src = String::new();
+        for i in 0..n {
+            src.push_str(&format!("fn f{i}(a) {{ return a; }}\n"));
+        }
+        src.push_str("print(f0(1));\n");
+        src
+    }
+    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+        (0..3)
+            .map(|_| {
+                let t0 = std::time::Instant::now();
+                let found = ting::lsp::warnings(src);
+                let elapsed = t0.elapsed();
+                // Keep the work, and say what it should be: every
+                // function but the one that is called is unused, so
+                // the count is the answer as well as the ballast.
+                assert_eq!(found.len(), n - 1, "unexpected warning count");
+                elapsed
+            })
+            .min()
+            .unwrap()
+    }
+    let small = best_of_three(&source(1500), 1500);
+    let large = best_of_three(&source(3000), 3000);
+    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    assert!(
+        ratio < 3.0,
+        "doubling the bindings multiplied the work by {ratio:.1} \
+         ({small:?} then {large:?}): the per-name scan is back"
+    );
+}

@@ -20298,3 +20298,43 @@ caret aligned.
   parser with a real error at a documented depth, well under the
   cliff, so nesting joins every other bad input in getting a line
   number instead of a signal.
+
+## 2026-09-09 — Iteration 844: the checker stops rescanning
+
+First stroke of "the program that got big". `unused_top_level_lets`
+asked, for every top-level binding, how many identifier tokens in the
+whole file bear that name; `unused_local_lets` rescanned the
+enclosing block for every local. A scan per name, so the work grew
+with names times tokens. One `ident_index` now groups every
+identifier token by name in a single pass, and both questions became
+lookups — a count for the first, and for the second a
+`partition_point` into that name's positions followed by a walk that
+stops at the end of the block.
+
+**Measured on 843's generated files**: `--check` over 500 to 8000
+functions was 45, 152, 572, 2737, 13120 ms and is now 29, 66, 148,
+338, 931 ms. The 8000-function file is **14x** faster. Doubling the
+input multiplies the time by about 2.4 rather than 4.8.
+
+**The rest of the curve is the next stroke, and I know where it is.**
+Timing each warning pass individually accounts for only 412 ms of
+that file's 931, and for a file of 8000 names with one call between
+them the passes total 107 ms against 1697 for the whole check. The
+remainder is `check_source` calling `compile::compile_program` — so
+`--check` pays the compiler's pool scans, which is exactly what the
+second stroke removes. Measuring before guessing turned "the checker
+is slow" into two separate causes with an address each.
+
+**The guard is a ratio, not a number.** tests/lsp.rs calls
+`lsp::warnings` on 1500 and 3000 bindings, best of three at each
+size, and fails if the larger takes more than three times the
+smaller — a wall-clock reading on a shared runner is weather, but
+doubling the input can only double linear work. With the per-name
+scan put back the ratio is 3.8 and the test fails saying so; as it
+stands it passes. Every function but the one that is called is
+unused, so the warning count is asserted too: the timing cannot pass
+by doing no work.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen (the same fourteen), selftest 2676 checks,
+Windows check and clippy, wasm release build.

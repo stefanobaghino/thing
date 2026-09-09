@@ -2453,6 +2453,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 844: first stroke — THE CHECKER STOPS RESCANNING. One
+  `ident_index` groups every identifier token by name in a single
+  pass; `unused_top_level_lets` counts from it and `unused_local_lets`
+  uses `partition_point` into that name's positions. `--check` over
+  500-8000 functions was 45/152/572/2737/13120 ms and is now
+  29/66/148/338/931 ms — 14x on the largest, and doubling now costs
+  2.4x rather than 4.8x. MEASURED, NOT GUESSED, WHERE THE REST IS:
+  timing each warning pass accounts for 412 ms of that 931, and only
+  107 of 1697 ms on the 8000-name file — the remainder is
+  `check_source` calling `compile_program`, which the second stroke
+  addresses. The guard in tests/lsp.rs is a RATIO (1500 vs 3000
+  bindings, best of three, fails above 3.0) because a wall-clock
+  number on a shared runner is weather; the old shape scores 3.8.
 - 843: REPLENISHMENT — MILESTONE "THE PROGRAM THAT GOT BIG"
   (v2.135.0), reasoning in LOG.md. An eighth kind of looking: the
   SIZE of the program. The largest ting program in the repo is 438
@@ -3093,13 +3106,11 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the checker stops rescanning: index the identifier tokens once by
-  name so every unused-check is a lookup. The bar is the 8000-name
-  file, 4175 ms today.
   - the compiler stops scanning its pools: `konst` and `name` get an
   index, and the comment saying a scan is fine goes with it. The bar
   is the 8000-function file, 650 ms on the VM against 80 ms on the
-  tree-walker.
+  tree-walker — and, per 844, the 931 ms `--check` still takes on it,
+  most of which is `compile_program`.
   - a program too deep to parse is TOLD so: a depth limit in the
   parser with a real error at a documented depth, well under the
   cliff, so nesting gets a line number instead of a signal.

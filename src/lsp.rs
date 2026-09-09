@@ -1174,6 +1174,25 @@ fn report(name: &str, from: usize, tokens: &[lexer::Token], scopes: &Scopes, out
     });
 }
 
+/// Every identifier token, grouped by name, in token order.
+///
+/// The unused-checks used to answer "does this name appear anywhere
+/// else?" by walking the whole token stream once per name they asked
+/// about — a scan per binding, and therefore quadratic in the number
+/// of bindings. Measured at 843: `--check` on a generated file of
+/// 8000 functions took 13 s, and 8000 names with one call between
+/// them took 4.2 s where 8000 calls to one name took 70 ms. Built
+/// once, every such question is a lookup.
+fn ident_index(tokens: &[lexer::Token]) -> std::collections::HashMap<&str, Vec<usize>> {
+    let mut index: std::collections::HashMap<&str, Vec<usize>> = std::collections::HashMap::new();
+    for (i, t) in tokens.iter().enumerate() {
+        if let lexer::TokenKind::Ident(n) = &t.kind {
+            index.entry(n.as_str()).or_default().push(i);
+        }
+    }
+    index
+}
+
 pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
@@ -1189,6 +1208,7 @@ pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
     {
         return Vec::new();
     }
+    let index = ident_index(&tokens);
     let mut out = Vec::new();
     for stmt in &program {
         let crate::ast::StmtKind::Let(name, _) = &stmt.kind else {
@@ -1197,17 +1217,20 @@ pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
         if name.starts_with('_') {
             continue;
         }
-        let uses = tokens
-            .iter()
-            .filter(|t| matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name))
-            .count();
-        if uses > 1 {
+        let Some(uses) = index.get(name.as_str()) else {
+            continue;
+        };
+        if uses.len() > 1 {
             continue;
         }
-        let Some(tok) = tokens.iter().find(|t| {
-            t.span.start >= stmt.span.start
-                && matches!(&t.kind, lexer::TokenKind::Ident(n) if n == name)
-        }) else {
+        // The one occurrence left is the binding itself, unless it
+        // sits before this statement — a name bound twice, where the
+        // earlier `let` owns the token.
+        let Some(tok) = uses
+            .iter()
+            .map(|&i| &tokens[i])
+            .find(|t| t.span.start >= stmt.span.start)
+        else {
             continue;
         };
         out.push((
@@ -1348,6 +1371,7 @@ pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
             _ => enclosing.push(stack.last().copied()),
         }
     }
+    let index = ident_index(&tokens);
     let mut out = Vec::new();
     for (i, t) in tokens.iter().enumerate() {
         if !matches!(t.kind, lexer::TokenKind::Let) {
@@ -1366,8 +1390,14 @@ pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
             continue;
         }
         let close = closing.get(&open).copied().unwrap_or(tokens.len() - 1);
-        let used = tokens[open..=close].iter().enumerate().any(|(k, tok)| {
-            open + k != i + 1 && matches!(&tok.kind, lexer::TokenKind::Ident(n) if n == name)
+        // The name's own tokens, narrowed to this block: the first at
+        // or after `open`, taken while still at or before `close`.
+        let used = index.get(name.as_str()).is_some_and(|at| {
+            let from = at.partition_point(|&k| k < open);
+            at[from..]
+                .iter()
+                .take_while(|&&k| k <= close)
+                .any(|&k| k != i + 1)
         });
         if !used {
             out.push((
