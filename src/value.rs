@@ -857,12 +857,27 @@ thread_local! {
     static PRINTING: RefCell<Vec<*const ()>> = const { RefCell::new(Vec::new()) };
 }
 
+/// How many levels of containers printing follows. Past this the
+/// marker that already means "there is more here" stands in for the
+/// rest, exactly as it does for a cycle — because the alternatives
+/// are worse: the walker recurses per level, and a list nested deep
+/// enough KILLED the process (854 measured the cliff between 100000
+/// and 200000). It also made printing quadratic, since the check for
+/// a cycle scanned the whole path per container: 51 ms at 10000 deep
+/// and 4492 at 100000, for output nobody reads.
+///
+/// A thousand is what json_parse follows too. Data this deep is a
+/// data structure rather than a document, and its shape is not what
+/// printing it is for.
+pub const MAX_PRINT_DEPTH: usize = 1000;
+
 /// Run `body` with `ptr` marked as being printed; None (and no call)
-/// when it already is — the caller prints the cycle marker instead.
+/// when it already is, or when the path is as deep as printing goes —
+/// the caller prints the marker instead.
 fn with_printing<T>(ptr: *const (), body: impl FnOnce() -> T) -> Option<T> {
     let entered = PRINTING.with(|p| {
         let mut p = p.borrow_mut();
-        if p.contains(&ptr) {
+        if p.len() >= MAX_PRINT_DEPTH || p.contains(&ptr) {
             false
         } else {
             p.push(ptr);
@@ -969,6 +984,35 @@ impl fmt::Display for Value {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A value deeper than printing follows ends in the marker that
+    /// already means "there is more here", rather than in a stack
+    /// overflow. 854 measured the old walker dying between 100000 and
+    /// 200000 levels, and taking 4.5 seconds at 100000 on the way.
+    #[test]
+    fn printing_stops_at_a_stated_depth_rather_than_at_the_cliff() {
+        fn nest(levels: usize) -> Value {
+            let mut v = Value::list(Vec::new());
+            for _ in 0..levels {
+                v = Value::list(vec![v]);
+            }
+            v
+        }
+        // One container per level plus the empty one at the middle:
+        // a value with exactly MAX_PRINT_DEPTH containers is shown
+        // whole.
+        let whole = nest(MAX_PRINT_DEPTH - 1).to_string();
+        assert!(!whole.contains("[...]"), "nothing to elide yet");
+        assert_eq!(whole.len(), 2 * MAX_PRINT_DEPTH);
+
+        let deeper = nest(MAX_PRINT_DEPTH).to_string();
+        assert!(deeper.contains("[...]"), "the marker says it stopped");
+        assert_eq!(deeper.len(), 2 * MAX_PRINT_DEPTH + 5);
+
+        // Far past the cliff, and the answer is the same size.
+        let far = nest(50_000).to_string();
+        assert_eq!(far.len(), 2 * MAX_PRINT_DEPTH + 5);
+    }
 
     #[test]
     fn floats_print_in_a_form_that_reads_back() {

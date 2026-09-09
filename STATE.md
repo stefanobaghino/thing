@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
   functions, guarded); 44 ting programs (22 selftest files — 21 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2679 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2683 selftest checks on all four
   CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2453,6 +2453,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 856: second stroke — PRINTING STOPS WHERE IT SAYS IT DOES.
+  `value::MAX_PRINT_DEPTH` is 1000; past it `str()`/`print()` write
+  the `[...]` / `{...}` marker a CYCLE already gets. That kills two
+  faults with one bound: the walker died past ~150000 levels, and it
+  was QUADRATIC before it died (51/408/1596/4492 ms at 10k/30k/60k/
+  100k) because the cycle check scanned the whole path per container.
+  Now 200000 deep is 57 ms and the answer is 2005 characters however
+  much deeper it goes. `json_str` REFUSES instead of eliding, at the
+  same 1000 as the reader: a reader is served by a marked cut, a
+  program is not served by half a document. Selftest 2679 -> 2683.
 - 855: first stroke — A JSON DOCUMENT TOO DEEP IS REFUSED.
   `json::MAX_DEPTH` is 1000 (arrays and objects share the count) and
   a deeper document is `json_parse: nested deeper than 1000 at
@@ -3242,8 +3252,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a deep value can be printed, or says why not: str(), print() and
-  the Display walker recurse per level and die at 200000.
   - the left spine is deep for the compiler and the tree-walker:
   `a + b + c + ...` parses in a loop but compiles and evaluates by
   recursion, so length is depth for them and MAX_NESTING does not

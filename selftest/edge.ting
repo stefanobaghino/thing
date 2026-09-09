@@ -118,3 +118,22 @@ assert(exists(cwd()) && is_dir(cwd()), "and it is a directory that exists");
 assert(err(fn() { return cwd(1); }) == "cwd expects 0 arguments, got 1", "cwd takes nothing");
 # eprint says nothing on stdout, which is what keeps this suite silent.
 assert(eprint() == nil, "eprint returns nil");
+
+# A value nested deeper than printing follows ends in the marker that
+# a cycle uses, rather than killing the process: the walker recursed
+# per level and died somewhere past 100000, having gone quadratic long
+# before that. json_str refuses the same depth instead, because a
+# truncated document would not be JSON.
+fn deep(n) {
+  let xs = [];
+  for i in range(0, n) { xs = [xs]; }
+  return xs;
+}
+let shown = str(deep(500));
+assert(!contains(shown, "[...]"), "a value within the depth prints whole");
+let stopped = str(deep(5000));
+assert(contains(stopped, "[...]"), "past it the marker stands in for the rest");
+assert(len(stopped) == len(str(deep(50000))), "however much deeper it goes");
+let refused = try(json_str, deep(5000));
+assert(contains(refused["err"], "nested deeper than 1000"),
+"json_str refuses what json_parse would not read back");

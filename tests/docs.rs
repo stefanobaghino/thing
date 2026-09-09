@@ -508,7 +508,12 @@ fn the_reference_states_the_json_depth_the_reader_enforces() {
         "docs/reference.md does not say \"JSON nesting: {limit} levels\""
     );
     assert!(
-        page.contains(&format!("nested deeper than\n  {limit} at offset N")),
+        page.contains(&format!("nested\n  deeper than {limit} at offset N")),
         "docs/reference.md does not quote the message json_parse raises"
+    );
+    let printed = ting::value::MAX_PRINT_DEPTH;
+    assert!(
+        page.contains(&format!("Printing: {printed} levels")),
+        "docs/reference.md does not say \"Printing: {printed} levels\""
     );
 }

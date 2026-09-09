@@ -20754,3 +20754,42 @@ page still tells the truth.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2679 checks, Windows check and clippy,
 wasm release build.
+
+## 856 — second stroke: printing stops where it says it does
+
+Two faults in one walker, and one bound fixes both.
+
+**It died.** `str()` and `print()` follow a value by recursion, so a
+list nested past about 150000 killed the process — 854's second row.
+
+**It was quadratic before it died.** The cycle check scanned the
+whole path per container: 51 ms at 10000 deep, 408 at 30000, 1596 at
+60000, 4492 at 100000. Ten times the depth cost eighty-eight times
+the work, for output nobody reads.
+
+`value::MAX_PRINT_DEPTH` is 1000. Past it the printer writes `[...]`
+/ `{...}` — the marker that ALREADY means "there is more here", which
+is what a cycle gets. Nothing fails, nothing lies, and the path the
+cycle check scans is now bounded, so the quadratic is bounded with
+it: 200000 deep is 57 ms, and the answer is the same 2005 characters
+whether the value is 5000 deep or 50000.
+
+**json_str refuses instead of eliding**, at the same 1000
+`json::MAX_DEPTH` the reader follows, and with the same shape of
+message a cycle gets: a truncated document would not be JSON, so
+there is nothing honest to print. Encoding now refuses exactly what
+reading refuses.
+
+Why elide in one place and refuse in the other: `str()` is for a
+reader, and a reader is served by a shape with a marker where it was
+cut. `json_str` is for another program, and half a document is worse
+than no document.
+
+Checked on both sides of the boundary in Rust and in ting (selftest
+2679 checks becomes 2683, so all four platforms answer it), stated in
+the reference's Limits beside the other two, guarded in tests/docs.rs
+against both constants.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2683 checks, Windows check and clippy,
+wasm release build, bench matching BASELINE on all eleven checksums.

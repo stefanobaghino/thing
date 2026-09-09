@@ -28,6 +28,14 @@ fn enter(path: &mut Path, ptr: *const ()) -> Result<(), String> {
     if path.contains(&ptr) {
         return Err("json_str cannot encode a cyclic value".to_string());
     }
+    // The same depth the reader follows, refused the same way a cycle
+    // is: a truncated document would not be JSON, and following it
+    // was a stack overflow waiting to happen (854).
+    if path.len() >= MAX_DEPTH {
+        return Err(format!(
+            "json_str cannot encode a value nested deeper than {MAX_DEPTH}"
+        ));
+    }
     path.push(ptr);
     Ok(())
 }
@@ -154,7 +162,9 @@ fn encode_string(s: &str, out: &mut String) {
     out.push('"');
 }
 
-/// How deep a document may nest, arrays and objects together. The
+/// How deep a document may nest, arrays and objects together — on
+/// the way in and on the way out, so json_str refuses what json_parse
+/// would not read back. The
 /// reader descends one host frame per level, so a deep enough
 /// document overflowed the stack and killed the process — no line,
 /// no message, and nothing a ting program could catch, on INPUT
@@ -462,6 +472,31 @@ mod tests {
             + &"}]".repeat(MAX_DEPTH);
         let e = decode(&mixed).unwrap_err();
         assert!(e.contains("nested deeper than"), "wrong error: {e}");
+    }
+
+    /// Encoding refuses what reading would refuse, and says so the
+    /// way a cycle is refused: a truncated document is not JSON.
+    #[test]
+    fn encoding_a_value_deeper_than_the_limit_is_an_error() {
+        fn nest(levels: usize) -> Value {
+            let mut v = Value::list(Vec::new());
+            for _ in 0..levels {
+                v = Value::list(vec![v]);
+            }
+            v
+        }
+        assert!(encode(&nest(MAX_DEPTH - 1)).is_ok(), "at the limit");
+        let e = encode(&nest(MAX_DEPTH)).unwrap_err();
+        assert!(
+            e.contains(&format!("nested deeper than {MAX_DEPTH}")),
+            "wrong error: {e}"
+        );
+        let far = encode(&nest(50_000)).unwrap_err();
+        assert!(far.contains("nested deeper than"), "wrong error: {far}");
+        assert!(
+            encode_pretty(&nest(50_000), 2).is_err(),
+            "the pretty encoder counts too"
+        );
     }
 
     #[test]
