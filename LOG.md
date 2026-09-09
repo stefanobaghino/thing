@@ -20982,3 +20982,51 @@ Two spellings cost me three probe runs: modules are `import("lib/
 list.ting")` and a module's functions come off the map it returns
 (`list["sum"]`), not `use` and not `list.sum` — ting has no methods,
 and the error said so.
+
+## 862 — health tick: the drop measured against the last release
+
+Maintenance: tree clean, no PRs, CI green for 089a7d0 from the API.
+
+Bench: all eleven checksums match BASELINE on both engines. Timings
+5-20% above it at load 3.2, which is weather — so this tick asked
+the question BASELINE cannot: how does the new binary compare with
+the LAST RELEASE, built here and run interleaved with it? A worktree
+at v2.135.0, `cargo build --release`, best of five alternating.
+
+It was not weather. 859's drop cost 20% on bench/json.ting, 6% on
+maps and 3% on lists. Three shapes were measured and three were
+wrong:
+
+- `MapCell::drop` collected every map's values into a fresh Vec
+  before walking them — an allocation per map dropped, however
+  shallow. Consuming the map in place instead: maps back to parity.
+- Moving every element into a worklist to look at it costs more than
+  looking at it where it lies. Now only NESTED CONTAINERS are lifted
+  out (`std::mem::replace` with nil) and everything else is freed by
+  the ordinary drop, which is what it was always good at.
+- The remaining 13% was not in the program at all: `--profile`
+  showed the same 24 ms of builtins on both binaries, and the wall
+  clock differed by 20 ms — TEARDOWN, freeing a parsed 1.25 MB
+  document at exit. Recursion is not just the danger, it is also the
+  FAST path: it frees in the order the allocator handed the memory
+  out. So dropping recurses again for the first 100 levels (a
+  thread-local counter says how deep the drops on this thread are)
+  and only switches to the worklist below that.
+
+Together: json 98 against 97, lists 125/126, maps 133/136, growth
+95/93 — parity, and a million-deep list and map still exit 0.
+
+A THREE-WAY A/B ALSO PRICED 855's DEPTH CHECK: a build with the
+`nested` wrapper taken out of the JSON reader parsed a 1.25 MB
+document 4% faster than one with it (594/619/662 ms over 20 parses
+for v2.135.0, no-check, and the shipped 2.136.0). Kept: 4% of the
+reader is what the refusal costs, and the alternative is exit 134.
+
+Sweeps in release: 50000 differential cases at the default seed and
+again at a fresh one, 2000000 pattern cases (3.12 s), the crash
+fuzzer, 20000 formatter cases — all green. Gate green on three
+targets. Site audited at 861: nine paths 200, changelog names
+v2.136.0.
+
+The repair is in the tree, not in v2.136.0 — the release shipped the
+slow drop and the next one carries the fix.

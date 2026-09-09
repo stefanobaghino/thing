@@ -59,37 +59,111 @@ impl std::ops::Deref for MapCell {
     }
 }
 
+/// How deep dropping may recurse before it starts using a worklist.
+/// The ordinary path is the one the compiler writes — freeing a list
+/// frees its elements, which frees theirs — and it is both the
+/// fastest and the kindest to the allocator, which frees in the order
+/// it allocated. It is also one host frame per level, so past this
+/// many levels the two below take the contents apart iteratively
+/// instead. A hundred frames of drop glue is a few kilobytes of
+/// stack; a million is a dead process (858).
+const DROP_RECURSION: usize = 100;
+
+thread_local! {
+    /// How many nested drops are on this thread's stack right now.
+    static DROP_DEPTH: std::cell::Cell<usize> = const { std::cell::Cell::new(0) };
+}
+
 impl Drop for ListCell {
     fn drop(&mut self) {
-        dismantle(std::mem::take(self.0.get_mut()));
+        // Nothing nested: the ordinary drop that follows frees the
+        // numbers and strings, and this costs one scan.
+        if !self.0.get_mut().iter().any(nests) {
+            return;
+        }
+        let mut items = std::mem::take(self.0.get_mut());
+        DROP_DEPTH.with(|depth| {
+            let at = depth.get();
+            if at < DROP_RECURSION {
+                depth.set(at + 1);
+                drop(items);
+                depth.set(at);
+            } else {
+                let mut todo = Vec::new();
+                uproot_list(&mut items, &mut todo);
+                while let Some(v) = todo.pop() {
+                    uproot(v, &mut todo);
+                }
+            }
+        });
     }
 }
 
 impl Drop for MapCell {
     fn drop(&mut self) {
-        dismantle(std::mem::take(self.0.get_mut()).into_values().collect());
+        if !self.0.get_mut().values().any(nests) {
+            return;
+        }
+        let mut entries = std::mem::take(self.0.get_mut());
+        DROP_DEPTH.with(|depth| {
+            let at = depth.get();
+            if at < DROP_RECURSION {
+                depth.set(at + 1);
+                drop(entries);
+                depth.set(at);
+            } else {
+                let mut todo = Vec::new();
+                uproot_map(&mut entries, &mut todo);
+                while let Some(v) = todo.pop() {
+                    uproot(v, &mut todo);
+                }
+            }
+        });
     }
 }
 
-/// Free a container's contents without recursing into them. Each
-/// nested container this holds the LAST reference to is emptied into
-/// the worklist before it goes out of scope, so the drop that follows
-/// finds nothing to descend into; one that is still shared is simply
+/// Free one value without recursing into it. A container this holds
+/// the LAST reference to has its own nested containers lifted out
+/// before it goes out of scope, so the drop that follows finds
+/// nothing to descend into; one that is still shared is simply
 /// released, as it always was.
-fn dismantle(mut todo: Vec<Value>) {
-    while let Some(v) = todo.pop() {
-        match v {
-            Value::List(items) => {
-                if let Some(mut cell) = Rc::into_inner(items) {
-                    todo.append(cell.0.get_mut());
-                }
+fn uproot(v: Value, todo: &mut Vec<Value>) {
+    match v {
+        Value::List(items) => {
+            if let Some(mut cell) = Rc::into_inner(items) {
+                uproot_list(cell.0.get_mut(), todo);
             }
-            Value::Map(entries) => {
-                if let Some(mut cell) = Rc::into_inner(entries) {
-                    todo.extend(std::mem::take(cell.0.get_mut()).into_values());
-                }
+        }
+        Value::Map(entries) => {
+            if let Some(mut cell) = Rc::into_inner(entries) {
+                uproot_map(cell.0.get_mut(), todo);
             }
-            _ => {}
+        }
+        _ => {}
+    }
+}
+
+/// Whether a value is a container, and so the reason any of this
+/// exists: only these two nest.
+fn nests(v: &Value) -> bool {
+    matches!(v, Value::List(_) | Value::Map(_))
+}
+
+/// Take the nested containers out and leave everything else where it
+/// is: numbers and strings are freed by the ordinary drop that
+/// follows, and nothing is moved that does not have to be.
+fn uproot_list(items: &mut [Value], todo: &mut Vec<Value>) {
+    for slot in items {
+        if nests(slot) {
+            todo.push(std::mem::replace(slot, Value::Nil));
+        }
+    }
+}
+
+fn uproot_map(entries: &mut BTreeMap<String, Value>, todo: &mut Vec<Value>) {
+    for slot in entries.values_mut() {
+        if nests(slot) {
+            todo.push(std::mem::replace(slot, Value::Nil));
         }
     }
 }

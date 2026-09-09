@@ -2453,6 +2453,23 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 862: HEALTH TICK — MILESTONE "HOW DEEP THE MACHINERY GOES"
+  (v2.136.0, strokes 854-861) COMPLETE, AND THE DROP REPAIRED.
+  Eleven checksums match on both engines; the timings were weather
+  but AN INTERLEAVED A/B AGAINST A v2.135.0 BUILD WAS NOT: 859's
+  drop cost 20% on bench/json.ting. Three causes, all fixed here:
+  `MapCell::drop` allocated a Vec per map; moving every element into
+  a worklist costs more than looking at it in place (only nested
+  containers are lifted out now); and the last 13% was TEARDOWN, not
+  the program — recursion is the FAST path (it frees in allocation
+  order), so dropping recurses for the first 100 levels by a
+  thread-local counter and only then uses the worklist. Now at
+  parity on all four container benches, deep cases still exit 0.
+  A three-way build also priced 855's depth check at 4% of a 1.25 MB
+  parse — kept. Sweeps green (50000 differential twice, 2000000
+  patterns, crash, 20000 formatter). NEW RULE: BASELINE ANSWERS
+  "DID THE CHECKSUM CHANGE", NOT "DID THIS COST ANYTHING" — build
+  the last release in a worktree and interleave.
 - 861: v2.136.0 VERIFIED (157th tag; strokes 855-859; seven assets,
   `sha256sum -c` OK on all six, both aarch64 archives unpacked and
   run here, 2683 checks from each on both engines, from a directory
@@ -3308,9 +3325,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench against BASELINE on both engines, sweeps in
-  release (50000 differential, crash fuzzer, 20000 formatter), site
-  audit — closing milestone "how deep the machinery goes".
+  - replenishment: choose the next milestone.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
