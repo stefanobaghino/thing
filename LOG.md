@@ -21189,3 +21189,50 @@ those on purpose, and the count moved from 6 to 7.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2690 checks, Windows check and clippy,
 wasm release build.
+
+## 866 — the tree-walker keeps what the VM lets go
+
+Maintenance: tree clean, no PRs, CI green for a4d856e from the API.
+
+865 measured the asymmetry: a NAMED `fn` returned from a call held
+180 MB per 300000 on `--eval` and 2.6 on the VM. The VM's compiler
+puts a name in the Env only when a nested function mentions it, so a
+plain helper is a slot and there is no cycle to leak; the tree-walker
+binds every name in the Env, so the frame holds the closure and the
+closure holds the frame.
+
+`Env::release` now decides per binding instead of all-or-nothing.
+It collects the functions bound in the frame whose env IS the frame,
+and if the frame's count is not exactly one per those plus our own it
+does nothing — a child scope, or a closure made inside one, shows up
+as a reference it cannot account for. If none of them escaped, the
+whole frame goes as before. If some did, each binding whose NAME is
+mentioned by none of those bodies is removed: nobody can call it by
+that name again, and the binding was the other half of the cycle.
+A recursive helper mentions itself, so its binding stays and the pair
+still lives to the end of the process — which is what the reference
+says, corrected this tick to name recursion as the condition rather
+than escaping.
+
+`mentions` is deliberately blunt: any occurrence of the identifier in
+the body counts, shadowed or not, and a compiled body always answers
+yes. A wrong yes keeps memory; a wrong no takes a binding away from a
+closure that needs it.
+
+Measured on `--eval`, 300000 rounds: a returned `fn add` and a
+returned counter both fall from 180 and 154 MB to 2.6. The recursive
+one stays at 180, on purpose. tests/alloc.rs gained a guard for the
+escaping shape on both engines, beside 864's for the helper that
+stays. Both engines still answer identically — selftest 2690 checks
+each, and the closure cases 864 added (returned recursive, two
+closures sharing a frame, closures escaping in a list and a map,
+mutual recursion, block scope, one frame per iteration) pass on both.
+
+No cost found: fib, toplevel, stdlib and accum interleaved against
+the previous commit on both engines land inside the noise of a host
+at load 6 (fib-eval 660 against 650, toplevel-eval 548 against 582).
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2690 checks, Windows check and clippy,
+wasm release build. `cargo fmt` reflowed one `if` in the new walker,
+which is the third time this tick's edits have been rewritten by it.

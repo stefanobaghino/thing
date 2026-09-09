@@ -296,18 +296,43 @@ impl Env {
         if Rc::strong_count(&frame) == 1 {
             return;
         }
-        let held = frame
+        // The functions defined HERE, each of which holds the frame
+        // once. Anything else that kept a reference — a child scope,
+        // a closure made in one, a container holding a closure — is
+        // counted by the arithmetic below and stops all of this.
+        let mine: Vec<(Rc<str>, Rc<Function>)> = frame
             .borrow()
             .vars
-            .values()
-            .filter(|v| match v {
-                Value::Fn(f) => Rc::strong_count(f) == 1 && Rc::ptr_eq(&f.env, &frame),
-                _ => false,
+            .iter()
+            .filter_map(|(n, v)| match v {
+                Value::Fn(f) if Rc::ptr_eq(&f.env, &frame) => Some((Rc::clone(n), Rc::clone(f))),
+                _ => None,
             })
-            .count();
-        if Rc::strong_count(&frame) == 1 + held {
+            .collect();
+        // `mine` holds each of them a second time, so the frame's own
+        // count is one for us, one per closure bound in it, and one
+        // more per clone just taken.
+        if Rc::strong_count(&frame) != 1 + mine.len() {
+            return;
+        }
+        if mine.iter().all(|(_, f)| Rc::strong_count(f) == 2) {
+            // Nothing escaped: the frame and everything in it is
+            // unreachable, so the bindings can all go at once.
             let dead = std::mem::take(&mut frame.borrow_mut().vars);
             drop(dead);
+            return;
+        }
+        // Something escaped, and it brought the frame with it. A
+        // closure the frame names but nobody CALLS by that name does
+        // not need the binding, and the binding is the other half of
+        // the cycle: `fn add` returned from a call keeps the frame
+        // alive forever otherwise. A name any of these bodies
+        // mentions — its own, for recursion, or a sibling's — stays.
+        for (name, _) in &mine {
+            if mine.iter().any(|(_, f)| mentions(&f.body, name)) {
+                continue;
+            }
+            frame.borrow_mut().vars.remove(name);
         }
     }
 
@@ -401,6 +426,60 @@ impl Env {
                 None => false,
             }
         }
+    }
+}
+
+/// Whether a function body could look `name` up while it runs: any
+/// mention at all counts, shadowed or not, because a wrong answer
+/// here would take a binding away from a closure that needs it. A
+/// compiled body always answers yes — the VM only puts a name in the
+/// Env when a nested function mentions it, so a binding that is
+/// there is one that is used.
+fn mentions(body: &FnBody, name: &str) -> bool {
+    fn in_stmt(s: &Stmt, name: &str) -> bool {
+        match &s.kind {
+            StmtKind::Let(n, e) => n == name || in_expr(e, name),
+            StmtKind::Assign(n, _, e) => n == name || in_expr(e, name),
+            StmtKind::IndexAssign(a, b, _, c) => {
+                in_expr(a, name) || in_expr(b, name) || in_expr(c, name)
+            }
+            StmtKind::Expr(e) => in_expr(e, name),
+            StmtKind::Block(stmts) => stmts.iter().any(|s| in_stmt(s, name)),
+            StmtKind::If(c, t, e) => {
+                in_expr(c, name) || in_stmt(t, name) || e.as_ref().is_some_and(|e| in_stmt(e, name))
+            }
+            StmtKind::While(c, b) => in_expr(c, name) || in_stmt(b, name),
+            StmtKind::For(n, it, b) => n == name || in_expr(it, name) || in_stmt(b, name),
+            StmtKind::Return(e) => e.as_ref().is_some_and(|e| in_expr(e, name)),
+            StmtKind::Break | StmtKind::Continue => false,
+        }
+    }
+    fn in_expr(e: &Expr, name: &str) -> bool {
+        match &e.kind {
+            ExprKind::Var(n) => n == name,
+            ExprKind::Unary(_, a) | ExprKind::Spread(a) => in_expr(a, name),
+            ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+                in_expr(a, name) || in_expr(b, name)
+            }
+            ExprKind::Call(callee, args) => {
+                in_expr(callee, name) || args.iter().any(|a| in_expr(a, name))
+            }
+            ExprKind::List(items) => items.iter().any(|i| in_expr(i, name)),
+            ExprKind::Map(entries) => entries
+                .iter()
+                .any(|(k, v)| in_expr(k, name) || in_expr(v, name)),
+            ExprKind::Fn(params, body) => {
+                params
+                    .iter()
+                    .any(|p| p.default.as_ref().is_some_and(|d| in_expr(d, name)))
+                    || body.iter().any(|s| in_stmt(s, name))
+            }
+            _ => false,
+        }
+    }
+    match body {
+        FnBody::Chunk(_) => true,
+        FnBody::Ast(stmts) => stmts.iter().any(|s| in_stmt(s, name)),
     }
 }
 

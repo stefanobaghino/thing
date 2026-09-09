@@ -173,15 +173,17 @@ without bound, and breaking the link — assigning over it, or `pop`ing
 it — is the whole remedy.
 
 A function keeps the scope it was defined in for as long as the
-function itself lives, which is how it sees the names around it. A
-helper defined inside a call and left there goes when the call
-returns, even if it calls itself. A `fn` that ESCAPES the call —
-returned, stored, put in a list — carries that scope with it, and
-because the scope also holds the name the function was defined under,
-the pair is a cycle by the rule above: it lives until the process
-ends, whether or not the program still refers to it. An anonymous
-function assigned to nothing, or one that never leaves the call, does
-not have this shape.
+function itself lives, which is how it sees the names around it. That
+scope goes when the function does — a helper defined inside a call
+and left there goes when the call returns, even if it calls itself,
+and one that escapes goes when the last reference to it does.
+
+The exception is again a cycle, and it takes a function that is
+reachable BY NAME from inside itself: a recursive `fn`, or a pair
+that call each other, that also escapes the call where it was
+defined. The scope has to keep the name so the call can be made, and
+the function keeps the scope, so the two hold each other up for the
+life of the process.
 
 ## Operators
 

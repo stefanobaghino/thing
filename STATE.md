@@ -2453,6 +2453,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 866: third stroke — THE TREE-WALKER KEEPS WHAT THE VM LETS GO.
+  `Env::release` decides per binding now: the functions bound in the
+  frame whose env IS the frame are counted, the frame's count must be
+  exactly those plus our own (anything else — a child scope, a
+  closure made in one — bails), and if some escaped, each binding
+  whose NAME no body among them mentions is removed. Nobody can call
+  it by that name again and the binding was the other half of the
+  cycle. `mentions` is blunt on purpose (any occurrence counts, a
+  compiled body always answers yes): a wrong yes keeps memory, a
+  wrong no breaks a program. On --eval, 300000 rounds: returned `fn
+  add` 180 -> 2.6 MB, returned counter 154 -> 2.6; the RECURSIVE one
+  stays at 180 and the reference now names recursion, not escaping,
+  as the condition. Guard in tests/alloc.rs on both engines; no cost
+  measured against the previous commit.
 - 865: second stroke — WHAT IS STILL NOT RECLAIMED, IN THE
   REFERENCE. New Memory section under Values and types: freed when
   the last reference lets go, no collector and no pause; data that
@@ -3372,11 +3386,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the tree-walker keeps what the VM lets go: a NAMED `fn` that
-  escapes leaks its frame on --eval (180 MB per 300000) and not on
-  the VM (2.6), because the compiler puts a name in the Env only
-  when a nested function mentions it while the tree-walker puts
-  every name there. Same answers, different memory (865).
   - release v2.137.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

@@ -350,3 +350,40 @@ fn a_cycle_costs_what_the_reference_says_it_costs() {
          left alone: the remedy the reference offers does not work"
     );
 }
+
+/// The same, for a closure that ESCAPES the call that made it. The
+/// frame holds the name it was defined under and the closure holds
+/// the frame, so returning one used to keep both forever: 865
+/// measured 180 MB per 300000 on the tree-walker, where the VM held
+/// 2.6 because its compiler only puts a name in the Env when a
+/// nested function mentions it. A closure nothing calls by name does
+/// not need its own binding, and without it the pair can go.
+#[test]
+fn a_returned_closure_does_not_keep_the_frame_forever() {
+    fn source(calls: usize) -> String {
+        format!(
+            "fn maker(n) {{\n  \
+             fn add(x) {{ return x + n; }}\n  \
+             return add;\n\
+             }}\n\
+             let i = 0;\n\
+             let t = 0;\n\
+             while i < {calls} {{ let f = maker(i); t += f(1); i += 1; }}\n"
+        )
+    }
+    fn run(engine: ting::Engine, src: &str) {
+        let mut out = Vec::new();
+        ting::run_source_engine(engine, "escape.ting", src, &mut out, Vec::new()).expect("runs");
+    }
+    for engine in [ting::Engine::Vm, ting::Engine::Eval] {
+        let (small, large) = (source(1000), source(10000));
+        run(engine, &small);
+        let kept_small = live_bytes(|| run(engine, &small));
+        let kept_large = live_bytes(|| run(engine, &large));
+        assert!(
+            kept_large < kept_small.max(4096) * 4,
+            "{engine:?} kept {kept_large} bytes for 10000 returned closures \
+             against {kept_small} for 1000"
+        );
+    }
+}
