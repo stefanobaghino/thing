@@ -21030,3 +21030,62 @@ v2.136.0.
 
 The repair is in the tree, not in v2.136.0 — the release shipped the
 slow drop and the next one carries the fix.
+
+## 863 — replenishment: milestone "what a long-running program keeps"
+
+Maintenance: tree clean, no PRs, CI green for 07edf07 from the API.
+
+**A tenth kind of looking: DURATION.** The nine before it held up the
+program's instructions (799), a program I wrote (808), fifty wrong
+ones (815), the same program in two languages (822), the input (829),
+a finding held back (835), the shell around it (836), the size of the
+program (843) and the shape of its data (854). Every one of them
+measured a run that ENDS. Nothing here has ever been left running.
+
+I started at numbers instead, and stopped: the reference already
+promises shortest-round-trip printing, `float()` refusing what a
+literal refuses, and `json_parse` refusing what `json_str` will not
+write — 574's findings were closed by a later milestone. Time is in
+the same state: lib/time.ting is Hinnant's civil algorithms and
+`local_zone(ms)` reads the platform's zone at an instant.
+
+**Healthy, measured on this host in release.** Reading 400 files ten
+times over: 4 file descriptors, 2.6 MB, flat. 3000 child processes
+through `run()`: 3.2 MB, no zombies, no descriptor growth. The LSP
+through 2000 edits with a document symbol query after each: 3.2 MB
+from the first hundred to the last, 3 descriptors. `--check --watch`
+over 300 rewrites of the watched file: 2.6 MB, 3 descriptors. Eight
+million maps churned through a 400-round loop: RSS rises to 19 MB —
+the working set — and stays there, which is what the drop repaired in
+862 looks like from outside.
+
+**NOT healthy: a function that defines a recursive helper leaks its
+frame, every call, on both engines.**
+
+    fn make(n) {
+      fn helper(k) { if k <= 0 { return 0; } return helper(k - 1) + n; }
+      return helper(1);
+    }
+
+300000 calls to that hold 145 MB on the VM and 180 on the
+tree-walker; 100000/200000/400000 measure 37/87/177 MB, so it is
+linear and unbounded. The helper NEVER HAS TO BE CALLED — defining it
+is enough (150 MB). A helper that does not name itself does not leak
+(2.6 MB), and neither does top-level recursion, nor an anonymous
+closure that captures a list.
+
+The mechanism is the one the corpus already knows about from the
+other direction: a name a nested function mentions is Env-allocated,
+so `helper` lives in `make`'s Env, and `helper`'s closure holds that
+Env. Rc counts references; a cycle counts itself. The same shape that
+makes `print` of a cyclic value work is the shape that never frees
+it — and 300000 self-referencing lists leak 35 MB the same way.
+
+**Milestone "what a long-running program keeps" (v2.137.0).** A
+recursive helper inside a function is an ordinary thing to write, and
+a program that runs for a day should not lose a gigabyte to it. The
+backlog: a harness that can SEE live bytes (tests/alloc.rs already
+counts allocations — it needs frees too), then the frame's self-cycle
+broken where it dies, on each engine, and last what is still not
+reclaimed said out loud in the reference rather than left to be
+discovered.

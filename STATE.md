@@ -2453,6 +2453,23 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 863: REPLENISHMENT — MILESTONE "WHAT A LONG-RUNNING PROGRAM KEEPS"
+  (v2.137.0), reasoning in LOG.md. A tenth kind of looking: DURATION
+  — every lens before it measured a run that ENDS. Numbers and time
+  were checked first and are already closed (574's findings are in
+  the reference; lib/time.ting is Hinnant). HEALTHY, measured: 4000
+  file reads at 4 descriptors and 2.6 MB, 3000 `run()` children at
+  3.2 MB with no zombies, the LSP flat at 3.2 MB over 2000 edits,
+  `--check --watch` flat over 300 rewrites, an eight-million-map
+  churn flat at its working set. NOT HEALTHY: A FUNCTION THAT
+  DEFINES A RECURSIVE HELPER LEAKS ITS FRAME ON EVERY CALL, both
+  engines — 145 MB (vm) and 180 MB (eval) for 300000 calls, linear
+  in the calls, and DEFINING the helper is enough (it never has to
+  be called). A helper that does not name itself does not leak, nor
+  does top-level recursion. Cause: the name is Env-allocated because
+  a nested function mentions it, so the Env holds the closure and
+  the closure holds the Env — the same Rc cycle that leaks 35 MB per
+  300000 self-referencing lists.
 - 862: HEALTH TICK — MILESTONE "HOW DEEP THE MACHINERY GOES"
   (v2.136.0, strokes 854-861) COMPLETE, AND THE DROP REPAIRED.
   Eleven checksums match on both engines; the timings were weather
@@ -3325,7 +3342,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - a harness that can see LIVE bytes: tests/alloc.rs counts
+  allocations, not frees. Then a guard that N calls to a function
+  defining a recursive helper leave live bytes flat.
+  - break the frame's self-cycle where the frame dies, tree-walker.
+  - the same for the VM.
+  - what is still not reclaimed, said out loud: the reference on
+  cyclic data, with a selftest.
+  - release v2.137.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program
