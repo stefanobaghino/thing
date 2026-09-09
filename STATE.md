@@ -2454,6 +2454,21 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 882: REPLENISHMENT — MILESTONE "THE FILE YOU WERE GIVEN"
+  (v2.139.0), reasoning in LOG.md. A twelfth kind of looking: not the
+  program, but what the program is HANDED. Probed first: one byte
+  that is not UTF-8 makes a file unreadable through every door
+  (`read_file`, `each_line`, running a script, `--check`, `--fmt`)
+  with a message that never says WHERE, and there is no way to
+  proceed anyway — `input()` even dies mid-stream after printing the
+  good lines. Meanwhile `run()` has always read a program's output
+  LOSSILY and nothing documents it. Size is not the problem: a
+  ten-megabyte line reads in 6 ms.
+  AND THE DEBT STATE SAID WAS OWED WAS ALREADY PAID: 787's two
+  string cliffs are gone (`Rc<Repr>` with a kept character count), all
+  four shapes linear at 20000/40000/80000 appends. The notes are
+  corrected below rather than left to send a future tick after
+  ghosts.
 - 881: HEALTH TICK, milestone "the project builds itself" complete.
   Bench: eleven checksums match BASELINE on both engines, compared
   mechanically. No head-to-head against the last release — nothing
@@ -3558,22 +3573,26 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
-  NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
-  FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
-  copies there (x27.2 against x3.8). Closing it needs a whole-program
-  scan for ASSIGNMENTS to the name (mentions are the
-  over-approximation; assignments are what matter) or Rc-backed
-  strings so the read is cheap and the binding's reference can be
-  dropped just before the add (CPython's trick). Neither is a tick.
-  NOT DONE, with the measurement (787): `len` on a string counts
-  characters, so it WALKS the string -- 80000 appends cost 0.016s
-  with a counter in the loop condition and 0.618s with `len(s)`. The
-  ASCII fast path (s.len() when s.is_ascii()) was tried, measured
-  15%, still quadratic, and REVERTED: the scan is the cost. A real
-  fix carries the count with the string -- Value::Str and 102 sites
-  in eval.rs. NO MEASURED PAIN: every `while len(s) < width` in the
-  corpus pads to a column.
+  - every "not UTF-8" says where: the byte and the line it falls in,
+  for files, scripts and stdin (one place, `diag::read_why`, plus the
+  read path handing back `valid_up_to`).
+  - a deliberate way to read anyway: `read_file(path, "lossy")`,
+  `each_line(path, f, "lossy")`, `input("lossy")`, following the mode
+  string `write_file` already takes.
+  - the docs say what each door does with bytes that are not text,
+  including that `run()` has always been lossy and why.
+  - selftests over real dirty fixtures (a latin-1 log, a truncated
+  character, a NUL, CRLF, a BOM) on both engines.
+  - release v2.139.0.
+  DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
+  closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
+  copied on a read, an append writes in place when it holds the only
+  reference, and `Repr` carries a character count that an append
+  KEEPS instead of throwing away. At 20000/40000/80000 appends every
+  shape is linear: 3/6/10 ms at top level, 3/5/11 inside a function,
+  6/11/20 with a closure mentioning the name, 5/10/18 with `len(s)`
+  in the loop condition. Neither the assignment scan nor the ASCII
+  fast path was needed in the end.
   NOT CHOSEN: streaming JSON (json_parse also takes the whole
   document, but a JSON document is a tree, not a sequence, so it
   means an event reader and a different programming model; the

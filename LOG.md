@@ -21768,3 +21768,57 @@ Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2749 checks on both engines.
 
 Next tick: replenishment.
+
+## 882 — replenishment: milestone "the file you were given"
+
+Maintenance: tree clean, no PRs, CI green for ab5f79b from the API.
+
+**First I went to collect the debt STATE said was owed, and found it
+already paid.** Two notes from 787 have stood there since, both
+promising a cliff: `s += str(n)` copying 27 times over when some
+function mentions the name, and `len(s)` walking the string so a
+`while len(s) < n` loop is quadratic. Measured tonight at 20000,
+40000 and 80000 appends, all four shapes are LINEAR — 3/6/10 ms at
+top level, 3/5/11 in a function, 6/11/20 with a closure mentioning
+the name, 5/10/18 with `len` in the condition. `Value::Str` is
+`Rc<Repr>` now and `Repr` carries a character count that an append
+keeps rather than throws away. Some later milestone closed both and
+the standing notes never learned; they are corrected rather than
+left to send a future tick after ghosts.
+
+**So, the twelfth kind of looking: the file you were given.** Every
+lens so far has looked at programs — ones I wrote, ones a fuzzer
+wrote, big ones, deep ones, long-running ones, the repo's own. None
+has looked at what a program is HANDED. A log with one byte from a
+1990s encoding in it, a CSV that came off Windows, a file with a
+BOM, a stream that is mostly text.
+
+Probed before choosing:
+
+- **One bad byte makes a file unreadable, and the message does not
+  say where.** `read_file`, `each_line`, running a script, `--check`
+  and `--fmt` all stop with `not UTF-8 text` — no offset, no line,
+  no way to find the byte in a two-gigabyte log. The message comes
+  from one place (`diag::read_why`) and std's error carries no
+  position, but `String::from_utf8` hands back a `valid_up_to`.
+- **There is no way to proceed anyway.** No lossy read, no skip; a
+  filter that would have dropped the one bad line cannot even reach
+  it. `input()` fails MID-STREAM: two good lines printed, then the
+  script dies with a diagnostic, which is the worst of both.
+- **And the other door is already lossy, silently.** `run()` on a
+  program whose output is not text answers happily with replacement
+  characters — 30 bytes in, 31 characters out. Nothing documents
+  that, and nothing says why the two doors differ.
+- Size is not the problem: a ten-megabyte single line reads in 6 ms
+  and streams in 18.
+
+**Milestone "the file you were given" (v2.139.0).** In order: every
+"not UTF-8" says where — the byte, and the line it falls in — for
+files, scripts and stdin alike; then a deliberate way to read
+anyway, `read_file(path, "lossy")` and `each_line(path, f, "lossy")`
+following the mode string `write_file(path, s, "append")` already
+takes, and the same for `input`; then the docs say what each door
+does with bytes that are not text, including that a program's output
+has always been read lossily and why that is the right default for a
+stream you did not write; then selftests over real dirty fixtures on
+both engines; then the release.
