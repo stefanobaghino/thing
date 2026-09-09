@@ -2453,6 +2453,14 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 850: v2.135.0 TAGGED (156th tag, adaf446; strokes 844-848 plus
+  849's fix). HEAD-TO-HEAD against a v2.134.0 worktree, best of
+  three, interleaved: `--check` over 500-8000 functions 58/228/997/
+  5798/29179 ms -> 36/56/139/270/599, **48.7x** on the largest and
+  linear at last. VERIFICATION IS THE NEXT TICK'S: six archives,
+  `sha256sum -c`, both aarch64 archives run here from a directory
+  with no lib/. BASELINE not regenerated (812): the engines' speed
+  is untouched, all eleven checksums matched before the tag.
 - 849: CI RED AFTER 848, ON TWO PLATFORMS, BOTH WORTH HAVING.
   (a) windows-latest: `--check` on the deep program still died (exit
   0xC00000FD) — the limit was right, the STACK was wrong. Only the
@@ -3184,7 +3192,8 @@ holds only the current milestone and the standing rules.
   `a + b + c + ...` parses in a loop but compiles and evaluates by
   recursion, so length is depth for them and MAX_NESTING does not
   bound it (849 overflowed a debug test thread at 12000 terms).
-  - release v2.135.0.
+  - verify v2.135.0: six archives, `sha256sum -c`, both aarch64
+  archives unpacked and run here from a directory with no lib/.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

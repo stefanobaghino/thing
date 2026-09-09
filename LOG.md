@@ -20564,3 +20564,34 @@ MAX_NESTING does not bound it.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2676 checks, Windows check and clippy,
 wasm release build.
+
+## 850 — v2.135.0 tagged: "the program that got big"
+
+The 156th tag, on adaf446: strokes 844, 845, 846, 847 and 848, plus
+849's fix for what 848's CI found.
+
+**The number the release is about, measured head to head.** A
+worktree at v2.134.0, built release, run against HEAD's binary on the
+same generated files, best of three each, interleaved, on this host:
+`--check` over 500, 1000, 2000, 4000 and 8000 functions was 58, 228,
+997, 5798, 29179 ms and is now 36, 56, 139, 270, 599 — **48.7x** on
+the largest, and a curve that doubles rather than quadruples. The
+quadratics were four: the checker's per-binding token sweep, the
+compiler's pool scans, `line_col` counting newlines from byte zero
+per diagnostic, and the resolver's scope walk with `note_scope`'s
+copy of every name in scope.
+
+Also in it: the same line-counting bug in eleven LSP places, the
+nesting limit that turns a stack overflow into an error with a line,
+and every command moving onto a stack this process chose rather than
+whatever the platform promised its main thread.
+
+Gate before the tag: fmt, clippy, 16 `test result: ok`, `--fmt .` 71
+unchanged, corpus at fourteen, selftest 2676 checks, bench matching
+BASELINE on all eleven checksums (timings ~10% high at load 3.2,
+which is weather; checksums decide). BASELINE not regenerated, per
+812: nothing here touches the engines' speed.
+
+Verification — six archives, `sha256sum -c`, both aarch64 Linux
+archives unpacked and run from a directory with no lib/ — is the next
+tick's, once the Release workflow finishes.
