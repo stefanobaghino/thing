@@ -4118,3 +4118,70 @@ fn a_deep_program_is_told_so_on_a_main_stack_the_size_windows_gives() {
     }
     let _ = std::fs::remove_file(&script);
 }
+
+/// A program that finished is finished: freeing what it built must
+/// not walk it. Before 859 both of these printed their answer and
+/// then died on the way out — exit 134, after the output, with
+/// nothing to catch — because `drop` descended one frame per level.
+/// Two shapes, because two types nest: the values a program builds,
+/// and the tree the program IS. A million levels either way; the
+/// limit on source nesting is 200, but a chain of `+` is not nested
+/// source, and neither is a list a loop grows one level at a time.
+#[test]
+fn a_deep_program_is_freed_without_walking_what_it_built() {
+    let script = std::env::temp_dir().join("ting-deep-value.ting");
+    for (what, src) in [
+        ("list", "let x = []; while i < 1000000 { x = [x]; i += 1; }"),
+        (
+            "map",
+            "let x = {}; while i < 1000000 { x = {\"a\": x}; i += 1; }",
+        ),
+    ] {
+        std::fs::write(&script, format!("let i = 0; {src} print(len(x));\n")).expect("write");
+        for engine in ["vm", "eval"] {
+            let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+                .arg(&script)
+                .env("TING_ENGINE", engine)
+                .output()
+                .expect("failed to run ting");
+            assert_eq!(
+                out.status.code(),
+                Some(0),
+                "{engine} on a deep {what}: {}",
+                String::from_utf8_lossy(&out.stderr)
+            );
+            assert_eq!(
+                String::from_utf8_lossy(&out.stdout),
+                "1\n",
+                "{engine} {what}"
+            );
+        }
+    }
+    let _ = std::fs::remove_file(&script);
+}
+
+#[test]
+fn a_long_chain_is_freed_without_walking_the_tree_it_parsed_to() {
+    let script = std::env::temp_dir().join("ting-deep-tree.ting");
+    let terms = ["1"; 1000000].join("+");
+    std::fs::write(&script, format!("print({terms});\n")).expect("write");
+    let path = script.to_str().expect("path is text");
+    for (engine, args) in [
+        ("vm", vec![path]),
+        ("eval", vec![path]),
+        ("vm", vec!["--check", path]),
+    ] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(&args)
+            .env("TING_ENGINE", engine)
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{engine} {args:?} on a million-term chain: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+    }
+    let _ = std::fs::remove_file(&script);
+}

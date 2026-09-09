@@ -120,6 +120,49 @@ pub enum ExprKind {
     Fn(Vec<Param>, Rc<Vec<Stmt>>),
 }
 
+/// Dropping an expression must not walk it by recursion. An operator
+/// chain leans left however flat the source reads, so `1 + 1 + ...`
+/// is a tree as deep as it is long: a million-term chain PRINTED ITS
+/// ANSWER and then died on the way out, freeing itself one host frame
+/// per term (858). This takes each node's children into a worklist,
+/// leaving a leaf behind, so every drop that follows finds nothing to
+/// descend into.
+impl Drop for Expr {
+    fn drop(&mut self) {
+        let mut todo = Vec::new();
+        take_children(&mut self.kind, &mut todo);
+        while let Some(mut kind) = todo.pop() {
+            take_children(&mut kind, &mut todo);
+        }
+    }
+}
+
+/// Move an expression's children out, leaving leaves in their place.
+/// A function literal's body is Rc-shared and holds statements, which
+/// nest no deeper than the parser allows, so it is left alone.
+fn take_children(kind: &mut ExprKind, todo: &mut Vec<ExprKind>) {
+    let mut take = |e: &mut Expr| todo.push(std::mem::replace(&mut e.kind, ExprKind::Nil));
+    match kind {
+        ExprKind::Unary(_, a) | ExprKind::Spread(a) => take(a),
+        ExprKind::Binary(_, a, b) | ExprKind::Index(a, b) => {
+            take(a);
+            take(b);
+        }
+        ExprKind::Call(callee, args) => {
+            take(callee);
+            args.iter_mut().for_each(take);
+        }
+        ExprKind::List(items) => items.iter_mut().for_each(take),
+        ExprKind::Map(entries) => {
+            for (k, v) in entries {
+                take(k);
+                take(v);
+            }
+        }
+        _ => {}
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum UnaryOp {
     Neg,

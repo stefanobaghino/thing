@@ -2335,7 +2335,7 @@ impl<W: Write> Interpreter<W> {
                     (Value::Str(a), Value::Str(b)) => a.cmp(b),
                     _ => std::cmp::Ordering::Equal,
                 });
-                Ok(Value::List(Rc::new(RefCell::new(names))))
+                Ok(Value::List(Rc::new(crate::value::ListCell::new(names))))
             }
             // A question about the filesystem, not a demand of it:
             // exists and is_dir answer false rather than raising when

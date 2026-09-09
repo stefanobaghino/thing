@@ -2453,6 +2453,21 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 859: fifth stroke — THE DROP, THE LAST THING THAT RECURSED. Both
+  types that nest have an iterative `Drop` now: `Expr` takes each
+  child's kind out by `mem::replace` into a worklist, and
+  `ListRef`/`MapRef` are `Rc<ListCell>`/`Rc<MapCell>` — newtypes
+  `Deref`ing to the same `RefCell` — whose drop steals the children
+  of every nested container it holds the LAST reference to
+  (`Rc::into_inner`) before the cell goes out of scope. Sharing still
+  decides, the refcount alone. `impl Drop for Value` is NOT possible:
+  eval moves out of a `Value` everywhere (E0509 — the parser's
+  assignment target hit it and takes the kind out instead). Measured:
+  a million-deep list and a million-deep map print their answer and
+  EXIT 0 on both engines (was 134, after the output), a million-term
+  chain runs, evaluates and checks, three million too. Guarded end to
+  end in tests/io.rs, on the binary, because the exit code AFTER the
+  output is the point.
 - 858: fourth stroke — FIVE MORE WALKERS, AND WHAT IS LEFT IS THE
   DROP. A throwaway test called each of the checker's nine passes on
   a 200000-term chain: `unbound_names`, `arity_mismatches` and
@@ -3277,10 +3292,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - dropping deep things walks them in Rust, and the program is
-  already finished when it dies: a list nested a million deep, and
-  the AST of a million-term chain, which prints its answer and then
-  aborts (858). One shape, two types.
   - release v2.136.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

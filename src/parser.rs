@@ -373,12 +373,16 @@ impl<'a> Parser<'a> {
                 })
             }
             _ => {
-                let expr = self.expr_bp(0)?;
+                let mut expr = self.expr_bp(0)?;
                 // Assignment targets: a bare variable or an index expression.
                 // `=` writes; `+=` and its four siblings read, apply the
                 // operator and write back.
                 if let Some(op) = assign_op(self.peek()) {
-                    let kind = match expr.kind {
+                    // The kind comes out rather than being moved from
+                    // the expression, which owns a Drop that dismantles
+                    // it (see ast::Expr).
+                    let target = std::mem::replace(&mut expr.kind, ExprKind::Nil);
+                    let kind = match target {
                         ExprKind::Var(name) => {
                             self.advance();
                             StmtKind::Assign(name, op, self.expr_bp(0)?)

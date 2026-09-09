@@ -20878,3 +20878,44 @@ nothing and look healthy.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2683 checks, Windows check and clippy,
 wasm release build.
+
+## Iteration 859 — dropping deep things does not walk them
+
+Maintenance: tree clean, no PRs, issues disabled, CI green for
+da2e708 read from the API before anything else.
+
+The fifth stroke of "how deep the machinery goes", and the last one
+854 found. The three strokes before it stopped the machinery from
+recursing while it WORKS; this one stops it recursing when the work
+is over. Two types nest, so two drops recursed:
+
+`Expr` now has a `Drop` that takes each child's `kind` out by
+`mem::replace` into a worklist and dismantles that iteratively, so
+the tree comes apart a node at a time rather than a frame at a time.
+The one place that moved out of an `Expr` — the assignment target in
+the parser — takes the kind out the same way, since a type with a
+`Drop` cannot be moved out of (E0509).
+
+`ListRef`/`MapRef` are `Rc<ListCell>`/`Rc<MapCell>` now: newtypes
+around the same `RefCell`, `Deref`ing to it so the 250-odd uses read
+unchanged, whose `Drop` empties the container into a worklist and,
+for every nested container it holds the LAST reference to
+(`Rc::into_inner`), steals the children before the cell goes out of
+scope. A container still shared is released as it always was, and
+the refcount decides — nothing else can. `impl Drop for Value` would
+have been the smaller change and is not possible: the matches all
+over eval move out of a `Value`.
+
+Measured, on the built binary: a list nested a million deep and a
+map nested a million deep both print `1` and exit 0 on both engines,
+where before the answer was printed and the process then died with
+exit 134. A million-term chain runs (0.66 s), evaluates (0.48 s) and
+checks (4.7 s) at exit 0, and three million does too.
+
+tests/io.rs guards both shapes end to end, on the binary, because
+the exit code after the output is the whole point: a test that only
+looked at stdout would have passed all along.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2683 checks, Windows check and clippy,
+wasm release build.

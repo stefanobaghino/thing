@@ -8,8 +8,91 @@ use std::rc::Rc;
 
 /// Lists and maps have reference semantics (like Python/JS/Lua):
 /// assigning or passing one shares the same underlying storage.
-pub type ListRef = Rc<RefCell<Vec<Value>>>;
-pub type MapRef = Rc<RefCell<BTreeMap<String, Value>>>;
+pub type ListRef = Rc<ListCell>;
+pub type MapRef = Rc<MapCell>;
+
+/// A list's storage. It exists as a type of its own only so that
+/// dropping it can dismantle what it holds ITERATIVELY: values nest
+/// as deep as a program builds them, and freeing `[[[[...]]]]` a
+/// million levels deep by recursion killed the process on the way
+/// out, after the program had finished (854).
+pub struct ListCell(RefCell<Vec<Value>>);
+
+/// A map's storage, for the same reason.
+pub struct MapCell(RefCell<BTreeMap<String, Value>>);
+
+impl ListCell {
+    pub fn new(items: Vec<Value>) -> ListCell {
+        ListCell(RefCell::new(items))
+    }
+}
+
+impl MapCell {
+    pub fn new(entries: BTreeMap<String, Value>) -> MapCell {
+        MapCell(RefCell::new(entries))
+    }
+}
+
+impl std::fmt::Debug for ListCell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for MapCell {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.0.fmt(f)
+    }
+}
+
+impl std::ops::Deref for ListCell {
+    type Target = RefCell<Vec<Value>>;
+    fn deref(&self) -> &RefCell<Vec<Value>> {
+        &self.0
+    }
+}
+
+impl std::ops::Deref for MapCell {
+    type Target = RefCell<BTreeMap<String, Value>>;
+    fn deref(&self) -> &RefCell<BTreeMap<String, Value>> {
+        &self.0
+    }
+}
+
+impl Drop for ListCell {
+    fn drop(&mut self) {
+        dismantle(std::mem::take(self.0.get_mut()));
+    }
+}
+
+impl Drop for MapCell {
+    fn drop(&mut self) {
+        dismantle(std::mem::take(self.0.get_mut()).into_values().collect());
+    }
+}
+
+/// Free a container's contents without recursing into them. Each
+/// nested container this holds the LAST reference to is emptied into
+/// the worklist before it goes out of scope, so the drop that follows
+/// finds nothing to descend into; one that is still shared is simply
+/// released, as it always was.
+fn dismantle(mut todo: Vec<Value>) {
+    while let Some(v) = todo.pop() {
+        match v {
+            Value::List(items) => {
+                if let Some(mut cell) = Rc::into_inner(items) {
+                    todo.append(cell.0.get_mut());
+                }
+            }
+            Value::Map(entries) => {
+                if let Some(mut cell) = Rc::into_inner(entries) {
+                    todo.extend(std::mem::take(cell.0.get_mut()).into_values());
+                }
+            }
+            _ => {}
+        }
+    }
+}
 
 /// A ting string.
 ///
@@ -742,11 +825,11 @@ impl Builtin {
 
 impl Value {
     pub fn list(items: Vec<Value>) -> Value {
-        Value::List(Rc::new(RefCell::new(items)))
+        Value::List(Rc::new(ListCell::new(items)))
     }
 
     pub fn map(entries: BTreeMap<String, Value>) -> Value {
-        Value::Map(Rc::new(RefCell::new(entries)))
+        Value::Map(Rc::new(MapCell::new(entries)))
     }
 
     pub fn str(text: impl Into<Str>) -> Value {
