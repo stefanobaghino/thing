@@ -21701,3 +21701,31 @@ Gate before tagging: fmt, clippy, 17 `test result: ok`, `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2748 checks on both engines,
 Windows check and clippy, wasm release build, docs guard after the
 version bump.
+
+## 880 — v2.138.0 verified
+
+Seven assets on the release, `sha256sum -c` OK on all six archives
+after a cold download. The two aarch64 Linux archives are the ones
+this host can run, and both were: unpacked, `--version` says 2.138.0,
+and each ran the repository's selftest suite to 23 passed, 2748
+checks, on both engines — four runs, four identical counts.
+
+Then the probe, in a directory holding nothing but the probe, so the
+imports can only be answered from inside the binary: thirteen
+modules, 207 exported bindings. THAT NUMBER IS NOT THE FUNCTION
+COUNT and I checked rather than writing it down as one — 203
+functions plus four exports that are not functions: test's `state`
+map, csv's `BOM`, and base64's `STANDARD` and `URL`. docs/stdlib.md
+says 203 and is right.
+
+The probe also asks the release for the things this version added:
+base64 both alphabets and a round trip through emoji and Greek,
+`mono_ms` measuring a pause, `(?i)a` refused as inline flags at 3,
+and the two short JSON escapes. All four binaries, both engines.
+
+The site is live and is the one ting rendered: the changelog page
+carries v2.138.0 and the reference carries mono_ms, served 200 from
+www.baghino.me/thing/.
+
+The macOS, Windows and x86-64 archives are verified by checksum only.
+This host cannot run them and does not pretend to.

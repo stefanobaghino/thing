@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 880: v2.138.0 VERIFIED (159th tag; strokes 871, 872, 873, 874, 875,
+  876, 877, 878; seven assets, `sha256sum -c` OK on all six, both
+  aarch64 archives unpacked and run here, 2748 checks from each on
+  both engines, and a probe in a directory holding only itself
+  proving the EMBEDDED stdlib answers — plus base64, mono_ms, the
+  named matcher error and the short JSON escapes asked of the release
+  binary directly). The site is live and ting-rendered: changelog
+  carries v2.138.0, reference carries mono_ms. THE PROBE'S 207 IS
+  BINDINGS, NOT FUNCTIONS — 203 functions plus test's `state`, csv's
+  `BOM`, base64's `STANDARD` and `URL`; checked instead of written
+  down.
 - 879: v2.138.0 TAGGED, milestone "the project builds itself" — five
   ports, one new builtin, one stdlib module, one matcher repair, one
   JSON fix, and no Python left in the tree. Release tick started with
@@ -3533,8 +3544,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.138.0: cold download, `sha256sum -c`, both aarch64
-  archives run from a directory holding only the probe.
   - health tick.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
