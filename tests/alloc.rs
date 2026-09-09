@@ -310,3 +310,43 @@ fn a_recursive_helper_does_not_leak_its_frame() {
         );
     }
 }
+
+/// The reference's Memory section makes two promises about cycles,
+/// and both are measured here rather than believed. A cycle a
+/// program builds and leaves alone is NOT reclaimed — that is the
+/// cost of counting references, and a test that pins it is what
+/// keeps the page honest. Breaking the link frees it, which is the
+/// remedy the page offers and the half that matters.
+#[test]
+fn a_cycle_costs_what_the_reference_says_it_costs() {
+    fn source(rounds: usize, breaks: bool) -> String {
+        let clear = if breaks { "xs[0] = nil;" } else { "" };
+        format!(
+            "let i = 0;\n\
+             while i < {rounds} {{\n  \
+             let xs = [];\n  \
+             push(xs, xs);\n  \
+             {clear}\n  \
+             i += 1;\n\
+             }}\n"
+        )
+    }
+    fn run(src: &str) {
+        let mut out = Vec::new();
+        ting::run_source("cycle.ting", src, &mut out, Vec::new()).expect("runs");
+    }
+    run(&source(100, false));
+    let kept_alone = live_bytes(|| run(&source(2000, false)));
+    let kept_broken = live_bytes(|| run(&source(2000, true)));
+    assert!(
+        kept_alone > 2000 * 32,
+        "a cycle left alone kept only {kept_alone} bytes: either it is \
+         reclaimed now — say so in docs/reference.md — or this measures \
+         the wrong thing"
+    );
+    assert!(
+        kept_broken < kept_alone / 8,
+        "breaking the cycle kept {kept_broken} bytes against {kept_alone} \
+         left alone: the remedy the reference offers does not work"
+    );
+}

@@ -2453,6 +2453,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 865: second stroke — WHAT IS STILL NOT RECLAIMED, IN THE
+  REFERENCE. New Memory section under Values and types: freed when
+  the last reference lets go, no collector and no pause; data that
+  refers to itself is never reclaimed; breaking the link frees it; a
+  `fn` that ESCAPES carries its scope and, because the scope holds
+  its name, is that same cycle. Measured over 300000 rounds: self-
+  referencing list 42 MB, self-holding map 111 MB, broken link 2.6
+  MB, returned recursive closure 141 MB, ANONYMOUS escaping closure
+  nothing on either engine. Guarded by tests/docs.rs (the section and
+  the remedy line) and tests/alloc.rs (the cycle keeps memory, the
+  broken one keeps almost none). No selftest: a ting program cannot
+  see what it holds. Reference snippet count 6 -> 7 run-only.
 - 864: first stroke — THE FRAME LETS GO. tests/alloc.rs subtracts
   frees now, so `live_bytes(f)` is what a run STILL HOLDS when it
   ends; the guard runs 1000 and 10000 calls on each engine and
@@ -3360,8 +3372,11 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - what is still not reclaimed, said out loud: the reference on
-  cyclic data, with a selftest.
+  - the tree-walker keeps what the VM lets go: a NAMED `fn` that
+  escapes leaks its frame on --eval (180 MB per 300000) and not on
+  the VM (2.6), because the compiler puts a name in the Env only
+  when a nested function mentions it while the tree-walker puts
+  every name there. Same answers, different memory (865).
   - release v2.137.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`

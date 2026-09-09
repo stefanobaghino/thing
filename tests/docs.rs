@@ -269,7 +269,7 @@ fn documented_snippets_run() {
     // that quietly disappeared would fail here rather than stop being
     // checked.
     for (page, want_checked, want_run_only, want_skipped) in
-        [("tutorial", 47, 1, 0), ("reference", 0, 6, 2)]
+        [("tutorial", 47, 1, 0), ("reference", 0, 7, 2)]
     {
         let src = std::fs::read_to_string(root.join(format!("docs/{page}.md")))
             .unwrap_or_else(|_| panic!("docs/{page}.md missing"));
@@ -516,4 +516,25 @@ fn the_reference_states_the_json_depth_the_reader_enforces() {
         page.contains(&format!("Printing: {printed} levels")),
         "docs/reference.md does not say \"Printing: {printed} levels\""
     );
+}
+
+/// What a program pays for the memory it holds is documented, not
+/// discovered: 863 measured a recursive helper leaking its frame on
+/// every call and 864 closed that, but a cycle a program builds
+/// itself is still counted by references that count each other, and
+/// the page has to say so — with the remedy, which is one assignment.
+#[test]
+fn the_reference_says_what_a_cycle_costs() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page = std::fs::read_to_string(root.join("docs/reference.md")).expect("docs/reference.md");
+    for claim in [
+        "### Memory",
+        "a cycle\ncounts itself, so it is never reclaimed",
+        "xs[0] = nil;    # breaking the loop frees it",
+    ] {
+        assert!(
+            page.contains(claim),
+            "docs/reference.md does not carry: {claim}"
+        );
+    }
 }

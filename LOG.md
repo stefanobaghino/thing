@@ -21144,3 +21144,48 @@ to `fetch` and `nudge`.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen, selftest 2690 checks, Windows check and clippy,
 wasm release build.
+
+## 865 — what is still not reclaimed, said out loud
+
+Maintenance: tree clean, no PRs, CI green for 479abf3 from the API.
+
+The reference has a Memory section now, under Values and types where
+reference semantics already live. Three sentences of fact and one of
+remedy: a value is freed when the last reference lets go, with no
+collector and so no pause; data that refers to itself is counted by
+references that count each other and is never reclaimed; breaking the
+link frees it. A `fn` that escapes the call carries that call's scope
+with it, and since the scope holds the name it was defined under, the
+pair is a cycle — which is the honest half of 864, whose fix covers
+the helper that STAYS.
+
+Measured before writing any of it, 300000 rounds each: a
+self-referencing list holds 42 MB and a map that holds itself 111 MB;
+breaking the link with `xs[0] = nil` costs 2.6 MB, which is nothing;
+a returned recursive closure holds 141 MB; an ANONYMOUS closure that
+escapes holds nothing on either engine, because the scope never held
+its name.
+
+**An asymmetry the page cannot promise away**: on the tree-walker any
+NAMED `fn` that escapes leaks its frame (180 MB where the VM holds
+2.6), because the compiler only puts a name in the Env when a nested
+function mentions it, and the tree-walker puts every name there. The
+answers are identical, as the differential suite requires; the memory
+is not. Backlogged rather than fixed here: it wants the compiler's
+captured-name analysis on the tree-walker's side.
+
+Two guards, because a page nobody checks is a wish: tests/docs.rs
+requires the section and the line that shows the remedy, and
+tests/alloc.rs runs 2000 rounds of both shapes and requires the cycle
+left alone to keep memory AND the broken one to keep almost none —
+the second is the promise, the first is what keeps the page honest if
+a collector ever arrives. No selftest: a ting program cannot see the
+memory it is holding, which is the whole reason these two tests are
+in Rust.
+
+The reference gained a seventh run-only snippet; tests/docs.rs counts
+those on purpose, and the count moved from 6 to 7.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2690 checks, Windows check and clippy,
+wasm release build.

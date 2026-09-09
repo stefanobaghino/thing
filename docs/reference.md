@@ -150,6 +150,39 @@ let c = a + [];  # + always builds a fresh list — use it to copy
 Equality (`==`) on lists and maps is structural (deep); on functions it
 is identity.
 
+### Memory
+
+A value is freed as soon as the last thing referring to it lets go.
+There is no garbage collector and so no pause: the memory a list, map
+or closure holds comes back at the statement that drops it, not at
+some later moment chosen for you.
+
+The exception is data that refers to itself, directly or around a
+loop of containers. Freeing works by counting references, and a cycle
+counts itself, so it is never reclaimed:
+
+```ting
+let xs = [];
+push(xs, xs);   # xs refers to itself: not freed while the program runs
+xs[0] = nil;    # breaking the loop frees it
+```
+
+A program that builds a cycle once pays nothing worth measuring; one
+that builds a cycle per iteration of a long-running loop grows
+without bound, and breaking the link — assigning over it, or `pop`ing
+it — is the whole remedy.
+
+A function keeps the scope it was defined in for as long as the
+function itself lives, which is how it sees the names around it. A
+helper defined inside a call and left there goes when the call
+returns, even if it calls itself. A `fn` that ESCAPES the call —
+returned, stored, put in a list — carries that scope with it, and
+because the scope also holds the name the function was defined under,
+the pair is a cycle by the rule above: it lives until the process
+ends, whether or not the program still refers to it. An anonymous
+function assigned to nothing, or one that never leaves the call, does
+not have this shape.
+
 ## Operators
 
 Tightest first; binary operators associate left.
@@ -1032,4 +1065,5 @@ tests.
 - Cyclic data (`xs[0] = xs;`) prints with `[...]` / `{...}` at the point
   of recursion, `==` compares it by the parts that are finite (two
   cycles that agree everywhere they can be inspected are equal), and
-  `json_str` refuses it with an error.
+  `json_str` refuses it with an error. Its memory is not reclaimed
+  until the process ends (see Memory).
