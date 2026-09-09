@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2748 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2749 selftest checks on all four
   CI platforms, Windows included); 419 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
   stale for a while). `ting --fmt .` reports 78 unchanged; BASELINE is ELEVEN
@@ -2454,6 +2454,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 881: HEALTH TICK, milestone "the project builds itself" complete.
+  Bench: eleven checksums match BASELINE on both engines, compared
+  mechanically. No head-to-head against the last release — nothing
+  here touched the hot paths, and weather against weather only
+  invites reading noise as a result. Sweeps green (50000 differential
+  twice, 2000000 patterns, crash, 20000 formatter). THE SITE AUDIT IS
+  A DIFFERENT QUESTION NOW: the six live pages were fetched and
+  compared BYTE FOR BYTE against what tools/md2html.ting renders
+  here — all six identical, live examples.js identical too, nine
+  paths 200, and all three generators left the tree clean. Coverage
+  found lib/base64.ting at 106/107: the missed line was the `fail`
+  for a character that starts and is not continued, which four error
+  checks had not reached. Closed; 100%, suite at 2749. Next tick:
+  replenishment.
 - 880: v2.138.0 VERIFIED (159th tag; strokes 871, 872, 873, 874, 875,
   876, 877, 878; seven assets, `sha256sum -c` OK on all six, both
   aarch64 archives unpacked and run here, 2748 checks from each on
@@ -3544,7 +3558,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick.
+  - replenishment: choose the next milestone.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

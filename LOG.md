@@ -21729,3 +21729,42 @@ www.baghino.me/thing/.
 
 The macOS, Windows and x86-64 archives are verified by checksum only.
 This host cannot run them and does not pretend to.
+
+## 881 — health tick: milestone "the project builds itself" complete
+
+Maintenance: tree clean, no PRs, CI green for f5ff07b from the API.
+
+Bench at load 0.9: all eleven checksums match BASELINE on both
+engines, compared mechanically rather than by eye — the table's
+checksums pulled out with a pattern and diffed against a fresh run.
+No head-to-head against the previous release this time: nothing in
+this milestone touched the interpreter's hot paths, and comparing
+weather to weather would only invite reading noise as a result.
+
+Sweeps in release: 50000 differential cases at the default seed and
+again at a fresh one, 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases — all green.
+
+THE SITE AUDIT IS A DIFFERENT QUESTION NOW, and this is the answer
+the milestone earns: the six published pages were fetched from
+www.baghino.me/thing/ and compared BYTE FOR BYTE against what
+tools/md2html.ting renders here from the same sources. All six
+identical, and the live examples.js identical to the repository's.
+Nine paths 200. The site is not merely up: it is exactly what this
+binary produces. Running all three generators left the tree clean,
+so nothing published is ahead of or behind what is committed.
+
+Coverage found the one thing worth fixing. `--coverage selftest`:
+lib/base64.ting read 106 of 107 lines, and the missed one was the
+`fail` for a character that starts and is then not continued — four
+error checks and none of them reached it. One check with the bytes
+[195, 65] closes it; base64 is at 100% and the suite at 2749.
+
+The gaps that remain are older and deliberate: args (the help
+columns), fs and sh (paths this platform does not take), test (its
+own summary). Nothing from this milestone is uncovered.
+
+Gate: fmt, clippy, 17 `test result: ok` (419 tests), `--fmt .` 78
+unchanged, corpus at fourteen, selftest 2749 checks on both engines.
+
+Next tick: replenishment.

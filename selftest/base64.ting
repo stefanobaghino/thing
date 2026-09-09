@@ -56,3 +56,7 @@ let mojibake = try(b64["from_bytes"], [195]);
 assert(has(mojibake, "err") && contains(mojibake["err"], "not UTF-8"), "refuses half a character");
 let stray = try(b64["from_bytes"], [255, 65]);
 assert(has(stray, "err") && contains(stray["err"], "not UTF-8"), "refuses a byte no character starts with");
+# 881: the one line the other four error checks never reached — a
+# character that starts and then is not continued.
+let broken = try(b64["from_bytes"], [195, 65]);
+assert(broken["err"] == "not UTF-8: byte 65 at 1", "refuses a continuation byte that is not one");
