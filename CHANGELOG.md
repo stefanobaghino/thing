@@ -5,6 +5,41 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.136.0 (2026-09-09)
+
+- **A JSON document nested too deeply is refused rather than
+  followed.** Past about 200000 levels of `[[[[...` the process
+  aborted from inside `json_parse` — exit 134, no line, nothing
+  `try()` could catch, and the depth is chosen by whoever wrote the
+  document, not by the script reading it. The reader now stops at
+  1000 levels of arrays and objects together with `json_parse: nested
+  deeper than 1000 at offset N`, and `json_str` refuses to encode a
+  value nested deeper the way it already refuses a cyclic one. A
+  thousand where the parser's own nesting limit is two hundred, on
+  purpose: one is a promise about the language, the other a bound on
+  data someone else wrote.
+- **Printing a deeply nested value stops where it says it does.**
+  `str()` and `print()` walked a value as deep as it went, which died
+  past about 150000 levels and was quadratic well before that — a
+  100000-deep list took 4.5 seconds to print, because the cycle check
+  scanned the whole path once per container. Past 1000 levels they
+  now write the `[...]` / `{...}` marker a cycle already gets: 200000
+  deep prints in 57 milliseconds, and the answer stops growing.
+- **A long chain of operators no longer costs a stack frame per
+  term.** `a + b + c + ...` is a left-leaning tree, and both engines
+  descended it: a 100000-term sum aborted on the tree-walker while
+  the VM printed the answer, and an unoptimized build died under
+  5000. Both engines now walk the left spine with an explicit stack,
+  as does the checker, the compiler and every walk over an
+  expression that had no bound. There is no new limit — a sum of
+  fifty thousand terms ran before and runs now.
+- **A program that finished is finished.** Freeing what a program
+  built recursed once per level, so a list nested a million deep, and
+  the tree of a million-term chain, printed the right answer and then
+  died on the way out with exit 134. Lists, maps and the syntax tree
+  now come apart iteratively; a million-deep list, a million-deep map
+  and a million-term chain all print and exit 0 on both engines.
+
 ## v2.135.0 (2026-09-09)
 
 - **`--check` is linear again.** A generated program of 8000
