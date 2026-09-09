@@ -2453,6 +2453,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 870: REPLENISHMENT — MILESTONE "THE PROJECT BUILDS ITSELF"
+  (v2.138.0), reasoning in LOG.md. An eleventh kind of looking: the
+  work THIS REPO does. tools/ is 354 lines of Python and bash that
+  build the site, generate playground examples and cut a step out of
+  a workflow; a scripting language whose own repo scripts in
+  something else has never been asked whether it can do the job.
+  MEASURED FIRST: base64url of UTF-8 written in ting matches Python
+  byte for byte on seven cases including emoji, every regex md2html
+  needs works (re_replace with $1 included), and the two absences —
+  negative lookbehind and callback replacement — are a few lines of
+  scanning. FOUND: `(?<!...)` and `(?i)` both report "nothing to
+  repeat at 2", the message for a bare `*`.
 - 869: HEALTH TICK GREEN — MILESTONE "WHAT A LONG-RUNNING PROGRAM
   KEEPS" (v2.137.0, strokes 862-868) COMPLETE. Eleven checksums
   match on both engines, and the interleaved A/B against a v2.136.0
@@ -3415,7 +3427,16 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - lib/base64.ting: encode and decode, url-safe and standard, on
+  top of `ord` and the bit operators; selftest and the stdlib page.
+  - the matcher names the construct it cannot compile, instead of
+  "nothing to repeat" for `(?<!...)` and `(?i)`.
+  - tools/workflow_step.py in ting, output compared against it.
+  - tools/playground_examples.py in ting (tests/docs.rs already
+  checks examples.js is in sync).
+  - tools/md2html.py in ting: the six pages byte for byte, then
+  pages.yml switched over and python3 dropped from it.
+  - release v2.138.0.
   NOT DONE, ON PURPOSE, with the measurement (787): a name SOME
   FUNCTION MENTIONS keeps the conservative rule, so `s += str(n)`
   copies there (x27.2 against x3.8). Closing it needs a whole-program

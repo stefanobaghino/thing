@@ -21320,3 +21320,42 @@ down rather than hidden — a cycle a program builds itself, and a
 recursive closure that escapes, still live to the end of the process.
 
 Next tick: replenishment.
+
+## 870 — replenishment: milestone "the project builds itself"
+
+Maintenance: tree clean, no PRs, CI green for f48af5f from the API.
+
+**An eleventh kind of looking: the work THIS REPO actually does.**
+Ten lenses have held up programs written to be looked at — the
+corpus, generated programs, dirty input, deep data, long runs. None
+of them looked at the 354 lines of Python and bash in tools/ that
+build this project's site, generate its playground examples and pull
+a workflow step out of YAML. A scripting language whose own repo
+scripts in something else has not been asked the only question that
+matters: can you do the job?
+
+Feasibility measured before choosing, not after:
+
+- **base64url of UTF-8, written in ting, matches Python byte for
+  byte** on seven cases including `héllo wörld`, `λ→∀` and an emoji.
+  The prototype encodes UTF-8 by hand out of `ord` and the bit
+  operators. md2html.py imports `base64` for the playground's run
+  links, and ting has no equivalent — that is the one real gap, and
+  it is a stdlib module rather than a language change.
+- Every regex md2html uses works today, including `re_replace` with
+  `$1`: inline code, bold, headers, links, table rows.
+- Two absences with workarounds: no negative lookbehind for the
+  table splitter's `(?<!\\)\|`, and no callback replacement for the
+  link rewriter. Both are a few lines of scanning instead.
+- AND THE ERROR MESSAGE FOR BOTH `(?<!...)` AND `(?i)` IS "nothing
+  to repeat at 2", which is what the matcher says about `*` with
+  nothing before it. A pattern using a construct ting does not have
+  should be told which construct.
+
+**Milestone "the project builds itself" (v2.138.0).** In order: a
+base64 module, the matcher's message for a group it cannot compile,
+then the three tools, smallest first, each proved by comparing its
+output with the Python one it replaces — byte for byte for the six
+site pages — and the workflows switched over as each lands. What the
+port cannot do is the finding; what it does easily is the answer to
+the question.
