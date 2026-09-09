@@ -5,6 +5,42 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.134.0 (2026-09-09)
+
+- `run` says what killed a child. The map it hands back has a fourth
+  key, `signal`: the number that ended the child where the platform
+  has signals, and nil elsewhere and after every normal exit. The
+  interpreter had always known — a child killed by one has no exit
+  code at all — but nothing above it did, so `sh.check` reported a
+  killed program as `sh exited nil`, wrong twice over: it did not
+  exit, and nil is not a status. It now says `sh was killed by
+  signal 9`, through a new `sh.ended` that names a finished child for
+  a message.
+- A child can be given something to read: `run(cmd, args, stdin)`,
+  and `sh.ok`, `sh.check` and `sh.lines` take it too. Output had
+  always come back and nothing could go in, so a script wanting
+  `echo data | sort` wrote a temp file or handed a quoted string to
+  `sh -c` — the very thing an argv list exists to avoid. Without it
+  the child reads nothing, which is what it always did and is now
+  what the documentation says. The write happens on its own thread,
+  because writing it from the calling thread hangs the moment the
+  child fills its stdout pipe while ting is still filling its stdin:
+  measured at 2 MB each way, that deadlocks forever, and the test
+  that covers it is bounded so a regression fails rather than wedges.
+  A child that stops reading early — `head`, say — is not an error.
+- Bytes that are not text now have a stated rule. Everything that
+  reads text INTO ting fails on them: `read_file`, `each_line`,
+  `input`, a script file, `--check`, `-`. A child's `out` and `err`
+  replace them instead, because there is no bytes type to hand back
+  and refusing would throw away the exit code, the stderr and the
+  signal along with the output.
+- That failure is now in ting's own words. It used to read `stream
+  did not contain valid UTF-8` — the standard library's phrasing,
+  calling a file a stream one clause after naming its path, and never
+  saying what the trouble was. It reads `not UTF-8 text`, everywhere
+  that reads anything. Errors that are not about encoding are
+  untouched.
+
 ## v2.133.0 (2026-09-08)
 
 - `for x in range(...)` no longer builds the list it counts through.
