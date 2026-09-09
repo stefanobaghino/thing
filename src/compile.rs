@@ -272,6 +272,8 @@ fn compile_stmts(
         in_function,
         fn_ctx,
         coverage,
+        const_at: std::collections::HashMap::new(),
+        name_at: std::collections::HashMap::new(),
     };
     // Parameters are the function's outermost bindings.
     for p in &params {
@@ -399,6 +401,27 @@ struct LoopCtx {
     scope_depth: usize,
 }
 
+/// A scalar literal by value, for finding it in the constant pool
+/// without walking the pool. Only the three kinds `konst` dedups have
+/// a key; a float is keyed by its bits, as the pool compares them.
+#[derive(PartialEq, Eq, Hash)]
+enum ConstKey {
+    Int(i64),
+    Str(String),
+    Float(u64),
+}
+
+impl ConstKey {
+    fn of(v: &Value) -> Option<ConstKey> {
+        match v {
+            Value::Int(n) => Some(ConstKey::Int(*n)),
+            Value::Str(t) => Some(ConstKey::Str(t.as_str().to_string())),
+            Value::Float(x) => Some(ConstKey::Float(x.to_bits())),
+            _ => None,
+        }
+    }
+}
+
 struct Compiler {
     chunk: Chunk,
     loops: Vec<LoopCtx>,
@@ -407,6 +430,15 @@ struct Compiler {
     fn_ctx: Option<FnCtx>,
     /// Emit a `Mark` before every statement, for `--coverage`.
     coverage: bool,
+    /// Where each pooled constant and name already sits. The pools
+    /// used to be searched by scanning them, under a comment saying
+    /// they stay tiny — true of every program in the corpus and false
+    /// of a generated one. Measured at 843: 8000 functions cost
+    /// 650 ms to compile against the tree-walker's 80 ms to run them,
+    /// and `--check` paid it too, since it compiles to find static
+    /// errors.
+    const_at: std::collections::HashMap<ConstKey, u32>,
+    name_at: std::collections::HashMap<String, u32>,
 }
 
 /// The value of a literal, or `None` for anything that has to be run
@@ -430,18 +462,19 @@ impl Compiler {
     }
 
     fn konst(&mut self, v: Value) -> u32 {
-        // Dedup scalar literals; the pool stays tiny so a scan is fine.
-        let dup = self.chunk.consts.iter().position(|c| match (c, &v) {
-            (Value::Int(a), Value::Int(b)) => a == b,
-            (Value::Str(a), Value::Str(b)) => a == b,
-            (Value::Float(a), Value::Float(b)) => a.to_bits() == b.to_bits(),
-            _ => false,
-        });
-        if let Some(i) = dup {
-            return i as u32;
+        // Scalar literals are deduped; anything else is pushed as it
+        // comes, exactly as when the pool was searched by scanning it.
+        let Some(key) = ConstKey::of(&v) else {
+            self.chunk.consts.push(v);
+            return (self.chunk.consts.len() - 1) as u32;
+        };
+        if let Some(&i) = self.const_at.get(&key) {
+            return i;
         }
         self.chunk.consts.push(v);
-        (self.chunk.consts.len() - 1) as u32
+        let at = (self.chunk.consts.len() - 1) as u32;
+        self.const_at.insert(key, at);
+        at
     }
 
     /// Note the slot names in scope for the instruction just emitted,
@@ -463,11 +496,13 @@ impl Compiler {
     }
 
     fn name(&mut self, n: &str) -> u32 {
-        if let Some(i) = self.chunk.names.iter().position(|x| x == n) {
-            return i as u32;
+        if let Some(&i) = self.name_at.get(n) {
+            return i;
         }
         self.chunk.names.push(n.to_string());
-        (self.chunk.names.len() - 1) as u32
+        let at = (self.chunk.names.len() - 1) as u32;
+        self.name_at.insert(n.to_string(), at);
+        at
     }
 
     /// Bind a fresh local: a frame slot when possible, Env when the

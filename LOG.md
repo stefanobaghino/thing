@@ -20338,3 +20338,50 @@ by doing no work.
 Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
 corpus at fourteen (the same fourteen), selftest 2676 checks,
 Windows check and clippy, wasm release build.
+
+## 2026-09-09 — Iteration 845: the compiler's pools, and two more quadratics found
+
+Second stroke of "the program that got big". `konst` and `name`
+found an entry by walking the pool, under the comment "the pool stays
+tiny so a scan is fine". Both now carry a `HashMap` index — a
+`ConstKey` of Int, Str or Float for the constants, since those are
+the three kinds the pool ever deduped, and everything else is pushed
+as it comes exactly as before.
+
+**Worth what it is worth, which is less than I said last tick.**
+Compiling and running 8000 functions with one call between them went
+from 207 ms to 57 ms. The 8000-function-and-8000-call file went from
+650 ms to 553 ms, and `--check` on it from 931 ms to 717 ms.
+
+**844 mis-attributed the rest of the curve, and this tick's
+measurement corrects it.** I wrote that the remainder was
+`compile_program`'s pool scans. It is not: with the pools indexed,
+`--check` on the 8000-name file is still 1563 ms against 1697. Two
+other quadratics turned up when the guard I wrote for this stroke
+FAILED at a ratio of 3.9 on a program of many functions and many
+calls:
+
+- **Rendering a diagnostic scans the source to find its line.**
+  `Span::line_col` counts characters from byte zero, so N warnings in
+  one file cost N times the file. Measured on files of 1000 to 8000
+  unused functions: 38, 116, 424, 1566 ms — a clean quadratic, and
+  the whole of what is left in that 1563 ms.
+- **The resolver and `note_scope` scan the scope.** `resolve` walks
+  the scope vectors per name, and `note_scope` CLONES every name in
+  scope for every instruction that can fail. The top level gets a
+  resolver of its own, so a program with n top-level bindings and n
+  references pays both.
+
+**So the guard measures what this stroke actually fixed**: distinct
+literals with few names, where the pools grow and the scopes do not.
+Ratio under 3 at 1500 against 3000, best of three; with the scan put
+back it is 3.5 and the test says so.
+
+Both new findings go on the backlog with their measurements. The
+lesson is 822's, again: the measurement that flatters the story is
+the one to re-run, and last tick's "I know where the rest is" was a
+story until this tick measured it.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 71 unchanged,
+corpus at fourteen, selftest 2676 checks, eleven bench checksums on
+both engines, Windows check and clippy, wasm release build.

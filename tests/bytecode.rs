@@ -183,3 +183,56 @@ fn a_for_over_range_counts_instead_of_building_a_list() {
         pops("for x in [1] { print(x); }")
     );
 }
+
+/// The constant and name pools are found by lookup, not by scanning
+/// them. They used to be searched linearly under a comment saying
+/// they stay tiny: true of every program in the corpus, false of a
+/// generated one, and 843 measured 8000 functions costing 650 ms to
+/// compile against 80 ms to run on the tree-walker.
+///
+/// A ratio rather than a number, best of three at each size, as the
+/// checker's guard is: doubling the input can only double linear
+/// work, and a scan per entry lands near 4.
+#[test]
+fn the_pools_are_not_searched_by_scanning_them() {
+    // Distinct literals, few names: the pools grow with n while the
+    // resolver's scopes do not, so this measures the pools alone.
+    fn source(n: usize) -> String {
+        let mut src = String::from("let s = \"\"");
+        for i in 0..n {
+            src.push_str(&format!(" + \"lit{i}\" + str({i})"));
+        }
+        src.push_str(";\nprint(len(s));\n");
+        src
+    }
+    fn best_of_three(src: &str, n: usize) -> std::time::Duration {
+        let tokens = ting::lexer::lex(src).expect("lex");
+        let program = ting::parser::parse_program(&tokens).expect("parse");
+        (0..3)
+            .map(|_| {
+                let t0 = std::time::Instant::now();
+                let Ok(chunk) = ting::compile::compile_program(&program) else {
+                    panic!("compile failed");
+                };
+                let elapsed = t0.elapsed();
+                // Keep the work, and pin what dedup means: one name
+                // per function plus the ones the calls share.
+                assert!(
+                    chunk.consts.len() >= 2 * n,
+                    "constants went missing: {}",
+                    chunk.consts.len()
+                );
+                elapsed
+            })
+            .min()
+            .unwrap()
+    }
+    let small = best_of_three(&source(1500), 1500);
+    let large = best_of_three(&source(3000), 3000);
+    let ratio = large.as_secs_f64() / small.as_secs_f64();
+    assert!(
+        ratio < 3.0,
+        "doubling the program multiplied compilation by {ratio:.1} \
+         ({small:?} then {large:?}): the pool scan is back"
+    );
+}

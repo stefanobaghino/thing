@@ -2453,6 +2453,25 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 845: second stroke — THE COMPILER'S POOLS, AND TWO MORE QUADRATICS
+  FOUND. `konst` and `name` carry HashMap indexes (a `ConstKey` of
+  Int/Str/Float, the three kinds the pool ever deduped). 8000
+  functions with one call: 207 -> 57 ms; with 8000 calls: 650 -> 553
+  ms and `--check` 931 -> 717 ms.
+  844'S ATTRIBUTION WAS WRONG AND THIS TICK CORRECTS IT: the rest of
+  the curve is NOT the pools. `--check` on the 8000-name file is
+  still 1563 ms against 1697. The guard written for this stroke
+  FAILED at 3.9 and turned up two more:
+  (a) RENDERING A DIAGNOSTIC SCANS THE SOURCE — `Span::line_col`
+  counts from byte zero, so N warnings cost N times the file: 38,
+  116, 424, 1566 ms over 1000-8000 unused functions;
+  (b) THE RESOLVER AND `note_scope` SCAN THE SCOPE — `resolve` walks
+  the scope vectors per name and `note_scope` CLONES every name in
+  scope per fallible instruction, and the top level has a resolver of
+  its own.
+  The guard therefore measures what was fixed: distinct literals with
+  few names, ratio under 3 at 1500 vs 3000, best of three; the scan
+  scores 3.5.
 - 844: first stroke — THE CHECKER STOPS RESCANNING. One
   `ident_index` groups every identifier token by name in a single
   pass; `unused_top_level_lets` counts from it and `unused_local_lets`
@@ -3106,11 +3125,15 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the compiler stops scanning its pools: `konst` and `name` get an
-  index, and the comment saying a scan is fine goes with it. The bar
-  is the 8000-function file, 650 ms on the VM against 80 ms on the
-  tree-walker — and, per 844, the 931 ms `--check` still takes on it,
-  most of which is `compile_program`.
+  - a diagnostic finds its line without counting from byte zero:
+  `Span::line_col` walks the source per rendered diagnostic, so a
+  file of warnings is quadratic (38, 116, 424, 1566 ms over 1000-8000
+  of them, 845). One line-start table per file, built once.
+  - the resolver stops scanning the scope: `resolve` walks the scope
+  vectors per name and `note_scope` clones every name in scope per
+  fallible instruction (845). The bar is the many-functions,
+  many-calls program, which still scores 3.9 on the ratio the pools
+  guard uses.
   - a program too deep to parse is TOLD so: a depth limit in the
   parser with a real error at a documented depth, well under the
   cliff, so nesting gets a line number instead of a signal.
