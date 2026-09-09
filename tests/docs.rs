@@ -433,7 +433,8 @@ fn the_tutorials_bundle_is_what_bundle_prints() {
 fn the_stdlib_page_counts_what_the_modules_export() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let script = r#"let names = ["list", "map", "string", "math", "json", "fs",
-                                 "test", "time", "sh", "args", "err", "csv"];
+                                 "test", "time", "sh", "args", "err", "csv",
+                                 "base64"];
 let total = 0;
 for n in names {
   let m = import("lib/" + n + ".ting");

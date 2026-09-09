@@ -1,0 +1,58 @@
+# ting testing ting: base64, both alphabets and both directions.
+let b64 = import("lib/base64.ting");
+
+# The vectors from RFC 4648, which every implementation agrees on.
+assert(b64["encode"]("") == "", "empty");
+assert(b64["encode"]("f") == "Zg==", "f");
+assert(b64["encode"]("fo") == "Zm8=", "fo");
+assert(b64["encode"]("foo") == "Zm9v", "foo");
+assert(b64["encode"]("foob") == "Zm9vYg==", "foob");
+assert(b64["encode"]("fooba") == "Zm9vYmE=", "fooba");
+assert(b64["encode"]("foobar") == "Zm9vYmFy", "foobar");
+
+# The URL-safe alphabet differs only in the last two characters and
+# carries no padding, so it can sit in a fragment as it is.
+assert(b64["encode_url"]("f") == "Zg", "url f");
+assert(b64["encode"]("😀") == "8J+YgA==", "standard reaches + for value 62");
+assert(b64["encode_url"]("😀") == "8J-YgA", "url writes - where standard writes +");
+assert(b64["encode"]("ÿ?") == "w78/", "standard reaches / for value 63");
+assert(b64["encode_url"]("ÿ?") == "w78_", "url writes _ where standard writes /");
+
+# Text goes in as its UTF-8 bytes, whatever the characters are.
+assert(b64["encode"]("héllo") == "aMOpbGxv", "two-byte characters");
+assert(b64["encode"]("λ→∀") == "zrvihpLiiIA=", "three-byte characters");
+assert(b64["encode"]("🎉") == "8J+OiQ==", "four-byte characters");
+assert(b64["encode_url"]("🎉") == "8J-OiQ", "four-byte characters, url");
+
+# Round trips, including the lengths that pad differently.
+for s in ["", "a", "ab", "abc", "abcd", "héllo wörld", "λ→∀", "🎉 party",
+"print(1);\n", "The quick brown fox jumps over the lazy dog"] {
+  assert(b64["decode"](b64["encode"](s)) == s, "round trip standard: " + s);
+  assert(b64["decode"](b64["encode_url"](s)) == s, "round trip url: " + s);
+}
+
+# Decoding takes either alphabet, with padding or without, and skips
+# the line breaks a wrapped document carries.
+assert(b64["decode"]("Zm9vYmE=") == "fooba", "padded");
+assert(b64["decode"]("Zm9vYmE") == "fooba", "unpadded");
+assert(b64["decode"]("Zm9v\nYmFy") == "foobar", "line breaks skipped");
+assert(b64["decode_bytes"]("-_8") == b64["decode_bytes"]("+/8="), "both alphabets agree");
+
+# The bytes are reachable on their own, since a format that counts
+# them needs them.
+assert(b64["bytes"]("A") == [65], "ascii byte");
+assert(b64["bytes"]("é") == [195, 169], "two-byte character");
+assert(b64["bytes"]("🎉") == [240, 159, 142, 137], "four-byte character");
+assert(b64["from_bytes"]([240, 159, 142, 137]) == "🎉", "bytes back to text");
+assert(len(b64["decode_bytes"]("Zm9vYmFy")) == 6, "decode_bytes counts bytes");
+
+# What is not base64, and what is base64 but not text, are errors
+# rather than wrong answers.
+let bad = try(b64["decode"], "not base64!");
+assert(has(bad, "err") && contains(bad["err"], "not base64"), "refuses a stray character");
+let lone = try(b64["decode"], "Zg==Zg==Z");
+assert(has(lone, "err") && contains(lone["err"], "group of one"), "refuses a lone character");
+let mojibake = try(b64["from_bytes"], [195]);
+assert(has(mojibake, "err") && contains(mojibake["err"], "not UTF-8"), "refuses half a character");
+let stray = try(b64["from_bytes"], [255, 65]);
+assert(has(stray, "err") && contains(stray["err"], "not UTF-8"), "refuses a byte no character starts with");

@@ -21,7 +21,7 @@ maps, functions and closures (parameters may carry defaults, the
 last may take the rest, and a list spreads into a call), control
 flow with compound assignment (`+=` and its four siblings),
 modules via `import()`
-plus twelve embedded stdlib modules
+plus thirteen embedded stdlib modules
 (list/map/string/math/json/fs/test/time/sh/args/err/csv),
 73 builtins (file and stdin I/O including a file read a line at a
 time, listing, making and removing directories, moving and copying

@@ -135,7 +135,7 @@ fn the_embedded_stdlib_is_exactly_the_lib_directory() {
         embedded, on_disk,
         "the embedded stdlib and lib/ are not the same modules"
     );
-    assert_eq!(embedded.len(), 12, "twelve modules, counted everywhere");
+    assert_eq!(embedded.len(), 13, "thirteen modules, counted everywhere");
 
     for (path, source) in ting::eval::embedded_stdlib() {
         let file = Path::new(env!("CARGO_MANIFEST_DIR")).join(path);
@@ -194,7 +194,7 @@ fn a_shadowing_lib_and_the_embedded_stdlib_answer_alike() {
     let _ = std::fs::remove_dir_all(&base);
 
     assert!(
-        with_lib.lines().count() == 12 && with_lib.contains("lib/csv.ting"),
+        with_lib.lines().count() == 13 && with_lib.contains("lib/csv.ting"),
         "the probe did not reach every module: {with_lib}"
     );
     assert_eq!(

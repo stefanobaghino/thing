@@ -15,11 +15,11 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 73 builtins; twelve embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv, 195
-  functions, guarded); 44 ting programs (22 selftest files — 21 tests
+- 73 builtins; thirteen embedded stdlib modules
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
+  functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2690 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2739 selftest checks on all four
   CI platforms, Windows included); 399 Rust tests
   in 16 suites. `ting --fmt .` reports 71 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2453,6 +2453,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 871: first stroke — lib/base64.ting, THE THIRTEENTH MODULE. Both
+  alphabets (standard padded, URL-safe unpadded), decoding either,
+  and `bytes`/`from_bytes`/`decode_bytes` exported because ting has
+  no bytes type and every byte-oriented format needs them. Checked
+  against Python's `base64` on ten strings: byte for byte, emoji
+  included. Selftest carries the RFC 4648 vectors and the four ways
+  to be wrong; 2690 -> 2739 checks over 23 files. A new module costs
+  a count in six places plus two module-counting assertions in
+  tests/selftest.rs. NOTE: `"\xNN"` IS NOT A TING ESCAPE — strings
+  are text — so a test needing byte values 62 and 63 uses `😀` and
+  `ÿ?`, and two alphabets are compared as BYTES, not as text.
 - 870: REPLENISHMENT — MILESTONE "THE PROJECT BUILDS ITSELF"
   (v2.138.0), reasoning in LOG.md. An eleventh kind of looking: the
   work THIS REPO does. tools/ is 354 lines of Python and bash that
@@ -3427,8 +3438,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/base64.ting: encode and decode, url-safe and standard, on
-  top of `ord` and the bit operators; selftest and the stdlib page.
   - the matcher names the construct it cannot compile, instead of
   "nothing to repeat" for `(?<!...)` and `(?i)`.
   - tools/workflow_step.py in ting, output compared against it.

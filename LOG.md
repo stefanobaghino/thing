@@ -21359,3 +21359,45 @@ output with the Python one it replaces — byte for byte for the six
 site pages — and the workflows switched over as each lands. What the
 port cannot do is the finding; what it does easily is the answer to
 the question.
+
+## 871 — lib/base64.ting: the first thing the port needed
+
+Maintenance: tree clean, no PRs, CI green for d002a2e from the API.
+
+The thirteenth stdlib module, and the one gap 870 found by trying to
+write this project's site generator in ting: md2html.py imports
+`base64` for the playground run links, and ting had nothing.
+
+It works on TEXT, because ting has no bytes type: a string goes in as
+its UTF-8 bytes and comes back as the string those bytes spell.
+`bytes` and `from_bytes` are exported rather than hidden, since any
+byte-oriented format needs them and there was nowhere else to get
+them. Both alphabets — standard with padding, URL-safe without — and
+decoding takes either, padded or not, skipping the line breaks a
+wrapped document carries. `decode_bytes` is there for base64 that is
+not text at all.
+
+Checked against Python's `base64` on ten strings, both alphabets:
+byte for byte identical, emoji and `λ→∀` included. The selftest
+carries the RFC 4648 vectors (`f`, `fo`, `foo`, `foob`, `fooba`,
+`foobar`), the round trips, the two alphabets disagreeing exactly
+where they should (`8J+YgA==` against `8J-YgA`), and the four ways to
+be wrong: a stray character, a group of one, half a character, and a
+byte no character starts with. 49 checks, both engines.
+
+TWO THINGS THE FIRST DRAFT GOT WRONG, both caught by running it:
+`"\xfb\xff"` is not a ting escape (strings are text, and those bytes
+are not UTF-8), so the alphabet checks now use `😀` and `ÿ?`, whose
+UTF-8 reaches values 62 and 63 honestly; and comparing the two
+alphabets by DECODING to text fails for the same reason, so it
+compares bytes.
+
+The count moved in six places, which is what a new module costs:
+lib/, the embedded table in src/eval.rs, docs/stdlib.md (thirteen
+modules, 203 functions), README, the tutorial, STATE's standing
+shape, and two assertions in tests/selftest.rs that count modules.
+Selftest 2690 -> 2739 checks over 23 files.
+
+Gate: fmt, clippy, 16 `test result: ok`, `--fmt .` 73 unchanged,
+corpus at fourteen, selftest 2739 checks, Windows check and clippy,
+wasm release build.

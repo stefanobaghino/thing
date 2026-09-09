@@ -931,6 +931,7 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
 /// when no matching file exists.
 const EMBEDDED_STDLIB: &[(&str, &str)] = &[
     ("lib/args.ting", include_str!("../lib/args.ting")),
+    ("lib/base64.ting", include_str!("../lib/base64.ting")),
     ("lib/csv.ting", include_str!("../lib/csv.ting")),
     ("lib/err.ting", include_str!("../lib/err.ting")),
     ("lib/fs.ting", include_str!("../lib/fs.ting")),

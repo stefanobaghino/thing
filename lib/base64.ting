@@ -1,0 +1,160 @@
+# Base64, both directions, written in ting.
+# Use it via
+#   let base64 = import("lib/base64.ting");
+#
+# ting has no bytes type, so these work on TEXT: a string goes in as
+# its UTF-8 bytes and comes back out as the string those bytes spell.
+# Both alphabets are here — the standard one (RFC 4648 section 4,
+# `+` and `/`, padded with `=`) and the URL-safe one (section 5, `-`
+# and `_`, unpadded), which is what a fragment or a query string can
+# carry. Decoding takes either, padded or not, and refuses anything
+# that is not base64 or does not spell text.
+
+let STANDARD = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+let URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+# The UTF-8 bytes of a string, as ints. This is the encoding every
+# byte-oriented format means when it says "the bytes of the text".
+fn bytes(s) {
+  let out = [];
+  for ch in s {
+    let c = ord(ch);
+    if c < 128 {
+      push(out, c);
+    } else if c < 2048 {
+      push(out, 192 | (c >> 6));
+      push(out, 128 | (c & 63));
+    } else if c < 65536 {
+      push(out, 224 | (c >> 12));
+      push(out, 128 | ((c >> 6) & 63));
+      push(out, 128 | (c & 63));
+    } else {
+      push(out, 240 | (c >> 18));
+      push(out, 128 | ((c >> 12) & 63));
+      push(out, 128 | ((c >> 6) & 63));
+      push(out, 128 | (c & 63));
+    }
+  }
+  return out;
+}
+
+# The string those UTF-8 bytes spell. Anything that is not valid
+# UTF-8 errors rather than becoming a replacement character: text
+# that arrives wrong is a fault, not a value.
+fn from_bytes(bs) {
+  let out = "";
+  let i = 0;
+  while i < len(bs) {
+    let b = bs[i];
+    let need = 0;
+    let c = 0;
+    if b < 128 {
+      c = b;
+    } else if b >= 192 && b < 224 {
+      need = 1;
+      c = b & 31;
+    } else if b >= 224 && b < 240 {
+      need = 2;
+      c = b & 15;
+    } else if b >= 240 && b < 248 {
+      need = 3;
+      c = b & 7;
+    } else {
+      fail("not UTF-8: byte " + str(b) + " at " + str(i));
+    }
+    let k = 0;
+    while k < need {
+      i += 1;
+      if i >= len(bs) { fail("not UTF-8: text ends mid-character"); }
+      let cont = bs[i];
+      if cont < 128 || cont >= 192 {
+        fail("not UTF-8: byte " + str(cont) + " at " + str(i));
+      }
+      c = (c << 6) | (cont & 63);
+      k += 1;
+    }
+    out += chr(c);
+    i += 1;
+  }
+  return out;
+}
+
+# Shared by both alphabets: three bytes make four characters, and a
+# short last group makes two or three of them.
+fn encode_with(alphabet, pad, bs) {
+  let out = "";
+  let i = 0;
+  while i < len(bs) {
+    let left = len(bs) - i;
+    let b1 = 0;
+    let b2 = 0;
+    if left > 1 { b1 = bs[i + 1]; }
+    if left > 2 { b2 = bs[i + 2]; }
+    let n = (bs[i] << 16) | (b1 << 8) | b2;
+    out += slice(alphabet, (n >> 18) & 63, ((n >> 18) & 63) + 1);
+    out += slice(alphabet, (n >> 12) & 63, ((n >> 12) & 63) + 1);
+    if left > 1 {
+      out += slice(alphabet, (n >> 6) & 63, ((n >> 6) & 63) + 1);
+    } else if pad {
+      out += "=";
+    }
+    if left > 2 {
+      out += slice(alphabet, n & 63, (n & 63) + 1);
+    } else if pad {
+      out += "=";
+    }
+    i += 3;
+  }
+  return out;
+}
+
+# The text as standard base64, padded.
+fn encode(s) { return encode_with(STANDARD, true, bytes(s)); }
+
+# The text as URL-safe base64, unpadded: `-` and `_` for `+` and `/`,
+# so it survives a URL without escaping.
+fn encode_url(s) { return encode_with(URL, false, bytes(s)); }
+
+# Where a character sits in either alphabet, or nil.
+fn value_of(ch) {
+  let i = find(STANDARD, ch);
+  if i != nil { return i; }
+  if ch == "-" { return 62; }
+  if ch == "_" { return 63; }
+  return nil;
+}
+
+# The bytes that base64 text stands for, taking either alphabet, with
+# padding or without.
+fn decode_bytes(s) {
+  let out = [];
+  let group = [];
+  for ch in s {
+    if ch == "=" || ch == "\n" || ch == "\r" { continue; }
+    let v = value_of(ch);
+    if v == nil { fail("not base64: `" + ch + "`"); }
+    push(group, v);
+    if len(group) == 4 {
+      let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6) | group[3];
+      push(out, (n >> 16) & 255);
+      push(out, (n >> 8) & 255);
+      push(out, n & 255);
+      group = [];
+    }
+  }
+  if len(group) == 1 { fail("not base64: a group of one character"); }
+  if len(group) == 2 {
+    let n = (group[0] << 18) | (group[1] << 12);
+    push(out, (n >> 16) & 255);
+  }
+  if len(group) == 3 {
+    let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6);
+    push(out, (n >> 16) & 255);
+    push(out, (n >> 8) & 255);
+  }
+  return out;
+}
+
+# The text that base64 stands for. Either alphabet, padded or not;
+# input that is not base64, or does not spell UTF-8 text, errors.
+fn decode(s) { return from_bytes(decode_bytes(s)); }

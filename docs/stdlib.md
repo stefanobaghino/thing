@@ -1,7 +1,7 @@
 # The ting standard library
 
-Twelve modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err and csv, 195 functions between them — living in `lib/` and also
+Thirteen modules written in ting itself — list, map, string, math,
+json, fs, test, time, sh, args, err, csv and base64, 203 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -266,6 +266,28 @@ field, and `extras` names a key for them in the maps — an empty list
 on the rows that have none, so the keys still match across rows. The
 key may not be a column name, since it would then hide that column.
 | `quote(field, sep)` | a field, quoted if it needs to be — spaces at either end included, so they survive a round trip |
+
+## lib/base64.ting
+
+Base64, both directions. ting has no bytes type, so these work on
+TEXT: a string goes in as its UTF-8 bytes and comes back as the
+string those bytes spell. Both alphabets are here — the standard one
+(RFC 4648 section 4, `+` and `/`, padded with `=`) and the URL-safe
+one (section 5, `-` and `_`, unpadded), which is what a fragment or a
+query string can carry without escaping. Decoding takes either, with
+padding or without, and skips the line breaks a wrapped document
+carries.
+
+| Function | Does |
+|----------|------|
+| `encode(s)` | the text as standard base64, padded |
+| `encode_url(s)` | the text as URL-safe base64, unpadded |
+| `decode(s)` | the text that base64 stands for; either alphabet, padded or not. Input that is not base64, or does not spell UTF-8 text, errors |
+| `bytes(s)` | the UTF-8 bytes of the text, as ints — what a byte-oriented format means by "the bytes" |
+| `from_bytes(bs)` | the text those UTF-8 bytes spell; anything that is not valid UTF-8 errors rather than becoming a replacement character |
+| `decode_bytes(s)` | the bytes base64 stands for, for data that is not text |
+| `encode_with(alphabet, pad, bs)` | the encoder underneath both spellings |
+| `value_of(ch)` | where a character sits in either alphabet, or nil |
 
 ## lib/err.ting
 

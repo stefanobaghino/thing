@@ -562,7 +562,7 @@ print(li["take"](words, 2), li["drop"](words, 4));
 Keys of a map are always strings, so `group_by`'s key function must
 return one — `str(...)` is the idiom.
 
-The [stdlib page](stdlib.html) documents all twelve
+The [stdlib page](stdlib.html) documents all thirteen
 (list/map/string/math/json/fs/time/args/csv/err/sh/test), and you
 never have to open a
 module's source to read about one function: `ting --doc median` in
