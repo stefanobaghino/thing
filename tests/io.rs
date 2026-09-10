@@ -4618,3 +4618,34 @@ fn a_comment_on_the_first_function_is_not_the_file_header() {
 
     std::fs::remove_dir_all(&dir).unwrap();
 }
+
+/// Two module names are also the name of something that answers
+/// first: `map` is the builtin map(xs, f) and `args` is args(). The
+/// answer has to say the module is there, or lib/map.ting and
+/// lib/args.ting are unreachable by the name a reader would try
+/// (908) — and lib/args.ting is where the shape of a spec is written.
+#[test]
+fn a_builtin_that_shares_a_module_name_points_at_the_module() {
+    for (name, path) in [("args", "lib/args.ting"), ("map", "lib/map.ting")] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--doc", name])
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(out.status.code(), Some(0), "{stdout}");
+        assert!(stdout.starts_with(&format!("{name}(")), "{stdout}");
+        assert!(
+            stdout.contains(&format!(
+                "({path} is a module of the same name: --doc {path})"
+            )),
+            "--doc {name} does not mention {path}:\n{stdout}"
+        );
+    }
+    // A name with no module of its own says nothing extra.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "len"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(!stdout.contains("is a module of the same name"), "{stdout}");
+}

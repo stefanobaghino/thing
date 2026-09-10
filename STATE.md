@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 443 Rust tests
-  in 17 suites (counted at 909; the 399 written here had been
+  CI platforms, Windows included); 446 Rust tests
+  in 17 suites (counted at 910; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 910: second stroke — THE BINDING AND THE NAME IT SHARES.
+  `lsp::imported_modules` pairs each `let NAME = import("PATH");`
+  with the embedded module its path ends in, and hovering the BINDING
+  answers with the module's header and its function count (the branch
+  sits AFTER the stdlib-function one, so `sum` is still the function).
+  And `--doc map`/`--doc args` now end with a pointer at
+  lib/map.ting/lib/args.ting: those two are the ONLY short names a
+  builtin also owns (counted, not guessed), and they were hiding the
+  module behind the one word a reader would try. The pointer lives in
+  `doc_text`, the single place `--doc` and `:doc` share.
 - 909: first stroke — THE MODULE SAYS WHAT IT IS. `lsp::source_header`
   reads a file's leading `#` block and `--doc` prints it: the whole
   header above the members when a module is asked for by name, the
@@ -3801,8 +3811,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - hover shows it over a module binding, and `--doc` on a name a
-  builtin already owns says the module exists too.
   - the site carries what a module's header explains and its
   function docs cannot, starting with what an args spec is.
   - release v2.142.0.

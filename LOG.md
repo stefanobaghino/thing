@@ -22806,3 +22806,37 @@ passed three times in a row; the host had climbed to load average
 is thin ON PURPOSE — the quadratic shape it exists to catch measured
 3.7x per doubling — so widening it would let that through. If it
 flakes again the answer is more repetitions, not a bigger number.
+
+## 910 — the binding and the name it shares
+
+Maintenance: tree clean, no PRs, CI and Pages green for b68d5dc from
+the API.
+
+Second stroke, two halves of the same complaint from 908.
+
+The editor. `lsp::imported_modules` reads a document's `let NAME =
+import("PATH");` lines and pairs each name with the embedded module
+its path ends in, so a relative "../lib/list.ting" counts the way
+imported_stdlib_functions already matches. Hovering the BINDING — the
+`li` a reader typed, not one of its functions — now answers with the
+module's header and how many functions it has. The branch sits after
+the stdlib-function one, so `sum` is still the function and `li` is
+the module; the test pins both directions.
+
+The name. Two of the thirteen modules are hidden behind something
+that answers first: `map` is the builtin map(xs, f), `args` is
+args(). `--doc map` and `--doc args` gave the builtin and never said
+a module of that name existed — and lib/args.ting is exactly where
+the shape of a spec is written, so the one word a reader would try
+was the one that could not reach it. Both answers now end with a
+pointer. It lives in `doc_text`, which is the single place `--doc`
+and the REPL's `:doc` both go through, so the two spellings of the
+question keep giving the same answer.
+
+The collisions were counted, not guessed: `map` and `args` are the
+only two of the thirteen short names that any builtin or stdlib
+function also owns.
+
+Gate: fmt, clippy, 17 `test result: ok` (446 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2769 checks on both engines, Windows
+check and clippy, wasm release build.

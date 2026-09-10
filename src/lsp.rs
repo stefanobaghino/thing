@@ -1770,6 +1770,37 @@ pub fn imported_stdlib_functions(src: &str) -> Vec<(&'static str, String, String
     out
 }
 
+/// The module bindings of a document: the NAME of every top-level
+/// `let NAME = import("PATH");` whose path names an embedded stdlib
+/// module, with that module. The path is matched by suffix, so
+/// "../lib/list.ting" counts, the way imported_stdlib_functions
+/// matches.
+pub fn imported_modules(src: &str) -> Vec<(String, &'static str)> {
+    let mut out = Vec::new();
+    for line in src.lines() {
+        let Some(rest) = line.trim_start().strip_prefix("let ") else {
+            continue;
+        };
+        let Some((name, init)) = rest.split_once(" = ") else {
+            continue;
+        };
+        let Some(inner) = init.strip_prefix("import(\"") else {
+            continue;
+        };
+        let Some(end) = inner.find('"') else {
+            continue;
+        };
+        let path = &inner[..end];
+        if let Some((full, _)) = crate::eval::embedded_stdlib()
+            .iter()
+            .find(|(p, _)| path.ends_with(p))
+        {
+            out.push((name.to_string(), *full));
+        }
+    }
+    out
+}
+
 /// The top-level `fn name(params)` declarations of a source with the
 /// `#` comment lines directly above each: (name, signature, comment
 /// joined by spaces). Line-based, so it works on any ting file —
@@ -1843,6 +1874,30 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
             format!("{comment}\n\n(from `{path}`)")
         };
         format!("```ting\n{sig}\n```\n\n{about}")
+    } else if let Some(path) = imported_modules(src)
+        .into_iter()
+        .find(|(name, _)| *name == word)
+        .map(|(_, path)| path)
+    {
+        // The module BINDING rather than one of its functions. What
+        // the module is FOR is the one thing hovering the name a
+        // reader actually typed can say, and until 910 it said
+        // nothing at all.
+        let source = crate::eval::embedded_stdlib()
+            .iter()
+            .find(|(p, _)| *p == path)
+            .map(|(_, src)| *src)
+            .unwrap_or_default();
+        let header = source_header(source).join("\n");
+        let count = source_functions(source).len();
+        let about = if header.is_empty() {
+            format!("`{path}`")
+        } else {
+            format!("{header}\n")
+        };
+        format!(
+            "```ting\nimport(\"{path}\")\n```\n\n{about}\n({count} functions — `--doc {path}` lists them)"
+        )
     } else if let Some(params) = user_fn_params(src, &word) {
         // A top-level fn (or let bound to a fn literal) in this document,
         // with the `#` comment above it when there is one — the user's
@@ -2540,6 +2595,44 @@ mod tests {
         assert!(source_header("").is_empty());
         // A file that is nothing but its header still has one.
         assert_eq!(source_header("# Notes.\n"), vec!["Notes.".to_string()]);
+    }
+
+    #[test]
+    fn hover_over_a_module_binding_says_what_the_module_is() {
+        let src = "let ar = import(\"lib/args.ting\");\nlet o = ar[\"parse\"](s, args());\n";
+        let hover = hover_result(src, 0, 4).to_string();
+        // The header, which is where the shape of a spec is written.
+        assert!(
+            hover.contains("Command-line parsing"),
+            "hover was:\n{hover}"
+        );
+        assert!(hover.contains("A spec is a map"), "hover was:\n{hover}");
+        assert!(hover.contains("--doc lib/args.ting"), "hover was:\n{hover}");
+        // A relative path names the same module.
+        let relative = "let ar = import(\"../lib/args.ting\");\nar;\n";
+        assert!(
+            hover_result(relative, 0, 4)
+                .to_string()
+                .contains("Command-line parsing"),
+            "a relative import should resolve"
+        );
+        // A function of the module still answers about the function.
+        let fun = "let li = import(\"lib/list.ting\");\nsum([1]);\n";
+        let hover = hover_result(fun, 1, 0).to_string();
+        assert!(hover.contains("sum(xs)"), "hover was:\n{hover}");
+        assert!(!hover.contains("List helpers"), "hover was:\n{hover}");
+    }
+
+    #[test]
+    fn imported_modules_reads_only_module_bindings() {
+        assert_eq!(
+            imported_modules("let m = import(\"lib/map.ting\");\n"),
+            vec![("m".to_string(), "lib/map.ting")]
+        );
+        // Not a module of ours, and not an import at all.
+        assert!(imported_modules("let m = import(\"mine.ting\");\n").is_empty());
+        assert!(imported_modules("let m = 1;\n").is_empty());
+        assert!(imported_modules("import(\"lib/map.ting\");\n").is_empty());
     }
 
     #[test]

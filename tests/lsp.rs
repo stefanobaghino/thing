@@ -390,6 +390,17 @@ fn completion_offers_imported_stdlib_functions() {
     let hov = recv(&mut reader);
     assert!(hov.contains("\"result\":null"), "{hov}");
 
+    // Hover on the BINDING itself — the `l` a reader typed — says
+    // what the module is for, from the module's own header comment.
+    // Until 910 it said nothing.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":13,"method":"textDocument/hover","params":{"textDocument":{"uri":"file:///c.ting"},"position":{"line":0,"character":4}}}"#,
+    );
+    let hov = recv(&mut reader);
+    assert!(hov.contains("List helpers"), "{hov}");
+    assert!(hov.contains("--doc lib/list.ting"), "{hov}");
+
     // Signature help inside l["median"](...) resolves through the
     // module map to the stdlib signature.
     send(

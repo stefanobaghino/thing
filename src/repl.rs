@@ -182,11 +182,35 @@ fn wrap_indented(text: &str, indent: usize) -> Vec<String> {
     lines
 }
 
+/// The module whose short name is this word. Two of the thirteen
+/// collide with something that answers first — `map` is the builtin
+/// map(xs, f) and also lib/map.ting, `args` the builtin args() and
+/// also lib/args.ting — so the answer about the builtin has to say
+/// the module is there, or the module is unreachable by the name a
+/// reader would try (908).
+fn module_named(name: &str) -> Option<&'static str> {
+    crate::eval::embedded_stdlib()
+        .iter()
+        .map(|(path, _)| *path)
+        .find(|path| path.trim_start_matches("lib/").trim_end_matches(".ting") == name)
+}
+
+/// The pointer to that module, appended to whatever answered first.
+fn also_a_module(out: &mut Vec<String>, name: &str) {
+    if let Some(path) = module_named(name) {
+        out.push(String::new());
+        out.push(format!(
+            "({path} is a module of the same name: --doc {path})"
+        ));
+    }
+}
+
 pub fn doc_text(name: &str) -> Option<String> {
     if let Some(b) = crate::value::Builtin::ALL.iter().find(|b| b.name() == name) {
         let (sig, text) = b.doc();
         let mut out = vec![sig.to_string()];
         out.extend(wrap_indented(text, 2));
+        also_a_module(&mut out, name);
         return Some(out.join("\n"));
     }
     // A source that imports every module makes the LSP's scanner
@@ -207,6 +231,7 @@ pub fn doc_text(name: &str) -> Option<String> {
         out.push(format!("{sig}  [{path}]"));
         out.extend(wrap_indented(&comment, 2));
     }
+    also_a_module(&mut out, name);
     Some(out.join("\n"))
 }
 
