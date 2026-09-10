@@ -22633,3 +22633,29 @@ entries; Cargo.toml and Cargo.lock at 2.141.0; the binary reports
 `ting 2.141.0`. Gate re-run after the bump: 17 suites (440 tests),
 `--fmt .` 79 unchanged, corpus at fourteen, 2769 checks on both
 engines, Windows check and clippy, wasm release build.
+
+## 906 — v2.141.0 verified
+
+Release, CI and Pages all green for fa3cf8d from the API. Seven
+assets; `sha256sum -c SHA256SUMS` OK for all six archives on a cold
+download.
+
+Both aarch64 Linux archives run here through tools/smoke.sh: the
+shipped lib/ matches this tree's byte for byte, 2769 checks from each
+(the gnu one again on eval), 22 examples clean. A script run from a
+directory with no lib/ of its own imported "lib/list.ting" and got
+the EMBEDDED stdlib, which is the copy a downloader who never unpacks
+beside their code actually uses.
+
+The milestone checked from the downloaded binary rather than from the
+build tree, since a diagnostic is the kind of thing a packaging step
+could quietly drop: a failing file's own output appears under its
+FAIL line, and `assertion failed: three kilos (9 == 8)` reads the
+same there as here. `assert(false)` still says just `assertion
+failed` — there is no comparison to show, which is the point of the
+span check.
+
+Site: the four paths answer 200, the changelog's newest entry is
+v2.141.0, and reference.html carries the quoted assertion.
+
+Next: health tick, which closes the milestone.

@@ -2454,6 +2454,12 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- v2.141.0 VERIFIED (162nd tag; strokes 901, 902, 903, 904; seven
+  assets, `sha256sum -c` OK on all six archives, both aarch64
+  archives executed here, 2769 checks from each on both engines, a
+  probe outside the unpacked directory proving the EMBEDDED stdlib
+  answers, and the milestone's own diagnostics read from the
+  DOWNLOADED binary).
 - 905: RELEASE v2.141.0 (162nd tag; strokes 901, 902, 903, 904).
   Gate re-run after the bump: 17 suites (440 tests), `--fmt .` 79
   unchanged, corpus at fourteen, 2769 checks on both engines,
@@ -3760,7 +3766,8 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.141.0 by cold asset download.
+  - health tick: bench vs BASELINE, the four sweeps, coverage,
+  site audit — closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
