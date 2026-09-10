@@ -23241,3 +23241,48 @@ four playground paths answer 200. Rendering them left the tree clean.
 Milestone "the key you take out" is complete.
 
 Next tick: replenishment.
+
+## 923 — replenishment: milestone "the same value twice"
+
+Maintenance: tree clean, no PRs, CI green for d3afb15 from the API.
+
+Probed by writing programs again. A queue drained from the front is
+quadratic (99/87/221/816 ms at 2000/4000/8000/16000) against 7 ms for
+the cursor idiom — real, but a Vec-backed list makes front removal
+O(n) whatever spelling it gets, so there is no builtin that fixes it.
+Recursion bottoms out cleanly at depth 4096 with a caught error, and
+nested writes (`m["a"]["b"] = 2`, `push(g["xs"], 4)`) work. sort_by
+calls its key once per element, not once per comparison.
+
+THE FINDING: asking whether a list has seen a value already is a
+linear scan everywhere in the stdlib, so every operation built on it
+is quadratic. `unique` is `if !contains(out, x)`; `unique_by` scans a
+`seen` list; `mode` scans with `find`. Measured on a list of n with
+n/2 distinct values: 4/16/68/261/1022 ms at 2000 through 32000 —
+four times the work for twice the input.
+
+And the set operations are missing entirely. lib/list.ting and
+lib/map.ting have no `union`, `intersection` or `difference`, so a
+program writes the nested loop by hand: 10/41/161 ms at 2000/4000/8000
+for an intersection of two lists.
+
+A map makes it linear, if a ting value can be turned into a key.
+`type(v) + ":" + str(v)` is faithful on everything I probed — 13
+distinct probes, 13 distinct keys, including `1` against `1.0`
+against `"1"`, `true` against `"true"`, and `[1, "1"]` against
+`["1", 1]` — because `str` already quotes strings inside a
+structure, and the type prefix settles the one ambiguity at the top.
+A `unique` on that key gives the same answer as today's on every size
+tested and runs 46 ms where the scan takes 1022.
+
+The hazard is functions, and it is real: `str` renders every function
+of one parameter as `<fn(x)>`, so two distinct functions share a key
+while `==` says they differ — today's `unique` keeps both, and a
+naive rewrite would drop one. Cyclic values are the opposite and fine:
+`[1, [...]]` for both, and `==` agrees they are equal.
+
+Milestone "the same value twice": value identity as a map key, the
+stdlib's sameness operations linear, and the set operations that were
+never there.
+
+Backlog written to STATE.md.

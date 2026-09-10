@@ -3892,10 +3892,19 @@ holds only the current milestone and the standing rules.
   complete. Coverage 3185/3202 (99%). A head-to-head against
   v2.142.0's binary cleared the runtime changes: maps -0.9%, lists
   +0.2%, stdlib's +4.3% did not survive a rerun.
+- 923: replenishment — milestone "the same value twice"
+  (v2.144), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - a faithful identity key for a ting value (functions are the
+  hazard: str renders them alike where == does not), and unique,
+  unique_by and mode built on it.
+  - union, intersection and difference in lib/list.ting, linear and
+  order-preserving, with selftest checks on both engines.
+  - a guard that these stay linear (weigh allocations, as 918 did),
+  and the docs.
+  - release v2.144.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
