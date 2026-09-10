@@ -117,7 +117,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `map_values(m, f)` | a fresh map with `f` applied to every value |
 | `map_keys(m, f)` | a fresh map with every key passed through `f` (a string); later keys win collisions |
 | `pick(m, ks)` | a fresh map with only the listed keys (missing skipped) |
-| `omit(m, ks)` | a fresh map without the listed keys |
+| `omit(m, ks)` (a fresh map; `pop(m, k)` is the in-place one) | a fresh map without the listed keys |
 | `filter_map(m, pred)` | a fresh map with only the entries where `pred(key, value)` holds |
 | `has_all(m, ks)` | true if every listed key is present |
 | `invert(m)` | keys and values swapped (values must be strings; last key wins on duplicates) |

@@ -395,6 +395,29 @@ the end — `get(xs, 9, nil)` is `nil` rather than an error. What it will
 not do is paper over a real mistake: asking a list for a string key
 still fails, because a default answers an absence, not a bug.
 
+A map can be emptied as well as filled. `pop(m, k)` takes the key out
+and hands back what it held; assigning `nil` does something else, and
+the difference matters when you count:
+
+```ting
+let ages = {"ada": 36, "grace": 85, "linus": 55};
+let gone = pop(ages, "linus");
+print(gone, ages);
+ages["ada"] = nil;
+print(len(ages), has(ages, "ada"), ages["ada"]);
+print(pop(ages, "ada"), len(ages));
+```
+
+```text
+55 {"ada": 36, "grace": 85}
+2 true nil
+nil 1
+```
+
+`ages["ada"] = nil` stores a nil under a key that is still there, so
+`len` and `has` both still count it; only `pop` makes the key go away.
+Popping a key the map does not have errors the way reading it would.
+
 ## When things go wrong
 
 Runtime errors stop the program with a caret diagnostic — unless you

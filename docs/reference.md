@@ -238,6 +238,10 @@ would have to invent.
 - Strings: `s[i]` yields a one-character string, by character (not byte).
 - Maps: `m["key"]` with a string; a missing key is an error — test with
   `has(m, "key")` first, or read it with `get(m, "key", default)`.
+  `m["key"] = v` adds or replaces in place, and `pop(m, "key")` takes
+  the key out and hands back what it held. Assigning `nil` is not the
+  same thing: it stores `nil` under a key that is still there, so `len`
+  and `has` both still count it.
 
 `get` covers all three: it takes the index or key and the value to use
 when it is absent, so a read that may miss needs no branch around it. An
@@ -396,7 +400,7 @@ scope).
 | `print(...)`   | prints args separated by spaces, then a newline; returns nil |
 | `len(x)`       | length of a list, string (in chars), or map                 |
 | `push(xs, v)`  | appends to a list in place; returns nil                     |
-| `pop(xs)`      | removes and returns the last element; empty list errors     |
+| `pop(xs)`, `pop(m, k)` | takes the last element out of a list, or key `k` out of a map, and returns it; an empty list or a missing key errors |
 | `keys(m)`      | the map's keys as a sorted list                             |
 | `has(m, k)`    | whether string key `k` is present                           |
 | `get(x, k, default)` | `x[k]` where it is present, otherwise `default`; reads a map by key and a list or string by index (negatives count from the end), and never errors on absence. Indexing a type that cannot take that key still errors |

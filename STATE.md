@@ -3881,11 +3881,13 @@ holds only the current milestone and the standing rules.
   a worktree, run head to head against HEAD, interleaved, best of
   five, same quiet host: CSV -9.7%, scan -7.5%, fib -6.5%, growth
   -7.4%, toplevel -4.2%, tight loop -19.5%.
+- 919: the docs say a map can be emptied — reference (both `pop`
+  shapes, and `m[k] = nil` storing a nil under a key that stays),
+  tutorial (a checked block; its count 47 -> 48 in tests/docs.rs),
+  stdlib (`omit` names `pop` as the in-place spelling).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the docs say a map can be emptied as well as filled, and what
-  `m[k] = nil` does instead.
   - release v2.143.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

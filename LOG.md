@@ -23119,3 +23119,42 @@ ratio of two timings can, and did at 909.
 Gate: fmt, clippy, 17 `test result: ok` (451 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2778 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 919 — what a map forgets
+
+Maintenance: tree clean, CI and Pages green for f31ce30 from the API.
+
+The last stroke of "the key you take out" is the one that makes the
+rest findable. `pop(m, k)` has been in the binary since 917 and in
+`--doc` since then, but the reference's builtin table still said
+`pop(xs)` and the Indexing section still described a map you can only
+add to. Three pages now say it, each in the register it uses:
+
+- docs/reference.md — the table row carries both shapes, and the
+  Maps bullet under Indexing says what `m[k] = nil` does INSTEAD of
+  removing: it stores a nil under a key that is still there, so `len`
+  and `has` both still count it. That is the thing 915 found by
+  running a program, and until now it was written down nowhere a
+  reader would look.
+- docs/tutorial.md — a checked block after the `get` tally, in the
+  section about sharing and copies, since this is the same subject
+  seen from the other side: what a map keeps and what it lets go.
+  The block pops a key, assigns nil to another, and prints `len`,
+  `has` and the read, so the difference is visible rather than
+  asserted. tests/docs.rs runs it: the tutorial's checked count goes
+  47 -> 48.
+- docs/stdlib.md — `omit`'s row names `pop(m, k)` as the in-place
+  spelling, which is also what lib/map.ting is built on since 918.
+
+Gate: fmt, clippy, 17 `test result: ok` (451 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2778 checks on both engines, Windows
+check and clippy, wasm release build.
+
+And a gate bug caught by the gate, worth writing down because it
+would have passed silently: I wrote the corpus step as `ting
+lib/*.ting` and friends and grepped the output, which RUNS the files
+instead of checking them and found 0 warnings. `[ "$c" = 14 ]` caught
+it — the check that gates on a comparison rather than printing a
+number is the reason this was a five-minute detour and not a wrong
+claim in the log. Warnings come from `--check`, which takes the five
+directories directly.
