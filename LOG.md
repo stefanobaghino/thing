@@ -22580,3 +22580,37 @@ Gate: fmt, clippy, 17 `test result: ok` (439 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build. `cargo fmt --check`
 caught the hand-written match arm again.
+
+## 904 — the page says what a failure looks like
+
+CI green on 3096b86 (CI and Pages, both from the API) — the stroke
+touched both engines, so the four-platform verdict came first.
+
+Last stroke of the milestone before the release: the three things
+901, 902 and 903 changed are now written down where a reader looks
+for them rather than only where a test asserts them.
+
+`docs/reference.md`, `--test` bullet: a failing file's own output is
+repeated under the `FAIL` line, indented, BEFORE the error that
+killed it — because what the file printed is usually the reason, and
+it is what `lib/test.ting`'s `summary()` prints. A passing file stays
+silent; a flood is cut after forty lines, head kept, rest counted.
+And the check count survives a failure, including a file that ends in
+`exit()`.
+
+`docs/reference.md`, the `assert` row, and the builtin's own summary
+in value.rs: a refused comparison shows both sides.
+
+The row does not paraphrase the message, it QUOTES it — `assertion
+failed: three kilos (9 == 8)` — and a new docs test runs that exact
+program and asserts the reference carries the diagnostic the binary
+printed, backticks and all. A quoted diagnostic is the kind of doc
+that rots quietly: the wording lives in eval.rs, the quote lives in
+the page, and nothing but a test connects them. Twelve docs tests
+now.
+
+Gate: fmt, clippy, 17 `test result: ok` (440 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.
+
+Next: release v2.141.0.

@@ -541,3 +541,33 @@ fn the_reference_says_what_a_cycle_costs() {
         );
     }
 }
+
+/// The message quoted for `assert` in the reference is the message
+/// the binary prints. A doc example of a diagnostic drifts silently
+/// otherwise: the wording lives in eval.rs, the quote lives here, and
+/// nothing but this test connects them.
+#[test]
+fn the_reference_quotes_what_a_failed_assertion_really_prints() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page = std::fs::read_to_string(root.join("docs/reference.md")).expect("docs/reference.md");
+    let dir = std::env::temp_dir().join(format!("ting-assert-doc-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("a directory for the program");
+    let file = dir.join("kilos.ting");
+    std::fs::write(&file, "let x = 9;\nassert(x == 8, \"three kilos\");\n").expect("written");
+    let out = std::process::Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&file)
+        .output()
+        .expect("failed to run ting");
+    std::fs::remove_dir_all(&dir).expect("the directory goes away again");
+    let stderr = String::from_utf8_lossy(&out.stderr).to_string();
+    let message = stderr
+        .lines()
+        .find_map(|l| l.split_once("error: "))
+        .map(|(_, m)| m.to_string())
+        .unwrap_or_else(|| panic!("no diagnostic in:\n{stderr}"));
+    assert!(
+        page.contains(&format!("`{message}`")),
+        "docs/reference.md does not quote what ting prints: {message}"
+    );
+}

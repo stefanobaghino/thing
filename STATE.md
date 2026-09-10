@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 439 Rust tests
-  in 17 suites (counted at 903; the 399 written here had been
+  CI platforms, Windows included); 440 Rust tests
+  in 17 suites (counted at 904; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 904: fourth stroke — THE PAGE SAYS WHAT A FAILURE LOOKS LIKE.
+  docs/reference.md's `--test` bullet now states that a failing
+  file's own output is repeated under the FAIL line before the error
+  (forty-line cap, head kept), that a passing file stays silent, and
+  that the check count survives a failure including `exit()`; the
+  `assert` row and the builtin's summary in value.rs say a refused
+  comparison shows both sides. The row QUOTES the diagnostic and a
+  new docs test runs that program and asserts the page carries what
+  the binary printed — a quoted diagnostic rots quietly otherwise.
+  Twelve docs tests. Next: release v2.141.0.
 - 903: third stroke — THE ASSERTION SHOWS ITS WORK. `assertion
   failed: three kilos (9 == 8)`. The two sides reach the builtin
   through the `Interpreter` (`set_compared`), filled by the
@@ -3746,8 +3756,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the docs say what a failing test prints and what an assertion
-  shows.
   - release v2.141.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

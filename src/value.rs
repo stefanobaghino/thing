@@ -736,7 +736,7 @@ impl Builtin {
             Builtin::Abs => ("abs(n)", "Absolute value of an int or float."),
             Builtin::Assert => (
                 "assert(cond) / assert(cond, msg)",
-                "Errors unless cond is true (bool required).",
+                "Errors unless cond is true (bool required); a refused comparison shows both sides.",
             ),
             Builtin::Import => (
                 "import(path)",

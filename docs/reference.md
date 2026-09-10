@@ -440,7 +440,7 @@ scope).
 | `reduce(xs, init, f)` | folds left: `f(f(init, x0), x1)…`                     |
 | `min(xs)` / `max(xs)` | smallest / largest element; `sort`'s ordering rules; empty list errors |
 | `abs(n)`       | absolute value of an int or float                            |
-| `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required) |
+| `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required); a refused comparison also shows both sides, as `assertion failed: three kilos (9 == 8)` |
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
 | `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors. A placeholder may carry a spec — `{:[[fill]align][width]}`, see below |
 | `json_parse(s)` | JSON text to ting values (object→map, array→list, null→nil); malformed input errors with an offset. A byte order mark at the head of the document is skipped — another program may have written one — but only there |
@@ -963,7 +963,15 @@ The `ting` binary is the whole toolchain — no separate installs:
   the file verified — `ok tests/list.ting (12 checks)`, one check
   per `assert` — the summary totals them, and a file that passed
   while checking nothing is named there, since it proves nothing.
-  `--watch` (below) re-runs the suite on every change.
+  A failing file's own output is repeated under the `FAIL` line,
+  indented, before the error that killed it: what the file printed
+  is usually the reason, and it is what `lib/test.ting`'s
+  `summary()` prints. A file that passes stays silent, and a flood
+  is cut after forty lines, keeping the head and counting the rest.
+  The check count survives a failure too — a file that dies partway,
+  or one that ends in `exit()`, still reports what it verified
+  before it stopped. `--watch` (below) re-runs the suite on every
+  change.
 - `--watch` turns `--test`, `--check` and `--fmt-check` into
   something that stays open: the pass runs, and then runs again
   every time one of the watched files changes, is added or is
