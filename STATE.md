@@ -2454,6 +2454,20 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 907: HEALTH TICK, milestone "the failure tells you why" complete.
+  Bench: eleven checksums identical, but every timing was up on
+  BASELINE (eval ~10%, vm ~8%) and 903 had put a predicate in the
+  tree-walker's per-argument path, so weather was NOT allowed to be
+  the answer: v2.140.0 built in a worktree and run against HEAD
+  interleaved, three rounds, best of three — median eval -0.3%,
+  median vm -0.4%, no regression. Sweeps green (50000 differential
+  twice, 2000000 patterns, crash, 20000 formatter). Coverage
+  3169/3186 (99%), unchanged; `summary()` in lib/test.ting is
+  uncovered BY DESIGN (a selftest calling it with a failure would
+  exit 1) and its exit path is covered from tests/io.rs instead.
+  Site audit strong form: six pages byte-identical to the local
+  renderer, examples.js identical, four playground paths 200. Next
+  tick: replenishment.
 - v2.141.0 VERIFIED (162nd tag; strokes 901, 902, 903, 904; seven
   assets, `sha256sum -c` OK on all six archives, both aarch64
   archives executed here, 2769 checks from each on both engines, a
@@ -3766,8 +3780,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, the four sweeps, coverage,
-  site audit — closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

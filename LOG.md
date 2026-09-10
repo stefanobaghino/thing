@@ -22659,3 +22659,52 @@ Site: the four paths answer 200, the changelog's newest entry is
 v2.141.0, and reference.html carries the quoted assertion.
 
 Next: health tick, which closes the milestone.
+
+## 907 — health tick, milestone "the failure tells you why" complete
+
+Maintenance: tree clean, no PRs, CI green for cccc8f1 from the API
+(no Pages run, and there should not be: a LOG/STATE-only push misses
+that workflow's path filter).
+
+Bench: eleven checksums identical to BASELINE, compared mechanically.
+Every timing was up on BASELINE — eval about 10%, vm about 8% —
+and on any other tick that would be weather and the end of it. Not
+this time. 903 put `is_assert_comparison` in the tree-walker's path
+for EVERY argument of EVERY call, I said so in that entry, and "the
+host is busy" is not a way to rule out the regression I introduced.
+
+So I measured it instead of arguing about it: v2.140.0 built in a
+worktree and run against HEAD interleaved, three rounds, best of
+three, same host in the same minutes. MEDIAN EVAL -0.3%, MEDIAN VM
+-0.4% — no regression, per script none outside ±7% in either
+direction and no sign of a bias. The predicate costs nothing
+measurable, which is what the tag test in front of the name
+comparison was for. The BASELINE gap is entirely the host (load
+average 2.14 on four cores against the quiet one BASELINE was
+recorded on), and the head-to-head is the reading that survives it.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 907), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage 3169/3186 (99%), unchanged from 899 — nothing in this
+milestone was ting-level. The gaps are the old deliberate ones (args'
+help columns, paths fs and sh do not take on this platform, the
+no-zone-data branch in selftest/time.ting, the unreachable statement
+edge.ting exists to warn about) plus one worth naming now that this
+milestone has been through it: `summary()` in lib/test.ting is never
+run by the corpus, because a selftest that called it with a failure
+would exit 1 and fail its own file. Its exit path — the one 902
+fixed — is covered from tests/io.rs, which spawns a child and reads
+what the harness saw. The right place for it; the ting-level number
+just cannot show it.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here from the same sources, the live examples.js is identical
+to the repository's, and the four playground paths answer 200.
+Rendering them left the tree clean.
+
+Milestone "the failure tells you why" is complete.
+
+Next tick: replenishment.
