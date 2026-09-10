@@ -15,8 +15,8 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 74 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
+- 75 builtins; thirteen embedded stdlib modules
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 204
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2778 selftest checks on all four
@@ -3894,12 +3894,13 @@ holds only the current milestone and the standing rules.
   +0.2%, stdlib's +4.3% did not survive a rerun.
 - 923: replenishment — milestone "the same value twice"
   (v2.144), reasoning in LOG.md.
+- 924: fingerprint(v), the 75th builtin — a map key wherever == is an
+  equivalence relation, nil for a function, a NaN, a number past 2^53
+  or a value holding itself. unique, unique_by and mode built on it,
+  linear now (32000 elements: 1022 ms -> 37).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a faithful identity key for a ting value (functions are the
-  hazard: str renders them alike where == does not), and unique,
-  unique_by and mode built on it.
   - union, intersection and difference in lib/list.ting, linear and
   order-preserving, with selftest checks on both engines.
   - a guard that these stay linear (weigh allocations, as 918 did),

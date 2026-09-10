@@ -23286,3 +23286,54 @@ stdlib's sameness operations linear, and the set operations that were
 never there.
 
 Backlog written to STATE.md.
+
+## 924 — the fingerprint
+
+Maintenance: tree clean, no PRs, CI green for dcf4ed5 from the API.
+
+`fingerprint(v)`, the 75th builtin: a string two values share exactly
+when `==` says they are equal, so a map lookup can stand in for a
+scan. `unique`, `unique_by` and `mode` are built on it and are linear
+now — unique of n with n/2 distinct values measured 16/68/261/1022 ms
+at 4000/8000/16000/32000 before and 3/7/15/37 after, and mode over
+20000 elements takes 17 ms.
+
+923 PROPOSED THE WRONG KEY AND THE TESTS SAID SO. `type(v) + ":" +
+str(v)` looked faithful on thirteen probes, and I wrote in the log
+that it tells `1` from `1.0`. That is exactly what it must not do:
+ting's `==` compares int against float numerically at every depth, so
+`1 == 1.0` and `[1] == [1.0]`, and a key that separates them would
+have made `unique([1, 1.0])` keep both. Nested floats sink the ting
+implementation altogether — `[1]` and `[1.0]` are equal and `str`
+spells them differently — so the fingerprint is a builtin, walking the
+value the way `PartialEq` does.
+
+What it refuses, each because equality there cannot be a map key:
+
+- a function, which `==` compares by identity while `str` renders
+  every one-parameter function as `<fn(x)>`;
+- a NaN, equal to nothing, itself included;
+- a number past 2^53, where int-to-float equality stops being
+  TRANSITIVE — `9007199254740993 == 9007199254740992.0` is true and
+  `9007199254740993 == 9007199254740992` is false, so no key can hold
+  both facts. The int's own magnitude decides, not the f64 it becomes:
+  my first version converted first and let the big int through;
+- a value that contains itself, where the walk has no end.
+
+The three helpers keep a scan for what it refuses, and the two paths
+cannot disagree: a value the fingerprint refuses is only ever equal to
+another it refuses too.
+
+Numbers are canonical through f64 (so `1`, `1.0` and `-0.0` against
+`0.0` agree with `==`), and strings carry their length, so no
+escaping is needed and no two structures can spell each other.
+
+Checks: 20 in collections.ting for the builtin, 8 in stdlib.ting for
+the helpers over functions and numbers, 12 differential cases. 2806
+checks now, on both engines. The editor grammar and the two stdlib
+counts (75 builtins, 204 functions) were guarded by tests that failed
+first, which is what they are for.
+
+Gate: fmt, clippy, 17 `test result: ok` (452 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2806 checks on both engines, Windows
+check and clippy, wasm release build.

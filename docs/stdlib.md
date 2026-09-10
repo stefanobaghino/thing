@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 203 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 204 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -38,8 +38,9 @@ Imports return a map, so functions are reached with `["name"]`.
 | `zip_with(a, b, f)` | `f(a[i], b[i])` for each index, trimmed to the shorter input |
 | `cartesian(a, b)` | every `[x, y]` pair, `a`-major order |
 | `enumerate(xs)` | list of `[index, value]` pairs |
-| `unique(xs)` | first occurrence of each element, order preserved (structural equality) |
+| `unique(xs)` | first occurrence of each element, order preserved (structural equality; keyed by `fingerprint`, so one pass rather than a scan per element) |
 | `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |
+| `fingerprint(v)` | the builtin, re-exported so the module carries the key its sameness helpers use |
 | `compact(xs)` | a fresh list without the `nil` elements |
 | `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |

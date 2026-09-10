@@ -1977,6 +1977,15 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Fingerprint => {
+                arity(1, 1)?;
+                let mut out = String::new();
+                let mut open = Vec::new();
+                Ok(match fingerprint(&args[0], &mut out, &mut open) {
+                    true => Value::str(out),
+                    false => Value::Nil,
+                })
+            }
             Builtin::Pop => {
                 arity(1, 2)?;
                 match (&args[0], args.get(1)) {
@@ -4616,6 +4625,80 @@ pub(crate) fn index_opt(
 /// "key not found", with the nearest key the map does have. Reading a
 /// key and taking one out fail the same way, so the message is here
 /// rather than at either call site.
+/// The largest magnitude where int and float equality is still an
+/// equivalence relation: past it `1 as f64 == b` merges ints a map
+/// would have to keep apart (2^53 and 2^53 + 1 are one f64).
+const EXACT: f64 = 9007199254740992.0;
+
+/// Writes a canonical text for `v`, equal exactly where `==` is, and
+/// answers false where no text can be: a function (compared by
+/// identity, not by what it says), a NaN (equal to nothing, itself
+/// included), a number past `EXACT`, or a container that holds
+/// itself. Strings carry their length, so no escaping is needed and
+/// no two structures can spell each other.
+pub(crate) fn fingerprint(v: &Value, out: &mut String, open: &mut Vec<*const ()>) -> bool {
+    use std::fmt::Write;
+    match v {
+        Value::Nil => out.push('N'),
+        Value::Bool(b) => out.push(if *b { 'T' } else { 'F' }),
+        Value::Int(i) => {
+            // The int's own magnitude, not the f64 it becomes: past
+            // 2^53 the conversion is what loses the difference.
+            if i.unsigned_abs() > EXACT as u64 {
+                return false;
+            }
+            let _ = write!(out, "{:?}", *i as f64);
+        }
+        Value::Float(f) => {
+            if f.is_nan() || (f.is_finite() && f.abs() > EXACT) {
+                return false;
+            }
+            // -0.0 == 0.0, and {:?} spells them differently.
+            let _ = write!(out, "{:?}", if *f == 0.0 { 0.0 } else { *f });
+        }
+        Value::Str(s) => {
+            let _ = write!(out, "s{}:{}", s.as_str().len(), s.as_str());
+        }
+        Value::List(items) => {
+            let p = Rc::as_ptr(items) as *const ();
+            if open.contains(&p) {
+                return false;
+            }
+            open.push(p);
+            out.push('[');
+            for x in items.borrow().iter() {
+                if !fingerprint(x, out, open) {
+                    open.pop();
+                    return false;
+                }
+                out.push(',');
+            }
+            out.push(']');
+            open.pop();
+        }
+        Value::Map(entries) => {
+            let p = Rc::as_ptr(entries) as *const ();
+            if open.contains(&p) {
+                return false;
+            }
+            open.push(p);
+            out.push('{');
+            for (k, x) in entries.borrow().iter() {
+                let _ = write!(out, "s{}:{}=", k.len(), k);
+                if !fingerprint(x, out, open) {
+                    open.pop();
+                    return false;
+                }
+                out.push(',');
+            }
+            out.push('}');
+            open.pop();
+        }
+        Value::Fn(_) | Value::Builtin(_) => return false,
+    }
+    true
+}
+
 pub(crate) fn key_miss(
     entries: &std::collections::BTreeMap<String, Value>,
     k: &str,

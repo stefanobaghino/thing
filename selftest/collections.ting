@@ -111,3 +111,33 @@ assert(errmsg(fn() { for i in range("a") { print(i); } }) == "range expects int 
 "fused range: a bad argument errors as the builtin does");
 assert(errmsg(fn() { for i in range() { print(i); } }) == "range expects 1 to 3 arguments, got 0",
 "fused range: arity errors as the builtin does");
+
+# fingerprint: a map key exactly where == is an equivalence relation,
+# and nil everywhere it is not.
+assert(type(fingerprint(1)) == "string", "fingerprint answers a string");
+assert(fingerprint(1) == fingerprint(1.0), "fingerprint: 1 and 1.0 are one value, as == says");
+assert(fingerprint([1]) == fingerprint([1.0]), "fingerprint: and nested, as == says there too");
+assert(fingerprint({"a": 1}) == fingerprint({"a": 1.0}), "fingerprint: map values too");
+assert(fingerprint(0.0) == fingerprint(-0.0), "fingerprint: zero has one spelling");
+assert(fingerprint("1") != fingerprint(1), "fingerprint: a string is not the number it spells");
+assert(fingerprint([1, "1"]) != fingerprint(["1", 1]), "fingerprint: order counts");
+assert(fingerprint({"a": 1}) != fingerprint({"b": 1}), "fingerprint: keys count");
+assert(fingerprint(["ab"]) != fingerprint(["a", "b"]), "fingerprint: a string carries its length");
+assert(fingerprint(true) != fingerprint("true"), "fingerprint: a bool is not its name");
+assert(fingerprint(nil) != nil, "fingerprint: nil is a value like any other");
+
+assert(fingerprint(print) == nil, "fingerprint refuses a builtin");
+assert(fingerprint(fn(x) { return x; }) == nil, "fingerprint refuses a function");
+assert(fingerprint([1, print]) == nil, "fingerprint refuses a function inside");
+assert(fingerprint({"f": print}) == nil, "fingerprint refuses one under a key");
+assert(fingerprint(9007199254740992) != nil, "fingerprint keeps 2^53 itself");
+assert(fingerprint(9007199254740993) == nil, "fingerprint refuses an int past 2^53");
+assert(fingerprint(0.0 / 0.0) == nil, "fingerprint refuses a NaN, which equals nothing");
+let cyc = [1];
+push(cyc, cyc);
+assert(fingerprint(cyc) == nil, "fingerprint refuses a value that holds itself");
+let selfmap = {"a": 1};
+selfmap["self"] = selfmap;
+assert(fingerprint(selfmap) == nil, "fingerprint refuses a map that holds itself");
+assert(errmsg(fn() { return fingerprint(); }) == "fingerprint expects 1 argument, got 0",
+"fingerprint takes one value");

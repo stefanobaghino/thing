@@ -466,6 +466,7 @@ scope).
 | `re_find_all(s, pattern)` | every non-overlapping match, left to right, as a list of those maps |
 | `re_replace(s, pattern, repl)` | every match replaced; `$0` is the whole match, `$1` to `$9` its groups, `$$` a literal `$`. A reference to a group the pattern does not have errors |
 | `re_split(s, pattern)` | the string cut at every match; leading and trailing empty pieces are kept, as `split` keeps them |
+| `fingerprint(v)` | a string two values share exactly when `==` says they are equal, so a map lookup can stand in for a scan; `nil` where equality cannot be a key — a function (compared by identity, not by what it says), a NaN (equal to nothing, itself included), a number past 2^53 (where `1 == 1.0` numeric equality stops being transitive between ints and floats), or a value that contains itself. The text itself is not promised: compare fingerprints, do not read them |
 
 ### Format specs
 

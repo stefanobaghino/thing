@@ -70,6 +70,30 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
 /// to read the same on both engines — including the "did you mean"
 /// that reading a missing key already gave.
 #[test]
+fn a_fingerprint_reads_the_same_on_both_engines() {
+    let cases: &[&str] = &[
+        // Equal values, one key: == says 1 == 1.0 at every depth.
+        "print(fingerprint(1) == fingerprint(1.0), fingerprint([1]) == fingerprint([1.0]));",
+        "print(fingerprint({\"a\": 1}) == fingerprint({\"a\": 1.0}));",
+        "print(fingerprint(0.0) == fingerprint(-0.0));",
+        // Different values, different keys.
+        "print(fingerprint(1) == fingerprint(\"1\"), fingerprint(true) == fingerprint(\"true\"));",
+        "print(fingerprint([1, \"1\"]) == fingerprint([\"1\", 1]));",
+        "print(fingerprint([\"ab\"]) == fingerprint([\"a\", \"b\"]));",
+        // Everything it refuses.
+        "print(fingerprint(print), fingerprint(fn(x) { return x; }), fingerprint([1, print]));",
+        "print(fingerprint(9007199254740992) == nil, fingerprint(9007199254740993));",
+        "print(fingerprint(0.0 / 0.0));",
+        "let c = [1]; push(c, c); print(fingerprint(c));",
+        "let m = {\"a\": 1}; m[\"m\"] = m; print(fingerprint(m));",
+        "print(try(fingerprint)[\"err\"], try(fingerprint, 1, 2)[\"err\"]);",
+    ];
+    for src in cases {
+        same(src);
+    }
+}
+
+#[test]
 fn taking_a_key_out_of_a_map_reads_the_same_on_both_engines() {
     let cases: &[&str] = &[
         "let m = {\"a\": 1, \"b\": 2}; print(pop(m, \"a\"), m, len(m));",

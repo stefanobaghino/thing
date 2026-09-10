@@ -488,10 +488,11 @@ pub enum Builtin {
     ReFindAll,
     ReReplace,
     ReSplit,
+    Fingerprint,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 74] = [
+    pub const ALL: [Builtin; 75] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -566,6 +567,7 @@ impl Builtin {
         Builtin::ReFindAll,
         Builtin::ReReplace,
         Builtin::ReSplit,
+        Builtin::Fingerprint,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -821,6 +823,10 @@ impl Builtin {
                 "re_split(s, pattern)",
                 "The string cut at every match, as a list of pieces.",
             ),
+            Builtin::Fingerprint => (
+                "fingerprint(v)",
+                "A string two values share exactly when == says they are equal, so a map can stand in for a scan; nil where equality cannot be a key: a function (compared by identity), a NaN (equal to nothing), a number past 2^53 (where int and float equality stops being transitive), or a value that contains itself.",
+            ),
         }
     }
 
@@ -900,6 +906,7 @@ impl Builtin {
             Builtin::ReFindAll => "re_find_all",
             Builtin::ReReplace => "re_replace",
             Builtin::ReSplit => "re_split",
+            Builtin::Fingerprint => "fingerprint",
         }
     }
 }
