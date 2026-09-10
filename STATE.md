@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 914: HEALTH TICK, milestone "the module says what it is" complete.
+  Bench: eleven checksums identical, timings 5-10% over BASELINE at
+  load 2.31 — weather, and NO head-to-head this time on purpose:
+  907 ran one because that milestone put a predicate in the
+  tree-walker's per-argument path, whereas this one touched `--doc`,
+  hover and comments, none of which run while a program does. Sweeps
+  green (50000 differential twice, 2000000 patterns, crash, 20000
+  formatter). Coverage 3169/3186 (99%), unchanged, same six
+  deliberate gaps. Site audit strong form: six pages byte-identical
+  to the local renderer, examples.js identical, four playground paths
+  200. Next tick: replenishment.
 - v2.142.0 VERIFIED (163rd tag; strokes 909, 910, 911; seven assets,
   `sha256sum -c` OK on all six archives, both aarch64 archives
   executed here, 2769 checks from each on both engines, a probe
@@ -3834,8 +3845,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, the four sweeps, coverage,
-  site audit — closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

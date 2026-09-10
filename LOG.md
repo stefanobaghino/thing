@@ -22932,3 +22932,34 @@ Site: the four paths answer 200, the changelog's newest entry is
 v2.142.0, and the spec is on stdlib.html.
 
 Next: health tick, which closes the milestone.
+
+## 914 — health tick, milestone "the module says what it is" complete
+
+Maintenance: tree clean, no PRs, CI green for 78f274d from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE, compared mechanically.
+Timings five to ten percent above BASELINE across both engines, which
+is the same weather 907 measured at a comparable load (2.31 here). No
+head-to-head this time, and the reason is worth writing down rather
+than assuming: 907 ran one because that milestone had put a predicate
+in the tree-walker's per-argument path, so a real regression was
+possible. This milestone touched `--doc`, hover and comments. Nothing
+it changed runs while a program does.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 914), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage 3169/3186 (99%), unchanged again — nothing here was
+ting-level either. Same six gaps, all old and deliberate.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js matches the repository's, and the
+four playground paths answer 200. Rendering them left the tree clean.
+
+Milestone "the module says what it is" is complete.
+
+Next tick: replenishment.
