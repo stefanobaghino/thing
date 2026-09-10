@@ -23179,3 +23179,27 @@ Cargo.toml and Cargo.lock at 2.143.0; the binary reports `ting
 2.143.0`. Gate re-run after the bump: 17 suites (451 tests), `--fmt
 .` 79 unchanged, corpus at fourteen, 2778 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 921 — v2.143.0 verified
+
+Release, CI and Pages all green for 00c7c3d from the API. Seven
+assets; `sha256sum -c SHA256SUMS` OK for all six archives on a cold
+download.
+
+Both aarch64 Linux archives run here through tools/smoke.sh: the
+shipped lib/ matches this tree byte for byte, 2778 checks from each
+(the gnu one again on eval), 22 examples clean.
+
+The milestone from the DOWNLOADED binary: `pop(m, "linus")` hands back
+55 and leaves a map of two, `m["ada"] = nil` leaves len 2 and has
+true with a nil read, `pop` then takes it out, and popping a key the
+map lacks says `key "nope" not found` through try(). `--doc pop`
+carries both shapes. lib/map.ting's `omit` — the shipped copy, built
+on pop — answers from a directory WITH lib/ and from one WITHOUT,
+where the embedded stdlib serves it.
+
+Site: the four paths answer 200, the changelog's newest entry is
+v2.143.0, the reference's table row carries `pop(m, k)`, and the
+tutorial's new block is on the page.
+
+Next: health tick, which closes the milestone.
