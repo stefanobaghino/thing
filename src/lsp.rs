@@ -1794,6 +1794,38 @@ pub fn source_functions(source: &str) -> Vec<(String, String, String)> {
     out
 }
 
+/// A file's own leading `#` comment: what the module is for, as
+/// opposed to what any one of its functions does. It is the file's
+/// only when a blank line follows it — a comment sitting directly on
+/// top of the first declaration documents THAT, and source_functions
+/// already hands it out. Lines come back with the `#` and one space
+/// removed and their own indentation intact, because a header is
+/// prose AND worked examples, and wrapping would ruin the examples.
+pub fn source_header(source: &str) -> Vec<String> {
+    let mut lines: Vec<String> = Vec::new();
+    let mut started = false;
+    for line in source.lines() {
+        if let Some(text) = line.strip_prefix('#') {
+            started = true;
+            lines.push(text.strip_prefix(' ').unwrap_or(text).to_string());
+            continue;
+        }
+        if !started && line.trim().is_empty() {
+            continue;
+        }
+        // Anything but a blank line here is the declaration the
+        // comment belongs to, so the file has no header of its own.
+        if !line.trim().is_empty() {
+            return Vec::new();
+        }
+        break;
+    }
+    while lines.last().is_some_and(|l| l.trim().is_empty()) {
+        lines.pop();
+    }
+    lines
+}
+
 fn hover_result(src: &str, line: usize, character: usize) -> Value {
     let Some(word) = ident_at(src, line, character) else {
         return Value::Nil;
@@ -2488,6 +2520,28 @@ mod tests {
     /// A hover over a function with defaults says which arguments may
     /// be left out, spelled the way they were written rather than as
     /// the AST prints them.
+    #[test]
+    fn a_file_header_is_the_leading_comment_a_blank_line_follows() {
+        let headed =
+            "# A ledger.\n#\n#   let l = import(\"l.ting\");\n\n# Adds.\nfn add(a) { return a; }\n";
+        assert_eq!(
+            source_header(headed),
+            vec![
+                "A ledger.".to_string(),
+                String::new(),
+                "  let l = import(\"l.ting\");".to_string(),
+            ],
+            "the indentation of a worked example survives"
+        );
+        // Straight on top of the declaration: that comment is the
+        // function's, and source_functions is what hands it out.
+        assert!(source_header("# Adds.\nfn add(a) { return a; }\n").is_empty());
+        assert!(source_header("fn add(a) { return a; }\n").is_empty());
+        assert!(source_header("").is_empty());
+        // A file that is nothing but its header still has one.
+        assert_eq!(source_header("# Notes.\n"), vec!["Notes.".to_string()]);
+    }
+
     #[test]
     fn hover_shows_a_default_as_written() {
         let src = "fn greet(who, greeting = \"hi\", n = 1 + 1) { return who; }\ngreet(\"a\");\n";

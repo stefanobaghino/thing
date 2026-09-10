@@ -22755,3 +22755,54 @@ padding helpers are for the cases format cannot reach, which is
 fine.
 
 Backlog for the milestone is in STATE.md.
+
+## 909 — the module says what it is
+
+Maintenance: tree clean, no PRs, CI green for 1963061 from the API.
+
+First stroke. `lsp::source_header` reads a file's leading `#` block —
+the same line-based reading `source_functions` already does for the
+comment above a declaration — and `--doc` prints it.
+
+The rule that matters: the block is the FILE's only when a blank line
+follows it. A comment sitting straight on top of the first
+declaration documents THAT, and source_functions already hands it
+out; printing it twice would be worse than not printing it at all.
+Tested both ways round.
+
+The other thing worth getting right is that a header is prose AND
+worked examples — lib/args.ting's spec is a JSON-shaped block, and
+lib/test.ting's is seven calls. So header lines are copied out with
+their own indentation intact and NOT word-wrapped, unlike every other
+doc line. Nothing but the source keeps them inside eighty columns,
+so the width test now checks that module too.
+
+Asked for by name a module leads with the whole header; in the table
+of contents that would be a wall, so `--doc` alone puts the first
+sentence on the module's own line — `lib/csv.ting: Delimited text,
+both directions, written in ting.` where before there was a bare
+path. Three of the thirteen are too long for one line and wrap under
+it, indented past where a member starts.
+
+`--doc lib/args.ting` now answers the question 908 could not: what a
+spec is, in the module's own words, above the five functions that
+take one. A user's own file gets the same — the ledger module I wrote
+while probing now shows what an entry is.
+
+The guard walks lib/ and asserts every module's header reaches `--doc
+lib/NAME.ting`, thirteen of them, line by line. It asks by PATH: by
+short name `args` is the builtin `args()`, which is the next stroke.
+
+Gate: fmt (rustfmt reshaped three of the new blocks), clippy, 17
+`test result: ok` (443 tests), `--fmt .` 79 unchanged, corpus at
+fourteen, 2769 checks on both engines, Windows check and clippy, wasm
+release build.
+
+One flake on the way, recorded because it will come back:
+`rendering_many_diagnostics_does_not_count_from_the_top_each_time`
+failed at a ratio of exactly 3.0 against a threshold of 3.0, then
+passed three times in a row; the host had climbed to load average
+6.6. Nothing in this stroke goes near check_warnings. The threshold
+is thin ON PURPOSE — the quadratic shape it exists to catch measured
+3.7x per doubling — so widening it would let that through. If it
+flakes again the answer is more repetitions, not a bigger number.

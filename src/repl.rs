@@ -271,7 +271,20 @@ pub fn doc_index(module: Option<&str>) -> Option<String> {
         if !out.is_empty() {
             out.push(String::new());
         }
-        out.push(format!("{path}:"));
+        let source = crate::eval::embedded_stdlib()
+            .iter()
+            .find(|(p, _)| p == path)
+            .map(|(_, src)| crate::lsp::source_header(src))
+            .unwrap_or_default();
+        // Asked for by name, the module answers with what it is for,
+        // in full; in the table of contents that would be a wall, so
+        // there it is the first sentence on the module's own line.
+        if module.is_some() {
+            out.push(format!("{path}:"));
+            out.extend(header_lines(&source));
+        } else {
+            out.push(module_line(path, &source));
+        }
         for (p, _, sig, comment) in &all {
             if p != path {
                 continue;
@@ -303,6 +316,61 @@ fn member_line(sig: &str, comment: &str) -> String {
     let mut lines = vec![format!("  {sig}")];
     lines.extend(wrap_indented(first, 6));
     lines.join("\n")
+}
+
+/// The first sentence of a module's header comment — its one-line
+/// answer to "what is this for". None when the file has no header.
+fn module_summary(header: &[String]) -> Option<String> {
+    let joined = header
+        .iter()
+        .filter(|l| !l.trim().is_empty())
+        .cloned()
+        .collect::<Vec<_>>()
+        .join(" ");
+    if joined.is_empty() {
+        return None;
+    }
+    Some(match joined.find(". ") {
+        Some(i) => joined[..=i].to_string(),
+        // No sentence break to cut at: the first line, rather than a
+        // header's worked examples run together on one line.
+        None => header.first()?.clone(),
+    })
+}
+
+/// A module's line in the index: its path, then that one-line answer
+/// where there is one — on the same line when it fits, wrapped
+/// underneath otherwise, indented past where a member would start.
+fn module_line(path: &str, header: &[String]) -> String {
+    let Some(summary) = module_summary(header) else {
+        return format!("{path}:");
+    };
+    let one = format!("{path}: {summary}");
+    if one.len() <= DOC_WIDTH {
+        return one;
+    }
+    let mut lines = vec![format!("{path}:")];
+    lines.extend(wrap_indented(&summary, 4));
+    lines.join("\n")
+}
+
+/// A header printed above a module's members: every line indented,
+/// its own shape kept, and a blank line before the list starts.
+fn header_lines(header: &[String]) -> Vec<String> {
+    let mut out: Vec<String> = header
+        .iter()
+        .map(|l| {
+            if l.is_empty() {
+                String::new()
+            } else {
+                format!("  {l}")
+            }
+        })
+        .collect();
+    if !out.is_empty() {
+        out.push(String::new());
+    }
+    out
 }
 
 /// Every entry `--doc` can print: the module path (empty for a
@@ -384,6 +452,7 @@ pub fn doc_search(query: &str, skip: Option<&str>) -> Option<String> {
 pub fn doc_file(path: &str) -> Option<String> {
     let source = std::fs::read_to_string(path).ok()?;
     let mut out = vec![format!("{path}:")];
+    out.extend(header_lines(&crate::lsp::source_header(&source)));
     for (_, sig, comment) in crate::lsp::source_functions(&source) {
         out.push(member_line(&sig, &comment));
     }

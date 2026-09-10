@@ -1172,11 +1172,16 @@ fn repl_doc_alone_lists_everything() {
     let out = child.wait_with_output().unwrap();
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.starts_with("builtins:\n"), "{stdout}");
-    assert!(stdout.contains("\nlib/list.ting:\n"), "{stdout}");
     assert!(
-        stdout.contains("\nlib/math.ting:\n  clamp(x, lo, hi)"),
+        stdout.contains("\nlib/list.ting: List helpers, written in ting.\n"),
         "{stdout}"
     );
+    // Asked for by name, a module leads with its header and then lists.
+    assert!(
+        stdout.contains("\nlib/math.ting:\n  Math helpers, written in ting."),
+        "{stdout}"
+    );
+    assert!(stdout.contains("\n  clamp(x, lo, hi)"), "{stdout}");
     assert_eq!(out.status.code(), Some(0));
 }
 
@@ -1539,6 +1544,17 @@ fn doc_output_fits_eighty_columns() {
         );
         assert!(stdout.contains("get_in(v, path)"), "{args:?}: {stdout}");
     }
+    // The widest header comment in lib/, which --doc prints since 909:
+    // its worked examples are copied out line for line, not wrapped, so
+    // nothing but the source keeps them inside eighty columns.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", "lib/args.ting"])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let long: Vec<&str> = stdout.lines().filter(|l| l.chars().count() > 78).collect();
+    assert!(long.is_empty(), "--doc lib/args.ting is too wide: {long:?}");
+
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--doc", "get_in"])
         .output()
@@ -1825,8 +1841,16 @@ fn doc_flag_lists_everything_or_a_module() {
     assert_eq!(out.status.code(), Some(0), "{stdout}");
     assert!(stdout.starts_with("builtins:\n"), "{stdout}");
     assert!(stdout.contains("\n  len(x)"), "{stdout}");
-    assert!(stdout.contains("\nlib/list.ting:\n"), "{stdout}");
-    assert!(stdout.contains("\nlib/test.ting:\n"), "{stdout}");
+    // The table of contents says what each module is for, in its own
+    // words: the first sentence of the header comment (909).
+    assert!(
+        stdout.contains("\nlib/list.ting: List helpers, written in ting.\n"),
+        "{stdout}"
+    );
+    assert!(
+        stdout.contains("\nlib/test.ting: A tiny test framework, written in ting.\n"),
+        "{stdout}"
+    );
     assert!(stdout.contains("\n  median(xs)"), "{stdout}");
 
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
@@ -4508,4 +4532,89 @@ fn a_stream_can_be_read_lossily_too() {
         String::from_utf8_lossy(&out.stderr)
     );
     assert!(out.status.success());
+}
+
+/// Every module opens with a comment saying what it is for — how to
+/// import it, and the shape of the values its functions take, which
+/// no per-function line has room for. `--doc lib/args.ting` used to
+/// answer with five functions, two of which take a "spec", and
+/// nothing anywhere said what a spec was: it is in that comment, ten
+/// lines up in the file, and no tool printed it (908).
+#[test]
+fn every_module_says_what_it_is() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let mut checked = 0;
+    for entry in std::fs::read_dir(root.join("lib")).expect("lib/ missing") {
+        let path = entry.unwrap().path();
+        if path.extension().and_then(|e| e.to_str()) != Some("ting") {
+            continue;
+        }
+        let src = std::fs::read_to_string(&path).unwrap();
+        let header: Vec<String> = src
+            .lines()
+            .take_while(|l| l.starts_with('#'))
+            .map(|l| l[1..].trim().to_string())
+            .filter(|l| !l.is_empty())
+            .collect();
+        assert!(
+            !header.is_empty(),
+            "{} has no header comment",
+            path.display()
+        );
+        // By path: `--doc args` is the builtin args(), which is its
+        // own problem and the next stroke's.
+        let short = format!("lib/{}", path.file_name().unwrap().to_str().unwrap());
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--doc", &short])
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        for line in &header {
+            assert!(
+                stdout.contains(line.as_str()),
+                "--doc {short} does not carry its header line {line:?}:\n{stdout}"
+            );
+        }
+        checked += 1;
+    }
+    assert_eq!(checked, 13, "expected thirteen modules");
+}
+
+/// A file's leading comment is the FILE's only when a blank line
+/// follows it. A comment sitting straight on top of the first
+/// declaration documents that declaration, and printing it twice —
+/// once as the file's, once as the function's — would be worse than
+/// not printing it at all.
+#[test]
+fn a_comment_on_the_first_function_is_not_the_file_header() {
+    let dir = std::env::temp_dir().join(format!("ting-doc-header-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+
+    let attached = dir.join("attached.ting");
+    std::fs::write(&attached, "# Adds one.\nfn inc(n) { return n + 1; }\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", attached.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(stdout.matches("Adds one.").count(), 1, "{stdout}");
+    assert!(stdout.contains("inc(n)  Adds one."), "{stdout}");
+
+    let headed = dir.join("headed.ting");
+    std::fs::write(
+        &headed,
+        "# A tiny ledger.\n#\n# An entry is {\"who\", \"amount\"}.\n\n# Adds one.\nfn inc(n) { return n + 1; }\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--doc", headed.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("\n  A tiny ledger.\n"), "{stdout}");
+    assert!(stdout.contains("An entry is"), "{stdout}");
+    assert_eq!(stdout.matches("Adds one.").count(), 1, "{stdout}");
+
+    std::fs::remove_dir_all(&dir).unwrap();
 }
