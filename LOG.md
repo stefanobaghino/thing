@@ -23203,3 +23203,41 @@ v2.143.0, the reference's table row carries `pop(m, k)`, and the
 tutorial's new block is on the page.
 
 Next: health tick, which closes the milestone.
+
+## 922 — health tick, milestone "the key you take out" complete
+
+Maintenance: tree clean, CI green for ba1495a from the API (no Pages
+run: a LOG/STATE-only push misses that workflow's path filter).
+
+Bench: eleven checksums identical to BASELINE, compared mechanically.
+Timings within a percent or two of BASELINE in both directions on a
+quiet host (load 0.08).
+
+And a head-to-head this time, because unlike 914 this milestone put
+code where programs run: a new `Builtin::Pop` arm, and the "did you
+mean" suggestion lifted out of `index()` into `eval::key_miss`, which
+sits on the map-read path even though only the miss branch calls it.
+A binary built from 453902a (v2.142.0) in a worktree, run against
+HEAD, interleaved, best of five, same host: maps -0.9%, lists +0.2%,
+stdlib +4.3%. The stdlib figure did not survive a rerun — twice more
+it came out +0.9% and -0.7%, and bench/stdlib.ting does not call
+`omit` at all — so the number was weather, and there is no
+regression. Worth the ten minutes: "checksums decide" says the
+interpreter is still correct, not that it is still fast.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 921), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage 3185 of 3202 lines (99%). Both numbers grew by sixteen since
+914 — 918's nine new checks in collections.ting and the rebuilt
+`omit` — and the six gaps are the same old deliberate ones.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js matches the repository's, and the
+four playground paths answer 200. Rendering them left the tree clean.
+
+Milestone "the key you take out" is complete.
+
+Next tick: replenishment.

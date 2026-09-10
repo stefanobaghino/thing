@@ -3888,10 +3888,14 @@ holds only the current milestone and the standing rules.
 - 920: v2.143.0 tagged (164th tag; strokes 916, 917, 918, 919).
 - v2.143.0 VERIFIED (164th tag; strokes 916, 917, 918, 919; both
   aarch64 archives executed here).
+- 922: health tick + audit green — milestone "the key you take out"
+  complete. Coverage 3185/3202 (99%). A head-to-head against
+  v2.142.0's binary cleared the runtime changes: maps -0.9%, lists
+  +0.2%, stdlib's +4.3% did not survive a rerun.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick, which closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
