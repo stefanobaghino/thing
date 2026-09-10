@@ -19,9 +19,9 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 450 Rust tests
-  in 17 suites (counted at 917; the 399 written here had been
+  nothing on its own — and 22 examples with .out; 2778 selftest checks on all four
+  CI platforms, Windows included); 451 Rust tests
+  in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 918: third stroke — THE MODULE AND THE GUARD. `lib/map.ting`'s
+  `omit` copies then pops, instead of asking `contains(ks, k)` about
+  every key of m (one pass of ks per key): 22 ms to 4 at 1000 keys
+  removed from 4000, never worse at the small end, same contract.
+  Nine selftest checks in collections.ting on both engines, including
+  that `m[k] = nil` KEEPS the key and pop does not. The regression
+  guard is in tests/alloc.rs weighing BYTES (1000 removals against
+  2000, budget 3x) rather than timings — mutation-tested at a ratio
+  of 4.02 with the rebuild put back, and an allocation count cannot
+  flake under load the way 909's timing ratio did.
 - 917: second stroke — THE KEY YOU TAKE OUT. `pop(m, k)` removes a
   key IN PLACE and returns its value; both engines share
   `call_builtin`, and the differential suite pins the text including
@@ -3874,8 +3884,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/map.ting built on it, and a selftest that draining a map is
-  linear.
   - the docs say a map can be emptied as well as filled, and what
   `m[k] = nil` does instead.
   - release v2.143.0.

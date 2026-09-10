@@ -162,6 +162,35 @@ fn growing_a_list_costs_the_appends_not_the_squares() {
     }
 }
 
+/// The same question for taking keys OUT. Until 917 the only way was
+/// `lib/map.ting`'s `omit`, which builds a whole new map per removal,
+/// so emptying a map cost a map per key — 8431 ms for 4000 keys.
+/// `pop(m, k)` removes in place and allocates nothing per removal.
+/// Bytes rather than count, for the reason above: a rebuild and an
+/// in-place removal both allocate about once per iteration, and it is
+/// the SIZE of what they allocate that differs. Doubling the keys
+/// doubles a linear appetite and quadruples a quadratic one; three
+/// times is the budget, which no quadratic run can meet.
+#[test]
+fn emptying_a_map_costs_the_removals_not_the_squares() {
+    let run = |n: usize| {
+        let src = format!(
+            "let m = {{}}; let i = 0; while i < {n} {{ m[str(i)] = i; i += 1; }} \
+             i = 0; while i < {n} {{ pop(m, str(i)); i += 1; }} \
+             if len(m) != 0 {{ fail(\"not emptied\"); }}"
+        );
+        bytes(|| {
+            ting::run_source("bench", &src, std::io::sink(), Vec::new()).expect("runs");
+        })
+    };
+    let a = run(1000);
+    let b = run(2000);
+    assert!(
+        b < a * 3,
+        "{a} bytes to empty 1000 keys, {b} for 2000 — the map is being rebuilt"
+    );
+}
+
 /// The same for a string built a piece at a time. `s += x` has been
 /// linear since compound assignment arrived; the long form it is
 /// short for was not, and nothing held either of them to it.

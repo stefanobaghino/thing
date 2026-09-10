@@ -23086,3 +23086,36 @@ removes it (len 0, has false).
 Gate: fmt, clippy, 17 `test result: ok` (450 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2769 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 918 — the module and the guard
+
+Maintenance: tree clean, no PRs, CI and Pages green for dc8d728 from
+the API.
+
+`lib/map.ting`'s `omit` is built on `pop` now: copy the map, then take
+the listed keys out. The old shape asked `contains(ks, k)` about every
+key of m, which is one pass of ks per key of m — at 1000 keys removed
+from 4000 that measured 22 ms against 4, and it never loses at the
+small end either (3-4 ms against 4-5 at one, ten and a hundred keys).
+The contract is unchanged: a fresh map, the original untouched.
+
+Nine selftest checks in collections.ting, on both engines: pop hands
+back what it removed, the key is gone, the same map fills again, an
+alias sees the removal because it is in place, popping twice errors, a
+map without a key and a list with one both refuse. And the thing 915
+found, pinned in the corpus: `m["b"] = nil` KEEPS the key with a nil
+value (len 3, has true), and `pop` takes it out, nil and all. 2778
+checks now.
+
+The guard against the regression is in tests/alloc.rs, not a timing
+ratio. Rebuilding the map per removal and removing in place both
+allocate about once per iteration; what differs is the SIZE, so this
+weighs bytes for 1000 removals against 2000 and asks for less than
+three times. Mutation-tested by putting the rebuild back: 110464590
+bytes for 1000 and 444128454 for 2000, a ratio of 4.02 — quadratic,
+and it fails. An allocation count cannot flake under load, which a
+ratio of two timings can, and did at 909.
+
+Gate: fmt, clippy, 17 `test result: ok` (451 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2778 checks on both engines, Windows
+check and clippy, wasm release build.

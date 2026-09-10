@@ -32,6 +32,25 @@ assert(has(try(get, [1], "k", 0), "err"), "get still errs on an unindexable pair
 let missing = try(fn() { return m["z"]; });
 assert(has(missing, "err"), "missing key errors");
 
+# 917: a map can be emptied as well as filled. Before pop took a key,
+# the only way was to rebuild the map without it.
+let took = pop(m, "b");
+assert(took == 2, "pop hands back the value it removed");
+assert(len(m) == 2 && !has(m, "b"), "and the key is gone");
+m["b"] = 2;
+assert(len(m) == 3 && m["b"] == 2, "the same map fills again");
+let alias = m;
+pop(alias, "b");
+assert(!has(m, "b"), "pop is in place, so an alias sees it");
+assert(has(try(pop, m, "b"), "err"), "popping a key twice errors");
+assert(has(try(pop, m), "err"), "a map wants the key to take out");
+assert(has(try(pop, [1, 2], "k"), "err"), "a list takes no key");
+m["b"] = 2;
+# What `m[k] = nil` does instead, which is not this.
+m["b"] = nil;
+assert(len(m) == 3 && has(m, "b") && m["b"] == nil, "assigning nil keeps the key");
+assert(pop(m, "b") == nil && !has(m, "b"), "pop removes it, nil and all");
+
 assert(sort([3, 1, 2]) == [1, 2, 3], "sort");
 assert(sort_by(["bbb", "a", "cc"], len) == ["a", "cc", "bbb"], "sort_by");
 assert(map([1, 2, 3], fn(x) { return x * 2; }) == [2, 4, 6], "map");

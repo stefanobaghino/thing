@@ -83,10 +83,15 @@ fn pick(m, ks) {
 }
 
 # A fresh map without the listed keys.
+#
+# Copy, then take those keys out: asking `contains(ks, k)` about every
+# key of m instead costs one pass of ks per key of m, which at 1000
+# keys removed from 4000 measured 22 ms against this shape's 4.
 fn omit(m, ks) {
   let out = {};
-  for k in m {
-    if !contains(ks, k) { out[k] = m[k]; }
+  for k in m { out[k] = m[k]; }
+  for k in ks {
+    if has(out, k) { pop(out, k); }
   }
   return out;
 }
