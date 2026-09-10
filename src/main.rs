@@ -890,8 +890,20 @@ fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
 /// (passed, stderr lines, elapsed ms, checks run) for one test file.
 type TestOutcome = (bool, Vec<String>, u128, usize);
 
+/// How much of a failing file's own output to repeat. A test that
+/// fails in a loop can print thousands of lines, and the first
+/// failures are the ones anyone acts on, so the head is kept and the
+/// rest is counted.
+const FAILURE_LINES: usize = 40;
+
 /// One test file in a child process. The child is asked to report how
 /// many checks it ran; that line is taken out of its diagnostics.
+///
+/// A FAILING file's own stdout is kept, because that is where the
+/// reason lives: `lib/test.ting`'s `summary()` names each failing
+/// check with `print`, and until 901 this function threw that away
+/// and left `FAIL <path>` as the whole report. A file that passes is
+/// still silent — its output is nobody's business.
 fn run_one(me: &std::path::Path, f: &str) -> TestOutcome {
     let started = std::time::Instant::now();
     let out = std::process::Command::new(me)
@@ -899,13 +911,12 @@ fn run_one(me: &std::path::Path, f: &str) -> TestOutcome {
         .env("TING_ENGINE", engine_name())
         .env("TING_TEST_REPORT", "1")
         .stdin(std::process::Stdio::null())
-        .stdout(std::process::Stdio::null())
         .output();
     let ms = started.elapsed().as_millis();
     match out {
         Ok(out) => {
             let mut checks = 0usize;
-            let diag: Vec<String> = String::from_utf8_lossy(&out.stderr)
+            let stderr: Vec<String> = String::from_utf8_lossy(&out.stderr)
                 .lines()
                 .filter(|line| match line.strip_prefix("ting-checks: ") {
                     Some(n) => {
@@ -917,10 +928,24 @@ fn run_one(me: &std::path::Path, f: &str) -> TestOutcome {
                 .map(str::to_string)
                 .collect();
             if out.status.success() {
-                (true, Vec::new(), ms, checks)
-            } else {
-                (false, diag, ms, checks)
+                return (true, Vec::new(), ms, checks);
             }
+            // What it printed, then what killed it: the order the two
+            // streams happened in for a file that reports and then
+            // exits, or runs and then dies.
+            let mut diag: Vec<String> = String::from_utf8_lossy(&out.stdout)
+                .lines()
+                .map(str::to_string)
+                .collect();
+            diag.extend(stderr);
+            if diag.len() > FAILURE_LINES {
+                let rest = diag.len() - FAILURE_LINES;
+                diag.truncate(FAILURE_LINES);
+                diag.push(format!(
+                    "... {rest} more lines (run the file itself for all of it)"
+                ));
+            }
+            (false, diag, ms, checks)
         }
         Err(e) => (false, vec![format!("cannot run: {e}")], ms, 0),
     }

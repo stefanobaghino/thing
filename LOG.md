@@ -22458,3 +22458,40 @@ compiled; the message can too, byte-identical on each, which the
 differential tests already know how to insist on.
 
 So: milestone "the failure tells you why" (v2.141.0).
+
+## 901 — the harness repeats the reason
+
+Maintenance: tree clean, no PRs, CI green for 23a72d1 from the API.
+
+First stroke: `--test` now repeats a failing file's own output under
+the FAIL line. The change is the removal of one line —
+`.stdout(Stdio::null())` in `run_one` — plus keeping what comes back.
+The same suite that yesterday said
+
+    FAIL .../t.ting
+
+now says
+
+    FAIL .../t.ting
+         FAIL: three kilos: got 9, want 8
+         FAIL: a map: got {"a": 1, ...}, want {"a": 1, ...}
+         1 passed, 3 failed
+
+which is what the file says when you run it yourself. The printing
+side needed nothing: it already indented a failing file's diagnostic
+lines, and stdout simply never reached it.
+
+Three decisions inside it. What the file PRINTED comes before what
+killed it, since that is the order the two streams happened in. A
+file that PASSES stays silent — its output is nobody's business, and
+the harness has always said so. And a flood is cut at forty lines
+with `... N more lines (run the file itself for all of it)`, keeping
+the HEAD rather than the tail, because the first failure is the one
+anyone acts on.
+
+The test holds all three: the reason appears, a passing file's chatter
+does not, and five hundred printed lines come back as forty-one.
+
+Gate: fmt, clippy, 17 `test result: ok` (437 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.

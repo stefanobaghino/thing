@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 436 Rust tests
-  in 17 suites (counted at 895; the 399 written here had been
+  CI platforms, Windows included); 437 Rust tests
+  in 17 suites (counted at 901; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,11 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 901: first stroke — THE HARNESS REPEATS THE REASON. `--test` shows
+  a failing file's own stdout under the FAIL line (the fix was
+  deleting `.stdout(Stdio::null())` from `run_one`); what the file
+  printed comes before what killed it, a passing file stays silent,
+  and a flood is cut at forty lines keeping the HEAD, with a count.
 - 900: REPLENISHMENT — MILESTONE "THE FAILURE TELLS YOU WHY"
   (v2.141.0), reasoning in LOG.md. Probed: RUNTIME ERRORS ARE ALREADY
   GOOD (types named, caret, a note per call with argument values), so
@@ -3722,9 +3727,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--test` shows a failing file's own output. The reason it failed
-  is what the file PRINTED, and `run_one` currently nulls the child's
-  stdout. Success stays silent.
   - a file that fails still reports how many checks it ran: `exit()`
   skips the `ting-checks:` line, so the totals under-count exactly
   when something went wrong.

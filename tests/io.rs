@@ -849,6 +849,59 @@ fn check_flag_follows_local_imports() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A failing file's own output is the reason it failed, so `--test`
+/// repeats it under the FAIL line. Until 901 the child's stdout went
+/// to /dev/null and `FAIL <path>` was the whole report — which is
+/// what `lib/test.ting` writes its failures to. A file that PASSES
+/// stays silent, and a file that prints a great deal is cut off with
+/// a count.
+#[test]
+fn test_flag_shows_why_a_file_failed() {
+    let root = std::env::temp_dir().join(format!("ting-test-why-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    // Prints its reason, then exits 1 the way summary() does.
+    std::fs::write(
+        root.join("a.ting"),
+        "print(\"FAIL: three kilos: got 9, want 8\");\nexit(1);\n",
+    )
+    .unwrap();
+    // Says nothing and passes: its output must not appear either way.
+    std::fs::write(root.join("b.ting"), "print(\"quiet success\");\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(
+        stdout.contains("     FAIL: three kilos: got 9, want 8"),
+        "the reason is missing:\n{stdout}"
+    );
+    assert!(
+        !stdout.contains("quiet success"),
+        "a passing file stayed noisy:\n{stdout}"
+    );
+
+    // A flood is cut off, and says how much it cut.
+    std::fs::write(
+        root.join("a.ting"),
+        "for i in range(0, 500) { print(i); }\nexit(1);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert!(stdout.contains("more lines"), "no trailer:\n{stdout}");
+    assert!(
+        stdout.lines().filter(|l| l.starts_with("     ")).count() <= 41,
+        "the flood was not cut:\n{stdout}"
+    );
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 /// `--test --fail-fast` stops at the first failing file: later files
 /// are skipped (never run), the summary counts them, and in TAP mode
 /// they are `# SKIP` lines so the plan still adds up.
