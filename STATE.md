@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 435 Rust tests
-  in 17 suites (counted at 894; the 399 written here had been
+  CI platforms, Windows included); 436 Rust tests
+  in 17 suites (counted at 895; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 895: fourth stroke — THE EDITOR KEEPS ANSWERING. NAVIGATION YES,
+  JUDGEMENT NO: `document_symbols`, `workspace_symbols`,
+  `definition_result` and `user_fn_params` read the recovering
+  parser's partial tree, so an outline keeps the functions either side
+  of the line being typed; the five warning walks
+  (`unreachable_code`, `duplicate_map_keys`, `arity_mismatches`,
+  `unbound_findings`, `unused_top_level_lets`) KEEP the strict parser,
+  because half a file supports no judgement — a name bound in a
+  failed statement looks bound nowhere. The test holds both halves and
+  was mutation-checked.
 - 894: third stroke — THE EDITOR MARKS THEM ALL. `lsp::diagnostics`
   publishes every syntax error on the checker's rules; three typos
   underline three places and clear together. The test pins the COUNT
@@ -3677,12 +3687,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the LSP's other answers (hover, definition, symbols, completion)
-  still bail out at `let Ok(program) = parse_program(...)`, so the
-  editor goes quiet about everything while a file has a typo. The
-  recovering parser has a partial tree for them — the question the
-  stroke has to answer is how much of a half-parsed file an editor
-  should believe.
   - the docs say what recovery means, what the cap is, and (from
   891's probe) that the formatter works on tokens, so it will
   reformat a file that does not parse.

@@ -41,6 +41,74 @@ fn spawn_server() -> (Child, ChildStdin, BufReader<ChildStdout>) {
     (child, stdin, reader)
 }
 
+/// A file with a typo in it still answers: the outline lists the
+/// functions above and below the mistake, and jump-to-definition
+/// still finds one. An editor that goes blank at the first half-typed
+/// line is blank most of the time somebody is typing.
+#[test]
+fn a_broken_file_still_answers_about_what_parsed() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"initialized","params":{}}"#,
+    );
+    // `half` is the line being typed; `before` and `after` are whole.
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///half.ting","languageId":"ting","version":1,"text":"fn before(a) { return a; }\nlet half = ;\nfn after(b) { return b; }\n"}}}"#,
+    );
+    // What must NOT happen: a judgement invented out of half a file.
+    // `half` is bound in the statement that failed to parse, so a
+    // checker reading the partial tree would call it unbound, unused,
+    // or both, under the real mistake.
+    let published = recv(&mut reader);
+    assert_eq!(
+        published.matches("\"severity\":1").count(),
+        1,
+        "one mistake, one error: {published}"
+    );
+    assert!(
+        !published.contains("\"severity\":2"),
+        "no warnings from half a file: {published}"
+    );
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"textDocument/documentSymbol","params":{"textDocument":{"uri":"file:///half.ting"}}}"#,
+    );
+    let symbols = recv(&mut reader);
+    assert!(
+        symbols.contains("\"before\""),
+        "outline lost the line above: {symbols}"
+    );
+    assert!(
+        symbols.contains("\"after\""),
+        "outline lost the line below: {symbols}"
+    );
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":3,"method":"textDocument/definition","params":{"textDocument":{"uri":"file:///half.ting"},"position":{"line":2,"character":3}}}"#,
+    );
+    let definition = recv(&mut reader);
+    assert!(
+        definition.contains("file:///half.ting"),
+        "definition went quiet: {definition}"
+    );
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":9,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    let _ = child.kill();
+}
+
 /// Every syntax error at once, so an editor underlines all three
 /// typos rather than the first — and clears them all when the file is
 /// fixed. The count is what matters here: the LSP used to publish one

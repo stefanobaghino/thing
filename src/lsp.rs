@@ -118,9 +118,11 @@ fn document_symbols(src: &str) -> Value {
     let Ok(tokens) = lexer::lex(src) else {
         return Value::list(vec![]);
     };
-    let Ok(program) = crate::parser::parse_program(&tokens) else {
-        return Value::list(vec![]);
-    };
+    // The statements that parsed, even when others did not: a file
+    // being typed in has a mistake in it most of the time, and an
+    // outline that empties itself at every half-written line is worse
+    // than one that is briefly missing the line being written.
+    let (program, _) = crate::parser::parse_program_recovering(&tokens);
     let mut symbols = Vec::new();
     for stmt in &program {
         if let crate::ast::StmtKind::Let(name, expr) = &stmt.kind {
@@ -154,9 +156,7 @@ fn workspace_symbols(docs: &BTreeMap<String, String>, query: &str) -> Value {
         let Ok(tokens) = lexer::lex(src) else {
             continue;
         };
-        let Ok(program) = crate::parser::parse_program(&tokens) else {
-            continue;
-        };
+        let (program, _) = crate::parser::parse_program_recovering(&tokens);
         for stmt in &program {
             if let crate::ast::StmtKind::Let(name, expr) = &stmt.kind
                 && name.to_lowercase().contains(&q)
@@ -198,9 +198,10 @@ fn definition_result(src: &str, uri: &str, line: usize, character: usize) -> Val
     let Ok(tokens) = lexer::lex(src) else {
         return Value::Nil;
     };
-    let Ok(program) = crate::parser::parse_program(&tokens) else {
-        return Value::Nil;
-    };
+    // Jumping to a definition is worth answering from what parsed:
+    // the definition being looked for is usually not the line the
+    // reader is in the middle of breaking.
+    let (program, _) = crate::parser::parse_program_recovering(&tokens);
     for stmt in &program {
         if let crate::ast::StmtKind::Let(n, _) = &stmt.kind
             && n == &name
@@ -673,6 +674,14 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
 /// Statements that can never run: whatever follows a `return`, a
 /// `break` or a `continue` in the same block. Only the first orphan
 /// is reported — the rest of the block is the same mistake.
+/// The warnings below deliberately KEEP the strict parser, where the
+/// answers above moved to the recovering one. A warning is a
+/// judgement about a whole file, and half a file supports none: a
+/// name bound in a statement that failed to parse looks bound
+/// nowhere, and a use inside one looks like no use at all. So a file
+/// with a syntax error gets its syntax errors and nothing invented
+/// underneath them — the same rule `check_source_all` follows by not
+/// running the compiler.
 pub fn unreachable_code(src: &str) -> Vec<(usize, usize, String)> {
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
@@ -1832,7 +1841,7 @@ fn hover_result(src: &str, line: usize, character: usize) -> Value {
 /// arguments may be left out.
 fn user_fn_params(src: &str, name: &str) -> Option<Vec<String>> {
     let tokens = lexer::lex(src).ok()?;
-    let program = crate::parser::parse_program(&tokens).ok()?;
+    let (program, _) = crate::parser::parse_program_recovering(&tokens);
     program.iter().find_map(|stmt| match &stmt.kind {
         crate::ast::StmtKind::Let(n, expr) if n == name => match &expr.kind {
             crate::ast::ExprKind::Fn(params, _) => Some(

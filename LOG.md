@@ -22265,3 +22265,40 @@ about how much of a half-parsed file an editor should believe.
 Gate: fmt, clippy, 17 `test result: ok` (435 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 895 — the editor keeps answering
+
+Maintenance: tree clean, no PRs, CI and Pages green for fb7f7c3 from
+the API.
+
+Fourth stroke, and the question 894 left open — how much of a
+half-parsed file should an editor believe? — has a clean answer:
+NAVIGATION YES, JUDGEMENT NO.
+
+The four answers about WHERE THINGS ARE now read the recovering
+parser's partial tree: `document_symbols`, `workspace_symbols`,
+`definition_result` and `user_fn_params` (which is what a hover over
+a function in the same file shows). The outline keeps the functions
+above and below the line being typed, and jump-to-definition still
+lands. A file being edited has a mistake in it most of the time, so
+an editor that empties itself at the first half-written line is empty
+most of the time.
+
+The five WARNINGS keep the strict parser on purpose:
+`unreachable_code`, `duplicate_map_keys`, `arity_mismatches`,
+`unbound_findings`, `unused_top_level_lets`. A warning is a
+judgement about a whole file and half a file supports none — a name
+bound in a statement that failed to parse looks bound nowhere, and a
+use inside one looks like no use at all. This is the same rule
+`check_source_all` follows by not running the compiler, now written
+where the warnings live.
+
+The test holds both halves: a file whose middle line is `let half =
+;` still lists `before` and `after` in its outline and still answers
+definition, AND its diagnostics are exactly one error with no
+warnings under it. Mutation-checked by putting the strict parser back
+in `document_symbols` — the outline assertion fails.
+
+Gate: fmt, clippy, 17 `test result: ok` (436 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.
