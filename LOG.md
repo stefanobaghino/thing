@@ -21964,7 +21964,7 @@ the bytes it needs to be handed. The fixtures are therefore committed
 
 - `latin1.log`, a log with one byte no character starts;
 - `truncated.txt`, a three-byte character cut after two, at EOF;
-- `nul.txt`, which is a reminder that a NUL is a CHARACTER and text
+- `has_nul.txt`, which is a reminder that a NUL is a CHARACTER and text
   may hold it;
 - `crlf.txt` and `bom.txt`, both perfectly good text that still
   surprises a reader.
@@ -21997,3 +21997,38 @@ Suite: 24 files, 2769 checks (was 23 and 2749) on both engines;
 
 Gate: fmt, clippy, 17 `test result: ok` (425 tests), corpus at
 fourteen, Windows check and clippy, wasm release build.
+
+## 887 — a name that cannot be cloned
+
+Maintenance: CI RED for c030754 — and not in a test. The Windows job
+failed in `actions/checkout`:
+
+    error: invalid path 'selftest/fixtures/nul.txt'
+
+`NUL` is a reserved DOS device name, and git for Windows refuses to
+write a path whose stem is one. The whole job died before a single
+test ran, on three platforms' worth of green either side of it. The
+fixture is `has_nul.txt` now, and the selftest carries the reason so
+nobody renames it back.
+
+The interesting part is what the gate could not see: this host runs
+the Windows TARGET (check and clippy since 767) but has never run a
+Windows CHECKOUT, so a filename that cannot exist there was invisible
+to every step of a local gate. The answer is a guard that needs no
+Windows at all — `every_path_here_can_exist_on_windows` in
+tests/tools.rs walks the tree for the three rules a path can break:
+a reserved device stem (CON, PRN, AUX, NUL, COM1-9, LPT1-9, matched
+before the first dot and case-insensitively), a name ending in a
+space or a dot, and the characters no Windows path may hold. Mutation
+tested: recreating `nul.txt` fails it, naming the file and the
+reason.
+
+Two claims about Windows checkouts still stand untested here, and CI
+is the only place that can settle them: that `-text` keeps `crlf.txt`
+intact through a checkout with `core.autocrlf` set, and that a byte
+which is not text survives one. That is the point of the fixtures,
+and the Windows job never got far enough to say.
+
+Gate: fmt, clippy, 17 `test result: ok` (426 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.

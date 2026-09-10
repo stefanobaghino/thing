@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 425 Rust tests
-  in 17 suites (counted at 884; the 399 written here had been
+  CI platforms, Windows included); 426 Rust tests
+  in 17 suites (counted at 887; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 887: CI RED, FIXED — A NAME THAT CANNOT BE CLONED. 886's fixture
+  `nul.txt` killed the whole Windows job inside `actions/checkout`
+  (`error: invalid path`): `NUL` is a reserved DOS device name and
+  git for Windows will not write such a path. Renamed `has_nul.txt`.
+  THE LOCAL GATE COULD NOT HAVE SEEN IT: this host builds the Windows
+  TARGET but has never run a Windows CHECKOUT. Guard that needs no
+  Windows: `every_path_here_can_exist_on_windows` (tests/tools.rs)
+  walks the tree for reserved device stems, names ending in a space
+  or dot, and the characters Windows paths cannot hold. Mutation
+  tested.
 - 886: fourth stroke — DIRTY FIXTURES, COMMITTED. A ting string is
   always text, so the self-hosted suite CANNOT PRODUCE the bytes it
   needs to be handed: `selftest/fixtures/` holds five committed files

@@ -346,3 +346,42 @@ fn nothing_in_this_repository_is_written_in_python() {
     walk(&root(), &mut strays);
     assert!(strays.is_empty(), "python left in the tree: {strays:?}");
 }
+
+/// A name this repository chooses can make a file unclonable. Git for
+/// Windows refuses to check out a path whose stem is a reserved DOS
+/// device, and the checkout fails before any test runs — 887 lost a
+/// whole Windows job to a fixture called `nul.txt`. The other Windows
+/// rules (characters no path may hold, a name ending in a space or a
+/// dot) cost nothing to check while we are walking the tree.
+#[test]
+fn every_path_here_can_exist_on_windows() {
+    const DEVICES: [&str; 22] = [
+        "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8",
+        "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9",
+    ];
+    fn walk(dir: &Path, bad: &mut Vec<String>) {
+        for entry in std::fs::read_dir(dir).expect("unreadable directory") {
+            let path = entry.unwrap().path();
+            let name = path.file_name().unwrap().to_string_lossy().into_owned();
+            let stem = name.split('.').next().unwrap_or("").to_ascii_uppercase();
+            let why = if DEVICES.contains(&stem.as_str()) {
+                Some("a reserved device name")
+            } else if name.ends_with(' ') || name.ends_with('.') {
+                Some("ends with a space or a dot")
+            } else if name.contains(['<', '>', ':', '"', '|', '?', '*', '\\']) {
+                Some("holds a character Windows paths cannot")
+            } else {
+                None
+            };
+            if let Some(why) = why {
+                bad.push(format!("{} ({why})", path.display()));
+            }
+            if path.is_dir() && name != "target" && name != ".git" {
+                walk(&path, bad);
+            }
+        }
+    }
+    let mut bad = Vec::new();
+    walk(&root(), &mut bad);
+    assert!(bad.is_empty(), "unclonable on Windows: {bad:?}");
+}

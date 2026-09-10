@@ -50,7 +50,10 @@ assert(contains(try(read_file, cut)["err"], "byte 0xe2 at offset 6 (line 1, byte
 assert(len(read_file(cut, "lossy")) == 7, "the whole broken tail is one replacement character");
 
 # A NUL is not a bad byte: it is a character, and text may hold it.
-let nul = read_file(dir + "nul.txt");
+# The fixture is has_nul.txt and must never be nul.txt: `NUL` is a
+# reserved device name on Windows, and git refuses to check out a path
+# that uses one, which fails the whole job before a test runs.
+let nul = read_file(dir + "has_nul.txt");
 assert(len(nul) == 13, "a NUL costs one character like any other");
 assert(ord(slice(nul, 6, 7)) == 0, "and it is the character it looks like");
 assert(len(split(nul, chr(0))) == 2, "so a string can be split on it");
