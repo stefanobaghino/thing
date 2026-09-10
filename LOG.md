@@ -22963,3 +22963,53 @@ four playground paths answer 200. Rendering them left the tree clean.
 Milestone "the module says what it is" is complete.
 
 Next tick: replenishment.
+
+## 915 — replenishment: milestone "the key you take out"
+
+Maintenance: tree clean, no PRs, CI green for 830e111 from the API.
+
+Probed by writing programs again — a dependency count over selftest/,
+a gate runner over lib/sh.ting, and a scaling harness.
+
+THE FINDING: a ting map can be filled but not emptied. `m[k] = v`
+writes in place; `push` and `pop` mutate a list in place; there is no
+in-place removal of a map key anywhere in the language. The only way
+to take a key out is `lib/map.ting`'s `omit`, which walks the whole
+map and rebuilds it, and `m[k] = nil` does not remove — it STORES
+nil, so `len` and `has` both still count the key.
+
+That makes removal quadratic, and not by a little. Deleting every key
+one at a time: 448 ms at 1000 keys, 1848 ms at 2000, 8431 ms at
+4000 — 4.1x and 4.6x per doubling, because each removal copies
+everything left. A cache, a work queue, a set difference, anything
+that takes entries out as it goes, pays this. A hash map removal
+should be constant time.
+
+Insertion, for contrast, is exactly linear — 7, 15, 31, 64, 136 ms at
+10k through 160k — so this is removal alone, not the map.
+
+So: milestone "the key you take out" (v2.143.0).
+
+MEASURED AND NOT A PROBLEM, recorded so the next probe skips them:
+integer arithmetic is checked (overflow, division by zero and
+conversion all raise, at both ends of the range); a map insert that
+looked 6x on one doubling was a one-off and repeats linear three
+times over; undefined names already suggest a near one, in three of
+the four ways a name can be wrong.
+
+NOT A MILESTONE, measured rather than assumed: I suspected `--doc`
+had grown thinner than docs/reference.md now that 909-912 made it
+where people look. Comparing all sixty-nine builtins, the median
+difference is THREE characters and only six rows say more than eighty
+characters more. It is a handful of doc strings, not a seam. Two of
+them are worth the ride: `--doc re_find` says "as a map ... groups
+included" without naming start, end, text and groups, and `--doc try`
+gives {"ok"} and {"err"} without the "at" and "trace" that are really
+there. The reference names both in full.
+
+AND ONE THAT IS SIMPLY WRONG: lib/err.ting's `site` is documented as
+returning `{"file", "line", "column"}`, in the module and again on
+docs/stdlib.md. The key is `col`. A reader following either gets nil.
+First item on the backlog.
+
+Backlog for the milestone is in STATE.md.

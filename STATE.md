@@ -2454,6 +2454,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 915: REPLENISHMENT — MILESTONE "THE KEY YOU TAKE OUT" (v2.143.0),
+  reasoning in LOG.md. A ting map can be FILLED but not EMPTIED:
+  `m[k] = v` writes in place, push/pop mutate a list in place, and
+  there is no in-place removal of a map key anywhere — only
+  lib/map.ting's `omit`, which rebuilds the whole map, while
+  `m[k] = nil` STORES nil (len and has still count it). Draining a
+  map one key at a time measured 448/1848/8431 ms at 1000/2000/4000
+  keys — 4.1x then 4.6x per doubling. Insertion is exactly linear
+  (7/15/31/64/136 ms at 10k-160k), so it is removal alone.
 - 914: HEALTH TICK, milestone "the module says what it is" complete.
   Bench: eleven checksums identical, timings 5-10% over BASELINE at
   load 2.31 — weather, and NO head-to-head this time on purpose:
@@ -3845,7 +3854,17 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - the shapes a builtin hands back: re_find's four keys and try's
+  "at" and "trace" in `--doc`, and lib/err.ting's `site` documented
+  as "column" where the key is `col` (wrong in the module AND on
+  docs/stdlib.md).
+  - a builtin that takes a key out of a map IN PLACE, byte-identical
+  on both engines.
+  - lib/map.ting built on it, and a selftest that draining a map is
+  linear.
+  - the docs say a map can be emptied as well as filled, and what
+  `m[k] = nil` does instead.
+  - release v2.143.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
