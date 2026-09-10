@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 885: third stroke — ONE PLACE THAT SAYS WHAT A BAD BYTE MEANS. The
+  reference gained *Bytes that are not text*, organised by the ANSWER
+  rather than the door, since there are only three in the language:
+  refuse and say where; read it anyway when asked (`"lossy"`);
+  replace always (`run()`, and why it is the odd one). The `run()`
+  row, which had grown into a design essay inside a table cell, is
+  one clause pointing at it. All three refusal shapes were re-read
+  off the binary before being written down. The docs guard's
+  reference counts moved to (0, 7, 4) for the two illustration
+  blocks.
 - 884: second stroke — A DELIBERATE WAY TO READ ANYWAY.
   `read_file(path, "lossy")`, `each_line(path, f, "lossy")` and
   `input("lossy")` follow the mode string `write_file` already took,
@@ -3596,11 +3606,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the docs say what each door does with bytes that are not text,
-  including that `run()` has always been lossy and why. Partly paid
-  in 883-884: every message says where, and the three builtin rows
-  plus `run()` carry the lossy forms. What is missing is ONE place
-  that says it all together.
   - selftests over real dirty fixtures (a latin-1 log, a truncated
   character, a NUL, CRLF, a BOM) on both engines. NOTE: ting cannot
   WRITE bytes that are not text, so the fixture has to be committed.

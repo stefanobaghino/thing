@@ -454,7 +454,7 @@ scope).
 | `random()`     | a float in `[0, 1)`, drawn from the 53 bits a double can hold |
 | `random_int(lo, hi)` | an int in `[lo, hi)`, half-open like `range`; an empty span errors |
 | `seed(n)`      | restarts the generator at `n`; unseeded, it starts from the clock |
-| `run(cmd)` / `run(cmd, args)` / `run(cmd, args, stdin)` | runs a program with that argv (no shell) and waits; a map of `code`, `out`, `err` and `signal`. The child reads `stdin` there and reads nothing without it. `out` and `err` are decoded lossily — a byte that is not UTF-8 becomes a replacement character — where every reader that takes text *into* ting (`read_file`, `each_line`, `input`, a script file, `-`) fails instead, naming the byte, where it is and the line it falls in: `not UTF-8 text: byte 0xe9 at offset 10 (line 2, byte 3)`. A reader that would rather have the text than the refusal asks for it — `read_file(path, "lossy")`, `each_line(path, f, "lossy")`, `input("lossy")` — and gets exactly what a child's output gets. The asymmetry is deliberate: a file is offered to ting as text, so mojibake would be a wrong answer, while a child's output is whatever the child printed, ting has no bytes type to hand back instead, and failing would throw away the exit code, the stderr and the signal along with it. A program that cannot be started errors; `code` is `nil` when a signal ended it, and `signal` is that number where the platform has signals — `nil` everywhere else, including after a normal exit |
+| `run(cmd)` / `run(cmd, args)` / `run(cmd, args, stdin)` | runs a program with that argv (no shell) and waits; a map of `code`, `out`, `err` and `signal`. The child reads `stdin` there and reads nothing without it. `out` and `err` are decoded lossily, where every reader that takes text *into* ting refuses instead — *Bytes that are not text* below says what each door does and why. A program that cannot be started errors; `code` is `nil` when a signal ended it, and `signal` is that number where the platform has signals — `nil` everywhere else, including after a normal exit |
 | `eprint(...)`  | like `print`, but to stderr, after flushing stdout so the two stay in order |
 | `cwd()`        | the working directory, as a string                           |
 | `re_test(s, pattern)` | whether the pattern matches anywhere in the string |
@@ -724,6 +724,67 @@ where that succeeds, and where it cannot, the copy and the removal
 `mv` falls back to. It lives there rather than in the binary so that
 the expensive path is readable, and so the rare case cannot pretend
 to be the cheap one.
+
+### Bytes that are not text
+
+Every string in ting is text: a sequence of Unicode characters, with
+no bytes type beside it. So every door that takes bytes from outside
+has to decide what a byte that is not UTF-8 means, and there are only
+three answers in the whole language. Each door picks one on purpose.
+
+**Refuse, and say where.** Anything offered to ting *as text* fails
+rather than guessing: `read_file`, `each_line`, `input`, a script
+given as a path or as `-`, `import`, the REPL's `:load`, and
+`--check`, `--fmt` and `--bundle` over a file or a directory. The
+message names the byte and where it is, in the terms that door has:
+
+```ting
+# not a program: the three shapes the refusal takes
+not UTF-8 text: byte 0xe9 at offset 10 (line 2, byte 3)
+not UTF-8 text: byte 0xe9 at byte 3 of line 2
+not UTF-8 text: byte 0xe9 at byte 3 of the line
+```
+
+A whole file can count both, so it gives the offset and the line.
+`each_line` is counting lines anyway, so it names the line and stops
+there — the good lines before it were already handed over. `input()`
+gives no line number at all, because nobody numbered the stream: the
+program has read as many lines as it has read, and a number invented
+here would name a different line than the reader's own count.
+
+**Read it anyway, when asked.** The three readers take a mode string
+in the shape `write_file` already uses for `"append"`:
+
+```ting
+# not a program: each one replaces every bad byte with U+FFFD
+read_file(path, "lossy")
+each_line(path, f, "lossy")
+input("lossy")
+```
+
+Each bad byte becomes one replacement character, so a lossy read
+substitutes into the line rather than shortening it. Any other mode
+string is refused by name — `read_file mode must be the string
+"lossy", got "skip"` — since a mode that is silently ignored is a
+worse answer than an error.
+
+**Replace, always.** `run()` decodes a child's `out` and `err`
+lossily and has no strict form. The asymmetry is deliberate: a file
+is offered to ting as text, so mojibake would be a wrong answer,
+while a child's output is whatever the child printed, ting has no
+bytes to hand back instead, and failing would throw away the exit
+code, the stderr and the signal along with it.
+
+Two doors nearby answer differently for reasons of their own.
+`list_dir` fails the whole listing on a name that is not UTF-8,
+because a lossily converted name would not reopen the file it came
+from. `lib/base64.ting` decodes to numbers with `decode_bytes` and
+only refuses in `from_bytes`, where the bytes become a string.
+
+Going out, nothing can go wrong: `write_file` writes a ting string,
+which is always text, so a file ting wrote always reads back. And
+what a byte costs is not what a character costs — `stat(p)["size"]`
+counts bytes where `len(read_file(p))` counts characters.
 
 ### Modules
 

@@ -21906,3 +21906,47 @@ instead of only confessing the asymmetry.
 Gate: fmt, clippy, 17 `test result: ok` (425 tests), `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2749 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 885 — one place that says what a bad byte means
+
+Maintenance: tree clean, no PRs, CI and Pages green for 707028c from
+the API.
+
+The story 883 and 884 wrote was true but scattered: the position was
+in three error messages, the lossy forms in three table rows, and the
+`run()` row had grown into a paragraph that explained the whole
+design from inside a table cell. The reference now has a section,
+*Bytes that are not text*, between "Files and directories" and
+"Modules", and the `run()` row is one clause pointing at it.
+
+The section is organised by the answer rather than by the door,
+because there are only three answers in the language and every door
+picks one:
+
+- REFUSE, AND SAY WHERE — `read_file`, `each_line`, `input`, a script
+  by path or `-`, `import`, `:load`, `--check`, `--fmt`, `--bundle`.
+  All three message shapes are shown, with why they differ: a whole
+  file can count both, `each_line` is counting lines anyway, and
+  `input()` gives no line number because nobody numbered the stream
+  and an invented one would name a different line than the reader's
+  own count.
+- READ IT ANYWAY, WHEN ASKED — the `"lossy"` mode, in `write_file`'s
+  shape, one replacement character per bad byte, so it substitutes
+  into the line rather than shortening it. A mode nobody has is
+  refused by name.
+- REPLACE, ALWAYS — `run()`, and the reason it is the odd one.
+
+Plus the two doors nearby that answer differently for their own
+reasons (`list_dir` fails a whole listing, `lib/base64.ting` splits
+`decode_bytes` from `from_bytes`), and the way back out: nothing can
+go wrong writing, since a ting string is always text.
+
+All three refusal shapes were re-read off the binary before being
+written down, not copied from the source. The two illustration
+blocks are marked `# not a program:` and the docs guard's per-page
+counts moved from (0, 7, 2) to (0, 7, 4), so a block that quietly
+disappeared would fail there.
+
+Gate: fmt, clippy, 17 `test result: ok` (425 tests), `--fmt .` 78
+unchanged, corpus at fourteen, selftest 2749 checks on both engines,
+Windows check and clippy, wasm release build.
