@@ -3885,10 +3885,13 @@ holds only the current milestone and the standing rules.
   shapes, and `m[k] = nil` storing a nil under a key that stays),
   tutorial (a checked block; its count 47 -> 48 in tests/docs.rs),
   stdlib (`omit` names `pop` as the in-place spelling).
+- 920: v2.143.0 tagged (164th tag; strokes 916, 917, 918, 919).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.143.0.
+  - verify v2.143.0 (assets, checksums, both aarch64 archives through
+  tools/smoke.sh, the milestone from the downloaded binary, the site).
+  - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

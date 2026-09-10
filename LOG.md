@@ -23158,3 +23158,24 @@ it — the check that gates on a comparison rather than printing a
 number is the reason this was a five-minute detour and not a wrong
 claim in the log. Warnings come from `--check`, which takes the five
 directories directly.
+
+## 920 — release v2.143.0
+
+Maintenance: tree clean, CI and Pages green for 000f086 from the API.
+
+v2.143.0, the milestone "the key you take out". A ting map could be
+filled, read and asked about, but not emptied: the only way to get a
+key out was lib/map.ting's `omit`, which builds a fresh map, so
+draining one key at a time was quadratic — 448/1848/8431 ms at
+1000/2000/4000 keys. `pop(m, k)` takes a key out in place and hands
+back what it held; the same drain is now 1/2/5/10/21/42 ms from 1000
+keys to 32000. `omit` is built on it. The release also carries the
+three `--doc` summaries that named a shape without naming its keys,
+the `column`/`col` error in lib/err.ting and on the stdlib page, and
+the docs that now say what `m[k] = nil` does instead of removing.
+
+Strokes 916, 917, 918, 919. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.143.0; the binary reports `ting
+2.143.0`. Gate re-run after the bump: 17 suites (451 tests), `--fmt
+.` 79 unchanged, corpus at fourteen, 2778 checks on both engines,
+Windows check and clippy, wasm release build.

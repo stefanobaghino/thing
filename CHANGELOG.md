@@ -5,6 +5,43 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.143.0 (2026-09-10)
+
+- **A map can be emptied now.** `pop(m, k)` takes a key out of a map
+  in place and hands back the value it held. A ting map could be
+  filled and read and asked about, but the only way to get a key out
+  was `lib/map.ting`'s `omit`, which builds a fresh map — so draining
+  one key at a time was quadratic, and measurably so: 448, 1848 and
+  8431 ms at 1000, 2000 and 4000 keys. With `pop` the same drain is
+  1/2/5/10/21/42 ms from 1000 keys to 32000, and the 4000-key case
+  went from 8431 ms to 5 ms. `omit` is now built on it, and stays the
+  spelling for a fresh map that leaves the original alone.
+- **The name is the design.** `pop(xs)` already removes the last
+  element of a list and returns it; taking a key out of a map is the
+  same sentence about a different container, the way `len`, `find`,
+  `contains` and `slice` already read across types. A missing key
+  ERRORS rather than answering nil, with the same "did you mean"
+  diagnostic that reading that key would give — indexing and popping
+  now share it — because `has` and `get` are how you ask about an
+  absence.
+- **What `m[k] = nil` does instead.** Assigning nil stores a nil under
+  a key that is still there, so `len` and `has` both still count it.
+  That was true before this release and written down nowhere; the
+  reference's Indexing section and a checked block in the tutorial now
+  show the difference beside `pop`.
+- **`--doc` names the keys a shaped value carries.** `re_find` said
+  "a map, or nil; groups included" without naming one of its four
+  keys, `re_find_all` said "a list" of what, and `try` listed "ok" and
+  "err" while leaving out the "at" and "trace" a caught failure really
+  carries. All three now name what is there. The guard runs each
+  builtin, takes `keys()` off the value that comes back, and asserts
+  `--doc` names every one — a key added later fails the test rather
+  than going unmentioned.
+- **One key that was wrong.** `lib/err.ting` and docs/stdlib.md both
+  documented `site` as returning `{"file", "line", "column"}`. The key
+  is `col`, so a reader following either got nil and no error. Both
+  corrected.
+
 ## v2.142.0 (2026-09-10)
 
 - **A module says what it is.** Every module opens with a comment
