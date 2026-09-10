@@ -2454,11 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
-- 888: RELEASE v2.139.0 (160th tag; strokes 883, 884, 885, 886, 887).
-  CI green for da7b246 on all four platforms first — the Windows job
-  is what proves `-text` holds `crlf.txt` through a checkout with
-  `core.autocrlf` set, which this host cannot test. Awaiting
-  verification by cold download.
+- 889: v2.139.0 VERIFIED (160th tag; strokes 883, 884, 885, 886, 887;
+  seven assets, `sha256sum -c` OK on all six, both aarch64 archives
+  unpacked and run here, 2769 checks and 22 clean examples from each,
+  and a probe outside the unpacked directory proving the EMBEDDED
+  stdlib answers and the release's own strict and lossy reads behave).
+  Site: changelog and reference pages live with the new material.
+- 888: RELEASE v2.139.0. CI green for da7b246 on all four platforms
+  first — the Windows job is what proves `-text` holds `crlf.txt`
+  through a checkout with `core.autocrlf` set, which this host cannot
+  test.
 - 887: CI RED, FIXED — A NAME THAT CANNOT BE CLONED. 886's fixture
   `nul.txt` killed the whole Windows job inside `actions/checkout`
   (`error: invalid path`): `NUL` is a reserved DOS device name and

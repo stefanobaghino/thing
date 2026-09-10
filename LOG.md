@@ -22054,3 +22054,29 @@ Strokes 883, 884, 885, 886, 887. CHANGELOG.md written from the LOG
 entries; Cargo.toml and Cargo.lock at 2.139.0; the binary reports
 `ting 2.139.0`. Gate re-run after the bump: 17 suites (426 tests),
 `--fmt .` 79 unchanged, 2769 checks.
+
+## 889 — v2.139.0 verified
+
+Release, CI and Pages all green for 591379c. Seven assets, and
+`sha256sum -c SHA256SUMS` on a cold download says OK for all six
+archives.
+
+Both aarch64 Linux archives (gnu and musl) unpacked and put through
+tools/smoke.sh here: `ting 2.139.0`, the shipped lib/ identical to
+this tree's, 24 files and 2769 checks from each, 22 examples clean.
+One honest note about that run: smoke.sh works from the repo root, so
+`selftest/bytes.ting` found the repository's fixtures rather than the
+copies beside the binary — the same bytes either way, but it is the
+tree's fixtures the archive's binary read.
+
+Then the probe that matters most, in a directory with no lib/ in it
+at all: `import("lib/base64.ting")` answered from the copy compiled
+into the binary, and the release's own reading of a dirty file gave
+`not UTF-8 text: byte 0xe9 at offset 21 (line 2, byte 9)` strict and
+30 characters lossy — the milestone's two headline behaviours, out of
+the shipped binary rather than out of this tree's target/.
+
+Site: the three pages fetched answer 200, the changelog page carries
+v2.139.0, and the reference page carries "Bytes that are not text".
+
+160th tag. Next tick: the health tick that closes the milestone.
