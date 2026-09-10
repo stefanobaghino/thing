@@ -17,12 +17,12 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 74 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 203
-  functions, guarded); 45 ting programs (23 selftest files — 22 tests
+  functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2749 selftest checks on all four
+  nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
   CI platforms, Windows included); 425 Rust tests
   in 17 suites (counted at 884; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 78 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 886: fourth stroke — DIRTY FIXTURES, COMMITTED. A ting string is
+  always text, so the self-hosted suite CANNOT PRODUCE the bytes it
+  needs to be handed: `selftest/fixtures/` holds five committed files
+  (latin-1, a character cut in half at EOF, a NUL, CRLF, a BOM) and
+  `.gitattributes` marks the directory `-text`, since the `eol=lf`
+  above it would have normalised `crlf.txt` into something else —
+  proved with `git cat-file -p :path` and `cmp`, not assumed. A
+  fixture may never be `.ting`: `--fmt .` and `--check` walk the tree
+  for those, so an unreadable one would fail the gate instead of
+  being tested by it. `selftest/bytes.ting` asserts what 885
+  documented, in the language, on both engines.
 - 885: third stroke — ONE PLACE THAT SAYS WHAT A BAD BYTE MEANS. The
   reference gained *Bytes that are not text*, organised by the ANSWER
   rather than the door, since there are only three in the language:
@@ -3606,9 +3617,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - selftests over real dirty fixtures (a latin-1 log, a truncated
-  character, a NUL, CRLF, a BOM) on both engines. NOTE: ting cannot
-  WRITE bytes that are not text, so the fixture has to be committed.
   - release v2.139.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

@@ -1,0 +1,70 @@
+# ting testing ting: the bytes a file can hold that text cannot.
+#
+# These fixtures are committed rather than written here, because ting
+# strings are always text: a program in this language cannot produce
+# the bytes it needs to be handed. They live in selftest/fixtures/ and
+# .gitattributes marks that directory as binary, so nothing normalises
+# a carriage return or a stray byte out of them on the way through a
+# checkout.
+
+# read_file resolves against the working directory, not against the
+# script, so the suite has to find its own fixtures. Every place it is
+# run from is tried, and a miss is loud rather than a skipped file.
+let dir = nil;
+for c in ["selftest/fixtures/", "fixtures/", "../selftest/fixtures/"] {
+  if dir == nil && exists(c + "latin1.log") { dir = c; }
+}
+assert(dir != nil, "the fixtures are not where this suite was run from");
+
+# A log written in latin-1: 30 bytes, one of which no character
+# starts. The refusal names the byte, its offset, and the line.
+let latin1 = dir + "latin1.log";
+let refused = try(read_file, latin1);
+assert(has(refused, "err"), "a byte that is not text is refused");
+assert(contains(refused["err"], "byte 0xe9 at offset 21 (line 2, byte 9)"),
+"and the refusal says exactly where: " + refused["err"]);
+
+# Asked to read it anyway, every bad byte becomes one replacement
+# character — so the 30 bytes are 30 characters, not 29.
+let anyway = read_file(latin1, "lossy");
+assert(len(anyway) == 30, "a lossy read substitutes, it does not shorten");
+assert(contains(anyway, "WARN caf"), "the good text is untouched");
+assert(!contains(anyway, "caf\u00e9"), "the byte did not become the character it meant");
+
+# The line reader gets as far as it can first: line 1 is handed over
+# before line 2 refuses, and the message counts in lines.
+let seen = [];
+let stopped = try(each_line, latin1, fn(l) { push(seen, len(l)); });
+assert(seen == [12], "the good line arrived before the bad one failed");
+assert(contains(stopped["err"], "byte 0xe9 at byte 9 of line 2"),
+"the line reader counts lines: " + stopped["err"]);
+let widths = [];
+assert(each_line(latin1, fn(l) { push(widths, len(l)); }, "lossy") == 2, "lossily, both lines arrive");
+assert(widths == [12, 16], "the replacement character is one character wide");
+
+# A character cut in half at the end of the file: the refusal points
+# at the byte the character starts with, not at the end of the file.
+let cut = dir + "truncated.txt";
+assert(contains(try(read_file, cut)["err"], "byte 0xe2 at offset 6 (line 1, byte 7)"),
+"a truncated character is reported where it starts");
+assert(len(read_file(cut, "lossy")) == 7, "the whole broken tail is one replacement character");
+
+# A NUL is not a bad byte: it is a character, and text may hold it.
+let nul = read_file(dir + "nul.txt");
+assert(len(nul) == 13, "a NUL costs one character like any other");
+assert(ord(slice(nul, 6, 7)) == 0, "and it is the character it looks like");
+assert(len(split(nul, chr(0))) == 2, "so a string can be split on it");
+
+# CRLF: the line reader drops the carriage return with the newline,
+# the way input() does, while read_file hands back what is there.
+let crlf = [];
+each_line(dir + "crlf.txt", fn(l) { push(crlf, l); });
+assert(crlf == ["one", "two"], "each_line drops the carriage return too");
+assert(len(read_file(dir + "crlf.txt")) == 10, "read_file keeps every character");
+
+# A BOM is a character, not a marker ting removes: a reader that does
+# not want it has to say so.
+let bom = read_file(dir + "bom.txt");
+assert(len(bom) == 7, "the byte order mark is one character of the file");
+assert(ord(slice(bom, 0, 1)) == 65279, "and it is U+FEFF, kept as it was read");
+assert(slice(bom, 1, 7) == "hello\n", "with the text itself after it");

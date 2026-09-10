@@ -21950,3 +21950,50 @@ disappeared would fail there.
 Gate: fmt, clippy, 17 `test result: ok` (425 tests), `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2749 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 886 — dirty fixtures, committed
+
+Maintenance: tree clean, no PRs, CI and Pages green for 55d7e85 from
+the API.
+
+883 and 884 were tested from Rust, where a `&[u8]` is easy to write.
+The suite that runs in ting had none of it, and could not: a ting
+string is always text, so a program in this language CANNOT PRODUCE
+the bytes it needs to be handed. The fixtures are therefore committed
+— `selftest/fixtures/`, five files, thirty bytes at the largest:
+
+- `latin1.log`, a log with one byte no character starts;
+- `truncated.txt`, a three-byte character cut after two, at EOF;
+- `nul.txt`, which is a reminder that a NUL is a CHARACTER and text
+  may hold it;
+- `crlf.txt` and `bom.txt`, both perfectly good text that still
+  surprises a reader.
+
+`.gitattributes` says `selftest/fixtures/** -text`, because the line
+above it — `* text=auto eol=lf`, there since the golden outputs are
+compared byte for byte — would normalise the carriage returns out of
+`crlf.txt` on the way into the index. Proved rather than assumed:
+`git cat-file -p :path` compared with `cmp` against each file on
+disk, all five identical.
+
+`selftest/bytes.ting` then asserts what 885 documented, in the
+language itself and on both engines: the offset and line in the
+refusal, the line reader handing over line 1 before line 2 fails, the
+lossy read that SUBSTITUTES rather than shortens (30 bytes, 30
+characters, and no `é` where the byte was), the truncated character
+reported where it starts rather than at EOF, the NUL that splits like
+any other character, the carriage return that `each_line` drops and
+`read_file` keeps, and the BOM that ting does not remove.
+
+Fixtures cannot be `.ting`: `--fmt .` and `--check` walk the tree for
+them, and a deliberately unreadable one would fail the gate rather
+than be tested by it. `read_file` also resolves against the working
+directory rather than the script, so the suite looks for its own
+fixtures in the places it is ever run from and says so loudly if it
+finds none.
+
+Suite: 24 files, 2769 checks (was 23 and 2749) on both engines;
+`--fmt .` 79 unchanged.
+
+Gate: fmt, clippy, 17 `test result: ok` (425 tests), corpus at
+fourteen, Windows check and clippy, wasm release build.

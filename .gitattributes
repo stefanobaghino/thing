@@ -1,3 +1,9 @@
 # Golden example outputs are compared byte-for-byte against interpreter
 # output (always \n), so nothing may be CRLF-converted on checkout.
 * text=auto eol=lf
+
+# The dirty fixtures selftest/bytes.ting reads are bytes, not text: a
+# latin-1 log, a character cut in half, a NUL, CRLF, a BOM. Any
+# conversion at all — including the eol=lf above — destroys what they
+# are there to test, so git may not touch them.
+selftest/fixtures/** -text
