@@ -202,3 +202,53 @@ fn a_shadowing_lib_and_the_embedded_stdlib_answer_alike() {
         "a lib/ beside the script and the copy inside the binary do not agree"
     );
 }
+
+mod common;
+
+/// "Have I seen this value?" was a scan of everything kept so far, so
+/// `unique` cost a comparison per pair: 4/16/68/261/1022 ms at 2000
+/// through 32000 when 923 measured it, against 3/7/15/37 once 924
+/// keyed it on `fingerprint`. `intersection` was the same nested loop
+/// written by hand, since no module carried one until 925.
+///
+/// A TIMING ratio, not the allocation weight 918 used, and the reason
+/// is worth stating: a scan allocates nothing per comparison. Putting
+/// the quadratic version back and weighing bytes measured no
+/// difference at all — the guard passed on the code it was written to
+/// catch. Time is the only thing that changes here.
+///
+/// `doubling_ratio` interleaves the two sizes, takes the best of five
+/// and the best of three rounds, so a busy host lengthens both sides
+/// together: doubling the input can only double linear work, while
+/// either scan quadruples it.
+#[test]
+fn the_sameness_helpers_cost_the_elements_not_the_squares() {
+    fn unique_of(n: usize) -> String {
+        format!(
+            "let l = import(\"lib/list.ting\"); \
+             let xs = []; let i = 0; while i < {n} {{ push(xs, str(i % ({n} / 2))); i += 1; }} \
+             if len(l[\"unique\"](xs)) != {n} / 2 {{ fail(\"wrong answer\"); }}"
+        )
+    }
+    fn intersection_of(n: usize) -> String {
+        format!(
+            "let l = import(\"lib/list.ting\"); \
+             let a = []; let b = []; let i = 0; \
+             while i < {n} {{ push(a, str(i)); push(b, str(i + {n} / 2)); i += 1; }} \
+             if len(l[\"intersection\"](a, b)) != {n} / 2 {{ fail(\"wrong answer\"); }}"
+        )
+    }
+    let run = |src: &str| {
+        ting::run_source("bench", src, std::io::sink(), Vec::new()).expect("runs");
+    };
+    for (what, small, large) in [
+        ("unique", unique_of(4000), unique_of(8000)),
+        ("intersection", intersection_of(4000), intersection_of(8000)),
+    ] {
+        let ratio = common::doubling_ratio(|| run(&small), || run(&large));
+        assert!(
+            ratio < 3.0,
+            "doubling the elements multiplied {what}'s work by {ratio:.1}: the scan is back"
+        );
+    }
+}

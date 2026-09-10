@@ -824,6 +824,21 @@ The standard library (`lib/list.ting`, `lib/string.ting`,
 `import("lib/list.ting")` works from any directory, in the REPL, and
 in the browser playground. A real file with that path always wins.
 
+### There is no set type
+
+A map is the set: keys are strings, and `fingerprint(v)` turns any
+value into one that two values share exactly when `==` says they are
+equal. That is what `lib/list.ting` builds on — `membership`, `holds`
+and `remember` to ask a list about a value without walking it, and
+`union`, `intersection` and `difference` on top of those. Written by
+hand with `contains`, each of those is a scan per element, which is
+quadratic; the module's versions are one lookup per element.
+
+`fingerprint` answers `nil` where equality cannot be a key at all: a
+function, a NaN, a number past 2^53, or a value that contains itself.
+The module's helpers fall back to the scan for exactly those, so their
+answers always agree with `==`.
+
 ## Errors
 
 An unhandled runtime error stops the program with a diagnostic pointing

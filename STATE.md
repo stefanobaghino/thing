@@ -3901,11 +3901,13 @@ holds only the current milestone and the standing rules.
 - 925: union, intersection and difference on the fingerprint, with
   the membership/holds/remember trio they are built on (16000
   elements: 51 ms, linear).
+- 926: the linearity guard is a TIMING ratio, not an allocation
+  weight: a scan allocates nothing per comparison, so the allocation
+  version passed on the code it was written to catch. Reference says
+  there is no set type and what to use instead.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a guard that these stay linear (weigh allocations, as 918 did),
-  and the docs.
   - release v2.144.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

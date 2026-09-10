@@ -23370,3 +23370,45 @@ stdlib count guard failed first at 204 and is 210.
 Gate: fmt, clippy, 17 `test result: ok` (452 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2822 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 926 — the guard the backlog asked for could not work
+
+Maintenance: tree clean, no PRs, CI and Pages green for 34bee51 from
+the API.
+
+The backlog said to weigh allocations, as 918 did. I wrote the two
+guards that way, they passed, and then the mutation test passed too:
+with the scan implementations put back, `unique` over 2000 and 4000
+elements allocated the same shape of bytes as the map version does.
+
+THE REASON IS THE POINT. 918's regression was a REBUILT MAP per
+removal — quadratic in bytes, which an allocator can see. A scan is
+not: `contains(out, x)` walks a list it does not touch, comparing
+values it does not copy. The quadratic work is comparisons, and
+comparisons allocate nothing. An allocation guard here measures a
+thing that never changed. Both tests came back out.
+
+So this is a timing ratio, in tests/selftest.rs, using the
+`doubling_ratio` helper the diagnostics guard has used since 845: the
+two sizes interleaved, best of five, best of three rounds, so a busy
+host lengthens both sides together. Doubling the elements can only
+double linear work; either scan quadruples it. Mutation-tested both
+ways — with the scans back it fails at 3.7 against a 3.0 threshold,
+and with them gone it passes.
+
+That threshold is the one that flaked at 909 (a ratio of exactly 3.0),
+which is a real cost of choosing timing. It is affordable here because
+the signal is 2.0 against 4.0 rather than 3.7 against a shape that
+measured 3.0 — half again as much room on either side.
+
+Docs: the reference now says there is no set type and what to use
+instead — a map is the set, `fingerprint` is the key, and
+lib/list.ting carries membership/holds/remember with union,
+intersection and difference on top. That is where a reader looks for
+"does ting have sets"; the stdlib page's rows (925) are where they
+look once they know the names.
+
+Gate: fmt (a stray blank line where the alloc tests came out), clippy,
+17 `test result: ok` (453 tests), `--fmt .` 79 unchanged, corpus at
+fourteen, 2822 checks on both engines, Windows check and clippy, wasm
+release build.
