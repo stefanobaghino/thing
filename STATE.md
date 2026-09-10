@@ -2454,6 +2454,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 908: REPLENISHMENT — MILESTONE "THE MODULE SAYS WHAT IT IS"
+  (v2.142.0), reasoning in LOG.md. Probed by WRITING programs: a CLI
+  built on lib/args.ting needs a "spec", and what a spec is appears
+  in no tool — only in the first 24 lines of lib/args.ting, a header
+  comment `--doc` never prints. All thirteen modules have one (112
+  lines between them) and so do users' own files; hover answers for
+  builtins, imported stdlib functions and this file's functions but
+  not for the module BINDING; and `--doc args` means the builtin
+  without mentioning that the module exists.
 - 907: HEALTH TICK, milestone "the failure tells you why" complete.
   Bench: eleven checksums identical, but every timing was up on
   BASELINE (eval ~10%, vm ~8%) and 903 had put a predicate in the
@@ -3780,7 +3789,13 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - a module's own header comment reaches `--doc`, for a stdlib
+  module, for a file, and for the REPL's `:doc`.
+  - hover shows it over a module binding, and `--doc` on a name a
+  builtin already owns says the module exists too.
+  - the site carries what a module's header explains and its
+  function docs cannot, starting with what an args spec is.
+  - release v2.142.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

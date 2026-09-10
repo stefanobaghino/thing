@@ -22708,3 +22708,50 @@ Rendering them left the tree clean.
 Milestone "the failure tells you why" is complete.
 
 Next tick: replenishment.
+
+## 908 — replenishment: milestone "the module says what it is"
+
+Maintenance: tree clean, no PRs, CI green for 0b11f5c from the API.
+
+Probed by writing programs rather than by reading our own docs. Two
+of them: a tally over LOG.md, and a small CLI that reads a CSV.
+
+The CLI is where it went wrong. `import("lib/args.ting")`, then
+`--doc lib/args.ting`, which answers with five functions — two of
+which take a "spec". What a spec IS appears nowhere: not in `--doc`,
+not in `--doc spec` (which finds the functions that MENTION one), not
+on docs/stdlib.md's lib/args.ting section, not in a hover. It is
+written down, clearly, in the first twenty-four lines of
+lib/args.ting — a comment the toolchain never shows anybody.
+
+That generalises. Every one of the thirteen modules opens with a
+header comment, 112 lines between them, and `--doc` prints none of
+them: it lists functions and stops. `lib/test.ting` opens with the
+seven calls that are how you use it; `lib/err.ting` explains the map
+try() hands back and why its four functions exist; `lib/sh.ting` says
+what run() deliberately does not decide for you. A user's OWN file
+loses its header the same way — a ledger module whose second line
+says what an entry looks like gets `--doc` output that mentions only
+`total(entries)`.
+
+The same hole in the editor: hover_result answers for a builtin, for
+an imported stdlib function, and for a function in this file, each
+with its comment. The module BINDING — the `ar` in `let ar =
+import(...)` — gets nothing. And `--doc args` silently means the
+builtin `args()`; that lib/args.ting exists is never mentioned, which
+is the one name where a reader is most likely to want the module.
+
+So: milestone "the module says what it is" (v2.142.0). A module
+explains itself already; the tools just have to carry it.
+
+NOT CHOSEN, found while probing: `pad_left` requires its fill
+argument, where a space is the obvious default and the language has
+default parameters (csv and sh use them, string.ting does not). Real
+but one line, not a milestone — it can ride along with something.
+And a friction that turned out not to exist: I reached for pad_left
+because I assumed format() had no width spec. It does — `{:>5}`,
+`{:<5}`, `{:^5}`, `{:0>2}`, `{:.2}` — and the doc says so. The
+padding helpers are for the cases format cannot reach, which is
+fine.
+
+Backlog for the milestone is in STATE.md.
