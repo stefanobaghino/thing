@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 900: REPLENISHMENT — MILESTONE "THE FAILURE TELLS YOU WHY"
+  (v2.141.0), reasoning in LOG.md. Probed: RUNTIME ERRORS ARE ALREADY
+  GOOD (types named, caret, a note per call with argument values), so
+  the seam is what happens when a TEST fails. `--test` spawns each
+  child with `.stdout(Stdio::null())`, so a file that prints why it
+  failed — which is what `lib/test.ting`'s `summary()` does — reports
+  only `FAIL <path>`; `summary()` then ends with `exit(1)`, which
+  skips the `ting-checks:` line, so a failing file also reports ZERO
+  checks. And `assert` shows neither side of the comparison it
+  refused.
 - 899: HEALTH TICK, milestone "every mistake at once" complete.
   Bench: eleven checksums identical to BASELINE, compared
   mechanically; timings a few percent slower than 890's across the
@@ -3712,6 +3722,18 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - `--test` shows a failing file's own output. The reason it failed
+  is what the file PRINTED, and `run_one` currently nulls the child's
+  stdout. Success stays silent.
+  - a file that fails still reports how many checks it ran: `exit()`
+  skips the `ting-checks:` line, so the totals under-count exactly
+  when something went wrong.
+  - `assert` shows the values it compared, from both engines,
+  byte-identical — the compiler and the evaluator both have the two
+  sides when the call is built.
+  - the docs say what a failing test prints and what an assertion
+  shows.
+  - release v2.141.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

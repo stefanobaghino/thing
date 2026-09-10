@@ -22405,3 +22405,56 @@ generators left the tree clean.
 Milestone "every mistake at once" is complete: v2.140.0 shipped and
 verified, and nothing it touched has moved since. Next tick:
 replenishment.
+
+## 900 — replenishment: milestone "the failure tells you why"
+
+Maintenance: tree clean, no PRs, CI green for bb6b018 from the API.
+
+Probed the paths a person walks when something is WRONG, since the
+last milestone left the tools better at saying what is wrong with a
+file and this asks what happens after that.
+
+RUNTIME ERRORS ARE ALREADY GOOD, so there is no milestone in them.
+Every shape I threw at them names the types and reads like English:
+`cannot index nil with string`, `index 5 out of bounds (len 2)`,
+`int is not callable`, `push expects a list, got map`, `slice expects
+int bounds, got string and int`, `cannot iterate over int`. An
+uncaught one prints the line with a caret under the failing
+expression and a note per call it unwound through, WITH THE ARGUMENT
+VALUES. That is the standard the rest of this probe is measured
+against.
+
+TWO THINGS FALL SHORT OF IT, and both are in the way a FAILING TEST
+reports itself.
+
+FIRST: `ting --test` THROWS AWAY THE OUTPUT THAT SAYS WHY. Run a
+failing test file directly and it tells you everything —
+
+    FAIL: three kilos: got 9, want 8
+    FAIL: a map: got {"a": 1, "b": [1, 2, 3]}, want {"a": 1, "b": [1, 2, 4]}
+
+Run the same file under the project's own harness and it says
+`FAIL <path>` and nothing else. The cause is one line in `run_one`:
+the child is spawned with `.stdout(Stdio::null())`, so only stderr
+survives, and `lib/test.ting`'s `summary()` prints its failures with
+`print`. The convenient way to run the suite is the way that hides
+the answer.
+
+SECOND: A FAILING FILE REPORTS ZERO CHECKS. The harness asks each
+child how many checks it ran through a `ting-checks:` line printed as
+the process ends — and `summary()` ends the process with `exit(1)`,
+which never reaches it. So the totals under-count silently, and the
+one number a reader might use to notice a file stopped early is the
+number that goes missing exactly when it stopped early.
+
+THIRD, and the reason this is a milestone rather than a bug fix:
+`assert` DOES NOT SHOW ITS WORK. `assert(got == want, "the shapes
+differ")` prints the message and the source line, and leaves you to
+re-run to learn what `got` was. Every other diagnostic here shows
+values — the call trace shows argument values — so the project's own
+2769 checks are the least informative failures it produces. Both
+engines have the comparison's two sides at hand when the call is
+compiled; the message can too, byte-identical on each, which the
+differential tests already know how to insist on.
+
+So: milestone "the failure tells you why" (v2.141.0).
