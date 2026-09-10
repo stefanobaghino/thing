@@ -16,7 +16,7 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 75 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 204
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 210
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2778 selftest checks on all four
@@ -3898,11 +3898,12 @@ holds only the current milestone and the standing rules.
   equivalence relation, nil for a function, a NaN, a number past 2^53
   or a value holding itself. unique, unique_by and mode built on it,
   linear now (32000 elements: 1022 ms -> 37).
+- 925: union, intersection and difference on the fingerprint, with
+  the membership/holds/remember trio they are built on (16000
+  elements: 51 ms, linear).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - union, intersection and difference in lib/list.ting, linear and
-  order-preserving, with selftest checks on both engines.
   - a guard that these stay linear (weigh allocations, as 918 did),
   and the docs.
   - release v2.144.0.

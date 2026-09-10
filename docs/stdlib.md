@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 204 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 210 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -41,6 +41,12 @@ Imports return a map, so functions are reached with `["name"]`.
 | `unique(xs)` | first occurrence of each element, order preserved (structural equality; keyed by `fingerprint`, so one pass rather than a scan per element) |
 | `unique_by(xs, key)` | first element for each distinct `key(x)`, order preserved |
 | `fingerprint(v)` | the builtin, re-exported so the module carries the key its sameness helpers use |
+| `union(a, b)` | every element of either, first occurrences kept, `a`'s order first |
+| `intersection(a, b)` | the distinct elements of `a` that `b` has too, in `a`'s order |
+| `difference(a, b)` | the distinct elements of `a` that `b` does not have, in `a`'s order |
+| `membership(xs)` | the elements ready to be asked about many times over — `contains` walks the list at every question, which is what makes a set operation written by hand quadratic |
+| `holds(m, x)` | whether a `membership` holds a value equal to `x` |
+| `remember(m, x)` | adds `x` to a `membership` in place and answers it, so a set can grow as a loop runs |
 | `compact(xs)` | a fresh list without the `nil` elements |
 | `any(xs, pred)` | true if `pred` holds for some element (false on empty) |
 | `all(xs, pred)` | true if `pred` holds for every element (true on empty) |

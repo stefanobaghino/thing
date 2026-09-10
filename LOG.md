@@ -23337,3 +23337,36 @@ first, which is what they are for.
 Gate: fmt, clippy, 17 `test result: ok` (452 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2806 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 925 — the sets that were never there
+
+Maintenance: tree clean, no PRs, CI and Pages green for 7f46159 from
+the API.
+
+`union`, `intersection` and `difference` in lib/list.ting, on the
+fingerprint 924 added. Neither module had them, so a program that
+needed one wrote the nested loop by hand: 10/41/161 ms at 2000/4000/
+8000 in 923's probe. These are 5/14/24/51 ms at 2000 through 16000 —
+linear, and twice the input costs twice the work.
+
+The three come with the pair they are built on, which is worth more
+than they are: `membership(xs)` turns a list into something that can
+be ASKED, `holds(m, x)` asks it, and `remember(m, x)` adds in place so
+a set can grow as a loop runs. That is the general answer to the trap
+— `contains` walks the list at every question — and the set
+operations are just its three obvious uses. The shape membership
+returns is deliberately not promised; holds and remember understand
+it, and the docs say so.
+
+They agree with `==` because the fingerprint does: `intersection([1,
+2], [1.0])` is `[1]`, `difference([1], [1.0])` is empty, structures
+compare structurally, and a function is found by identity through the
+scan the fingerprint's refusal falls back to. All three answer in a's
+order with duplicates dropped, which the page states.
+
+18 new checks in selftest/stdlib.ting; 2822 now, on both engines. The
+stdlib count guard failed first at 204 and is 210.
+
+Gate: fmt, clippy, 17 `test result: ok` (452 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2822 checks on both engines, Windows
+check and clippy, wasm release build.

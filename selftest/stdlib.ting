@@ -450,3 +450,24 @@ assert(l["unique_by"]([1, 2, 3], fn(x) { if x == 2 { return f1; } return f2; }) 
 "unique_by keys that refuse a fingerprint still work");
 assert(l["mode"]([f1, f2, f2]) == f2, "mode over functions");
 assert(l["mode"]([1, 1.0, 2]) == 1, "mode counts 1 and 1.0 together");
+
+# Set operations, keyed the same way and linear because of it.
+assert(l["union"]([1, 2, 2], [2, 3]) == [1, 2, 3], "union keeps first occurrences, a first");
+assert(l["union"]([], []) == [], "union of nothing");
+assert(l["intersection"]([1, 2, 3, 2], [3, 2, 9]) == [2, 3], "intersection is a's order, distinct");
+assert(l["intersection"]([1], []) == [], "intersection with nothing");
+assert(l["difference"]([1, 2, 3, 2], [2]) == [1, 3], "difference is a's order, distinct");
+assert(l["difference"]([], [1]) == [], "difference from nothing");
+assert(l["intersection"]([1, 2], [1.0]) == [1], "sets agree with ==: 1.0 is 1");
+assert(l["difference"]([1], [1.0]) == [], "and so nothing is left");
+assert(l["intersection"]([[1], [2]], [[2]]) == [[2]], "sets compare structures");
+assert(l["difference"]([f1, 1], [f1]) == [1], "a function is found by identity");
+assert(l["intersection"]([f1, 1], [f1]) == [f1], "and kept when both lists hold it");
+
+let seen = l["membership"](["a", 1, f1]);
+assert(l["holds"](seen, 1.0) && l["holds"](seen, "a") && l["holds"](seen, f1),
+"membership holds what it was given");
+assert(!l["holds"](seen, 2) && !l["holds"](seen, f2), "and nothing else");
+assert(l["holds"](l["remember"](seen, 2), 2), "remember adds in place and answers the set");
+assert(l["holds"](seen, 2), "which the caller's own binding sees");
+assert(!l["holds"](l["membership"]([]), 1), "an empty membership holds nothing");

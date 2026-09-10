@@ -524,3 +524,68 @@ fn binary_search(xs, x) {
   }
   return nil;
 }
+
+# The elements of xs, ready to be asked about many times over:
+# `contains` walks the list at every question, which is what makes a
+# set operation written by hand quadratic. Ask this with holds(); the
+# shape it returns is not promised, only that holds() understands it.
+fn membership(xs) {
+  let keyed = {};
+  let loose = [];
+  for x in xs {
+    let k = fingerprint(x);
+    if k == nil {
+      if !contains(loose, x) { push(loose, x); }
+    } else {
+      keyed[k] = true;
+    }
+  }
+  return {"keyed": keyed, "loose": loose};
+}
+
+# Whether m, from membership(), holds a value equal to x.
+fn holds(m, x) {
+  let k = fingerprint(x);
+  if k == nil { return contains(m["loose"], x); }
+  return has(m["keyed"], k);
+}
+
+# Adds x to m, in place, and answers m — so a set can grow as a loop
+# runs instead of being rebuilt from a list each time round.
+fn remember(m, x) {
+  let k = fingerprint(x);
+  if k == nil {
+    if !contains(m["loose"], x) { push(m["loose"], x); }
+  } else {
+    m["keyed"][k] = true;
+  }
+  return m;
+}
+
+# Every element of either list, first occurrences kept and duplicates
+# dropped: a's order, then whatever b adds.
+fn union(a, b) { return unique(a + b); }
+
+# The distinct elements of a that b has too, in a's order.
+fn intersection(a, b) {
+  let inb = membership(b);
+  let out = [];
+  let taken = membership([]);
+  for x in a {
+    if holds(inb, x) && !holds(taken, x) {
+      push(out, x);
+      remember(taken, x);
+    }
+  }
+  return out;
+}
+
+# The distinct elements of a that b does not have, in a's order.
+fn difference(a, b) {
+  let inb = membership(b);
+  let out = [];
+  for x in a {
+    if !holds(inb, x) { push(out, x); }
+  }
+  return unique(out);
+}
