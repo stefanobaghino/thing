@@ -643,20 +643,20 @@ impl Builtin {
                 "The command-line arguments after the script path.",
             ),
             Builtin::Input => (
-                "input()",
-                "One line from stdin without the newline; nil at end of input.",
+                "input() / input(\"lossy\")",
+                "One line from stdin without the newline; nil at end of input. A line that is not UTF-8 fails, naming the byte; \"lossy\" reads it anyway, with a replacement character where each bad byte was.",
             ),
             Builtin::ReadFile => (
-                "read_file(path)",
-                "The file's entire contents as a string (\"-\" reads stdin); unreadable file errors.",
+                "read_file(path) / read_file(path, \"lossy\")",
+                "The file's entire contents as a string (\"-\" reads stdin); unreadable file errors, and so does one that is not UTF-8, naming the byte and the line it falls in. \"lossy\" reads it anyway, with a replacement character where each bad byte was — what run() has always done with a child's output.",
             ),
             Builtin::WriteFile => (
                 "write_file(path, s) / write_file(path, s, \"append\")",
                 "Writes (or overwrites) the file; \"append\" adds to the end. Returns nil.",
             ),
             Builtin::EachLine => (
-                "each_line(path, f)",
-                "Reads the file one line at a time, calling f(line) for each — newline removed, CRLF too, as input() does. Only the current line is held, so a file larger than memory still reads. \"-\" is stdin. Returning false from f stops the read. Answers how many lines f was given.",
+                "each_line(path, f) / each_line(path, f, \"lossy\")",
+                "Reads the file one line at a time, calling f(line) for each — newline removed, CRLF too, as input() does. Only the current line is held, so a file larger than memory still reads. \"-\" is stdin. Returning false from f stops the read. Answers how many lines f was given. A line that is not UTF-8 fails, naming the byte and which line it was; \"lossy\" hands the line over with a replacement character where each bad byte was.",
             ),
             Builtin::ListDir => (
                 "list_dir(path)",

@@ -4315,3 +4315,81 @@ fn an_unreadable_module_does_not_fall_back_to_the_embedded_one() {
         "a file that is there is not a missing file: {err}"
     );
 }
+
+/// Saying where the bytes go bad is half of it; the other half is
+/// being able to read the file anyway. `"lossy"` asks for exactly
+/// what a child's output has always got — a replacement character
+/// per bad byte — so one word means one thing in both directions.
+#[test]
+fn a_reader_can_ask_for_the_text_anyway() {
+    let dir = std::env::temp_dir().join(format!("ting-lossy-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("temp dir");
+    let log = dir.join("dirty.log");
+    std::fs::write(&log, b"ok line\nca\xe9 bad\nlast\n").expect("write fixture");
+    let script = dir.join("lossy.ting");
+    std::fs::write(
+        &script,
+        "let whole = read_file(args()[0], \"lossy\");\n\
+         print(len(whole), len(split(whole, \"\\n\")));\n\
+         let widths = [];\n\
+         print(each_line(args()[0], fn(l) { push(widths, len(l)); }, \"lossy\"), widths);\n\
+         print(try(read_file, args()[0], \"skip\")[\"err\"]);\n",
+    )
+    .expect("write script");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .arg(&log)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    // 21 bytes of text, one replacement character, and the trailing
+    // newline leaves a fourth (empty) piece.
+    assert_eq!(lines.next().unwrap(), "21 4", "whole file:\n{text}");
+    assert_eq!(
+        lines.next().unwrap(),
+        "3 [7, 7, 4]",
+        "line by line:\n{text}"
+    );
+    assert_eq!(
+        lines.next().unwrap(),
+        "read_file mode must be the string \"lossy\", got \"skip\"",
+        "a mode nobody has:\n{text}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// The same for the stream: a filter that would have dropped the one
+/// bad line can now reach it.
+#[test]
+fn a_stream_can_be_read_lossily_too() {
+    let script = std::env::temp_dir().join(format!("ting-lossy-in-{}.ting", std::process::id()));
+    std::fs::write(
+        &script,
+        "let line = input(\"lossy\");\nwhile line != nil {\n  print(len(line));\n  line = input(\"lossy\");\n}\n",
+    )
+    .unwrap();
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"ok\nca\xe9 bad\nlast\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let _ = std::fs::remove_file(&script);
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "2\n7\n4\n",
+        "{}",
+        String::from_utf8_lossy(&out.stderr)
+    );
+    assert!(out.status.success());
+}

@@ -251,6 +251,27 @@ fn lines_of(src: &str, offsets: &std::collections::HashSet<usize>) -> Vec<usize>
     lines
 }
 
+/// The optional last argument of a reader: absent, or the string
+/// "lossy", which asks for the replacement characters `run()` has
+/// always given a child's output rather than a refusal. Any other
+/// value is a mistake worth naming, the way write_file's mode is.
+fn read_mode(v: Option<&Value>, whose: &str, span: Span) -> Result<bool, RuntimeError> {
+    match v {
+        None => Ok(false),
+        Some(Value::Str(mode)) if mode == "lossy" => Ok(true),
+        Some(v) => Err(error(
+            format!(
+                "{whose} mode must be the string \"lossy\", got {}",
+                match v {
+                    Value::Str(m) => format!("{m:?}"),
+                    other => other.type_name().to_string(),
+                }
+            ),
+            span,
+        )),
+    }
+}
+
 pub(crate) fn error(message: impl Into<String>, span: Span) -> RuntimeError {
     RuntimeError {
         message: message.into(),
@@ -2236,7 +2257,8 @@ impl<W: Write> Interpreter<W> {
                 ))
             }
             Builtin::Input => {
-                arity(0, 0)?;
+                arity(0, 1)?;
+                let lossy = read_mode(args.first(), "input", span)?;
                 use std::io::BufRead;
                 // Read the bytes, then say where they stop being
                 // text: `read_line` refuses without a position, and a
@@ -2252,8 +2274,8 @@ impl<W: Write> Interpreter<W> {
                                 raw.pop();
                             }
                         }
-                        match crate::diag::text_of_line(&raw, "the line") {
-                            Ok(line) => Ok(Value::str(line)),
+                        match crate::diag::line_or_lossy(&raw, "the line", lossy) {
+                            Ok(line) => Ok(Value::str(line.into_owned())),
                             Err(why) => Err(error(format!("input failed: {why}"), span)),
                         }
                     }
@@ -2264,18 +2286,19 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             Builtin::ReadFile => {
-                arity(1, 1)?;
+                arity(1, 2)?;
+                let lossy = read_mode(args.get(1), "read_file", span)?;
                 match &args[0] {
                     // "-" is the conventional name for stdin, read to EOF.
                     Value::Str(path) if path == "-" => {
                         let mut buf = Vec::new();
                         std::io::Read::read_to_end(&mut std::io::stdin().lock(), &mut buf)
                             .map_err(|e| crate::diag::read_why(&e))
-                            .and_then(|_| crate::diag::text_of(buf))
+                            .and_then(|_| crate::diag::text_or_lossy(buf, lossy))
                             .map(Value::str)
                             .map_err(|why| error(format!("cannot read stdin: {why}"), span))
                     }
-                    Value::Str(path) => crate::diag::read_text(path.as_str())
+                    Value::Str(path) => crate::diag::read_text_mode(path.as_str(), lossy)
                         .map(Value::str)
                         .map_err(|why| error(format!("cannot read {path:?}: {why}"), span)),
                     v => Err(error(
@@ -2345,7 +2368,8 @@ impl<W: Write> Interpreter<W> {
             // without reading the rest — and any other answer, nil
             // included, carries on.
             Builtin::EachLine => {
-                arity(2, 2)?;
+                arity(2, 3)?;
+                let lossy = read_mode(args.get(2), "each_line", span)?;
                 let (Value::Str(path), f @ (Value::Fn(_) | Value::Builtin(_))) =
                     (&args[0], &args[1])
                 else {
@@ -2400,12 +2424,13 @@ impl<W: Write> Interpreter<W> {
                         }
                     }
                     count += 1;
-                    let line = match crate::diag::text_of_line(&raw, &format!("line {count}")) {
-                        Ok(line) => Value::str(line),
-                        Err(why) => {
-                            return Err(error(format!("cannot read {whose}: {why}"), span));
-                        }
-                    };
+                    let line =
+                        match crate::diag::line_or_lossy(&raw, &format!("line {count}"), lossy) {
+                            Ok(line) => Value::str(line.into_owned()),
+                            Err(why) => {
+                                return Err(error(format!("cannot read {whose}: {why}"), span));
+                            }
+                        };
                     if matches!(self.call_value(&f, vec![line], span)?, Value::Bool(false)) {
                         break;
                     }

@@ -53,6 +53,40 @@ pub fn text_of_line<'a>(bytes: &'a [u8], whose: &str) -> Result<&'a str, String>
     })
 }
 
+/// Bytes as text, or as text with the bad ones replaced when the
+/// caller asked for that. "lossy" means here what it has always
+/// meant for a child's output: a byte that is not UTF-8 becomes a
+/// replacement character, and the read goes on.
+pub fn text_or_lossy(bytes: Vec<u8>, lossy: bool) -> Result<String, String> {
+    if lossy {
+        Ok(String::from_utf8_lossy(&bytes).into_owned())
+    } else {
+        text_of(bytes)
+    }
+}
+
+/// The same choice for one line.
+pub fn line_or_lossy<'a>(
+    bytes: &'a [u8],
+    whose: &str,
+    lossy: bool,
+) -> Result<std::borrow::Cow<'a, str>, String> {
+    if lossy {
+        Ok(String::from_utf8_lossy(bytes))
+    } else {
+        text_of_line(bytes, whose).map(std::borrow::Cow::Borrowed)
+    }
+}
+
+/// A file as text, or as lossy text, with the read's own trouble
+/// worded either way.
+pub fn read_text_mode(path: impl AsRef<std::path::Path>, lossy: bool) -> Result<String, String> {
+    match std::fs::read(path) {
+        Ok(bytes) => text_or_lossy(bytes, lossy),
+        Err(e) => Err(read_why(&e)),
+    }
+}
+
 /// A file as text, with either kind of trouble already worded: the
 /// file could not be read at all, or it is not text and this is
 /// where it stops being text.

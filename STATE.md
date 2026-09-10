@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2749 selftest checks on all four
-  CI platforms, Windows included); 423 Rust tests
-  in 17 suites (counted at 873; the 399 written here had been
+  CI platforms, Windows included); 425 Rust tests
+  in 17 suites (counted at 884; the 399 written here had been
   stale for a while). `ting --fmt .` reports 78 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 884: second stroke — A DELIBERATE WAY TO READ ANYWAY.
+  `read_file(path, "lossy")`, `each_line(path, f, "lossy")` and
+  `input("lossy")` follow the mode string `write_file` already took,
+  and produce exactly what `run()` has always produced: a
+  replacement character per bad byte. One helper each side —
+  `read_mode` in the evaluator, the lossy twins in `diag` — so
+  strict and lossy read the same bytes through the same code. A mode
+  nobody has is refused by name. BOTH NEW TESTS FAILED FIRST TIME ON
+  MY OWN ARITHMETIC: I predicted six characters where a seven-byte
+  line with one bad byte gives seven. A lossy read SUBSTITUTES into
+  the line, it does not shrink it.
 - 883: first stroke — EVERY "not UTF-8" SAYS WHERE. The wording was
   never the problem: `diag::read_why` is handed an `std::io::Error`,
   which knows no position because `read_to_string` threw the bytes
@@ -3585,13 +3596,14 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a deliberate way to read anyway: `read_file(path, "lossy")`,
-  `each_line(path, f, "lossy")`, `input("lossy")`, following the mode
-  string `write_file` already takes.
   - the docs say what each door does with bytes that are not text,
-  including that `run()` has always been lossy and why.
+  including that `run()` has always been lossy and why. Partly paid
+  in 883-884: every message says where, and the three builtin rows
+  plus `run()` carry the lossy forms. What is missing is ONE place
+  that says it all together.
   - selftests over real dirty fixtures (a latin-1 log, a truncated
-  character, a NUL, CRLF, a BOM) on both engines.
+  character, a NUL, CRLF, a BOM) on both engines. NOTE: ting cannot
+  WRITE bytes that are not text, so the fixture has to be committed.
   - release v2.139.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

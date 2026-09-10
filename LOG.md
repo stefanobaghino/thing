@@ -21864,3 +21864,45 @@ it now shows the position too. Four Rust tests, ten unit checks.
 Gate: fmt, clippy, 17 `test result: ok` (423 tests), `--fmt .` 78
 unchanged, corpus at fourteen, selftest 2749 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 884 — a deliberate way to read anyway
+
+Maintenance: tree clean, no PRs, CI green for ba1cdec from the API
+(Pages green too).
+
+883 gave the refusal a position. This gives the reader a way past
+it. `write_file` has taken a mode string for a long time; the three
+reading doors now take the same shape:
+
+- `read_file(path, "lossy")`
+- `each_line(path, f, "lossy")`
+- `input("lossy")`
+
+and every one of them produces what `run()` has always produced — a
+replacement character per bad byte. One word, one meaning, in both
+directions. Anything else is refused by name rather than ignored:
+`read_file mode must be the string "lossy", got "skip"`.
+
+The shape is one helper on each side. `read_mode` in the evaluator
+turns the optional argument into a bool or an error, so the three
+builtins share one spelling of the rule; `diag` grew the lossy twin
+of each conversion it gained in 883 (`text_or_lossy`,
+`line_or_lossy`, `read_text_mode`), so the strict and lossy paths
+read the same bytes through the same code and differ only at the
+last step. The refusal keeps its position; the lossy read keeps its
+character.
+
+MY OWN ARITHMETIC WAS THE ONLY THING WRONG: both new tests failed
+first time because I predicted six characters where the binary gave
+seven. `ca<bad byte> bad` is seven bytes and one bad byte becomes
+ONE replacement character, so it is seven characters — the binary
+was right and the expectation was wrong, twice. Worth writing down:
+a lossy read does not shrink the line, it substitutes into it.
+
+Docs: the three builtin rows carry their lossy forms and `--doc`
+prints them; the `run()` row now points at the door that matches it
+instead of only confessing the asymmetry.
+
+Gate: fmt, clippy, 17 `test result: ok` (425 tests), `--fmt .` 78
+unchanged, corpus at fourteen, selftest 2749 checks on both engines,
+Windows check and clippy, wasm release build.
