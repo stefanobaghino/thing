@@ -22614,3 +22614,22 @@ unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
 
 Next: release v2.141.0.
+
+## 905 — release v2.141.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for ff46929 from
+the API.
+
+v2.141.0, the milestone "the failure tells you why". Runtime errors
+were already good — types named, a caret, a note per call with the
+argument values — so this milestone went where the diagnostics were
+still silent, which is what happens when a TEST fails: the harness
+threw the child's output away, `exit()` skipped the check count, and
+`assert` refused a comparison without showing either side. All three
+are answered, and the reference now says so and quotes the message.
+
+Strokes 901, 902, 903, 904. CHANGELOG.md written from the LOG
+entries; Cargo.toml and Cargo.lock at 2.141.0; the binary reports
+`ting 2.141.0`. Gate re-run after the bump: 17 suites (440 tests),
+`--fmt .` 79 unchanged, corpus at fourteen, 2769 checks on both
+engines, Windows check and clippy, wasm release build.

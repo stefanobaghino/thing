@@ -5,6 +5,29 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.141.0 (2026-09-10)
+
+- **A failing test says why it failed.** `ting --test` ran each file
+  with its output thrown away, so a file that printed the reason it
+  failed — which is exactly what `lib/test.ting`'s `summary()` does —
+  reported nothing but `FAIL` and a path, and the reason had to be
+  chased by running the file again by hand. The file's own output now
+  appears under the `FAIL` line, indented, before the error that
+  killed it. A file that passes stays silent, and a file that fails in
+  a loop is cut after forty lines, keeping the first ones and counting
+  the rest.
+- **A file that fails still reports what it checked.** The check count
+  came from a line printed at the end of a run, and `exit()` never
+  reached it — so a suite that stopped at its first real failure
+  claimed zero checks, hiding the hundreds that had passed before it.
+  `exit()` reports the count too, and the summary totals it.
+- **A failed assertion shows both sides.** `assert(x == 8)` refused
+  with `assertion failed` and nothing else: the two values were gone
+  by the time the builtin ran. A refused comparison now prints them —
+  `assertion failed: three kilos (9 == 8)` — on both engines, from
+  lists and maps as readily as from numbers, cut at 64 characters so a
+  large value cannot bury the message.
+
 ## v2.140.0 (2026-09-10)
 
 - **Every syntax error at once.** The parser used to report the first

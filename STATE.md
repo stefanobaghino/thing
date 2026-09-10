@@ -2454,6 +2454,10 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 905: RELEASE v2.141.0 (162nd tag; strokes 901, 902, 903, 904).
+  Gate re-run after the bump: 17 suites (440 tests), `--fmt .` 79
+  unchanged, corpus at fourteen, 2769 checks on both engines,
+  Windows and wasm. Next: verify it.
 - 904: fourth stroke — THE PAGE SAYS WHAT A FAILURE LOOKS LIKE.
   docs/reference.md's `--test` bullet now states that a failing
   file's own output is repeated under the FAIL line before the error
@@ -3756,7 +3760,7 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.141.0.
+  - verify v2.141.0 by cold asset download.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
