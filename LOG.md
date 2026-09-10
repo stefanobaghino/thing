@@ -22032,3 +22032,25 @@ and the Windows job never got far enough to say.
 Gate: fmt, clippy, 17 `test result: ok` (426 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 888 — release v2.139.0
+
+Maintenance: tree clean, no PRs, CI GREEN for da7b246 on all four
+platforms — which is the verdict 886 and 887 were waiting for. The
+Windows job is the one that matters here: it checked the fixtures
+out and ran `selftest/bytes.ting` against them, so `-text` does hold
+`crlf.txt` through a checkout with `core.autocrlf` set, and a byte
+that is not text survives one. Neither claim could be settled on this
+host.
+
+v2.139.0, the milestone "the file you were given": every "not UTF-8"
+says where it stopped being text, the three readers take `"lossy"`
+the way `write_file` takes `"append"`, an unreadable module stops
+falling back to the embedded one, the reference has one section that
+says what every door does with bytes that are not text, and the
+self-hosted suite reads five committed dirty files.
+
+Strokes 883, 884, 885, 886, 887. CHANGELOG.md written from the LOG
+entries; Cargo.toml and Cargo.lock at 2.139.0; the binary reports
+`ting 2.139.0`. Gate re-run after the bump: 17 suites (426 tests),
+`--fmt .` 79 unchanged, 2769 checks.

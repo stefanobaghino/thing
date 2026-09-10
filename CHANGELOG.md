@@ -5,6 +5,42 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.139.0 (2026-09-10)
+
+- **Every "not UTF-8" says where.** The refusal used to be the same
+  six words wherever it came from, because the error it was built
+  from knew no position: `read_to_string` had thrown the bytes away
+  before failing. The reads changed instead. A whole file — through
+  `read_file`, `import`, a script, `--check`, `--fmt`, `--bundle` or
+  `:load` — names the byte, its offset and its line: `not UTF-8 text:
+  byte 0xe9 at offset 10 (line 2, byte 3)`. `each_line` names the
+  line it stopped on, and `input()` names the byte in the line
+  without inventing a line number for a stream nobody has counted.
+- **A deliberate way to read the bytes anyway.** `read_file(path,
+  "lossy")`, `each_line(path, f, "lossy")` and `input("lossy")`
+  follow the mode string `write_file` already took, and hand back
+  exactly what `run()` has always handed back: one replacement
+  character per bad byte. A lossy read substitutes into the line
+  rather than shortening it. A mode string nobody has is an error
+  naming what it got, not a silently ignored argument.
+- **An unreadable module no longer falls back to the embedded one.**
+  `import` treated a file that could not be read as a file that was
+  not there, so a corrupt `lib/list.ting` sitting right beside a
+  script quietly ran the copy compiled into the binary instead — a
+  wrong answer with nothing to see. A file that is there is not a
+  missing file.
+- **The reference says what every door does with bytes that are not
+  text.** A new section organised by the answer rather than by the
+  door, since the language only has three: refuse and say where, read
+  it anyway when asked, or replace always — the last being `run()`,
+  with the reason it is the odd one. `list_dir`, `lib/base64.ting`
+  and `write_file` are placed against it too.
+- **The self-hosted suite reads real dirty files.** A ting string is
+  always text, so a ting program cannot produce the bytes these
+  checks need: five fixtures are committed instead — a latin-1 log, a
+  character cut in half, a NUL, CRLF and a BOM — with git told not to
+  convert them. 2769 checks on both engines, up from 2749.
+
 ## v2.138.0 (2026-09-10)
 
 - **base64, the thirteenth stdlib module.** `import("lib/base64.ting")`
