@@ -2454,6 +2454,14 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 891: REPLENISHMENT — MILESTONE "EVERY MISTAKE AT ONCE" (v2.140.0),
+  reasoning in LOG.md. Probed first: arithmetic edges are ALREADY
+  TENDED (overflow, division by zero, `int(1e20)`, NaN, truncating
+  `%`, `1 == 1.0`, hex in `int`) and so is runaway recursion (`stack
+  overflow (max call depth 4096)` with argument values, no crash).
+  The seam is that the parser reports THE FIRST syntax error and
+  stops, so `--check` and the LSP each show one mistake at a time
+  while every other diagnostic here comes in batches.
 - 890: HEALTH TICK, milestone "the file you were given" complete.
   Bench: eleven checksums identical to BASELINE, compared
   mechanically; timings recorded, not read. Sweeps green (50000
@@ -3646,7 +3654,18 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.139.0.
+  - the parser recovers at statement boundaries and returns every
+  error it found: a recovering entry point beside `parse_program`,
+  which keeps its shape and its callers. Every step consumes at least
+  one token so it terminates, errors come in line order, no span
+  reports twice, and there is a cap.
+  - `--check` prints every parse error in a file, not the first.
+  - the LSP publishes them all, so an editor marks every syntax error
+  at once.
+  - the docs say what recovery means, what the cap is, and (from
+  891's probe) that the formatter works on tokens, so it will
+  reformat a file that does not parse.
+  - release v2.140.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

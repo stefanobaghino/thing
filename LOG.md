@@ -22110,3 +22110,49 @@ written here.
 Milestone "the file you were given" is complete: v2.139.0 shipped and
 verified, and nothing it touched has moved since. Next tick:
 replenishment.
+
+## 891 — replenishment: milestone "every mistake at once"
+
+Maintenance: tree clean, no PRs, CI green for 3a23f39 from the API.
+
+Probed three areas before choosing, because the last two milestones
+both started from something measured rather than imagined.
+
+ARITHMETIC IS ALREADY TENDED, so there is no milestone in it. Every
+edge answered the way it should: `+`, `-` and `*` past i64 say
+"integer overflow" rather than wrapping, `1 / 0` and `1 % 0` say
+"division by zero" while `1.0 / 0.0` is `inf`, `int(1e20)` and
+`int(NaN)` refuse by name, `-7 / 2` is -3 and `-7 % 2` is -1
+(truncating, like the host), `1 == 1.0` is true, `str(0.1 + 0.2)`
+prints all seventeen digits, and `int("0x10")` reads hex. Nothing to
+fix.
+
+RUNAWAY RECURSION IS ALSO TENDED: `stack overflow (max call depth
+4096)`, with the argument values in the trace, and no crash.
+
+THE SEAM IS SYNTAX ERRORS: the parser reports THE FIRST ONE AND
+STOPS. A file with three typos takes three edit-run cycles to see
+three messages, and an editor underlines one mistake at a time
+because `--check` and the LSP both get a single `ParseError` from
+`parse_program`. Every other diagnostic this project emits comes in
+batches — the compiler's warnings, a directory's worth of files — so
+this is the one place that still answers a question with a quarter of
+the answer.
+
+So: milestone "every mistake at once" (v2.140.0). The parser gains a
+recovering entry point beside the strict one (`parse_program` keeps
+its shape and its callers), skipping to the next statement boundary
+after an error and collecting what it finds; `--check` and the LSP
+use it. The rules that make recovery honest rather than noisy are the
+work: every recovery step consumes at least one token so it always
+terminates, errors come in line order, the same span never reports
+twice, and there is a cap so a file of soup does not print a
+thousand lines.
+
+NOT CHOSEN, but found while probing and worth writing down: `--fmt`
+happily reformats a file that does not PARSE — `let a = ;` becomes
+`let a =;`. That is not a bug as such (the formatter is token-based
+on purpose, and 462 set the bar at lexing, which is what lets you
+format a file mid-edit), but the reference says the formatter "never
+alters program meaning", and a file with no meaning to alter deserves
+a sentence there rather than silence.
