@@ -22353,3 +22353,26 @@ entries; Cargo.toml and Cargo.lock at 2.140.0; the binary reports
 `ting 2.140.0`. Gate re-run after the bump: 17 suites (436 tests),
 `--fmt .` 79 unchanged, corpus at fourteen, 2769 checks on both
 engines.
+
+## 898 — v2.140.0 verified
+
+Release, CI and Pages all green for 61de048. Seven assets;
+`sha256sum -c SHA256SUMS` OK for all six archives on a cold download.
+
+Both aarch64 Linux archives through tools/smoke.sh: `ting 2.140.0`,
+the shipped lib/ identical to this tree's, 24 files and 2769 checks
+from each, 22 examples clean.
+
+The milestone's own behaviour, out of the shipped binaries rather
+than this tree's target/: a five-line file with three typos gets
+THREE errors from `--check` (it would have got one before), from both
+the gnu and the musl build. And in a directory with no lib/ at all,
+`import("lib/list.ting")` still answered from the copy compiled into
+the binary.
+
+Site: reference.html and changelog.html fetched and compared byte for
+byte against what tools/md2html.ting renders here — both identical,
+so the published reference carries the recovery contract; the three
+playground paths answer 200.
+
+161st tag. Next tick: the health tick that closes the milestone.

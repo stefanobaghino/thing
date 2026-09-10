@@ -2454,8 +2454,14 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
-- 897: RELEASE v2.140.0 (161st tag; strokes 892, 893, 894, 895, 896).
-  Awaiting verification by cold download.
+- 898: v2.140.0 VERIFIED (161st tag; strokes 892, 893, 894, 895, 896;
+  seven assets, `sha256sum -c` OK on all six, both aarch64 archives
+  unpacked and run here, 2769 checks and 22 clean examples from each,
+  three errors from `--check` on a three-typo file out of both
+  builds, and the embedded stdlib answering outside the unpacked
+  directory). Site: reference and changelog pages byte-identical to
+  the local renderer.
+- 897: RELEASE v2.140.0.
 - 896: fifth stroke — WHAT RECOVERY PROMISES. The reference's
   `--check` bullet states the contract (every error, where recovery
   resumes, line order, no position twice, twenty per file, and why a
