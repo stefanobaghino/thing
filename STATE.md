@@ -2454,6 +2454,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 890: HEALTH TICK, milestone "the file you were given" complete.
+  Bench: eleven checksums identical to BASELINE, compared
+  mechanically; timings recorded, not read. Sweeps green (50000
+  differential twice, 2000000 patterns, crash, 20000 formatter).
+  Coverage 3169/3186 (99%), selftest/bytes.ting at 100%, the
+  remaining gaps the same platform-shaped lines as before. Site audit
+  in its strong form: all six pages byte-identical to what
+  tools/md2html.ting renders here, three playground paths 200. Next
+  tick: replenishment.
 - 889: v2.139.0 VERIFIED (160th tag; strokes 883, 884, 885, 886, 887;
   seven assets, `sha256sum -c` OK on all six, both aarch64 archives
   unpacked and run here, 2769 checks and 22 clean examples from each,

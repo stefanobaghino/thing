@@ -22080,3 +22080,33 @@ Site: the three pages fetched answer 200, the changelog page carries
 v2.139.0, and the reference page carries "Bytes that are not text".
 
 160th tag. Next tick: the health tick that closes the milestone.
+
+## 890 — health tick: milestone "the file you were given" complete
+
+Maintenance: tree clean, no PRs, CI green for e7c0db5 from the API.
+
+Bench: eleven checksums, compared mechanically against BASELINE, all
+identical. Timings are the usual weather on a shared four-core host
+and nothing here went near a hot path, so they are recorded and not
+read: vm between 20% and 62% faster than eval, scan and growth the
+widest as always.
+
+Sweeps, all in release: 50000 differential cases twice (the second on
+a fresh seed), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases. Green.
+
+Coverage of the self-hosted suite: 3169 of 3186 lines, 99%. The new
+selftest/bytes.ting is at 100%. What is left is the same handful of
+platform-shaped lines as before — six in lib/args.ting, three in
+lib/test.ting, two each in lib/fs.ting and lib/sh.ting — not a
+regression from this milestone.
+
+Site audit, the strong form: all six published pages fetched and
+compared BYTE FOR BYTE against what tools/md2html.ting renders from
+this tree, all six identical, and the three playground paths answer
+200. The reference page therefore carries the new section exactly as
+written here.
+
+Milestone "the file you were given" is complete: v2.139.0 shipped and
+verified, and nothing it touched has moved since. Next tick:
+replenishment.
