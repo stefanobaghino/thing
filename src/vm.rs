@@ -129,6 +129,13 @@ fn exec<W: Write>(
                 let l = stack.pop().expect("stack underflow");
                 stack.push(eval::binary(*op, l, r, span)?);
             }
+            Op::CompareShowing(op) => {
+                let r = stack.pop().expect("stack underflow");
+                let l = stack.pop().expect("stack underflow");
+                let outcome = eval::binary(*op, l.clone(), r.clone(), span)?;
+                interp.set_compared(*op, l, r, span, &outcome);
+                stack.push(outcome);
+            }
             Op::MakeList(n) => {
                 let items = stack.split_off(stack.len() - *n as usize);
                 stack.push(Value::list(items));

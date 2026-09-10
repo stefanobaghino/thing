@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 438 Rust tests
-  in 17 suites (counted at 902; the 399 written here had been
+  CI platforms, Windows included); 439 Rust tests
+  in 17 suites (counted at 903; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 903: third stroke — THE ASSERTION SHOWS ITS WORK. `assertion
+  failed: three kilos (9 == 8)`. The two sides reach the builtin
+  through the `Interpreter` (`set_compared`), filled by the
+  tree-walker inline and by the VM's new `CompareShowing` opcode,
+  with ONE shared predicate (`is_assert_comparison`) deciding the
+  shape for both — syntactic, since the compiler cannot know what
+  `assert` is bound to. Kept only when the comparison is FALSE;
+  `assert` takes the pair only if its span lies inside its own call
+  (so a shadowed `assert` cannot leave one behind); the predicate
+  tests the argument shape before the callee name, because it runs
+  for every argument of every call. Thirteen differential cases hold
+  the engines to the same text.
 - 902: second stroke — THE COUNT SURVIVES THE EXIT.
   `eval::report_checks_if_asked` is the one place that prints the
   `ting-checks:` line, called at the end of a run AND inside
@@ -3734,9 +3746,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `assert` shows the values it compared, from both engines,
-  byte-identical — the compiler and the evaluator both have the two
-  sides when the call is built.
   - the docs say what a failing test prints and what an assertion
   shows.
   - release v2.141.0.

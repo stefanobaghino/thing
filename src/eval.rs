@@ -126,6 +126,10 @@ const TRACE_EDGE: usize = 4;
 /// big value or a long parameter list cannot bury the message.
 const ARGS_SHOWN: usize = 4;
 const ARG_WIDTH: usize = 32;
+/// A value shown inside a failed assertion gets twice the width a
+/// value in a call trace gets: there, the value is context; here, it
+/// is the whole point of the message.
+const ASSERT_WIDTH: usize = 64;
 
 pub(crate) fn render_args(args: &[(Rc<str>, Value)]) -> String {
     let mut out = String::from("(");
@@ -154,6 +158,34 @@ fn abbreviate(s: &str) -> String {
         return s.to_string();
     }
     let kept: String = s.chars().take(ARG_WIDTH).collect();
+    format!("{kept}...")
+}
+
+/// Is this call `assert(a == b, ...)` — the first argument of a call
+/// written with the name `assert`, being a comparison? The evaluator
+/// and the compiler both ask, so that the two engines record the same
+/// pairs on the same programs.
+pub(crate) fn is_assert_comparison(callee: &Expr, arg: &Expr) -> bool {
+    // Shape first, name second: this runs for every argument of every
+    // call the tree-walker makes, and comparing a name against
+    // "assert" there costs more than the tag test that rules out
+    // almost everything.
+    matches!(
+        &arg.kind,
+        ExprKind::Binary(
+            BinaryOp::Eq | BinaryOp::Ne | BinaryOp::Lt | BinaryOp::Le | BinaryOp::Gt | BinaryOp::Ge,
+            ..
+        )
+    ) && matches!(&callee.kind, ExprKind::Var(n) if &**n == "assert")
+}
+
+/// A value as a failed assertion shows it.
+fn assert_repr(v: &Value) -> String {
+    let s = crate::value::element_repr(v);
+    if s.chars().count() <= ASSERT_WIDTH {
+        return s;
+    }
+    let kept: String = s.chars().take(ASSERT_WIDTH).collect();
     format!("{kept}...")
 }
 
@@ -632,6 +664,14 @@ pub struct Interpreter<W: Write> {
     /// number: a program that never rolls a die never reads the clock,
     /// and one that calls seed() first is reproducible.
     rng: Option<u64>,
+    /// The two sides of the comparison an `assert` is about to be
+    /// handed, with the operator and the comparison's span. Both
+    /// engines fill it in immediately before the comparison they
+    /// compiled specially, and `assert` takes it to say what the
+    /// values actually were. The span is checked against the assert's
+    /// own so a pair left behind by a shadowed `assert` cannot be
+    /// reported against a later real one.
+    compared: Option<(BinaryOp, Value, Value, Span)>,
 }
 
 /// Where an unseeded generator starts. The clock is the only entropy
@@ -1029,6 +1069,26 @@ impl<W: Write> Interpreter<W> {
             compile_imports: false,
             patterns: HashMap::new(),
             rng: None,
+            compared: None,
+        }
+    }
+
+    /// The two sides of the comparison an `assert` is about to see,
+    /// kept only when the comparison came out FALSE — a passing
+    /// assert has nothing to explain, and this runs on every one of
+    /// them. The VM calls it from its own opcode; the tree-walker
+    /// calls it where it evaluates the argument, so the rule lives in
+    /// one place.
+    pub fn set_compared(
+        &mut self,
+        op: BinaryOp,
+        lhs: Value,
+        rhs: Value,
+        span: Span,
+        outcome: &Value,
+    ) {
+        if matches!(outcome, Value::Bool(false)) {
+            self.compared = Some((op, lhs, rhs, span));
         }
     }
 
@@ -3042,12 +3102,31 @@ impl<W: Write> Interpreter<W> {
                         ));
                     }
                 };
+                // Whatever the sides were, they are this call's or
+                // nobody's: a pair recorded for a call that never
+                // reached this builtin must not surface here.
+                let compared = self
+                    .compared
+                    .take()
+                    .filter(|(_, _, _, at)| span.start <= at.start && at.end <= span.end);
                 match &args[0] {
                     Value::Bool(true) => Ok(Value::Nil),
                     Value::Bool(false) => Err(error(
-                        match msg {
-                            Some(m) => format!("assertion failed: {m}"),
-                            None => "assertion failed".to_string(),
+                        {
+                            let head = match msg {
+                                Some(m) => format!("assertion failed: {m}"),
+                                None => "assertion failed".to_string(),
+                            };
+                            match compared {
+                                // What the comparison came down to,
+                                // in the operator's own shape: the
+                                // line above already shows what was
+                                // written, so this shows what it was.
+                                Some((op, l, r, _)) => {
+                                    format!("{head} ({} {op} {})", assert_repr(&l), assert_repr(&r))
+                                }
+                                None => head,
+                            }
                         },
                         span,
                     )),
@@ -3934,6 +4013,23 @@ impl<W: Write> Interpreter<W> {
                         ExprKind::Spread(inner) => {
                             let v = self.eval(inner)?;
                             arg_vals.extend(spread_values(v, inner.span)?);
+                        }
+                        // `assert(a == b, ...)`: keep the two sides so
+                        // the failure can say what they were. The
+                        // trigger is the SHAPE of the call, not what
+                        // `assert` happens to be bound to, because the
+                        // compiler can only see the shape — and two
+                        // engines that decide this differently would
+                        // print different messages.
+                        _ if is_assert_comparison(callee, a) => {
+                            let ExprKind::Binary(op, lhs, rhs) = &a.kind else {
+                                unreachable!("is_assert_comparison checked the shape")
+                            };
+                            let l = self.eval(lhs)?;
+                            let r = self.eval(rhs)?;
+                            let outcome = binary(*op, l.clone(), r.clone(), a.span)?;
+                            self.set_compared(*op, l, r, a.span, &outcome);
+                            arg_vals.push(outcome);
                         }
                         _ => arg_vals.push(self.eval(a)?),
                     }

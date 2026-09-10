@@ -24,6 +24,10 @@ pub enum Op {
     GetVarToUpdate(u32),
     Unary(UnaryOp),
     Binary(BinaryOp),
+    /// `Binary`, and the two sides are kept for the `assert` this
+    /// comparison is an argument of — which is the only shape the
+    /// compiler emits it for. stack: [l, r] -> [l op r]
+    CompareShowing(BinaryOp),
     /// Pop n items into a fresh list.
     MakeList(u32),
     /// Pop 2n items (key/value pairs, in order) into a fresh map.
@@ -1113,6 +1117,19 @@ impl Compiler {
                     self.emit(Op::CallSpread(args.len() as u8, callee.span), e.span);
                 } else {
                     for a in args {
+                        // `assert(a == b, ...)`: the comparison is
+                        // compiled to an op that keeps both sides, so
+                        // the failure can name them. Same shape test
+                        // the tree-walker uses, so the two engines
+                        // record the same pairs.
+                        if crate::eval::is_assert_comparison(callee, a)
+                            && let ExprKind::Binary(op, lhs, rhs) = &a.kind
+                        {
+                            self.expr(lhs)?;
+                            self.expr(rhs)?;
+                            self.emit(Op::CompareShowing(*op), a.span);
+                            continue;
+                        }
                         self.expr(a)?;
                     }
                     self.emit(Op::Call(args.len() as u8, callee.span), e.span);

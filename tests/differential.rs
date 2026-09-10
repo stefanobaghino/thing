@@ -24,6 +24,47 @@ fn same(src: &str) {
     assert_eq!(a, b, "engines diverge on:\n{src}");
 }
 
+/// A failed assertion says what the two sides came out as, and both
+/// engines say it in the same words — the tree-walker keeps the pair
+/// where it evaluates the argument, the VM from an opcode of its own,
+/// and nothing but this test stands between those two paths and a
+/// quiet divergence.
+#[test]
+fn a_failed_assertion_shows_the_same_values_on_both_engines() {
+    let cases: &[&str] = &[
+        "assert(1 == 2);",
+        "assert(1 == 2, \"named\");",
+        "assert([1, 2, 3] == [1, 2, 4], \"a list\");",
+        "assert({\"a\": 1} == {\"a\": 2}, \"a map\");",
+        "assert(len(\"abc\") < 2, \"too short\");",
+        "assert(nil == false, \"nil\");",
+        "assert(\"x\" != \"x\", \"the same\");",
+        "assert(1.5 >= 2.0, \"floats\");",
+        // Not a comparison: nothing to show, and nothing stale from
+        // the assert before it either.
+        "assert(1 == 2, \"first\");",
+        "assert(has({\"a\": 1}, \"b\"), \"no comparison\");",
+        // Shadowed: the pair is recorded and never read.
+        "fn assert(c, m) { print(m); } assert(1 == 2, \"mine\");",
+        // A value too long to print in full is cut the same way twice.
+        "assert(\"the quick brown fox jumps over the lazy dog and then some\" == \"x\");",
+        // Nested: the inner one fails first, and inside a try() the
+        // outer still reports its own sides.
+        "print(try(fn() { assert(1 == 2, \"inner\"); })[\"err\"]); assert(3 == 4, \"outer\");",
+    ];
+    for src in cases {
+        same(src);
+    }
+    // And the message really does carry the values, on both.
+    for engine in [Engine::Eval, Engine::Vm] {
+        let err = run(engine, "assert(1 == 2, \"two\");").unwrap_err();
+        assert!(
+            err.contains("assertion failed: two (1 == 2)"),
+            "{engine:?}: {err}"
+        );
+    }
+}
+
 #[test]
 fn expressions_match_across_engines() {
     let corpus: &[&str] = &[

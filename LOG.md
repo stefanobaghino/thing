@@ -22523,3 +22523,60 @@ not be part of it.
 Gate: fmt, clippy, 17 `test result: ok` (438 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 903 — the assertion shows its work
+
+Maintenance: tree clean, no PRs, CI green for 3c6ec31 from the API.
+
+Third stroke, and the milestone's reason for existing:
+
+    assertion failed: three kilos (9 == 8)
+
+A failed assertion now says what the two sides came out as, in the
+operator's own shape — the source line above already shows what was
+WRITTEN, so the message shows what it WAS. Every comparison operator
+is covered, values are rendered as `element_repr` renders them and
+cut at 64 characters (twice a call trace's width: there a value is
+context, here it is the point).
+
+THE DESIGN PROBLEM was that `assert` receives a bool. The two sides
+are gone by the time the builtin runs, and the two engines reach it
+by different roads. What they share is an `Interpreter`, so that is
+where the pair goes: `set_compared` takes the operator, both values
+and the comparison's span. The tree-walker fills it in where it
+evaluates the argument; the VM has a new opcode, `CompareShowing`,
+that the compiler emits in place of `Binary` for exactly this shape.
+One predicate — `is_assert_comparison` — decides the shape for BOTH,
+because two engines that disagreed about when to record would print
+different messages, and the trigger is deliberately SYNTACTIC (a call
+written with the name `assert`) since the compiler cannot know what
+the name is bound to.
+
+Three details that are the difference between working and nearly
+working:
+
+- The pair is kept ONLY when the comparison came out false. A passing
+  assert has nothing to explain, and this runs on all 2769 of them.
+- `assert` takes the pair and checks the comparison's span lies
+  INSIDE its own call, so a pair recorded for a shadowed `assert`
+  that never reached the builtin cannot surface against a later real
+  one.
+- The predicate tests the argument's SHAPE before the callee's name.
+  It runs for every argument of every call the tree-walker makes, and
+  a string comparison there is not free.
+
+Thirteen differential cases hold the two engines to the same text —
+lists, maps, nil, floats, `!=`, `<`, `>=`, a value long enough to be
+cut, a non-comparison after a comparison, a shadowed `assert`, and a
+nested one inside `try()` — plus a direct check that the values are
+really in the message on each engine.
+
+Bench: eleven checksums identical. THE TIMINGS SAY NOTHING TODAY and
+are not recorded as anything: the host is carrying someone else's
+work (load average 5.65 on four cores) and accum.ting measured 138 ms
+and 70.8 ms in consecutive runs of the SAME binary.
+
+Gate: fmt, clippy, 17 `test result: ok` (439 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build. `cargo fmt --check`
+caught the hand-written match arm again.
