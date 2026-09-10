@@ -22907,3 +22907,28 @@ Cargo.toml and Cargo.lock at 2.142.0; the binary reports `ting
 2.142.0`. Gate re-run after the bump: 17 suites (448 tests), `--fmt
 .` 79 unchanged, corpus at fourteen, 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 913 — v2.142.0 verified
+
+Release, CI and Pages all green for 453902a from the API. Seven
+assets; `sha256sum -c SHA256SUMS` OK for all six archives on a cold
+download.
+
+Both aarch64 Linux archives run here through tools/smoke.sh: the
+shipped lib/ matches this tree byte for byte, 2769 checks from each
+(the gnu one again on eval), 22 examples clean. A script run from a
+directory with no lib/ of its own imported "lib/list.ting" and got
+the embedded stdlib.
+
+The milestone checked from the DOWNLOADED binary, since what it
+changed is text the packaging step carries: `--doc lib/args.ting`
+opens with the header and the spec, `--doc args` ends with the
+pointer at the module the builtin's name was hiding, the table of
+contents summarises each module (lib/time.ting's summary is one
+character too long for the path's line and wraps under it, as
+designed), and the corrected time header names local_zone().
+
+Site: the four paths answer 200, the changelog's newest entry is
+v2.142.0, and the spec is on stdlib.html.
+
+Next: health tick, which closes the milestone.
