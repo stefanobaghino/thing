@@ -578,8 +578,8 @@ impl Builtin {
             Builtin::Len => ("len(x)", "Length of a list, string (in chars), or map."),
             Builtin::Push => ("push(xs, v)", "Appends to a list in place; returns nil."),
             Builtin::Pop => (
-                "pop(xs)",
-                "Removes and returns the last element; empty list errors.",
+                "pop(xs) / pop(m, k)",
+                "Removes and returns the last element of a list, or the value at key k of a map, deleting it from the map in place; an empty list, or a key the map does not have, errors.",
             ),
             Builtin::Keys => ("keys(m)", "The map's keys as a sorted list."),
             Builtin::Has => ("has(m, k)", "Whether string key k is present in the map."),

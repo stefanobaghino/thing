@@ -23047,3 +23047,42 @@ Gate: fmt (rustfmt reshaped the test's table), clippy, 17 `test
 result: ok` (449 tests), `--fmt .` 79 unchanged, corpus at fourteen,
 2769 checks on both engines, Windows check and clippy, wasm release
 build.
+
+## 917 — the key you take out
+
+Maintenance: tree clean, no PRs, CI and Pages green for ac2ff9a from
+the API.
+
+`pop(m, k)` takes a key out of a map in place and hands back the
+value it held. Both engines share `call_builtin`, so one
+implementation lands on both; the differential suite holds them to
+the same text anyway, refusals included.
+
+The name is the design. `pop(xs)` already removes the last element of
+a list and returns it, and taking a key out of a map is the same
+sentence about a different container — ting already overloads `len`,
+`find`, `contains` and `slice` across types, and `run`, `try`, `input`
+and `read_file` across arities. A new word would have been a third
+thing to learn for the same idea.
+
+Missing keys ERROR rather than answering nil, because `m[k]` errors
+and `has` and `get` are the two ways to ask about absence. The
+message is the same one indexing gives, "did you mean" and all: the
+suggestion moved into `eval::key_miss`, which reading a key and taking
+one out now share. The other four refusals are their own sentences —
+a map with no key given, a list with one, a non-string key, a value
+that is neither.
+
+Measured, which is why the milestone exists: draining a map one key
+at a time was 448/1848/8431 ms at 1000/2000/4000 keys through
+`lib/map.ting`'s `omit`, because every removal rebuilt the map. With
+`pop` it is 1/2/5/10/21/42 ms from 1000 to 32000 — linear, and the
+4000-key case went from 8431 ms to 5 ms.
+
+The differential test also pins the thing 915 found: `m[k] = nil`
+stores nil and keeps the key (len 1, has true), and `pop` really
+removes it (len 0, has false).
+
+Gate: fmt, clippy, 17 `test result: ok` (450 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2769 checks on both engines, Windows
+check and clippy, wasm release build.

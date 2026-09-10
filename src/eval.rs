@@ -1978,14 +1978,32 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             Builtin::Pop => {
-                arity(1, 1)?;
-                match &args[0] {
-                    Value::List(items) => items
+                arity(1, 2)?;
+                match (&args[0], args.get(1)) {
+                    (Value::List(items), None) => items
                         .borrow_mut()
                         .pop()
                         .ok_or_else(|| error("pop from empty list", span)),
-                    v => Err(error(
-                        format!("pop expects a list, got {}", v.type_name()),
+                    (Value::Map(entries), Some(Value::Str(k))) => {
+                        // The removal gives the borrow back before the
+                        // suggestion needs to read the keys.
+                        let taken = entries.borrow_mut().remove(k.as_str());
+                        taken.ok_or_else(|| key_miss(&entries.borrow(), k.as_str(), span))
+                    }
+                    (Value::Map(_), Some(v)) => Err(error(
+                        format!("a map key is a string, got {}", v.type_name()),
+                        span,
+                    )),
+                    (Value::Map(_), None) => Err(error(
+                        "pop from a map wants the key to take out".to_string(),
+                        span,
+                    )),
+                    (Value::List(_), Some(_)) => Err(error(
+                        "pop from a list takes no key; it removes the last element".to_string(),
+                        span,
+                    )),
+                    (v, _) => Err(error(
+                        format!("pop expects a list or a map, got {}", v.type_name()),
                         span,
                     )),
                 }
@@ -4595,6 +4613,22 @@ pub(crate) fn index_opt(
     }
 }
 
+/// "key not found", with the nearest key the map does have. Reading a
+/// key and taking one out fail the same way, so the message is here
+/// rather than at either call site.
+pub(crate) fn key_miss(
+    entries: &std::collections::BTreeMap<String, Value>,
+    k: &str,
+    span: Span,
+) -> RuntimeError {
+    // The map's own keys are the candidates: a misspelled member of an
+    // imported module lands here too.
+    match crate::diag::nearest(k, entries.keys().map(|k| k.as_ref())) {
+        Some(n) => error(format!("key {k:?} not found (did you mean {n:?}?)"), span),
+        None => error(format!("key {k:?} not found"), span),
+    }
+}
+
 pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
     if let Some(v) = index_opt(&base, &idx, span)? {
         return Ok(v);
@@ -4602,16 +4636,7 @@ pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, Runtim
     // Absent, and index_opt has already erred on anything unindexable:
     // all that is left is to say which absence this was.
     match (base, idx) {
-        (Value::Map(entries), Value::Str(k)) => {
-            let entries = entries.borrow();
-            // The map's own keys are the candidates: a misspelled
-            // member of an imported module lands here too.
-            let near = crate::diag::nearest(&k, entries.keys().map(|k| k.as_ref()));
-            Err(match near {
-                Some(n) => error(format!("key {k:?} not found (did you mean {n:?}?)"), span),
-                None => error(format!("key {k:?} not found"), span),
-            })
-        }
+        (Value::Map(entries), Value::Str(k)) => Err(key_miss(&entries.borrow(), &k, span)),
         (Value::List(items), Value::Int(i)) => {
             let len = items.borrow().len();
             Err(error(format!("index {i} out of bounds (len {len})"), span))

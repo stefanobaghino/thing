@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 449 Rust tests
-  in 17 suites (counted at 916; the 399 written here had been
+  CI platforms, Windows included); 450 Rust tests
+  in 17 suites (counted at 917; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,17 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 917: second stroke — THE KEY YOU TAKE OUT. `pop(m, k)` removes a
+  key IN PLACE and returns its value; both engines share
+  `call_builtin`, and the differential suite pins the text including
+  every refusal. The NAME is the design: `pop(xs)` already removes
+  and returns the last element, and ting overloads across types
+  (len/find/contains/slice) and arities (run/try/input/read_file)
+  already. A missing key ERRORS, with the same "did you mean" message
+  indexing gives — the suggestion moved into `eval::key_miss`, shared
+  by reading a key and taking one out. Draining 4000 keys went from
+  8431 ms to 5 ms; 1000 to 32000 keys is linear at 1/2/5/10/21/42 ms.
+  The test also pins that `m[k] = nil` KEEPS the key and pop does not.
 - 916: first stroke — THE SHAPE IT HANDS BACK. lib/err.ting and
   docs/stdlib.md documented `site` as `{"file", "line", "column"}`
   where the key is `col` — silently nil for anyone who followed it —
@@ -3863,8 +3874,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a builtin that takes a key out of a map IN PLACE, byte-identical
-  on both engines.
   - lib/map.ting built on it, and a selftest that draining a map is
   linear.
   - the docs say a map can be emptied as well as filled, and what

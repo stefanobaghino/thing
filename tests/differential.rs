@@ -65,6 +65,50 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
     }
 }
 
+/// Taking a key out of a map is the first thing `pop` does to
+/// something that is not a list, so every way of getting it wrong has
+/// to read the same on both engines — including the "did you mean"
+/// that reading a missing key already gave.
+#[test]
+fn taking_a_key_out_of_a_map_reads_the_same_on_both_engines() {
+    let cases: &[&str] = &[
+        "let m = {\"a\": 1, \"b\": 2}; print(pop(m, \"a\"), m, len(m));",
+        // The value comes back whatever it is, the map keeps the rest.
+        "let m = {\"a\": [1, 2], \"b\": {\"c\": 3}}; print(pop(m, \"b\"), m);",
+        "let m = {\"a\": nil}; print(pop(m, \"a\"), has(m, \"a\"), len(m));",
+        // Emptied and refilled: the map is the same map throughout.
+        "let m = {\"a\": 1}; pop(m, \"a\"); m[\"a\"] = 2; print(m);",
+        // Through a binding: it is in place, so the alias sees it.
+        "let m = {\"a\": 1}; let n = m; pop(n, \"a\"); print(m, n);",
+        // Every refusal.
+        "let m = {\"alpha\": 1}; print(try(pop, m, \"alhpa\")[\"err\"]);",
+        "let m = {\"a\": 1}; print(try(pop, m)[\"err\"]);",
+        "print(try(pop, [1, 2], \"x\")[\"err\"]);",
+        "let m = {\"a\": 1}; print(try(pop, m, 1)[\"err\"]);",
+        "print(try(pop, \"abc\")[\"err\"]);",
+        "print(try(pop, [])[\"err\"]);",
+        // The list side is untouched.
+        "let xs = [1, 2, 3]; print(pop(xs), xs);",
+        // Draining in a loop, which is what the milestone is for.
+        "let m = {}; let i = 0; while i < 50 { m[str(i)] = i * i; i += 1; } \
+         let s = 0; i = 0; while i < 50 { s += pop(m, str(i)); i += 1; } print(s, len(m));",
+    ];
+    for src in cases {
+        same(src);
+    }
+    // A map key really is gone, not merely nil: `m[k] = nil` was the
+    // only spelling before, and it stores nil and keeps the key (915).
+    for engine in [Engine::Eval, Engine::Vm] {
+        let out = run(
+            engine,
+            "let m = {\"a\": 1}; m[\"a\"] = nil; print(len(m), has(m, \"a\")); \
+             pop(m, \"a\"); print(len(m), has(m, \"a\"));",
+        )
+        .unwrap();
+        assert_eq!(out, "1 true\n0 false\n", "{engine:?}");
+    }
+}
+
 #[test]
 fn expressions_match_across_engines() {
     let corpus: &[&str] = &[
