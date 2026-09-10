@@ -5,6 +5,31 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.140.0 (2026-09-10)
+
+- **Every syntax error at once.** The parser used to report the first
+  one and stop, so a file with three typos took three edit-and-run
+  cycles and an editor underlined one mistake at a time. It now
+  recovers: after an error it skips to where a statement can start
+  again — past the next `;`, out of the braces the mistake was
+  inside, or up to a keyword that opens a statement — and carries on.
+  `ting --check`, the playground's check button and `ting --lsp` all
+  report the whole list, in line order, no position twice, up to
+  twenty per file. Running a program is unchanged: there is nothing
+  to run either way, so it still stops at the first.
+- **A file with a syntax error gets only syntax errors.** What parsed
+  is the statements around the mistakes, so the compiler and the
+  warnings sit out rather than judging a program nobody wrote — a
+  name bound in a statement that failed would otherwise look bound
+  nowhere, under the real mistake.
+- **The editor keeps answering while you type.** A file being edited
+  is broken most of the time, and the language server used to go
+  silent about everything the moment it was. The answers about where
+  things are — the outline, go-to-definition, workspace symbols, and
+  the hover for the file's own functions — now come from what did
+  parse, so the lines above and below the one being written still
+  work. The judgements still wait for a file that parses.
+
 ## v2.139.0 (2026-09-10)
 
 - **Every "not UTF-8" says where.** The refusal used to be the same

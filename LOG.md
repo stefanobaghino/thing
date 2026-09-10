@@ -22335,3 +22335,21 @@ that does not parse. Nothing is checked on the way through.
 Gate: fmt, clippy, 17 `test result: ok` (436 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks, Windows check,
 wasm release build, docs guard green.
+
+## 897 — release v2.140.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for a4b5d8b from
+the API.
+
+v2.140.0, the milestone "every mistake at once": the parser recovers
+instead of stopping, so `--check`, the playground and the language
+server report every syntax error in a file; a broken file gets its
+syntax errors and nothing invented underneath them; and the editor's
+answers about where things are keep working from what parsed while
+the file is being typed.
+
+Strokes 892, 893, 894, 895, 896. CHANGELOG.md written from the LOG
+entries; Cargo.toml and Cargo.lock at 2.140.0; the binary reports
+`ting 2.140.0`. Gate re-run after the bump: 17 suites (436 tests),
+`--fmt .` 79 unchanged, corpus at fourteen, 2769 checks on both
+engines.

@@ -2454,6 +2454,8 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 897: RELEASE v2.140.0 (161st tag; strokes 892, 893, 894, 895, 896).
+  Awaiting verification by cold download.
 - 896: fifth stroke — WHAT RECOVERY PROMISES. The reference's
   `--check` bullet states the contract (every error, where recovery
   resumes, line order, no position twice, twenty per file, and why a
@@ -3694,7 +3696,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.140.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
