@@ -5,6 +5,41 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.142.0 (2026-09-10)
+
+- **A module says what it is.** Every module opens with a comment
+  explaining what it is for and the shape of the values its functions
+  take — `lib/args.ting` spends twenty-four lines on what a "spec" is
+  — and no tool printed a word of it. `ting --doc lib/args.ting`
+  answered with five functions, two of which take a spec, and nothing
+  anywhere said what one looked like. `--doc` now opens a module with
+  its own header, and the table of contents gives each module a
+  one-line summary in place of a bare path. A file of your own gets
+  the same, so a module you wrote explains itself the way ours do.
+  The leading comment counts as the file's only when a blank line
+  follows it: sitting straight on top of the first declaration it
+  documents that declaration, and is already printed there.
+- **Hovering a module says what it is too.** The editor answered for
+  builtins, for a stdlib function, and for a function in the file
+  being edited, but the module binding — the `csv` in `let csv =
+  import("lib/csv.ting")` — got nothing at all. It now shows the
+  module's header and how many functions it has.
+- **The two module names a builtin was hiding.** `map` is the builtin
+  `map(xs, f)` and also `lib/map.ting`; `args` is `args()` and also
+  `lib/args.ting`. `--doc map` and `--doc args` answered about the
+  builtin and never mentioned the module, so the one word a reader
+  would try was the one that could not reach it. Both now point at
+  the module as well. These two are the only such collisions.
+- **What the headers said, checked against the modules.** Making the
+  headers visible showed that some had drifted from the pages that
+  describe the same modules. `lib/time.ting` claimed "there is no
+  time zone here" while exporting `local_date`, `local_clock` and
+  `local_iso`; it carries no zone database, and those three ask the
+  platform, answering `nil` where it keeps no zone data. Decoding
+  base64 both skips the line breaks a wrapped document carries and
+  refuses anything else that is not base64 — each text had said one
+  half. And the standard library page now shows what an args spec is.
+
 ## v2.141.0 (2026-09-10)
 
 - **A failing test says why it failed.** `ting --test` ran each file

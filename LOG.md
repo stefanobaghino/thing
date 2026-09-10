@@ -22886,3 +22886,24 @@ unchanged, corpus at fourteen, 2769 checks on both engines, Windows
 check and clippy, wasm release build.
 
 Next: release v2.142.0.
+
+## 912 — release v2.142.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 3e23fe4 from
+the API.
+
+v2.142.0, the milestone "the module says what it is". Every module
+opened with a comment explaining what it is for — lib/args.ting
+spends twenty-four lines on what a spec is — and no tool printed a
+word of it. `--doc` now opens a module with its own header, the table
+of contents summarises each one instead of listing a bare path,
+hovering a module binding says the same, and the two module names a
+builtin was hiding (map, args) point at the module as well. Making
+the headers visible then showed where they had drifted from the pages
+describing the same modules, which 911 measured and corrected.
+
+Strokes 909, 910, 911. CHANGELOG.md written from the LOG entries;
+Cargo.toml and Cargo.lock at 2.142.0; the binary reports `ting
+2.142.0`. Gate re-run after the bump: 17 suites (448 tests), `--fmt
+.` 79 unchanged, corpus at fourteen, 2769 checks on both engines,
+Windows check and clippy, wasm release build.
