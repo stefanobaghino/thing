@@ -22376,3 +22376,32 @@ so the published reference carries the recovery contract; the three
 playground paths answer 200.
 
 161st tag. Next tick: the health tick that closes the milestone.
+
+## 899 — health tick: milestone "every mistake at once" complete
+
+Maintenance: tree clean, no PRs, CI green for f6520a8 from the API.
+
+Bench: eleven checksums compared mechanically against BASELINE, all
+identical. Timings are weather — this tick ran a few percent slower
+across the board than 890's, on a host that is shared — and nothing
+in this milestone touches a hot path: the recovering parser only
+runs where the strict one FAILED, and running a program never calls
+it.
+
+Sweeps in release: 50000 differential cases twice (second on a fresh
+seed), 2000000 pattern cases, the crash fuzzer — which since 892 also
+runs recovery over every input that fails to parse — and 20000
+formatter cases. Green.
+
+Coverage: 3169 of 3186 lines, 99%, identical to 890's. The same
+platform-shaped remainder in lib/args.ting, lib/test.ting,
+lib/fs.ting and lib/sh.ting.
+
+Site audit, strong form: all six published pages fetched and compared
+BYTE FOR BYTE against what tools/md2html.ting renders here — all six
+identical — and the three playground paths answer 200. The
+generators left the tree clean.
+
+Milestone "every mistake at once" is complete: v2.140.0 shipped and
+verified, and nothing it touched has moved since. Next tick:
+replenishment.

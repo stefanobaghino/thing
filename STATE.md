@@ -2454,6 +2454,16 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 899: HEALTH TICK, milestone "every mistake at once" complete.
+  Bench: eleven checksums identical to BASELINE, compared
+  mechanically; timings a few percent slower than 890's across the
+  board, which is weather on a shared host — the recovering parser
+  only runs where the strict one FAILED. Sweeps green (50000
+  differential twice, 2000000 patterns, crash — now exercising
+  recovery too — 20000 formatter). Coverage 3169/3186 (99%),
+  unchanged. Site audit strong form: six pages byte-identical to the
+  local renderer, three playground paths 200. Next tick:
+  replenishment.
 - 898: v2.140.0 VERIFIED (161st tag; strokes 892, 893, 894, 895, 896;
   seven assets, `sha256sum -c` OK on all six, both aarch64 archives
   unpacked and run here, 2769 checks and 22 clean examples from each,
