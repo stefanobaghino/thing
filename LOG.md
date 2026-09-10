@@ -22302,3 +22302,36 @@ in `document_symbols` — the outline assertion fails.
 Gate: fmt, clippy, 17 `test result: ok` (436 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 896 — what recovery promises
+
+Maintenance: tree clean, no PRs, CI and Pages green for 48cea06 from
+the API.
+
+Fifth stroke, the docs. Three places in the reference:
+
+The `--check` bullet now states the contract rather than the
+behaviour of the day: every syntax error, not the first; where
+recovery resumes (past the next `;`, out of the braces the mistake
+was inside, or at a keyword that opens a statement); line order; no
+position twice; twenty per file. And the part a reader would
+otherwise file as a bug — a file with a syntax error gets ONLY syntax
+errors, because what parsed is the statements around the mistakes and
+everything else would be judging a program nobody wrote. A file that
+does not LEX is called out separately: no tokens past the bad
+character, so one error alone.
+
+The `--lsp` bullet says diagnostics come all at once on the same
+rules, and a new paragraph draws 895's line where a reader can see
+it: while a file is broken — most of the time, in an editor — the
+answers about WHERE THINGS ARE keep working from what parsed, and the
+judgements wait.
+
+The `--fmt` bullet admits what 891's probe found: the formatter works
+on TOKENS, not on a parsed program, which is why it can tidy a file
+you are in the middle of writing, and why it will reformat a file
+that does not parse. Nothing is checked on the way through.
+
+Gate: fmt, clippy, 17 `test result: ok` (436 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks, Windows check,
+wasm release build, docs guard green.

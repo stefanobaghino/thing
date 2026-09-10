@@ -902,7 +902,11 @@ The `ting` binary is the whole toolchain — no separate installs:
   if anything would change (use it in CI); `--fmt --diff` prints the
   changed lines instead of writing. Directories recurse. The formatter is
   idempotent, never alters program meaning, and keeps the file's line
-  endings (a CRLF file stays CRLF). Over several files every one is
+  endings (a CRLF file stays CRLF). It works on TOKENS rather than on
+  a parsed program, which is why it can tidy a file you are in the
+  middle of writing: a file that does not parse is still reformatted,
+  as long as it lexes. Nothing is checked on the way through — run
+  `--check` for that. Over several files every one is
   processed — a file that cannot be read, does not lex or cannot be
   written is reported and the run goes on — and the run ends with a
   summary line (reformatted / unchanged / failed, or "would change"
@@ -913,6 +917,19 @@ The `ting` binary is the whole toolchain — no separate installs:
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a
   local path are checked too, each once under its own path.
+  EVERY syntax error in a file is reported, not the first: after one,
+  the parser skips to where a statement can start again — past the
+  next `;`, out of the braces the mistake was inside, or up to a
+  keyword that opens a statement — and carries on. The errors come in
+  line order, no position is reported twice, and a file stops at
+  twenty of them, since the later ones in a file that confused the
+  parser are usually gone once the first are fixed. A file with a
+  syntax error gets ONLY its syntax errors: what parsed is the
+  statements around the mistakes, so the compiler and the warnings
+  below would be judging a program nobody wrote — a name bound in a
+  statement that failed looks bound nowhere. A file that does not
+  lex is a different matter: there are no tokens past the bad
+  character, so that is one error on its own.
   Clean files may still get warnings (a statement that can never run,
   after a `return`, `break` or `continue` in the same block; a map
   literal that gives the
@@ -1059,7 +1076,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   nor describes anything — the other names are still printed, and
   one close to a documented name is suggested.
 - `ting --lsp` speaks the Language Server Protocol on stdio:
-  diagnostics as you type (syntax errors; an error on an `import` of
+  diagnostics as you type (every syntax error at once, on the same
+  rules as `--check`; an error on an `import` of
   a local file that has one, with the module's position; and warnings
   for a name bound nowhere, for a call that cannot match the function
   it names, for a duplicate key in a map literal, for code that can
@@ -1084,6 +1102,14 @@ The `ting` binary is the whole toolchain — no separate installs:
   across open files, document links on `import(...)` paths that
   exist on disk, and quickfixes that correct a misspelt stdlib member
   or a name bound nowhere to the nearest one.
+
+While a file has a syntax error in it — which, in an editor, is most
+of the time — the answers about WHERE THINGS ARE keep working from
+what did parse: the outline, go-to-definition, workspace symbols and
+the hover for the file's own functions all still list the lines above
+and below the one being typed. The judgements wait: no warning is
+published about a file that did not parse, for the reason `--check`
+gives above.
 
 Point your editor's generic LSP client at `ting --lsp`; a TextMate
 grammar for syntax highlighting ships in the repo under `editor/`.

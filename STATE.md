@@ -2454,6 +2454,13 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 896: fifth stroke — WHAT RECOVERY PROMISES. The reference's
+  `--check` bullet states the contract (every error, where recovery
+  resumes, line order, no position twice, twenty per file, and why a
+  broken file gets syntax errors ONLY); the `--lsp` bullet carries
+  895's navigation/judgement line where a reader can see it; the
+  `--fmt` bullet admits the formatter works on TOKENS, so it
+  reformats a file that does not parse.
 - 895: fourth stroke — THE EDITOR KEEPS ANSWERING. NAVIGATION YES,
   JUDGEMENT NO: `document_symbols`, `workspace_symbols`,
   `definition_result` and `user_fn_params` read the recovering
@@ -3687,9 +3694,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the docs say what recovery means, what the cap is, and (from
-  891's probe) that the formatter works on tokens, so it will
-  reformat a file that does not parse.
   - release v2.140.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
