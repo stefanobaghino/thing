@@ -10,7 +10,10 @@
 #
 # An empty line is a row with one empty field, which is what a reader
 # that counts columns expects. Text ending in a line break does not
-# make a final empty row.
+# make a final empty row. A byte order mark at the head of the file —
+# which a spreadsheet writes when it exports one — is dropped, rather
+# than left on the first column's name where it would hide that
+# column from anything asking for it by name.
 
 # A field, quoted if it needs to be. Leading or trailing spaces are
 # quoted too: they survive a round trip that way, and a reader that

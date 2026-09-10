@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 446 Rust tests
-  in 17 suites (counted at 910; the 399 written here had been
+  CI platforms, Windows included); 448 Rust tests
+  in 17 suites (counted at 911; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,19 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 911: third stroke — WHAT THE HEADER SAYS, CHECKED AGAINST THE
+  MODULE. docs/stdlib.md carries what an args spec IS, pinned to
+  lib/args.ting's header line by line by a test. Comparing all
+  thirteen headers with their page sections found they had drifted
+  BOTH ways, invisible while a header was an internal comment and
+  visible since 909: lib/time.ting said "there is no time zone here"
+  while exporting local_date/local_clock/local_iso (the page repeated
+  it three rows above its own list of them) — both now say the module
+  carries no zone DATABASE and the local_ functions ask the platform
+  through local_zone(), guarded; base64's header said decoding
+  refuses non-base64 while the page said it skips a wrapped
+  document's line breaks, and MEASUREMENT says both, so both say
+  both; csv's header did not mention the BOM it drops.
 - 910: second stroke — THE BINDING AND THE NAME IT SHARES.
   `lsp::imported_modules` pairs each `let NAME = import("PATH");`
   with the embedded module its path ends in, and hovering the BINDING
@@ -3811,8 +3824,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the site carries what a module's header explains and its
-  function docs cannot, starting with what an args spec is.
   - release v2.142.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

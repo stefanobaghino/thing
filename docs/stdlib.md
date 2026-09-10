@@ -5,10 +5,13 @@ json, fs, test, time, sh, args, err, csv and base64, 203 functions between them 
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
-and modify them freely. The same text as this page is in the binary:
-`ting --doc` lists everything, `ting --doc list` one module, and
-`ting --doc median` (or `:doc median` in the REPL) one function with
-its comment.
+and modify them freely. The binary carries this too: `ting --doc`
+lists everything, `ting --doc lib/list.ting` one module — opening
+with the module's own header, which is where a shape like an args
+spec is written down — and `ting --doc median` (or `:doc median` in
+the REPL) one function with its comment. Two module names are also
+builtins, so `--doc map` and `--doc args` answer about the builtin
+and then point at the module.
 
 ```ting
 let l = import("lib/list.ting");
@@ -190,8 +193,11 @@ binary runs on accepts.
 
 ## lib/time.ting
 
-Milliseconds since the Unix epoch, UTC throughout: there is no time
-zone here, because a zone is a database and this is a module.
+Milliseconds since the Unix epoch, and every conversion here is UTC:
+the module carries no zone database, because a zone is a database and
+this is a module. The `local_` functions are the exception that
+proves it — they ask the platform, through the `local_zone()`
+builtin, and answer `nil` where it keeps no zone data.
 
 | Function | Does |
 |----------|------|
@@ -221,6 +227,22 @@ The command line, taken apart according to a spec — and the `--help`
 text, built from that same spec, so the two cannot drift. Short
 options are not bundled (`-a -b`, never `-ab`): the ambiguity that
 introduces around values is not worth the characters it saves.
+
+A spec is a map. Every key but `name` may be left out, and a
+positional is required unless it is `many`, which collects whatever
+is left:
+
+```ting
+{
+  "name": "todo",
+  "summary": "a little task list",
+  "flags": [{"long": "verbose", "short": "v", "help": "say more"}],
+  "options": [{"long": "file", "short": "f", "value": "PATH",
+               "help": "where the list lives", "default": "todo.txt"}],
+  "positionals": [{"name": "command", "help": "what to do"},
+                  {"name": "rest", "help": "the rest", "many": true}]
+}
+```
 
 | Function | Does |
 |----------|------|
@@ -275,8 +297,8 @@ string those bytes spell. Both alphabets are here — the standard one
 (RFC 4648 section 4, `+` and `/`, padded with `=`) and the URL-safe
 one (section 5, `-` and `_`, unpadded), which is what a fragment or a
 query string can carry without escaping. Decoding takes either, with
-padding or without, and skips the line breaks a wrapped document
-carries.
+padding or without, skips the line breaks a wrapped document carries,
+and refuses anything else that is not base64 or does not spell text.
 
 | Function | Does |
 |----------|------|

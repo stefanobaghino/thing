@@ -571,3 +571,65 @@ fn the_reference_quotes_what_a_failed_assertion_really_prints() {
         "docs/reference.md does not quote what ting prints: {message}"
     );
 }
+
+/// What a spec IS lives in lib/args.ting's header comment, and 908
+/// found that no tool and no page said it: `parse(spec, argv)` and
+/// `help(spec)` named a shape nothing defined. The page carries it
+/// now, and this pins the copy to the source so the two cannot drift.
+#[test]
+fn the_stdlib_page_carries_the_args_spec_from_the_source() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let module = std::fs::read_to_string(root.join("lib/args.ting")).expect("lib/args.ting");
+    let page = std::fs::read_to_string(root.join("docs/stdlib.md")).expect("docs/stdlib.md");
+    let header: Vec<String> = module
+        .lines()
+        .take_while(|l| l.starts_with('#'))
+        .map(|l| l[1..].trim().to_string())
+        .collect();
+    let open = header
+        .iter()
+        .position(|l| l == "{")
+        .expect("lib/args.ting's header should show a spec, opening with {");
+    let close = open
+        + header[open..]
+            .iter()
+            .position(|l| l == "}")
+            .expect("and closing with }");
+    for line in &header[open..=close] {
+        assert!(
+            page.contains(line.as_str()),
+            "docs/stdlib.md does not carry the spec line {line:?} from lib/args.ting"
+        );
+    }
+}
+
+/// lib/time.ting opened with "there is no time zone here", and so did
+/// its section on the page — while the module exports local_date,
+/// local_clock and local_iso, which the same page lists three rows
+/// down. 909 made that header something `--doc` prints, so a stale
+/// comment became a wrong answer. Both have to name what the local_
+/// functions actually do: ask the platform, through local_zone().
+#[test]
+fn what_says_time_has_no_zone_says_where_the_local_answers_come_from() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let module = std::fs::read_to_string(root.join("lib/time.ting")).expect("lib/time.ting");
+    let header: String = module
+        .lines()
+        .take_while(|l| l.starts_with('#'))
+        .collect::<Vec<_>>()
+        .join(" ");
+    assert!(
+        header.contains("local_zone()"),
+        "lib/time.ting's header does not say where a local answer comes from:\n{header}"
+    );
+    let page = std::fs::read_to_string(root.join("docs/stdlib.md")).expect("docs/stdlib.md");
+    let section = page
+        .split("## lib/time.ting")
+        .nth(1)
+        .and_then(|rest| rest.split("\n## ").next())
+        .expect("docs/stdlib.md has no lib/time.ting section");
+    assert!(
+        section.contains("local_zone()"),
+        "the page's lib/time.ting section does not either:\n{section}"
+    );
+}

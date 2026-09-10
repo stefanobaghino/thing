@@ -22840,3 +22840,49 @@ function also owns.
 Gate: fmt, clippy, 17 `test result: ok` (446 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2769 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 911 — what the header says, checked against the module
+
+Maintenance: tree clean, no PRs, CI and Pages green for e45331f from
+the API.
+
+Third stroke, and it turned up more than the backlog item asked for.
+
+The item: docs/stdlib.md now carries what an args spec IS — the map,
+with the note that every key but "name" is optional and a positional
+is required unless it is "many" — which is what 908 went looking for
+and could not find on any page. A test pins the block to
+lib/args.ting's header line by line, so the copy cannot drift from
+the source it was copied out of.
+
+What came with it: I compared all thirteen headers against their
+sections on the page, and the two texts had drifted from each other
+in BOTH directions, which nobody would have noticed while the header
+was an internal comment. 909 made it something `--doc` prints.
+
+- lib/time.ting opened with "There is no time zone here: a zone is a
+  database, and this is a module" — and exports local_date,
+  local_clock and local_iso, which the same page lists three rows
+  below the same claim. The page repeated it, so the section
+  contradicted itself. Both now say what is actually true: the module
+  carries no zone DATABASE, and the local_ functions ask the platform
+  through the local_zone() builtin, answering nil where it keeps
+  none. Guarded by a test that makes both name local_zone().
+- lib/base64.ting's header said decoding "refuses anything that is
+  not base64"; the page said it "skips the line breaks a wrapped
+  document carries". Measured: a wrapped document decodes, and `%`
+  fails with "not base64: `%`". Both were half right and each is now
+  whole.
+- lib/csv.ting's header did not mention the byte order mark it drops,
+  which the page explains. Added.
+
+The page's opening also said "the same text as this page is in the
+binary", which is truer now than it was: `--doc lib/list.ting` opens
+with the module's header, and `--doc map`/`--doc args` point at the
+module behind the builtin. It says so.
+
+Gate: fmt, clippy, 17 `test result: ok` (448 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2769 checks on both engines, Windows
+check and clippy, wasm release build.
+
+Next: release v2.142.0.

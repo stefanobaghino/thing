@@ -7,8 +7,9 @@
 # Both alphabets are here — the standard one (RFC 4648 section 4,
 # `+` and `/`, padded with `=`) and the URL-safe one (section 5, `-`
 # and `_`, unpadded), which is what a fragment or a query string can
-# carry. Decoding takes either, padded or not, and refuses anything
-# that is not base64 or does not spell text.
+# carry. Decoding takes either, padded or not, skips the line breaks
+# a wrapped document carries, and refuses anything else that is not
+# base64 or does not spell text.
 
 let STANDARD = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 let URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";

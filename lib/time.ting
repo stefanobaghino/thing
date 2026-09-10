@@ -2,9 +2,12 @@
 # Use them via
 #   let time = import("lib/time.ting");
 #
-# Everything takes or returns milliseconds since the Unix epoch, UTC.
-# There is no time zone here: a zone is a database, and this is a
-# module. The conversions are Howard Hinnant's days-from-civil
+# Everything takes or returns milliseconds since the Unix epoch, and
+# every conversion here is UTC: this module carries no zone database,
+# because a zone is a database and this is a module. The local_
+# functions are the exception that proves it — they ask the PLATFORM,
+# through the local_zone() builtin, and answer nil where it keeps no
+# zone data. The conversions are Howard Hinnant's days-from-civil
 # algorithms, which are exact for every year an i64 of milliseconds
 # can reach.
 
