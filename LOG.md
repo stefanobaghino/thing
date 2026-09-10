@@ -22156,3 +22156,49 @@ on purpose, and 462 set the bar at lexing, which is what lets you
 format a file mid-edit), but the reference says the formatter "never
 alters program meaning", and a file with no meaning to alter deserves
 a sentence there rather than silence.
+
+## 892 — the parser carries on
+
+Maintenance: tree clean, no PRs, CI green for 75f5e28 from the API.
+
+First stroke of "every mistake at once":
+`parser::parse_program_recovering` returns the statements that parsed
+AND every error found, in line order. `parse_program` is untouched —
+running a program still stops at the first error, which is right,
+since there is nothing to run either way. This is for the tools that
+report rather than execute.
+
+Recovery is `Parser::recover`, and the whole of it is three rules:
+past the next `;` at brace depth zero, out of the braces the failed
+statement was inside, or up to a keyword that opens a statement. The
+part that matters is not which rule fires but that EVERY PASS
+CONSUMES AT LEAST ONE TOKEN — if the failed statement consumed
+nothing, one token goes anyway. Without that, a file whose first
+token cannot start a statement would spin forever, and it would spin
+inside an editor.
+
+Two more rules keep the output honest rather than merely plentiful:
+the same span never reports twice (recovery can walk back into a
+place from another rule, and one caret twice reads as two mistakes),
+and MAX_PARSE_ERRORS caps a file at twenty, because a thousand
+messages is not a better answer than twenty and the later ones
+usually go away when the first are fixed.
+
+Six unit tests: three typos give three messages with the two good
+statements between them still parsed, spans move forward, THE FIRST
+ERROR IS BYTE-FOR-BYTE THE ONE THE STRICT PARSER GIVES (an addition
+must not change what a reader already sees), a clean program recovers
+nothing, soup stops at the cap, and a list of nasty shapes all
+terminate.
+
+Termination deserves better than a curated list, so the crash fuzzer
+now runs recovery over everything that fails to parse — token soup,
+mutated examples, every seed. A hang there is as much a failure as a
+panic.
+
+Gate: fmt, clippy, 17 `test result: ok` (432 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build. `cargo fmt --check`
+caught my hand-written Rust before clippy did, and the gate's own
+trailing `grep` printed a STALE corpus count while the chain had
+already stopped — the corpus step is inside the `&&` chain now.

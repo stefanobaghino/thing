@@ -145,7 +145,17 @@ fn exercise(src: &str) {
     let Ok(tokens) = ting::lexer::lex(src) else {
         return;
     };
+    // Everything that fails to parse goes through recovery, which is
+    // what --check and the LSP read: it must reach the end of every
+    // input rather than standing still on one. A hang here is the
+    // failure being hunted just as much as a panic.
     let Ok(program) = ting::parser::parse_program(&tokens) else {
+        let (_, errors) = ting::parser::parse_program_recovering(&tokens);
+        assert!(!errors.is_empty(), "recovery found nothing wrong:\n{src}");
+        assert!(
+            errors.len() <= ting::parser::MAX_PARSE_ERRORS,
+            "recovery reported past the cap:\n{src}"
+        );
         return;
     };
     // `while` is the only unbounded construct (for iterates snapshots,

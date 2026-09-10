@@ -39,6 +39,51 @@ pub fn parse_program(tokens: &[Token]) -> Result<Vec<Stmt>, ParseError> {
     Ok(stmts)
 }
 
+/// How many syntax errors one file may report. A file of soup errors
+/// about as often as it has tokens, and a thousand messages is not a
+/// better answer than twenty — the first ones are the ones a reader
+/// acts on, and the rest usually go away when those are fixed.
+pub const MAX_PARSE_ERRORS: usize = 20;
+
+/// Parse a whole program, carrying on past a syntax error instead of
+/// stopping at the first: the statements that did parse, and every
+/// error found, in line order. `parse_program` above is unchanged and
+/// still what running a program uses — this is for the tools that
+/// report rather than execute, where showing one mistake at a time
+/// costs a whole edit-and-run cycle per typo.
+///
+/// Recovery skips to where a statement can plausibly start again: past
+/// the next `;`, out of the braces the error was inside, or up to a
+/// keyword that opens a statement. Every pass consumes at least one
+/// token, so a file that keeps failing still reaches Eof.
+pub fn parse_program_recovering(tokens: &[Token]) -> (Vec<Stmt>, Vec<ParseError>) {
+    let mut p = Parser {
+        tokens,
+        pos: 0,
+        depth: 0,
+    };
+    let (mut stmts, mut errors) = (Vec::new(), Vec::<ParseError>::new());
+    while p.peek() != &TokenKind::Eof {
+        let before = p.pos;
+        match p.statement() {
+            Ok(stmt) => stmts.push(stmt),
+            Err(e) => {
+                // One span reports once: recovery can walk back into
+                // the same place from a different rule, and the same
+                // caret twice reads as two mistakes.
+                if errors.last().map(|last| last.span) != Some(e.span) {
+                    errors.push(e);
+                }
+                if errors.len() >= MAX_PARSE_ERRORS {
+                    break;
+                }
+                p.recover(before);
+            }
+        }
+    }
+    (stmts, errors)
+}
+
 /// Parse a complete expression; every token before Eof must be consumed.
 /// Used by the REPL to echo expression results.
 pub fn parse_expr(tokens: &[Token]) -> Result<Expr, ParseError> {
@@ -219,6 +264,57 @@ impl<'a> Parser<'a> {
 
     fn statement(&mut self) -> Result<Stmt, ParseError> {
         self.nested(Self::statement_inner)
+    }
+
+    /// Move to somewhere a statement could begin, after one failed.
+    /// `before` is where the failed statement started: if nothing was
+    /// consumed at all, one token goes anyway, which is what keeps
+    /// parse_program_recovering from standing still.
+    fn recover(&mut self, before: usize) {
+        if self.pos == before {
+            self.advance();
+        }
+        let mut depth = 0usize;
+        loop {
+            match self.peek() {
+                TokenKind::Eof => return,
+                TokenKind::LBrace => {
+                    depth += 1;
+                    self.advance();
+                }
+                TokenKind::RBrace => {
+                    self.advance();
+                    // At depth 0 this closes a block the failed
+                    // statement was inside; either way, the brace it
+                    // closes is behind us now.
+                    if depth <= 1 {
+                        return;
+                    }
+                    depth -= 1;
+                }
+                TokenKind::Semi => {
+                    self.advance();
+                    if depth == 0 {
+                        return;
+                    }
+                }
+                TokenKind::Let
+                | TokenKind::Fn
+                | TokenKind::If
+                | TokenKind::While
+                | TokenKind::For
+                | TokenKind::Return
+                | TokenKind::Break
+                | TokenKind::Continue
+                    if depth == 0 =>
+                {
+                    return;
+                }
+                _ => {
+                    self.advance();
+                }
+            }
+        }
     }
 
     fn statement_inner(&mut self) -> Result<Stmt, ParseError> {
@@ -1413,5 +1509,118 @@ mod tests {
         let src = "1 + 2 * 3";
         let expr = parse_expr(&lex(src).unwrap()).unwrap();
         assert_eq!(&src[expr.span.start..expr.span.end], src);
+    }
+
+    /// Recovery: what the tools see instead of one message.
+    fn recovered(src: &str) -> (usize, Vec<String>) {
+        let (stmts, errors) = parse_program_recovering(&lex(src).unwrap());
+        (
+            stmts.len(),
+            errors.iter().map(|e| e.message.clone()).collect(),
+        )
+    }
+
+    #[test]
+    fn every_broken_statement_reports_not_just_the_first() {
+        let (stmts, messages) =
+            recovered("let a = ;\nlet b = 1;\nlet c = ;\nlet d = 2;\nlet e = ;\n");
+        assert_eq!(
+            messages.len(),
+            3,
+            "three typos, three messages: {messages:?}"
+        );
+        for m in &messages {
+            assert_eq!(m, "expected expression, found ';'");
+        }
+        // The statements between them still parse, which is what lets
+        // the checker go on to say anything about the rest of the file.
+        assert_eq!(stmts, 2, "the good lines survived");
+    }
+
+    #[test]
+    fn the_errors_come_in_the_order_they_are_read() {
+        let (_, errors) =
+            parse_program_recovering(&lex("let a = ;\nfn f( { }\nlet c = (1 + ;\n").unwrap());
+        assert!(errors.len() >= 2, "several mistakes: {errors:?}");
+        for pair in errors.windows(2) {
+            assert!(
+                pair[0].span.start < pair[1].span.start,
+                "spans must move forward: {errors:?}"
+            );
+        }
+    }
+
+    #[test]
+    fn the_first_error_is_the_one_the_strict_parser_gives() {
+        // The recovering parser is an addition, not a replacement: a
+        // reader who sees one message must see the same one.
+        for src in [
+            "let a = ;",
+            "fn f( { }",
+            "let x = 1 let y = 2;",
+            "if x { let a = ; } let b = 2;",
+            "}",
+        ] {
+            let tokens = lex(src).unwrap();
+            let strict = parse_program(&tokens).unwrap_err();
+            let (_, errors) = parse_program_recovering(&tokens);
+            assert_eq!(
+                errors.first().map(|e| e.message.clone()),
+                Some(strict.message),
+                "{src}"
+            );
+            assert_eq!(errors.first().map(|e| e.span), Some(strict.span), "{src}");
+        }
+    }
+
+    #[test]
+    fn a_program_that_parses_recovers_nothing() {
+        let src = "let x = 1; fn f(a) { return a + 1; } for i in [1, 2] { print(f(i)); }";
+        let tokens = lex(src).unwrap();
+        let (stmts, errors) = parse_program_recovering(&tokens);
+        assert!(errors.is_empty(), "{errors:?}");
+        assert_eq!(stmts.len(), parse_program(&tokens).unwrap().len());
+    }
+
+    #[test]
+    fn a_file_of_soup_stops_at_the_cap_rather_than_the_end() {
+        let soup = "; ) ] } = + * , : ".repeat(200);
+        let (_, errors) = recovered(&soup);
+        assert_eq!(errors.len(), MAX_PARSE_ERRORS, "capped, not endless");
+    }
+
+    /// The property that matters more than any message: recovery
+    /// always makes progress, so every input reaches Eof. A shape that
+    /// consumed nothing would hang the checker and the editor with it.
+    #[test]
+    fn recovery_always_terminates() {
+        for src in [
+            "}",
+            "{",
+            "((((",
+            "]]]]",
+            ";;;;",
+            "let",
+            "fn",
+            "if",
+            "else",
+            "for in",
+            "let a = ;",
+            "fn f( { }",
+            "while { }",
+            "return return return",
+            "{ { { let a = ; } } }",
+            "f(,,,)",
+            "[1, 2",
+            "m[\"k\"",
+            "let a = 1 +",
+            "break break",
+            "x = = = 1;",
+            "fn f() { fn g() { let a = ; } }",
+        ] {
+            let (_, errors) = recovered(src);
+            assert!(!errors.is_empty(), "{src} should be refused");
+            assert!(errors.len() <= MAX_PARSE_ERRORS, "{src}: {errors:?}");
+        }
     }
 }
