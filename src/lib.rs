@@ -61,6 +61,32 @@ pub fn local_imports(path: &str, src: &str) -> Vec<std::path::PathBuf> {
         .collect()
 }
 
+/// Every diagnostic in a source rather than the first, for the tools
+/// that report: a lexer error on its own (there are no tokens to
+/// parse past it), or every syntax error the parser recovered from,
+/// or what the compiler says about a file that parsed. Empty means
+/// clean, and the warnings are a separate question — `check_warnings`
+/// answers it for a source that gets nothing back from here.
+pub fn check_source_all(path: &str, src: &str) -> Vec<String> {
+    let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
+    let tokens = match lexer::lex(src) {
+        Ok(t) => t,
+        Err(e) => return vec![render(&e.message, e.span)],
+    };
+    let (program, errors) = parser::parse_program_recovering(&tokens);
+    if !errors.is_empty() {
+        // What parsed is the statements AROUND the mistakes, so the
+        // compiler would be reading a program nobody wrote: a name
+        // bound in a statement that failed looks unbound to it. The
+        // syntax errors are the whole answer until they are fixed.
+        return errors.iter().map(|e| render(&e.message, e.span)).collect();
+    }
+    match compile::compile_program(&program) {
+        Ok(_) => Vec::new(),
+        Err(e) => vec![render(&e.message, e.span)],
+    }
+}
+
 pub fn check_source(path: &str, src: &str) -> Result<(), String> {
     let render = |m: &str, s: lexer::Span| diag::render(path, src, m, s);
     let tokens = lexer::lex(src).map_err(|e| render(&e.message, e.span))?;
@@ -275,6 +301,18 @@ mod tests {
         let mut out = Vec::new();
         run_source("t", "print(6 * 7);", &mut out, Vec::new()).unwrap();
         assert_eq!(String::from_utf8(out).unwrap(), "42\n");
+    }
+
+    #[test]
+    fn check_source_all_reports_every_syntax_error() {
+        // A lexer error stands alone: there are no tokens past it.
+        assert_eq!(check_source_all("t", "let s = \"unterminated;\n").len(), 1);
+        // Syntax errors come as a batch...
+        let many = check_source_all("t", "let a = ;\nlet b = 1;\nlet c = ;\n");
+        assert_eq!(many.len(), 2, "{many:?}");
+        // ...and a file that parses is judged by the compiler alone.
+        assert!(check_source_all("t", "let x = 1; print(x);").is_empty());
+        assert_eq!(check_source_all("t", "break;").len(), 1);
     }
 
     #[test]

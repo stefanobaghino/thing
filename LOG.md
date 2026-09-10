@@ -22202,3 +22202,36 @@ Windows check and clippy, wasm release build. `cargo fmt --check`
 caught my hand-written Rust before clippy did, and the gate's own
 trailing `grep` printed a STALE corpus count while the chain had
 already stopped — the corpus step is inside the `&&` chain now.
+
+## 893 — the checker says all of it
+
+Maintenance: tree clean, no PRs, CI and Pages green for eafa9fb from
+the API.
+
+Second stroke: `--check` now prints every syntax error in a file.
+`check_source_all` in lib.rs is the shape — a lexer error alone
+(there are no tokens past it), or every error the recovering parser
+found, or the compiler's word about a file that parsed — and
+`check_source` is left exactly as it was for whoever else wants one
+answer.
+
+The judgement call is what happens after syntax errors: the compiler
+does NOT run. What parsed is the statements AROUND the mistakes, so
+compiling it would read a program nobody wrote — a name bound in a
+statement that failed looks unbound, and the file would get invented
+complaints under the real ones. Syntax errors are the whole answer
+until they are fixed.
+
+THE PLAYGROUND GETS IT TOO, which is the part a stranger sees:
+`ting_check` in the wasm ABI joins the same list with newlines, so
+the check button on the front page marks every mistake at once
+instead of the first.
+
+The test pins the count AND the line numbers, because "reports more"
+is trivially satisfied by reporting one mistake twice: a five-line
+file with three typos gives exactly three messages, at 1:9, 3:9 and
+5:9.
+
+Gate: fmt, clippy, 17 `test result: ok` (434 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.

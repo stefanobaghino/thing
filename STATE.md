@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 432 Rust tests
-  in 17 suites (counted at 892; the 399 written here had been
+  CI platforms, Windows included); 434 Rust tests
+  in 17 suites (counted at 893; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,15 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 893: second stroke — THE CHECKER SAYS ALL OF IT. `check_source_all`
+  (lib.rs) gives `--check` every syntax error in a file; the
+  playground's check button gets the same list through `ting_check`.
+  After syntax errors THE COMPILER DOES NOT RUN: what parsed is the
+  statements around the mistakes, so it would invent complaints about
+  a program nobody wrote. `check_source` is unchanged for callers
+  that want one answer. The test pins line numbers as well as the
+  count, since "reports more" is satisfied by reporting one mistake
+  twice.
 - 892: first stroke — THE PARSER CARRIES ON.
   `parser::parse_program_recovering` gives the statements that parsed
   and every error, in line order; `parse_program` is untouched, so
@@ -3664,7 +3673,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--check` prints every parse error in a file, not the first.
   - the LSP publishes them all, so an editor marks every syntax error
   at once.
   - the docs say what recovery means, what the cap is, and (from

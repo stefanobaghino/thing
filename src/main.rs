@@ -529,21 +529,21 @@ fn check_pass(args: &[String], strict: bool) -> ExitCode {
                 continue;
             }
         };
-        match ting::check_source(&f, &src) {
-            Err(diagnostic) => {
-                eprintln!("{diagnostic}");
-                failed = true;
-            }
+        let diagnostics = ting::check_source_all(&f, &src);
+        if diagnostics.is_empty() {
             // Warnings are advice and leave the exit status alone —
             // unless --strict asked for them to count.
-            Ok(()) => {
-                for w in ting::check_warnings(&f, &src) {
-                    eprintln!("{w}");
-                    if strict {
-                        failed = true;
-                    }
+            for w in ting::check_warnings(&f, &src) {
+                eprintln!("{w}");
+                if strict {
+                    failed = true;
                 }
             }
+        } else {
+            for diagnostic in diagnostics {
+                eprintln!("{diagnostic}");
+            }
+            failed = true;
         }
         if f != "-" {
             for target in ting::local_imports(&f, &src) {

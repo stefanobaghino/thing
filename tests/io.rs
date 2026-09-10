@@ -124,6 +124,37 @@ fn check_flag_reports_without_running() {
     let _ = std::fs::remove_file(&bad);
 }
 
+/// Every syntax error in a file, not the first: a reader with three
+/// typos used to need three runs to see three messages, and an editor
+/// underlined one mistake at a time. The count and the line numbers
+/// are both pinned, because "reports more" is easy to get by
+/// reporting the same mistake twice.
+#[test]
+fn check_reports_every_syntax_error_in_one_pass() {
+    let dir = std::env::temp_dir();
+    let path = dir.join(format!("ting-check-many-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let a = ;\nlet b = 1;\nlet c = ;\nprint(b);\nlet e = ;\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(1), "a file with mistakes fails");
+    let errors: Vec<&str> = stderr.lines().filter(|l| l.contains(": error: ")).collect();
+    assert_eq!(errors.len(), 3, "three typos, three messages:\n{stderr}");
+    for (error, line) in errors.iter().zip(["1:9", "3:9", "5:9"]) {
+        assert!(
+            error.contains(&format!(":{line}: error: expected expression, found ';'")),
+            "expected {line} in {error}"
+        );
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--check` also prints the semantic warning the LSP knows — an
 /// imported stdlib module indexed with a name it lacks — without
 /// changing the exit status.

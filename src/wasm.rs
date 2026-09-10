@@ -91,16 +91,16 @@ pub unsafe extern "C" fn ting_fmt(ptr: *const u8, len: usize) -> i32 {
 pub unsafe extern "C" fn ting_check(ptr: *const u8, len: usize) -> i32 {
     let bytes = unsafe { std::slice::from_raw_parts(ptr, len) };
     let src = String::from_utf8_lossy(bytes);
-    let (ok, out) = match crate::check_source("playground", &src) {
-        Err(diagnostic) => (0, diagnostic),
-        Ok(()) => {
-            let warnings = crate::check_warnings("playground", &src);
-            if warnings.is_empty() {
-                (1, "no problems found".to_string())
-            } else {
-                (1, warnings.join("\n"))
-            }
+    let diagnostics = crate::check_source_all("playground", &src);
+    let (ok, out) = if diagnostics.is_empty() {
+        let warnings = crate::check_warnings("playground", &src);
+        if warnings.is_empty() {
+            (1, "no problems found".to_string())
+        } else {
+            (1, warnings.join("\n"))
         }
+    } else {
+        (0, diagnostics.join("\n"))
     };
     RESULT.with(|r| *r.borrow_mut() = out.into_bytes());
     ok
