@@ -576,31 +576,45 @@ fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
 
 fn diagnostics(src: &str, uri: &str) -> Value {
     let lines = lexer::Lines::new(src);
-    let err = match lexer::lex(src) {
-        Err(e) => Some((e.message, e.span)),
-        Ok(tokens) => match parser::parse_program(&tokens) {
-            Err(e) => Some((e.message, e.span)),
-            Ok(program) => match compile::compile_program(&program) {
-                Err(e) => Some((e.message, e.span)),
-                Ok(_) => None,
-            },
-        },
+    // Every syntax error, not the first: an editor marking one typo at
+    // a time makes the reader fix, save, and wait to be told about the
+    // next. A lexer error stands alone (nothing past it is tokens),
+    // and the compiler sits out a file that did not parse, since it
+    // would be reading the statements around the mistakes.
+    let errors: Vec<(String, lexer::Span)> = match lexer::lex(src) {
+        Err(e) => vec![(e.message, e.span)],
+        Ok(tokens) => {
+            let (program, parse_errors) = parser::parse_program_recovering(&tokens);
+            if parse_errors.is_empty() {
+                match compile::compile_program(&program) {
+                    Err(e) => vec![(e.message, e.span)],
+                    Ok(_) => Vec::new(),
+                }
+            } else {
+                parse_errors
+                    .into_iter()
+                    .map(|e| (e.message, e.span))
+                    .collect()
+            }
+        }
     };
-    let mut list = match err {
-        None => Vec::new(),
-        Some((message, span)) => vec![obj(vec![
-            (
-                "range",
-                obj(vec![
-                    ("start", position(&lines, src, span.start)),
-                    ("end", position(&lines, src, span.end.max(span.start))),
-                ]),
-            ),
-            ("severity", Value::Int(1)),
-            ("source", s("ting")),
-            ("message", s(&message)),
-        ])],
-    };
+    let mut list: Vec<Value> = errors
+        .into_iter()
+        .map(|(message, span)| {
+            obj(vec![
+                (
+                    "range",
+                    obj(vec![
+                        ("start", position(&lines, src, span.start)),
+                        ("end", position(&lines, src, span.end.max(span.start))),
+                    ]),
+                ),
+                ("severity", Value::Int(1)),
+                ("source", s("ting")),
+                ("message", s(&message)),
+            ])
+        })
+        .collect();
     list.extend(import_diagnostics(src, uri));
     for (start, end, message) in warnings(src) {
         list.push(obj(vec![

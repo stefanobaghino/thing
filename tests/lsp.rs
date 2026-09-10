@@ -41,6 +41,52 @@ fn spawn_server() -> (Child, ChildStdin, BufReader<ChildStdout>) {
     (child, stdin, reader)
 }
 
+/// Every syntax error at once, so an editor underlines all three
+/// typos rather than the first — and clears them all when the file is
+/// fixed. The count is what matters here: the LSP used to publish one
+/// diagnostic no matter how many mistakes a file held.
+#[test]
+fn a_broken_file_publishes_every_syntax_error() {
+    let (mut child, mut stdin, mut reader) = spawn_server();
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"initialized","params":{}}"#,
+    );
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{"textDocument":{"uri":"file:///many.ting","languageId":"ting","version":1,"text":"let a = ;\nlet b = 1;\nlet c = ;\nprint(b);\nlet e = ;\n"}}}"#,
+    );
+    let diag = recv(&mut reader);
+    assert_eq!(
+        diag.matches("expected expression").count(),
+        3,
+        "three typos, three diagnostics: {diag}"
+    );
+    // Each one is on its own line, so an editor marks three places.
+    for line in ["\"line\":0", "\"line\":2", "\"line\":4"] {
+        assert!(diag.contains(line), "missing {line} in {diag}");
+    }
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","method":"textDocument/didChange","params":{"textDocument":{"uri":"file:///many.ting","version":2},"contentChanges":[{"text":"let a = 1;\nlet b = 1;\nprint(a + b);\n"}]}}"#,
+    );
+    let cleared = recv(&mut reader);
+    assert!(cleared.contains("\"diagnostics\":[]"), "{cleared}");
+
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":9,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    let _ = child.kill();
+}
+
 #[test]
 fn lsp_session_lifecycle_and_diagnostics() {
     let (mut child, mut stdin, mut reader) = spawn_server();

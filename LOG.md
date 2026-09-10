@@ -22235,3 +22235,33 @@ file with three typos gives exactly three messages, at 1:9, 3:9 and
 Gate: fmt, clippy, 17 `test result: ok` (434 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 894 — the editor marks them all
+
+Maintenance: tree clean, no PRs, CI and Pages green for 7922928 from
+the API.
+
+Third stroke: `lsp::diagnostics` publishes every syntax error rather
+than the first, on the same rules as the checker — a lexer error
+alone, the compiler sitting out a file that did not parse. Three
+typos now underline three places and clear together when the file is
+fixed.
+
+The test asserts the COUNT (three "expected expression", not one) and
+the three line numbers, then mutation-checked it: adding `.take(1)`
+back into the diagnostics path fails it with "three typos, three
+diagnostics". A test that only asserted "contains expected" would
+have passed against the old behaviour, which is exactly the trap 873
+fell into.
+
+NOT DONE HERE, and added to the backlog instead: the LSP's other
+answers — hover, definition, symbols, completion — still bail out at
+`let Ok(program) = parse_program(...) else { return }`, so the editor
+goes quiet about everything the moment a file has a typo, which is
+most of the time while typing. The recovering parser has a partial
+tree to give them. That is its own stroke, with its own question
+about how much of a half-parsed file an editor should believe.
+
+Gate: fmt, clippy, 17 `test result: ok` (435 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.
