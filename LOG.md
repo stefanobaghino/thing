@@ -23412,3 +23412,24 @@ Gate: fmt (a stray blank line where the alloc tests came out), clippy,
 17 `test result: ok` (453 tests), `--fmt .` 79 unchanged, corpus at
 fourteen, 2822 checks on both engines, Windows check and clippy, wasm
 release build.
+
+## 927 — release v2.144.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 3e2b709 from
+the API.
+
+v2.144.0, the milestone "the same value twice". Asking "have I seen
+this value?" was a scan of everything kept so far, everywhere in the
+stdlib, so `unique`, `unique_by` and `mode` were quadratic and the set
+operations did not exist at all. `fingerprint(v)` answers a string two
+values share exactly when `==` says they are equal — and nil where
+equality cannot be a key, which is the honest half of the design.
+The three helpers are keyed on it, `union`, `intersection` and
+`difference` are new, and `membership`/`holds`/`remember` are the pair
+underneath that a program can use for anything else shaped this way.
+
+Strokes 924, 925, 926. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.144.0; the binary reports `ting
+2.144.0`. Gate re-run after the bump: 17 suites (453 tests), `--fmt
+.` 79 unchanged, corpus at fourteen, 2822 checks on both engines,
+Windows check and clippy, wasm release build.

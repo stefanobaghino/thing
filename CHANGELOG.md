@@ -5,6 +5,36 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.144.0 (2026-09-11)
+
+- **A value can be a map key now.** `fingerprint(v)` answers a string
+  two values share exactly when `==` says they are equal, so a map
+  lookup can stand in for a scan. Asking "have I seen this value?" was
+  a walk of everything kept so far, which made every operation built
+  on it quadratic: `unique` over a list of 32000 with half of them
+  distinct took 1022 ms, and 4000, 8000 and 16000 took 16, 68 and 261.
+  Keyed on a fingerprint the same runs are 3, 7, 15 and 37 ms.
+  `unique`, `unique_by` and `mode` are built on it.
+- **It refuses where equality cannot be a key**, answering `nil`
+  instead of guessing: a function, which `==` compares by identity; a
+  NaN, equal to nothing at all, itself included; a number past 2^53,
+  where int-to-float equality stops being transitive
+  (`9007199254740993 == 9007199254740992.0` is true while
+  `9007199254740993 == 9007199254740992` is false, and no single key
+  can hold both facts); and a value that contains itself. The helpers
+  keep the old scan for exactly those, so their answers always agree
+  with `==` — including that `1`, `1.0` and `[1.0]` are the same
+  values `==` already called equal, at any depth.
+- **Sets, which no module had.** `union(a, b)`, `intersection(a, b)`
+  and `difference(a, b)` in `lib/list.ting`, each answering in `a`'s
+  order with duplicates dropped. Written by hand with `contains` they
+  are a nested loop — 10, 41 and 161 ms at 2000, 4000 and 8000 —
+  where these are 5, 14 and 24, and 51 ms at 16000.
+- **And the pair underneath them**, which is worth more than the three:
+  `membership(xs)` turns a list into something that can be ASKED,
+  `holds(m, x)` asks it, and `remember(m, x)` adds in place so a set
+  can grow as a loop runs. That is the general answer to `contains`
+  walking the list at every question.
 ## v2.143.0 (2026-09-10)
 
 - **A map can be emptied now.** `pop(m, k)` takes a key out of a map

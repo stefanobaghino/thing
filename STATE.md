@@ -3905,10 +3905,13 @@ holds only the current milestone and the standing rules.
   weight: a scan allocates nothing per comparison, so the allocation
   version passed on the code it was written to catch. Reference says
   there is no set type and what to use instead.
+- 927: v2.144.0 tagged (165th tag; strokes 924, 925, 926).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.144.0.
+  - verify v2.144.0 (assets, checksums, both aarch64 archives through
+  tools/smoke.sh, the milestone from the downloaded binary, the site).
+  - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
