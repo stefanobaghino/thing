@@ -23433,3 +23433,40 @@ Cargo.toml and Cargo.lock at 2.144.0; the binary reports `ting
 2.144.0`. Gate re-run after the bump: 17 suites (453 tests), `--fmt
 .` 79 unchanged, corpus at fourteen, 2822 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 928 — v2.144.0 verified
+
+Release, CI and Pages all green for 0d977d6 from the API. Seven
+assets; `sha256sum -c SHA256SUMS` OK for all six archives on a cold
+download.
+
+Both aarch64 Linux archives run here through tools/smoke.sh: the
+shipped lib/ matches this tree byte for byte, 2822 checks from each
+(the gnu one again on eval), 22 examples clean.
+
+The milestone from the DOWNLOADED binary, run where nothing shadows
+the embedded stdlib: 54 top-level bindings in lib/list.ting,
+`fingerprint(1) == fingerprint(1.0)` true while `fingerprint(print)`
+and `fingerprint(0.0 / 0.0)` are nil, `unique([1, 1.0, "1", [1],
+[1.0]])` is `[1, "1", [1]]`, the three set operations answer in a's
+order, membership/holds/remember work, and unique over 32000 elements
+takes 36 ms — the 37 the changelog claims. `--doc fingerprint` and
+`--doc lib/list.ting` carry the new text.
+
+A SCARE WORTH RECORDING, because I nearly filed it as a broken
+release. The same probe run from the scratchpad said 47 bindings and
+no `union`, from the downloaded binary AND from both local builds. The
+scratchpad has a `lib/` of its own — copied there on 8 September for
+an unrelated probe — and `import("lib/list.ting")` resolves against
+THE IMPORTING FILE'S directory, so every probe I have run from there
+since has been reading a stale September 8th stdlib. The lesson is the
+rule the release check already states: run it where nothing shadows
+the embedded copy. I went as far as grepping the binary for `fn union`
+(absent, because the bytes I was greping were another module's text)
+before looking at the directory the script sat in.
+
+Site: the four paths answer 200, the changelog's newest entry is
+v2.144.0, the reference carries "There is no set type", and the
+stdlib page has union.
+
+Next: health tick, which closes the milestone.

@@ -3906,11 +3906,13 @@ holds only the current milestone and the standing rules.
   version passed on the code it was written to catch. Reference says
   there is no set type and what to use instead.
 - 927: v2.144.0 tagged (165th tag; strokes 924, 925, 926).
+- v2.144.0 VERIFIED (165th tag; strokes 924, 925, 926; both aarch64
+  archives executed here). A probe run from the SCRATCHPAD reads that
+  directory's own stale lib/ (copied there on 8 September), not the
+  embedded stdlib: imports resolve against the importing file.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.144.0 (assets, checksums, both aarch64 archives through
-  tools/smoke.sh, the milestone from the downloaded binary, the site).
   - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
