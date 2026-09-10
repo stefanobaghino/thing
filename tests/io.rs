@@ -902,6 +902,38 @@ fn test_flag_shows_why_a_file_failed() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
+/// A file that fails still says how many checks it ran. The count
+/// travels from child to harness on a line printed as the process
+/// ends, and `exit()` never came back to print it — so a file that
+/// failed the way `lib/test.ting`'s `summary()` fails reported ZERO,
+/// and the suite's totals lost count exactly when something had gone
+/// wrong.
+#[test]
+fn a_failing_file_still_reports_its_checks() {
+    let root = std::env::temp_dir().join(format!("ting-test-counts-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    std::fs::write(
+        root.join("a.ting"),
+        "assert(1 == 1, \"one\");\nassert(2 == 2, \"two\");\nprint(\"1 passed, 1 failed\");\nexit(1);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(
+        stdout.contains("0 passed, 1 failed, 2 checks"),
+        "the checks were lost with the process:\n{stdout}"
+    );
+    // And the count is not printed where a reader would read it as
+    // part of the file's own output.
+    assert!(!stdout.contains("ting-checks"), "{stdout}");
+    let _ = std::fs::remove_dir_all(&root);
+}
+
 /// `--test --fail-fast` stops at the first failing file: later files
 /// are skipped (never run), the summary counts them, and in TAP mode
 /// they are `# SKIP` lines so the plan still adds up.

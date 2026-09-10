@@ -432,10 +432,9 @@ fn run_file_inner(
         eprint!("{report}");
     }
     // `--test` runs each file as a child of itself and asks it, this
-    // way, how many checks it ran.
-    if std::env::var_os("TING_TEST_REPORT").is_some() {
-        eprintln!("ting-checks: {}", ting::eval::checks_run());
-    }
+    // way, how many checks it ran. `exit()` reports the same thing
+    // from where it stands, since it never comes back here.
+    ting::eval::report_checks_if_asked();
     outcome
 }
 

@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2769 selftest checks on all four
-  CI platforms, Windows included); 437 Rust tests
-  in 17 suites (counted at 901; the 399 written here had been
+  CI platforms, Windows included); 438 Rust tests
+  in 17 suites (counted at 902; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -2454,6 +2454,13 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 902: second stroke — THE COUNT SURVIVES THE EXIT.
+  `eval::report_checks_if_asked` is the one place that prints the
+  `ting-checks:` line, called at the end of a run AND inside
+  `Builtin::Exit`, so a file that fails through `summary()`'s
+  `exit(1)` no longer reports zero checks. The test pins the number
+  in the summary AND that the private line never reaches the reader,
+  now that 901 shows a failing file's output.
 - 901: first stroke — THE HARNESS REPEATS THE REASON. `--test` shows
   a failing file's own stdout under the FAIL line (the fix was
   deleting `.stdout(Stdio::null())` from `run_one`); what the file
@@ -3727,9 +3734,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a file that fails still reports how many checks it ran: `exit()`
-  skips the `ting-checks:` line, so the totals under-count exactly
-  when something went wrong.
   - `assert` shows the values it compared, from both engines,
   byte-identical — the compiler and the evaluator both have the two
   sides when the call is built.

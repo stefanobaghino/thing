@@ -986,6 +986,18 @@ pub fn checks_run() -> usize {
     CHECKS.load(std::sync::atomic::Ordering::Relaxed)
 }
 
+/// Tell the parent `--test` harness how many checks ran, if a harness
+/// is listening. It is called both where a run ends normally and
+/// where `exit()` ends it, because a test file that FAILS ends the
+/// second way — `lib/test.ting`'s `summary()` calls `exit(1)` — and
+/// until 902 that meant a failing file reported zero checks, so the
+/// totals lost count exactly when something had gone wrong.
+pub fn report_checks_if_asked() {
+    if std::env::var_os("TING_TEST_REPORT").is_some() {
+        eprintln!("ting-checks: {}", checks_run());
+    }
+}
+
 fn global_env() -> Rc<RefCell<Env>> {
     let mut globals = HashMap::new();
     for b in Builtin::ALL {
@@ -3177,6 +3189,7 @@ impl<W: Write> Interpreter<W> {
                 self.out
                     .flush()
                     .map_err(|e| error(format!("exit: flush failed: {e}"), span))?;
+                report_checks_if_asked();
                 std::process::exit(code.clamp(0, 255) as i32)
             }
             Builtin::TimeMs => {

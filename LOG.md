@@ -22495,3 +22495,31 @@ does not, and five hundred printed lines come back as forty-one.
 Gate: fmt, clippy, 17 `test result: ok` (437 tests), `--fmt .` 79
 unchanged, corpus at fourteen, selftest 2769 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 902 — the count survives the exit
+
+Maintenance: tree clean, no PRs, CI green for 3545fc6 from the API.
+
+Second stroke: a failing file reports how many checks it ran.
+
+The count travels from child to harness on a `ting-checks:` line
+printed as the process ends — and `exit()` ends the process without
+coming back, so the line was never printed for a file that failed
+the way `lib/test.ting`'s `summary()` fails. `0 passed, 1 failed, 0
+checks` for a file that had just run four of them.
+
+`eval::report_checks_if_asked` is now the one place that prints it,
+called both where a run ends normally and inside `Builtin::Exit`
+after the flush. Both engines go through that arm, and both were
+checked by hand. The suite's totals stop under-counting at exactly
+the moment they were least trustworthy.
+
+The test asserts the number in the summary line — `0 passed, 1
+failed, 2 checks` from a file that asserts twice and exits 1 — and
+also that `ting-checks:` never reaches the reader, since 901 started
+showing a failing file's output and the harness's private line must
+not be part of it.
+
+Gate: fmt, clippy, 17 `test result: ok` (438 tests), `--fmt .` 79
+unchanged, corpus at fourteen, selftest 2769 checks on both engines,
+Windows check and clippy, wasm release build.
