@@ -325,7 +325,7 @@ thing to say — a fallback, a prefix — it comes before the arguments.
 | `failed(f, ...rest)` | whether the call failed |
 | `value(f, fallback, ...rest)` | the value, or the fallback if it failed |
 | `wrap(f, prefix, ...rest)` | the value, or a failure with the prefix in front of the message — how "no such file" becomes "reading the config: no such file" |
-| `site(f, ...rest)` | where it failed: the `{"file", "line", "column"}` `try` reports, or nil |
+| `site(f, ...rest)` | where it failed: the `{"file", "line", "col"}` `try` reports, or nil |
 | `trace(f, ...rest)` | the calls the failure came out of, innermost first, or `[]` |
 | `given(f, ...rest)` | what the innermost failing call was given: parameter name to value, or nil |
 

@@ -22,7 +22,7 @@ fn failed(f, ...rest) { return has(try(f, ...rest), "err"); }
 # where a failure has an obvious answer and no story worth telling.
 fn value(f, fallback, ...rest) { return get(try(f, ...rest), "ok", fallback); }
 
-# Where it failed: the {"file", "line", "column"} try reports, or nil.
+# Where it failed: the {"file", "line", "col"} try reports, or nil.
 fn site(f, ...rest) { return get(try(f, ...rest), "at", nil); }
 
 # The calls the failure came out of, innermost first, or [].

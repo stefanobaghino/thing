@@ -23013,3 +23013,37 @@ docs/stdlib.md. The key is `col`. A reader following either gets nil.
 First item on the backlog.
 
 Backlog for the milestone is in STATE.md.
+
+## 916 — the shape it hands back, and one key that was wrong
+
+Maintenance: tree clean, no PRs, CI green for 1c0ba62 from the API.
+
+First stroke, the ride-along 915 found while probing something else.
+
+lib/err.ting documented `site` as returning `{"file", "line",
+"column"}`, and docs/stdlib.md said the same. The key is `col`. A
+reader following either wrote `s["column"]` and got nil — the worst
+kind of documentation, since it fails silently. Both corrected;
+docs/reference.md had it right all along.
+
+And three `--doc` summaries named a shape without saying what was in
+it. `re_find` was "the leftmost match as a map, or nil; groups
+included" — four keys, none of them named, which is how 915 came to
+guess `hit[1]` and have to run an experiment. `re_find_all` said "as
+a list" of what. `try` gave {"ok"} and {"err"} and left out the "at"
+and "trace" that a caught failure really carries. All three now name
+what is there; the reference already did, and this is the standard
+910 set — the same question typed two ways has to give the same
+answer.
+
+The guard does not compare two texts. It RUNS each builtin, takes the
+keys off the value that comes back, and asserts `--doc` names each
+one, at a word boundary so "at" does not match "that". A key added
+later fails this rather than going unmentioned. Mutation-tested by
+putting try's old summary back: "--doc try does not name the key
+"at" the value carries".
+
+Gate: fmt (rustfmt reshaped the test's table), clippy, 17 `test
+result: ok` (449 tests), `--fmt .` 79 unchanged, corpus at fourteen,
+2769 checks on both engines, Windows check and clippy, wasm release
+build.

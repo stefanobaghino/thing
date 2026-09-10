@@ -713,7 +713,7 @@ impl Builtin {
             ),
             Builtin::Try => (
                 "try(f) / try(f, ...args)",
-                "Calls f with the arguments that follow it; {\"ok\": result} on success, {\"err\": message} on a runtime error.",
+                "Calls f with the arguments that follow it; {\"ok\": result} on success, and on a runtime error {\"err\": message, \"at\": a map of file, line and col, \"trace\": the calls it came out of, innermost first}.",
             ),
             Builtin::Fail => (
                 "fail(msg)",
@@ -807,11 +807,11 @@ impl Builtin {
             ),
             Builtin::ReFind => (
                 "re_find(s, pattern)",
-                "The leftmost match as a map, or nil; groups included.",
+                "The leftmost match as a map of start, end, text and groups (a list, nil where a group took no part), or nil; positions count characters, as find and slice do.",
             ),
             Builtin::ReFindAll => (
                 "re_find_all(s, pattern)",
-                "Every non-overlapping match, left to right, as a list.",
+                "Every non-overlapping match, left to right, as a list of the maps re_find gives.",
             ),
             Builtin::ReReplace => (
                 "re_replace(s, pattern, repl)",

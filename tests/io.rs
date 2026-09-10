@@ -4649,3 +4649,74 @@ fn a_builtin_that_shares_a_module_name_points_at_the_module() {
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(!stdout.contains("is a module of the same name"), "{stdout}");
 }
+
+/// A builtin that hands back a shaped map has to NAME its keys where
+/// `--doc` will show them, not just say "a map": 915 found `re_find`
+/// described as "a map ... groups included" and `try` as {"ok"} or
+/// {"err"}, when the real failure map also carries "at" and "trace".
+/// The value is produced here and its own keys are what the doc is
+/// checked against, so a key added later fails this rather than going
+/// unmentioned.
+#[test]
+fn the_doc_for_a_shaped_value_names_every_key_it_has() {
+    fn names(text: &str, word: &str) -> bool {
+        text.match_indices(word).any(|(i, _)| {
+            let before = text[..i].chars().next_back();
+            let after = text[i + word.len()..].chars().next();
+            let edge = |c: Option<char>| !c.is_some_and(|c| c.is_alphanumeric() || c == '_');
+            edge(before) && edge(after)
+        })
+    }
+
+    let dir = std::env::temp_dir().join(format!("ting-shapes-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let target = dir.join("f.txt");
+    std::fs::write(&target, "hello").unwrap();
+    let quoted = target.to_str().unwrap().replace('\\', "\\\\");
+
+    for (builtin, program) in [
+        (
+            "re_find",
+            "print(join(keys(re_find(\"ab\", \"(a)\")), \" \"));".to_string(),
+        ),
+        (
+            "try",
+            "print(join(keys(try(fn() { fail(\"x\"); })), \" \"));".to_string(),
+        ),
+        (
+            "stat",
+            format!("print(join(keys(stat(\"{quoted}\")), \" \"));"),
+        ),
+    ] {
+        let script = dir.join(format!("{builtin}.ting"));
+        std::fs::write(&script, &program).unwrap();
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        let stdout = String::from_utf8_lossy(&out.stdout).to_string();
+        assert_eq!(
+            out.status.code(),
+            Some(0),
+            "{builtin}: {}",
+            String::from_utf8_lossy(&out.stderr)
+        );
+        let keys: Vec<&str> = stdout.trim().split(' ').collect();
+        assert!(keys.len() >= 3, "{builtin} gave too few keys: {keys:?}");
+
+        let doc = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--doc", builtin])
+            .output()
+            .expect("failed to run ting");
+        let doc = String::from_utf8_lossy(&doc.stdout).to_string();
+        let entry = doc.split("\nalso matching").next().unwrap_or(&doc);
+        for key in keys {
+            assert!(
+                names(entry, key),
+                "--doc {builtin} does not name the key {key:?} the value carries:\n{entry}"
+            );
+        }
+    }
+    std::fs::remove_dir_all(&dir).unwrap();
+}
