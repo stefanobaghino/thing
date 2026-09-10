@@ -21822,3 +21822,45 @@ does with bytes that are not text, including that a program's output
 has always been read lossily and why that is the right default for a
 stream you did not write; then selftests over real dirty fixtures on
 both engines; then the release.
+
+## 883 — every "not UTF-8" says where
+
+Maintenance: tree clean, no PRs, CI green for 2b20e05 from the API.
+
+The message was the same six words everywhere: `not UTF-8 text`. It
+came from one place, `diag::read_why`, which is handed an
+`std::io::Error` — and that error knows nothing about position,
+because `read_to_string` has already thrown the bytes away by the
+time it fails. So the READS changed rather than the wording: read
+the bytes, convert them here, and `String::from_utf8` hands back
+`valid_up_to`, which is the offset. The line is a count of the
+newlines before it.
+
+Now every door says where:
+
+- a whole file — `not UTF-8 text: byte 0xe9 at offset 10 (line 2,
+  byte 3)`, from `read_file`, an imported module, a script being
+  run, `--check`, `--fmt`, `--bundle` and `:load` alike;
+- the line reader — `byte 3 of line 2`, since `each_line` is
+  counting lines anyway, and the good lines before it were already
+  handed over;
+- a stream nobody has numbered — `byte 3 of the line`, for
+  `input()`, which INVENTED a line number in the first draft. It
+  said "line 1" about the third line of the stream, because the
+  function that counts newlines was counting them in a single line.
+  A reader that cannot name the line says "the line".
+
+AND A SILENT WRONG ANSWER FELL OUT OF IT: `import` treated
+unreadable exactly like absent, so a `lib/list.ting` sitting right
+there but not text made the EMBEDDED module answer instead — a
+corrupt copy of a module silently replaced by another one. A file
+that is there is not a missing file; it errors now, and a test holds
+it.
+
+The reference already spelled out the asymmetry between reading a
+file (fails) and reading a child's output (replaced, deliberately);
+it now shows the position too. Four Rust tests, ten unit checks.
+
+Gate: fmt, clippy, 17 `test result: ok` (423 tests), `--fmt .` 78
+unchanged, corpus at fourteen, selftest 2749 checks on both engines,
+Windows check and clippy, wasm release build.

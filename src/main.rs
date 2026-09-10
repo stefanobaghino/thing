@@ -443,12 +443,16 @@ fn run_file_inner(
 /// EOF), the same convention read_file() follows inside scripts.
 fn read_tool_source(f: &str) -> Result<String, ExitCode> {
     let read = if f == "-" {
-        std::io::read_to_string(std::io::stdin().lock())
+        let mut bytes = Vec::new();
+        match std::io::Read::read_to_end(&mut std::io::stdin().lock(), &mut bytes) {
+            Ok(_) => ting::diag::text_of(bytes),
+            Err(e) => Err(ting::diag::read_why(&e)),
+        }
     } else {
-        std::fs::read_to_string(f)
+        ting::diag::read_text(f)
     };
-    read.map_err(|e| {
-        eprintln!("ting: cannot read {f}: {}", ting::diag::read_why(&e));
+    read.map_err(|why| {
+        eprintln!("ting: cannot read {f}: {why}");
         ExitCode::FAILURE
     })
 }

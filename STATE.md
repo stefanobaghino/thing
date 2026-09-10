@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 45 ting programs (23 selftest files — 22 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 22 examples with .out; 2749 selftest checks on all four
-  CI platforms, Windows included); 419 Rust tests
+  CI platforms, Windows included); 423 Rust tests
   in 17 suites (counted at 873; the 399 written here had been
   stale for a while). `ting --fmt .` reports 78 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -2454,6 +2454,18 @@ holds only the current milestone and the standing rules.
   archives executed here, 2583 checks from each on both engines, and
   a probe outside the unpacked directory proving the EMBEDDED stdlib
   answers).
+- 883: first stroke — EVERY "not UTF-8" SAYS WHERE. The wording was
+  never the problem: `diag::read_why` is handed an `std::io::Error`,
+  which knows no position because `read_to_string` threw the bytes
+  away before failing. The READS changed — read bytes, convert here,
+  and `from_utf8` hands back `valid_up_to`. A whole file says `byte
+  0xe9 at offset 10 (line 2, byte 3)`; `each_line` says `byte 3 of
+  line 2`; `input()` says `byte 3 of the line`, because a stream
+  nobody numbered has no line number — THE FIRST DRAFT INVENTED ONE,
+  saying "line 1" about the third line of a stream. A SILENT WRONG
+  ANSWER fell out of it: `import` treated unreadable as absent, so a
+  corrupt lib/list.ting made the EMBEDDED module answer instead; a
+  file that is there is not a missing file.
 - 882: REPLENISHMENT — MILESTONE "THE FILE YOU WERE GIVEN"
   (v2.139.0), reasoning in LOG.md. A twelfth kind of looking: not the
   program, but what the program is HANDED. Probed first: one byte
@@ -3573,9 +3585,6 @@ holds only the current milestone and the standing rules.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - every "not UTF-8" says where: the byte and the line it falls in,
-  for files, scripts and stdin (one place, `diag::read_why`, plus the
-  read path handing back `valid_up_to`).
   - a deliberate way to read anyway: `read_file(path, "lossy")`,
   `each_line(path, f, "lossy")`, `input("lossy")`, following the mode
   string `write_file` already takes.

@@ -15,6 +15,54 @@ pub fn read_why(e: &std::io::Error) -> String {
     e.to_string()
 }
 
+/// Bytes as text, or a message saying exactly where they stop being
+/// text. A log is a gigabyte of good lines and one byte from some
+/// older encoding; "not UTF-8 text" alone leaves nothing to search
+/// for, so the byte, its offset, and the line it falls in are all
+/// named. `from_utf8` already knows the offset — it is `valid_up_to`
+/// — and the line is a count of the newlines before it.
+pub fn text_of(bytes: Vec<u8>) -> Result<String, String> {
+    String::from_utf8(bytes).map_err(|e| {
+        let at = e.utf8_error().valid_up_to();
+        let bytes = e.as_bytes();
+        let line = bytes[..at].iter().filter(|b| **b == b'\n').count() + 1;
+        let sol = bytes[..at]
+            .iter()
+            .rposition(|b| *b == b'\n')
+            .map_or(0, |i| i + 1);
+        format!(
+            "not UTF-8 text: byte {:#04x} at offset {at} (line {line}, byte {})",
+            bytes[at],
+            at - sol + 1
+        )
+    })
+}
+
+/// The same for one line read on its own: its offsets are its own,
+/// and `whose` names it the way the reader can — "line 2" when the
+/// reader is counting, "the line" when it is a stream nobody has
+/// numbered.
+pub fn text_of_line<'a>(bytes: &'a [u8], whose: &str) -> Result<&'a str, String> {
+    std::str::from_utf8(bytes).map_err(|e| {
+        let at = e.valid_up_to();
+        format!(
+            "not UTF-8 text: byte {:#04x} at byte {} of {whose}",
+            bytes[at],
+            at + 1
+        )
+    })
+}
+
+/// A file as text, with either kind of trouble already worded: the
+/// file could not be read at all, or it is not text and this is
+/// where it stops being text.
+pub fn read_text(path: impl AsRef<std::path::Path>) -> Result<String, String> {
+    match std::fs::read(path) {
+        Ok(bytes) => text_of(bytes),
+        Err(e) => Err(read_why(&e)),
+    }
+}
+
 /// Render a `path:line:col` header plus the offending line with a caret
 /// underline covering the span (clamped to that line).
 ///
@@ -328,5 +376,34 @@ mod tests {
         assert_eq!(nearest("lps", ["lsp", "map"]), Some("lsp".to_string()));
         // Under three characters, no suggestion at all.
         assert_eq!(nearest("ab", ["ac", "bb"]), None);
+    }
+
+    #[test]
+    fn where_the_bytes_stop_being_text() {
+        assert_eq!(text_of(b"plain".to_vec()), Ok("plain".to_string()));
+        // The first byte, and a byte in the middle of the third line.
+        assert_eq!(
+            text_of(vec![0xff]).unwrap_err(),
+            "not UTF-8 text: byte 0xff at offset 0 (line 1, byte 1)"
+        );
+        assert_eq!(
+            text_of(b"a\nbb\nccc\xe9d".to_vec()).unwrap_err(),
+            "not UTF-8 text: byte 0xe9 at offset 8 (line 3, byte 4)"
+        );
+        // Half a character at the end is where it stops too.
+        assert_eq!(
+            text_of("é".as_bytes()[..1].to_vec()).unwrap_err(),
+            "not UTF-8 text: byte 0xc3 at offset 0 (line 1, byte 1)"
+        );
+        // A line names itself however the reader can name it.
+        assert_eq!(text_of_line(b"fine", "line 7"), Ok("fine"));
+        assert_eq!(
+            text_of_line(b"ca\xe9 bad", "line 7").unwrap_err(),
+            "not UTF-8 text: byte 0xe9 at byte 3 of line 7"
+        );
+        assert_eq!(
+            text_of_line(b"\xe9", "the line").unwrap_err(),
+            "not UTF-8 text: byte 0xe9 at byte 1 of the line"
+        );
     }
 }

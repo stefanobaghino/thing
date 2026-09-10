@@ -543,7 +543,7 @@ fn run_inner() -> ExitCode {
             && let Some(path) = line.trim().strip_prefix(":load ")
         {
             let path = path.trim();
-            match std::fs::read_to_string(path) {
+            match crate::diag::read_text(path) {
                 Ok(src) => {
                     // The loaded file's relative imports resolve against
                     // its own directory, as they would under `ting FILE`;
@@ -569,7 +569,7 @@ fn run_inner() -> ExitCode {
                         say(&format!("(loaded {path}: {added} new binding(s))"));
                     }
                 }
-                Err(e) => eprintln!("ting: cannot read {path}: {}", crate::diag::read_why(&e)),
+                Err(why) => eprintln!("ting: cannot read {path}: {why}"),
             }
             continue;
         }

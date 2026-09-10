@@ -3284,8 +3284,8 @@ fn bytes_that_are_not_text_fail_on_the_way_in_and_are_replaced_on_the_way_out() 
     for whose in ["read_file", "each_line"] {
         let line = lines.next().unwrap();
         assert!(
-            line.ends_with("not UTF-8 text"),
-            "{whose} must say it in ting's words:\n{text}"
+            line.contains("not UTF-8 text: byte 0xff at "),
+            "{whose} must say it in ting's words, and where:\n{text}"
         );
         assert!(
             !line.contains("stream"),
@@ -4184,4 +4184,134 @@ fn a_long_chain_is_freed_without_walking_the_tree_it_parsed_to() {
         );
     }
     let _ = std::fs::remove_file(&script);
+}
+
+/// A log is a million good lines and one byte from an older
+/// encoding. "not UTF-8 text" alone leaves nothing to search for, so
+/// every door into a file says WHERE the bytes stop being text: the
+/// byte itself, its offset, and the line it falls in.
+#[test]
+fn a_byte_that_is_not_text_is_reported_where_it_is() {
+    let dir = std::env::temp_dir().join(format!("ting-dirty-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).expect("temp dir");
+    let log = dir.join("dirty.log");
+    // "ok line\nca<0xe9> bad\nlast\n": the bad byte is the third of
+    // the second line, at offset 10.
+    std::fs::write(&log, b"ok line\nca\xe9 bad\nlast\n").expect("write fixture");
+
+    let script = dir.join("read.ting");
+    std::fs::write(&script, "print(len(read_file(args()[0])));\n").expect("write script");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .arg(&log)
+        .output()
+        .expect("failed to run ting");
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("not UTF-8 text: byte 0xe9 at offset 10 (line 2, byte 3)"),
+        "read_file: {err}"
+    );
+
+    // The line reader counts lines, so it says which one.
+    let each = dir.join("each.ting");
+    std::fs::write(&each, "each_line(args()[0], fn(l) { print(len(l)); });\n").expect("write");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&each)
+        .arg(&log)
+        .output()
+        .expect("failed to run ting");
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("not UTF-8 text: byte 0xe9 at byte 3 of line 2"),
+        "each_line: {err}"
+    );
+    assert_eq!(
+        String::from_utf8_lossy(&out.stdout),
+        "7\n",
+        "the good line before it was handed over"
+    );
+
+    // A script that is not text, through the three tools that read
+    // one, all say the same thing.
+    let source = dir.join("bad.ting");
+    std::fs::write(&source, b"print(\"h\xe9llo\");\n").expect("write source");
+    for flags in [vec![], vec!["--check"], vec!["--fmt"]] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(&flags)
+            .arg(&source)
+            .output()
+            .expect("failed to run ting");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            err.contains("not UTF-8 text: byte 0xe9 at offset 8 (line 1, byte 9)"),
+            "{flags:?}: {err}"
+        );
+        assert_eq!(out.status.code(), Some(1), "{flags:?}");
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// input() reads a stream nobody has numbered, so it names the byte
+/// within the line rather than inventing a line number — and the
+/// lines before it were already handed over, which is why saying
+/// where matters here most.
+#[test]
+fn a_stream_that_goes_bad_says_where_in_the_line() {
+    let script = std::env::temp_dir().join(format!("ting-stream-{}.ting", std::process::id()));
+    std::fs::write(
+        &script,
+        "let line = input();\nwhile line != nil {\n  print(len(line));\n  line = input();\n}\n",
+    )
+    .unwrap();
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to run ting");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b"ok\nca\xe9 bad\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let _ = std::fs::remove_file(&script);
+    assert_eq!(String::from_utf8_lossy(&out.stdout), "2\n");
+    let err = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        err.contains("input failed: not UTF-8 text: byte 0xe9 at byte 3 of the line"),
+        "{err}"
+    );
+}
+
+/// A module that is THERE but unreadable is not a missing module: the
+/// embedded stdlib must not answer for a lib/ file the script can
+/// see, or a corrupt copy would silently run something else.
+#[test]
+fn an_unreadable_module_does_not_fall_back_to_the_embedded_one() {
+    let dir = std::env::temp_dir().join(format!("ting-shadow-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("lib")).expect("temp dir");
+    std::fs::write(dir.join("lib/list.ting"), b"# \xe9\nlet x = 1;\n").expect("write module");
+    std::fs::write(
+        dir.join("use.ting"),
+        "let l = import(\"lib/list.ting\");\nprint(len(keys(l)));\n",
+    )
+    .expect("write script");
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg("use.ting")
+        .current_dir(&dir)
+        .output()
+        .expect("failed to run ting");
+    let err = String::from_utf8_lossy(&out.stderr);
+    let _ = std::fs::remove_dir_all(&dir);
+    assert_eq!(out.status.code(), Some(1), "{err}");
+    assert!(err.contains("not UTF-8 text"), "{err}");
+    assert!(
+        !err.contains("no embedded module"),
+        "a file that is there is not a missing file: {err}"
+    );
 }

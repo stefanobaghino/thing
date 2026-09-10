@@ -2238,17 +2238,24 @@ impl<W: Write> Interpreter<W> {
             Builtin::Input => {
                 arity(0, 0)?;
                 use std::io::BufRead;
-                let mut line = String::new();
-                match std::io::stdin().lock().read_line(&mut line) {
+                // Read the bytes, then say where they stop being
+                // text: `read_line` refuses without a position, and a
+                // stream that goes bad halfway is exactly where one
+                // is wanted.
+                let mut raw = Vec::new();
+                match std::io::stdin().lock().read_until(b'\n', &mut raw) {
                     Ok(0) => Ok(Value::Nil),
                     Ok(_) => {
-                        if line.ends_with('\n') {
-                            line.pop();
-                            if line.ends_with('\r') {
-                                line.pop();
+                        if raw.last() == Some(&b'\n') {
+                            raw.pop();
+                            if raw.last() == Some(&b'\r') {
+                                raw.pop();
                             }
                         }
-                        Ok(Value::str(line))
+                        match crate::diag::text_of_line(&raw, "the line") {
+                            Ok(line) => Ok(Value::str(line)),
+                            Err(why) => Err(error(format!("input failed: {why}"), span)),
+                        }
                     }
                     Err(e) => Err(error(
                         format!("input failed: {}", crate::diag::read_why(&e)),
@@ -2261,24 +2268,16 @@ impl<W: Write> Interpreter<W> {
                 match &args[0] {
                     // "-" is the conventional name for stdin, read to EOF.
                     Value::Str(path) if path == "-" => {
-                        let mut buf = String::new();
-                        std::io::Read::read_to_string(&mut std::io::stdin().lock(), &mut buf)
-                            .map(|_| Value::str(buf))
-                            .map_err(|e| {
-                                error(
-                                    format!("cannot read stdin: {}", crate::diag::read_why(&e)),
-                                    span,
-                                )
-                            })
+                        let mut buf = Vec::new();
+                        std::io::Read::read_to_end(&mut std::io::stdin().lock(), &mut buf)
+                            .map_err(|e| crate::diag::read_why(&e))
+                            .and_then(|_| crate::diag::text_of(buf))
+                            .map(Value::str)
+                            .map_err(|why| error(format!("cannot read stdin: {why}"), span))
                     }
-                    Value::Str(path) => {
-                        std::fs::read_to_string(path).map(Value::str).map_err(|e| {
-                            error(
-                                format!("cannot read {path:?}: {}", crate::diag::read_why(&e)),
-                                span,
-                            )
-                        })
-                    }
+                    Value::Str(path) => crate::diag::read_text(path.as_str())
+                        .map(Value::str)
+                        .map_err(|why| error(format!("cannot read {path:?}: {why}"), span)),
                     v => Err(error(
                         format!("read_file expects a string path, got {}", v.type_name()),
                         span,
@@ -2380,11 +2379,11 @@ impl<W: Write> Interpreter<W> {
                 };
                 // One buffer for the whole read, reused: the point of
                 // this builtin is that nothing grows with the file.
-                let mut buf = String::new();
+                let mut raw = Vec::new();
                 let mut count = 0i64;
                 loop {
-                    buf.clear();
-                    match reader.read_line(&mut buf) {
+                    raw.clear();
+                    match reader.read_until(b'\n', &mut raw) {
                         Ok(0) => break,
                         Ok(_) => {}
                         Err(e) => {
@@ -2394,17 +2393,20 @@ impl<W: Write> Interpreter<W> {
                             ));
                         }
                     }
-                    if buf.ends_with('\n') {
-                        buf.pop();
-                        if buf.ends_with('\r') {
-                            buf.pop();
+                    if raw.last() == Some(&b'\n') {
+                        raw.pop();
+                        if raw.last() == Some(&b'\r') {
+                            raw.pop();
                         }
                     }
                     count += 1;
-                    if matches!(
-                        self.call_value(&f, vec![Value::str(buf.clone())], span)?,
-                        Value::Bool(false)
-                    ) {
+                    let line = match crate::diag::text_of_line(&raw, &format!("line {count}")) {
+                        Ok(line) => Value::str(line),
+                        Err(why) => {
+                            return Err(error(format!("cannot read {whose}: {why}"), span));
+                        }
+                    };
+                    if matches!(self.call_value(&f, vec![line], span)?, Value::Bool(false)) {
                         break;
                     }
                 }
@@ -3536,9 +3538,15 @@ impl<W: Write> Interpreter<W> {
         // falls back to the stdlib embedded in the binary, so the
         // standard library works from any directory, in the REPL, and
         // in the wasm playground.
-        let src = match std::fs::read_to_string(&resolved) {
+        let src = match crate::diag::read_text(&resolved) {
             Ok(src) => src,
             Err(e) => {
+                // A file that is THERE but unreadable is not a missing
+                // file: falling back to the embedded module would run
+                // something other than the module asked for.
+                if resolved.exists() {
+                    return Err(error(format!("cannot import {path:?}: {e}"), span));
+                }
                 let key = path.trim_start_matches("./");
                 let hit = EMBEDDED_STDLIB
                     .iter()

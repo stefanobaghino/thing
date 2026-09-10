@@ -165,13 +165,8 @@ impl Bundler {
             ));
         }
         let display = self.show(path);
-        let src = std::fs::read_to_string(path).map_err(|e| {
-            format!(
-                "ting: cannot read {}: {}",
-                path.display(),
-                crate::diag::read_why(&e)
-            )
-        })?;
+        let src = crate::diag::read_text(path)
+            .map_err(|why| format!("ting: cannot read {}: {why}", path.display()))?;
         self.open.push(path.to_path_buf());
         let body = self.inline(&display, &src, path)?;
         self.open.pop();
@@ -276,13 +271,8 @@ pub fn bundle(path: &Path) -> Result<Bundle, String> {
         out: Vec::new(),
     };
     let display = bundler.show(&path);
-    let src = std::fs::read_to_string(&path).map_err(|e| {
-        format!(
-            "ting: cannot read {}: {}",
-            path.display(),
-            crate::diag::read_why(&e)
-        )
-    })?;
+    let src = crate::diag::read_text(&path)
+        .map_err(|why| format!("ting: cannot read {}: {why}", path.display()))?;
     // The entry is parsed for the same reasons a module is: a file
     // that does not parse cannot be bundled, and saying so here beats
     // handing back something that only fails when it is run.
