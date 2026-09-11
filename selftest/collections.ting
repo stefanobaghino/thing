@@ -184,7 +184,7 @@ assert(errmsg(fn() { return compare(nil, 1); }) == "cannot compare nil and int",
 "compare refuses exactly where < refuses");
 assert(errmsg(fn() { return compare(1); }) == "compare expects 2 arguments, got 1", "compare takes two");
 let staff = [{"n": "amir", "a": 30}, {"n": "amir", "a": 25}, {"n": "Bo", "a": 41}];
-let list = import("lib/list.ting");
+let list = import("../lib/list.ting");
 let by_name_then_age = list["sort_with"](staff, fn(x, y) {
   let first = compare(x["n"], y["n"]);
   if first != 0 { return first; }

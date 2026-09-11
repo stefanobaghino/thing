@@ -78,7 +78,7 @@ let wide = cli["help"]({
   "options": [{"long": "ファイル", "value": "P", "help": "path"}],
   "flags": [{"long": "verbose", "help": "say more"}],
 });
-let st = import("lib/string.ting");
+let st = import("../lib/string.ting");
 let helped = [];
 for line in st["lines"](wide) {
   if starts_with(line, "  -") { push(helped, display_width(line)); }

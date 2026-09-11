@@ -3974,10 +3974,19 @@ holds only the current milestone and the standing rules.
   green on each, nine site paths 200, cookbook carries ranking). The
   shipped binaries sort a frequency table, take a list as a compound
   key, and still refuse nil inside a list.
+- 944: health tick + audit green — milestone "putting things in
+  order" complete. Coverage 3378/3395 (99%). Head-to-head against
+  v2.145.0 between -5.2% and +4.2%, which is what said the 9-12%
+  against BASELINE was the machine. TWO SPELLINGS OF A MODULE ARE TWO
+  MODULES: `import("lib/x.ting")` from selftest/ is the EMBEDDED
+  copy, `import("../lib/x.ting")` the file on disk, and using both in
+  one run loads each twice — invisible to every check, visible only
+  in the coverage total (88% against 99%). The suite's own spelling
+  is the relative one.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick, which closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

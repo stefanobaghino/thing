@@ -23985,3 +23985,43 @@ name]` pairs finds the commonest without sorting.
 Site audit: all nine published paths answer 200 on
 www.baghino.me/thing/, the changelog page carries v2.146.0 and the
 cookbook carries the ranking example.
+
+## 944 — health tick, milestone "putting things in order" complete
+
+Maintenance: tree clean, no PRs, CI green for e56f151 from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE. Timings nine to twelve
+percent above it on both engines, with one row at 23 — higher than
+the usual weather, and fib.ting, which compares nothing and sorts
+nothing, was among the worst. So the head-to-head answered it: a
+binary built from v2.145.0 against HEAD, interleaved, best of five,
+every row between -5.2% and +4.2% in both directions. The
+comparison path did not get slower; the machine did.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 943), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+COVERAGE FOUND A MEASUREMENT I BROKE, and it is worth the ink. The
+first report read 3462 of 3918 lines (88%), with lib/list.ting and
+lib/string.ting listed TWICE — once at 100% and once at 15%. Two
+spellings of the same module are two modules: selftest/stdlib.ting
+imports `../lib/list.ting`, the file on disk, and the two lines I
+added in 939 and 941 imported `lib/list.ting` and `lib/string.ting`,
+which resolve to the copy embedded in the binary. Both spellings ran
+the same code, so every check passed and only the coverage total said
+anything. The two lines now use the suite's own spelling, and
+coverage is 3378 of 3395 (99%), 42 lines more than 936 on both sides.
+The four gaps are the same old ones: args, fs, sh, test.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, and the live examples.js matches the repository's.
+Rendering them left the tree clean. The deployed ting.wasm carries
+`compare`, which dates the playground to this release.
+
+Milestone "putting things in order" is complete.
+
+Next tick: replenishment.
