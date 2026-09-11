@@ -1093,13 +1093,26 @@ most seen: red
 
 ## report
 
-A small report, using the three modules a script reaches for first: a command line, delimited input, and something to say when it goes wrong. The command line is written out here instead of taken from args(), so the example prints the same thing every time.
+A small report, and a whole command-line program: the three modules a script reaches for first — a command line, delimited input, and something to say when it goes wrong.  The front door is main(), which is parse() with the two things every program does around it: --help prints the help built from this same spec and leaves with 0, and a command line the spec does not describe prints its trouble and that help to stderr and leaves with 2. Run it for yourself:  ting examples/report.ting --help ting examples/report.ting --by rep sales.csv ting examples/report.ting --nope  Named no file — which is how it runs here, and how the .out beside it was made — it reports on the small table written below, so the example prints the same thing every time.
 
 ```ting
-# A small report, using the three modules a script reaches for first:
-# a command line, delimited input, and something to say when it goes
-# wrong. The command line is written out here instead of taken from
-# args(), so the example prints the same thing every time.
+# A small report, and a whole command-line program: the three modules
+# a script reaches for first — a command line, delimited input, and
+# something to say when it goes wrong.
+#
+# The front door is main(), which is parse() with the two things every
+# program does around it: --help prints the help built from this same
+# spec and leaves with 0, and a command line the spec does not
+# describe prints its trouble and that help to stderr and leaves with
+# 2. Run it for yourself:
+#
+#   ting examples/report.ting --help
+#   ting examples/report.ting --by rep sales.csv
+#   ting examples/report.ting --nope
+#
+# Named no file — which is how it runs here, and how the .out beside
+# it was made — it reports on the small table written below, so the
+# example prints the same thing every time.
 
 let cli = import("../lib/args.ting");
 let csv = import("../lib/csv.ting");
@@ -1110,23 +1123,27 @@ let spec = {
   "summary": "totals by column from a CSV",
   "flags": [{"long": "quiet", "short": "q", "help": "no header line"}],
   "options": [{"long": "by", "short": "b", "value": "COLUMN", "help": "column to group by", "default": "region"}],
-  "positionals": [{"name": "file", "help": "the CSV to read"}],
+  "positionals": [{"name": "file", "help": "the CSVs to read", "many": true}],
 };
 
-print(cli["help"](spec));
-print("");
+let opts = cli["main"](spec, args());
 
-let opts = cli["parse"](spec, ["--by", "region", "sales.csv"]);
-print("grouping by " + opts["options"]["by"] + ", reading " + opts["positionals"]["file"]);
-print("");
-
-let data = "region,rep,amount\n" +
+let sample = "region,rep,amount\n" +
 "north,\"Smith, J\",120\n" +
 "south,Okafor,340\n" +
 "north,\"O\"\"Neill\",95\n" +
 "south,Tanaka,210\n";
 
-let rows = csv["maps"](csv["parse"](data));
+let rows = [];
+let files = opts["positionals"]["file"];
+if len(files) == 0 {
+  for row in csv["maps"](csv["parse"](sample)) { push(rows, row); }
+} else {
+  for path in files {
+    for row in csv["maps"](csv["parse"](read_file(path))) { push(rows, row); }
+  }
+}
+
 let column = opts["options"]["by"];
 let totals = {};
 for row in rows {
@@ -1145,24 +1162,19 @@ print("");
 for row in rows { print(row["rep"]); }
 print("");
 
-# What the front door does when the command line is wrong: the parser
-# fails with a message the program can print, rather than guessing.
+# The command lines this run was not given. What --help prints, and
+# leaves with 0:
+print(cli["help"](spec));
+print("");
+
+# and what goes to stderr ahead of it, before leaving with 2: the
+# parser fails with a message the program can print, rather than
+# guessing.
 print(err["message"](fn() { return cli["parse"](spec, ["--nope", "x"]); }));
-print(err["message"](fn() { return cli["parse"](spec, []); }));
+print(err["message"](fn() { return cli["parse"](spec, ["--by"]); }));
 ```
 
 ```text
-report — totals by column from a CSV
-
-usage: report [options] <file>
-
-options:
-  -b, --by COLUMN  column to group by (default region)
-  -q, --quiet      no header line
-  -h, --help       show this and leave
-
-grouping by region, reading sales.csv
-
 region,total
 north,215
 south,550
@@ -1172,8 +1184,17 @@ Okafor
 O"Neill
 Tanaka
 
+report — totals by column from a CSV
+
+usage: report [options] [file...]
+
+options:
+  -b, --by COLUMN  column to group by (default region)
+  -q, --quiet      no header line
+  -h, --help       show this and leave
+
 unknown option --nope
-missing <file>
+--by needs a value
 ```
 
 ## series
