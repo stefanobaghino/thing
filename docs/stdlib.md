@@ -89,7 +89,7 @@ Imports return a map, so functions are reached with `["name"]`.
 | `truncate(s, width, suffix = "...")` | at most `width` columns, ending in `suffix` when cut |
 | `indent(s, prefix)` | `prefix` before every non-empty line |
 | `dedent(s)` | the common leading whitespace of the non-blank lines removed |
-| `table(rows)` | rows of strings padded into aligned columns, two spaces apart |
+| `table(rows, align = "")` | rows of strings padded into aligned columns, two spaces apart; `align` is one of `<`, `>` or `^` per column, the rest left |
 | `wrap(s, width)` | greedy word wrap into lines of at most `width` columns |
 | `levenshtein(a, b)` | edit distance (insert, delete, substitute each cost one) |
 | `lines(s)` | split on `"\n"` |

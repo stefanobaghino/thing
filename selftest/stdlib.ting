@@ -359,6 +359,15 @@ assert(s["table"]([["a", "bb"], ["ccc", "d"]]) == "a    bb\nccc  d", "table alig
 assert(s["table"]([["x"], ["yy", "z"]]) == "x\nyy  z", "table ragged rows");
 assert(s["table"]([]) == "", "table empty");
 assert(s["table"]([["héllo", "1"], ["a", "2"]]) == "héllo  1\na      2", "table counts characters");
+# An alignment per column, spelled the way a format spec spells it.
+# A right-aligned cell is padded even last, because that padding is
+# what lines the column up; a left-aligned one is not.
+assert(s["table"]([["a", "1"], ["bb", "22"]], "<>") == "a    1\nbb  22", "table right-aligns a column");
+assert(s["table"]([["a", "1"], ["bb", "22"]], "<") == "a   1\nbb  22", "a column past the alignment is left");
+assert(s["table"]([["a"], ["bbb"]], "^") == " a \nbbb", "table centres a column");
+assert(s["table"]([["a", "1"], ["bb", "22"]]) == "a   1\nbb  22", "no alignment is the old behaviour");
+let bad_align = try(s["table"], [["a"]], "x");
+assert(contains(bad_align["err"], "alignment must be"), "an unknown alignment is refused");
 
 let j = import("../lib/json.ting");
 let doc = json_parse("{\"users\": [{\"name\": \"ann\", \"tags\": [\"a\", \"b\"]}, {\"name\": \"bob\"}], \"n\": 2}");
