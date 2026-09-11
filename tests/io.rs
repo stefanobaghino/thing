@@ -2540,7 +2540,9 @@ fn unknown_members_suggest_the_nearest_one() {
         "{stderr}"
     );
 
-    // So does the runtime error, on both engines.
+    // And the runtime says the same sentence about the same lookup,
+    // on both engines: a module is not a map with keys, it is a file
+    // with members, and both surfaces name it that way.
     let mut seen = Vec::new();
     for engine in ["vm", "eval"] {
         let out = Command::new(env!("CARGO_BIN_EXE_ting"))
@@ -2553,7 +2555,7 @@ fn unknown_members_suggest_the_nearest_one() {
     }
     assert_eq!(seen[0], seen[1], "{seen:?}");
     assert!(
-        seen[0].contains("key \"medain\" not found (did you mean \"median\"?)"),
+        seen[0].contains("lib/list.ting has no `medain` (did you mean `median`?)"),
         "{}",
         seen[0]
     );
@@ -4963,4 +4965,63 @@ fn the_doc_for_a_shaped_value_names_every_key_it_has() {
         }
     }
     std::fs::remove_dir_all(&dir).unwrap();
+}
+
+/// The checker and the run are one sentence about a module member
+/// that is not there, not two. The checker sees the lookup before the
+/// program runs and the run sees it when it gets there, and a reader
+/// who fixes what one of them said should not be told something else
+/// by the other.
+#[test]
+fn a_missing_module_member_reads_the_same_before_and_during_a_run() {
+    let dir = std::env::temp_dir().join("ting-member-sentence");
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    let script = dir.join("m.ting");
+    // A name the module retired into a builtin, which is the case
+    // where the sentence says something a map's keys cannot.
+    std::fs::write(
+        &script,
+        "let st = import(\"lib/string.ting\");\nprint(st[\"ends_with\"](\"a\", \"b\"));\n",
+    )
+    .expect("write");
+
+    let said = |args: &[&str]| {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        let text = String::from_utf8_lossy(&out.stderr).to_string();
+        let line = text
+            .lines()
+            .next()
+            .unwrap_or_else(|| panic!("nothing said for {args:?}:\n{text}"))
+            .to_string();
+        // Past "warning: " or "error: ": the level and the position
+        // differ by surface, the sentence is what must not.
+        let i = line
+            .find(": ")
+            .and_then(|i| line[i + 2..].find(": "))
+            .unwrap();
+        line[line.find(": ").unwrap() + i + 4..].to_string()
+    };
+
+    let checked = said(&["--check"]);
+    assert_eq!(
+        checked,
+        "lib/string.ting has no `ends_with` (`ends_with` is a builtin)"
+    );
+    assert_eq!(said(&[]), checked, "the run says something else");
+
+    // A map the program built for itself is still a map: it has keys,
+    // not members, and nothing names a file at it. The module stays
+    // imported, so what tells the two apart is identity and not
+    // whether this run imported anything.
+    std::fs::write(
+        &script,
+        "let st = import(\"lib/string.ting\");\nlet m = {\"alpha\": 1};\nprint(m[\"beta\"]);\n",
+    )
+    .expect("write");
+    assert_eq!(said(&[]), "key \"beta\" not found");
+    let _ = std::fs::remove_dir_all(&dir);
 }

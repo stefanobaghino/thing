@@ -161,13 +161,13 @@ fn exec<W: Write>(
             Op::Index => {
                 let idx = stack.pop().expect("stack underflow");
                 let base = stack.pop().expect("stack underflow");
-                stack.push(eval::index(base, idx, span)?);
+                stack.push(eval::index(base, idx, span, interp.imports())?);
             }
             Op::IndexKeep => {
                 let n = stack.len();
                 let idx = stack[n - 1].clone();
                 let base = stack[n - 2].clone();
-                stack.push(eval::index(base, idx, span)?);
+                stack.push(eval::index(base, idx, span, interp.imports())?);
             }
             Op::IndexSet => {
                 let value = stack.pop().expect("stack underflow");

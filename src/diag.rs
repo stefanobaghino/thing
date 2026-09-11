@@ -231,6 +231,28 @@ pub fn spelt_here_as(name: &str) -> Option<&'static str> {
     })
 }
 
+/// What a module does not have, in one sentence: the module named the
+/// way `--check` names a file, the key that was asked for, and the
+/// nearest thing it does offer. `--check` says this about a lookup it
+/// can see before the program runs, and a run says it about the same
+/// lookup when it reaches it, so the two are this one function.
+pub fn no_member<'a>(
+    module: &str,
+    key: &str,
+    exports: impl IntoIterator<Item = &'a str>,
+) -> String {
+    // An exact builtin of that name is a certainty where the nearest
+    // export is only a guess, so it wins: a module that retires a
+    // function into a builtin leaves callers here.
+    if crate::value::Builtin::ALL.iter().any(|b| b.name() == key) {
+        return format!("{module} has no `{key}` (`{key}` is a builtin)");
+    }
+    match nearest(key, exports) {
+        Some(n) => format!("{module} has no `{key}` (did you mean `{n}`?)"),
+        None => format!("{module} has no `{key}`"),
+    }
+}
+
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
     // Under three characters every name is one edit from every other,
     // so a suggestion would be noise rather than help.

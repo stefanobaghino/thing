@@ -604,7 +604,12 @@ module, say — surface earlier: `ting --check main.ting` follows every
 reads what those modules offer, too: a call through one gets its
 arguments counted (`truncate takes 2 to 3 arguments, called with 1`)
 and a key the module does not export is named, with the nearest one
-it does suggested.
+it does suggested. A run that reaches that key says the same
+sentence — the module named, the nearest member suggested, a builtin
+of that name pointed out — rather than `key "ends_with" not found`,
+because a module is a file with members rather than a map with keys.
+Both surfaces build the sentence with one function, so they cannot
+drift apart.
 
 Thirteen stdlib modules ship embedded in the interpreter itself — any
 path starting with `lib/` falls back to the built-in copy when no

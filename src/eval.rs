@@ -653,7 +653,7 @@ pub struct Interpreter<W: Write> {
     /// Directory import paths resolve against; the top is the directory
     /// of the file currently executing (script, or module mid-import).
     dir_stack: Vec<std::path::PathBuf>,
-    import_cache: HashMap<std::path::PathBuf, Value>,
+    import_cache: Imports,
     importing: Vec<std::path::PathBuf>,
     /// The module whose top level is currently running, if any.
     origin_stack: Vec<Rc<Origin>>,
@@ -1783,7 +1783,7 @@ impl<W: Write> Interpreter<W> {
                 let v = match op {
                     None => self.eval(value)?,
                     Some(op) => {
-                        let old = index(b.clone(), i.clone(), stmt.span)?;
+                        let old = index(b.clone(), i.clone(), stmt.span, &self.import_cache)?;
                         let r = self.eval(value)?;
                         binary(*op, old, r, stmt.span)?
                     }
@@ -2137,7 +2137,15 @@ impl<W: Write> Interpreter<W> {
                         // The removal gives the borrow back before the
                         // suggestion needs to read the keys.
                         let taken = entries.borrow_mut().remove(k.as_str());
-                        taken.ok_or_else(|| key_miss(&entries.borrow(), k.as_str(), span))
+                        taken.ok_or_else(|| {
+                            key_miss(
+                                &args[0],
+                                &entries.borrow(),
+                                k.as_str(),
+                                span,
+                                &self.import_cache,
+                            )
+                        })
                     }
                     (Value::Map(_), Some(v)) => Err(error(
                         format!("a map key is a string, got {}", v.type_name()),
@@ -3882,6 +3890,12 @@ impl<W: Write> Interpreter<W> {
         }
     }
 
+    /// The modules this run has imported, for a message that has to
+    /// tell a module from a map.
+    pub(crate) fn imports(&self) -> &Imports {
+        &self.import_cache
+    }
+
     /// The module currently being imported, for functions defined
     /// during its top-level run.
     pub(crate) fn current_origin(&self) -> Option<Rc<Origin>> {
@@ -4356,7 +4370,7 @@ impl<W: Write> Interpreter<W> {
             ExprKind::Index(base, idx) => {
                 let b = self.eval(base)?;
                 let i = self.eval(idx)?;
-                index(b, i, expr.span)
+                index(b, i, expr.span, &self.import_cache)
             }
         }
     }
@@ -5046,27 +5060,67 @@ pub(crate) fn fingerprint(v: &Value, out: &mut String, open: &mut Vec<*const ()>
     true
 }
 
+/// Every module a run has imported, by the path it resolved to. A map
+/// that is one of these is a module rather than data, which is what
+/// lets a missing member be named the way `--check` names it.
+pub(crate) type Imports = HashMap<std::path::PathBuf, Value>;
+
+/// The module this map is, if it is one: `import` hands back the same
+/// map on every import and keeps it here, so identity — not shape —
+/// is the question, and a map a program built for itself is never
+/// mistaken for a module.
+pub(crate) fn module_of(imports: &Imports, entries: &Value) -> Option<String> {
+    let Value::Map(entries) = entries else {
+        return None;
+    };
+    let (path, _) = imports
+        .iter()
+        .find(|(_, v)| matches!(v, Value::Map(m) if Rc::ptr_eq(m, entries)))?;
+    let path = path.display().to_string();
+    // The embedded stdlib is named by the name it is embedded under;
+    // a module on disk the way every other tool prints a path it
+    // resolved for itself.
+    Some(match path.strip_prefix("<embedded>/") {
+        Some(name) => name.to_string(),
+        None => crate::diag::shorten(&path),
+    })
+}
+
 pub(crate) fn key_miss(
+    base: &Value,
     entries: &std::collections::BTreeMap<String, Value>,
     k: &str,
     span: Span,
+    imports: &Imports,
 ) -> RuntimeError {
-    // The map's own keys are the candidates: a misspelled member of an
-    // imported module lands here too.
+    // A module says what it has, in the words `--check` uses about
+    // the same lookup; anything else is a map, and a map has keys.
+    if let Some(module) = module_of(imports, base) {
+        let exports = entries.keys().map(|k| k.as_ref());
+        return error(crate::diag::no_member(&module, k, exports), span);
+    }
+    // The map's own keys are the candidates.
     match crate::diag::nearest(k, entries.keys().map(|k| k.as_ref())) {
         Some(n) => error(format!("key {k:?} not found (did you mean {n:?}?)"), span),
         None => error(format!("key {k:?} not found"), span),
     }
 }
 
-pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, RuntimeError> {
+pub(crate) fn index(
+    base: Value,
+    idx: Value,
+    span: Span,
+    imports: &Imports,
+) -> Result<Value, RuntimeError> {
     if let Some(v) = index_opt(&base, &idx, span)? {
         return Ok(v);
     }
     // Absent, and index_opt has already erred on anything unindexable:
     // all that is left is to say which absence this was.
-    match (base, idx) {
-        (Value::Map(entries), Value::Str(k)) => Err(key_miss(&entries.borrow(), &k, span)),
+    match (base.clone(), idx) {
+        (Value::Map(entries), Value::Str(k)) => {
+            Err(key_miss(&base, &entries.borrow(), &k, span, imports))
+        }
         (Value::List(items), Value::Int(i)) => {
             let len = items.borrow().len();
             Err(error(format!("index {i} out of bounds (len {len})"), span))

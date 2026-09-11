@@ -1724,17 +1724,8 @@ fn unknown_members(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usiz
     member_findings(src, dir)
         .into_iter()
         .map(|f| {
-            // An exact builtin of that name is a certainty where the
-            // nearest export is only a guess, so it wins: a module that
-            // retires a function into a builtin leaves callers here.
-            let message = if Builtin::ALL.iter().any(|b| b.name() == f.key) {
-                format!("{} has no `{}` (`{}` is a builtin)", f.module, f.key, f.key)
-            } else {
-                match crate::diag::nearest(&f.key, f.exports.iter().map(String::as_str)) {
-                    Some(n) => format!("{} has no `{}` (did you mean `{}`?)", f.module, f.key, n),
-                    None => format!("{} has no `{}`", f.module, f.key),
-                }
-            };
+            let message =
+                crate::diag::no_member(&f.module, &f.key, f.exports.iter().map(String::as_str));
             (f.start, f.end, message)
         })
         .collect()
