@@ -5,6 +5,27 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.153.0 (2026-09-11)
+
+- **A path that isn't there is not an empty tree.** `lib/fs.ting`'s
+  `walk` answered `[that path]` for a path with nothing behind it, so
+  `walk_ext` and `facts` answered `[]` and `total_size` answered `0`:
+  a script given a mistyped directory reported finding nothing, and
+  left happy. All four now raise, in the words the builtin that had to
+  look gives. A file still walks to itself, and `size`, `stat` and
+  `exists` still answer `nil`, `nil` and `false` — they ask where the
+  others demand.
+- **The module says what it answers for each kind of path.** Nothing
+  there, a file, a directory: three answers per function, set out once
+  in `lib/fs.ting`'s header (so `--doc` carries it) and once on the
+  stdlib page, and checked cell by cell in the corpus.
+- **Every message that holds a path quotes it.** The tools wrote
+  `ting: cannot read notes.ting` where the runtime has always written
+  `cannot read "notes.ting"`, so a path with a space in it had no
+  ends. The script reader, `--fmt`'s writer, `-o`, the REPL's `:load`
+  and `:save`, and the bundler all quote now; `file:line:col:` headers
+  stay bare, where the colon does that job.
+
 ## v2.152.0 (2026-09-11)
 
 - **A spec its author got wrong is the author's error.** `lib/args.ting`
