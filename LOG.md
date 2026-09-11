@@ -26720,3 +26720,48 @@ whether the child writes where ting writes (1017). v2.156.0 tagged
 and verified (1018, 1019).
 
 Replenishment next.
+
+## 1021 — replenishment: milestone "the answer it already has"
+
+The probe wrote a report about this repo: commits per day from `git
+log`, a bar per day, and the ten commonest words in the subjects.
+Forty lines, and it ran. What it cost was two wrong guesses about
+where a name lives, and both told the same story — the binary knew
+the answer and would not say it.
+
+**A name the stdlib exports is "bound nowhere".** `repeat("#", n)`
+answers `undefined variable 'repeat'` at run time and ``repeat` is
+bound nowhere` from `--check`, though lib/string.ting exports
+`repeat` and the binary carries that module inside it. The other
+direction is already handled and reads beautifully — `lib/list.ting
+has no `sort_by` (`sort_by` is a builtin)`, which is 989's work — so
+the asymmetry is the finding, not the absence of an idea.
+
+**`--doc json_str` hides an argument it has.** `json_str(v, 2)`
+pretty-prints, with two spaces a level; the reference table and the
+tutorial both say so; the entry the binary prints says `json_str(v)
+Ting value to compact JSON`. I went looking for a pretty printer
+convinced there was none, and found the code first — it has been
+there all along. A scan of every builtin's documented signature
+against the arity its arm accepts finds exactly one mismatch, which
+is this one: cheap to fix, and nothing stops the next.
+
+**`--doc` cannot be asked a phrase.** `--doc times` finds
+lib/string.ting's `repeat` and lib/list.ting's `membership` through
+their text; `--doc "how many"` finds nothing at all, though
+lib/fs.ting's `count_lines` begins "How many lines a file has". The
+search is case-insensitive — `KEYS` and `Times` both work — so it is
+the space that loses it, and a phrase is how a person asks about
+something they cannot name.
+
+Not chosen. `lib/csv.ting has no `write`` says nothing more when
+nothing is near — a signpost to `--doc lib/csv.ting` would be a
+second sentence on every miss, and the near-miss suggestion already
+covers the common case. The report itself found nothing wrong with
+the language: `sort_by`, `items`, `keys`, `get` with a default,
+integer division for the bar and lib/time's `date` all did what they
+looked like. The probe hand-rolled a tally that lib/list.ting's
+`frequencies` and `count_by` already do, which is the same
+discoverability story as the three above rather than a fourth thing.
+
+Milestone "the answer it already has" (v2.157), backlog in STATE.md.

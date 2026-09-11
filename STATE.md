@@ -4310,10 +4310,26 @@ holds only the current milestone and the standing rules.
   counts all standing (79 builtins, 13 modules, 214 functions, 48
   programs, 3007 checks, 489 tests in 18 suites, 81 unchanged,
   fifteen warnings, 177 tags). Milestone "the program your program
-  runs" COMPLETE. Replenishment next.
+  runs" COMPLETE.
+- 1021: replenishment — milestone "the answer it already has"
+  (v2.157), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - a name bound nowhere that a stdlib module exports says where it
+    lives: `undefined variable 'repeat' (lib/string.ting has it)`, at
+    run time and in `--check`'s warning, naming every module that has
+    it when more than one does. The mirror of 989's `sort_by` is a
+    builtin, which is the sentence to match.
+  - `--doc json_str` shows the indent it takes, and a guard walks
+    every builtin's documented signature against the arity its arm
+    accepts. The scan written during the probe found exactly this one
+    mismatch (`input`'s two forms are a false positive worth keeping
+    in mind).
+  - `--doc` answers a phrase: "how many" should find lib/fs.ting's
+    count_lines, whose text begins with it. The search already
+    ignores case, so it is the space that loses it.
+  - release v2.157.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
