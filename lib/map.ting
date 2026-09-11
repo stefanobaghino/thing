@@ -42,7 +42,7 @@ fn items(m) {
 # repeated key keeps the last pair's value.
 fn from_items(pairs) {
   let out = {};
-  for p in pairs { out[p[0]] = p[1]; }
+  for [k, v] in pairs { out[k] = v; }
   return out;
 }
 
@@ -144,7 +144,7 @@ fn update(m, k, f) {
 # or frequencies, then top.
 fn top(m, n) {
   if n < 0 { fail("top: negative count"); }
-  let ranked = sort_by(items(m), fn(p) { return 0 - p[1]; });
+  let ranked = sort_by(items(m), fn([_, v]) { return 0 - v; });
   if n > len(ranked) { n = len(ranked); }
   return slice(ranked, 0, n);
 }

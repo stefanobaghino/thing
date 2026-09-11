@@ -501,7 +501,7 @@ fn compact(xs) { return filter(xs, fn(x) { return x != nil; }); }
 let sort_with = sort_with;
 
 # f(a[i], b[i]) for each index, trimmed to the shorter input.
-fn zip_with(a, b, f) { return map(zip(a, b), fn(p) { return f(p[0], p[1]); }); }
+fn zip_with(a, b, f) { return map(zip(a, b), fn([x, y]) { return f(x, y); }); }
 
 # Every [x, y] pair with x from a and y from b, a-major order.
 fn cartesian(a, b) {

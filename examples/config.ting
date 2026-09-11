@@ -32,6 +32,6 @@ for path in j["paths"](effective) {
 print(st["table"](rows));
 
 print("changed from defaults:");
-for change in j["diff"](defaults, effective) {
-  print(" ", join(map(change[0], str), "."), str(change[1]), "->", str(change[2]));
+for [path, was, now] in j["diff"](defaults, effective) {
+  print(" ", join(map(path, str), "."), str(was), "->", str(now));
 }

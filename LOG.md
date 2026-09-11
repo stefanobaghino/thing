@@ -24195,3 +24195,40 @@ passed alone at once. First flake since 925 wrote it; watching.
 Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2902 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 949 — the docs and the stdlib say what 946 to 948 built
+
+Maintenance: tree clean, no PRs, CI and Pages green for 80b4d5a from
+the API.
+
+Three ticks of patterns had shipped with nothing written down. The
+reference gains "Taking a value apart" under Statements: the three
+forms in one checked block, the exact-length rule and both refusals
+quoted, `_`, nesting, `let [] = xs;`, and the sentence that the loop
+and the parameter forms ARE the `let` form, written into the front of
+the body by the parser. The statement list gains the two lines a
+reader scans for. The tutorial gains a section under Loops — pairs
+are where `p[0]` stops being readable — and its word-frequency script
+now walks `for [word, n] in top(counts, 3)`, which was the clearest
+`pair[1], pair[0]` in the book.
+
+The stdlib reads better for it in three places: `from_items` walks
+`for [k, v] in pairs`, `top` ranks on `fn([_, v])`, and `zip_with`
+calls `f(x, y)` out of `fn([x, y])`. examples/config.ting walks
+`for [path, was, now] in diff(...)`, and its .out is unchanged, which
+is the point.
+
+Found: docs/reference.md's new block claimed `[ant, 2]` where `print`
+gives `["ant", 2]` — a list prints its strings quoted. The guard ran
+the block and said so, which is why blocks in the docs are run.
+
+Found: BOTH timing guards flaked under the full parallel suite this
+tick — tests/selftest.rs at 4.5x in 948 and tests/lsp.rs at 7.4x
+here — and both passed alone at once. Load average was 8 on a
+four-core host while the suites ran. If it becomes a habit the answer
+is to make them serial rather than to loosen the ratio.
+
+Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2902 checks on both engines, Windows
+check and clippy, wasm release build. Cookbook and playground
+examples regenerated for the config change.

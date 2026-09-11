@@ -159,6 +159,36 @@ else is holding the same value — another name, or a list you pushed it
 onto — and then it has to, so that the other holder keeps what it was
 given.
 
+### Taking a value apart
+
+Work with pairs for five minutes — a map's entries, two things zipped
+together — and you will write `p[0]` and `p[1]` until you lose track
+of which was which. Names are better, and brackets on the left-hand
+side ask for them:
+
+```ting
+let ma = import("lib/map.ting");
+let ages = {"ada": 36, "alan": 41};
+for [name, age] in ma["items"](ages) {
+  print(name, "is", age);
+}
+let [oldest, years] = ma["items"](ages)[1];
+print(oldest, years);
+```
+
+```text
+ada is 36
+alan is 41
+alan 41
+```
+
+The same brackets work in a plain `let`, in a `for`, and in a
+parameter list — `fn([name, age]) { ... }`, which is what makes a
+`map` over pairs readable. The list has to be exactly as long as the
+pattern; anything else is an error rather than a silent trim. Write
+`_` where you do not care about a value: `for [_, age] in
+ma["items"](ages)` walks the ages alone.
+
 ## Functions are values
 
 `fn name(...) { ... }` defines a function; anonymous `fn(...) { ... }`
@@ -791,8 +821,8 @@ let counts = li["frequencies"](st["words"](lower(text)));
 
 # The three most frequent words as [word, count] pairs, ties in
 # alphabetical order.
-for pair in ma["top"](counts, 3) {
-  print(pair[1], pair[0]);
+for [word, n] in ma["top"](counts, 3) {
+  print(n, word);
 }
 ```
 

@@ -256,10 +256,12 @@ x = 2;              # rebind the nearest existing x; undefined name errors
 xs[0] = 9;          # write a list slot / insert or update a map key
 x += 1;             # also -=, *=, /=, %=: read, apply, write back
 xs[i] += 1;         # base and subscript are evaluated once, not twice
+let [a, b] = pair;  # take a list apart by position into names
 { let y = 1; }      # block: introduces a scope; y does not leak
 if c { } else if d { } else { }
 while c { }
 for x in xs { }     # iterate a list, a string (chars), or a map (keys)
+for [k, v] in ps { }  # taking each element apart the same way
 break;              # exit the innermost loop
 continue;           # next iteration of the innermost loop
 fn add(a, b) { return a + b; }
@@ -322,6 +324,46 @@ keys in sorted order. The loop variable is a fresh binding each
 iteration, so closures created in the body capture that iteration's
 value. `break`/`continue` apply to the innermost `while`/`for` and may
 not cross a function boundary.
+
+### Taking a value apart
+
+A `let` may name several things at once by writing where they sit in
+a list. A `for` loop and a parameter take the same brackets, and mean
+the same thing by them:
+
+```ting
+let ma = import("lib/map.ting");
+let counts = {"ant": 2, "bee": 5};
+let [first, second] = ma["items"](counts);
+print(first, second);
+for [name, n] in ma["items"](counts) { print(name, n); }
+fn line([name, n]) { return name + ": " + str(n); }
+print(join(map(ma["items"](counts), line), ", "));
+```
+
+```text
+["ant", 2] ["bee", 5]
+ant 2
+bee 5
+ant: 2, bee: 5
+```
+
+The value must be a list and its length must match the pattern
+exactly: `this pattern takes 2 values, and the list has 3` says so,
+and so does `this pattern takes a list apart, and the value is int`.
+Nothing is trimmed and nothing is padded, because a pair that arrived
+with three things in it is a bug rather than a shape to guess at.
+`_` stands where a value is matched and dropped, patterns nest
+(`let [a, [b, c]] = ...`), and `let [] = xs;` asserts that `xs` is
+empty and binds nothing.
+
+The loop and the parameter forms are the `let` form: the parser
+writes the `let` into the front of the body, so the names are the
+body's own bindings and everything else about a loop or a call is
+unchanged. A pattern parameter counts as one argument, takes no
+default, and may not repeat a name another parameter already binds —
+`fn f(k, [k, v])` is refused. What it prints in a signature or a
+trace is the pattern as it was written: `f([k, v], n)`.
 
 ## Functions
 

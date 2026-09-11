@@ -4003,11 +4003,14 @@ holds only the current milestone and the standing rules.
   named by the pattern's own text, so hover, `--doc` and trace frames
   print what was typed; duplicates are checked over the names a list
   binds, not the spellings.
+- 949: docs and stdlib — reference "Taking a value apart", a tutorial
+  section under Loops, and patterns in from_items, top, zip_with and
+  examples/config.ting. BOTH timing guards (tests/selftest.rs,
+  tests/lsp.rs) flaked under the parallel suite at load 8 and passed
+  alone; serialize them if it repeats.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - docs and the stdlib reading better for it: lib/map.ting's
-  from_items and top, reference, tutorial.
   - release v2.147.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
