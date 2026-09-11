@@ -25599,3 +25599,45 @@ args(). It is skipped now for the true reason, and the file is
 byte-identical.
 
 481 Rust tests in 18 suites.
+
+## Iteration 988 — the front door first
+
+Milestone "the command line your program shows its user", third
+stroke. `ting --doc lib/args.ting` prints the module's header and
+then its members in the order the file defines them. The header ends
+by telling the reader to call `main(spec, args())`; the list under it
+opened with `flag_of`, `option_of` and `pad` — three helpers the
+module's page puts last — and `main` came seventh. A reader scanning
+the list met the internals first.
+
+Definition order is the right order for that list: it is the file's
+own order, and a module whose file opens with its front door reads
+correctly in both places at once. So the fix is in the corpus, not in
+the tool. Six modules were led by a helper: args (flag_of), base64
+(bytes), csv (quote), sh (windows), test (pass) and time (fdiv). Each
+now opens with what its table in docs/stdlib.md opens with, and the
+helpers follow. Nothing else changed — same functions, same bodies,
+`--fmt` reports every file unchanged, and the corpus still checks
+2968 times on both engines.
+
+Forward references were the thing to check before moving anything: a
+top-level function may call one defined further down, on both
+engines, and `--check` is happy. Probed cold before the first file
+was touched.
+
+The page moved twice: lib/args.ting's table led with `parse` where
+the prose says to reach for `main`, and lib/map.ting's led with
+`key_of` where the module opens with `merge`. Both now agree with
+their file.
+
+What holds it: a test in tests/docs.rs asserting that each module's
+first definition is the first function row of its section on the
+page — the one place the two orders have to agree, without forcing
+the whole curated order onto the source. It counts the modules it
+checked against the embedded stdlib, so a section renamed out of
+`lib/` cannot make it pass by checking nothing. Mutation-tested
+both ways: with lib/args.ting back in its old order it names
+flag_of against main, and with the two map rows swapped it names
+merge against key_of.
+
+482 Rust tests in 18 suites.
