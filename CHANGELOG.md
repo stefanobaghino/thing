@@ -5,6 +5,37 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.151.0 (2026-09-11)
+
+- **Every tool names a file the same way.** A path you typed on the
+  command line comes back exactly as you typed it; a path the run
+  resolved for itself — a module an `import` found — is written
+  relative to the directory the command ran in, which is what
+  `--check` has always done. An error raised inside an imported
+  module used to print the absolute path the import resolved to,
+  while the trace note under it named the main file as written: two
+  files in one diagnostic, spelled two ways. `try`'s `"at"` and
+  `"trace"` disagreed with each other inside a single map for the
+  same reason. Both follow the rule now, and so do the `--profile`
+  and `--coverage` tables, which used to shorten the path you typed
+  as well.
+- **`--lsp` says which module a broken import is.** The message on an
+  `import(...)` string named the module by its last component, so two
+  files called `util.ting` in two directories produced the same
+  diagnostic.
+- **A file that checked nothing is a skip, not a pass.** `--test`
+  printed `ok f (no checks)`, counted the file among the passes, and
+  added `(1 file checked nothing)` to the summary as an aside — so a
+  suite that quietly stopped checking anything still read as green.
+  The line is `skip f (no checks)` now, and the file is counted with
+  the ones `--fail-fast` never started, those being the same claim
+  about the suite. In TAP the line keeps its `ok` and carries a
+  `# SKIP` directive, which is how TAP has always spelled a skip. A
+  run with nothing skipped prints what it printed before.
+- **`lib/json.ting` offers `parse` and `str`**, the two builtins the
+  area is named for, the way `lib/map.ting` offers `items` and
+  `values`.
+
 ## v2.150.0 (2026-09-11)
 
 - **A format spec can take its width from the arguments.**
