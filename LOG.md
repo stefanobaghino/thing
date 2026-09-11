@@ -25319,3 +25319,41 @@ passing file out of `print(1);`, which checks nothing, so under the
 new rule it became a second skip and the summary the test expects
 changed. Its file asserts something now — that test is about the
 files after a failure, not about counting.
+
+## 981 — the module you imported answers for the whole area
+
+Backlog item four of milestone "one way to name a file": lib/json.ting
+re-exports json_parse as `parse` and json_str as `str`, the way
+lib/map.ting re-exports items and values.
+
+The argument is 954's: the area's verbs are builtins, and the module
+you imported is the first place anyone looks for them. Someone who
+has written `j["get_in"]` and `j["merge_in"]` should find `j["parse"]`
+and `j["str"]` beside them rather than having to know that those two
+never needed a module.
+
+`str` is the interesting half, because the module used the builtin of
+that name itself. Probed first: a top-level `let str = json_str;`
+shadows the builtin for the WHOLE file in both engines, whatever the
+order — a function defined ABOVE the `let` still sees the new binding,
+because the lookup is dynamic. So the two places lib/json.ting spelled
+a path step with str now use `format("{}", step)`: no extra exported
+name, and the shadow is stated in the comment above the `let`.
+
+That shadow is a real warning, and now a deliberate one: the corpus
+expectation goes FOURTEEN to FIFTEEN, enumerated in tests/selftest.rs
+with the rest.
+
+The stdlib page's guard had a hole this walked into. It recognised a
+re-export only as `let f = f;`, so `let parse = json_parse;` was
+neither counted nor required to have a row — a module member the page
+guard could not see. It now takes any `let NAME = IDENT;`, a top-level
+`let` bound to anything else still being data rather than a function
+(lib/test.ting's state map). Mutation-tested both ways: with the row
+for `str` deleted, and with the guard back to its old shape, each
+fails.
+
+Counts: 213 module functions (was 211), 2955 selftest checks (was
+2950) for five new ones — the two re-exports, the round trip, a
+flatten key that proves the module's own str is still plain text, and
+the set_in message that proves the same.

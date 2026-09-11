@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 213
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2950 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2955 selftest checks on all four
   CI platforms, Windows included); 480 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4134,11 +4134,17 @@ holds only the current milestone and the standing rules.
   2950 checks` — the `(1 file checked nothing)` aside is gone. TAP
   keeps its `ok` and gains `# SKIP no checks`. One stroke banked
   toward v2.151.0.
+- 981: lib/json.ting offers json_parse as `parse` and json_str as
+  `str`. A module-level `let` shadows a builtin for the WHOLE file in
+  both engines, whatever the order, so the module's own two uses of
+  str became format("{}", step). CORPUS WARNINGS ARE FIFTEEN: the
+  shadow is deliberate and enumerated in tests/selftest.rs. The
+  stdlib page's guard counted a re-export only as `let f = f;` and
+  now counts any `let NAME = IDENT;`. 213 module functions, 2955
+  selftest checks. One stroke banked toward v2.151.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/json.ting re-exports parse and str, the way lib/map.ting
-    re-exports items and values.
   - release v2.151.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
@@ -4292,8 +4298,10 @@ Standing rules (each from a slip; the LOG entry named has the story):
   engines run at the same nice level in one bench invocation, so the
   eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  FOURTEEN warnings since 830 (was thirteen since 818, seven before
-  817), guarded by a test since 499, all on purpose:
+  FIFTEEN warnings since 981 (was fourteen since 830, thirteen since
+  818, seven before 817), guarded by a test since 499, all on
+  purpose: lib/json.ting shadows `str` (981), because that is the
+  name the module offers json_str under;
   collections.ting shadows `range` (830), because the selftest proving
   a shadowed `range` beats the fused loop has to shadow one, and
   edge.ting shadows `len` (451), repeats a map key and writes a
