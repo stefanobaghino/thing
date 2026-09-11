@@ -25269,3 +25269,13 @@ each reversion failed its guard; restored, all seven pass.
 
 The gate's suite count goes 17 to 18 for the new file, and the gate
 was mutation-tested after the edit.
+
+The Windows runner failed on the guards themselves, not on the code
+they guard: `shorten` hands back what `Path::display` prints, so the
+module is `sub/m.ting` on Unix and `sub\m.ting` there, and the LSP
+one arrives inside JSON with the separator escaped. The rule is that
+the surfaces agree with each other, not that they pick a separator,
+so the assertions now spell the expected name with
+`MAIN_SEPARATOR_STR` and the fixture builds its absolute paths a
+component at a time. Iteration 979's own gate cannot see this: the
+Windows target is type-checked here, never run.

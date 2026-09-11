@@ -1398,8 +1398,11 @@ fn a_broken_import_is_named_the_way_check_would_name_it() {
     );
     send(&mut stdin, &open);
     let diag = recv(&mut reader);
-    assert!(diag.contains("sub/m.ting:1:12:"), "{diag}");
-    assert!(diag.contains("other/m.ting:1:10:"), "{diag}");
+    // `shorten` writes a path the way the platform does, and the JSON
+    // the server sends escapes a Windows separator.
+    let sep = std::path::MAIN_SEPARATOR_STR.replace('\\', "\\\\");
+    assert!(diag.contains(&format!("sub{sep}m.ting:1:12:")), "{diag}");
+    assert!(diag.contains(&format!("other{sep}m.ting:1:10:")), "{diag}");
     assert_eq!(diag.matches("\"severity\":1").count(), 2, "{diag}");
     send(
         &mut stdin,

@@ -55,7 +55,20 @@ fn ting(dir: &Path, args: &[&str]) -> String {
 /// The absolute form of a name inside the fixture, as a reader would
 /// type it on the command line.
 fn abs(dir: &Path, name: &str) -> String {
-    dir.join(name).display().to_string()
+    let mut p = dir.to_path_buf();
+    for part in name.split('/') {
+        p.push(part);
+    }
+    p.display().to_string()
+}
+
+/// A path written the way this platform writes one. `shorten` hands
+/// back what `Path::display` prints, so the module below is
+/// `sub/m.ting` on Unix and `sub\m.ting` on Windows — and the rule is
+/// that the tools agree with each other, not that they pick a
+/// separator.
+fn native(path: &str) -> String {
+    path.replace('/', std::path::MAIN_SEPARATOR_STR)
 }
 
 /// The rule itself, at the surface every other one is held to.
@@ -84,8 +97,9 @@ fn fmt_prints_back_the_path_it_was_given() {
 #[test]
 fn doc_prints_back_the_path_it_was_given() {
     let dir = fixture("doc");
-    let out = ting(&dir, &["--doc", "sub/m.ting"]);
-    assert!(out.starts_with("sub/m.ting:\n"), "{out}");
+    let typed = native("sub/m.ting");
+    let out = ting(&dir, &["--doc", &typed]);
+    assert!(out.starts_with(&format!("{typed}:\n")), "{out}");
     let long = abs(&dir, "sub/m.ting");
     let out = ting(&dir, &["--doc", &long]);
     assert!(out.starts_with(&format!("{long}:\n")), "{out}");
@@ -99,11 +113,17 @@ fn test_names_the_file_it_was_given_and_shortens_the_module() {
     let dir = fixture("test");
     let out = ting(&dir, &["--test", "failing.ting"]);
     assert!(out.contains("FAIL failing.ting\n"), "{out}");
-    assert!(out.contains("sub/m.ting:7:13: error: boom"), "{out}");
+    assert!(
+        out.contains(&format!("{}:7:13: error: boom", native("sub/m.ting"))),
+        "{out}"
+    );
     let long = abs(&dir, "failing.ting");
     let out = ting(&dir, &["--test", &long]);
     assert!(out.contains(&format!("FAIL {long}\n")), "{out}");
-    assert!(out.contains("sub/m.ting:7:13: error: boom"), "{out}");
+    assert!(
+        out.contains(&format!("{}:7:13: error: boom", native("sub/m.ting"))),
+        "{out}"
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }
 
@@ -115,9 +135,12 @@ fn profile_keeps_the_typed_name_and_shortens_the_module() {
     let dir = fixture("profile");
     for arg in ["main.ting".to_string(), abs(&dir, "main.ting")] {
         let out = ting(&dir, &["--profile", &arg]);
-        assert!(out.contains("sub/m.ting:2:1"), "{out}");
+        assert!(
+            out.contains(&format!("{}:2:1", native("sub/m.ting"))),
+            "{out}"
+        );
         assert!(out.contains(&format!("{arg}:3:1")), "{out}");
-        assert!(!out.contains(&format!("{}/sub", dir.display())), "{out}");
+        assert!(!out.contains(&abs(&dir, "sub/m.ting")), "{out}");
     }
     let _ = std::fs::remove_dir_all(&dir);
 }
@@ -129,10 +152,16 @@ fn coverage_keeps_the_typed_name_and_shortens_the_module() {
     let dir = fixture("coverage");
     let out = ting(&dir, &["--coverage", "main.ting"]);
     assert!(out.contains(" main.ting\n"), "{out}");
-    assert!(out.contains(" sub/m.ting\n"), "{out}");
+    assert!(
+        out.contains(&format!(" {}\n", native("sub/m.ting"))),
+        "{out}"
+    );
     let long = abs(&dir, "main.ting");
     let out = ting(&dir, &["--coverage", &long]);
     assert!(out.contains(&format!(" {long}\n")), "{out}");
-    assert!(out.contains(" sub/m.ting\n"), "{out}");
+    assert!(
+        out.contains(&format!(" {}\n", native("sub/m.ting"))),
+        "{out}"
+    );
     let _ = std::fs::remove_dir_all(&dir);
 }
