@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2968 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2973 selftest checks on all four
   CI platforms, Windows included); 483 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4212,14 +4212,16 @@ holds only the current milestone and the standing rules.
   Milestone "the command line your program shows its user" COMPLETE.
 - 993: replenishment — milestone "a path that isn't there" (v2.153),
   reasoning in LOG.md.
+- 994: walk refuses a path that is not there — it asks exists and
+  lets list_dir say why, so walk_ext, facts and total_size stop
+  answering [], [] and 0 for a mistyped directory. 2973 checks.
+  A FAILED selftest/fs.ting LEAVES ITS TREE (selftest-fs-tree-*,
+  three .ting files) IN THE REPO ROOT, ignored by git, and the next
+  `ting --fmt .` counts 84 instead of 81. Remove it before believing
+  any count.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `walk` tells a file from nothing: a path that is not there is an
-    error in the words its own builtins use, where today it answers
-    [that path] and walk_ext, facts and total_size turn that into an
-    empty tree and a zero. selftest/fs.ting covers the missing
-    column.
   - the stdlib page and `--doc` say what each tree function answers
     for a path that is missing, one that is a file and one that is a
     directory — three answers per function, none of them inferred by

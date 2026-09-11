@@ -25829,3 +25829,45 @@ delete that has nothing to delete has done its job. `from_iso` and
 `which` answering nil are questions and stay questions.
 
 Milestone "a path that isn't there" (v2.153), backlog in STATE.md.
+
+## 994 — an absent tree is not an empty one
+
+Milestone "a path that isn't there", first stroke. `walk(d)` opened
+with `if !is_dir(d) { return [d]; }`, which is right for a file and
+wrong for a path with nothing behind it: the walk handed back a
+one-element list naming a file that does not exist, `walk_ext`
+filtered it away to `[]`, `facts` answered `[]` and `total_size`
+answered `0`. A script given the wrong directory found nothing and
+said so cheerfully.
+
+`walk` now asks `exists` first and, when the answer is no, calls
+`list_dir(d)` for its error. That is the builtin that would have had
+to look, so the message names the path and gives the platform's own
+reason — no sentence about missing files is written here, and none
+can drift from what the filesystem said. The whole missing column
+moves at once, since walk_ext, facts and total_size are built on
+walk:
+
+    walk            error   (was ["nosuch"])
+    walk_ext        error   (was [])
+    facts           error   (was [])
+    total_size      error   (was 0)
+
+A file still walks to itself, and `size`, `stat` and `exists` still
+answer nil, nil and false — they are questions, and the rule the
+corpus already states in `from_iso`'s doc is that a question answers
+and a demand raises.
+
+Six checks in selftest/fs.ting, one per function plus the two ends of
+the rule, asserting that the three built on `walk` say exactly what
+`walk` says. Mutation-tested: with the old `walk` back, the first of
+them fails.
+
+FOUND, THE HARD WAY: that mutation run failed partway through
+selftest/fs.ting, which meant the file never reached its own cleanup,
+and its tree — `selftest-fs-tree-<random>`, holding three `.ting`
+files — sat in the repository root. The next `ting --fmt .` counted
+84 unchanged instead of 81. `git status` and `git clean -nd` both
+showed nothing, because the tree is ignored. A count read while a
+failed fs run's tree is still on disk is not the count. Removed, and
+the gate re-run clean: 81 unchanged, 2973 checks, fifteen warnings.
