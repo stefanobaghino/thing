@@ -26084,3 +26084,34 @@ the probe without a scratch.
 
 Milestone "the REPL as a place to look around" (v2.154), backlog in
 STATE.md.
+
+## 1001 — an expression is echoed to be read
+
+Milestone "the REPL as a place to look around", first stroke. The
+prompt echoed whatever a value printed as, with no ceiling:
+`range(100000)` is 688890 characters, a three-thousand-entry map
+39780, and either takes the session's scrollback with it — including
+whatever the reader was looking at.
+
+`render` in src/repl.rs now stops at 2000 characters and says what it
+did: `(2000 of 688890 characters; print() writes all of it)`. That
+number is the whole of the design. The cut belongs to the prompt,
+which is showing a value to be read; `print(x)` writes every
+character, in the REPL exactly as in a script, and nothing a program
+prints passes through `render` at all. `:time` and `:load` echo
+through the same function, so all three agree.
+
+A value that fits is untouched, byte for byte: `[1, 2, 3]` echoes as
+`[1, 2, 3]`.
+
+The guard pipes three chunks into a real session: a small list, which
+must come back exactly; `range(100000)`, which must come back under
+2200 characters and carry the note; and `print(range(100000))`, which
+must be over 600000 characters and carry no note. Mutation-tested
+both ways — with the ceiling lifted the second fails, and with the
+ceiling at 20 characters the third does, because `print` would have
+been cut with everything else.
+
+The reference's REPL paragraph states the rule and the number.
+
+485 Rust tests in 18 suites.

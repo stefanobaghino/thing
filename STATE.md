@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 2984 selftest checks on all four
-  CI platforms, Windows included); 484 Rust tests
+  CI platforms, Windows included); 485 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4242,14 +4242,12 @@ holds only the current milestone and the standing rules.
   Milestone "a path that isn't there" COMPLETE.
 - 1000: replenishment — milestone "the REPL as a place to look
   around" (v2.154), reasoning in LOG.md.
+- 1001: the prompt's echo stops at 2000 characters and says how many
+  there were; print() is untouched, in the REPL as in a script.
+  repl::render is the one place, so :time and :load agree. 485 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the REPL's echo is bounded: `range(100000)` at the prompt prints
-    688891 characters and a 3000-entry map 39781, so one expression
-    takes the scrollback with it. The first part, then what was left
-    out; `print(x)` still prints everything, and a script's output is
-    untouched.
   - `:vars` says what a binding is, not just that it is a list: the
     same bounded rendering, one line each.
   - `--doc <word>` that names something exactly answers with that and
