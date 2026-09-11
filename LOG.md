@@ -25715,3 +25715,32 @@ both engines, Windows check and clippy, wasm release build.
 Tagged v2.152.0 — the 173rd tag — and pushed. Verification is the
 next tick: assets, checksums, both aarch64 archives executed here,
 the site audit.
+
+## 991 — v2.152.0 verified
+
+Release workflow green for the tag; CI green for 897c4b5 on all five
+test jobs (the Pages deploy does not run for a LOG/STATE-only push,
+which is its path filter, not a failure — the release commit's own
+deploy is what put v2.152.0 on the site, and the audit below reads
+it).
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.152.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 2968
+checks, 24 examples clean, 0 differing, both.
+
+The shipped binary answers the shipped example's command line, which
+is this milestone's point: `ting examples/report.ting --help` prints
+the usage and leaves with 0, and `--nope` prints `report: unknown
+option --nope` and leaves with 2 — from the release archive, not from
+this tree.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.152.0; stdlib.html says 214 functions between them and leads the
+args table with `main(spec, argv)`; cookbook.html carries the
+rewritten report example, command lines and all. The deployed
+ting.wasm holds `spec_trouble` six times over, so it is this
+milestone's build rather than a stale one — there being no version
+string in the library to ask instead.

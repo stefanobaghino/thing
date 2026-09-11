@@ -4199,9 +4199,12 @@ holds only the current milestone and the standing rules.
   every-map-is-a-module mutation passed until the fixture imported
   anything.
 - 990: v2.152.0 tagged (173rd tag; strokes 986, 987, 988, 989).
-  Verification next: seven assets, `sha256sum -c SHA256SUMS` on a
-  cold download, both aarch64 Linux archives executed here with
-  tools/smoke.sh, and the ten published paths.
+- 991: v2.152.0 VERIFIED — seven assets, six checksums OK on a cold
+  download, both aarch64 archives executed here (2968 checks, 24
+  examples clean, each), the shipped report example answering
+  --help with 0 and --nope with 2 from the archive itself, and the
+  ten published paths 200 with the wasm carrying spec_trouble.
+  Next: health tick + audit closes the milestone.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4289,7 +4292,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 148 (v2.127.0), 148 verified; v2.29.0 is publicly marked broken
+- Tags: 173 (v2.152.0), 173 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
