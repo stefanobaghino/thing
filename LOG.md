@@ -26457,3 +26457,33 @@ leaves out.
 
 A correction to 1010: selftest/time.ting keeps 78 checks after losing
 the helper's, not 77.
+
+## 1013 — health tick, milestone "the number you meant" complete
+
+Maintenance: tree clean, no open PRs, CI green for 6a6856e from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE — stdlib.ting's included, which is the row the time
+module's rewrite could have moved — and at load 0.3 every row is
+within a few per cent of what was recorded.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 213 module functions, 24
+selftest files, 24 examples each with a .out, 2994 selftest checks on
+both engines, 486 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at fifteen warnings, 176 tags all verified.
+
+The milestone is complete. A cold probe — a money-in-cents module
+and its tests, written the way a small project starts — found that
+every number the tools put on screen was wrong in its own way: a zero
+in front of a width was silently not a fill (1008), a coverage report
+counted the stdlib that came with the binary against a project of 29
+lines (1009), and lib/time.ting's private zero-padding helper made
+`--doc pad` answer twice (1010). v2.155.0 tagged and verified (1011,
+1012).
+
+Replenishment next.

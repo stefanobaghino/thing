@@ -4281,10 +4281,15 @@ holds only the current milestone and the standing rules.
   aarch64 archives executed here (2994 checks, 24 examples clean),
   the zero fill, the coverage report and a single `--doc pad` all
   seen from the archive, ten published paths 200.
+- 1013: health tick + audit green — eleven bench checksums identical
+  to BASELINE and every row within a few per cent at load 0.3, four
+  sweeps ok, counts all standing (79 builtins, 13 modules, 213
+  functions, 48 programs, 2994 checks, 486 tests in 18 suites, 81
+  unchanged, fifteen warnings, 176 tags). Milestone "the number you
+  meant" COMPLETE. Replenishment next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
