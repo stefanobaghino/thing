@@ -4010,12 +4010,15 @@ holds only the current milestone and the standing rules.
   alone; serialize them if it repeats.
 - v2.147.0 VERIFIED (168th tag; strokes 946, 947, 948, 949; seven
   assets, sums OK, both aarch64 archives smoke-tested here, site
-  audit clean) — milestone "taking a value apart".
+  audit clean) — milestone "taking a value apart". 952: health tick — checksums
+  identical, coverage 3432/3449 (99%), sweeps and strong-form site
+  audit green; milestone complete. TIMINGS THIS TICK MEAN NOTHING:
+  another user's chessbot-engine and two stockfish processes held
+  ~3 of 4 cores, which also explains the timing-guard flakes in 948
+  and 949.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone (bench vs BASELINE, fuzz
-  sweeps in release).
   - replenishment: the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

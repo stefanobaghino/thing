@@ -24278,3 +24278,47 @@ has 3` and `this pattern takes a list apart, and the value is int`.
 Site audit: all ten published paths answer 200 on
 www.baghino.me/thing/, the changelog page carries v2.147.0 and the
 reference page carries "Taking a value apart".
+
+## 952 — health tick, milestone "taking a value apart" complete
+
+Maintenance: tree clean, no PRs, CI green for 494b5ad from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE. THE TIMINGS ARE
+UNUSABLE TODAY and the reason is nameable: `ps` shows another user's
+`chessbot-engine` at 171% of CPU and two `stockfish` processes at 66%
+each on a four-core host, load average near 7 for the whole tick.
+Every row ran two to three times BASELINE, and a head-to-head against
+a v2.146.0 binary BUILT HERE swung from -59% to +11% across eleven
+scripts — in both directions, which is what noise looks like and what
+a regression does not. The same contention explains the two timing
+guards that flaked in 948 and 949 and passed alone. A real timing
+comparison waits for a quiet host; the checksums are what this tick
+gets to stand on.
+
+That head-to-head also showed something worth keeping: v2.146.0
+cannot read HEAD's lib/list.ting at all — `expected parameter name,
+found '['` from `zip_with`. The stdlib on disk now needs a 2.147
+parser. Additive for anyone moving forward, and a reminder that an
+archive ships the lib/ that matches its binary, which is exactly what
+tools/smoke.sh exercises.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 952), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage: 3432 of 3449 lines (99%), each of the thirteen lib modules
+listed once. 54 lines more than 944 on both sides. The four gaps are
+the same old ones: args, fs, sh, test.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, and the live examples.js matches the repository's.
+Rendering them left the tree clean. The deployed ting.wasm carries
+`this pattern takes a list apart`, which dates the playground to this
+release.
+
+Milestone "taking a value apart" is complete.
+
+Next tick: replenishment.
