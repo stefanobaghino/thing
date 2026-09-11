@@ -26042,3 +26042,45 @@ closed it — the walkers refuse what is not there (994), the module
 and the page state all three answers instead of one (995), and every
 message that holds a path quotes it (996) — and v2.153.0 is tagged
 and verified (997, 998).
+
+## 1000 — replenishment: milestone "the REPL as a place to look around"
+
+The thousandth iteration, and the probe went where nothing has gone
+in a long while: the REPL, driven the way a newcomer would drive it —
+define a list and a function, call them, misspell a name, call with
+the wrong arity, ask `:doc` about something, time an expression, run
+a loop, ask `:history`.
+
+Three things came back, all of them about how much the session says.
+
+**An echoed value has no ceiling.** `range(100000)` at the prompt
+prints 688891 characters. `:time map(range(100000), fn(x) { return
+x * 2; })` printed 727 kilobytes over the timing it was asked for. A
+map of three thousand entries is 39781. One careless expression takes
+the session's scrollback with it, and there is nothing to say what
+the value was any more. A script's `print` must stay complete —
+pipelines depend on it — but the REPL's echo is a convenience and
+should behave like one.
+
+**`:vars` says the type and stops.** After the session above it
+answers `greet: function` and `names: list`, which is the one thing a
+reader can already guess from the name they typed. What they cannot
+remember is what is in it.
+
+**`--doc <word>` searches even when the word names something.**
+`--doc map` prints the builtin's two lines, then a note that
+lib/map.ting exists, then forty-four other entries whose text
+contains the word "map" — fingerprint, has, import, items, json_str,
+keys, len, local_zone, pop, re_find, run, stat, try, values, and on
+into four modules — 142 lines in total. `--doc len` is 35 lines and
+`--doc sort` 53 for the same reason. `--help` already states the rule
+the code does not follow: "a word naming none of them is searched
+for". The discovery is worth keeping in some form; forty-four full
+entries after an exact hit is not that form.
+
+Not chosen: the REPL's other seven meta-commands all did what they
+say. `:load`, `:time`, `:history` and multi-line chunks came through
+the probe without a scratch.
+
+Milestone "the REPL as a place to look around" (v2.154), backlog in
+STATE.md.

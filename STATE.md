@@ -4239,7 +4239,24 @@ holds only the current milestone and the standing rules.
   timed alone is at baseline), four sweeps ok, counts all standing
   (79 builtins, 13 modules, 214 functions, 48 programs, 2984 checks,
   484 tests in 18 suites, 81 unchanged, fifteen warnings, 174 tags).
-  Milestone "a path that isn't there" COMPLETE. Replenishment next.
+  Milestone "a path that isn't there" COMPLETE.
+- 1000: replenishment — milestone "the REPL as a place to look
+  around" (v2.154), reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - the REPL's echo is bounded: `range(100000)` at the prompt prints
+    688891 characters and a 3000-entry map 39781, so one expression
+    takes the scrollback with it. The first part, then what was left
+    out; `print(x)` still prints everything, and a script's output is
+    untouched.
+  - `:vars` says what a binding is, not just that it is a list: the
+    same bounded rendering, one line each.
+  - `--doc <word>` that names something exactly answers with that and
+    offers the rest as names, not as forty-four full entries (`--doc
+    map` is 142 lines). `--help` already says "a word naming none of
+    them is searched for".
+  - release v2.154.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
