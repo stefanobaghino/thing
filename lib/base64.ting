@@ -12,7 +12,79 @@
 # base64 or does not spell text.
 
 let STANDARD = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+
 let URL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+
+# The text as standard base64, padded.
+fn encode(s) { return encode_with(STANDARD, true, bytes(s)); }
+
+# The text as URL-safe base64, unpadded: `-` and `_` for `+` and `/`,
+# so it survives a URL without escaping.
+fn encode_url(s) { return encode_with(URL, false, bytes(s)); }
+
+# The text that base64 stands for. Either alphabet, padded or not;
+# input that is not base64, or does not spell UTF-8 text, errors.
+fn decode(s) { return from_bytes(decode_bytes(s)); }
+
+# Shared by both alphabets: three bytes make four characters, and a
+# short last group makes two or three of them.
+fn encode_with(alphabet, pad, bs) {
+  let out = "";
+  let i = 0;
+  while i < len(bs) {
+    let left = len(bs) - i;
+    let b1 = 0;
+    let b2 = 0;
+    if left > 1 { b1 = bs[i + 1]; }
+    if left > 2 { b2 = bs[i + 2]; }
+    let n = (bs[i] << 16) | (b1 << 8) | b2;
+    out += slice(alphabet, (n >> 18) & 63, ((n >> 18) & 63) + 1);
+    out += slice(alphabet, (n >> 12) & 63, ((n >> 12) & 63) + 1);
+    if left > 1 {
+      out += slice(alphabet, (n >> 6) & 63, ((n >> 6) & 63) + 1);
+    } else if pad {
+      out += "=";
+    }
+    if left > 2 {
+      out += slice(alphabet, n & 63, (n & 63) + 1);
+    } else if pad {
+      out += "=";
+    }
+    i += 3;
+  }
+  return out;
+}
+
+# The bytes that base64 text stands for, taking either alphabet, with
+# padding or without.
+fn decode_bytes(s) {
+  let out = [];
+  let group = [];
+  for ch in s {
+    if ch == "=" || ch == "\n" || ch == "\r" { continue; }
+    let v = value_of(ch);
+    if v == nil { fail("not base64: `" + ch + "`"); }
+    push(group, v);
+    if len(group) == 4 {
+      let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6) | group[3];
+      push(out, (n >> 16) & 255);
+      push(out, (n >> 8) & 255);
+      push(out, n & 255);
+      group = [];
+    }
+  }
+  if len(group) == 1 { fail("not base64: a group of one character"); }
+  if len(group) == 2 {
+    let n = (group[0] << 18) | (group[1] << 12);
+    push(out, (n >> 16) & 255);
+  }
+  if len(group) == 3 {
+    let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6);
+    push(out, (n >> 16) & 255);
+    push(out, (n >> 8) & 255);
+  }
+  return out;
+}
 
 # The UTF-8 bytes of a string, as ints. This is the encoding every
 # byte-oriented format means when it says "the bytes of the text".
@@ -80,42 +152,6 @@ fn from_bytes(bs) {
   return out;
 }
 
-# Shared by both alphabets: three bytes make four characters, and a
-# short last group makes two or three of them.
-fn encode_with(alphabet, pad, bs) {
-  let out = "";
-  let i = 0;
-  while i < len(bs) {
-    let left = len(bs) - i;
-    let b1 = 0;
-    let b2 = 0;
-    if left > 1 { b1 = bs[i + 1]; }
-    if left > 2 { b2 = bs[i + 2]; }
-    let n = (bs[i] << 16) | (b1 << 8) | b2;
-    out += slice(alphabet, (n >> 18) & 63, ((n >> 18) & 63) + 1);
-    out += slice(alphabet, (n >> 12) & 63, ((n >> 12) & 63) + 1);
-    if left > 1 {
-      out += slice(alphabet, (n >> 6) & 63, ((n >> 6) & 63) + 1);
-    } else if pad {
-      out += "=";
-    }
-    if left > 2 {
-      out += slice(alphabet, n & 63, (n & 63) + 1);
-    } else if pad {
-      out += "=";
-    }
-    i += 3;
-  }
-  return out;
-}
-
-# The text as standard base64, padded.
-fn encode(s) { return encode_with(STANDARD, true, bytes(s)); }
-
-# The text as URL-safe base64, unpadded: `-` and `_` for `+` and `/`,
-# so it survives a URL without escaping.
-fn encode_url(s) { return encode_with(URL, false, bytes(s)); }
-
 # Where a character sits in either alphabet, or nil.
 fn value_of(ch) {
   let i = find(STANDARD, ch);
@@ -124,38 +160,3 @@ fn value_of(ch) {
   if ch == "_" { return 63; }
   return nil;
 }
-
-# The bytes that base64 text stands for, taking either alphabet, with
-# padding or without.
-fn decode_bytes(s) {
-  let out = [];
-  let group = [];
-  for ch in s {
-    if ch == "=" || ch == "\n" || ch == "\r" { continue; }
-    let v = value_of(ch);
-    if v == nil { fail("not base64: `" + ch + "`"); }
-    push(group, v);
-    if len(group) == 4 {
-      let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6) | group[3];
-      push(out, (n >> 16) & 255);
-      push(out, (n >> 8) & 255);
-      push(out, n & 255);
-      group = [];
-    }
-  }
-  if len(group) == 1 { fail("not base64: a group of one character"); }
-  if len(group) == 2 {
-    let n = (group[0] << 18) | (group[1] << 12);
-    push(out, (n >> 16) & 255);
-  }
-  if len(group) == 3 {
-    let n = (group[0] << 18) | (group[1] << 12) | (group[2] << 6);
-    push(out, (n >> 16) & 255);
-    push(out, (n >> 8) & 255);
-  }
-  return out;
-}
-
-# The text that base64 stands for. Either alphabet, padded or not;
-# input that is not base64, or does not spell UTF-8 text, errors.
-fn decode(s) { return from_bytes(decode_bytes(s)); }

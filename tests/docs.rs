@@ -666,3 +666,59 @@ fn what_says_time_has_no_zone_says_where_the_local_answers_come_from() {
         "the page's lib/time.ting section does not either:\n{section}"
     );
 }
+
+/// A module's front door comes first. `--doc lib/args.ting` lists the
+/// module's members in the order the file defines them, so whatever a
+/// module opens with is what a reader scanning that list meets first
+/// — and for a while that was `flag_of`, a helper the page puts last.
+/// The page's table is the curated order, so the two agree on the one
+/// thing that matters most: the first row and the first definition
+/// name the same function.
+#[test]
+fn every_module_opens_with_the_function_its_page_leads_with() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page =
+        std::fs::read_to_string(root.join("docs/stdlib.md")).expect("docs/stdlib.md missing");
+    let mut checked = 0;
+    for section in page.split("\n## ").skip(1) {
+        let (title, body) = section.split_once('\n').expect("a section has a body");
+        let module = title.trim();
+        if !module.starts_with("lib/") {
+            continue;
+        }
+        let first_row = body
+            .lines()
+            .find(|l| l.starts_with("| `"))
+            .and_then(|l| l.split('`').nth(1))
+            .map(|cell| cell.split('(').next().unwrap_or(cell).to_string())
+            .unwrap_or_else(|| panic!("{module} has no table row"));
+        let src = std::fs::read_to_string(root.join(module))
+            .unwrap_or_else(|_| panic!("{module} missing"));
+        // The same two spellings the row count above accepts: a
+        // definition, or a builtin re-exported under a name.
+        let first_def = src
+            .lines()
+            .find_map(|line| match line.strip_prefix("fn ") {
+                Some(rest) => Some(rest[..rest.find('(')?].to_string()),
+                None => {
+                    let (name, init) = line.strip_prefix("let ")?.split_once(" = ")?;
+                    let init = init.strip_suffix(';')?;
+                    let named = !init.is_empty()
+                        && init.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+                        && !init.starts_with(|c: char| c.is_ascii_digit());
+                    named.then(|| name.to_string())
+                }
+            })
+            .unwrap_or_else(|| panic!("{module} defines nothing"));
+        assert_eq!(
+            first_def, first_row,
+            "{module} opens with {first_def}, but docs/stdlib.md leads with {first_row}"
+        );
+        checked += 1;
+    }
+    assert_eq!(
+        checked,
+        ting::eval::embedded_stdlib().len(),
+        "modules checked"
+    );
+}

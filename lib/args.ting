@@ -30,136 +30,28 @@
 # how a program answers --help by running anyway. parse() is there for
 # a program that wants to do both itself.
 
-# The flag with that long or short name, or nil.
-fn flag_of(spec, name) {
-  if !has(spec, "flags") { return nil; }
-  for flag in spec["flags"] {
-    if flag["long"] == name { return flag; }
-    if get(flag, "short", nil) == name { return flag; }
+# parse(), with the two things a command-line program does around it:
+# --help prints the help and leaves happy, a bad command line prints
+# the trouble and the help to stderr and leaves with status 2.
+fn main(spec, argv) {
+  # Asked here as well as in parse, and asked FIRST, because what
+  # follows turns a failure into a usage message: a spec its author
+  # got wrong has to stay the author's error, with a trace, rather
+  # than being read out to whoever typed the command.
+  let trouble = spec_trouble(spec);
+  if trouble != nil { fail(trouble); }
+  let done = try(parse, spec, argv);
+  if has(done, "err") {
+    eprint(spec["name"] + ": " + done["err"]);
+    eprint("");
+    eprint(help(spec));
+    exit(2);
   }
-  return nil;
-}
-
-# The option with that long or short name, or nil.
-fn option_of(spec, name) {
-  if !has(spec, "options") { return nil; }
-  for opt in spec["options"] {
-    if opt["long"] == name { return opt; }
-    if get(opt, "short", nil) == name { return opt; }
+  if done["ok"]["help"] {
+    print(help(spec));
+    exit(0);
   }
-  return nil;
-}
-
-# A string padded with spaces to that width in COLUMNS, for the help
-# columns: a terminal lays them out in columns, and neither an option
-# name nor a value placeholder has to be ASCII.
-fn pad(text, width) {
-  let out = text;
-  while display_width(out) < width { out = out + " "; }
-  return out;
-}
-
-# What is wrong with the spec, as a sentence, or nil when nothing is.
-# A spec its author got wrong is not something the person at the
-# terminal can do anything about, so the two kinds of trouble are kept
-# apart here: this one is asked before a single argument is read.
-fn spec_trouble(spec) {
-  if type(spec) != "map" { return "spec must be a map, got " + type(spec); }
-  if !has(spec, "name") { return "spec needs a \"name\""; }
-  if type(spec["name"]) != "string" {
-    return "spec: \"name\" must be a string, got " + type(spec["name"]);
-  }
-  if has(spec, "summary") && type(spec["summary"]) != "string" {
-    return "spec: \"summary\" must be a string, got " + type(spec["summary"]);
-  }
-  for key in ["flags", "options"] {
-    if !has(spec, key) { continue; }
-    if type(spec[key]) != "list" {
-      return "spec: \"" + key + "\" must be a list of maps, got " + type(spec[key]);
-    }
-    for entry in spec[key] {
-      if type(entry) != "map" {
-        return "spec: every entry of \"" + key + "\" must be a map, got " + type(entry);
-      }
-      if !has(entry, "long") {
-        return "spec: every entry of \"" + key + "\" needs a \"long\"";
-      }
-    }
-  }
-  if !has(spec, "positionals") { return nil; }
-  if type(spec["positionals"]) != "list" {
-    return "spec: \"positionals\" must be a list of maps, got "
-    + type(spec["positionals"]);
-  }
-  let i = 0;
-  for p in spec["positionals"] {
-    i += 1;
-    if type(p) != "map" {
-      return "spec: every entry of \"positionals\" must be a map, got " + type(p);
-    }
-    if !has(p, "name") { return "spec: every entry of \"positionals\" needs a \"name\""; }
-    # A "many" swallows everything left, so anything after it is a
-    # positional the command line can never reach.
-    if get(p, "many", false) && i < len(spec["positionals"]) {
-      return "spec: the \"many\" positional <" + p["name"] + "> must be the last one";
-    }
-  }
-  return nil;
-}
-
-# The --help text, built from the same spec the parser reads.
-fn help(spec) {
-  let lines = [];
-  if has(spec, "summary") {
-    push(lines, spec["name"] + " — " + spec["summary"]);
-    push(lines, "");
-  }
-  let usage = "usage: " + spec["name"];
-  if has(spec, "flags") || has(spec, "options") { usage = usage + " [options]"; }
-  if has(spec, "positionals") {
-    for p in spec["positionals"] {
-      if get(p, "many", false) { usage = usage + " [" + p["name"] + "...]"; }
-      else { usage = usage + " <" + p["name"] + ">"; }
-    }
-  }
-  push(lines, usage);
-  # Every option and flag on one line each, names in one column.
-  let names = [];
-  let helps = [];
-  if has(spec, "options") {
-    for opt in spec["options"] {
-      let name = "";
-      if has(opt, "short") { name = "-" + opt["short"] + ", "; }
-      name += "--" + opt["long"];
-      let value = get(opt, "value", "VALUE");
-      push(names, name + " " + value);
-      let text = get(opt, "help", "");
-      let fallback = get(opt, "default", nil);
-      if fallback != nil { text += " (default " + str(fallback) + ")"; }
-      push(helps, text);
-    }
-  }
-  if has(spec, "flags") {
-    for flag in spec["flags"] {
-      let name = "";
-      if has(flag, "short") { name = "-" + flag["short"] + ", "; }
-      push(names, name + "--" + flag["long"]);
-      let text = get(flag, "help", "");
-      push(helps, text);
-    }
-  }
-  push(names, "-h, --help");
-  push(helps, "show this and leave");
-  let width = 0;
-  for name in names {
-    if display_width(name) > width { width = display_width(name); }
-  }
-  push(lines, "");
-  push(lines, "options:");
-  for i in range(0, len(names)) {
-    push(lines, "  " + pad(names[i], width) + "  " + helps[i]);
-  }
-  return join(lines, "\n");
+  return done["ok"];
 }
 
 # The command line, taken apart according to the spec: a map of
@@ -241,26 +133,134 @@ fn parse(spec, argv) {
   return {"flags": flags, "options": options, "positionals": positionals, "help": wants_help};
 }
 
-# parse(), with the two things a command-line program does around it:
-# --help prints the help and leaves happy, a bad command line prints
-# the trouble and the help to stderr and leaves with status 2.
-fn main(spec, argv) {
-  # Asked here as well as in parse, and asked FIRST, because what
-  # follows turns a failure into a usage message: a spec its author
-  # got wrong has to stay the author's error, with a trace, rather
-  # than being read out to whoever typed the command.
-  let trouble = spec_trouble(spec);
-  if trouble != nil { fail(trouble); }
-  let done = try(parse, spec, argv);
-  if has(done, "err") {
-    eprint(spec["name"] + ": " + done["err"]);
-    eprint("");
-    eprint(help(spec));
-    exit(2);
+# The --help text, built from the same spec the parser reads.
+fn help(spec) {
+  let lines = [];
+  if has(spec, "summary") {
+    push(lines, spec["name"] + " — " + spec["summary"]);
+    push(lines, "");
   }
-  if done["ok"]["help"] {
-    print(help(spec));
-    exit(0);
+  let usage = "usage: " + spec["name"];
+  if has(spec, "flags") || has(spec, "options") { usage = usage + " [options]"; }
+  if has(spec, "positionals") {
+    for p in spec["positionals"] {
+      if get(p, "many", false) { usage = usage + " [" + p["name"] + "...]"; }
+      else { usage = usage + " <" + p["name"] + ">"; }
+    }
   }
-  return done["ok"];
+  push(lines, usage);
+  # Every option and flag on one line each, names in one column.
+  let names = [];
+  let helps = [];
+  if has(spec, "options") {
+    for opt in spec["options"] {
+      let name = "";
+      if has(opt, "short") { name = "-" + opt["short"] + ", "; }
+      name += "--" + opt["long"];
+      let value = get(opt, "value", "VALUE");
+      push(names, name + " " + value);
+      let text = get(opt, "help", "");
+      let fallback = get(opt, "default", nil);
+      if fallback != nil { text += " (default " + str(fallback) + ")"; }
+      push(helps, text);
+    }
+  }
+  if has(spec, "flags") {
+    for flag in spec["flags"] {
+      let name = "";
+      if has(flag, "short") { name = "-" + flag["short"] + ", "; }
+      push(names, name + "--" + flag["long"]);
+      let text = get(flag, "help", "");
+      push(helps, text);
+    }
+  }
+  push(names, "-h, --help");
+  push(helps, "show this and leave");
+  let width = 0;
+  for name in names {
+    if display_width(name) > width { width = display_width(name); }
+  }
+  push(lines, "");
+  push(lines, "options:");
+  for i in range(0, len(names)) {
+    push(lines, "  " + pad(names[i], width) + "  " + helps[i]);
+  }
+  return join(lines, "\n");
+}
+
+# What is wrong with the spec, as a sentence, or nil when nothing is.
+# A spec its author got wrong is not something the person at the
+# terminal can do anything about, so the two kinds of trouble are kept
+# apart here: this one is asked before a single argument is read.
+fn spec_trouble(spec) {
+  if type(spec) != "map" { return "spec must be a map, got " + type(spec); }
+  if !has(spec, "name") { return "spec needs a \"name\""; }
+  if type(spec["name"]) != "string" {
+    return "spec: \"name\" must be a string, got " + type(spec["name"]);
+  }
+  if has(spec, "summary") && type(spec["summary"]) != "string" {
+    return "spec: \"summary\" must be a string, got " + type(spec["summary"]);
+  }
+  for key in ["flags", "options"] {
+    if !has(spec, key) { continue; }
+    if type(spec[key]) != "list" {
+      return "spec: \"" + key + "\" must be a list of maps, got " + type(spec[key]);
+    }
+    for entry in spec[key] {
+      if type(entry) != "map" {
+        return "spec: every entry of \"" + key + "\" must be a map, got " + type(entry);
+      }
+      if !has(entry, "long") {
+        return "spec: every entry of \"" + key + "\" needs a \"long\"";
+      }
+    }
+  }
+  if !has(spec, "positionals") { return nil; }
+  if type(spec["positionals"]) != "list" {
+    return "spec: \"positionals\" must be a list of maps, got "
+    + type(spec["positionals"]);
+  }
+  let i = 0;
+  for p in spec["positionals"] {
+    i += 1;
+    if type(p) != "map" {
+      return "spec: every entry of \"positionals\" must be a map, got " + type(p);
+    }
+    if !has(p, "name") { return "spec: every entry of \"positionals\" needs a \"name\""; }
+    # A "many" swallows everything left, so anything after it is a
+    # positional the command line can never reach.
+    if get(p, "many", false) && i < len(spec["positionals"]) {
+      return "spec: the \"many\" positional <" + p["name"] + "> must be the last one";
+    }
+  }
+  return nil;
+}
+
+# The flag with that long or short name, or nil.
+fn flag_of(spec, name) {
+  if !has(spec, "flags") { return nil; }
+  for flag in spec["flags"] {
+    if flag["long"] == name { return flag; }
+    if get(flag, "short", nil) == name { return flag; }
+  }
+  return nil;
+}
+
+# The option with that long or short name, or nil.
+fn option_of(spec, name) {
+  if !has(spec, "options") { return nil; }
+  for opt in spec["options"] {
+    if opt["long"] == name { return opt; }
+    if get(opt, "short", nil) == name { return opt; }
+  }
+  return nil;
+}
+
+# A string padded with spaces to that width in COLUMNS, for the help
+# columns: a terminal lays them out in columns, and neither an option
+# name nor a value placeholder has to be ASCII.
+fn pad(text, width) {
+  let out = text;
+  while display_width(out) < width { out = out + " "; }
+  return out;
 }

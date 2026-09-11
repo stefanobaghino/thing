@@ -116,8 +116,8 @@ Imports return a map, so functions are reached with `["name"]`.
 
 | Function | Does |
 |----------|------|
-| `key_of(m, v)` | the first key (in key order) whose value equals `v`; `nil` when none |
 | `merge(a, b)` | a fresh map with `a`'s entries then `b`'s (`b` wins ties) |
+| `key_of(m, v)` | the first key (in key order) whose value equals `v`; `nil` when none |
 | `merge_with(a, b, f)` | `merge`, but a key in both maps gets `f(a[k], b[k])` |
 | `items(m)` | list of `[key, value]` pairs in sorted key order |
 | `from_items(pairs)` | a fresh map built from `[key, value]` pairs |
@@ -257,8 +257,8 @@ is left:
 
 | Function | Does |
 |----------|------|
-| `parse(spec, argv)` | the command line as `{"flags", "options", "positionals", "help"}`; anything the spec does not describe is an error |
 | `main(spec, argv)` | `parse`, plus what a program does around it: `--help` prints the help and exits 0, a bad command line prints the trouble and the help to stderr and exits 2. Reach for this one first: it is the whole of what a command-line program does around its arguments |
+| `parse(spec, argv)` | the command line as `{"flags", "options", "positionals", "help"}`; anything the spec does not describe is an error |
 | `spec_trouble(spec)` | what is wrong with the spec, as a sentence, or `nil`. A spec its author got wrong is the author's error, so `parse` and `main` both ask this before reading a single argument and neither dresses the answer up as a usage message |
 | `help(spec)` | the usage text |
 | `flag_of(spec, name)` | the flag with that long or short name, or nil |

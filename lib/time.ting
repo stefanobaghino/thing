@@ -11,57 +11,6 @@
 # algorithms, which are exact for every year an i64 of milliseconds
 # can reach.
 
-# Floor division, since ting's / truncates toward zero and the era
-# arithmetic below needs the floor for dates before 1970.
-fn fdiv(a, b) {
-  let q = a / b;
-  if a % b != 0 && ((a < 0) != (b < 0)) { return q - 1; }
-  return q;
-}
-
-# The remainder that goes with fdiv: always has the sign of b.
-fn fmod(a, b) { return a - fdiv(a, b) * b; }
-
-# Whether the year has a February 29th.
-fn is_leap(y) { return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0); }
-
-# Days in the month (1-12) of that year.
-fn days_in_month(y, m) {
-  let lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
-  if m < 1 || m > 12 { fail("month out of range: " + str(m)); }
-  if m == 2 && is_leap(y) { return 29; }
-  return lengths[m - 1];
-}
-
-# Days since 1970-01-01 for a civil date.
-fn days_from_civil(y, m, d) {
-  let year = y;
-  if m <= 2 { year = year - 1; }
-  let era = fdiv(year, 400);
-  let yoe = year - era * 400;
-  let mp = m + 9;
-  if m > 2 { mp = m - 3; }
-  let doy = (153 * mp + 2) / 5 + d - 1;
-  let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
-  return era * 146097 + doe - 719468;
-}
-
-# The civil date for a day count: {"year": y, "month": m, "day": d}.
-fn civil_from_days(z) {
-  let days = z + 719468;
-  let era = fdiv(days, 146097);
-  let doe = days - era * 146097;
-  let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
-  let y = yoe + era * 400;
-  let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
-  let mp = (5 * doy + 2) / 153;
-  let d = doy - (153 * mp + 2) / 5 + 1;
-  let m = mp + 3;
-  if mp >= 10 { m = mp - 9; }
-  if m <= 2 { y = y + 1; }
-  return {"year": y, "month": m, "day": d};
-}
-
 # Every field of an instant: year, month, day, hour, minute, second,
 # ms, and weekday (0 is Sunday).
 fn parts(ms) {
@@ -85,83 +34,8 @@ fn from_parts(y, mo, d, h, mi, s) {
   return days_from_civil(y, mo, d) * 86400000 + h * 3600000 + mi * 60000 + s * 1000;
 }
 
-# A number left-padded with zeros to that width.
-fn pad(n, width) {
-  let out = str(n);
-  while len(out) < width { out = "0" + out; }
-  return out;
-}
-
-# The date as YYYY-MM-DD.
-fn date(ms) {
-  let p = parts(ms);
-  return pad(p["year"], 4) + "-" + pad(p["month"], 2) + "-" + pad(p["day"], 2);
-}
-
-# The time of day as HH:MM:SS.
-fn clock(ms) {
-  let p = parts(ms);
-  return pad(p["hour"], 2) + ":" + pad(p["minute"], 2) + ":" + pad(p["second"], 2);
-}
-
 # The instant as ISO 8601 in UTC: 2026-09-04T20:33:12Z.
 fn iso(ms) { return date(ms) + "T" + clock(ms) + "Z"; }
-
-# An offset in milliseconds east of UTC, written the way ISO 8601
-# writes one: "Z" for none, "+02:00", "-05:30". ISO has no room for
-# seconds in an offset, and a handful of pre-1900 local mean times
-# have them, so those are truncated towards zero — which is what date
-# prints for them too.
-fn offset_iso(off) {
-  if off == 0 { return "Z"; }
-  let sign = "+";
-  let n = off;
-  if n < 0 {
-    sign = "-";
-    n = -n;
-  }
-  let minutes = n / 60000;
-  return sign + pad(minutes / 60, 2) + ":" + pad(minutes % 60, 2);
-}
-
-# The three questions that need a zone, and cannot be answered without
-# one: what day is it here, what time of day, and the instant written
-# so that it carries where "here" was. Each answers nil where the
-# platform keeps no zone data, rather than quietly handing back the
-# UTC answer under a local name — a caller that wants UTC as a
-# fallback should say so, in its own code, where a reader can see it.
-fn local_date(ms) {
-  let z = local_zone(ms);
-  if z == nil { return nil; }
-  return date(ms + z["offset"]);
-}
-
-# The time of day in the local zone at that instant, as clock()
-# writes it; nil where the platform keeps no zone data to read.
-fn local_clock(ms) {
-  let z = local_zone(ms);
-  if z == nil { return nil; }
-  return clock(ms + z["offset"]);
-}
-
-# 2026-09-07T00:30:00+02:00, which from_iso reads back to the same
-# instant — exactly, unless the offset has seconds in it, which only
-# the local mean times before about 1900 do.
-fn local_iso(ms) {
-  let z = local_zone(ms);
-  if z == nil { return nil; }
-  let shifted = ms + z["offset"];
-  return date(shifted) + "T" + clock(shifted) + offset_iso(z["offset"]);
-}
-
-# Whether every character is a digit, and there is at least one.
-fn digits(s) {
-  if len(s) == 0 { return false; }
-  for c in s {
-    if c < "0" || c > "9" { return false; }
-  }
-  return true;
-}
 
 # Milliseconds from an ISO 8601 instant, or nil when the string is not
 # one. This is iso()'s inverse and more: it also reads a date on its
@@ -250,11 +124,72 @@ fn from_iso(s) {
   return from_parts(y, mo, d, h, mi, sec) + millis - offset;
 }
 
-# The name of a weekday number, 0 being Sunday.
-fn weekday_name(n) {
-  let names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
-  if n < 0 || n > 6 { fail("weekday out of range: " + str(n)); }
-  return names[n];
+# The three questions that need a zone, and cannot be answered without
+# one: what day is it here, what time of day, and the instant written
+# so that it carries where "here" was. Each answers nil where the
+# platform keeps no zone data, rather than quietly handing back the
+# UTC answer under a local name — a caller that wants UTC as a
+# fallback should say so, in its own code, where a reader can see it.
+fn local_date(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  return date(ms + z["offset"]);
+}
+
+# The time of day in the local zone at that instant, as clock()
+# writes it; nil where the platform keeps no zone data to read.
+fn local_clock(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  return clock(ms + z["offset"]);
+}
+
+# 2026-09-07T00:30:00+02:00, which from_iso reads back to the same
+# instant — exactly, unless the offset has seconds in it, which only
+# the local mean times before about 1900 do.
+fn local_iso(ms) {
+  let z = local_zone(ms);
+  if z == nil { return nil; }
+  let shifted = ms + z["offset"];
+  return date(shifted) + "T" + clock(shifted) + offset_iso(z["offset"]);
+}
+
+# An offset in milliseconds east of UTC, written the way ISO 8601
+# writes one: "Z" for none, "+02:00", "-05:30". ISO has no room for
+# seconds in an offset, and a handful of pre-1900 local mean times
+# have them, so those are truncated towards zero — which is what date
+# prints for them too.
+fn offset_iso(off) {
+  if off == 0 { return "Z"; }
+  let sign = "+";
+  let n = off;
+  if n < 0 {
+    sign = "-";
+    n = -n;
+  }
+  let minutes = n / 60000;
+  return sign + pad(minutes / 60, 2) + ":" + pad(minutes % 60, 2);
+}
+
+# Whether every character is a digit, and there is at least one.
+fn digits(s) {
+  if len(s) == 0 { return false; }
+  for c in s {
+    if c < "0" || c > "9" { return false; }
+  }
+  return true;
+}
+
+# The date as YYYY-MM-DD.
+fn date(ms) {
+  let p = parts(ms);
+  return pad(p["year"], 4) + "-" + pad(p["month"], 2) + "-" + pad(p["day"], 2);
+}
+
+# The time of day as HH:MM:SS.
+fn clock(ms) {
+  let p = parts(ms);
+  return pad(p["hour"], 2) + ":" + pad(p["minute"], 2) + ":" + pad(p["second"], 2);
 }
 
 # A span of milliseconds as "1h 2m 3s", dropping the leading zero
@@ -270,4 +205,69 @@ fn span(ms) {
   if h > 0 { out = out + str(h) + "h "; }
   if h > 0 || m > 0 { out = out + str(m) + "m "; }
   return out + str(s) + "s";
+}
+
+# The name of a weekday number, 0 being Sunday.
+fn weekday_name(n) {
+  let names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  if n < 0 || n > 6 { fail("weekday out of range: " + str(n)); }
+  return names[n];
+}
+
+# Whether the year has a February 29th.
+fn is_leap(y) { return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0); }
+
+# Days in the month (1-12) of that year.
+fn days_in_month(y, m) {
+  let lengths = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+  if m < 1 || m > 12 { fail("month out of range: " + str(m)); }
+  if m == 2 && is_leap(y) { return 29; }
+  return lengths[m - 1];
+}
+
+# Days since 1970-01-01 for a civil date.
+fn days_from_civil(y, m, d) {
+  let year = y;
+  if m <= 2 { year = year - 1; }
+  let era = fdiv(year, 400);
+  let yoe = year - era * 400;
+  let mp = m + 9;
+  if m > 2 { mp = m - 3; }
+  let doy = (153 * mp + 2) / 5 + d - 1;
+  let doe = yoe * 365 + yoe / 4 - yoe / 100 + doy;
+  return era * 146097 + doe - 719468;
+}
+
+# The civil date for a day count: {"year": y, "month": m, "day": d}.
+fn civil_from_days(z) {
+  let days = z + 719468;
+  let era = fdiv(days, 146097);
+  let doe = days - era * 146097;
+  let yoe = (doe - doe / 1460 + doe / 36524 - doe / 146096) / 365;
+  let y = yoe + era * 400;
+  let doy = doe - (365 * yoe + yoe / 4 - yoe / 100);
+  let mp = (5 * doy + 2) / 153;
+  let d = doy - (153 * mp + 2) / 5 + 1;
+  let m = mp + 3;
+  if mp >= 10 { m = mp - 9; }
+  if m <= 2 { y = y + 1; }
+  return {"year": y, "month": m, "day": d};
+}
+
+# Floor division, since ting's / truncates toward zero and the era
+# arithmetic below needs the floor for dates before 1970.
+fn fdiv(a, b) {
+  let q = a / b;
+  if a % b != 0 && ((a < 0) != (b < 0)) { return q - 1; }
+  return q;
+}
+
+# The remainder that goes with fdiv: always has the sign of b.
+fn fmod(a, b) { return a - fdiv(a, b) * b; }
+
+# A number left-padded with zeros to that width.
+fn pad(n, width) {
+  let out = str(n);
+  while len(out) < width { out = "0" + out; }
+  return out;
 }
