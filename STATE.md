@@ -4256,8 +4256,14 @@ holds only the current milestone and the standing rules.
 - 1005: v2.154.0 VERIFIED — seven assets, six checksums OK cold, both
   aarch64 archives executed here (2984 checks, 24 examples clean),
   the echo ceiling, :vars line and 15-line `--doc map` all seen from
-  the archive, ten published paths 200. Next: health tick + audit
-  closes the milestone.
+  the archive, ten published paths 200.
+- 1006: health tick + audit green — eleven bench checksums identical
+  to BASELINE and every row within a few per cent at load 1.9 (which
+  settles 999's inflated tick as the host), four sweeps ok, counts
+  all standing (79 builtins, 13 modules, 214 functions, 48 programs,
+  2984 checks, 485 tests in 18 suites, 81 unchanged, fifteen
+  warnings, 175 tags). Milestone "the REPL as a place to look
+  around" COMPLETE. Replenishment next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

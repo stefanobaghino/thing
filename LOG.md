@@ -26231,3 +26231,30 @@ print() writes all of it)`, `:vars` gives it one line ending
 Site audit: all ten published paths 200. changelog.html carries
 v2.154.0; reference.html carries both new sentences — the echo's
 ceiling and what `--doc` does after an exact hit.
+
+## 1006 — health tick, milestone "the REPL as a place to look around" complete
+
+Maintenance: tree clean, no open PRs, CI green for e504259 on all
+five test jobs, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, and at load 1.9 every row is within a few per cent of
+what was recorded — which settles 999's reading of its own tick,
+where every row was 5 to 16 per cent slow at load 4.6 and nothing
+had changed but the host.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 214 module functions, 24
+selftest files, 24 examples each with a .out, 2984 selftest checks on
+both engines, 485 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at fifteen warnings, 175 tags all verified.
+
+The milestone is complete. The thousandth iteration sat down at the
+REPL as a newcomer would and found three ways the session said too
+much or too little: an echo with no ceiling (1001), `:vars` answering
+with the type rather than the value (1002), and `--doc` burying its
+own answer under every entry that mentions the word (1003). v2.154.0
+tagged and verified (1004, 1005).
