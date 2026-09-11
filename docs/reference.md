@@ -1323,6 +1323,14 @@ diagnostic and the notes under it, the names `--fmt`, `--doc` and
 of `try`'s `"at"` and `"trace"`, and the message `--lsp` puts on a
 broken `import`.
 
+A path written into the middle of a message is quoted, wherever the
+message comes from: `ting: cannot read "notes.ting": ...` from a
+tool, `cannot read "notes.ting": ...` from a builtin that could not
+read it. The quotes are what give a name with a space in it ends,
+and a diagnostic's own `file:line:col:` header is the one place a
+path is written bare, because there the colon after it does that
+job.
+
 ## Stability
 
 As of 2.0, the language described on this page is stable: programs

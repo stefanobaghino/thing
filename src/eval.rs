@@ -3943,7 +3943,7 @@ impl<W: Write> Interpreter<W> {
                     // module has that name either.
                     return Err(error(
                         format!(
-                            "cannot import {path:?}: no file at {} ({e}), and no embedded module of that name",
+                            "cannot import {path:?}: no file at {:?} ({e}), and no embedded module of that name",
                             resolved.display()
                         ),
                         span,

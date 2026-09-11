@@ -585,7 +585,7 @@ fn run_inner() -> ExitCode {
                 + "\n";
             match std::fs::write(path, script) {
                 Ok(()) => say(&format!("(saved {} chunk(s) to {path})", history.len())),
-                Err(e) => eprintln!("ting: cannot write {path}: {e}"),
+                Err(e) => eprintln!("ting: cannot write {path:?}: {e}"),
             }
             continue;
         }
@@ -683,7 +683,7 @@ fn run_inner() -> ExitCode {
                         say(&format!("(loaded {path}: {added} new binding(s))"));
                     }
                 }
-                Err(why) => eprintln!("ting: cannot read {path}: {why}"),
+                Err(why) => eprintln!("ting: cannot read {path:?}: {why}"),
             }
             continue;
         }

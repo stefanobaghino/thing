@@ -370,13 +370,13 @@ fn run_bundle(args: Vec<String>) -> ExitCode {
     // is the reason -o exists; the least it can do is refuse.
     let target = same_file_as(std::path::Path::new(&out));
     if bundle.sources.contains(&target) {
-        eprintln!("ting: -o would overwrite {out}, which went into the bundle");
+        eprintln!("ting: -o would overwrite {out:?}, which went into the bundle");
         return ExitCode::from(2);
     }
     match std::fs::write(&out, &bundle.text) {
         Ok(()) => ExitCode::SUCCESS,
         Err(e) => {
-            eprintln!("ting: cannot write {out}: {e}");
+            eprintln!("ting: cannot write {out:?}: {e}");
             ExitCode::FAILURE
         }
     }
@@ -451,13 +451,24 @@ fn read_tool_source(f: &str) -> Result<String, ExitCode> {
         ting::diag::read_text(f)
     };
     read.map_err(|why| {
-        eprintln!("ting: cannot read {f}: {why}");
+        eprintln!("ting: cannot read {f:?}: {why}");
         ExitCode::FAILURE
     })
 }
 
 /// Directory arguments expand to every .ting file beneath them (files
 /// first, then subdirectories, sorted); other arguments pass through.
+/// Paths as a message names them: each one quoted, the way every
+/// other message that holds a path writes it, so a name with a space
+/// in it has ends.
+fn quoted(paths: &[String]) -> String {
+    paths
+        .iter()
+        .map(|p| format!("{p:?}"))
+        .collect::<Vec<_>>()
+        .join(" ")
+}
+
 fn expand_paths(args: &[String]) -> Vec<String> {
     let mut files = Vec::new();
     for a in args {
@@ -508,7 +519,7 @@ fn run_check(mut args: Vec<String>) -> ExitCode {
 fn check_pass(args: &[String], strict: bool) -> ExitCode {
     let files = expand_paths(args);
     if files.is_empty() {
-        eprintln!("ting: no .ting files found under {}", args.join(" "));
+        eprintln!("ting: no .ting files found under {}", quoted(args));
         return ExitCode::from(2);
     }
     let mut failed = false;
@@ -734,10 +745,10 @@ fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
     if files.is_empty() {
         match filter {
             Some(f) => eprintln!(
-                "ting: no .ting files matching \"{f}\" under {}",
-                paths.join(" ")
+                "ting: no .ting files matching {f:?} under {}",
+                quoted(paths)
             ),
-            None => eprintln!("ting: no .ting files found under {}", paths.join(" ")),
+            None => eprintln!("ting: no .ting files found under {}", quoted(paths)),
         }
         return ExitCode::from(2);
     }
@@ -989,7 +1000,7 @@ fn run_fmt(check: bool, diff: bool, args: &[String]) -> ExitCode {
     }
     let files = expand_paths(args);
     if files.is_empty() {
-        eprintln!("ting: no .ting files found under {}", args.join(" "));
+        eprintln!("ting: no .ting files found under {}", quoted(args));
         return ExitCode::from(2);
     }
     let mut dirty = false;
@@ -1031,7 +1042,7 @@ fn run_fmt(check: bool, diff: bool, args: &[String]) -> ExitCode {
                     dirty = true;
                     changed += 1;
                 } else if let Err(e) = std::fs::write(f, formatted) {
-                    eprintln!("ting: cannot write {f}: {e}");
+                    eprintln!("ting: cannot write {f:?}: {e}");
                     failed = true;
                     failures += 1;
                 } else {

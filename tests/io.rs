@@ -1491,7 +1491,7 @@ fn failed_import_says_where_it_looked() {
             stderr.contains("cannot import \"../nowhere.ting\": no file at "),
             "{engine}: {stderr}"
         );
-        assert!(stderr.contains("nowhere.ting ("), "{engine}: {stderr}");
+        assert!(stderr.contains("nowhere.ting\" ("), "{engine}: {stderr}");
         assert!(
             stderr.contains("and no embedded module of that name"),
             "{engine}: {stderr}"
@@ -1856,7 +1856,7 @@ fn repl_load_runs_a_file_into_the_session() {
     // The loaded binding is visible to later lines.
     assert!(stdout.contains("42"), "{stdout}");
     // A bad path reports and the session survives (exit 0 on ctrl-d).
-    assert!(stderr.contains("cannot read /missing.ting"), "{stderr}");
+    assert!(stderr.contains("cannot read \"/missing.ting\""), "{stderr}");
     assert_eq!(out.status.code(), Some(0));
     let _ = std::fs::remove_file(&script);
 }
@@ -5023,5 +5023,63 @@ fn a_missing_module_member_reads_the_same_before_and_during_a_run() {
     )
     .expect("write");
     assert_eq!(said(&[]), "key \"beta\" not found");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// One way to name a path in a message. The tools used to write it
+/// bare — `cannot read nosuch` — where every runtime error quotes it,
+/// and a path with a space in it then had no ends: the reader could
+/// not tell the name from the sentence around it. Every surface that
+/// names a path it could not read is here, because the one that is
+/// left out is the one that goes back to writing it bare.
+#[test]
+fn every_tool_quotes_the_path_it_could_not_read() {
+    let dir = std::env::temp_dir().join(format!("ting-quoted-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).expect("mkdir");
+    // The name is the test: a path with a space in it is unreadable
+    // in a message that does not delimit it.
+    let missing = dir.join("no such file.ting");
+    let name = missing.to_str().unwrap();
+
+    for args in [
+        vec![name],
+        vec!["--check", name],
+        vec!["--fmt", name],
+        vec!["--fmt-check", name],
+        vec!["--test", name],
+        vec!["--coverage", name],
+        vec!["--profile", name],
+        vec!["--bundle", name],
+    ] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(&args)
+            .output()
+            .expect("failed to run ting");
+        let said = String::from_utf8_lossy(&out.stderr).to_string()
+            + &String::from_utf8_lossy(&out.stdout);
+        assert!(
+            said.contains(&format!("cannot read {name:?}")),
+            "{args:?} said: {said}"
+        );
+        assert!(!out.status.success(), "{args:?} left happy: {said}");
+    }
+
+    // And the message about a directory holding nothing to run names
+    // the directory the same way, on each of the three tools that
+    // can say it.
+    for tool in ["--test", "--check", "--fmt"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args([tool, dir.to_str().unwrap()])
+            .output()
+            .expect("failed to run ting");
+        let said = String::from_utf8_lossy(&out.stderr).to_string();
+        assert!(
+            said.contains(&format!(
+                "no .ting files found under {:?}",
+                dir.to_str().unwrap()
+            )),
+            "{tool} said: {said}"
+        );
+    }
     let _ = std::fs::remove_dir_all(&dir);
 }
