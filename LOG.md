@@ -23560,3 +23560,41 @@ means columns — a `width` builtin, the caret row, format's specs,
 lib/string's padding, and the doc wrapper.
 
 Backlog written to STATE.md.
+
+## 931 — how wide a character is
+
+Maintenance: tree clean, no PRs, CI green for a54259f from the API.
+
+`display_width(s)`, the 76th builtin: how many terminal COLUMNS a
+string takes, where `len` counts characters. src/width.rs carries two
+sorted range tables and a binary search — zero for controls, formats
+and nonspacing or enclosing marks, two for East Asian W and F, one for
+everything else, with unassigned code points counted as one because
+the Unicode data calls some of them "F" and guessing two for something
+nothing can draw is worse.
+
+The tables are DATA, generated from python3's unicodedata at Unicode
+14.0.0: 350 zero ranges and 128 wide ones. What the tests hold is the
+CODE that reads them, against tests/fixtures/width.txt — every range
+boundary and its two neighbours, plus a sample every 0x400, 2739 code
+points in all, generated the same way. A fixture and a table from one
+authority cannot check each other's data; they can and do check the
+search that walks it, which is where an off-by-one would live.
+
+THE FIRST NAME WAS WRONG AND THE CHECKER SAID SO. `width` is what
+lib/args.ting, lib/list.ting and lib/string.ting all call a parameter
+— `pad(text, width)`, `pad_left(s, width, fill)` — so the new builtin
+turned ten corpus lines into `\`width\` shadows a builtin` warnings.
+That warning exists to catch a name that fights for a common word, and
+here it caught one in ting's own stdlib before any user met it. The
+name is `display_width`, which says what it measures and which nobody
+writes as a variable. Corpus back to fourteen.
+
+Ten checks in selftest/strings.ting, including that `len("日本")` is 2
+where `display_width("日本")` is 4, that both spellings of é are one
+column, and that a zero-width joiner and a tab take none. 2832 checks
+now, on both engines.
+
+Gate: fmt (the generated table needed it), clippy, 17 `test result:
+ok` (455 tests), `--fmt .` 79 unchanged, corpus at fourteen, 2832
+checks on both engines, Windows check and clippy, wasm release build.

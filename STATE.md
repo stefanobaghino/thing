@@ -15,7 +15,7 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 75 builtins; thirteen embedded stdlib modules
+- 76 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 210
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
@@ -3917,12 +3917,13 @@ holds only the current milestone and the standing rules.
   run the new lib/list.ting, which calls fingerprint.
 - 930: replenishment — milestone "the width of a character"
   (v2.145), reasoning in LOG.md.
+- 931: display_width(s), the 76th builtin — src/width.rs, tables
+  generated from unicodedata 14.0.0, the search checked against
+  tests/fixtures/width.txt. Named `width` first; the shadowing
+  warning fired ten times in lib/, which is the warning working.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a width table and a width(s) builtin: East Asian W/F are two
-  columns, combining marks zero, the rest one — checked against a
-  fixture generated from python3's unicodedata (14.0.0) and committed.
   - the caret row under a diagnostic lines up under the token it
   points at, whatever the line holds.
   - format's width specs, lib/string's pad_left/pad_right/center/

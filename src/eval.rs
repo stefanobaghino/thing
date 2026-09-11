@@ -1977,6 +1977,16 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Width => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Str(s) => Ok(Value::Int(crate::width::width(s.as_str()) as i64)),
+                    v => Err(error(
+                        format!("display_width expects a string, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
             Builtin::Fingerprint => {
                 arity(1, 1)?;
                 let mut out = String::new();

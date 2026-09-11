@@ -466,6 +466,7 @@ scope).
 | `re_find_all(s, pattern)` | every non-overlapping match, left to right, as a list of those maps |
 | `re_replace(s, pattern, repl)` | every match replaced; `$0` is the whole match, `$1` to `$9` its groups, `$$` a literal `$`. A reference to a group the pattern does not have errors |
 | `re_split(s, pattern)` | the string cut at every match; leading and trailing empty pieces are kept, as `split` keeps them |
+| `display_width(s)` | how many terminal COLUMNS the string takes, where `len` counts characters: an East Asian wide or fullwidth character (an ideograph, a fullwidth digit, most emoji) counts two, a combining mark or a control counts none, everything else one. What lines text up in a terminal — a padded column, a caret under a diagnostic — has to count these, and ting's own tools now do. Character by character, which is where a terminal's arithmetic stops too: an emoji sequence joined by zero-width joiners counts as its parts |
 | `fingerprint(v)` | a string two values share exactly when `==` says they are equal, so a map lookup can stand in for a scan; `nil` where equality cannot be a key — a function (compared by identity, not by what it says), a NaN (equal to nothing, itself included), a number past 2^53 (where `1 == 1.0` numeric equality stops being transitive between ints and floats), or a value that contains itself. The text itself is not promised: compare fingerprints, do not read them |
 
 ### Format specs

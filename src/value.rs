@@ -489,10 +489,11 @@ pub enum Builtin {
     ReReplace,
     ReSplit,
     Fingerprint,
+    Width,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 75] = [
+    pub const ALL: [Builtin; 76] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -568,6 +569,7 @@ impl Builtin {
         Builtin::ReReplace,
         Builtin::ReSplit,
         Builtin::Fingerprint,
+        Builtin::Width,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -823,6 +825,10 @@ impl Builtin {
                 "re_split(s, pattern)",
                 "The string cut at every match, as a list of pieces.",
             ),
+            Builtin::Width => (
+                "display_width(s)",
+                "How many terminal columns the string takes: an East Asian wide or fullwidth character counts two, a combining mark or a control none, everything else one — what len counts in characters and a terminal counts in columns.",
+            ),
             Builtin::Fingerprint => (
                 "fingerprint(v)",
                 "A string two values share exactly when == says they are equal, so a map can stand in for a scan; nil where equality cannot be a key: a function (compared by identity), a NaN (equal to nothing), a number past 2^53 (where int and float equality stops being transitive), or a value that contains itself.",
@@ -907,6 +913,7 @@ impl Builtin {
             Builtin::ReReplace => "re_replace",
             Builtin::ReSplit => "re_split",
             Builtin::Fingerprint => "fingerprint",
+            Builtin::Width => "display_width",
         }
     }
 }

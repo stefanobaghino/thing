@@ -17,6 +17,7 @@ pub mod tz;
 pub mod value;
 pub mod vm;
 pub mod wasm;
+pub mod width;
 
 use std::io::Write;
 

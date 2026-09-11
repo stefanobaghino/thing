@@ -137,3 +137,17 @@ let narrowed = "é";
 assert(len(narrowed) == 1, "counted while it is not");
 narrowed += "ab";
 assert(len(narrowed) == 3 && narrowed[2] == "b" && slice(narrowed, 1, 3) == "ab", "and again after");
+
+# display_width(): what a terminal counts, where len() counts characters.
+assert(display_width("abc") == 3 && display_width("") == 0, "width of plain text is its length");
+assert(len("日本") == 2 && display_width("日本") == 4, "an ideograph takes two columns");
+assert(display_width("１２") == 4, "and so does a fullwidth digit");
+assert(display_width("🙂") == 2, "an emoji takes two");
+assert(display_width("é") == 1 && display_width("é") == 1,
+"a combining accent rides on the letter, however the word is spelled");
+assert(display_width("a‍b") == 2, "a zero-width joiner takes no column");
+assert(display_width("a\tb") == 2, "a control takes none either: what a tab advances to is the terminal's business");
+assert(display_width("añ日🙂") == 6, "a mixed string is the sum of its characters");
+let errmsg = import("lib/err.ting")["message"];
+assert(errmsg(fn() { return display_width(1); }) == "display_width expects a string, got int", "width wants a string");
+assert(errmsg(fn() { return display_width(); }) == "display_width expects 1 argument, got 0", "width wants one");
