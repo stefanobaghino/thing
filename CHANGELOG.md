@@ -5,6 +5,37 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.145.0 (2026-09-11)
+
+- **A terminal measures in columns, and now so does ting.**
+  `display_width(s)` says how many columns a string takes: an East
+  Asian wide or fullwidth character two, a combining mark or a control
+  none, everything else one. `len("日本")` is 2 characters and
+  `display_width("日本")` is 4 columns, and the difference is
+  every misaligned table anyone has ever printed. The tables behind it
+  are generated from Unicode 14.0.0 — 350 zero-width ranges and 128
+  wide ones — and the search that reads them is checked against a
+  committed fixture of 2739 code points, every range boundary and its
+  neighbours included. No dependency: the data is in the binary.
+- **Diagnostics point where they mean.** The caret row under an error
+  was padded one space per character, so a line holding ideographs put
+  the carets short of the token — eight columns short for
+  `print("日本語のテキスト", totl);`. It counts columns now, and a
+  tab in the prefix is copied through as a tab, since only the
+  terminal knows where its tab stops are.
+- **Everything that lays out a column counts columns.** `format`'s
+  width specs (`{:<4}` of an ideograph padded to five columns before);
+  `pad_left`, `pad_right`, `center`, `table` and `wrap` in
+  `lib/string.ting`; and `truncate`, which now cuts on a column budget
+  through the new `fit(s, width)` — the longest prefix that fits,
+  never splitting a wide character in half.
+- **Two of them had been counting BYTES**, which is worse than
+  characters: the `--doc` wrapper broke a line of Japanese at a third
+  of the page, and `:help`'s signature column would have gone ragged
+  on the first non-ASCII name. Both measure columns now.
+- A fill that takes no columns is an error rather than a hang:
+  `pad_left(s, width, "")` used to loop forever.
+
 ## v2.144.0 (2026-09-11)
 
 - **A value can be a map key now.** `fingerprint(v)` answers a string
@@ -35,6 +66,7 @@ Windows are attached to each
   `holds(m, x)` asks it, and `remember(m, x)` adds in place so a set
   can grow as a loop runs. That is the general answer to `contains`
   walking the list at every question.
+
 ## v2.143.0 (2026-09-10)
 
 - **A map can be emptied now.** `pop(m, k)` takes a key out of a map

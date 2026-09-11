@@ -3932,10 +3932,13 @@ holds only the current milestone and the standing rules.
   mutation-tested. A fill must take at least one column now, which
   turns the old empty-fill hang into an error. STILL ON CHARACTERS
   ON PURPOSE: main.rs's rule(), decoration no test here can see.
+- 934: v2.145.0 tagged (166th tag; strokes 931, 932, 933).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.145.0.
+  - verify v2.145.0: cold download of every asset, SHA256SUMS
+  checked, both aarch64 archives executed here, tools/smoke.sh.
+  - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

@@ -23666,3 +23666,24 @@ here without holding a blocking process open.
 Gate: fmt, clippy, 17 `test result: ok` (459 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2850 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 934 — release v2.145.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 1ba417a from
+the API.
+
+v2.145.0, the milestone "the width of a character". A terminal lays
+text out in columns and ting had been counting characters — or, in
+two places, bytes. `display_width(s)` is the answer, from tables
+generated out of Unicode 14.0.0 and checked against a committed
+fixture; the caret row, `format`'s width specs, lib/string's padding,
+wrapping and truncation, the `--doc` wrapper and the `:help`
+signature column all read it now.
+
+Strokes 931, 932, 933. CHANGELOG.md written from those entries, and
+a blank line put back before the v2.143.0 heading while I was in
+there — md2html renders it either way, but the file should not depend
+on that. Cargo.toml and Cargo.lock at 2.145.0; the binary reports
+`ting 2.145.0`. Gate re-run after the bump: 17 suites (459 tests),
+`--fmt .` 79 unchanged, corpus at fourteen, 2850 checks on both
+engines, Windows check and clippy, wasm release build.
