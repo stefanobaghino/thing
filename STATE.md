@@ -4205,6 +4205,12 @@ holds only the current milestone and the standing rules.
   --help with 0 and --nope with 2 from the archive itself, and the
   ten published paths 200 with the wasm carrying spec_trouble.
   Next: health tick + audit closes the milestone.
+- 992: health tick + audit green — eleven bench checksums identical
+  to BASELINE, four sweeps ok, counts all standing (79 builtins, 13
+  modules, 214 functions, 48 programs, 2968 checks, 483 tests in 18
+  suites, 81 unchanged, fifteen warnings, 173 tags, seven assets).
+  Milestone "the command line your program shows its user" COMPLETE.
+  Replenishment next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

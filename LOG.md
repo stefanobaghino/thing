@@ -25744,3 +25744,35 @@ rewritten report example, command lines and all. The deployed
 ting.wasm holds `spec_trouble` six times over, so it is this
 milestone's build rather than a stale one — there being no version
 string in the library to ask instead.
+
+## 992 — health tick, milestone "the command line your program shows its user" complete
+
+Maintenance: tree clean, no open PRs, CI green for 4398451 on all
+five test jobs.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE. Timings are weather on this host — load average 1.7 to
+3.1 through the run — and every row sits inside it, the widest being
+stdlib.ting on the vm at 148.5 ms against 140.2 ms recorded. Nothing
+moved that a checksum could see.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts audited against the standing shape: 79 builtins from the
+binary's own `--doc`, thirteen embedded modules, 214 module
+functions, 24 selftest files and 24 examples each with a `.out`,
+2968 selftest checks on both engines, 483 Rust tests in 18 suites,
+`--fmt .` 81 unchanged, corpus at fifteen warnings, 173 tags all
+verified, seven assets on each of the last three releases.
+
+The milestone is complete. It began as four items, two of which were
+wrong: `main(spec, args())` already existed and already did what they
+proposed building. What the rest of the milestone did was make the
+thing that exists findable — an author's bad spec reported to the
+author (986), an example that is a whole command-line program built
+on `main` (987), every module opening with its front door so `--doc`
+leads with it (988), and a module member that is missing reading the
+same before and during a run (989). v2.152.0 tagged and verified
+(990, 991).
