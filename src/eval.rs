@@ -3885,9 +3885,9 @@ impl<W: Write> Interpreter<W> {
                 // waiting for — or a map of options, stdin among
                 // them, for the things a child needs that a string
                 // has no room for.
-                let (input, dir) = match args.get(2) {
-                    None | Some(Value::Nil) => (None, None),
-                    Some(Value::Str(s)) => (Some(s.to_string()), None),
+                let (input, dir, env) = match args.get(2) {
+                    None | Some(Value::Nil) => (None, None, Vec::new()),
+                    Some(Value::Str(s)) => (Some(s.to_string()), None, Vec::new()),
                     Some(Value::Map(m)) => run_options(&m.borrow(), span)?,
                     Some(other) => {
                         return Err(error(
@@ -3916,16 +3916,23 @@ impl<W: Write> Interpreter<W> {
                 self.out
                     .flush()
                     .map_err(|e| error(format!("run: flush failed: {e}"), span))?;
+                // One place builds the child, so the directory and the
+                // environment cannot reach one spawn and miss the
+                // other.
+                let mut command = std::process::Command::new(&*cmd);
+                command.args(&argv);
+                if let Some(d) = &dir {
+                    command.current_dir(d);
+                }
+                for (name, value) in &env {
+                    match value {
+                        Some(v) => command.env(name, v),
+                        None => command.env_remove(name),
+                    };
+                }
                 let done = match input {
-                    None => {
-                        let mut c = std::process::Command::new(&*cmd);
-                        c.args(&argv);
-                        if let Some(d) = &dir {
-                            c.current_dir(d);
-                        }
-                        c.output()
-                    }
-                    Some(text) => spawn_with_input(&cmd, &argv, text, dir.as_deref()),
+                    None => command.output(),
+                    Some(text) => spawn_with_input(command, text),
                 };
                 // A program that is not there is an error, not an exit
                 // code: "not installed" must never read as "ran and
@@ -4481,11 +4488,17 @@ impl<W: Write> Interpreter<W> {
 /// the directory to run it in. A key nothing knows is an error rather
 /// than a setting quietly ignored — a misspelled option that changes
 /// nothing is the kind of bug a script does not report on.
+type RunOptions = (
+    Option<String>,
+    Option<String>,
+    Vec<(String, Option<String>)>,
+);
+
 fn run_options(
     m: &std::collections::BTreeMap<String, Value>,
     span: Span,
-) -> Result<(Option<String>, Option<String>), RuntimeError> {
-    const OPTIONS: [&str; 2] = ["dir", "stdin"];
+) -> Result<RunOptions, RuntimeError> {
+    const OPTIONS: [&str; 3] = ["dir", "env", "stdin"];
     let text = |key: &str, v: &Value| -> Result<Option<String>, RuntimeError> {
         match v {
             Value::Nil => Ok(None),
@@ -4496,13 +4509,18 @@ fn run_options(
             )),
         }
     };
-    let (mut input, mut dir) = (None, None);
+    let (mut input, mut dir, mut env) = (None, None, Vec::new());
     for (key, v) in m {
         match key.as_str() {
             "stdin" => input = text("stdin", v)?,
             "dir" => dir = text("dir", v)?,
+            "env" => env = run_env(v, span)?,
             other => {
-                let known = OPTIONS.map(|o| format!("`{o}`")).join(" and ");
+                let named: Vec<String> = OPTIONS.iter().map(|o| format!("`{o}`")).collect();
+                let known = match named.split_last() {
+                    Some((last, rest)) => format!("{} and {last}", rest.join(", ")),
+                    None => String::new(),
+                };
                 return Err(error(
                     match crate::diag::nearest(other, OPTIONS) {
                         Some(n) => format!("run: no option `{other}` (did you mean `{n}`?)"),
@@ -4513,25 +4531,57 @@ fn run_options(
             }
         }
     }
-    Ok((input, dir))
+    Ok((input, dir, env))
+}
+
+/// The `env` option: what the child's environment gets on top of the
+/// one it inherits. A name bound to nil is one the child will NOT
+/// have, which is the other half of the question and has no other
+/// spelling.
+fn run_env(v: &Value, span: Span) -> Result<Vec<(String, Option<String>)>, RuntimeError> {
+    let Value::Map(m) = v else {
+        return Err(error(
+            format!("run: env must be a map, got {}", v.type_name()),
+            span,
+        ));
+    };
+    let mut out = Vec::new();
+    for (name, value) in m.borrow().iter() {
+        // A name with an `=` or a NUL in it is not a variable name on
+        // any platform here; passed through, it would make an entry
+        // the child reads as something else entirely.
+        if name.is_empty() || name.contains('=') || name.contains('\0') {
+            return Err(error(
+                format!("run: {name:?} is not an environment variable name"),
+                span,
+            ));
+        }
+        out.push(match value {
+            Value::Nil => (name.clone(), None),
+            Value::Str(s) => (name.clone(), Some(s.to_string())),
+            other => {
+                return Err(error(
+                    format!(
+                        "run: env `{name}` must be a string or nil, got {}",
+                        other.type_name()
+                    ),
+                    span,
+                ));
+            }
+        });
+    }
+    Ok(out)
 }
 
 fn spawn_with_input(
-    cmd: &str,
-    argv: &[String],
+    mut command: std::process::Command,
     text: String,
-    dir: Option<&str>,
 ) -> std::io::Result<std::process::Output> {
     use std::io::Write;
-    let mut command = std::process::Command::new(cmd);
     command
-        .args(argv)
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
         .stderr(std::process::Stdio::piped());
-    if let Some(d) = dir {
-        command.current_dir(d);
-    }
     let mut child = command.spawn()?;
     let mut sink = child.stdin.take().expect("stdin was asked for");
     let writer = std::thread::spawn(move || {

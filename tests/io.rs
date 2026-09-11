@@ -3766,6 +3766,50 @@ fn run_takes_the_directory_to_run_the_child_in() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A child is given variables, keeps the ones it inherits, and can
+/// be told to do without one. Both spawn paths again: the plain one
+/// and the one with something on the child's stdin.
+#[test]
+fn run_gives_the_child_the_environment_it_is_told_to() {
+    let exe = env!("CARGO_BIN_EXE_ting").replace('\\', "/");
+    let dir = std::env::temp_dir().join(format!("ting-io-run-env-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let child = dir.join("say.ting");
+    std::fs::write(
+        &child,
+        "print(env(\"TING_PROBE\"), env(\"TING_INHERITED\"), env(\"TING_DROPPED\"));\n",
+    )
+    .unwrap();
+    let child_path = child.to_str().unwrap().replace('\\', "/");
+    let script = dir.join("parent.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "let opts = {{\"env\": {{\"TING_PROBE\": \"here\", \"TING_DROPPED\": nil}}}};\n\
+             print(trim(run(\"{exe}\", [\"{child_path}\"], opts)[\"out\"]));\n\
+             opts[\"stdin\"] = \"\";\n\
+             print(trim(run(\"{exe}\", [\"{child_path}\"], opts)[\"out\"]));\n\
+             print(trim(run(\"{exe}\", [\"{child_path}\"])[\"out\"]));\n"
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .env("TING_INHERITED", "kept")
+        .env("TING_DROPPED", "gone")
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    // Given, inherited, and removed — in that order, twice.
+    assert_eq!(lines.next().unwrap(), "here kept nil", "{text}");
+    assert_eq!(lines.next().unwrap(), "here kept nil", "{text}");
+    // Without the option the child has this process's environment.
+    assert_eq!(lines.next().unwrap(), "nil kept gone", "{text}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// Bytes that are not text, both ways round: a file ting is asked to
 /// read as text FAILS, in ting's words rather than std's; a child's
 /// output is decoded lossily, because there is no bytes type to hand

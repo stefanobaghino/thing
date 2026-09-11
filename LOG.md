@@ -26571,3 +26571,37 @@ different check, and the last two are the reason both call sites are
 in the test.
 
 487 tests, 2999 checks.
+
+## 1016 — and with the variables it is told to have
+
+Milestone "the program your program runs", second stroke. The
+commonest line in any CI script is `VAR=value program`, and a ting
+script could reach it only through `run("env", ["VAR=value", ...])`,
+which is POSIX-only, or a shell string. This binary's own suite runs
+`TING_ENGINE=eval`, and could not have been driven from ting.
+
+`{"env": {"TING_ENGINE": "eval"}}` joins `dir` and `stdin` in the
+options map. The variables named go on top of the ones the child
+inherits — the rest of the environment is still there, which is what
+a script wants when it adds one — and a name bound to `nil` is one
+the child will NOT have, since dropping a variable has no other
+spelling and is the other half of the same question.
+
+A name with an `=` or a NUL in it is refused. Passed through, it
+would make an entry the child reads as a different variable
+altogether, and no platform here calls it a name.
+
+The two spawn paths are now one: the plain call and the one that
+feeds stdin build the same `Command`, which the directory and the
+environment are set on once. 1015 needed a mutation per path to prove
+they agreed; the ones it caught could not happen now.
+
+Four checks in selftest/edge.ting for the refusals, including the new
+list of three options in the unknown-option sentence, and a real
+child in tests/io.rs asked to print three variables — one given, one
+inherited, one dropped — twice, once per spawn path, plus once with
+no options at all to show the environment it would otherwise have.
+Three mutations: nil not removing, any name accepted, and the
+environment not applied; each fails a different check.
+
+488 tests, 3003 checks.

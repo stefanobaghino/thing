@@ -815,8 +815,10 @@ impl Builtin {
                  A signal killed it when code is nil, and signal is that \
                  number where the platform has them. The child reads stdin \
                  there, and reads nothing without it. A map in that place \
-                 is options instead — {\"stdin\": text, \"dir\": path}, the \
-                 directory being where the child runs; an option nothing \
+                 is options instead — {\"stdin\": text, \"dir\": path, \
+                 \"env\": {\"VAR\": value}}: where the child runs, and what \
+                 its environment gets on top of the one it inherits, a name \
+                 bound to nil being one it will not have. An option nothing \
                  knows is an error. Bytes that are not UTF-8 come back as \
                  replacement characters, where reading a file would be an \
                  error.",
