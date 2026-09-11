@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2887 selftest checks on all four
+  nothing on its own — and 23 examples with .out; 2893 selftest checks on all four
   CI platforms, Windows included); 463 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
@@ -3994,10 +3994,13 @@ holds only the current milestone and the standing rules.
   Exact length or an error. The checker reads patterns in both
   unused-binding passes; the formatter already did, being
   token-based.
+- 947: `for [k, v] in items(m)` — the PARSER desugars it into the
+  loop's own body as a `let`, spliced at the front of the block, so
+  no engine, checker or formatter changed. The holder is named `for
+  element`, with a space, which no program can write.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `for [k, v] in items(m)` on the same pattern code.
   - `fn([k, v]) { ... }` parameters, which is what makes the
   higher-order stdlib read.
   - docs and the stdlib reading better for it: lib/map.ting's

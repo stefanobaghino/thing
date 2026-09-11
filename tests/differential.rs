@@ -65,9 +65,10 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
     }
 }
 
-/// A `let` with a pattern binds through a new opcode in the VM and a
-/// walk in the tree-walker, so the two have to agree about what it
-/// binds AND about every way a value can fail to match.
+/// A pattern binds through a new opcode in the VM and a walk in the
+/// tree-walker, so the two have to agree about what it binds AND
+/// about every way a value can fail to match — in a `let`, and in the
+/// loop that is written as one.
 #[test]
 fn let_patterns_bind_the_same_on_both_engines() {
     let cases: &[&str] = &[
@@ -82,6 +83,14 @@ fn let_patterns_bind_the_same_on_both_engines() {
         "print(try(fn() { let [a, b] = 5; return a; }));",
         "print(try(fn() { let [a, b] = {\"a\": 1}; return a; }));",
         "let m = import(\"lib/map.ting\"); for p in m[\"items\"]({\"a\": 1}) { let [k, v] = p; print(k, v); }",
+        // The same pattern in a loop, which is a `let` the parser
+        // writes into the body.
+        "for [k, v] in [[\"a\", 1], [\"b\", 2]] { print(k, v); }",
+        "for [i, [a, b]] in [[0, [1, 2]]] { print(i, a, b); }",
+        "let t = 0; for [_, n] in [[\"a\", 3], [\"b\", 4]] { t += n; } print(t);",
+        "for [x, y] in [[1, 2], [3, 4]] { if x == 3 { break; } print(y); }",
+        "print(try(fn() { for [a, b] in [[1, 2, 3]] { print(a, b); } }));",
+        "print(try(fn() { for [a, b] in [7] { print(a, b); } }));",
     ];
     for src in cases {
         same(src);

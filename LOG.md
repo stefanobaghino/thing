@@ -24117,3 +24117,38 @@ tests for the length rule and the push order.
 Gate: fmt, clippy, 17 `test result: ok` (463 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2887 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 947 — the loop takes each element apart
+
+Maintenance: tree clean, no PRs, CI and Pages green for 2270cad from
+the API.
+
+`for [k, v] in items(m) { ... }`. No new statement, no second copy of
+the loop: the parser writes the loop over a holder it names itself and
+splices `let [k, v] = holder;` into the front of the body
+block rather than nesting a second one, so the loop keeps its scope
+and 946's pattern code does all the work. Both engines, the checker,
+the coverage marks and the formatter needed no changes at all, which
+is the argument for desugaring over a second variant.
+
+The holder is called `for element`, with a space in it: no ting
+program can write that name, so nothing can shadow it and it cannot
+collide with a binding of the user's.
+
+The mismatch points at the pattern and nothing else — the span ends
+at the `]` rather than at the `in` that follows, which is one
+`self.pos - 1` and reads much better under the carets.
+
+An unused name from a pattern in a loop draws no warning, and that is
+the existing behaviour rather than a gap: `for x in xs { print(1); }`
+has never warned about `x` either, because a loop variable is a
+binding the loop itself demands.
+
+Guards: six checks in selftest/compound.ting, six differential cases
+(both engines, break included, both refusals). Splicing the `let` at
+the END of the body instead of the front was the mutation: the body
+then names `k` before it exists.
+
+Gate: fmt, clippy, 17 `test result: ok` (463 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2893 checks on both engines, Windows
+check and clippy, wasm release build.

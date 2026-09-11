@@ -251,3 +251,26 @@ assert(errmsg2(fn() { let [a, _b] = 5; return a; })
 == "this pattern takes a list apart, and the value is int", "a pattern needs a list");
 assert(errmsg2(fn() { let [a, _b] = "ab"; return a; })
 == "this pattern takes a list apart, and the value is string", "a string is not a list here");
+
+# A for loop takes each element apart the same way, which is what
+# walking a map's items is for.
+let pairs = [["a", 1], ["b", 2]];
+let seen = [];
+for [k, v] in pairs { push(seen, k + str(v)); }
+assert(seen == ["a1", "b2"], "a loop takes each pair apart");
+let nested = [];
+for [i, [lo, hi]] in [[0, [1, 2]], [1, [3, 4]]] { push(nested, i + lo + hi); }
+assert(nested == [3, 8], "and nests the way a let does");
+let total = 0;
+for [_, n] in pairs { total += n; }
+assert(total == 3, "a hole works in a loop too");
+let stopped = [];
+for [x, y] in [[1, 2], [3, 4]] {
+  if x == 3 { break; }
+  push(stopped, y);
+}
+assert(stopped == [2], "break and continue still see the body they belong to");
+assert(errmsg2(fn() { for [a, b] in [[1, 2, 3]] { print(a, b); } })
+== "this pattern takes 2 values, and the list has 3", "a loop reports the mismatch the let would");
+assert(errmsg2(fn() { for [a, b] in [7] { print(a, b); } })
+== "this pattern takes a list apart, and the value is int", "and the wrong type as well");

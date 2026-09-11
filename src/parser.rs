@@ -476,20 +476,52 @@ impl<'a> Parser<'a> {
             }
             TokenKind::For => {
                 self.advance();
-                let var = match self.peek().clone() {
-                    TokenKind::Ident(name) => {
-                        self.advance();
-                        name
-                    }
-                    k => {
-                        return Err(
-                            self.error(format!("expected loop variable, found {}", describe(&k)))
-                        );
-                    }
+                // `for [k, v] in pairs {..}` is `for <element> in pairs
+                // { let [k, v] = <element>; .. }`: one loop, and the
+                // pattern is the `let` that already knows how to take a
+                // value apart. The holder is named with a space so no
+                // program can write it and none can shadow it.
+                let pattern_start = self.span().start;
+                let pattern = match self.peek() {
+                    TokenKind::LBracket => Some(self.pattern()?),
+                    _ => None,
+                };
+                // The pattern's own span, ending at its `]` rather
+                // than at the `in` that follows, so a mismatch puts
+                // its carets under the pattern and nothing else.
+                let pattern_span = Span::new(pattern_start, self.tokens[self.pos - 1].span.end);
+                let var = match &pattern {
+                    Some(_) => "for element".to_string(),
+                    None => match self.peek().clone() {
+                        TokenKind::Ident(name) => {
+                            self.advance();
+                            name
+                        }
+                        k => {
+                            return Err(self
+                                .error(format!("expected loop variable, found {}", describe(&k))));
+                        }
+                    },
                 };
                 self.expect(&TokenKind::In, "'in'")?;
                 let iterable = self.expr_bp(0)?;
-                let body = self.block_stmt("after 'for' iterable")?;
+                let mut body = self.block_stmt("after 'for' iterable")?;
+                if let Some(pattern) = pattern {
+                    let take_apart = Stmt {
+                        kind: StmtKind::LetPattern(
+                            pattern,
+                            Expr {
+                                kind: ExprKind::Var(var.clone()),
+                                span: pattern_span,
+                            },
+                        ),
+                        span: pattern_span,
+                    };
+                    match &mut body.kind {
+                        StmtKind::Block(stmts) => stmts.insert(0, take_apart),
+                        _ => unreachable!("a for body is a block"),
+                    }
+                }
                 let end = body.span.end;
                 Ok(Stmt {
                     kind: StmtKind::For(var, iterable, Box::new(body)),
