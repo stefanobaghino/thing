@@ -1460,24 +1460,29 @@ pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
         let Some(open) = enclosing[i] else {
             continue;
         };
-        // `let [a, b] = ..` binds every name in the brackets, and each
-        // answers for itself; anything else binds the one name after
-        // `let`.
+        // `let [a, b] = ..` and `let {a, b} = ..` bind every name
+        // between their brackets — a quoted key is a string token, so
+        // what is left is what the pattern binds — and each answers
+        // for itself; anything else binds the one name after `let`.
         let mut bound: Vec<usize> = Vec::new();
         match tokens.get(i + 1).map(|t| &t.kind) {
-            Some(lexer::TokenKind::LBracket) => {
+            Some(open @ (lexer::TokenKind::LBracket | lexer::TokenKind::LBrace)) => {
+                let close = match open {
+                    lexer::TokenKind::LBracket => lexer::TokenKind::RBracket,
+                    _ => lexer::TokenKind::RBrace,
+                };
+                let open = open.clone();
                 let mut depth = 0usize;
                 for (k, t) in tokens.iter().enumerate().skip(i + 1) {
-                    match &t.kind {
-                        lexer::TokenKind::LBracket => depth += 1,
-                        lexer::TokenKind::RBracket => {
-                            depth -= 1;
-                            if depth == 0 {
-                                break;
-                            }
+                    if t.kind == open {
+                        depth += 1;
+                    } else if t.kind == close {
+                        depth -= 1;
+                        if depth == 0 {
+                            break;
                         }
-                        lexer::TokenKind::Ident(_) => bound.push(k),
-                        _ => {}
+                    } else if matches!(t.kind, lexer::TokenKind::Ident(_)) {
+                        bound.push(k);
                     }
                 }
             }

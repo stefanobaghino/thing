@@ -106,6 +106,17 @@ fn let_patterns_bind_the_same_on_both_engines() {
         "print(items({\"a\": [1, 2]}), values({\"a\": [1, 2]}));",
         "print(items({}), values({}));",
         "print(try(items, [1]), try(values, 3));",
+        // A map pattern asks for fields by name, the way a map
+        // literal writes them.
+        "let {a, b} = {\"a\": 1, \"b\": 2}; print(a, b);",
+        "let {\"a\": x} = {\"a\": [1, 2]}; print(x);",
+        "let {\"a\": [p, q]} = {\"a\": [1, 2]}; print(p, q);",
+        "let {\"a\": {\"b\": deep}} = {\"a\": {\"b\": 3}}; print(deep);",
+        "let {} = {\"a\": 1}; print(\"nothing asked\");",
+        "let {b} = {\"a\": 1, \"b\": 2, \"c\": 3}; print(b);",
+        "print(try(fn() { let {z} = {\"a\": 1}; return z; }));",
+        "print(try(fn() { let {a} = [1]; return a; }));",
+        "print(try(fn() { let {a} = 5; return a; }));",
     ];
     for src in cases {
         same(src);

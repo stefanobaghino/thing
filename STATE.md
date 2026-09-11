@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2908 selftest checks on all four
+  nothing on its own — and 23 examples with .out; 2918 selftest checks on all four
   CI platforms, Windows included); 464 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
@@ -4021,12 +4021,13 @@ holds only the current milestone and the standing rules.
 - 954: `items` and `values` are the 78th and 79th builtins; lib/map
   re-exports them. Taking two common words global cost six shadowing
   warnings in the corpus, all renamed.
+- 955: `let {code, out} = r;` — Pattern::Map beside List, mirroring
+  the map literal. Extra keys fine, a missing key an error. The
+  formatter learned that `let {` is a pattern (brace_is_map) and the
+  checker's token pass learned braces.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `let {code, out} = run(cmd);` — Pattern::Map, mirroring the map
-  literal: a bare name is its own key, `"key": subpattern` nests. A
-  missing key is an error; extra keys are fine.
   - the same braces in `for` and in a parameter list, which 947 and
   948's desugaring should make free — verify rather than assume.
   - docs, the stdlib and the examples reading better for it:

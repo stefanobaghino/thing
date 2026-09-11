@@ -337,6 +337,43 @@ impl<'a> Parser<'a> {
                 self.expect(&TokenKind::RBracket, "']'")?;
                 Ok(Pattern::List(parts))
             }
+            // A map pattern is written the way a map literal is: a
+            // bare name is the key of that name, and a spelled-out
+            // `"key": pattern` nests.
+            TokenKind::LBrace => {
+                self.advance();
+                let mut fields: Vec<(String, Pattern)> = Vec::new();
+                while self.peek() != &TokenKind::RBrace {
+                    let (key, p) = match self.peek().clone() {
+                        TokenKind::Ident(name) => {
+                            self.advance();
+                            (name.clone(), Pattern::Name(name))
+                        }
+                        TokenKind::Str(key) => {
+                            self.advance();
+                            self.expect(&TokenKind::Colon, "':'")?;
+                            (key, self.pattern()?)
+                        }
+                        k => {
+                            return Err(self.error(format!(
+                                "expected a name or a quoted key in this pattern, found {}",
+                                describe(&k)
+                            )));
+                        }
+                    };
+                    if fields.iter().any(|(k, _)| *k == key) {
+                        return Err(self.error(format!("duplicate key `{key}` in this pattern")));
+                    }
+                    fields.push((key, p));
+                    if self.peek() == &TokenKind::Comma {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                self.expect(&TokenKind::RBrace, "'}'")?;
+                Ok(Pattern::Map(fields))
+            }
             TokenKind::Ident(name) => {
                 self.advance();
                 match name.as_str() {
@@ -345,7 +382,7 @@ impl<'a> Parser<'a> {
                 }
             }
             k => Err(self.error(format!(
-                "expected a name, `_` or `[` in this pattern, found {}",
+                "expected a name, `_`, `[` or `{{` in this pattern, found {}",
                 describe(&k)
             ))),
         }
@@ -357,11 +394,11 @@ impl<'a> Parser<'a> {
         match self.peek() {
             TokenKind::Let => {
                 self.advance();
-                // `let [a, b] = ...` takes the value apart; anything
-                // else binds one name, which is the common shape and
-                // keeps its own statement.
+                // `let [a, b] = ...` and `let {a, b} = ...` take the
+                // value apart; anything else binds one name, which is
+                // the common shape and keeps its own statement.
                 let pattern = match self.peek() {
-                    TokenKind::LBracket => Some(self.pattern()?),
+                    TokenKind::LBracket | TokenKind::LBrace => Some(self.pattern()?),
                     _ => None,
                 };
                 let name = match pattern {

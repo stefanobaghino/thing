@@ -4650,6 +4650,29 @@ pub(crate) fn unpack(
                 v.type_name()
             )),
         },
+        // A map's keys are its contents rather than its shape, so a
+        // pattern asks for the fields it wants and leaves the rest:
+        // extra keys are fine, a missing one is not.
+        Pattern::Map(fields) => match &v {
+            Value::Map(entries) => {
+                for (key, p) in fields {
+                    let field = entries.borrow().get(key.as_str()).cloned();
+                    match field {
+                        Some(field) => unpack(p, field, out)?,
+                        None => {
+                            return Err(format!(
+                                "this pattern asks for the key \"{key}\", and the map has no such key"
+                            ));
+                        }
+                    }
+                }
+                Ok(())
+            }
+            v => Err(format!(
+                "this pattern takes a map apart, and the value is {}",
+                v.type_name()
+            )),
+        },
     }
 }
 

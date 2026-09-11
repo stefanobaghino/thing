@@ -80,7 +80,10 @@ fn brace_is_map(prev: Option<&TokenKind>) -> bool {
     matches!(
         prev,
         Some(
-            In | Eq
+            // `let {a, b} = m;` opens a pattern, not a block, and a
+            // pattern is written the way the literal it matches is.
+            Let | In
+                | Eq
                 | LParen
                 | LBracket
                 | Comma

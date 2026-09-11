@@ -24404,3 +24404,43 @@ alternation, and examples/ranking.ting's .out unchanged.
 Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2908 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 955 — let takes a map apart
+
+Maintenance: tree clean, no PRs, CI and Pages green for d9af349 from
+the API.
+
+`let {code, out} = run(cmd);`. `Pattern::Map(Vec<(String, Pattern)>)`
+joins Name, Hole and List, and the parser reads it the way the map
+literal is written: a bare name is the key of that name bound to
+that name, and `"key": pattern` spells a key out and nests, so
+`let {"out": [a, b]} = r;` reads as the value it matches. A duplicate
+key in one pattern is refused at parse time.
+
+The asymmetry with a list pattern is the design, not an oversight. A
+list's LENGTH is its shape, so a mismatch is an error; a map's KEYS
+ARE ITS CONTENTS, so a pattern asks for the fields it wants and
+leaves the rest — `let {b} = {"a": 1, "b": 2, "c": 3};` is fine.
+A key the map does not have is still a mistake: `this pattern asks
+for the key "nope", and the map has no such key`. Mutation-tested by
+binding nil for a missing key instead, which the selftest catches.
+
+One eval::unpack does the work for both engines again, so the VM's
+`Unpack` opcode needed no change at all. Two other places did:
+
+- The FORMATTER thought `let {` opened a block and wrote `let { code,
+  out } = r;` with a block's spaces. `brace_is_map` decides from the
+  token before the brace, and `Let` now says map — a pattern is
+  written the way the literal it matches is.
+- The CHECKER's token-based unused-local pass read names between
+  brackets only, so `y` in `let {"a": x, "b": y}` inside a function
+  drew no warning. It now reads either bracket; a quoted key is a
+  string token, so what is left between them is exactly what the
+  pattern binds.
+
+Guards: thirteen checks in selftest/compound.ting, nine differential
+cases, and the mutation above.
+
+Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2918 checks on both engines, Windows
+check and clippy, wasm release build.

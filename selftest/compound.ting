@@ -293,3 +293,31 @@ assert(errmsg2(fn() { let f = fn([a, b]) { return a + b; }; return f([1, 2, 3]);
 == "this pattern takes 2 values, and the list has 3", "a mismatched argument reports what a let would");
 assert(errmsg2(fn() { let f = fn([a, _b]) { return a; }; return f(7); })
 == "this pattern takes a list apart, and the value is int", "and the wrong type as well");
+
+# A map pattern asks for the fields it wants, written the way a map
+# literal is: a bare name is its own key, a quoted key nests.
+let rec = {"code": 0, "out": "hi", "err": ""};
+let {code, out} = rec;
+assert(code == 0 && out == "hi", "a bare name is the key of that name");
+let {"code": status} = rec;
+assert(status == 0, "a quoted key binds whatever name follows it");
+let {"out": [first, second]} = {"out": [7, 8]};
+assert(first == 7 && second == 8, "and a list pattern nests inside it");
+let {"a": {"b": deep2}} = {"a": {"b": 3}};
+assert(deep2 == 3, "maps nest in maps");
+let {} = {"anything": 1};
+assert(true, "an empty map pattern asks for nothing and is happy");
+let {"x": _} = {"x": 9};
+assert(true, "a hole matches a field and drops it");
+assert(errmsg2(fn() { let {nope} = {"a": 1}; return nope; })
+== "this pattern asks for the key \"nope\", and the map has no such key",
+"a key the map lacks is a mistake");
+assert(errmsg2(fn() { let {a} = [1, 2]; return a; })
+== "this pattern takes a map apart, and the value is list",
+"a list is not a map here");
+assert(errmsg2(fn() { let {a} = 5; return a; })
+== "this pattern takes a map apart, and the value is int",
+"and neither is an int");
+let big = {"a": 1, "b": 2, "c": 3};
+let {b} = big;
+assert(b == 2, "EXTRA KEYS ARE FINE: a map's keys are its contents, not its shape");

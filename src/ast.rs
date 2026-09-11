@@ -19,6 +19,9 @@ pub enum Pattern {
     /// `_` — the value is matched and dropped.
     Hole,
     List(Vec<Pattern>),
+    /// `{name, "key": p}` — the fields asked of a map, in the order
+    /// they were written. A bare name is its own key.
+    Map(Vec<(String, Pattern)>),
 }
 
 impl Pattern {
@@ -30,6 +33,11 @@ impl Pattern {
             Pattern::Hole => {}
             Pattern::List(parts) => {
                 for p in parts {
+                    p.names(out);
+                }
+            }
+            Pattern::Map(fields) => {
+                for (_, p) in fields {
                     p.names(out);
                 }
             }
@@ -51,6 +59,21 @@ impl std::fmt::Display for Pattern {
                     write!(f, "{p}")?;
                 }
                 write!(f, "]")
+            }
+            Pattern::Map(fields) => {
+                write!(f, "{{")?;
+                for (i, (key, p)) in fields.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    // A field that binds its own key reads back the
+                    // short way it was written.
+                    match p {
+                        Pattern::Name(n) if n == key => write!(f, "{n}")?,
+                        _ => write!(f, "\"{key}\": {p}")?,
+                    }
+                }
+                write!(f, "}}")
             }
         }
     }
