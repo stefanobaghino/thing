@@ -25918,3 +25918,46 @@ Recurring, cost ten minutes: `--doc lib/fs.ting` printed the OLD
 header after the file was edited, because the stdlib is baked into
 the binary at compile time. Rebuild before probing a lib/*.ting
 change — it is in STATE.md and I still tripped on it.
+
+## 996 — a path with a space in it has ends
+
+Milestone "a path that isn't there", third stroke. Two spellings of
+the same sentence, one layer apart:
+
+    ting: cannot read nosuch: No such file or directory (os error 2)
+    cannot read "nosuch": No such file or directory (os error 2)
+
+The first is what `ting`, `--check`, `--fmt`, `--test`, `--coverage`,
+`--profile` and `--bundle` printed; the second is what the builtin
+under them says when a program reads the same path. The runtime has
+quoted paths everywhere for a long time — `cannot list`, `cannot
+write`, `cannot remove`, `cannot rename`, `cannot copy`, `cannot
+import` — and the tools were the holdout.
+
+Quoted wins, and the reason is a path with a space in it: bare, the
+reader cannot tell where the name ends and the sentence resumes.
+Eleven sites moved — the script reader, the writer behind `--fmt`,
+`-o`'s two messages, the REPL's `:load` and `:save`, the bundler's
+three, and the runtime's own `no file at`, which was the one bare
+path left inside a quoted message. The three "no .ting files found
+under" messages take a list of paths, so they quote each: `quoted()`
+in main.rs is that one line.
+
+`file:line:col:` headers stay bare. The colon after the path does
+what the quotes do, and every diagnostic in the corpus, every
+editor's error list and every test that reads one is built on that
+shape.
+
+The guard walks eight surfaces with a path that has a space in it
+and requires `cannot read "..."` from each, then the three tools that
+can say "no .ting files found under" with an empty directory.
+Mutation-tested at both ends: unquoting the script reader fails the
+first half, and putting `paths.join(" ")` back fails the second. The
+first attempt at that second mutation passed — it edited the
+`--check` site while the assertion ran `--test` — so the guard now
+covers every call site rather than one of them.
+
+Two older tests asserted the bare form and were updated; the
+reference states the rule beside 979's.
+
+484 Rust tests in 18 suites.
