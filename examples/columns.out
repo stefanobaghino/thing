@@ -1,0 +1,19 @@
+folder         files    MB
+src               14  0.48
+documentation      6  0.09
+lib               13  0.12
+t                209  3.31
+
+folder                MB
+------------------------
+src                 0.48
+documentation       0.09
+lib                 0.12
+t                   3.31
+------------------------
+total               4.01
+
+src            14 files
+documentation  6 files
+lib            13 files
+t              209 files

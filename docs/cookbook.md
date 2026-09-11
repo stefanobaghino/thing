@@ -186,6 +186,86 @@ sat 1
 the 3
 ```
 
+## columns
+
+Laying out a table when the DATA decides how wide the columns are. table() does the whole thing in one call, with one character per column saying which way it leans; a format spec can take a width it is handed rather than one written into the template, for the lines a table has no row for.
+
+```ting
+# Laying out a table when the DATA decides how wide the columns are.
+# table() does the whole thing in one call, with one character per
+# column saying which way it leans; a format spec can take a width it
+# is handed rather than one written into the template, for the lines
+# a table has no row for.
+
+let li = import("../lib/list.ting");
+let st = import("../lib/string.ting");
+
+let folders = [
+  { "name": "src", "files": 14, "bytes": 482301 },
+  { "name": "documentation", "files": 6, "bytes": 91244 },
+  { "name": "lib", "files": 13, "bytes": 120558 },
+  { "name": "t", "files": 209, "bytes": 3311902 },
+];
+
+fn mb(bytes) { return float(bytes) / 1000000.0; }
+
+# The cells as strings, then one call. The alignment marks the two
+# columns that hold numbers, so they line up under their headings
+# instead of hanging off the left.
+let rows = [["folder", "files", "MB"]];
+for {name, files, bytes} in folders {
+  push(rows, [name, str(files), format("{:.2}", mb(bytes))]);
+}
+print(st["table"](rows, "<>>"));
+print("");
+
+# A rule under the heading and a total below the last row are not
+# rows of the table, so they are laid out by hand — against the same
+# widths, which come from the same data.
+let width = 0;
+for {name} in folders {
+  if len(name) > width { width = len(name); }
+}
+let total = li["sum_by"](folders, fn({bytes}) { return mb(bytes); });
+
+print(format("{:<{}}   {:>8}", "folder", width, "MB"));
+print(st["repeat"]("-", width + 11));
+for {name, bytes} in folders {
+  print(format("{:<{}}   {:>8.2}", name, width, mb(bytes)));
+}
+print(st["repeat"]("-", width + 11));
+print(format("{:<{}}   {:>8.2}", "total", width, total));
+print("");
+
+# pad_right fills with a space unless told otherwise, so a label and
+# its value need no third argument.
+for {name, files} in folders {
+  print(st["pad_right"](name, width) + "  " + st["plural"](files, "file", "files"));
+}
+```
+
+```text
+folder         files    MB
+src               14  0.48
+documentation      6  0.09
+lib               13  0.12
+t                209  3.31
+
+folder                MB
+------------------------
+src                 0.48
+documentation       0.09
+lib                 0.12
+t                   3.31
+------------------------
+total               4.01
+
+src            14 files
+documentation  6 files
+lib            13 files
+t              209 files
+```
+
 ## config
 
 Layered configuration with lib/json.ting: built-in defaults, a config-file overlay and environment-style overrides folded together with merge_in, the effective settings printed as a table, and diff reporting exactly what the overrides changed.

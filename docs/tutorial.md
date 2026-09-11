@@ -863,6 +863,48 @@ for [word, n] in ma["top"](counts, 3) {
 1 and
 ```
 
+### Lining the output up
+
+A count is easier to read under its heading than beside its word.
+`table` takes rows of strings and pads them into columns; the second
+argument says which way each column leans, one character per column,
+`<` for left, `>` for right and `^` for centred:
+
+```ting
+let st = import("lib/string.ting");
+let rows = [["word", "count"], ["the", "3"], ["cat", "2"], ["and", "1"]];
+print(st["table"](rows, "<>"));
+```
+
+```text
+word  count
+the       3
+cat       2
+and       1
+```
+
+For a line that is not a row of a table — a heading rule, a total —
+a format spec can take its width from the arguments instead of having
+it written in, which is what you want when the data decides how wide
+the column is:
+
+```ting
+let words = ["the", "watermelon", "cat"];
+let width = 0;
+for w in words {
+  if len(w) > width { width = len(w); }
+}
+for w in words {
+  print(format("{:<{}}  {}", w, width, len(w)));
+}
+```
+
+```text
+the         3
+watermelon  10
+cat         3
+```
+
 That's the whole tour. From here: the [reference](reference.md) for
 every operator and builtin, or `ting` with no arguments for a REPL to
 poke at.
