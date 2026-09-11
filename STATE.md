@@ -4073,10 +4073,20 @@ holds only the current milestone and the standing rules.
   identical, sweeps green, coverage 3465/3482 (99%), the six site
   pages byte-identical to what md2html renders here. Milestone "the
   checker knows what a module offers" complete.
+- 969: replenishment — milestone "a column you didn't know the width
+  of" (v2.150), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: design the next milestone.
+  - format takes a width and a number of decimal places from the
+    argument list: `{:<{}}` and `{:>{}.{}}`. The value comes first,
+    then the spec's holes left to right, as Python reads them.
+  - pad_left and pad_right default their fill to a space.
+  - string.table takes an alignment per column, so a column of
+    figures lines up under its heading.
+  - an example that prints a real report with all three, and the
+    reference, tutorial, cookbook and playground entries for them.
+  - release v2.150.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

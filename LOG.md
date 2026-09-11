@@ -24873,3 +24873,40 @@ and dates the playground to this release.
 Milestone "the checker knows what a module offers" is complete.
 
 Next tick: replenishment.
+
+## 969 — replenishment: milestone "a column you didn't know the width of"
+
+Maintenance: tree clean, no PRs, CI green for a3f98b7 from the API.
+
+Probed the way 961 did: wrote a plausible program without looking
+anything up first — a monthly expense report from a CSV, totals per
+category, a column whose width comes from the longest category name.
+
+THE LAST MILESTONE PAID OFF IMMEDIATELY. `--check` caught the whole
+first draft before it ran: `lib/csv.ting has no parse_file (did you
+mean parse_with?)`, `pad_right takes 3 arguments, called with 2`,
+`round is bound nowhere`, three unused imports and an unused
+`header`. Only the second draft needed the interpreter at all.
+
+WHAT IT COULD NOT SAY, and the milestone this replenishes:
+
+- `format("{:<{}}", cat, width)` is an error. A format spec's width
+  and decimal places must be written into the template, so the ONE
+  case that makes a program compute a width — the data decides how
+  wide the column is — is the case the spec cannot express. The
+  fallback is `pad_right(cat, width, " ")`, which is what format
+  exists to replace.
+- `pad_left`/`pad_right` require the fill character. Every call in
+  this repository outside selftest passes `" "`. 964's lesson applies
+  exactly: a default is additive for callers.
+- `string.table` left-aligns every column, so a table of figures
+  cannot line its numbers up under their heading. Alignment per
+  column is the missing argument.
+
+NOT CHOSEN: `round(x, places)` as a value (format's `{:.2}` already
+renders it, and money arithmetic wants a decimal type rather than a
+rounded float — a bigger question than this milestone); a
+csv-to-maps convenience (`entry_of` is already that); string
+interpolation (a language change to save `format`, which is fine).
+
+Backlog for v2.150 is in STATE.md.
