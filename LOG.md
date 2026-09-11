@@ -23809,3 +23809,48 @@ Milestone "putting things in order": ordering as deep as equality
 already goes.
 
 Backlog written to STATE.md.
+
+## 938 — a list has a place in the order
+
+Maintenance: tree clean, no PRs, CI green for 64e2882 from the API.
+
+Lists order lexicographically now, everywhere ting orders: `<` and
+its three siblings, `sort`, `sort_by`'s keys, `min` and `max` — one
+`order()` in src/eval.rs behind all of them, so both engines and every
+builtin got it at once. Element by element, the first difference
+decides, a list that is a prefix of another comes first, and ints and
+floats tie inside a list exactly as `==` says they do outside it.
+
+So `sort(items(m))` works, and a compound key is a list:
+`sort_by(people, fn(p) { return [p["last"], p["first"]]; })`.
+
+THE REFUSALS ARE THE DESIGN. A kind with no order still has none
+inside a list: `sort([[nil], [nil]])` says `sort cannot order nil`,
+and `sort([[1], ["a"]])` says it cannot order strings and numbers
+together — the same sentences the top level already used, because
+`ensure_sortable` and the sort now share one vocabulary (`numbers`,
+`strings`, `lists`, or the type's own name). Since a sort's
+comparator cannot fail, it records the first pair it could not order
+and reports that after the sort rather than guessing.
+
+A NaN is unordered inside a list as it is outside: every comparison
+false, including against itself.
+
+TWO RINGS HAVE NO BOTTOM BETWEEN THEM. A list that contains itself
+compared against another such list recurses forever, so `order` keeps
+the pair stack `==` keeps: a pair met again while it is still being
+ordered is taken as equal. Removing that guard aborts the process
+with a stack overflow, which is how it was checked; the case in
+selftest is two DISTINCT rings, since a list compared with itself is
+caught earlier by pointer identity and proves nothing.
+
+Guards: a unit test in src/eval.rs for the rule and every refusal,
+eleven differential cases so the engines agree including on the error
+text, and sixteen checks in selftest/collections.ting. The prefix
+rule was mutation-tested by reversing it, the cycle guard by removing
+it. Also fixed in passing: the fingerprint differential test carried
+the `pop` test's doc comment, from 924.
+
+Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2866 checks on both engines, Windows
+check and clippy, wasm release build.

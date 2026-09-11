@@ -65,10 +65,34 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
     }
 }
 
-/// Taking a key out of a map is the first thing `pop` does to
-/// something that is not a list, so every way of getting it wrong has
-/// to read the same on both engines — including the "did you mean"
-/// that reading a missing key already gave.
+/// Lists order lexicographically, and both engines go through the
+/// same `eval::binary` to say so — including the refusals, which are
+/// the half a difference would hide.
+#[test]
+fn lists_order_the_same_on_both_engines() {
+    let cases: &[&str] = &[
+        "print([1, 2] < [1, 3], [1, 2] < [1, 2, 0], [] < [0]);",
+        "print([1, 2] <= [1, 2.0], [1, 2] >= [1, 2.0], [1, 2] == [1, 2.0]);",
+        "print(sort([[\"b\", 1], [\"a\", 2], [\"a\", 1]]));",
+        "print(sort_by([[2, \"x\"], [1, \"y\"]], fn(p) { return [p[0], p[1]]; }));",
+        "print(min([[2], [1, 9]]), max([[2], [1, 9]]));",
+        "print(try(fn() { return sort([[1], [\"a\"]]); }));",
+        "print(try(fn() { return sort([[nil], [nil]]); }));",
+        "print(try(fn() { return sort([[1], 2]); }));",
+        "print(try(fn() { return [1] < 1; }));",
+        "print([0.0 / 0.0] < [1], [1] < [0.0 / 0.0]);",
+        "let r = [1]; push(r, r); print(r < [1, r], r <= [1, r]);",
+        "let a = [1]; push(a, a); let b = [1]; push(b, b); print(a < b, a <= b, a == b);",
+    ];
+    for src in cases {
+        same(src);
+    }
+}
+
+/// A fingerprint is a key a map is expected to agree with `==` on, so
+/// the two engines have to spell it identically — the refusals
+/// included, since a `nil` there is what sends the caller back to a
+/// scan.
 #[test]
 fn a_fingerprint_reads_the_same_on_both_engines() {
     let cases: &[&str] = &[

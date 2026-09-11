@@ -3947,14 +3947,17 @@ holds only the current milestone and the standing rules.
   apart from main.rs's `rule()`.
 - 937: replenishment — milestone "putting things in order"
   (v2.146), reasoning in LOG.md.
+- 938: lists order lexicographically — one `order()` in src/eval.rs
+  behind `<` and sort/sort_by/min/max, so both engines got it at
+  once. `sort(items(m))` works and a compound key is a list. The
+  refusals keep the top level's vocabulary, and a sort reports the
+  first pair it could not order after the fact, since a comparator
+  cannot fail. TWO DISTINCT RINGS have no bottom between them: the
+  pair stack `==` keeps is load-bearing, and removing it aborts with
+  a stack overflow.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lists order lexicographically wherever ting orders — `<` and its
-  siblings through eval::binary, and sort/sort_by/min/max/
-  binary_search through ensure_sortable. First difference decides, a
-  prefix comes first, a refusal names what it could not order. Maps
-  stay unordered: their keys are a set.
   - compare(a, b), the 77th builtin: -1, 0 or 1 by the same rule,
   refusing where `<` refuses, so a comparator over several fields in
   mixed directions is one line per field.

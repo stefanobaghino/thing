@@ -141,3 +141,32 @@ selfmap["self"] = selfmap;
 assert(fingerprint(selfmap) == nil, "fingerprint refuses a map that holds itself");
 assert(errmsg(fn() { return fingerprint(); }) == "fingerprint expects 1 argument, got 0",
 "fingerprint takes one value");
+
+# Order goes as deep as equality does: a list is compared element by
+# element, the first difference decides, and a prefix comes first.
+assert([1, 2] < [1, 3], "a list orders by its first difference");
+assert([1, 2] < [1, 2, 0], "a prefix comes first");
+assert(!([1, 2] < [1, 2]) && [1, 2] <= [1, 2], "equal lists are neither before nor after");
+assert([1, 2] <= [1, 2.0] && [1, 2] >= [1, 2.0], "ints and floats tie, as == says");
+assert([["b"], ["a"]] > [["a"], ["z"]], "a list of lists orders the same way");
+assert([] < [0], "the empty list comes before everything");
+assert(sort([["b", 1], ["a", 2], ["a", 1]]) == [["a", 1], ["a", 2], ["b", 1]],
+"sort orders pairs, which is what a frequency table is");
+assert(sort_by([{"n": 2, "s": "x"}, {"n": 1, "s": "y"}], fn(r) { return [r["n"], r["s"]]; })
+== [{"n": 1, "s": "y"}, {"n": 2, "s": "x"}], "a compound key is a list");
+assert(min([[2], [1, 9]]) == [1, 9] && max([[2], [1, 9]]) == [2], "min and max read the same order");
+assert(errmsg(fn() { return sort([[1], ["a"]]); }) == "sort cannot order strings and numbers together",
+"a mismatch inside the lists is still a mismatch");
+assert(errmsg(fn() { return sort([[nil], [nil]]); }) == "sort cannot order nil",
+"a kind with no order has none inside a list either");
+assert(errmsg(fn() { return sort([[1], 2]); }) == "sort cannot order lists and numbers together",
+"a list does not order against a number");
+assert(errmsg(fn() { return [1] < 1; }) == "cannot compare list and int",
+"and the operator says so in its own words");
+let ring = [1];
+push(ring, ring);
+assert(!(ring < [1, ring]) && ring <= [1, ring], "a list that holds itself still answers");
+let twin = [1];
+push(twin, twin);
+assert(!(ring < twin) && ring <= twin, "and so do two of them, which have no bottom between them");
+assert(!([0.0 / 0.0] < [1]) && !([1] < [0.0 / 0.0]), "a NaN inside is unordered, as it is outside");

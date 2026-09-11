@@ -2854,8 +2854,12 @@ impl<W: Write> Interpreter<W> {
                     Value::List(items) => {
                         let mut items = items.borrow().clone();
                         ensure_sortable(items.iter(), "sort", span)?;
-                        items.sort_by(cmp_ordered);
-                        Ok(Value::list(items))
+                        let mut bad = None;
+                        items.sort_by(|a, b| cmp_ordered(&mut bad, a, b));
+                        match bad {
+                            Some(m) => Err(error(unsortable("sort", m), span)),
+                            None => Ok(Value::list(items)),
+                        }
                     }
                     v => Err(error(
                         format!("sort expects a list, got {}", v.type_name()),
@@ -2875,8 +2879,12 @@ impl<W: Write> Interpreter<W> {
                             keyed.push((k, v));
                         }
                         ensure_sortable(keyed.iter().map(|(k, _)| k), "sort_by keys", span)?;
-                        keyed.sort_by(|a, b| cmp_ordered(&a.0, &b.0));
-                        Ok(Value::list(keyed.into_iter().map(|(_, v)| v).collect()))
+                        let mut bad = None;
+                        keyed.sort_by(|a, b| cmp_ordered(&mut bad, &a.0, &b.0));
+                        match bad {
+                            Some(m) => Err(error(unsortable("sort_by keys", m), span)),
+                            None => Ok(Value::list(keyed.into_iter().map(|(_, v)| v).collect())),
+                        }
                     }
                     (a, f) => Err(error(
                         format!(
@@ -3098,13 +3106,17 @@ impl<W: Write> Interpreter<W> {
                         }
                         ensure_sortable(items.iter(), b.name(), span)?;
                         let mut best = items[0].clone();
+                        let mut bad = None;
                         for v in items.iter().skip(1) {
-                            let ord = cmp_ordered(v, &best);
+                            let ord = cmp_ordered(&mut bad, v, &best);
                             if (b == Builtin::Min) == ord.is_lt() && !ord.is_eq() {
                                 best = v.clone();
                             }
                         }
-                        Ok(best)
+                        match bad {
+                            Some(m) => Err(error(unsortable(b.name(), m), span)),
+                            None => Ok(best),
+                        }
                     }
                     v => Err(error(
                         format!("{} expects a list, got {}", b.name(), v.type_name()),
@@ -4539,18 +4551,76 @@ fn values_equal(l: &Value, r: &Value) -> bool {
     l == r
 }
 
+/// The two kinds a comparison could not put in order, named the way
+/// the value that carried them names itself.
+pub(crate) struct Mismatch(pub &'static str, pub &'static str);
+
+thread_local! {
+    /// The (left, right) list pairs currently being ordered. A pair met
+    /// again while it is still being ordered is taken as equal, which
+    /// is what `==` does with the same shape: the comparison ends on a
+    /// cycle instead of overflowing the stack. Pointers only; never
+    /// dereferenced.
+    static ORDERING: RefCell<Vec<(*const (), *const ())>> = const { RefCell::new(Vec::new()) };
+}
+
+/// Ting's order, as deep as equality already goes: numbers
+/// numerically (so 1 and 1.0 tie), strings by code point, and lists
+/// element by element — the first difference decides, and a list that
+/// is a prefix of another comes first. `Ok(None)` is a NaN, which is
+/// unordered against everything, itself included.
+pub(crate) fn order(l: &Value, r: &Value) -> Result<Option<std::cmp::Ordering>, Mismatch> {
+    use std::cmp::Ordering;
+    match (l, r) {
+        (Value::Int(a), Value::Int(b)) => Ok(Some(a.cmp(b))),
+        (Value::Float(a), Value::Float(b)) => Ok(a.partial_cmp(b)),
+        (Value::Int(a), Value::Float(b)) => Ok((*a as f64).partial_cmp(b)),
+        (Value::Float(a), Value::Int(b)) => Ok(a.partial_cmp(&(*b as f64))),
+        (Value::Str(a), Value::Str(b)) => Ok(Some(a.as_str().cmp(b.as_str()))),
+        (Value::List(a), Value::List(b)) => {
+            let (pa, pb) = (Rc::as_ptr(a) as *const (), Rc::as_ptr(b) as *const ());
+            if pa == pb {
+                return Ok(Some(Ordering::Equal));
+            }
+            let entered = ORDERING.with(|o| {
+                let mut o = o.borrow_mut();
+                if o.contains(&(pa, pb)) {
+                    false
+                } else {
+                    o.push((pa, pb));
+                    true
+                }
+            });
+            if !entered {
+                return Ok(Some(Ordering::Equal));
+            }
+            let out = order_lists(&a.borrow(), &b.borrow());
+            ORDERING.with(|o| {
+                o.borrow_mut().pop();
+            });
+            out
+        }
+        _ => Err(Mismatch(l.type_name(), r.type_name())),
+    }
+}
+
+/// Lexicographic, once the cycle guard has let the pair through.
+fn order_lists(a: &[Value], b: &[Value]) -> Result<Option<std::cmp::Ordering>, Mismatch> {
+    use std::cmp::Ordering;
+    for (x, y) in a.iter().zip(b.iter()) {
+        match order(x, y)? {
+            Some(Ordering::Equal) => {}
+            decided => return Ok(decided),
+        }
+    }
+    Ok(Some(a.len().cmp(&b.len())))
+}
+
 fn compare(op: BinaryOp, l: Value, r: Value, span: Span) -> Result<Value, RuntimeError> {
-    let ord = match (&l, &r) {
-        (Value::Int(a), Value::Int(b)) => a.partial_cmp(b),
-        (Value::Float(a), Value::Float(b)) => a.partial_cmp(b),
-        (Value::Int(a), Value::Float(b)) => (*a as f64).partial_cmp(b),
-        (Value::Float(a), Value::Int(b)) => a.partial_cmp(&(*b as f64)),
-        (Value::Str(a), Value::Str(b)) => a.partial_cmp(b),
-        _ => {
-            return Err(error(
-                format!("cannot compare {} and {}", l.type_name(), r.type_name()),
-                span,
-            ));
+    let ord = match order(&l, &r) {
+        Ok(ord) => ord,
+        Err(Mismatch(a, b)) => {
+            return Err(error(format!("cannot compare {a} and {b}"), span));
         }
     };
     // NaN comparisons are false, matching IEEE semantics.
@@ -4744,45 +4814,71 @@ pub(crate) fn index(base: Value, idx: Value, span: Span) -> Result<Value, Runtim
     }
 }
 
-/// All values orderable, and not strings mixed with numbers.
+/// What a sort calls a kind of value, in the plural it reads as in a
+/// message: the two number types are one kind, since they order
+/// together.
+fn kind_word(type_name: &'static str) -> &'static str {
+    match type_name {
+        "int" | "float" => "numbers",
+        "string" => "strings",
+        "list" => "lists",
+        other => other,
+    }
+}
+
+/// The message for a pair a sort could not put in order: one kind when
+/// the kind itself has no order, both when they have one each.
+fn unsortable(who: &str, m: Mismatch) -> String {
+    let (a, b) = (kind_word(m.0), kind_word(m.1));
+    match a == b {
+        true => format!("{who} cannot order {a}"),
+        false => format!("{who} cannot order {a} and {b} together"),
+    }
+}
+
+/// Every value a kind that has an order, and all of them the same kind.
+/// A one-element list is never compared, so this is what answers for
+/// `sort([nil])`; a mismatch deeper in is the sort's own to report.
 fn ensure_sortable<'a>(
     vals: impl Iterator<Item = &'a Value>,
     who: &str,
     span: Span,
 ) -> Result<(), RuntimeError> {
-    let (mut nums, mut strs) = (false, false);
+    let mut seen: Option<&'static str> = None;
     for v in vals {
-        match v {
-            Value::Int(_) | Value::Float(_) => nums = true,
-            Value::Str(_) => strs = true,
+        let kind = match v {
+            Value::Int(_) | Value::Float(_) | Value::Str(_) | Value::List(_) => {
+                kind_word(v.type_name())
+            }
             v => {
                 return Err(error(format!("{who} cannot order {}", v.type_name()), span));
             }
+        };
+        match seen {
+            Some(first) if first != kind => {
+                return Err(error(
+                    format!("{who} cannot order {first} and {kind} together"),
+                    span,
+                ));
+            }
+            _ => seen = Some(kind),
         }
-    }
-    if nums && strs {
-        return Err(error(
-            format!("{who} cannot order numbers and strings together"),
-            span,
-        ));
     }
     Ok(())
 }
 
-/// Total order over values ensure_sortable accepted. Int/Float compare
-/// numerically; NaN sorts as equal to everything (partial_cmp fallback).
-fn cmp_ordered(a: &Value, b: &Value) -> std::cmp::Ordering {
-    let as_f = |v: &Value| match v {
-        Value::Int(n) => *n as f64,
-        Value::Float(x) => *x,
-        _ => unreachable!("ensure_sortable admits only numbers and strings"),
-    };
-    match (a, b) {
-        (Value::Int(x), Value::Int(y)) => x.cmp(y),
-        (Value::Str(x), Value::Str(y)) => x.cmp(y),
-        _ => as_f(a)
-            .partial_cmp(&as_f(b))
-            .unwrap_or(std::cmp::Ordering::Equal),
+/// A total order for sorting, and the first pair it could not order.
+/// NaN sorts as equal to everything, and so does a pair that has no
+/// order at all — the comparison has to answer something, so it
+/// answers the one thing that moves nothing, and the caller reports
+/// what `bad` caught.
+fn cmp_ordered(bad: &mut Option<Mismatch>, a: &Value, b: &Value) -> std::cmp::Ordering {
+    match order(a, b) {
+        Ok(ord) => ord.unwrap_or(std::cmp::Ordering::Equal),
+        Err(m) => {
+            bad.get_or_insert(m);
+            std::cmp::Ordering::Equal
+        }
     }
 }
 
@@ -4883,6 +4979,40 @@ mod tests {
         assert_eq!(run("2 <= 1"), Value::Bool(false));
         assert_eq!(run("1 < 1.5"), Value::Bool(true));
         assert_eq!(run("\"a\" < \"b\""), Value::Bool(true));
+    }
+
+    /// Order follows equality down into a list: element by element,
+    /// the first difference deciding, a prefix first — and where
+    /// equality says two values are the same, order says neither
+    /// comes first.
+    #[test]
+    fn lists_order_lexicographically() {
+        assert_eq!(run("[1, 2] < [1, 3]"), Value::Bool(true));
+        assert_eq!(run("[1, 2] < [1, 2, 0]"), Value::Bool(true));
+        assert_eq!(run("[] < [0]"), Value::Bool(true));
+        assert_eq!(run("[2] < [1, 9]"), Value::Bool(false));
+        assert_eq!(run("[1, 2] < [1, 2]"), Value::Bool(false));
+        assert_eq!(run("[1, 2] <= [1, 2.0]"), Value::Bool(true));
+        assert_eq!(run("[1, 2] >= [1, 2.0]"), Value::Bool(true));
+        assert_eq!(
+            run("[[\"b\"], [\"a\"]] > [[\"a\"], [\"z\"]]"),
+            Value::Bool(true)
+        );
+        // A NaN is unordered wherever it sits.
+        assert_eq!(run("[0.0 / 0.0] < [1]"), Value::Bool(false));
+        assert_eq!(run("[1] < [0.0 / 0.0]"), Value::Bool(false));
+        // The refusals keep their own words.
+        assert_eq!(run_err("[1] < 1"), "cannot compare list and int");
+        assert_eq!(run_err("[nil] < [nil]"), "cannot compare nil and nil");
+        assert_eq!(
+            run_err("sort([[1], [\"a\"]])"),
+            "sort cannot order strings and numbers together"
+        );
+        assert_eq!(run_err("sort([[nil], [nil]])"), "sort cannot order nil");
+        assert_eq!(
+            run_err("sort([[1], 2])"),
+            "sort cannot order lists and numbers together"
+        );
     }
 
     #[test]
