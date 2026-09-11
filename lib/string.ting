@@ -11,8 +11,10 @@ fn repeat(s, n) {
 # s padded with fill on the LEFT until it is width COLUMNS wide,
 # which right-aligns it in a column of that width. A string already
 # that wide is returned unchanged; a wide fill can overshoot by a
-# column. format's `{:>5}` does the same inside a template.
-fn pad_left(s, width, fill) {
+# column. format's `{:>5}` does the same inside a template. The fill
+# defaults to a space, which is what a column of text wants and what
+# every caller here passed.
+fn pad_left(s, width, fill = " ") {
   let step = display_width(fill);
   if step <= 0 { fail("pad_left: fill must take at least one column"); }
   let gap = width - display_width(s);
@@ -23,8 +25,9 @@ fn pad_left(s, width, fill) {
 # s padded with fill on the RIGHT until it is width COLUMNS wide,
 # which left-aligns it in a column of that width. A string already
 # that wide is returned unchanged; a wide fill can overshoot by a
-# column. format's `{:<5}` does the same inside a template.
-fn pad_right(s, width, fill) {
+# column. format's `{:<5}` does the same inside a template. The fill
+# defaults to a space.
+fn pad_right(s, width, fill = " ") {
   let step = display_width(fill);
   if step <= 0 { fail("pad_right: fill must take at least one column"); }
   let gap = width - display_width(s);
@@ -33,8 +36,9 @@ fn pad_right(s, width, fill) {
 }
 
 # s centred in width using fill on both sides; the extra column of an
-# odd gap goes on the right. fill must be one column wide.
-fn center(s, width, fill) {
+# odd gap goes on the right. fill must be one column wide, and is a
+# space unless another is given.
+fn center(s, width, fill = " ") {
   if display_width(fill) != 1 { fail("center: fill must be one column wide"); }
   let gap = width - display_width(s);
   if gap <= 0 { return s; }
@@ -263,7 +267,7 @@ fn table(rows) {
   for row in rows {
     let cells = [];
     for i in range(len(row)) {
-      if i == len(row) - 1 { push(cells, row[i]); } else { push(cells, pad_right(row[i], widths[i], " ")); }
+      if i == len(row) - 1 { push(cells, row[i]); } else { push(cells, pad_right(row[i], widths[i])); }
     }
     push(lines, join(cells, "  "));
   }

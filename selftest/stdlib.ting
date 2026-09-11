@@ -23,6 +23,9 @@ assert(s["repeat"]("ab", 3) == "ababab", "repeat");
 assert(s["repeat"]("x", 0) == "", "repeat zero");
 assert(s["pad_left"]("7", 3, "0") == "007", "pad_left");
 assert(s["pad_right"]("7", 3, " ") == "7  ", "pad_right");
+assert(s["pad_left"]("7", 3) == "  7", "pad_left fills with a space by default");
+assert(s["pad_right"]("7", 3) == "7  ", "pad_right fills with a space by default");
+assert(s["center"]("7", 5) == "  7  ", "center fills with a space by default");
 assert(s["lines"]("a\nb\nc") == ["a", "b", "c"], "lines");
 assert(s["title"]("héllo wide  world") == "Héllo Wide  World", "title");
 

@@ -82,9 +82,9 @@ Imports return a map, so functions are reached with `["name"]`.
 | Function | Does |
 |----------|------|
 | `repeat(s, n)` | `s` concatenated `n` times |
-| `pad_left(s, width, fill)` | prepends `fill` until at least `width` columns |
-| `pad_right(s, width, fill)` | appends `fill` until at least `width` columns |
-| `center(s, width, fill)` | `s` centred in `width` columns with `fill` on both sides (odd gap: extra on the right) |
+| `pad_left(s, width, fill = " ")` | prepends `fill` until at least `width` columns |
+| `pad_right(s, width, fill = " ")` | appends `fill` until at least `width` columns |
+| `center(s, width, fill = " ")` | `s` centred in `width` columns with `fill` on both sides (odd gap: extra on the right) |
 | `fit(s, width)` | the longest prefix of `s` that fits in `width` columns, never splitting a wide character |
 | `truncate(s, width, suffix = "...")` | at most `width` columns, ending in `suffix` when cut |
 | `indent(s, prefix)` | `prefix` before every non-empty line |
