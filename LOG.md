@@ -25135,3 +25135,44 @@ arguments` both are, and both are there.
 Milestone "a column you didn't know the width of" is complete.
 
 Next tick: replenishment.
+
+## 977 — replenishment: milestone "one way to name a file"
+
+Maintenance: tree clean, no PRs, CI green for 88b54cc from the API.
+
+Three probes this time, all written cold: a task runner over a JSON
+file of dependencies, a semver module with a test file beside it, and
+a module that does a little work when it loads. The checker caught
+every name I guessed wrong before anything ran — `lib/json.ting has
+no parse`, `lib/test.ting has no check_fails (did you mean check?)`,
+`is_digit is bound nowhere` — which is 962 and 963 doing their job on
+code they never saw.
+
+WHAT THE PROBES FOUND, and the milestone this replenishes:
+
+- A DIAGNOSTIC NAMES ONE FILE TWO WAYS. An error raised inside an
+  imported module prints the module's ABSOLUTE path, while the trace
+  note under it prints the main file as written: "…/probe/boom.ting:1:16:
+  error: boom" then "note: in explode(), called from main.ting:5:1".
+  `--check` prints that same module as `./boom.ting`. try()'s "at"
+  and "trace" disagree with each other in the same map for the same
+  reason. src/diag.rs has had `shorten` — "a path the way the reader
+  wrote it" — since the profile table needed it; the error path never
+  used it.
+- `ting --test .` calls a module `ok`. A library file in a directory
+  of tests verifies nothing and is reported as a file that passed,
+  with the totals adding "(1 file checked nothing)" as an aside. A
+  file that checked nothing is not a test that passed.
+- lib/json.ting has no `parse` and no `str`. The area's two verbs are
+  builtins (`json_parse`, `json_str`), and the module you imported is
+  the first place anyone looks — which is exactly the argument 954
+  made for `items` and `values`, and lib/map.ting re-exports those.
+
+NOT CHOSEN: a naming convention for test files (`*_test.ting`), which
+would make selftest/ wrong and hands the problem to the file system
+rather than answering it; a `match` statement (a language addition
+the probes did not ask for); shaping lib/test.ting's failure line
+further, which mostly stops being a problem once the path in it is
+short.
+
+Backlog for v2.151 is in STATE.md.

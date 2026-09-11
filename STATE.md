@@ -4108,10 +4108,21 @@ holds only the current milestone and the standing rules.
   pages byte-identical. Milestone "a column you didn't know the width
   of" complete. Found: a marker used to date the deployed wasm must
   be a literal the compiler kept whole, not one with a `{}` in it.
+- 977: replenishment — milestone "one way to name a file" (v2.151),
+  reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: design the next milestone.
+  - an error inside an imported file names it the way --check does:
+    the message, the trace notes, and try's "at" and "trace", all
+    through diag::shorten.
+  - the same rule audited across --fmt, --test, --doc, --profile and
+    --lsp, with a guard per surface so one cannot drift back.
+  - `ting --test` reports a file that verified nothing as skipped
+    rather than ok, and says so in the totals.
+  - lib/json.ting re-exports parse and str, the way lib/map.ting
+    re-exports items and values.
+  - release v2.151.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
