@@ -4033,10 +4033,15 @@ holds only the current milestone and the standing rules.
   prologue as one map pattern, logs.ting by field name. A tutorial
   block nearly shelled out to `echo`, which Windows CI has no
   executable for.
+- 958: v2.148.0 tagged (169th tag) — milestone "asking a map for its
+  fields".
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.148.0.
+  - verify v2.148.0 from the API and the published assets.
+  - health tick closing the milestone (bench vs BASELINE, fuzz
+  sweeps in release).
+  - replenishment: the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

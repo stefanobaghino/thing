@@ -5,6 +5,38 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.148.0 (2026-09-11)
+
+- **`items(m)` and `values(m)` are builtins**, the 78th and 79th,
+  beside `keys(m)`. Walking a map was the documented idiom —
+  `for [k, v] in items(m)` — and it cost an import that walking a
+  list did not. lib/map.ting re-exports both, so
+  `import("lib/map.ting")["items"]` still finds them.
+- **A pattern takes a map apart.** `let {code, out} = run(cmd);`
+  binds two fields by name, and the same braces work in a loop and in
+  a parameter list: `for {name, n} in rows` and
+  `map(rows, fn({n}) { ... })`. ting hands back record-shaped maps
+  everywhere — `run` gives code/out/err, `stat` gives
+  size/modified/kind, `try` gives ok/err, `re_find` gives
+  start/end/text/groups — and every use of one used to open with a
+  line of subscript bookkeeping.
+- **Written the way the literal is.** A bare name is the key of that
+  name; `"key": pattern` spells a key out and nests, so
+  `let {"out": [a, b]} = r;` reads as the value it matches. A key
+  asked for twice in one pattern is a parse error.
+- **Extra keys are fine; a missing one is not.** The asymmetry with a
+  list pattern is the design: a list's length is its shape, while a
+  map's keys are its contents, and asking three fields of a
+  ten-field record is the ordinary thing to do. `this pattern asks
+  for the key "nope", and the map has no such key` says the other
+  half.
+- The checker warns about an unused name a map pattern binds, the
+  formatter knows `let {` and `for {` open a pattern rather than a
+  block, and a signature or trace prints the pattern as written:
+  `label({name, n})`.
+- lib/csv.ting's scanner and examples/logs.ting are written with
+  these, and the reference and tutorial sections cover them.
+
 ## v2.147.0 (2026-09-11)
 
 - **A pattern takes a value apart.** `let [a, b] = pair;` binds both

@@ -24513,3 +24513,24 @@ Gate: fmt, clippy, 17 `test result: ok` (465 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2926 checks on both engines, Windows
 check and clippy, wasm release build. Cookbook and playground
 examples regenerated for the logs change.
+
+## 958 — release v2.148.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for ebcbd34 from
+the API.
+
+v2.148.0, the milestone "asking a map for its fields". 947 made a map
+walkable by name and 949's own reference example had to import a
+module to show it; `items` and `values` are builtins now. The larger
+half is that ting hands back record-shaped maps everywhere and
+nothing took one apart: `let {code, out} = run(cmd);` does, and the
+same braces work in a loop and a parameter list. A map pattern is
+written the way the map literal is, extra keys are fine because a
+map's keys are its contents rather than its shape, and a key that is
+not there is still a mistake.
+
+Strokes 954, 955, 956, 957. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.148.0; the binary reports `ting
+2.148.0`. Gate re-run after the bump: 17 suites (465 tests), `--fmt
+.` 80 unchanged, corpus at fourteen, 2926 checks on both engines,
+Windows check and clippy, wasm release build.
