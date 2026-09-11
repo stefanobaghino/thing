@@ -26644,3 +26644,26 @@ deadlock guard for its full two minutes, which is how that test says
 no.
 
 489 tests, 3007 checks.
+
+## 1018 — release v2.156.0
+
+Maintenance: tree clean, no open PRs, CI and Pages green for 44067d1
+from the API, no stray fs tree in the root.
+
+v2.156.0, the milestone "the program your program runs". The probe
+wrote release notes from git and found that a script driving other
+programs runs out of road just past the first page: no directory for
+a child (1015), no environment for it (1016), and nothing to see
+until it was over (1017). All three were a shell string away, and a
+shell string is what `run` was built to avoid.
+
+Strokes 1015, 1016, 1017. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.156.0; the binary reports `ting
+2.156.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (489
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 3007 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.156.0 — the 177th tag — and pushed. Verification is the
+next tick.

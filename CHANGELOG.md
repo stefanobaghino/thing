@@ -5,6 +5,27 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.156.0 (2026-09-12)
+
+- **A child can be told where to run.** `run`'s third argument is
+  stdin when it is a string and options when it is a map:
+  `run("git", ["status"], {"dir": path})`. Before this, a script that
+  wanted a child in another directory needed a flag the program
+  happens to have, or a shell string to `cd` for it — and there is no
+  shell on Windows. An option nothing knows is an error, with the list
+  of the ones there are.
+- **And what its environment should hold.** `{"env": {"VAR": "value"}}`
+  puts variables on top of the ones the child inherits, and a name
+  bound to `nil` is one the child will not have. `VAR=value program`
+  is the commonest line in any CI script, and it took a shell to write
+  until now.
+- **And whether you get to watch.** `{"show": true}` lets the child
+  write to ting's own stdout and stderr as it goes, for the build or
+  test run whose output is the whole point of waiting. What comes back
+  has no `out` or `err` in it — nothing was captured, and an empty
+  string would say the child was silent. `lib/sh.ting` gains `show`
+  beside `ok`, `check` and `lines`.
+
 ## v2.155.0 (2026-09-12)
 
 - **A zero in front of a width fills with zeroes.** `format("{:05}",
