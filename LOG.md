@@ -26404,8 +26404,8 @@ the spec is sign-aware, so it is "-005". ISO 8601 writes expanded
 years that way, and a date already four characters wide — the years a
 run of `time_ms()` can actually reach — is untouched either way.
 
-selftest/time.ting loses the check for the helper and keeps its 77
-others; the stdlib page loses the row. 213 functions, 2994 checks.
+selftest/time.ting loses the check for the helper and keeps its 78
+others (corrected in 1012); the stdlib page loses the row. 213 functions, 2994 checks.
 
 ## 1011 — release v2.155.0
 
@@ -26430,3 +26430,30 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.155.0 — the 176th tag — and pushed. Verification is the
 next tick.
+
+## 1012 — v2.155.0 verified
+
+Release workflow green for the tag; CI and Pages green for 2738d28
+from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.155.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 2994
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive: `format("{:05}", -42)` is "-0042",
+`{:07.2}` of -3.5 is "-003.50" and `{:>05}` still keeps its zeroes at
+the edge; `--coverage` over the probe's project reports 29 of 29
+lines and names lib/string.ting and lib/test.ting as not counted;
+`--doc pad` answers with args.ting's alone. `iso(0)` still writes
+1970-01-01T00:00:00Z, from the stdlib baked into the shipped binary.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.155.0, stdlib.html says 213 functions, and reference.html carries
+the zero-fill paragraph and the sentence about what a coverage report
+leaves out.
+
+A correction to 1010: selftest/time.ting keeps 78 checks after losing
+the helper's, not 77.
