@@ -20,8 +20,8 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 2950 selftest checks on all four
-  CI platforms, Windows included); 472 Rust tests
-  in 17 suites (counted at 918; the 399 written here had been
+  CI platforms, Windows included); 480 Rust tests
+  in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
@@ -57,7 +57,7 @@ current orientation.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); before every push run what CI runs, in CI's own words —
    `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
-   `cargo test` (17 suites) — plus `ting --fmt .` and the corpus check. NO
+   `cargo test` (18 suites) — plus `ting --fmt .` and the corpus check. NO
    EXCEPTIONS (clippy skipped once, iteration 182, cost a red CI;
    `cargo fmt --check` was never in this list at all until 763, and
    the first hand-written Rust in a while turned CI red on all four
@@ -4115,11 +4115,17 @@ holds only the current milestone and the standing rules.
   so an imported module is named the way --check names it. Only the
   origin arm is shortened: the other one is the path the reader
   typed. One stroke banked toward v2.151.0.
+- 979: the rule audited at every surface that prints a file name.
+  --fmt, --doc and --test already followed it; --profile and
+  --coverage shortened the typed path too, and --lsp named a broken
+  import by its last component alone. FileCoverage carries `typed`
+  because the coverage table is built after the runs, by an
+  interpreter with no source of its own. Guards: tests/paths.rs, one
+  per surface, plus one in tests/lsp.rs. THE SUITE COUNT IS 18.
+  One stroke banked toward v2.151.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the same rule audited across --fmt, --test, --doc, --profile and
-    --lsp, with a guard per surface so one cannot drift back.
   - `ting --test` reports a file that verified nothing as skipped
     rather than ok, and says so in the totals.
   - lib/json.ting re-exports parse and str, the way lib/map.ting

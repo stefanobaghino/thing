@@ -25219,3 +25219,53 @@ time — and each reversion failed it; restored, it passes.
 
 Gate green: 17 suites, 473 tests (the new one), 2950 selftest checks,
 81 files unchanged by `--fmt`, 14 corpus warnings, three targets.
+
+## 979 — the same rule at every surface that prints a file name
+
+Backlog item two of milestone "one way to name a file": the rule 978
+put in the error path, audited across the tools and guarded one
+surface at a time.
+
+The rule, stated: a path the reader typed on the command line is
+printed back exactly as typed; a path the run resolved for itself —
+a module an `import` found — is written relative to the directory
+the command ran in, which is `diag::shorten`. `--check` has always
+done both, and is the surface the others are measured against.
+
+Probed with a fixture holding `sub/m.ting`, three scripts that reach
+it and one file that wants reformatting, each surface run twice: once
+with a relative argument and once with the absolute one. `--fmt`,
+`--fmt-check`, `--fmt --diff`, `--doc` and `--test` echoed the typed
+path verbatim and, after 978, named the module short. Three did not:
+
+- `--profile` shortened the typed path too, because `where_defined`
+  called `shorten` on both arms of its match. It now shortens only
+  the origin, as `site` does.
+- `--coverage` did the same, and could not have done otherwise: the
+  table is built after the runs are over by an interpreter with no
+  source of its own, so nothing at report time knew which file had
+  been named on the command line. `FileCoverage` now records it —
+  `typed`, set where the record is created, ORed in so that a file
+  named on the command line stays named that way even if a later
+  script imports it.
+- `--lsp` named a broken import by its last component. Two files
+  called `m.ting` in two directories produced the same message. It
+  goes through `shorten` now, so the diagnostic says which one.
+
+Guards: a new suite, `tests/paths.rs`, one test per surface —
+`--check` (the rule itself), `--fmt`, `--doc`, `--test`, `--profile`
+and `--coverage` — sharing one fixture, each asserting both halves
+where the surface prints both. `--profile` and `--coverage` are the
+two that hold both kinds of name in one table, so `main.ting` and
+`sub/m.ting` appear side by side there. The `--lsp` guard is in
+tests/lsp.rs beside the server harness, where `spawn_server_in` now
+starts the server in a directory of the test's choosing; it opens a
+file importing two broken modules both called `m.ting` and requires
+the two diagnostics to differ.
+
+Mutation-tested one fix at a time — profile shortening both arms
+again, `f.typed` forced false, the LSP name back to a basename — and
+each reversion failed its guard; restored, all seven pass.
+
+The gate's suite count goes 17 to 18 for the new file, and the gate
+was mutation-tested after the edit.
