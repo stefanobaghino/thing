@@ -520,7 +520,7 @@ impl<'a> Parser<'a> {
                 // program can write it and none can shadow it.
                 let pattern_start = self.span().start;
                 let pattern = match self.peek() {
-                    TokenKind::LBracket => Some(self.pattern()?),
+                    TokenKind::LBracket | TokenKind::LBrace => Some(self.pattern()?),
                     _ => None,
                 };
                 // The pattern's own span, ending at its `]` rather
@@ -692,11 +692,12 @@ impl<'a> Parser<'a> {
                             rest: false,
                         });
                     }
-                    TokenKind::LBracket => {
+                    TokenKind::LBracket | TokenKind::LBrace => {
                         let start = self.span().start;
                         let pattern = self.pattern()?;
-                        // The pattern's own span, ending at its `]`,
-                        // so a mismatch points at the parameter.
+                        // The pattern's own span, ending at its
+                        // closing bracket, so a mismatch points at
+                        // the parameter.
                         let span = Span::new(start, self.tokens[self.pos - 1].span.end);
                         // Its own text is its name: no program can
                         // write that, so nothing can shadow it, and a

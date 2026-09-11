@@ -24444,3 +24444,40 @@ cases, and the mutation above.
 Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2918 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 956 — the loop and the parameter take a map apart
+
+Maintenance: tree clean, no PRs, CI and Pages green for 5610c81 from
+the API.
+
+`for {name, n} in rows` and `fn label({name, n})`. Two match arms in
+the parser — `LBracket | LBrace` where a pattern may start — and 947
+and 948's desugaring carried the rest: the `let` goes into the front
+of the body, both engines run it, and the signature reads
+`label({name, n})` because a pattern parameter is named by its own
+text. A trace frame reads `f({name} = {"nope": 1})`.
+
+The formatter needed the other half of 955's fix: `brace_is_map`
+decides from the token before the brace, and `For` now says pattern
+as `Let` does. A loop's own body brace follows the iterable, so it is
+still a block — checked both ways, and the corpus `--fmt` gate would
+catch a regression now that selftest/compound.ting writes `for {name,
+n} in rows`.
+
+TWO TEST FIXTURES BROKE, and the reason is a real consequence worth
+recording. tests/io.rs and tests/lsp.rs both wrote `fn broken( {` as
+the file that must not parse, and `{` is now the start of a parameter
+pattern, so the parser reads on and reports at end of input instead
+of at column 12. The fixtures say `fn broken( 1` now — an int is a
+parameter name nowhere — and both assertions hold as written. The
+cost is real but small: a truncated `fn f( {` reports the pattern it
+was in the middle of rather than the `{` itself, exactly as `fn f( [`
+already did.
+
+Guards: eleven checks in selftest/compound.ting, six differential
+cases, and an lsp unit test that a map parameter's hover and arity
+read back as written.
+
+Gate: fmt, clippy, 17 `test result: ok` (465 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2926 checks on both engines, Windows
+check and clippy, wasm release build.

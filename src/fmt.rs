@@ -80,9 +80,11 @@ fn brace_is_map(prev: Option<&TokenKind>) -> bool {
     matches!(
         prev,
         Some(
-            // `let {a, b} = m;` opens a pattern, not a block, and a
-            // pattern is written the way the literal it matches is.
-            Let | In
+            // `let {a, b} = m;` and `for {a, b} in ms` open a
+            // pattern, not a block, and a pattern is written the way
+            // the literal it matches is.
+            Let | For
+                | In
                 | Eq
                 | LParen
                 | LBracket

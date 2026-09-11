@@ -901,7 +901,9 @@ fn check_flag_follows_local_imports() {
         "let b = import(\"../sub/b.ting\");\n",
     )
     .unwrap();
-    std::fs::write(dir.join("sub/b.ting"), "fn broken( {\n").unwrap();
+    // Broken at column 12 and still broken now that `[` and `{` open
+    // a parameter pattern there: an int is a parameter name nowhere.
+    std::fs::write(dir.join("sub/b.ting"), "fn broken( 1\n").unwrap();
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .args(["--check", dir.join("main.ting").to_str().unwrap()])
         .output()

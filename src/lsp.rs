@@ -2762,6 +2762,23 @@ mod tests {
         assert!(hover.contains("f([k, v], n)"), "hover was:\n{hover}");
     }
 
+    /// A map pattern in a parameter list reads back the way it was
+    /// written too, short form and all.
+    #[test]
+    fn a_map_pattern_parameter_reads_back_as_it_was_written() {
+        let src = "fn f({name, n}) { return name + n; }\nf();\n";
+        let messages: Vec<String> = arity_mismatches(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(
+            messages,
+            vec!["`f` takes 1 argument, called with 0".to_string()]
+        );
+        let hover = hover_result(src, 1, 0).to_string();
+        assert!(hover.contains("f({name, n})"), "hover was:\n{hover}");
+    }
+
     /// A spread argument makes the count a runtime fact, so the arity
     /// pass says nothing about the call either way.
     #[test]

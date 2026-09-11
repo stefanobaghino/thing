@@ -321,3 +321,28 @@ assert(errmsg2(fn() { let {a} = 5; return a; })
 let big = {"a": 1, "b": 2, "c": 3};
 let {b} = big;
 assert(b == 2, "EXTRA KEYS ARE FINE: a map's keys are its contents, not its shape");
+
+# The same braces in a loop and in a parameter list, which the
+# parser writes as the `let` above.
+let rows = [{"name": "ada", "n": 1}, {"name": "bo", "n": 2}];
+let seen2 = [];
+for {name, n} in rows { push(seen2, name + str(n)); }
+assert(seen2 == ["ada1", "bo2"], "a loop takes each record apart by field");
+let whos = [];
+for {"name": who} in rows { push(whos, who); }
+assert(whos == ["ada", "bo"], "a quoted key names the binding in a loop too");
+let inner = [];
+for {"n": [x]} in [{"n": [5]}, {"n": [6]}] { push(inner, x); }
+assert(inner == [5, 6], "and patterns nest inside it");
+fn label({name, n}) { return name + ":" + str(n); }
+assert(map(rows, label) == ["ada:1", "bo:2"], "a parameter asks for fields by name");
+assert(map(rows, fn({n}) { return n * 10; }) == [10, 20], "which is what the call wanted");
+fn greet({name}, sep = "!") { return name + sep; }
+assert(greet(rows[0]) == "ada!" && greet(rows[0], "?") == "ada?",
+"a map pattern sits beside a default like a list one");
+assert(errmsg2(fn() { for {nope} in rows { print(nope); } })
+== "this pattern asks for the key \"nope\", and the map has no such key",
+"a loop reports the missing key the let would");
+assert(errmsg2(fn() { let f = fn({a}) { return a; }; return f([1]); })
+== "this pattern takes a map apart, and the value is list",
+"and so does a parameter");

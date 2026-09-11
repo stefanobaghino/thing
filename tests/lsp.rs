@@ -634,7 +634,9 @@ fn workspace_symbols_span_open_documents() {
 fn broken_local_import_is_an_error_on_the_import_string() {
     let dir = std::env::temp_dir().join(format!("ting-lsp-import-{}", std::process::id()));
     std::fs::create_dir_all(dir.join("sub")).unwrap();
-    std::fs::write(dir.join("sub").join("b.ting"), "fn broken( {\n").unwrap();
+    // Still broken at column 12 now that `[` and `{` open a parameter
+    // pattern there: an int is a parameter name nowhere.
+    std::fs::write(dir.join("sub").join("b.ting"), "fn broken( 1\n").unwrap();
     std::fs::write(dir.join("sub").join("ok.ting"), "fn f() { return 1; }\n").unwrap();
     let dir_text = dir.display().to_string().replace('\\', "/");
     let uri = if dir_text.starts_with('/') {

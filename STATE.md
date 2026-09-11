@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2918 selftest checks on all four
-  CI platforms, Windows included); 464 Rust tests
+  nothing on its own — and 23 examples with .out; 2926 selftest checks on all four
+  CI platforms, Windows included); 465 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4025,11 +4025,13 @@ holds only the current milestone and the standing rules.
   the map literal. Extra keys fine, a missing key an error. The
   formatter learned that `let {` is a pattern (brace_is_map) and the
   checker's token pass learned braces.
+- 956: `for {name, n} in rows` and `fn label({name, n})` — two parser
+  arms, the rest free from the desugar; `For` joined `Let` in
+  brace_is_map. Two test fixtures used `fn broken( {` as unparseable
+  source and had to change: `{` now opens a parameter pattern.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the same braces in `for` and in a parameter list, which 947 and
-  948's desugaring should make free — verify rather than assume.
   - docs, the stdlib and the examples reading better for it:
   run/stat/try/re_find sites, reference, tutorial.
   - release v2.148.0.

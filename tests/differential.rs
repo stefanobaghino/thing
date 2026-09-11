@@ -117,6 +117,13 @@ fn let_patterns_bind_the_same_on_both_engines() {
         "print(try(fn() { let {z} = {\"a\": 1}; return z; }));",
         "print(try(fn() { let {a} = [1]; return a; }));",
         "print(try(fn() { let {a} = 5; return a; }));",
+        // The same braces in a loop and in a parameter list.
+        "for {a, b} in [{\"a\": 1, \"b\": 2}] { print(a, b); }",
+        "for {\"a\": x} in [{\"a\": 1}, {\"a\": 2}] { print(x); }",
+        "print(map([{\"n\": 1}, {\"n\": 2}], fn({n}) { return n * 10; }));",
+        "fn f({a}, b = 2) { return a + b; } print(f({\"a\": 1}), f({\"a\": 1}, 5));",
+        "print(try(fn() { for {z} in [{\"a\": 1}] { print(z); } }));",
+        "print(try(fn() { let g = fn({a}) { return a; }; return g([1]); }));",
     ];
     for src in cases {
         same(src);
