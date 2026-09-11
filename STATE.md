@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 2968 selftest checks on all four
-  CI platforms, Windows included); 480 Rust tests
+  CI platforms, Windows included); 481 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4174,14 +4174,20 @@ holds only the current milestone and the standing rules.
   spec). 214 module functions, 2968 selftest checks. NOTE: 985's
   first finding was wrong — `main` already existed; the backlog
   above is the corrected one.
+- 987: examples/report.ting is a whole command-line program —
+  `cli["main"](spec, args())` and nothing between the command line
+  and the report. Its file positional is "many", so the empty
+  command line tests/examples.rs runs is one the spec describes and
+  the `.out` still matches byte for byte; the two answers that run
+  cannot show, --help leaving with 0 and an unknown option leaving
+  with 2 on stderr, are a second test there. 481 Rust tests.
+  playground/examples.js is unchanged: the generator skips any
+  example naming args(), and the old header named it in prose.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
   (CORRECTED AT 986: the first two items were already done. `main`
   exists and does both; nothing led a reader to it. See LOG.md 986.)
-  - an example that is a whole command-line program built on `main`
-    — help, error path and exit status all shown — feeding the three
-    generators, replacing examples/report.ting's hard-coded argv.
   - `--doc` on a module lists what it offers before how it works:
     lib/args.ting puts flag_of, option_of and pad ahead of main, and
     a reader scanning the list meets the internals first.

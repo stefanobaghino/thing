@@ -25552,3 +25552,50 @@ The three command-line paths were re-run through `main` end to end:
 --help prints the help and exits 0, `--deph` prints `outline: unknown
 option --deph` with the usage under it and exits 2, and the good run
 works.
+
+## Iteration 987 — the example takes the command line it is given
+
+Milestone "the command line your program shows its user", second
+stroke. lib/args.ting has had a front door since before this
+milestone; nothing in the repository walked through it. The one
+example that reaches for the module, examples/report.ting, said so in
+its own header: "The command line is written out here instead of
+taken from args(), so the example prints the same thing every time."
+It printed the help by calling `help(spec)` directly, parsed a
+hard-coded `["--by", "region", "sales.csv"]`, and demonstrated two
+failures with `err["message"]`. A reader copying it got a program
+that cannot be told anything.
+
+What stood in the way is in tests/examples.rs: every `examples/*.ting`
+is run with NO arguments, has to exit 0, and has to print its `.out`
+byte for byte. A real command-line program answers `--help` by
+leaving with 0 and a bad command line by leaving with 2, and neither
+can be what the harness sees.
+
+The way through is the spec. `report`'s file positional is now
+`"many"`, so the empty command line is one the spec describes: named
+no file, the program reports on the small table written into it, and
+the `.out` is what it always was plus the help text. Named files, it
+reads them — `ting examples/report.ting --by rep sales.csv` works,
+and so does `--quiet`. The body is now `let opts = cli["main"](spec,
+args());` and nothing else stands between the command line and the
+report.
+
+The two answers the harness cannot see are guarded instead, in a
+second test in tests/examples.rs: `--help` exits 0, prints the usage
+line and does NOT print the report; `--nope` exits 2, puts
+`report: unknown option --nope` and the help on stderr, and leaves
+stdout empty. A third check hands it a real CSV in a temp directory
+and reads the totals back. Mutation-tested twice: with `main`
+swapped back to `parse` the help assertion fails, and with the
+read_file branch stubbed out the CSV assertion fails.
+
+The header now tells the reader the three command lines to try, and
+docs/cookbook.md carries all of it (regenerated, along with the
+`.out`). playground/examples.js does not: the generator skips any
+example whose source contains `args()`, and report.ting was already
+skipped — for the sentence in its old header saying it did not use
+args(). It is skipped now for the true reason, and the file is
+byte-identical.
+
+481 Rust tests in 18 suites.
