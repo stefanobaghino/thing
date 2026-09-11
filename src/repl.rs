@@ -156,18 +156,20 @@ fn print_doc(name: &str) {
 /// function (signature, module, leading comment — every embedded
 /// module searched; a name in several modules lists all), or None.
 /// Shared by the REPL's :doc and the CLI's --doc.
-/// Width every doc line is kept within, so nothing runs past an
-/// 80-column terminal.
+/// COLUMNS every doc line is kept within, so nothing runs past an
+/// 80-column terminal — measured the way a terminal measures, where
+/// an ideograph takes two and a combining mark none.
 const DOC_WIDTH: usize = 78;
 
-/// `text` word-wrapped to DOC_WIDTH, every line prefixed with `indent`
-/// spaces; an empty text gives no lines.
+/// `text` word-wrapped to DOC_WIDTH columns, every line prefixed with
+/// `indent` spaces; an empty text gives no lines.
 fn wrap_indented(text: &str, indent: usize) -> Vec<String> {
     let pad = " ".repeat(indent);
     let mut lines = Vec::new();
     let mut line = String::new();
     for word in text.split_whitespace() {
-        if !line.is_empty() && indent + line.len() + 1 + word.len() > DOC_WIDTH {
+        let (have, next) = (crate::width::width(&line), crate::width::width(word));
+        if !line.is_empty() && indent + have + 1 + next > DOC_WIDTH {
             lines.push(format!("{pad}{line}"));
             line.clear();
         }
@@ -335,7 +337,7 @@ fn member_line(sig: &str, comment: &str) -> String {
         return format!("  {sig}");
     }
     let one = format!("  {sig}  {first}");
-    if one.len() <= DOC_WIDTH {
+    if crate::width::width(&one) <= DOC_WIDTH {
         return one;
     }
     let mut lines = vec![format!("  {sig}")];
@@ -484,13 +486,31 @@ pub fn doc_file(path: &str) -> Option<String> {
     Some(out.join("\n"))
 }
 
+/// Pairs laid out as two columns, the first padded to the widest
+/// entry. COLUMNS, and padded by hand: Rust's own `{:width$}` counts
+/// characters, which is the same answer only while every signature is
+/// ASCII.
+fn two_columns(pairs: &[(&str, &str)]) -> Vec<String> {
+    let width = pairs
+        .iter()
+        .map(|(sig, _)| crate::width::width(sig))
+        .max()
+        .unwrap_or(0);
+    pairs
+        .iter()
+        .map(|(sig, text)| {
+            let pad = " ".repeat(width - crate::width::width(sig));
+            format!("{sig}{pad}  {text}")
+        })
+        .collect()
+}
+
 /// `:help` — every builtin's signature and one-liner, in name order.
 fn print_help() {
     let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
     docs.sort();
-    let width = docs.iter().map(|(sig, _)| sig.len()).max().unwrap_or(0);
-    for (sig, text) in docs {
-        say(&format!("{sig:width$}  {text}"));
+    for line in two_columns(&docs) {
+        say(&line);
     }
     say(
         "(:doc NAME explains a builtin or stdlib function, :doc MODULE lists a module, :doc alone lists everything; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :save <file> writes them as a script; :clear resets; ctrl-d exits)",
@@ -697,6 +717,45 @@ mod tests {
 
     fn fresh() -> Interpreter<Vec<u8>> {
         Interpreter::new(Vec::new())
+    }
+
+    /// The two columns line up on a terminal, which means the first
+    /// one is measured in columns: an ideograph takes two of them and
+    /// a combining accent none.
+    #[test]
+    fn the_signature_column_is_as_wide_as_a_terminal_makes_it() {
+        let pairs = [
+            ("\u{65e5}()", "wide"),
+            ("abcd()", "plain"),
+            ("e\u{301}()", "mark"),
+        ];
+        let lines = two_columns(&pairs);
+        // The widest signature is six columns, so every second column
+        // starts at the eighth.
+        let starts: Vec<_> = lines
+            .iter()
+            .zip(pairs)
+            .map(|(l, (_, text))| crate::width::width(l) - crate::width::width(text))
+            .collect();
+        assert_eq!(starts, vec![8, 8, 8], "{lines:?}");
+        assert_eq!(lines[0], "\u{65e5}()    wide");
+        assert_eq!(lines[2], "e\u{301}()     mark");
+    }
+
+    /// A doc line is wrapped to fit a terminal, so it packs by
+    /// columns: measured in bytes, wide text would break a third of
+    /// the way across the page.
+    #[test]
+    fn doc_text_wraps_on_columns() {
+        let word = "\u{65e5}\u{672c}\u{8a9e}"; // six columns, nine bytes
+        let text = vec![word; 30].join(" ");
+        let lines = wrap_indented(&text, 6);
+        for l in &lines {
+            assert!(crate::width::width(l) <= DOC_WIDTH, "{l}");
+        }
+        // Ten words fit: 6 of indent, then ten sixes and nine spaces.
+        assert_eq!(lines[0].split_whitespace().count(), 10, "{lines:?}");
+        assert_eq!(crate::width::width(&lines[0]), 75, "{lines:?}");
     }
 
     #[test]

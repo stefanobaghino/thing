@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 210 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 211 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -82,14 +82,15 @@ Imports return a map, so functions are reached with `["name"]`.
 | Function | Does |
 |----------|------|
 | `repeat(s, n)` | `s` concatenated `n` times |
-| `pad_left(s, width, fill)` | prepends `fill` until at least `width` chars |
-| `pad_right(s, width, fill)` | appends `fill` until at least `width` chars |
-| `center(s, width, fill)` | `s` centred in `width` with `fill` on both sides (odd gap: extra on the right) |
-| `truncate(s, width, suffix)` | at most `width` chars, ending in `suffix` when cut |
+| `pad_left(s, width, fill)` | prepends `fill` until at least `width` columns |
+| `pad_right(s, width, fill)` | appends `fill` until at least `width` columns |
+| `center(s, width, fill)` | `s` centred in `width` columns with `fill` on both sides (odd gap: extra on the right) |
+| `fit(s, width)` | the longest prefix of `s` that fits in `width` columns, never splitting a wide character |
+| `truncate(s, width, suffix)` | at most `width` columns, ending in `suffix` when cut |
 | `indent(s, prefix)` | `prefix` before every non-empty line |
 | `dedent(s)` | the common leading whitespace of the non-blank lines removed |
 | `table(rows)` | rows of strings padded into aligned columns, two spaces apart |
-| `wrap(s, width)` | greedy word wrap into lines of at most `width` characters |
+| `wrap(s, width)` | greedy word wrap into lines of at most `width` columns |
 | `levenshtein(a, b)` | edit distance (insert, delete, substitute each cost one) |
 | `lines(s)` | split on `"\n"` |
 | `words(s)` | whitespace-separated words, no empties |

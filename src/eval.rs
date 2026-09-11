@@ -847,7 +847,9 @@ impl Spec {
             None => v.to_string(),
             Some(places) => fixed(v, places)?,
         };
-        let have = text.chars().count();
+        // COLUMNS: a width spec lines a column up in a terminal, and
+        // an ideograph takes two of them.
+        let have = crate::width::width(&text);
         if have >= self.width {
             return Ok(text);
         }

@@ -16,11 +16,11 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 76 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 210
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2832 selftest checks on all four
-  CI platforms, Windows included); 457 Rust tests
+  nothing on its own — and 22 examples with .out; 2850 selftest checks on all four
+  CI platforms, Windows included); 459 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -3925,12 +3925,16 @@ holds only the current milestone and the standing rules.
   (src/diag.rs), tabs copied through as tabs. Guarded twice — the
   renderer in src/diag.rs, the binary's stderr in tests/io.rs — and
   both mutation-tested by putting the character count back.
+- 933: columns where a column is meant — format's width specs,
+  lib/string's pad_left/pad_right/center/table/wrap, truncate through
+  a new fit(s, width), the --doc wrapper and the :help signature
+  column (both had been measuring BYTES). Six sites, each
+  mutation-tested. A fill must take at least one column now, which
+  turns the old empty-fill hang into an error. STILL ON CHARACTERS
+  ON PURPOSE: main.rs's rule(), decoration no test here can see.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - format's width specs, lib/string's pad_left/pad_right/center/
-  truncate, the --doc wrapper and its signature column (which
-  measures BYTES today) all count columns.
   - release v2.145.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

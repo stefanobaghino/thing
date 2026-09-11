@@ -471,3 +471,21 @@ assert(!l["holds"](seen, 2) && !l["holds"](seen, f2), "and nothing else");
 assert(l["holds"](l["remember"](seen, 2), 2), "remember adds in place and answers the set");
 assert(l["holds"](seen, 2), "which the caller's own binding sees");
 assert(!l["holds"](l["membership"]([]), 1), "an empty membership holds nothing");
+
+# Padding and wrapping lay text out in COLUMNS, not characters: an
+# ideograph takes two of them and a combining accent none, so a table
+# built with len would come out ragged on any terminal.
+assert(s["pad_right"]("日本", 6, " ") == "日本  ", "pad_right counts columns");
+assert(s["pad_left"]("日", 4, " ") == "  日", "pad_left counts columns");
+assert(s["pad_right"]("é", 3, " ") == "é  ", "a combining accent adds no column");
+assert(s["pad_right"]("a", 4, "日") == "a日日", "a wide fill overshoots rather than splitting");
+assert(has(try(fn() { return s["pad_left"]("a", 3, ""); }), "err"), "pad_left empty fill fails");
+assert(s["center"]("日", 6, "-") == "--日--", "center counts columns");
+assert(has(try(fn() { return s["center"]("a", 3, "日"); }), "err"), "center wide fill fails");
+assert(s["fit"]("日本語", 4) == "日本", "fit cuts on a column budget");
+assert(s["fit"]("日本語", 5) == "日本", "fit keeps a wide character whole");
+assert(s["fit"]("abc", 0) == "" && s["fit"]("abc", 9) == "abc", "fit at the ends");
+assert(s["truncate"]("日本語の文", 7, "…") == "日本語…", "truncate counts columns");
+assert(s["truncate"]("日本", 4, "…") == "日本", "truncate passes what fits");
+assert(s["table"]([["日", "x"], ["ab", "y"]]) == "日  x\nab  y", "table aligns in columns");
+assert(s["wrap"]("日本 語", 4) == "日本\n語", "wrap counts columns");

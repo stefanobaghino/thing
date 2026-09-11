@@ -8,29 +8,35 @@ fn repeat(s, n) {
   return out;
 }
 
-# s padded with fill on the LEFT until it is width characters, which
-# right-aligns it in a column of that width. A string already that
-# long is returned unchanged. format's `{:>5}` does the same inside
-# a template.
+# s padded with fill on the LEFT until it is width COLUMNS wide,
+# which right-aligns it in a column of that width. A string already
+# that wide is returned unchanged; a wide fill can overshoot by a
+# column. format's `{:>5}` does the same inside a template.
 fn pad_left(s, width, fill) {
-  while len(s) < width { s = fill + s; }
-  return s;
+  let step = display_width(fill);
+  if step <= 0 { fail("pad_left: fill must take at least one column"); }
+  let gap = width - display_width(s);
+  if gap <= 0 { return s; }
+  return repeat(fill, (gap + step - 1) / step) + s;
 }
 
-# s padded with fill on the RIGHT until it is width characters, which
-# left-aligns it in a column of that width. A string already that
-# long is returned unchanged. format's `{:<5}` does the same inside
-# a template.
+# s padded with fill on the RIGHT until it is width COLUMNS wide,
+# which left-aligns it in a column of that width. A string already
+# that wide is returned unchanged; a wide fill can overshoot by a
+# column. format's `{:<5}` does the same inside a template.
 fn pad_right(s, width, fill) {
-  while len(s) < width { s = s + fill; }
-  return s;
+  let step = display_width(fill);
+  if step <= 0 { fail("pad_right: fill must take at least one column"); }
+  let gap = width - display_width(s);
+  if gap <= 0 { return s; }
+  return s + repeat(fill, (gap + step - 1) / step);
 }
 
-# s centred in width using fill on both sides; the extra character of
-# an odd gap goes on the right. fill must be a single character.
+# s centred in width using fill on both sides; the extra column of an
+# odd gap goes on the right. fill must be one column wide.
 fn center(s, width, fill) {
-  if len(fill) != 1 { fail("center: fill must be one character"); }
-  let gap = width - len(s);
+  if display_width(fill) != 1 { fail("center: fill must be one column wide"); }
+  let gap = width - display_width(s);
   if gap <= 0 { return s; }
   return repeat(fill, gap / 2) + s + repeat(fill, gap - gap / 2);
 }
@@ -185,12 +191,25 @@ fn slug(s) {
   return out;
 }
 
-# s cut to at most width characters, with suffix marking the cut
-# (the suffix counts toward the width). Shorter strings pass through.
+# The longest prefix of s that fits in width COLUMNS. A wide
+# character is kept whole, so the answer can be a column short of
+# width rather than cut one in half.
+fn fit(s, width) {
+  let used = 0;
+  for i in range(len(s)) {
+    let w = display_width(slice(s, i, i + 1));
+    if used + w > width { return slice(s, 0, i); }
+    used = used + w;
+  }
+  return s;
+}
+
+# s cut to at most width COLUMNS, with suffix marking the cut (the
+# suffix counts toward the width). Shorter strings pass through.
 fn truncate(s, width, suffix) {
-  if len(s) <= width { return s; }
-  if len(suffix) >= width { return slice(suffix, 0, width); }
-  return slice(s, 0, width - len(suffix)) + suffix;
+  if display_width(s) <= width { return s; }
+  if display_width(suffix) >= width { return fit(suffix, width); }
+  return fit(s, width - display_width(suffix)) + suffix;
 }
 
 # s without a leading prefix, or s unchanged when it does not start
@@ -235,7 +254,7 @@ fn table(rows) {
   for row in rows {
     for i in range(len(row)) {
       if i == len(widths) { push(widths, 0); }
-      if len(row[i]) > widths[i] { widths[i] = len(row[i]); }
+      if display_width(row[i]) > widths[i] { widths[i] = display_width(row[i]); }
     }
   }
   let lines = [];
@@ -250,7 +269,7 @@ fn table(rows) {
 }
 
 # Greedy word wrap: words (any whitespace-separated) packed into lines
-# of at most width characters, joined by newlines. A word longer than
+# of at most width COLUMNS, joined by newlines. A word wider than
 # width stands alone on its line; width must be positive.
 fn wrap(s, width) {
   if width <= 0 { fail("wrap: width must be positive"); }
@@ -259,7 +278,7 @@ fn wrap(s, width) {
   for w in words(s) {
     if cur == "" {
       cur = w;
-    } else if len(cur) + 1 + len(w) <= width {
+    } else if display_width(cur) + 1 + display_width(w) <= width {
       cur += " " + w;
     } else {
       push(lines, cur);

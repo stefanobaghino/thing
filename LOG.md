@@ -23627,3 +23627,42 @@ different claims.
 Gate: fmt, clippy, 17 `test result: ok` (457 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2832 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 933 — columns everywhere a column is meant
+
+Maintenance: tree clean, no PRs, CI and Pages green for ae6938f from
+the API.
+
+Everything that lays text out in a column now measures columns. Six
+sites, one rule, each guarded and each mutation-tested by putting the
+old measure back:
+
+- `format`'s width specs (src/eval.rs) counted characters, so
+  `{:<4}` of an ideograph padded to five columns.
+- `pad_left`, `pad_right`, `center`, `table` and `wrap` in
+  lib/string.ting counted characters — and `table` is the one that
+  shows it, since a ragged column is the whole thing it exists to
+  prevent.
+- `truncate` cut by characters; it now cuts by columns, through a new
+  `fit(s, width)` — the longest prefix that fits, never splitting a
+  wide character in half. 211 functions.
+- The `--doc` wrapper (src/repl.rs) measured in BYTES, so a line of
+  Japanese wrapped at a third of the page; the `:help` signature
+  column measured in bytes too.
+
+Two decisions worth the ink. The padding helpers ask that `fill` take
+at least one column, which turns a hang into an error: the old loop
+`while len(s) < width { s = fill + s; }` never finished on an empty
+fill, and a zero-width fill would have been a new way in. And a wide
+fill overshoots by a column rather than splitting a character, which
+`center` refuses outright — a fill that is not one column wide cannot
+centre anything.
+
+Left alone on purpose: main.rs's `rule()` pads its dashes to eighty
+by character count. It is decoration around a watch-mode run, the
+text is a file path, and there is no way to observe it from a test
+here without holding a blocking process open.
+
+Gate: fmt, clippy, 17 `test result: ok` (459 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2850 checks on both engines, Windows
+check and clippy, wasm release build.

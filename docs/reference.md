@@ -478,9 +478,10 @@ lays the value out in a column:
 
 `align` is `<` for left, `>` for right and `^` for centred; `fill` is
 any single character placed before it, and defaults to a space;
-`width` is the number of CHARACTERS the result should occupy, counted
-the way `len` counts them. A value already that wide is written
-unchanged — a spec pads, it never truncates.
+`width` is the number of COLUMNS the result should occupy, counted
+the way a terminal counts them: `display_width`, not `len`, so an
+ideograph takes two and a combining mark none. A value already that
+wide is written unchanged — a spec pads, it never truncates.
 
     format("{:>5}", 42)        # "   42"
     format("{:<8}|", "hi")     # "hi      |"
@@ -494,9 +495,9 @@ else to the left, which is what a column of figures wants:
     format("{:5}", 42)         # "   42"
     format("{:5}", "ab")       # "ab   "
 
-When a centred value cannot be centred exactly, the extra character
+When a centred value cannot be centred exactly, the extra column
 goes on the right, as `lib/string.ting`'s `center` puts it. `{}` and
-`{:}` mean the same thing. Widths are capped at 100000 characters, so
+`{:}` mean the same thing. Widths are capped at 100000 columns, so
 a mistyped spec reports an error rather than exhausting memory.
 
 `.places` writes a number with exactly that many digits after the

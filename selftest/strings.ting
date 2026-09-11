@@ -48,6 +48,11 @@ assert(format("{:^9}", "hi") == "   hi    ", "centre, odd character to the right
 assert(format("{:0>2}", 7) == "07", "fill before the alignment");
 assert(format("{:.^10}", "mid") == "...mid....", "any character fills");
 assert(format("{:2}", "abcdef") == "abcdef", "a wider value is left alone");
+# A width spec lines a column up in a terminal, so it counts COLUMNS.
+assert(format("{:<4}|", "日") == "日  |", "a width spec counts columns");
+assert(format("{:>4}", "é") == "   é", "a combining accent takes no column");
+assert(format("{:^6}", "日") == "  日  ", "a centred wide value");
+assert(format("{:2}", "日本") == "日本", "a value already that wide is left alone");
 assert(format("{:}", 9) == "9", "an empty spec is just the value");
 assert(format("{:0}", 9) == "9", "width zero is just the value");
 # A width with no alignment lays numbers right and everything else left.
