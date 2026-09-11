@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 213
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2994 selftest checks on all four
-  CI platforms, Windows included); 486 Rust tests
+  nothing on its own — and 24 examples with .out; 2999 selftest checks on all four
+  CI platforms, Windows included); 487 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4289,14 +4289,12 @@ holds only the current milestone and the standing rules.
   meant" COMPLETE.
 - 1014: replenishment — milestone "the program your program runs"
   (v2.156), reasoning in LOG.md.
+- 1015: `run`'s third argument is stdin as a string or options as a
+  map — `{"dir": path, "stdin": text}` — and an option nothing knows
+  is refused with the list. 487 tests, 2999 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `run` takes options in its third place: a string there is still
-    stdin, a map is `{"stdin": s, "dir": path}` and whatever the
-    later strokes add. Today `run("echo", [], {})` says "run expects
-    stdin as a string, got map", so the place is free. A key nothing
-    knows is an error, the way the rest of ting refuses a typo.
   - `env` in those options: the variables named are added to (or
     replace) what the child inherits, so a script can write the
     `VAR=value program` every CI script writes without `sh -c` or

@@ -3878,20 +3878,35 @@ impl<W: Write> Interpreter<W> {
                         }
                     }
                 }
-                // What the child reads on its stdin. Without it the
-                // child gets EOF at once, which is what a program
-                // that reads nothing wants and what one that reads
-                // everything must not be left waiting for.
-                let input = match args.get(2) {
-                    None | Some(Value::Nil) => None,
-                    Some(Value::Str(s)) => Some(s.to_string()),
+                // The third argument is what the child reads on its
+                // stdin — without it the child gets EOF at once,
+                // which is what a program that reads nothing wants
+                // and what one that reads everything must not be left
+                // waiting for — or a map of options, stdin among
+                // them, for the things a child needs that a string
+                // has no room for.
+                let (input, dir) = match args.get(2) {
+                    None | Some(Value::Nil) => (None, None),
+                    Some(Value::Str(s)) => (Some(s.to_string()), None),
+                    Some(Value::Map(m)) => run_options(&m.borrow(), span)?,
                     Some(other) => {
                         return Err(error(
-                            format!("run expects stdin as a string, got {}", other.type_name()),
+                            format!(
+                                "run expects stdin as a string or options as a map, got {}",
+                                other.type_name()
+                            ),
                             span,
                         ));
                     }
                 };
+                // A directory that is not there reads as "cannot start
+                // the program" from the spawn, which is the wrong
+                // fact: the program may be perfectly present.
+                if let Some(d) = &dir
+                    && !std::path::Path::new(d).is_dir()
+                {
+                    return Err(error(format!("run: no directory at {d:?} to run in"), span));
+                }
                 if cfg!(target_arch = "wasm32") {
                     // There is nothing to spawn inside a page.
                     return Err(error("run is not available in this environment", span));
@@ -3902,8 +3917,15 @@ impl<W: Write> Interpreter<W> {
                     .flush()
                     .map_err(|e| error(format!("run: flush failed: {e}"), span))?;
                 let done = match input {
-                    None => std::process::Command::new(&*cmd).args(&argv).output(),
-                    Some(text) => spawn_with_input(&cmd, &argv, text),
+                    None => {
+                        let mut c = std::process::Command::new(&*cmd);
+                        c.args(&argv);
+                        if let Some(d) = &dir {
+                            c.current_dir(d);
+                        }
+                        c.output()
+                    }
+                    Some(text) => spawn_with_input(&cmd, &argv, text, dir.as_deref()),
                 };
                 // A program that is not there is an error, not an exit
                 // code: "not installed" must never read as "ran and
@@ -4455,18 +4477,62 @@ impl<W: Write> Interpreter<W> {
 /// Not cfg'd away for wasm: `run` refuses to spawn there long before
 /// this is reached, and the same std::process the sibling branch
 /// already calls compiles for that target too.
+/// What `run`'s options map says: the text for the child's stdin and
+/// the directory to run it in. A key nothing knows is an error rather
+/// than a setting quietly ignored — a misspelled option that changes
+/// nothing is the kind of bug a script does not report on.
+fn run_options(
+    m: &std::collections::BTreeMap<String, Value>,
+    span: Span,
+) -> Result<(Option<String>, Option<String>), RuntimeError> {
+    const OPTIONS: [&str; 2] = ["dir", "stdin"];
+    let text = |key: &str, v: &Value| -> Result<Option<String>, RuntimeError> {
+        match v {
+            Value::Nil => Ok(None),
+            Value::Str(s) => Ok(Some(s.to_string())),
+            other => Err(error(
+                format!("run: {key} must be a string, got {}", other.type_name()),
+                span,
+            )),
+        }
+    };
+    let (mut input, mut dir) = (None, None);
+    for (key, v) in m {
+        match key.as_str() {
+            "stdin" => input = text("stdin", v)?,
+            "dir" => dir = text("dir", v)?,
+            other => {
+                let known = OPTIONS.map(|o| format!("`{o}`")).join(" and ");
+                return Err(error(
+                    match crate::diag::nearest(other, OPTIONS) {
+                        Some(n) => format!("run: no option `{other}` (did you mean `{n}`?)"),
+                        None => format!("run: no option `{other}` (the options are {known})"),
+                    },
+                    span,
+                ));
+            }
+        }
+    }
+    Ok((input, dir))
+}
+
 fn spawn_with_input(
     cmd: &str,
     argv: &[String],
     text: String,
+    dir: Option<&str>,
 ) -> std::io::Result<std::process::Output> {
     use std::io::Write;
-    let mut child = std::process::Command::new(cmd)
+    let mut command = std::process::Command::new(cmd);
+    command
         .args(argv)
         .stdin(std::process::Stdio::piped())
         .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped())
-        .spawn()?;
+        .stderr(std::process::Stdio::piped());
+    if let Some(d) = dir {
+        command.current_dir(d);
+    }
+    let mut child = command.spawn()?;
     let mut sink = child.stdin.take().expect("stdin was asked for");
     let writer = std::thread::spawn(move || {
         // A child that stops reading early — `head`, say — is not an

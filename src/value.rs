@@ -810,13 +810,16 @@ impl Builtin {
                 "Restarts the generator at n, so a run repeats exactly.",
             ),
             Builtin::Run => (
-                "run(cmd) / run(cmd, args) / run(cmd, args, stdin)",
+                "run(cmd) / run(cmd, args) / run(cmd, args, stdin) / run(cmd, args, options)",
                 "Runs a program and waits: a map of code, out, err and signal. \
                  A signal killed it when code is nil, and signal is that \
                  number where the platform has them. The child reads stdin \
-                 there, and reads nothing without it. Bytes that are not \
-                 UTF-8 come back as replacement characters, where reading \
-                 a file would be an error.",
+                 there, and reads nothing without it. A map in that place \
+                 is options instead — {\"stdin\": text, \"dir\": path}, the \
+                 directory being where the child runs; an option nothing \
+                 knows is an error. Bytes that are not UTF-8 come back as \
+                 replacement characters, where reading a file would be an \
+                 error.",
             ),
             Builtin::EPrint => (
                 "eprint(...)",

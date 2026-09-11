@@ -3721,6 +3721,51 @@ fn run_spawns_a_program_and_reports_what_it_did() {
     let _ = std::fs::remove_file(&child);
 }
 
+/// A child runs where it is told to. The directory is the option a
+/// script visiting several checkouts needs, and the alternative was
+/// `run("sh", ["-c", "cd ... && ..."])` — a shell string, on the
+/// platforms that have a shell.
+#[test]
+fn run_takes_the_directory_to_run_the_child_in() {
+    let exe = env!("CARGO_BIN_EXE_ting").replace('\\', "/");
+    let name = format!("ting-io-run-dir-{}", std::process::id());
+    let dir = std::env::temp_dir().join(&name);
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let here = dir.to_str().unwrap().replace('\\', "/");
+    // The child prints where it stands; the parent asks for the same
+    // directory both with and without something on the child's stdin,
+    // since those are two different spawns.
+    let child = dir.join("where.ting");
+    std::fs::write(&child, "print(cwd());\nprint(input());\n").unwrap();
+    let child_path = child.to_str().unwrap().replace('\\', "/");
+    let script = dir.join("parent.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "let plain = run(\"{exe}\", [\"{child_path}\"], {{\"dir\": \"{here}\"}});\n\
+             let fed = run(\"{exe}\", [\"{child_path}\"], {{\"dir\": \"{here}\", \"stdin\": \"fed\\n\"}});\n\
+             print(ends_with(split(plain[\"out\"], \"\\n\")[0], \"{name}\"), plain[\"code\"]);\n\
+             print(ends_with(split(trim(fed[\"out\"]), \"\\n\")[0], \"{name}\"), trim(split(fed[\"out\"], \"\\n\")[1]));\n\
+             let elsewhere = run(\"{exe}\", [\"{child_path}\"]);\n\
+             print(ends_with(split(elsewhere[\"out\"], \"\\n\")[0], \"{name}\"));\n"
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    assert_eq!(lines.next().unwrap(), "true 0", "{text}");
+    assert_eq!(lines.next().unwrap(), "true fed", "{text}");
+    // Without the option the child inherits this process's directory,
+    // which is the crate root rather than the temp directory.
+    assert_eq!(lines.next().unwrap(), "false", "{text}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// Bytes that are not text, both ways round: a file ting is asked to
 /// read as text FAILS, in ting's words rather than std's; a child's
 /// output is decoded lossily, because there is no bytes type to hand
@@ -3860,7 +3905,7 @@ fn a_child_reads_what_it_is_given_without_deadlocking() {
     assert_eq!(lines.next().unwrap(), "true", "nil input is EOF:\n{text}");
     assert_eq!(
         lines.next().unwrap(),
-        "run expects stdin as a string, got int",
+        "run expects stdin as a string or options as a map, got int",
         "unexpected:\n{text}"
     );
     let _ = std::fs::remove_file(&script);

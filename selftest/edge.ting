@@ -123,6 +123,21 @@ assert(err(fn() { return run("echo", "hi"); }) == "run expects a list of argumen
 "argv is a list, not a shell string");
 assert(err(fn() { return run("echo", [1]); }) == "run expects a list of strings, got int in it",
 "argv holds strings");
+# The third argument is stdin as a string, or a map of options. An
+# option nothing knows is refused rather than quietly ignored: a
+# misspelled one that changes nothing is a bug a script cannot see.
+assert(err(fn() { return run("echo", [], 7); })
+== "run expects stdin as a string or options as a map, got int",
+"the third argument is stdin or options");
+assert(err(fn() { return run("echo", [], {"dri": "/tmp"}); })
+== "run: no option `dri` (did you mean `dir`?)", "a near miss is named");
+assert(err(fn() { return run("echo", [], {"shell": true}); })
+== "run: no option `shell` (the options are `dir` and `stdin`)", "and so are the options");
+assert(err(fn() { return run("echo", [], {"dir": 7}); })
+== "run: dir must be a string, got int", "an option has a type");
+assert(err(fn() { return run("echo", [], {"dir": "ting-no-such-directory-xyz"}); })
+== "run: no directory at \"ting-no-such-directory-xyz\" to run in",
+"a missing directory is not a missing program");
 
 # cwd() is a path, and a script standing in it can see itself listed.
 assert(len(cwd()) > 0, "the working directory is a string");

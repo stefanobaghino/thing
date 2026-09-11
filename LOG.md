@@ -26533,3 +26533,41 @@ program and its code and quotes stderr.
 
 Milestone "the program your program runs" (v2.156), backlog in
 STATE.md.
+
+## 1015 — a child runs where it is told
+
+Milestone "the program your program runs", first stroke. `run` took
+a command, an argv and stdin, and a script that wanted a child in
+another directory had to use a flag the program happens to have
+(`git -C`) or spawn a shell to `cd` for it — a shell string, which is
+what 595 built `run` to avoid, on the platforms that have a shell.
+
+The third argument is now stdin when it is a string and options when
+it is a map: `run(cmd, argv, {"dir": path, "stdin": text})`. A map
+there was an error until today, so nothing that ran before means
+something else now.
+
+An option nothing knows is refused — `run: no option `dri` (did you
+mean `dir`?)`, and `(the options are `dir` and `stdin`)` when it is
+not a near miss — rather than quietly ignored, because an option that
+silently changes nothing is a bug a script cannot report on. The
+sentence is built from the list of options, so the next stroke's
+addition cannot leave it stale.
+
+A `dir` that is not a directory is its own refusal, `run: no
+directory at "x" to run in`, checked before the spawn. Without that
+check the spawn fails with "cannot start PROGRAM: No such file or
+directory", which is the wrong fact about a program that is perfectly
+present.
+
+Five checks in selftest/edge.ting for the refusals, and a real child
+in tests/io.rs: the binary under test, run twice in a temp directory
+— once plain, once with something on its stdin, since those are two
+different spawns — plus the same child with no option, to prove the
+directory is not inherited from somewhere. Four mutations: dropping
+the directory check, ignoring unknown options, and dropping the
+`current_dir` from each of the two spawn paths in turn; each fails a
+different check, and the last two are the reason both call sites are
+in the test.
+
+487 tests, 2999 checks.
