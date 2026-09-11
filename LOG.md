@@ -25641,3 +25641,48 @@ flag_of against main, and with the two map rows swapped it names
 merge against key_of.
 
 482 Rust tests in 18 suites.
+
+## Iteration 989 — a module is not a map
+
+Milestone "the command line your program shows its user", fourth
+stroke, and the last before the release. `--check` has known how to
+talk about a module member since 817: `lib/string.ting has no
+`ends_with` (`ends_with` is a builtin)`. A run that reached the same
+lookup said `key "ends_with" not found` — true of a map, and the
+wrong noun for a file whose members are listed in a page and in
+`--doc`.
+
+The two sentences are now one function, `diag::no_member(module, key,
+exports)`: the builtin of that name wins over a near miss (a module
+that retires a function into a builtin leaves callers exactly here),
+then the nearest export, then the bare form. `--check` had it inline;
+it calls this now.
+
+What the runtime was missing is which maps are modules. It is not a
+shape question — a module map has no mark on it — but an identity
+one: `import` hands back the same map on every import and keeps it in
+the interpreter's cache, so a map that IS one of those maps is a
+module, and a map the program built for itself never is.
+`eval::module_of(imports, value)` answers with the module's name, and
+`key_miss` asks it before falling back to keys. The lookup is on the
+error path only, and `index` takes the cache as an argument so both
+engines pass the same one: the VM's two index instructions call
+`eval::index` with `interp.imports()`.
+
+The name is the name every other surface prints: an embedded module
+by the name it is embedded under (`lib/string.ting`), a module on
+disk through `diag::shorten`, which is 978's rule for a path the run
+resolved for itself.
+
+tests/io.rs's older suggestion test had asserted the old runtime
+message; it now asserts the checker's. A new test holds the two
+surfaces to the same sentence — it strips the level and the position
+and compares what is left — and pins that a map the program built
+stays a map. Both mutation-tested: with the module branch cut the
+sentences differ, and with every map treated as a module the plain
+map fails. The second mutation passed at first: the fixture had no
+import at all, so the cache was empty and nothing could be
+misnamed. The fixture now imports a module and then indexes a map of
+its own.
+
+483 Rust tests in 18 suites.

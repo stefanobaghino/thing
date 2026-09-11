@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 2968 selftest checks on all four
-  CI platforms, Windows included); 482 Rust tests
+  CI platforms, Windows included); 483 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4190,15 +4190,19 @@ holds only the current milestone and the standing rules.
   call one defined below it, on both engines — probed before
   anything moved. tests/docs.rs holds first definition == first row,
   counting the modules it checked. 482 Rust tests.
+- 989: a missing module member reads the same before and during a
+  run — diag::no_member is the one sentence, and eval::module_of
+  tells a module from a map by the identity of the map the import
+  cache holds (not by shape), on the error path only. index() takes
+  the cache so both engines pass the same one. 483 Rust tests. A
+  guard's fixture has to contain the thing it rules out: the
+  every-map-is-a-module mutation passed until the fixture imported
+  anything.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
   (CORRECTED AT 986: the first two items were already done. `main`
   exists and does both; nothing led a reader to it. See LOG.md 986.)
-  - the runtime says about a module member what --check says: a run
-    of `st["ends_with"]` answers `key "ends_with" not found` where
-    --check answers "lib/string.ting has no `ends_with` (`ends_with`
-    is a builtin)".
   - release v2.152.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
