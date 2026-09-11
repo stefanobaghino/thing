@@ -5,6 +5,33 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.149.0 (2026-09-11)
+
+- **`--check` counts the arguments of a module call.**
+  `st["truncate"]("x", 3)` is a warning — `truncate takes 3
+  arguments, called with 2` — where before only a call to one of the
+  file's own functions was counted. The module is parsed the way the
+  file is, so a default makes a range, `...rest` makes a floor, and a
+  spread call is left alone.
+- **The module it checks is the module `import` would run.** A file
+  beside the script is read from disk, so `u["helpr"](1, 2)` against
+  the util.ting next door says `./util.ting has no helpr (did you
+  mean helper?)`. A `lib/string.ting` on disk now beats the embedded
+  copy of the same path, which is what happens at run time and what
+  the checker used to get backwards.
+- **The editor sees what `--check` sees**: diagnostics resolve
+  modules against the document's own directory.
+- **Less than certain means nothing said.** A module binding that is
+  reassigned, imported twice, shadowed by a parameter or written into
+  answers for no call; a key the file writes is a key it may read
+  back; a member a module re-exports from a builtin has no `fn`
+  behind it and is not checked.
+- **`truncate(s, width, suffix = "...")`** — the suffix now defaults
+  to the marker the interpreter's own elided traces use.
+- The reference's `--check` and `--lsp` entries say all of this. The
+  tutorial had said six embedded stdlib modules since there were
+  thirteen; a guard reads that number from the binary now.
+
 ## v2.148.0 (2026-09-11)
 
 - **`items(m)` and `values(m)` are builtins**, the 78th and 79th,
