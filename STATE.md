@@ -4229,8 +4229,12 @@ holds only the current milestone and the standing rules.
   for the lists. 484 Rust tests. A mutation that passes may be
   testing a different call site than the assertion reads.
 - 997: v2.153.0 tagged (174th tag; strokes 994, 995, 996).
-  Verification next: seven assets, checksums on a cold download,
-  both aarch64 archives executed here, the ten published paths.
+- 998: v2.153.0 VERIFIED — seven assets, six checksums OK cold, both
+  aarch64 archives executed here (2984 checks, 24 examples clean,
+  each), the probe tool from 993 refusing a missing directory from
+  the archive itself, and the ten published paths 200 with the wasm
+  carrying lib/fs.ting's new header. Next: health tick + audit
+  closes the milestone.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4321,7 +4325,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 173 (v2.152.0), 173 verified; v2.29.0 is publicly marked broken
+- Tags: 174 (v2.153.0), 174 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

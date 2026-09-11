@@ -25986,3 +25986,28 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.153.0 — the 174th tag — and pushed. Verification is the
 next tick.
+
+## 998 — v2.153.0 verified
+
+Release workflow green for the tag; CI green for 7b58e39 on all five
+test jobs.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.153.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 2984
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive rather than from this tree: 993's
+probe tool, handed a directory that is not there, now prints `cannot
+list "nosuch": No such file or directory` and leaves with 1 where it
+used to print an empty table and leave with 0; handed the real one it
+still leaves with 0. And the shipped binary quotes a path with a
+space in it, both as a script it cannot read and under `--check`.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.153.0; stdlib.html carries the "At the path" table; reference.html
+carries the sentence about a path written into the middle of a
+message. The deployed ting.wasm holds lib/fs.ting's new header, so it
+is this milestone's build.
