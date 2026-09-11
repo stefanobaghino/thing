@@ -3938,10 +3938,17 @@ holds only the current milestone and the standing rules.
   each, nine site paths 200). The shipped binaries answer the
   release's own question: len 2 where display_width is 4, and the
   carets under the token.
+- 936: health tick + audit green — milestone "the width of a
+  character" complete. Coverage 3336/3353 (99%). Head-to-head against
+  v2.144.0 within ±2.2% everywhere. The deployed ting.wasm carries
+  `display_width`, which dates the playground to this release where a
+  200 would not. FOUND: lib/args.ting's `pad(text, width)` builds the
+  --help column with `len` — the last layout site counting characters
+  apart from main.rs's `rule()`.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick, which closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

@@ -23710,3 +23710,46 @@ the caret row under `print("日本語のテキスト", totl);` sits under
 Site audit: all nine published paths answer 200 on
 www.baghino.me/thing/, the changelog page carries v2.145.0 and the
 stdlib page says 211 functions.
+
+## 936 — health tick, milestone "the width of a character" complete
+
+Maintenance: tree clean, no PRs, CI green for 46a4b71 from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE, compared mechanically.
+Timings about five percent above BASELINE on both engines at load
+3.09 — the whole table moving together, which is weather.
+
+Head-to-head against v2.144.0, interleaved, best of five, each binary
+pointed at its own tree (the old one cannot run the new
+lib/string.ting, which calls display_width). Every row within ±2.2%
+on both engines, in both directions: a builtin added to the dispatch
+and four layout sites rewritten cost nothing measurable.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 935), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage 3336 of 3353 lines (99%), 42 lines more on both sides than
+922 — lib/string.ting is at 100% including `fit` and the new fill
+refusals. The gaps are the same four, all old: args (its help
+columns), fs and sh (paths this platform does not take), test (its
+own summary).
+
+FOUND, AND THE SAME CLASS THIS MILESTONE JUST FIXED: lib/args.ting's
+`pad(text, width)` builds the --help option column with `len`, so a
+spec written with a non-ASCII option name or help text goes ragged
+exactly the way `table` did. It is the last layout site in the tree
+that still counts characters, apart from main.rs's `rule()`.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, and the live examples.js matches the repository's.
+Rendering them left the tree clean. The deployed ting.wasm carries
+`display_width`, so the playground is running THIS release, which a
+200 alone would not have shown.
+
+Milestone "the width of a character" is complete.
+
+Next tick: replenishment.
