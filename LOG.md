@@ -25071,3 +25071,27 @@ Cargo.toml and Cargo.lock at 2.150.0; the binary reports `ting
 Gate re-run after the bump: fmt, clippy, 17 `test result: ok` (472
 tests), `--fmt .` 81 unchanged, corpus at fourteen, 2950 checks on
 both engines, Windows check and clippy, wasm release build.
+
+## 975 — v2.150.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+72c3854 from the API, CI green for dfae2cb.
+
+Six archives plus SHA256SUMS, cold-downloaded into an empty
+directory; `sha256sum -c` says OK on all six. Both aarch64 Linux
+archives unpacked and run here: `ting 2.150.0` from gnu and from
+musl, and tools/smoke.sh against each — 24 passed, 2950 checks, 24
+examples clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically: `format("[{:<{}}]", "ab", 7)` pads to a
+width it was handed and `{:>{}.{}}` takes both numbers that way;
+`pad_right("ab", 5)` and `center("ab", 6)` need no fill; a table with
+`"<>"` puts its figures under the heading; and both refusals come
+back word for word — the spec with no argument left for its width,
+and the alignment character that is none of the three.
+
+Site audit: all ten published paths answer 200 on
+www.baghino.me/thing/, the changelog page carries v2.150.0, the
+tutorial page carries "Lining the output up", and the cookbook page
+and examples.js both carry the columns example.

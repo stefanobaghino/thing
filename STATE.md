@@ -4101,11 +4101,11 @@ holds only the current milestone and the standing rules.
   layout rather than what is computed; the tutorial's "Lining the
   output up"; cookbook and playground regenerated.
 - 974: v2.150.0 released (171st tag).
+- 975: v2.150.0 VERIFIED (171st tag; strokes 970, 971, 972, 973; both
+  aarch64 archives executed here). Site audit green on all ten paths.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.150.0: cold asset download, checksums, both aarch64
-    archives run here with tools/smoke.sh, site audit.
   - health tick + audit; close the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
