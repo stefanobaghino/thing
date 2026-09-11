@@ -26258,3 +26258,52 @@ much or too little: an echo with no ceiling (1001), `:vars` answering
 with the type rather than the value (1002), and `--doc` burying its
 own answer under every entry that mentions the word (1003). v2.154.0
 tagged and verified (1004, 1005).
+
+## 1007 — replenishment: milestone "the number you meant"
+
+The probe took the cold path a small project starts on: a money module
+that keeps amounts in cents, a test file beside it using lib/test.ting,
+`ting --test .`, `--test . --filter`, `--coverage`, and enough
+`format` calls to print a column of amounts.
+
+The module and the tests worked first try. What did not was every
+number the tools and the formatter put on screen.
+
+**`{:05}` is silently a width, not a zero fill.** `format("{:05}",
+42)` is `"   42"`; `format("{:03}", 7)` is `"  7"`; `format("{:08.2}",
+3.5)` is `"    3.50"`. The zeros only arrive when the fill is spelled
+out as an alignment — `{:0>5}` gives `"00042"`. Rust, Python, C and Go
+all read a leading zero in a width as a fill, and that is the spelling
+that reaches for the fingers when a price or a clock has to line up.
+Nothing warns: the leading zero is parsed as part of the number, the
+value comes out padded with spaces, and the program is wrong only in
+the one place a reader looks last. `format`'s other refusals are good
+— `{:q}`, `+` and `,` each get the whole grammar in a sentence — which
+makes the silence here the odd one out.
+
+**`--coverage` grades the embedded stdlib against your project.** In a
+directory holding 29 lines of my own code, `ting --coverage
+money_test.ting` prints `coverage: 88 of 264 lines (33%)` over four
+rows: `22% 43/191 lib/string.ting`, `36% 16/44 lib/test.ting`, `100%
+18/18 money.ting`, `100% 11/11 money_test.ting`. Both files I wrote
+are fully covered and the headline says a third, because 235 of the
+264 lines are library code that arrived with the binary. The number a
+coverage tool exists to give is the one it gets wrong. `Origin` keeps
+only the display path and `import_module` strips `<embedded>/` from it
+before it lands, so telling the two apart again means keeping that
+marker.
+
+**`--doc pad` answers with two different functions.** lib/time.ting
+has a private `pad(n, width)` that is exactly `pad_left(str(n), width,
+"0")`, so the doc index holds two `pad`s — args.ting's space-and-
+COLUMNS one and time.ting's zero one — and prints both.
+
+Not chosen. `pad_left(s, width, fill = " ")` and `pad_right` already
+take a fill character, so zero padding is not missing from the stdlib;
+the trap is only in `format`'s spec. `--test .` in a project runs the
+library modules it finds and reports them as `skip ... (no checks)`,
+which reads oddly but is honest and costs nothing. `int("5 ")` and
+`int(" 5")` are accepted while `int("5 5")` errors — trimming is the
+usual bargain and nothing in the probe wanted otherwise.
+
+Milestone "the number you meant" (v2.155), backlog in STATE.md.

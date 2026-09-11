@@ -4263,10 +4263,29 @@ holds only the current milestone and the standing rules.
   all standing (79 builtins, 13 modules, 214 functions, 48 programs,
   2984 checks, 485 tests in 18 suites, 81 unchanged, fifteen
   warnings, 175 tags). Milestone "the REPL as a place to look
-  around" COMPLETE. Replenishment next.
+  around" COMPLETE.
+- 1007: replenishment — milestone "the number you meant" (v2.155),
+  reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - `{:05}` fills with zeros, the way Rust, Python, C and Go read a
+    leading zero in a width. Today it is silently a width alone:
+    `format("{:05}", 42)` is "   42" where `{:0>5}` gives "00042".
+    Sign-aware, so -42 pads to "-0042" rather than "00-42"; the
+    grammar sentence, the reference and the stdlib page follow. If the
+    stroke finds a reason not to change what a spelling means, the
+    fallback is to refuse a leading zero with a sentence naming both
+    `{:0>5}` and `{:5}` — but a program writing `{:05}` meant zeros.
+  - `--coverage` counts the project, not the embedded stdlib: 29 lines
+    of my own code reported "88 of 264 lines (33%)" because
+    lib/string.ting and lib/test.ting came along. `Origin` keeps only
+    the display path and `import_module` strips `<embedded>/` before
+    it lands, so this needs the marker kept (or a flag beside it).
+  - lib/time.ting's private `pad(n, width)` goes: it is
+    `pad_left(str(n), width, "0")` spelled again, and having two makes
+    `--doc pad` answer with two different functions.
+  - release v2.155.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
