@@ -4142,10 +4142,15 @@ holds only the current milestone and the standing rules.
   stdlib page's guard counted a re-export only as `let f = f;` and
   now counts any `let NAME = IDENT;`. 213 module functions, 2955
   selftest checks. One stroke banked toward v2.151.0.
+- 982: v2.151.0 tagged (172nd tag; strokes 978, 979, 980, 981).
+  Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (480
+  tests), `--fmt .` 81 unchanged, corpus at fifteen, 2955 checks on
+  both engines, Windows check and clippy, wasm release build. Awaits
+  verification: both aarch64 archives executed here, sha256sum -c on
+  a fresh download, seven assets, site audit on all ten paths.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.151.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

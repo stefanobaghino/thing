@@ -25357,3 +25357,27 @@ Counts: 213 module functions (was 211), 2955 selftest checks (was
 2950) for five new ones — the two re-exports, the round trip, a
 flatten key that proves the module's own str is still plain text, and
 the set_in message that proves the same.
+
+## 982 — release v2.151.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 881a8c4 from
+the API.
+
+v2.151.0, the milestone "one way to name a file". 977's probe caught
+a diagnostic naming one file two ways — the module's absolute path in
+the header, the main file as written in the note under it — and the
+same disagreement inside a single `try` map. The rule that settles
+it was already in the code, unused by the error path: a path the
+reader typed comes back as typed, a path the run resolved is written
+relative to where the command ran. Four strokes put every surface on
+it, and two more things the probe found came along: a file that
+verified nothing reading as a pass, and lib/json.ting missing the two
+verbs the area is named for.
+
+Strokes 978, 979, 980, 981. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.151.0; the binary reports `ting
+2.151.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (480
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 2955 checks on
+both engines, Windows check and clippy, wasm release build.
