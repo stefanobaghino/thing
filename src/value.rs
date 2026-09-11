@@ -765,7 +765,9 @@ impl Builtin {
                 "Fills {} placeholders left-to-right; {{ and }} escape braces. A \
                  placeholder may carry a spec after a colon: width and \
                  alignment ({:>5} right, {:<5} left, {:^5} centred, {:0>2} \
-                 zero-filled) and decimal places ({:.2}, {:>8.2}).",
+                 zero-filled) and decimal places ({:.2}, {:>8.2}). A width or \
+                 a number of places written {} is read from the arguments, \
+                 after the value: format(\"{:<{}}\", name, width).",
             ),
             Builtin::JsonParse => (
                 "json_parse(s)",

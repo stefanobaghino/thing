@@ -828,8 +828,17 @@ fn millis(ns: u128) -> String {
 struct Spec {
     fill: char,
     align: Option<Align>,
-    width: usize,
-    precision: Option<usize>,
+    width: Slot,
+    precision: Option<Slot>,
+}
+
+/// A number in a spec: written there, or `{}` and taken from the
+/// argument list. A computed width is the reason a program measures
+/// its data at all, so the template has to be able to ask for one.
+#[derive(Clone, Copy, PartialEq)]
+enum Slot {
+    Fixed(usize),
+    FromArgs,
 }
 
 #[derive(Clone, Copy, PartialEq)]
@@ -850,18 +859,21 @@ fn default_align(v: &Value) -> Align {
 }
 
 impl Spec {
-    fn apply(&self, v: &Value) -> Result<String, String> {
-        let text = match self.precision {
+    /// The width and the number of decimal places arrive already
+    /// resolved: the caller is the only place that knows the
+    /// arguments a `{}` in the spec was meant to read.
+    fn apply(&self, v: &Value, width: usize, places: Option<usize>) -> Result<String, String> {
+        let text = match places {
             None => v.to_string(),
             Some(places) => fixed(v, places)?,
         };
         // COLUMNS: a width spec lines a column up in a terminal, and
         // an ideograph takes two of them.
         let have = crate::width::width(&text);
-        if have >= self.width {
+        if have >= width {
             return Ok(text);
         }
-        let gap = self.width - have;
+        let gap = width - have;
         let fill = |n: usize| -> String { std::iter::repeat_n(self.fill, n).collect() };
         Ok(match self.align.unwrap_or_else(|| default_align(v)) {
             Align::Left => text + &fill(gap),
@@ -909,6 +921,41 @@ fn fixed(v: &Value, places: usize) -> Result<String, String> {
     }
 }
 
+/// The next argument, read as the width or the number of decimal
+/// places a spec's `{}` asked for. A free function rather than a
+/// closure in the caller: the caller is four blocks deep already, and
+/// a long signature down there is the kind of line two rustfmt
+/// versions wrap differently (965).
+fn take_slot(args: &[Value], next: &mut usize, what: &str, max: usize) -> Result<usize, String> {
+    let Some(v) = args.get(*next) else {
+        return Err(format!(
+            "format: this spec takes its {what} from the next argument, and there is none"
+        ));
+    };
+    *next += 1;
+    slot_from_args(v, what, max)
+}
+
+/// A width or a number of decimal places that a spec's `{}` took from
+/// the argument list, checked the way a written one is.
+fn slot_from_args(v: &Value, what: &str, max: usize) -> Result<usize, String> {
+    match v {
+        Value::Int(n) if *n >= 0 => {
+            let n = *n as usize;
+            if n > max {
+                Err(format!("format: {what} {n} is above the limit of {max}"))
+            } else {
+                Ok(n)
+            }
+        }
+        Value::Int(n) => Err(format!("format: a {what} cannot be negative, got {n}")),
+        v => Err(format!(
+            "format: a {what} from the arguments must be an int, got {}",
+            v.type_name()
+        )),
+    }
+}
+
 /// Widths are capped so that a typo asks for a diagnostic rather
 /// than for a gigabyte.
 const MAX_WIDTH: usize = 100_000;
@@ -918,12 +965,15 @@ const MAX_WIDTH: usize = 100_000;
 const MAX_PLACES: usize = 100;
 
 /// `[':' [[fill] align] [width]]` — the text between the braces. An
-/// empty spec, and a bare `:`, mean "just the value".
+/// empty spec, and a bare `:`, mean "just the value". A width or a
+/// number of decimal places written `{}` is read from the arguments
+/// instead, which is why a `{` here opens a hole rather than filling
+/// a column with braces.
 fn parse_spec(spec: &str) -> Result<Spec, String> {
     let mut out = Spec {
         fill: ' ',
         align: None,
-        width: 0,
+        width: Slot::Fixed(0),
         precision: None,
     };
     if spec.is_empty() {
@@ -962,12 +1012,15 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
         Some((w, p)) => (w, Some(p)),
         None => (rest.as_str(), None),
     };
-    if !width.is_empty() {
+    if width == "{}" {
+        out.width = Slot::FromArgs;
+    } else if !width.is_empty() {
         let Ok(n) = width.parse::<usize>() else {
             return Err(format!(
                 "format: `{width}` is not a width — a spec is `{{:}}`, an alignment \
                  (`<`, `>`, `^`, optionally after a fill character), a number of \
-                 characters, and `.` and a number of decimal places"
+                 characters or `{{}}` to take one from the arguments, and `.` and \
+                 a number of decimal places"
             ));
         };
         if n > MAX_WIDTH {
@@ -975,16 +1028,21 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
                 "format: width {n} is above the limit of {MAX_WIDTH}"
             ));
         }
-        out.width = n;
+        out.width = Slot::Fixed(n);
     }
     if let Some(places) = places {
         if places.is_empty() {
             return Err("format: `.` with no number of decimal places after it".to_string());
         }
+        if places == "{}" {
+            out.precision = Some(Slot::FromArgs);
+            return Ok(out);
+        }
         let Ok(n) = places.parse::<usize>() else {
             return Err(format!(
                 "format: `{places}` is not a number of decimal places — write `.2` \
-                 for two, or `.0` for none"
+                 for two, `.0` for none, or `.{{}}` to take the number from the \
+                 arguments"
             ));
         };
         if n > MAX_PLACES {
@@ -992,7 +1050,7 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
                 "format: {n} decimal places is above the limit of {MAX_PLACES}"
             ));
         }
-        out.precision = Some(n);
+        out.precision = Some(Slot::Fixed(n));
     }
     Ok(out)
 }
@@ -3263,6 +3321,8 @@ impl<W: Write> Interpreter<W> {
                 };
                 let mut out = String::with_capacity(fmt.len());
                 let mut next = 1;
+                let mut placeholders = 0;
+                let mut from_args = 0;
                 let mut chars = fmt.chars().peekable();
                 while let Some(c) = chars.next() {
                     match c {
@@ -3277,10 +3337,20 @@ impl<W: Write> Interpreter<W> {
                         '{' => {
                             let mut spec = String::new();
                             let mut closed = false;
+                            // A `{` inside the spec opens a hole that
+                            // reads a number from the arguments, so
+                            // the placeholder ends at the `}` that
+                            // matches THIS brace, not at the first one.
+                            let mut depth = 0usize;
                             for c in chars.by_ref() {
                                 if c == '}' {
-                                    closed = true;
-                                    break;
+                                    if depth == 0 {
+                                        closed = true;
+                                        break;
+                                    }
+                                    depth -= 1;
+                                } else if c == '{' {
+                                    depth += 1;
                                 }
                                 spec.push(c);
                             }
@@ -3297,9 +3367,36 @@ impl<W: Write> Interpreter<W> {
                                 ));
                             }
                             let spec = parse_spec(&spec).map_err(|m| error(m, span))?;
-                            let piece = spec.apply(&args[next]).map_err(|m| error(m, span))?;
-                            out.push_str(&piece);
+                            let value = &args[next];
                             next += 1;
+                            // The value first, then the spec's holes
+                            // left to right: the width before the
+                            // decimal places, as the template reads.
+                            let width = match spec.width {
+                                Slot::Fixed(n) => n,
+                                Slot::FromArgs => {
+                                    from_args += 1;
+                                    take_slot(&args, &mut next, "width", MAX_WIDTH)
+                                        .map_err(|m| error(m, span))?
+                                }
+                            };
+                            let places = match spec.precision {
+                                None => None,
+                                Some(Slot::Fixed(n)) => Some(n),
+                                Some(Slot::FromArgs) => {
+                                    from_args += 1;
+                                    let what = "number of decimal places";
+                                    Some(
+                                        take_slot(&args, &mut next, what, MAX_PLACES)
+                                            .map_err(|m| error(m, span))?,
+                                    )
+                                }
+                            };
+                            let piece = spec
+                                .apply(value, width, places)
+                                .map_err(|m| error(m, span))?;
+                            out.push_str(&piece);
+                            placeholders += 1;
                         }
                         '}' => {
                             return Err(error(
@@ -3311,14 +3408,23 @@ impl<W: Write> Interpreter<W> {
                     }
                 }
                 if next != args.len() {
-                    return Err(error(
+                    // Where a spec read a number from the arguments,
+                    // counting placeholders against arguments would
+                    // not add up; say what the template takes instead.
+                    let msg = if from_args == 0 {
                         format!(
                             "format: {} but {}",
-                            crate::diag::plural(next - 1, "placeholder"),
+                            crate::diag::plural(placeholders, "placeholder"),
                             crate::diag::plural(args.len() - 1, "value argument")
-                        ),
-                        span,
-                    ));
+                        )
+                    } else {
+                        format!(
+                            "format: the template takes {} but {} were given",
+                            crate::diag::plural(next - 1, "argument"),
+                            args.len() - 1
+                        )
+                    };
+                    return Err(error(msg, span));
                 }
                 Ok(Value::str(out))
             }

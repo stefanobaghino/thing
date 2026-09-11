@@ -97,6 +97,32 @@ assert(contains(bad_places["err"], "not a number of decimal places"), "places mu
 let deep = try(format, "{:.200}", 1.5);
 assert(contains(deep["err"], "above the limit"), "places are capped");
 
+# format specs: a width or a number of places written `{}` is read
+# from the arguments, the value first and then the spec's holes left
+# to right. The data decides how wide a column is, so a template that
+# cannot ask is a template that sends you back to pad_right.
+let w = 7;
+assert(format("[{:<{}}]", "ab", w) == "[ab     ]", "a width from the arguments");
+assert(format("[{:>{}}]", "ab", w) == "[     ab]", "and right-aligned");
+assert(format("[{:{}}]", 42, 6) == "[    42]", "a hole with no alignment");
+assert(format("[{:0>{}}]", 7, 4) == "[0007]", "fill, alignment and a hole");
+assert(format("[{:.{}}]", 2.5, 0) == "[3]", "places from the arguments");
+assert(format("[{:>{}.{}}]", 3.14159, 9, 3) == "[    3.142]", "both from the arguments");
+assert(format("{:{}}|{:{}}", "a", 3, "b", 2) == "a  |b ", "two holes, in order");
+assert(format("[{:{}}]", "ab", 0) == "[ab]", "a width of zero from the arguments");
+let no_width = try(format, "{:<{}}", "ab");
+assert(contains(no_width["err"], "takes its width from the next"), "a hole needs an argument");
+let no_place = try(format, "{:>{}.{}}", 1.5, 8);
+assert(contains(no_place["err"], "number of decimal places from the next"), "so does a places hole");
+let text_width = try(format, "{:<{}}", "ab", "x");
+assert(contains(text_width["err"], "must be an int"), "a width from the arguments is an int");
+let neg_width = try(format, "{:<{}}", "ab", 0 - 1);
+assert(contains(neg_width["err"], "cannot be negative"), "and not negative");
+let over = try(format, "{:<{}}", "ab", 999999999);
+assert(contains(over["err"], "above the limit"), "a width from the arguments is capped too");
+let spare = try(format, "{:<{}}", "ab", 7, 9);
+assert(contains(spare["err"], "the template takes 2 arguments but 3"), "spare arguments are counted the new way");
+
 # \r escape (added in 2.11): a real carriage return, one char.
 assert(len("\r") == 1, "cr is one char");
 assert("a\rb" != "a\nb", "cr is not lf");

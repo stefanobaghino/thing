@@ -525,7 +525,7 @@ scope).
 | `abs(n)`       | absolute value of an int or float                            |
 | `assert(cond)` / `assert(cond, msg)` | error unless `cond` is `true` (bool required); a refused comparison also shows both sides, as `assertion failed: three kilos (9 == 8)` |
 | `import(path)` | runs the file once and returns its top-level bindings as a map; see below |
-| `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors. A placeholder may carry a spec — `{:[[fill]align][width]}`, see below |
+| `format(fmt, ...)` | fills `{}` placeholders left-to-right (`{{`/`}}` for literal braces); placeholder/value count mismatch errors. A placeholder may carry a spec — `{:[[fill]align][width][.places]}`, whose width and places may be `{}` and come from the arguments; see below |
 | `json_parse(s)` | JSON text to ting values (object→map, array→list, null→nil); malformed input errors with an offset. A byte order mark at the head of the document is skipped — another program may have written one — but only there |
 | `json_str(v)` / `json_str(v, indent)` | ting value to JSON — compact, or pretty with `indent` spaces per level (map keys sorted); functions and non-finite floats error |
 | `env(name)`    | the environment variable's value, or `nil` if unset          |
@@ -599,6 +599,19 @@ second is a spec's: `{:.2}` always writes two digits after the point,
 where `round(x * 100) / 100` gives back a number that prints as `17.3`
 when the second digit is a zero. Reach for `round` when the VALUE
 should change, and for a spec when only the writing should.
+
+A width or a number of places written `{}` is taken from the argument
+list instead of the template. The value comes first, then the spec's
+holes left to right, so a column measured from the data lines up
+without going through `pad_right`:
+
+    let w = 7;
+    format("[{:<{}}]", "ab", w)          # "[ab     ]"
+    format("[{:>{}.{}}]", 3.14159, 9, 3) # "[    3.142]"
+
+A hole reads a non-negative int, and is capped exactly as a written
+number is. Because `{` in a spec opens a hole, a spec cannot pad a
+column with braces.
 
 ### Patterns
 
