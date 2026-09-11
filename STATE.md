@@ -4110,12 +4110,14 @@ holds only the current milestone and the standing rules.
   be a literal the compiler kept whole, not one with a `{}` in it.
 - 977: replenishment — milestone "one way to name a file" (v2.151),
   reasoning in LOG.md.
+- 978: RuntimeError's header, its frame notes, and the `file` of
+  try's `at` and of every trace frame all go through diag::shorten,
+  so an imported module is named the way --check names it. Only the
+  origin arm is shortened: the other one is the path the reader
+  typed. One stroke banked toward v2.151.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - an error inside an imported file names it the way --check does:
-    the message, the trace notes, and try's "at" and "trace", all
-    through diag::shorten.
   - the same rule audited across --fmt, --test, --doc, --profile and
     --lsp, with a guard per surface so one cannot drift back.
   - `ting --test` reports a file that verified nothing as skipped

@@ -25176,3 +25176,46 @@ further, which mostly stops being a problem once the path in it is
 short.
 
 Backlog for v2.151 is in STATE.md.
+
+## 978 — one name for a file an error came out of
+
+Backlog item one of milestone "one way to name a file": an error
+raised inside an imported file now names that file the way `--check`
+names it.
+
+977's probe put the defect plainly. A module importing `./boom.ting`
+and letting it fail printed a header naming the absolute path the
+import resolved to, and a trace note underneath naming `main.ting`
+as the reader wrote it — two files in one diagnostic, spelled by two
+different rules. `try` reproduced the disagreement inside a single
+map: `at` carried the absolute path and the `trace` frame beside it
+carried the short one. `src/diag.rs` has had `shorten` — "a path the
+way the reader wrote it" — since the profile table needed it, and
+the error path never called it.
+
+Three call sites in `src/eval.rs` now do: the header in
+`RuntimeError::render`, the `called from` of each frame note, and
+`Interpreter::site`, which builds both `try`'s `at` and every entry
+of its `trace`. Only the `Some(origin)` arm of each is shortened.
+The other arm is the path the reader typed on the command line, and
+shortening that would rename a file the user named — `--check` does
+not do that either, and matching `--check` is the whole point.
+
+The frame note's pair went from `(&str, &str)` to
+`(Cow<str>, &str)`: a shortened path is owned, and a frame with no
+origin should not have to allocate one to say so.
+
+The guard is `tests/io.rs`'s
+`an_error_in_an_imported_file_names_it_the_way_check_does`, which
+runs `ting` with its working directory set to the module's own, so a
+path that failed to shorten would be visibly absolute. It asserts
+the `--check` exit first, then for both engines: the three lines the
+program prints from `at` and `trace`, the header, both notes, and
+that the temp directory's absolute path appears nowhere in stdout or
+stderr. Mutation-tested three ways — one call site reverted at a
+time — and each reversion failed it; restored, it passes.
+
+`docs/reference.md` says the rule where `try`'s map is described.
+
+Gate green: 17 suites, 473 tests (the new one), 2950 selftest checks,
+81 files unchanged by `--fmt`, 14 corpus warnings, three targets.
