@@ -25686,3 +25686,32 @@ misnamed. The fixture now imports a module and then indexes a map of
 its own.
 
 483 Rust tests in 18 suites.
+
+## 990 — release v2.152.0
+
+Maintenance: tree clean, no open PRs, CI green for ca540d2 on all six
+checks from the API.
+
+v2.152.0, the milestone "the command line your program shows its
+user". 985's replenishment was half wrong — `main(spec, argv)` already
+existed and already did what the first two items proposed adding —
+and the correction is what the milestone turned out to be about:
+nothing led a reader to the front door, so the four strokes are about
+being led there. A spec its author got wrong now stays the author's
+error (986). The one example that reaches for the module is a whole
+command-line program built on `main` (987). Every module opens with
+what its page opens with, so `--doc` meets a reader with the front
+door rather than the helpers (988). And a member a module does not
+have reads the same before and during a run (989).
+
+Strokes 986, 987, 988, 989. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.152.0; the binary reports `ting
+2.152.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (483
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 2968 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.152.0 — the 173rd tag — and pushed. Verification is the
+next tick: assets, checksums, both aarch64 archives executed here,
+the site audit.

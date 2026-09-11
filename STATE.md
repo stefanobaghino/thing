@@ -4198,12 +4198,15 @@ holds only the current milestone and the standing rules.
   guard's fixture has to contain the thing it rules out: the
   every-map-is-a-module mutation passed until the fixture imported
   anything.
+- 990: v2.152.0 tagged (173rd tag; strokes 986, 987, 988, 989).
+  Verification next: seven assets, `sha256sum -c SHA256SUMS` on a
+  cold download, both aarch64 Linux archives executed here with
+  tools/smoke.sh, and the ten published paths.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
   (CORRECTED AT 986: the first two items were already done. `main`
   exists and does both; nothing led a reader to it. See LOG.md 986.)
-  - release v2.152.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
