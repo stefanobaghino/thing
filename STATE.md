@@ -57,7 +57,7 @@ current orientation.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); before every push run what CI runs, in CI's own words —
    `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
-   `cargo test` (16 suites) — plus `ting --fmt .` and the corpus check. NO
+   `cargo test` (17 suites) — plus `ting --fmt .` and the corpus check. NO
    EXCEPTIONS (clippy skipped once, iteration 182, cost a red CI;
    `cargo fmt --check` was never in this list at all until 763, and
    the first hand-written Rust in a while turned CI red on all four
@@ -4057,10 +4057,18 @@ holds only the current milestone and the standing rules.
   what it leaves to the run. The tutorial had said SIX embedded
   stdlib modules since there were thirteen; tests/docs.rs reads that
   number from embedded_stdlib() now.
+- 966: v2.149.0 released (170th tag). FOUND THE TICK BEFORE, and it
+  is a gate limit worth keeping: `cargo fmt --check` here passed on
+  965's word-list array while CI's stable rustfmt wanted one element
+  per line, so the local check proves the local rustfmt is happy and
+  nothing more. 248ed22 writes the list as one string literal, which
+  no rustfmt wraps.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.149.0.
+  - verify v2.149.0: cold asset download, checksums, both aarch64
+    archives run here with tools/smoke.sh, site audit.
+  - health tick + audit; close the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

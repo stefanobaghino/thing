@@ -24773,3 +24773,35 @@ spells it the way the sentence does. Mutation-tested by putting
 Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2928 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 966 — release v2.149.0
+
+Maintenance: tree clean, no PRs, CI green for 248ed22 from the API.
+
+FIRST, THE FIX THAT 965'S ENTRY WAS WRITTEN BEFORE: 472f792 went out
+with `cargo fmt --check` clean here and red on all four CI runners.
+The new guard's word list was an array of twenty-one short string
+literals, and the local rustfmt (rustc 1.98) fills that array while
+CI's stable rustfmt puts one element per line. 248ed22 makes it one
+space-separated string literal read with `.split(' ').nth(count)`,
+because a string literal is wrapped by nobody. The lesson for the
+gate: `cargo fmt --check` here proves the local rustfmt is happy, not
+that CI's is, so prefer a construct both versions format the same way
+over one that sits near a wrapping decision.
+
+v2.149.0, the milestone "the checker knows what a module offers".
+961's probe wrote a plausible script against the stdlib and the
+checker let four kinds of mistake through to the run; the release
+answers all four. A module call's arguments are counted, the module
+is resolved the way `import` resolves it (a file on disk beating an
+embedded one of the same path), the editor resolves against the
+document's own directory, and everything the checker cannot be sure
+of is still left to the run.
+
+Strokes 962, 963, 964, 965. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.149.0; the binary reports `ting
+2.149.0`.
+
+Gate re-run after the bump: fmt, clippy, 17 `test result: ok` (472
+tests), `--fmt .` 80 unchanged, corpus at fourteen, 2928 checks on
+both engines, Windows check and clippy, wasm release build.
