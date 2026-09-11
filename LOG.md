@@ -26148,3 +26148,42 @@ type name back, the first two fail; with the cut lifted, the third
 does.
 
 2984 checks, 485 Rust tests.
+
+## 1003 — the answer, then where else to look
+
+Milestone "the REPL as a place to look around", third stroke.
+`--doc map` printed the builtin's two lines, a note that lib/map.ting
+exists, and then forty-four entries whose text contains the word
+"map" — 142 lines, of which the answer was two. `--doc len` was 35
+and `--doc sort` 53 the same way.
+
+The search after an exact hit is worth keeping: `--doc sort` should
+not leave `sort_with` unmentioned. What is not worth keeping is
+spelling each one out. `doc_mentions` lists the names, grouped by
+where they live:
+
+    also mentioned by:
+      builtins: compare, items, json_str, keys, list_dir, max, min,
+                sort_by, sort_with, values
+      lib/fs.ting: entries, walk, walk_ext, facts
+      lib/list.ting: median, binary_search
+      lib/math.ting: percentile
+
+`--doc map` is 15 lines now, `--doc sort` 8, `--doc len` 7. A word
+that names NOTHING is still searched for in full — that search is the
+only answer such a word gets, and the help has always said so.
+
+Both surfaces say it identically, which a test has guarded for a
+while: the header is `also mentioned by:` with no tool name in it,
+because `--doc X` and `:doc X` must print the same bytes. The first
+attempt had the flag say "(--doc NAME explains any)" and the REPL
+"({name} explains any)", and that test caught it at once.
+
+`doc_search` and `doc_mentions` are two renderings of one collector,
+`doc_hits`, so the two can never find different things. Three tests
+updated; mutation-tested by rendering entries where names belong,
+which fails the flag's test.
+
+The help line and the reference paragraph say what it does now.
+
+2984 checks, 485 Rust tests.
