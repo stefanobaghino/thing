@@ -87,3 +87,36 @@ for line in st["lines"](wide) {
 assert(helped == [16 + display_width("path"), 16 + display_width("say more"),
 16 + display_width("show this and leave")], "the help column starts in one place");
 assert(contains(wide, "  --ファイル P  path"), "the widest name sets the column");
+
+# A spec its author got wrong is the author's error, and is asked
+# about before a single argument is read: parse fails with a sentence
+# naming the key whose shape is wrong, rather than dying on one of
+# lib/args.ting's own lines, and main lets it through as that error
+# rather than reading it out to whoever typed the command.
+assert(cli["spec_trouble"]({"name": "t"}) == nil, "a minimal spec is fine");
+assert(cli["spec_trouble"]([]) == "spec must be a map, got list", "a spec is a map");
+assert(cli["spec_trouble"]({}) == "spec needs a \"name\"", "a spec is named");
+assert(cli["spec_trouble"]({"name": 1}) == "spec: \"name\" must be a string, got int",
+"the name is a string");
+assert(cli["spec_trouble"]({"name": "t", "summary": []})
+== "spec: \"summary\" must be a string, got list", "the summary is a string");
+assert(cli["spec_trouble"]({"name": "t", "options": {"depth": {}}})
+== "spec: \"options\" must be a list of maps, got map", "options is a list");
+assert(cli["spec_trouble"]({"name": "t", "flags": [1]})
+== "spec: every entry of \"flags\" must be a map, got int", "a flag is a map");
+assert(cli["spec_trouble"]({"name": "t", "flags": [{}]})
+== "spec: every entry of \"flags\" needs a \"long\"", "a flag has a long name");
+assert(cli["spec_trouble"]({"name": "t", "positionals": {}})
+== "spec: \"positionals\" must be a list of maps, got map", "positionals is a list");
+assert(cli["spec_trouble"]({"name": "t", "positionals": [{}]})
+== "spec: every entry of \"positionals\" needs a \"name\"", "a positional is named");
+assert(cli["spec_trouble"]({"name": "t",
+  "positionals": [{"name": "rest", "many": true}, {"name": "last"}]})
+== "spec: the \"many\" positional <rest> must be the last one",
+"nothing follows a many positional");
+assert(cli["spec_trouble"]({"name": "t",
+  "positionals": [{"name": "first"}, {"name": "rest", "many": true}]}) == nil,
+"a many positional at the end is fine");
+let wrong = try(cli["parse"], {"name": "t", "options": {}}, []);
+assert(contains(wrong["err"], "\"options\" must be a list of maps"),
+"parse refuses a bad spec before reading arguments");

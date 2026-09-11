@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 213 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 214 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -258,7 +258,8 @@ is left:
 | Function | Does |
 |----------|------|
 | `parse(spec, argv)` | the command line as `{"flags", "options", "positionals", "help"}`; anything the spec does not describe is an error |
-| `main(spec, argv)` | `parse`, plus what a program does around it: `--help` prints the help and exits 0, a bad command line prints the trouble and the help to stderr and exits 2 |
+| `main(spec, argv)` | `parse`, plus what a program does around it: `--help` prints the help and exits 0, a bad command line prints the trouble and the help to stderr and exits 2. Reach for this one first: it is the whole of what a command-line program does around its arguments |
+| `spec_trouble(spec)` | what is wrong with the spec, as a sentence, or `nil`. A spec its author got wrong is the author's error, so `parse` and `main` both ask this before reading a single argument and neither dresses the answer up as a usage message |
 | `help(spec)` | the usage text |
 | `flag_of(spec, name)` | the flag with that long or short name, or nil |
 | `option_of(spec, name)` | the option with that long or short name, or nil |

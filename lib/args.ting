@@ -22,6 +22,13 @@
 # Short options are not bundled: -a -b, never -ab. The ambiguity that
 # bundling introduces around values (-f meaning a flag here and an
 # option there) is not worth the four characters it saves.
+#
+# Call main(spec, args()). It is parse() with the two things every
+# command-line program does around it — --help prints the help and
+# leaves happy, a bad command line prints the trouble and the help to
+# stderr and leaves with status 2 — and forgetting either of those is
+# how a program answers --help by running anyway. parse() is there for
+# a program that wants to do both itself.
 
 # The flag with that long or short name, or nil.
 fn flag_of(spec, name) {
@@ -50,6 +57,54 @@ fn pad(text, width) {
   let out = text;
   while display_width(out) < width { out = out + " "; }
   return out;
+}
+
+# What is wrong with the spec, as a sentence, or nil when nothing is.
+# A spec its author got wrong is not something the person at the
+# terminal can do anything about, so the two kinds of trouble are kept
+# apart here: this one is asked before a single argument is read.
+fn spec_trouble(spec) {
+  if type(spec) != "map" { return "spec must be a map, got " + type(spec); }
+  if !has(spec, "name") { return "spec needs a \"name\""; }
+  if type(spec["name"]) != "string" {
+    return "spec: \"name\" must be a string, got " + type(spec["name"]);
+  }
+  if has(spec, "summary") && type(spec["summary"]) != "string" {
+    return "spec: \"summary\" must be a string, got " + type(spec["summary"]);
+  }
+  for key in ["flags", "options"] {
+    if !has(spec, key) { continue; }
+    if type(spec[key]) != "list" {
+      return "spec: \"" + key + "\" must be a list of maps, got " + type(spec[key]);
+    }
+    for entry in spec[key] {
+      if type(entry) != "map" {
+        return "spec: every entry of \"" + key + "\" must be a map, got " + type(entry);
+      }
+      if !has(entry, "long") {
+        return "spec: every entry of \"" + key + "\" needs a \"long\"";
+      }
+    }
+  }
+  if !has(spec, "positionals") { return nil; }
+  if type(spec["positionals"]) != "list" {
+    return "spec: \"positionals\" must be a list of maps, got "
+    + type(spec["positionals"]);
+  }
+  let i = 0;
+  for p in spec["positionals"] {
+    i += 1;
+    if type(p) != "map" {
+      return "spec: every entry of \"positionals\" must be a map, got " + type(p);
+    }
+    if !has(p, "name") { return "spec: every entry of \"positionals\" needs a \"name\""; }
+    # A "many" swallows everything left, so anything after it is a
+    # positional the command line can never reach.
+    if get(p, "many", false) && i < len(spec["positionals"]) {
+      return "spec: the \"many\" positional <" + p["name"] + "> must be the last one";
+    }
+  }
+  return nil;
 }
 
 # The --help text, built from the same spec the parser reads.
@@ -114,6 +169,8 @@ fn help(spec) {
 # describe is an error, since a misspelled option that is silently
 # ignored is how a script does the wrong thing quietly.
 fn parse(spec, argv) {
+  let trouble = spec_trouble(spec);
+  if trouble != nil { fail(trouble); }
   let flags = {};
   let options = {};
   if has(spec, "flags") {
@@ -188,6 +245,12 @@ fn parse(spec, argv) {
 # --help prints the help and leaves happy, a bad command line prints
 # the trouble and the help to stderr and leaves with status 2.
 fn main(spec, argv) {
+  # Asked here as well as in parse, and asked FIRST, because what
+  # follows turns a failure into a usage message: a spec its author
+  # got wrong has to stay the author's error, with a trace, rather
+  # than being read out to whoever typed the command.
+  let trouble = spec_trouble(spec);
+  if trouble != nil { fail(trouble); }
   let done = try(parse, spec, argv);
   if has(done, "err") {
     eprint(spec["name"] + ": " + done["err"]);
