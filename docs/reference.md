@@ -1311,6 +1311,15 @@ Scripts behave as shell citizens: `ting x.ting | head` ends quietly
 with exit 0 when the reader goes away, and a runtime error prints a
 diagnostic and exits 1.
 
+Every tool names a file the same way. A path you typed on the command
+line comes back exactly as you typed it; a path the run resolved for
+itself — a module an `import` found — is written relative to the
+directory the command ran in. One rule covers the header of a
+diagnostic and the notes under it, the names `--fmt`, `--doc` and
+`--test` print, the `--profile` and `--coverage` tables, the `"file"`
+of `try`'s `"at"` and `"trace"`, and the message `--lsp` puts on a
+broken `import`.
+
 ## Stability
 
 As of 2.0, the language described on this page is stable: programs

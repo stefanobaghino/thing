@@ -589,10 +589,10 @@ fn import_diagnostics(src: &str, uri: &str) -> Vec<Value> {
             continue;
         };
         let (line, col) = espan.line_col(&text);
-        let name = target
-            .file_name()
-            .map(|n| n.to_string_lossy().into_owned())
-            .unwrap_or_default();
+        // The module named the way `--check` would name it, rather
+        // than by its last component: two files called `util.ting` in
+        // two directories are one message otherwise.
+        let name = crate::diag::shorten(&target.display().to_string());
         out.push(obj(vec![
             (
                 "range",

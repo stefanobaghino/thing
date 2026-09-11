@@ -30,8 +30,16 @@ fn recv(reader: &mut BufReader<ChildStdout>) -> String {
 }
 
 fn spawn_server() -> (Child, ChildStdin, BufReader<ChildStdout>) {
+    spawn_server_in(&std::env::current_dir().unwrap())
+}
+
+/// The server started somewhere in particular. An editor starts it in
+/// the workspace, and the names it puts in a diagnostic are relative
+/// to wherever that was.
+fn spawn_server_in(dir: &std::path::Path) -> (Child, ChildStdin, BufReader<ChildStdout>) {
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--lsp")
+        .current_dir(dir)
         .stdin(Stdio::piped())
         .stdout(Stdio::piped())
         .spawn()
@@ -1355,4 +1363,50 @@ fn the_checker_walks_a_long_chain_without_recursing_down_it() {
         .expect("the checker died on a long chain");
     assert_eq!(out.0, 0, "a chain of ones has nothing to warn about");
     assert!(out.1, "the unbound name at the end of the chain is found");
+}
+
+/// The name a broken import carries follows the same rule as every
+/// other surface (tests/paths.rs): the module written the way
+/// `--check` would write it from where the server was started. The
+/// last component alone would make these two diagnostics one
+/// message, which is the whole reason the rule exists.
+#[test]
+fn a_broken_import_is_named_the_way_check_would_name_it() {
+    let dir = std::env::temp_dir().join(format!("ting-lsp-naming-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(dir.join("sub")).unwrap();
+    std::fs::create_dir_all(dir.join("other")).unwrap();
+    std::fs::write(dir.join("sub").join("m.ting"), "fn broken( 1\n").unwrap();
+    std::fs::write(dir.join("other").join("m.ting"), "fn also( 2\n").unwrap();
+    let dir_text = dir.display().to_string().replace('\\', "/");
+    let uri = if dir_text.starts_with('/') {
+        format!("file://{dir_text}/a.ting")
+    } else {
+        format!("file:///{dir_text}/a.ting")
+    };
+    let (mut child, mut stdin, mut reader) = spawn_server_in(&dir);
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":1,"method":"initialize","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    let text =
+        "let a = import(\"./sub/m.ting\");\nlet b = import(\"./other/m.ting\");\nprint(a, b);\n";
+    let open = format!(
+        r#"{{"jsonrpc":"2.0","method":"textDocument/didOpen","params":{{"textDocument":{{"uri":"{uri}","text":"{}"}}}}}}"#,
+        text.replace('"', "\\\"").replace('\n', "\\n")
+    );
+    send(&mut stdin, &open);
+    let diag = recv(&mut reader);
+    assert!(diag.contains("sub/m.ting:1:12:"), "{diag}");
+    assert!(diag.contains("other/m.ting:1:10:"), "{diag}");
+    assert_eq!(diag.matches("\"severity\":1").count(), 2, "{diag}");
+    send(
+        &mut stdin,
+        r#"{"jsonrpc":"2.0","id":2,"method":"shutdown","params":{}}"#,
+    );
+    let _ = recv(&mut reader);
+    send(&mut stdin, r#"{"jsonrpc":"2.0","method":"exit"}"#);
+    assert_eq!(child.wait().unwrap().code(), Some(0));
+    let _ = std::fs::remove_dir_all(&dir);
 }

@@ -65,6 +65,11 @@ pub struct FileCoverage {
     pub coverable: std::collections::HashSet<usize>,
     /// Where the statements that did run start.
     pub hit: std::collections::HashSet<usize>,
+    /// Whether the file was named on the command line, as opposed to
+    /// resolved by an import. The report is built after the runs are
+    /// over, by an interpreter that has no source of its own, so the
+    /// answer has to be recorded while it is still known.
+    pub typed: bool,
 }
 
 impl Coverage {
@@ -1408,10 +1413,16 @@ impl<W: Write> Interpreter<W> {
                     src: src.map_or_else(|| Rc::from(""), Rc::clone),
                     coverable: Default::default(),
                     hit: Default::default(),
+                    typed: false,
                 },
             );
         }
-        coverage.files.get_mut(path).expect("just inserted")
+        let f = coverage.files.get_mut(path).expect("just inserted");
+        // Named on the command line once is named that way for good:
+        // a file another script went on to import is still the file
+        // the reader asked for.
+        f.typed |= origin.is_none();
+        f
     }
 
     /// The profile as a table, busiest function first: how often each
@@ -1435,7 +1446,15 @@ impl<W: Write> Interpreter<W> {
                 .collect();
             total += coverable.len();
             total_hit += coverable.len() - missed.len();
-            rows.push((crate::diag::shorten(&f.path), coverable.len(), missed));
+            // The file the reader named keeps the name they gave it;
+            // the rest were resolved by an import and are written
+            // back the way `--check` would write them.
+            let name = if f.typed {
+                f.path.clone()
+            } else {
+                crate::diag::shorten(&f.path)
+            };
+            rows.push((name, coverable.len(), missed));
         }
         rows.sort_by(|a, b| a.0.cmp(&b.0));
         let mut out = format!(
@@ -1525,15 +1544,18 @@ impl<W: Write> Interpreter<W> {
         if r.builtin {
             return "a builtin".to_string();
         }
-        let (path, src): (&str, &str) = match &r.origin {
-            Some(o) => (&o.path, &o.src),
+        let (path, src): (std::borrow::Cow<str>, &str) = match &r.origin {
+            // As in every other diagnostic: a path the run resolved is
+            // shortened, and the one the reader typed is printed back
+            // the way they typed it.
+            Some(o) => (crate::diag::shorten(&o.path).into(), &o.src),
             None => match &self.source {
-                Some((p, s)) => (p, s),
-                None => ("", ""),
+                Some((p, s)) => (p.as_str().into(), s),
+                None => ("".into(), ""),
             },
         };
         let (line, col) = r.def.line_col(src);
-        format!("{}:{line}:{col}", crate::diag::shorten(path))
+        format!("{path}:{line}:{col}")
     }
 
     /// A span as the entries of a ting map: the file it belongs to,
