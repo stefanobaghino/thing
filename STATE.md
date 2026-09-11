@@ -4123,11 +4123,20 @@ holds only the current milestone and the standing rules.
   interpreter with no source of its own. Guards: tests/paths.rs, one
   per surface, plus one in tests/lsp.rs. THE SUITE COUNT IS 18.
   One stroke banked toward v2.151.0.
+  Windows went red on the guards themselves: shorten prints what
+  Path::display prints, so the module is sub\m.ting there and the
+  LSP one arrives JSON-escaped. Assertions about a RESOLVED path
+  must spell it with MAIN_SEPARATOR_STR — the gate type-checks the
+  Windows target but never runs it, so this class is CI's to find.
+- 980: `ting --test` reports a file that ran and checked nothing as
+  `skip f (no checks)`, counted with the ones --fail-fast never
+  started, and the summary reads `23 passed, 0 failed, 1 skipped,
+  2950 checks` — the `(1 file checked nothing)` aside is gone. TAP
+  keeps its `ok` and gains `# SKIP no checks`. One stroke banked
+  toward v2.151.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `ting --test` reports a file that verified nothing as skipped
-    rather than ok, and says so in the totals.
   - lib/json.ting re-exports parse and str, the way lib/map.ting
     re-exports items and values.
   - release v2.151.0.

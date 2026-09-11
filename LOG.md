@@ -25279,3 +25279,43 @@ so the assertions now spell the expected name with
 `MAIN_SEPARATOR_STR` and the fixture builds its absolute paths a
 component at a time. Iteration 979's own gate cannot see this: the
 Windows target is type-checked here, never run.
+
+## 980 — a file that checked nothing is not a file that passed
+
+Backlog item three of milestone "one way to name a file": `ting
+--test` reports a file that verified nothing as a skip.
+
+It used to print `ok   f (no checks)`, count the file among the
+passes, and add `(1 file checked nothing)` to the end of the summary
+as an aside. A suite that quietly stops checking anything therefore
+still reads as green, which is the whole complaint 977's probe made.
+
+The line is now `skip f (no checks)`, and the file is counted with
+the ones `--fail-fast` never started. Those two are the same claim
+about the suite — this file stands behind none of it — so one number
+carries both, and the parenthetical aside is gone:
+
+    23 passed, 0 failed, 1 skipped, 2950 checks
+
+`ok`, `skip` and `FAIL` are all five columns wide, so the file names
+still line up. In TAP the line keeps its `ok` and gains a directive,
+`ok 1 - f # SKIP no checks`, which is how TAP has always spelled a
+skip: nothing went wrong, nothing was proved.
+
+A run where nothing is skipped prints exactly what it printed before.
+That is most runs, `ting --test selftest` here being the exception
+(selftest/_lib.ting is the module modules.ting imports, and checks
+nothing on its own).
+
+The guard is tests/io.rs's `test_flag_counts_checks`, which now finds
+the line for the file that checked nothing and requires it to start
+with `skip`, requires the summary to read `2 passed, 0 failed, 1
+skipped, 3 checks`, and requires the TAP line to carry the directive.
+Mutation-tested: with `nothing` forced false it fails. The reference
+and `--help` say `ok`, `skip` or `FAIL`.
+
+Caught by the gate: `test_flag_fail_fast_skips_the_rest` built its
+passing file out of `print(1);`, which checks nothing, so under the
+new rule it became a second skip and the summary the test expects
+changed. Its file asserts something now — that test is about the
+files after a failure, not about counting.
