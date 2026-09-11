@@ -23687,3 +23687,26 @@ on that. Cargo.toml and Cargo.lock at 2.145.0; the binary reports
 `ting 2.145.0`. Gate re-run after the bump: 17 suites (459 tests),
 `--fmt .` 79 unchanged, corpus at fourteen, 2850 checks on both
 engines, Windows check and clippy, wasm release build.
+
+## 935 — v2.145.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+4267a6d from the API.
+
+Seven assets, cold-downloaded into an empty directory; `sha256sum -c
+SHA256SUMS` says OK on all six archives. Both aarch64 Linux archives
+unpacked and run here: `ting 2.145.0` from gnu and from musl, and
+tools/smoke.sh against each — 24 passed, 2850 checks, 22 examples
+clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically: `len("日本")` is 2 where
+`display_width("日本")` is 4; `table` lays `日` and `ab` in the same
+two-column column; `format("{:<4}|", "日")` pads to four columns, not
+five; `truncate("日本語の文", 7, "…")` cuts at the column budget; and
+the caret row under `print("日本語のテキスト", totl);` sits under
+`totl` rather than eight columns to its left.
+
+Site audit: all nine published paths answer 200 on
+www.baghino.me/thing/, the changelog page carries v2.145.0 and the
+stdlib page says 211 functions.

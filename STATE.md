@@ -3933,11 +3933,14 @@ holds only the current milestone and the standing rules.
   turns the old empty-fill hang into an error. STILL ON CHARACTERS
   ON PURPOSE: main.rs's rule(), decoration no test here can see.
 - 934: v2.145.0 tagged (166th tag; strokes 931, 932, 933).
+- v2.145.0 VERIFIED (166th tag; strokes 931, 932, 933; seven assets,
+  checksums OK, both aarch64 archives executed here, smoke green on
+  each, nine site paths 200). The shipped binaries answer the
+  release's own question: len 2 where display_width is 4, and the
+  carets under the token.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.145.0: cold download of every asset, SHA256SUMS
-  checked, both aarch64 archives executed here, tools/smoke.sh.
   - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
