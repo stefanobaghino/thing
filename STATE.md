@@ -4304,10 +4304,16 @@ holds only the current milestone and the standing rules.
   aarch64 archives executed here (3007 checks, 24 examples clean),
   dir, env and a shown child all seen from the archive, ten published
   paths 200.
+- 1020: health tick + audit green — eleven bench checksums identical
+  to BASELINE, timings weather (two runs an hour apart disagreed by
+  tens of per cent about rows nothing touched), four sweeps ok,
+  counts all standing (79 builtins, 13 modules, 214 functions, 48
+  programs, 3007 checks, 489 tests in 18 suites, 81 unchanged,
+  fifteen warnings, 177 tags). Milestone "the program your program
+  runs" COMPLETE. Replenishment next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

@@ -26689,3 +26689,34 @@ hands back nil.
 Site audit: all ten published paths 200. changelog.html carries
 v2.156.0, stdlib.html says 214 functions, and reference.html carries
 the options sentence.
+
+## 1020 — health tick, milestone "the program your program runs" complete
+
+Maintenance: tree clean, no open PRs, CI green for 4a91875 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE. The timings are weather and said so themselves — at load
+1.7 lists.ting on eval read 460 ms against BASELINE's 255, so the
+bench was run again at load 3.0 and the same row read 289 while
+fib.ting went the other way, 558 to 760. Two runs an hour apart
+disagreeing by that much about rows nothing has touched is the host,
+not the binary; the checksums are what decide, and they did.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 214 module functions, 24
+selftest files, 24 examples each with a .out, 3007 selftest checks on
+both engines, 489 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at fifteen warnings, 177 tags all verified.
+
+The milestone is complete. A script that drives other programs ran
+out of road just past the first page, and every answer was a shell
+string away: `run` now takes options in the place stdin had to
+itself, and they are the directory (1015), the environment (1016) and
+whether the child writes where ting writes (1017). v2.156.0 tagged
+and verified (1018, 1019).
+
+Replenishment next.
