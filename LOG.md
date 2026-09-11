@@ -26406,3 +26406,27 @@ run of `time_ms()` can actually reach — is untouched either way.
 
 selftest/time.ting loses the check for the helper and keeps its 77
 others; the stdlib page loses the row. 213 functions, 2994 checks.
+
+## 1011 — release v2.155.0
+
+Maintenance: tree clean, no open PRs, CI green for c8bc0d3 from the
+API (CI and Pages both success).
+
+v2.155.0, the milestone "the number you meant". The probe wrote a
+money-in-cents module and its tests from cold, and every number the
+tools and the formatter put on screen was wrong in a different way: a
+zero in front of a width was silently not a fill (1008), a coverage
+report counted the embedded stdlib against a project of 29 lines
+(1009), and a private zero-padding helper in lib/time.ting made
+`--doc pad` answer twice (1010).
+
+Strokes 1008, 1009, 1010. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.155.0; the binary reports `ting
+2.155.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (486
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 2994 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.155.0 — the 176th tag — and pushed. Verification is the
+next tick.

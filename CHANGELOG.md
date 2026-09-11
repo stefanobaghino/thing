@@ -5,6 +5,28 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.155.0 (2026-09-12)
+
+- **A zero in front of a width fills with zeroes.** `format("{:05}",
+  42)` answered `"   42"`: the zero was read as the first digit of the
+  width and nothing said so, though Rust, Python, C and Go all fill
+  with it. It fills now, and past the sign — `{:05}` of -42 is
+  `"-0042"` — with decimal places (`{:07.2}`) and a width from the
+  arguments (`{:0{}}`) along for the ride. A fill written out still
+  wins, and an alignment beside the zero says where the zeroes go, so
+  `{:0>5}` and `{:>05}` both keep them at the edge.
+- **A coverage report is about the code you wrote.** `--coverage` on a
+  project of 29 lines said `88 of 264 lines (33%)`, because
+  lib/string.ting and lib/test.ting came with the binary. Stdlib
+  modules out of the binary are left out of the table and the total
+  and named on a last line instead. A `lib/` module that is a real
+  file beside your script is yours, and is counted.
+- **`--doc pad` answers once.** lib/time.ting kept a private
+  zero-padding helper, so the word named two different functions.
+  `date`, `clock` and `offset_iso` write their fields with a format
+  spec now. A year before the epoch's era writes its zeroes after the
+  minus sign, as ISO 8601 does: `-005`, where the helper gave `00-5`.
+
 ## v2.154.0 (2026-09-11)
 
 - **An echoed value stops at a screenful.** The prompt echoed whatever
