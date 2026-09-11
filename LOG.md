@@ -26380,3 +26380,29 @@ only the half with the file on disk, which is the half that says what
 the flag is for.
 
 486 tests.
+
+## 1010 — one pad, and a spec instead of a loop
+
+Milestone "the number you meant", third stroke. lib/time.ting carried
+a private `pad(n, width)` — `str(n)`, then a `while` prepending "0" —
+and every module exports what its top level binds, so the doc index
+held two `pad`s. `--doc pad` answered with both: lib/args.ting's
+space-and-COLUMNS one, which a help layout wants, and this one, which
+a clock wants. Two answers to a word is the index saying it does not
+know which you meant.
+
+1008 made the shorter answer available. `date`, `clock` and
+`offset_iso` now write their fields with one `format` each —
+`format("{:04}-{:02}-{:02}", ...)` for a date — instead of eight
+calls to a helper that spelled the same thing in a loop. The module
+loses a function and three string concatenations per call, and
+`--doc pad` answers once.
+
+The one behaviour that moves is a year before the epoch's era: `pad`
+put its zeroes in front of the minus sign, so year -5 was "00-5", and
+the spec is sign-aware, so it is "-005". ISO 8601 writes expanded
+years that way, and a date already four characters wide — the years a
+run of `time_ms()` can actually reach — is untouched either way.
+
+selftest/time.ting loses the check for the helper and keeps its 77
+others; the stdlib page loses the row. 213 functions, 2994 checks.

@@ -41,7 +41,6 @@ assert(t["span"](3723000) == "1h 2m 3s", "hours too");
 assert(t["span"](-61000) == "-1m 1s", "a negative span keeps its sign");
 
 assert(t["fdiv"](-1, 86400000) == -1 && t["fmod"](-1, 86400000) == 86399999, "floor division");
-assert(t["pad"](7, 3) == "007", "padding");
 
 # A clock reading now must land in a plausible century.
 let now = t["parts"](time_ms());

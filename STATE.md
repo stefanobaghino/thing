@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 213
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2995 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2994 selftest checks on all four
   CI platforms, Windows included); 486 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4273,12 +4273,12 @@ holds only the current milestone and the standing rules.
   the total and names it on a last line; a lib/ module that is a real
   file beside the script is still counted. `Origin` and
   `FileCoverage` carry an `embedded` flag. 486 tests.
+- 1010: lib/time.ting's private `pad` goes — `date`, `clock` and
+  `offset_iso` write their fields with one `format` each, and
+  `--doc pad` answers once. 213 functions, 2994 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/time.ting's private `pad(n, width)` goes: it is
-    `pad_left(str(n), width, "0")` spelled again, and having two makes
-    `--doc pad` answer with two different functions.
   - release v2.155.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 214 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 213 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -239,7 +239,6 @@ builtin, and answer `nil` where it keeps no zone data.
 | `weekday_name(n)` | the name of a weekday number, 0 being Sunday; outside 0-6 errors |
 | `fdiv(a, b)` / `fmod(a, b)` | floor division and its remainder, which `/` and `%` do not do for negatives |
 | `fmod(a, b)` | see `fdiv` |
-| `pad(n, width)` | a number left-padded with zeros |
 
 ## lib/args.ting
 
