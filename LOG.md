@@ -23598,3 +23598,32 @@ now, on both engines.
 Gate: fmt (the generated table needed it), clippy, 17 `test result:
 ok` (455 tests), `--fmt .` 79 unchanged, corpus at fourteen, 2832
 checks on both engines, Windows check and clippy, wasm release build.
+
+## 932 — where the carets go
+
+Maintenance: tree clean, no PRs, CI and Pages green for 248684b from
+the API.
+
+The caret row under a diagnostic is padded in COLUMNS now, not in
+characters. src/diag.rs measured the token with a character count and
+padded the prefix with one space per character, so a line holding an
+ideograph put the carets eight columns left of the name they point
+at: `print("日本語のテキスト", totl);` needs 31 columns of prefix and
+got 23. The run itself was wrong the other way — a combining accent
+counts as a character and would have widened the carets past the
+token.
+
+Tabs stay tabs in the prefix. A tab's width is the terminal's
+business (it depends on where the tab stop is), so copying the source
+line's own tabs is the only padding that lands where the source did.
+
+Two guards, each mutation-tested by putting the character count back:
+a unit test in src/diag.rs on the renderer (17 columns where 19 are
+wanted) and one in tests/io.rs on the BINARY's stderr, both engines,
+for a wide line and for a line with a combining mark — the second
+because the renderer being right and the binary printing it are
+different claims.
+
+Gate: fmt, clippy, 17 `test result: ok` (457 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2832 checks on both engines, Windows
+check and clippy, wasm release build.

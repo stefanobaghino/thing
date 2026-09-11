@@ -145,11 +145,20 @@ pub fn render_level_at(
     // caret at the line's end rather than a panic.
     let span_start = span.start.min(line_end);
     let span_end = span.end.clamp(span_start, line_end);
-    let width = src[span_start..span_end].chars().count().max(1);
+    // COLUMNS, not characters: an ideograph is two columns wide and a
+    // combining accent none, so a line holding either would put the
+    // carets somewhere the token is not.
+    let width = crate::width::width(&src[span_start..span_end]).max(1);
     // Tabs in the prefix stay tabs so the caret lines up in terminals.
     let prefix: String = src[line_start..span.start.min(line_end)]
         .chars()
-        .map(|c| if c == '\t' { '\t' } else { ' ' })
+        .map(|c| {
+            if c == '\t' {
+                "\t".to_string()
+            } else {
+                " ".repeat(crate::width::char_width(c))
+            }
+        })
         .collect();
 
     let gutter = line.to_string();
@@ -308,6 +317,35 @@ mod tests {
         let src = "1 + true;";
         let out = render("t.ting", src, "boom", Span::new(4, 8));
         assert!(out.ends_with(" | 1 + true;\n   |     ^^^^"), "got:\n{out}");
+    }
+
+    /// A line holding text wider than one column each: the carets
+    /// have to be placed in COLUMNS, or they point somewhere the
+    /// token is not. Every ideograph before the span pushes it one
+    /// column right, and the span's own are two columns each.
+    #[test]
+    fn carets_line_up_under_wide_characters() {
+        let src = "print(\"\u{65e5}\u{672c}\", totl);";
+        let start = src.find("totl").unwrap();
+        let out = render("t.ting", src, "boom", Span::new(start, start + 4));
+        let last = out.lines().next_back().unwrap();
+        let before = last.split('^').next().unwrap();
+        // 5 for the gutter, then print(" is 7, the two ideographs 4,
+        // and ", is 3.
+        assert_eq!(before.chars().count(), 5 + 7 + 4 + 3, "got:\n{out}");
+        assert!(last.ends_with("^^^^"), "got:\n{out}");
+
+        // The span itself is two columns per character.
+        let wide = "\u{65e5}\u{672c}";
+        let out = render("t.ting", wide, "boom", Span::new(0, wide.len()));
+        assert!(out.ends_with("| ^^^^"), "got:\n{out}");
+
+        // A combining accent takes no column of its own, so the caret
+        // does not drift right of the letter it rides on.
+        let src = "e\u{301}x = 1;";
+        let start = src.find('x').unwrap();
+        let out = render("t.ting", src, "boom", Span::new(start, start + 1));
+        assert!(out.ends_with("|  ^"), "got:\n{out}");
     }
 
     #[test]

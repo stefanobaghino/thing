@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 210
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 22 examples with .out; 2778 selftest checks on all four
-  CI platforms, Windows included); 451 Rust tests
+  nothing on its own — and 22 examples with .out; 2832 selftest checks on all four
+  CI platforms, Windows included); 457 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 79 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -3921,11 +3921,13 @@ holds only the current milestone and the standing rules.
   generated from unicodedata 14.0.0, the search checked against
   tests/fixtures/width.txt. Named `width` first; the shadowing
   warning fired ten times in lib/, which is the warning working.
+- 932: the caret row under a diagnostic is padded in COLUMNS
+  (src/diag.rs), tabs copied through as tabs. Guarded twice — the
+  renderer in src/diag.rs, the binary's stderr in tests/io.rs — and
+  both mutation-tested by putting the character count back.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the caret row under a diagnostic lines up under the token it
-  points at, whatever the line holds.
   - format's width specs, lib/string's pad_left/pad_right/center/
   truncate, the --doc wrapper and its signature column (which
   measures BYTES today) all count columns.

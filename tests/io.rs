@@ -385,6 +385,40 @@ fn module_runtime_errors_point_into_the_module() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A terminal lays a line out in columns, not in characters: an
+/// ideograph takes two and a combining accent none. The caret row
+/// under a diagnostic is padded to match, so it sits under the token
+/// however the line before it is spelled.
+#[test]
+fn the_caret_row_lines_up_under_the_token() {
+    let dir = std::env::temp_dir().join(format!("ting-caret-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    // print(" is seven columns, the three ideographs six more, and
+    // ", three: sixteen before the name.
+    let wide = dir.join("wide.ting");
+    std::fs::write(&wide, "print(\"\u{65e5}\u{672c}\u{8a9e}\", nosuch);\n").unwrap();
+    // The same line with a combining accent, which takes none: the e
+    // it sits on is the only column it adds.
+    let mark = dir.join("mark.ting");
+    std::fs::write(&mark, "print(\"e\u{301}\", nosuch);\n").unwrap();
+    for engine in ["vm", "eval"] {
+        for (file, pad) in [(&wide, 16), (&mark, 11)] {
+            let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+                .env("TING_ENGINE", engine)
+                .arg(file)
+                .output()
+                .expect("failed to run ting");
+            let stderr = String::from_utf8_lossy(&out.stderr);
+            let want = format!("   | {}^^^^^^", " ".repeat(pad));
+            assert!(
+                stderr.lines().any(|l| l == want),
+                "{engine} {file:?}: wanted {want:?} in {stderr}"
+            );
+        }
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// An error carries every call it unwound through: one note per
 /// frame, innermost first, named after the function it was raised in,
 /// identical under both engines. A long trace is elided in the middle
