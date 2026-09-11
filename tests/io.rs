@@ -359,6 +359,76 @@ print(st[\"repeat\"](\"x\", 2));
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check` reads a module beside the file the same way it reads an
+/// embedded one: an unknown member is named, and a call's arguments
+/// are counted against what that module declares.
+#[test]
+fn check_flag_reads_a_module_next_door() {
+    let dir = std::env::temp_dir().join(format!("ting-check-local-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("util.ting"),
+        "fn helper(a, b) { return a + b; }\nfn only(a) { return a; }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("main.ting"),
+        "let u = import(\"./util.ting\");\nprint(u[\"helper\"](1));\nprint(u[\"helpr\"](1, 2));\nprint(u[\"only\"](1));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", dir.join("main.ting").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: `helper` takes 2 arguments, called with 1"),
+        "{stderr}"
+    );
+    assert!(
+        stderr.contains("warning: ./util.ting has no `helpr` (did you mean `helper`?)"),
+        "{stderr}"
+    );
+    assert!(!stderr.contains("`only`"), "{stderr}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
+/// A lib/ beside the script shadows the embedded stdlib at run time,
+/// so the checker reads the file on disk rather than the copy in the
+/// binary: its arities are the ones a call is answered against.
+#[test]
+fn check_flag_prefers_a_lib_on_disk() {
+    let dir = std::env::temp_dir().join(format!("ting-check-shadow-{}", std::process::id()));
+    std::fs::create_dir_all(dir.join("lib")).unwrap();
+    std::fs::write(
+        dir.join("lib/string.ting"),
+        "fn truncate(s) { return s; }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("m.ting"),
+        "let st = import(\"lib/string.ting\");\nprint(st[\"truncate\"](\"x\", 3));\nprint(st[\"repeat\"](\"x\", 2));\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", dir.join("m.ting").to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: `truncate` takes 1 argument, called with 2"),
+        "{stderr}"
+    );
+    // `repeat` is in the embedded module and not in this one, which is
+    // the whole point of shadowing.
+    assert!(
+        stderr.contains("warning: lib/string.ting has no `repeat`"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// `--check` warns about a parameter the function body never names;
 /// `_`-prefixed parameters and used ones are silent.
 #[test]

@@ -466,21 +466,55 @@ pub fn import_targets(
         if name != "import" {
             continue;
         }
-        let mut target = std::path::PathBuf::new();
-        for part in dir.join(path).components() {
-            match part {
-                std::path::Component::ParentDir => {
-                    target.pop();
-                }
-                std::path::Component::CurDir => {}
-                other => target.push(other),
-            }
-        }
+        let target = resolve_import(dir, path);
         if target.is_file() {
             out.push((w[2].span, target));
         }
     }
     out
+}
+
+/// Where an import lands, resolved against the importing file's own
+/// directory with `.` and `..` taken out lexically — the way the
+/// interpreter resolves it, so what the checker reads is what the
+/// program will run.
+fn resolve_import(dir: &std::path::Path, path: &str) -> std::path::PathBuf {
+    let mut target = std::path::PathBuf::new();
+    for part in dir.join(path).components() {
+        match part {
+            std::path::Component::ParentDir => {
+                target.pop();
+            }
+            std::path::Component::CurDir => {}
+            other => target.push(other),
+        }
+    }
+    target
+}
+
+/// What a module beside this file offers: the names its top level
+/// binds, and the arity of each name it binds to a function. A file
+/// on disk WINS over an embedded module of the same path, because
+/// that is what import does.
+fn local_module(
+    dir: Option<&std::path::Path>,
+    path: &str,
+) -> Option<(Vec<String>, std::collections::HashMap<String, Arity>)> {
+    let target = resolve_import(dir?, path);
+    if !target.is_file() {
+        return None;
+    }
+    let source = std::fs::read_to_string(&target).ok()?;
+    let tokens = lexer::lex(&source).ok()?;
+    let program = crate::parser::parse_program(&tokens).ok()?;
+    let exports = program
+        .iter()
+        .filter_map(|stmt| match &stmt.kind {
+            crate::ast::StmtKind::Let(name, _) => Some(name.clone()),
+            _ => None,
+        })
+        .collect();
+    Some((exports, declared_arities(&program)))
 }
 
 /// Folding ranges: every `{ ... }` pair that spans more than one line,
@@ -617,7 +651,10 @@ fn diagnostics(src: &str, uri: &str) -> Value {
         })
         .collect();
     list.extend(import_diagnostics(src, uri));
-    for (start, end, message) in warnings(src) {
+    // The document's own directory, so a module beside it is checked
+    // in the editor exactly as `--check` checks it.
+    let dir = uri_to_path(uri).and_then(|p| p.parent().map(|d| d.to_path_buf()));
+    for (start, end, message) in warnings_in(src, dir.as_deref()) {
         list.push(obj(vec![
             (
                 "range",
@@ -889,6 +926,10 @@ struct Arities {
 /// out: `st["truncate"]("x", 3)` is checked against the function
 /// lib/string.ting declares.
 pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
+    arity_mismatches_in(src, None)
+}
+
+fn arity_mismatches_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usize, String)> {
     let Ok(tokens) = lexer::lex(src) else {
         return Vec::new();
     };
@@ -921,6 +962,14 @@ pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
         {
             *imported.entry(name.clone()).or_insert(0) += 1;
             if unsure.contains(name) || imported[name] > 1 {
+                continue;
+            }
+            // A module on disk wins over an embedded one of the
+            // same path, as it does at run time.
+            if let Some((_, declared)) = local_module(dir, path) {
+                for (key, arity) in declared {
+                    arities.members.insert((name.clone(), key), arity);
+                }
                 continue;
             }
             for (module, source) in crate::eval::embedded_stdlib() {
@@ -1646,9 +1695,15 @@ pub fn shadowed_builtins(src: &str) -> Vec<(usize, usize, String)> {
 /// unused top-level bindings, then unused parameters. Shared by
 /// --check and the LSP.
 pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
-    let mut all = unknown_stdlib_members(src);
+    warnings_in(src, None)
+}
+
+/// The same, for a source whose own directory is known: a module
+/// beside it is then read the way an imported stdlib module is.
+pub fn warnings_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usize, String)> {
+    let mut all = unknown_members(src, dir);
     all.extend(unbound_names(src));
-    all.extend(arity_mismatches(src));
+    all.extend(arity_mismatches_in(src, dir));
     all.extend(duplicate_map_keys(src));
     all.extend(unreachable_code(src));
     all.extend(unused_top_level_lets(src));
@@ -1662,7 +1717,11 @@ pub fn warnings(src: &str) -> Vec<(usize, usize, String)> {
 }
 
 pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
-    stdlib_member_findings(src)
+    unknown_members(src, None)
+}
+
+fn unknown_members(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usize, String)> {
+    member_findings(src, dir)
         .into_iter()
         .map(|f| {
             // An exact builtin of that name is a certainty where the
@@ -1687,15 +1746,16 @@ pub fn unknown_stdlib_members(src: &str) -> Vec<(usize, usize, String)> {
 struct MemberFinding {
     start: usize,
     end: usize,
-    module: &'static str,
+    module: String,
     key: String,
     exports: Vec<String>,
 }
 
-fn stdlib_member_findings(src: &str) -> Vec<MemberFinding> {
+fn member_findings(src: &str, dir: Option<&std::path::Path>) -> Vec<MemberFinding> {
     let mut out = Vec::new();
-    // Bindings: `let <ident> = import("<...lib/x.ting>")`.
-    let mut bindings: Vec<(String, &'static str, Vec<String>)> = Vec::new();
+    // Bindings: `let <ident> = import("<path>")`, naming either a
+    // module on disk or an embedded one.
+    let mut bindings: Vec<(String, String, Vec<String>)> = Vec::new();
     for line in src.lines() {
         let Some(rest) = line.trim_start().strip_prefix("let ") else {
             continue;
@@ -1711,6 +1771,11 @@ fn stdlib_member_findings(src: &str) -> Vec<MemberFinding> {
             continue;
         };
         let path = &arg[..path_end];
+        // A file on disk wins, as it does at run time.
+        if let Some((exports, _)) = local_module(dir, path) {
+            bindings.push((name.trim().to_string(), path.to_string(), exports));
+            continue;
+        }
         for (module, source) in crate::eval::embedded_stdlib() {
             if path.ends_with(module) {
                 let exports = source
@@ -1722,13 +1787,19 @@ fn stdlib_member_findings(src: &str) -> Vec<MemberFinding> {
                     })
                     .map(|n| n.trim().to_string())
                     .collect();
-                bindings.push((name.trim().to_string(), module, exports));
+                bindings.push((name.trim().to_string(), module.to_string(), exports));
             }
         }
     }
     for (name, module, exports) in &bindings {
         let needle = format!("{name}[\"");
         let mut from = 0;
+        // Every `name["key"]` in the file: where the key sits, what it
+        // is, and whether this occurrence WRITES it. `m["new"] = v;`
+        // puts a key there rather than asking for one, which is how a
+        // program extends a module map; a compound assignment reads
+        // first, so it still asks.
+        let mut uses: Vec<(usize, usize, &str, bool)> = Vec::new();
         while let Some(i) = src[from..].find(&needle) {
             let key_start = from + i + needle.len();
             // Must be a whole identifier: not preceded by an ident char.
@@ -1740,16 +1811,32 @@ fn stdlib_member_findings(src: &str) -> Vec<MemberFinding> {
                 break;
             };
             let key = &src[key_start..key_start + key_len];
-            if bounded && !exports.iter().any(|e| e == key) {
+            let after = src[key_start + key_len..].trim_start_matches('"');
+            let after = after.strip_prefix(']').unwrap_or(after).trim_start();
+            let assigned = after.starts_with('=') && !after.starts_with("==");
+            if bounded {
+                uses.push((key_start, key_start + key_len, key, assigned));
+            }
+            from = key_start + key_len;
+        }
+        // A key the file puts there is a key the file may read back,
+        // wherever it reads it.
+        let mut exports = exports.clone();
+        exports.extend(
+            uses.iter()
+                .filter(|(_, _, _, assigned)| *assigned)
+                .map(|(_, _, key, _)| (*key).to_string()),
+        );
+        for (start, end, key, assigned) in uses {
+            if !assigned && !exports.iter().any(|e| e == key) {
                 out.push(MemberFinding {
-                    start: key_start,
-                    end: key_start + key_len,
-                    module,
+                    start,
+                    end,
+                    module: module.clone(),
                     key: key.to_string(),
                     exports: exports.clone(),
                 });
             }
-            from = key_start + key_len;
         }
     }
     out
@@ -1818,7 +1905,7 @@ fn code_action_result(src: &str, uri: &str, first_line: usize, last_line: usize)
             fix(f.start, f.end, near, &mut actions);
         }
     }
-    for f in stdlib_member_findings(src) {
+    for f in member_findings(src, None) {
         let line = src[..f.start].matches('\n').count();
         if line < first_line || line > last_line {
             continue;
@@ -2837,6 +2924,22 @@ mod tests {
         );
         let hover = hover_result(src, 1, 0).to_string();
         assert!(hover.contains("f([k, v], n)"), "hover was:\n{hover}");
+    }
+
+    /// Writing a key into a module map puts it there, so neither the
+    /// write nor a later read of it is an unknown member. A compound
+    /// assignment reads the key first and still asks for it.
+    #[test]
+    fn a_key_the_file_writes_is_a_key_it_may_read() {
+        let src = "let st = import(\"lib/string.ting\");\n\
+                   st[\"brand\"] = 1;\n\
+                   print(st[\"brand\"]);\n\
+                   st[\"other\"] += 1;\n";
+        let messages: Vec<String> = unknown_stdlib_members(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(messages, vec!["lib/string.ting has no `other`".to_string()]);
     }
 
     /// What a module offers is checked the way the file's own

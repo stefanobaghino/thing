@@ -106,7 +106,10 @@ pub fn check_warnings(path: &str, src: &str) -> Vec<String> {
     // binding has thousands, and each used to find its line by
     // counting from the top.
     let lines = lexer::Lines::new(src);
-    lsp::warnings(src)
+    // A module beside this file is part of what can be checked, and
+    // where "beside" is depends on the path this source came from.
+    let dir = std::path::Path::new(path).parent().map(|d| d.to_path_buf());
+    lsp::warnings_in(src, dir.as_deref())
         .into_iter()
         .map(|(start, end, message)| {
             diag::render_level_at(

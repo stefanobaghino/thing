@@ -24674,3 +24674,43 @@ whole corpus calls its modules correctly.
 Gate: fmt, clippy, 17 `test result: ok` (468 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2926 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 963 — the checker reads the module next door
+
+Maintenance: tree clean, no PRs, CI and Pages green for c52e9a6 from
+the API.
+
+The other four gaps 961's probe found are closed. `u["helpr"](1, 2)`
+where u is `import("./util.ting")` now says `./util.ting has no
+helpr (did you mean helper?)`, and `u["helper"](1)` says `helper
+takes 2 arguments, called with 1`. Both passes take the importing
+file's own directory and read the module the way --check has read it
+for parse errors all along; `resolve_import` came out of
+`import_targets`, and one `local_module` gives a file's exports and
+its arities to whichever pass asks.
+
+A FILE ON DISK NOW WINS over an embedded module of the same path,
+which is what `import` does at run time and what the checker got
+wrong before: a `lib/string.ting` beside the script was checked
+against the copy in the binary. Its own `truncate` answers now, and
+`repeat`, which only the embedded module has, is reported missing.
+
+The directory reaches the passes through `warnings_in`, which
+`check_warnings` calls with the file's parent and the LSP calls with
+the document URI's, so an editor sees exactly what --check sees.
+
+FOUND BY THE CORPUS, and it was a false positive the stdlib half had
+all along: selftest/modules.ting writes `lib["extra"] = true;` to
+prove imports are cached, and the member pass read that as asking
+for a key the module lacks. A write PUTS a key there; it asks for
+nothing. The pass now collects a binding's writes first and treats
+those keys as readable wherever they are read, while a compound
+assignment — which reads before it writes — still asks.
+
+Guards: two end-to-end `--check` tests (a module next door, a lib/
+that shadows the embedded stdlib) and a unit test for write-then-read.
+Corpus back to fourteen.
+
+Gate: fmt, clippy, 17 `test result: ok` (471 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2926 checks on both engines, Windows
+check and clippy, wasm release build.

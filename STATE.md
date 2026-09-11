@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 23 examples with .out; 2926 selftest checks on all four
-  CI platforms, Windows included); 468 Rust tests
+  CI platforms, Windows included); 471 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4045,11 +4045,14 @@ holds only the current milestone and the standing rules.
   with the pass from 498, uncertain bindings dropped (reassigned,
   imported twice, shadowed, written into). A re-exported builtin has
   no `fn` behind it and is not checked; later, maybe.
+- 963: both passes read a module next door, through `warnings_in` and
+  the importing file's directory (--check and the LSP alike). A file
+  on disk now wins over an embedded module of the same path. Fixed a
+  false positive the stdlib half had: `m["new"] = v;` writes a key
+  rather than asking for one.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the same two passes for LOCAL imports: unknown member and
-  arity, read from the file --check already follows.
   - `truncate`'s ellipsis gets a default, found by the probe that
   started the milestone.
   - docs: what --check catches, in the reference's tooling section.
