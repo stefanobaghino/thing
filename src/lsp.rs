@@ -2949,6 +2949,7 @@ mod tests {
     fn a_module_member_is_checked_against_what_the_module_declares() {
         let src = "let st = import(\"lib/string.ting\");\n\
                    let cs = import(\"lib/csv.ting\");\n\
+                   print(st[\"repeat\"](\"x\"));\n\
                    print(st[\"truncate\"](\"x\", 3));\n\
                    print(cs[\"parse\"](\"a,b\"));\n\
                    print(cs[\"parse\"](\"a,b\", \";\", 9));\n\
@@ -2960,7 +2961,7 @@ mod tests {
         assert_eq!(
             messages,
             vec![
-                "`truncate` takes 3 arguments, called with 2".to_string(),
+                "`repeat` takes 2 arguments, called with 1".to_string(),
                 "`parse` takes 1 to 2 arguments, called with 3".to_string(),
             ]
         );

@@ -24714,3 +24714,32 @@ Corpus back to fourteen.
 Gate: fmt, clippy, 17 `test result: ok` (471 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2926 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 964 — truncate's suffix gets a default
+
+Maintenance: tree clean, no PRs, CI and Pages green for 5e86129 from
+the API.
+
+`truncate(s, width, suffix = "...")`. The call that started this
+milestone — `st["truncate"](name, 40)` in 961's probe — is a correct
+call now, and where it is not, 962's pass says `truncate takes 2 to
+3 arguments` rather than letting it run.
+
+The default is the marker the interpreter's own elided traces use
+(`note: ... N more frames`), rather than a one-column `…`: a table
+and a diagnostic should mark a cut the same way, and three ASCII
+columns land everywhere a terminal might not have the glyph.
+
+TWO OF MY OWN TESTS USED THIS AS THE EXAMPLE of a wrong-arity call,
+which is what a default does to one: both now call `repeat` with one
+argument, a function with no defaults at all, and keep `truncate` as
+the call that is right. A stdlib function gaining a default is
+additive for callers and subtractive for anything that tested the
+refusal — worth remembering the next time a default looks free.
+
+Guards: two checks in selftest/stdlib.ting, the docs/stdlib.md row
+(its guard reads the signature), and the two tests above.
+
+Gate: fmt, clippy, 17 `test result: ok` (471 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2928 checks on both engines, Windows
+check and clippy, wasm release build.

@@ -335,9 +335,9 @@ fn check_flag_counts_arguments_of_module_calls() {
         &path,
         "let st = import(\"lib/string.ting\");
 let cs = import(\"lib/csv.ting\");
-print(st[\"truncate\"](\"abc\", 2));
+print(st[\"repeat\"](\"x\"));
 print(cs[\"parse\"](\"a,b\"));
-print(st[\"repeat\"](\"x\", 2));
+print(st[\"truncate\"](\"abc\", 2));
 ",
     )
     .unwrap();
@@ -348,12 +348,12 @@ print(st[\"repeat\"](\"x\", 2));
     assert_eq!(out.status.code(), Some(0));
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(
-        stderr.contains("warning: `truncate` takes 3 arguments, called with 2"),
+        stderr.contains("warning: `repeat` takes 2 arguments, called with 1"),
         "{stderr}"
     );
     // The calls that are right say nothing, defaults included.
     assert!(
-        !stderr.contains("`parse`") && !stderr.contains("`repeat`"),
+        !stderr.contains("`parse`") && !stderr.contains("`truncate`"),
         "{stderr}"
     );
     let _ = std::fs::remove_file(&path);

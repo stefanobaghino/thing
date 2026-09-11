@@ -205,8 +205,10 @@ fn fit(s, width) {
 }
 
 # s cut to at most width COLUMNS, with suffix marking the cut (the
-# suffix counts toward the width). Shorter strings pass through.
-fn truncate(s, width, suffix) {
+# suffix counts toward the width). Shorter strings pass through. The
+# default suffix is the one the interpreter's own elided traces use,
+# so a table and a diagnostic mark a cut the same way.
+fn truncate(s, width, suffix = "...") {
   if display_width(s) <= width { return s; }
   if display_width(suffix) >= width { return fit(suffix, width); }
   return fit(s, width - display_width(suffix)) + suffix;
