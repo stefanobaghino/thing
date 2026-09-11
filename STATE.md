@@ -4103,10 +4103,15 @@ holds only the current milestone and the standing rules.
 - 974: v2.150.0 released (171st tag).
 - 975: v2.150.0 VERIFIED (171st tag; strokes 970, 971, 972, 973; both
   aarch64 archives executed here). Site audit green on all ten paths.
+- 976: health tick + strong-form audit green — bench checksums
+  identical, sweeps green, coverage 3504/3521 (99%), the six site
+  pages byte-identical. Milestone "a column you didn't know the width
+  of" complete. Found: a marker used to date the deployed wasm must
+  be a literal the compiler kept whole, not one with a `{}` in it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick + audit; close the milestone.
+  - replenishment: design the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

@@ -25095,3 +25095,43 @@ Site audit: all ten published paths answer 200 on
 www.baghino.me/thing/, the changelog page carries v2.150.0, the
 tutorial page carries "Lining the output up", and the cookbook page
 and examples.js both carry the columns example.
+
+## 976 — health tick, milestone "a column you didn't know the width of" complete
+
+Maintenance: tree clean, no PRs, CI green for 3a3cb08 from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE. THE CLOSEST THESE HAVE
+COME TO A MEASUREMENT IN A WHILE — load average 3.4 rather than the 8
+to 10 of the last several ticks, and every VM row landed between 1.3%
+and 15.4% above BASELINE, most of them around 8%. That is still a
+shared host and still not a number to draw a conclusion from; it is
+recorded because the shape of the gap says "background load", not
+"one row got slower".
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 975), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage: 3504 of 3521 lines (99%), each of the thirteen lib modules
+listed once, 39 lines more than 968 on both sides — 972's alignment
+branches and 973's example. The four gaps are the same old ones:
+args, fs, sh, test.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js and index.html match the
+repository's, and rendering them left the tree clean.
+
+DATING THE DEPLOYED WASM TOOK TWO TRIES, and the reason is worth
+keeping: the string this release is known by, `this spec takes its
+width from the next argument`, is built by format! with `{what}`
+interpolated, so the binary holds the two halves and never that
+sentence. A marker for this purpose has to be a LITERAL the compiler
+kept whole — `from the next argument` and `to take one from the
+arguments` both are, and both are there.
+
+Milestone "a column you didn't know the width of" is complete.
+
+Next tick: replenishment.
