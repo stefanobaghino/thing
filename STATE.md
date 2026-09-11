@@ -17,12 +17,12 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
-  functions, guarded); 47 ting programs (24 selftest files — 23 tests
+  functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2928 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2950 selftest checks on all four
   CI platforms, Windows included); 472 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -4097,11 +4097,12 @@ holds only the current milestone and the standing rules.
   code went in under the LOG/STATE commit message: a backtick inside
   a double-quoted printf ran as a command substitution and took the
   first half of the tick's shell chain with it.
+- 973: examples/columns.ting, the 24th example and the first about
+  layout rather than what is computed; the tutorial's "Lining the
+  output up"; cookbook and playground regenerated.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - an example that prints a real report with all three, and the
-    reference, tutorial, cookbook and playground entries for them.
   - release v2.150.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

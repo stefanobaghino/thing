@@ -25021,3 +25021,34 @@ whose guard reads the signature back from the binary.
 Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2950 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 973 — an example that lays a table out
+
+Maintenance: tree clean, no PRs, CI green for 689924c from the API.
+
+examples/columns.ting, the 24th example, and the first whose subject
+is LAYOUT rather than what is being computed. Three shapes, in the
+order a reader meets them: `table(rows, "<>>")` for the table itself;
+a width measured from the data and handed to `format("{:<{}}", ...)`
+for the lines a table has no row for, which here are a rule under the
+heading and a total under the last row; and `pad_right(name, width)`
+without the fill it used to demand.
+
+It takes no arguments and reads nothing, so it prints the same thing
+on every platform — the .out file is the guard, replayed by
+tests/examples.rs.
+
+The tutorial gained "Lining the output up" at the end of the
+word-frequency section, two checked blocks: the table with its
+alignment string, and a computed width in a format spec. The pin in
+tests/docs.rs went from 50 checked tutorial blocks to 52, and was
+mutation-tested at 50 to be sure the new blocks are the ones it
+counted.
+
+docs/cookbook.md and playground/examples.js regenerated from their
+generators rather than edited, which is the only way they stay
+byte-identical to what the Pages workflow builds.
+
+Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 81
+unchanged, corpus at fourteen, 2950 checks on both engines, Windows
+check and clippy, wasm release build.
