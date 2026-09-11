@@ -23510,3 +23510,53 @@ four playground paths answer 200. Rendering them left the tree clean.
 Milestone "the same value twice" is complete.
 
 Next tick: replenishment.
+
+## 930 — replenishment: milestone "the width of a character"
+
+Maintenance: tree clean, no PRs, CI green for 829c0b8 from the API.
+
+Probed by writing programs, this time from a directory with nothing
+to shadow the embedded stdlib — 928's lesson, applied.
+
+Rejected: date arithmetic. Bucketing thirty timestamps by week needs
+`start_of_day` and `start_of_week` written by hand, which is four
+lines, and `from_iso` already reads a date-only string. Convenience,
+not a gap.
+
+THE FINDING: ting counts characters where it means COLUMNS, and every
+tool it ships gets it wrong on text that is not Latin.
+
+- `format("{:>6}", "日本")` pads to six CHARACTERS and prints eight
+  COLUMNS, so any table with a CJK cell is crooked. lib/string's
+  pad_left, pad_right, center and truncate are the same.
+- `--doc` wraps at 78 characters. Given a module whose comments are
+  Japanese it emitted lines of 86 and 116 columns — the tool breaking
+  its own promise, which `doc_output_fits_eighty_columns` cannot see
+  because every module in lib/ is ASCII.
+- Worst, because it is the thing a beginner sees first: THE CARET ROW
+  UNDER AN ERROR. For `print("日本語のテキスト", totl);` the source
+  line puts `totl` at column 31 and the carets land at 23 — eight
+  columns left, one for each wide character before it. The diagnostic
+  points at the wrong place.
+- src/repl.rs's signature column is measured with `.len()`, which is
+  BYTES: one non-ASCII character in a name and the column moves.
+
+This is the same principle the language already committed to — `len`
+counts characters, `slice` counts characters, not bytes — carried one
+step further to where the text is being LOOKED AT rather than
+measured. A terminal's column is not a character.
+
+The work is a table: East Asian Width W and F are two columns,
+combining marks are zero, everything else is one. Rust's std carries
+case mapping (which `upper` and `lower` already use) but not width,
+so this is hand-rolled, which is the usual ting answer. The TEST data
+need not be: python3 here has unicodedata at Unicode 14.0.0, so a
+fixture of code points and their widths can be generated once,
+committed, and checked against — an authority for the expectation
+without a dependency in the build.
+
+Milestone "the width of a character": display columns where a tool
+means columns — a `width` builtin, the caret row, format's specs,
+lib/string's padding, and the doc wrapper.
+
+Backlog written to STATE.md.

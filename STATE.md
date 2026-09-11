@@ -3915,10 +3915,20 @@ holds only the current milestone and the standing rules.
   clear (stdlib +2.8%, maps -3.6%, lists +2.2%, toplevel -1.1%), and
   it needed each binary pointed at its OWN tree: the old one cannot
   run the new lib/list.ting, which calls fingerprint.
+- 930: replenishment — milestone "the width of a character"
+  (v2.145), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - a width table and a width(s) builtin: East Asian W/F are two
+  columns, combining marks zero, the rest one — checked against a
+  fixture generated from python3's unicodedata (14.0.0) and committed.
+  - the caret row under a diagnostic lines up under the token it
+  points at, whatever the line holds.
+  - format's width specs, lib/string's pad_left/pad_right/center/
+  truncate, the --doc wrapper and its signature column (which
+  measures BYTES today) all count columns.
+  - release v2.145.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
