@@ -4033,12 +4033,12 @@ holds only the current milestone and the standing rules.
   prologue as one map pattern, logs.ting by field name. A tutorial
   block nearly shelled out to `echo`, which Windows CI has no
   executable for.
-- 958: v2.148.0 tagged (169th tag) — milestone "asking a map for its
-  fields".
+- v2.148.0 VERIFIED (169th tag; strokes 954, 955, 956, 957; seven
+  assets, sums OK, both aarch64 archives smoke-tested here, site
+  audit clean) — milestone "asking a map for its fields".
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.148.0 from the API and the published assets.
   - health tick closing the milestone (bench vs BASELINE, fuzz
   sweeps in release).
   - replenishment: the next milestone.

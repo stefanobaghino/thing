@@ -24534,3 +24534,27 @@ Cargo.toml and Cargo.lock at 2.148.0; the binary reports `ting
 2.148.0`. Gate re-run after the bump: 17 suites (465 tests), `--fmt
 .` 80 unchanged, corpus at fourteen, 2926 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 959 — v2.148.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+312c4d2 from the API.
+
+Seven assets, cold-downloaded into an empty directory; `sha256sum -c
+SHA256SUMS` says OK on all six archives. Both aarch64 Linux archives
+unpacked and run here: `ting 2.148.0` from gnu and from musl, and
+tools/smoke.sh against each — 24 passed, 2926 checks, 23 examples
+clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically: `keys`, `values` and `items` are one trio
+with no import in sight; `let {code, out} = r;` takes two fields out
+of a four-field record and says nothing about the other two;
+`let {"out": [x, y]} = ...` nests; `for {name, n} in rows` and
+`map(rows, fn({n}) { ... })` read the same way; both refusals come
+back word for word; and lib/map.ting's re-exported `items` and
+`values` give the same answers as the builtins they now are.
+
+Site audit: all ten published paths answer 200 on
+www.baghino.me/thing/, the changelog page carries v2.148.0 and the
+reference page carries the missing-key refusal.
