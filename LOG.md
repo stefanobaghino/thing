@@ -24025,3 +24025,54 @@ Rendering them left the tree clean. The deployed ting.wasm carries
 Milestone "putting things in order" is complete.
 
 Next tick: replenishment.
+
+## 945 — replenishment: milestone "taking a value apart"
+
+Maintenance: tree clean, no PRs, CI green for 901eb0a from the API.
+
+Chased 944's finding first, and it closes without code. Imports are
+CACHED AND CANONICALISED: `./m.ting`, `m.ting`, `sub/../m.ting` and
+`../m.ting` reached from a file one directory down all give the same
+module — it runs once, and its top-level state is shared, which two
+`bump()` calls counting 2 and 3 showed. The only way to get two
+copies is the embedded stdlib against the tree's own `lib/`, and
+those really are two different files. Nothing to fix; the lesson was
+about which file a selftest reads, and that is written down.
+
+Rejected: named placeholders in `format`. `{name}` and `{0}` are
+refused on purpose, and the error says what to write instead. A
+template with named fields is a `replace` per key, three lines, and
+the language already has `{}` for the ordered case.
+
+THE FINDING: ting hands back pairs everywhere and gives no way to
+take one apart. `items(m)` is pairs, so is `zip`, `enumerate`,
+`window`, `chunk`, `partition` and `extent`, and 938 made pairs the
+natural currency of a sorted map. Yet:
+
+- `let [a, b] = [1, 2];` is `expected variable name, found '['`.
+- `for [k, v] in items(m)` is `expected loop variable, found '['`.
+- `fn([k, v]) { ... }` is `expected parameter name, found '['`.
+
+So every use of a pair opens with two lines of index bookkeeping.
+lib/map.ting's own `from_items` reads `for p in pairs { out[p[0]] =
+p[1]; }`, and its `top` sorts with `fn(p) { return 0 - p[1]; }`.
+There are 31 `[0]` reads in lib/, examples/ and tools/, and the ones
+that hurt are exactly the pairs.
+
+This is a language feature rather than a builtin — lexer, parser,
+AST, both engines, the formatter, the checker's unused-binding
+warnings and the LSP all learn one new shape — which is why it is a
+milestone and not a stroke. Two decisions to make when the first
+stroke lands: whether `StmtKind::Let(String, Expr)` becomes
+`Let(Pattern, Expr)` (twelve call sites) or gains a second variant,
+and whether the VM grows an unpack opcode or the compiler desugars
+into indexing through a temporary. Both engines have to answer
+identically either way, which the differential fuzzer is there for.
+
+The shape should match ting's character: exact length or an error,
+nested patterns, `_` for a hole. A value of the wrong length or the
+wrong type is a mistake, not something to pad with nil.
+
+Milestone "taking a value apart": patterns where a name goes.
+
+Backlog written to STATE.md.

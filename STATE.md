@@ -3983,10 +3983,24 @@ holds only the current milestone and the standing rules.
   one run loads each twice — invisible to every check, visible only
   in the coverage total (88% against 99%). The suite's own spelling
   is the relative one.
+- 945: replenishment — milestone "taking a value apart" (v2.147),
+  reasoning in LOG.md. 944's import finding CLOSES WITHOUT CODE:
+  imports are cached and canonicalised, so one file is one module
+  however it is spelled; embedded-vs-tree is the only two-copies
+  case, and those are two files.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - `let [a, b] = expr;` — list patterns with nesting and `_` holes,
+  exact length or an error, on both engines; the formatter prints
+  them and the checker warns about an unused one the way it warns
+  about any other binding.
+  - `for [k, v] in items(m)` on the same pattern code.
+  - `fn([k, v]) { ... }` parameters, which is what makes the
+  higher-order stdlib read.
+  - docs and the stdlib reading better for it: lib/map.ting's
+  from_items and top, reference, tutorial.
+  - release v2.147.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
