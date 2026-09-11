@@ -25871,3 +25871,50 @@ files — sat in the repository root. The next `ting --fmt .` counted
 showed nothing, because the tree is ignored. A count read while a
 failed fs run's tree is still on disk is not the count. Removed, and
 the gate re-run clean: 81 unchanged, 2973 checks, fifteen warnings.
+
+## 995 — nothing there, a file, a directory
+
+Milestone "a path that isn't there", second stroke. 994 changed what
+the walkers do with a path that is not there; this says what they all
+do with each of the three things a path can be, so a reader does not
+have to infer two of them from a row about the third.
+
+The table, as the module header and the stdlib page both now set it
+out:
+
+    nothing there   every function that touches the filesystem
+                    raises, in the words of the builtin that had to
+                    look. Two do not: size answers nil, the way stat
+                    and exists do, because it is a question where the
+                    rest are demands; and remove_tree is quiet, a
+                    delete with nothing to delete having done its
+                    job. The path functions — parts, base, dir, ext,
+                    stem, join_path, with_ext — read the string and
+                    never look at all.
+    a file          the walkers take it as a tree of one: walk and
+                    walk_ext answer that file (walk_ext only if the
+                    extension matches), facts its facts, total_size
+                    its bytes. The readers read it. Only entries
+                    refuses, a file having no entries.
+    a directory     the walkers walk it, the directories themselves
+                    left out. The readers raise: a directory is not
+                    lines. size answers the directory's own
+                    bookkeeping size, which is exactly what
+                    total_size leaves out.
+
+Every cell was run before it was written down. The two that were not
+already obvious: `walk_ext` on a file whose extension does not match
+answers `[]` rather than raising, which is the filter doing its job
+on a tree of one; and `size` on a directory answers 4096 here, which
+is stat's answer and not a lie — it is the directory's own
+bookkeeping, and `total_size`'s doc has always said it leaves that
+out.
+
+Eleven checks in selftest/fs.ting for the file and directory columns,
+beside 994's six for the missing one: the page and the header now
+describe something a run verifies. 2984 checks.
+
+Recurring, cost ten minutes: `--doc lib/fs.ting` printed the OLD
+header after the file was edited, because the stdlib is baked into
+the binary at compile time. Rebuild before probing a lib/*.ting
+change — it is in STATE.md and I still tripped on it.

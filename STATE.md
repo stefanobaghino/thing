@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2973 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2984 selftest checks on all four
   CI platforms, Windows included); 483 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4219,13 +4219,13 @@ holds only the current milestone and the standing rules.
   three .ting files) IN THE REPO ROOT, ignored by git, and the next
   `ting --fmt .` counts 84 instead of 81. Remove it before believing
   any count.
+- 995: lib/fs.ting's header and the stdlib page set out the three
+  answers (nothing there / a file / a directory) once, and
+  selftest/fs.ting checks every cell — 2984 checks. Every cell was
+  run before it was written down.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the stdlib page and `--doc` say what each tree function answers
-    for a path that is missing, one that is a file and one that is a
-    directory — three answers per function, none of them inferred by
-    the reader.
   - one way to name a path in a message: `ting: cannot read nosuch`
     from the tools against `cannot read "nosuch"` from the runtime,
     decided one way and guarded.
