@@ -24254,3 +24254,27 @@ Cargo.toml and Cargo.lock at 2.147.0; the binary reports `ting
 2.147.0`. Gate re-run after the bump: 17 suites (464 tests), `--fmt
 .` 80 unchanged, corpus at fourteen, 2902 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 951 — v2.147.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+7d1f85a from the API.
+
+Seven assets, cold-downloaded into an empty directory; `sha256sum -c
+SHA256SUMS` says OK on all six archives. Both aarch64 Linux archives
+unpacked and run here: `ting 2.147.0` from gnu and from musl, and
+tools/smoke.sh against each — 24 passed, 2902 checks, 23 examples
+clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically: `let [a, b] = pair;` names both halves;
+`for [name, n] in top(counts, 2)` walks a ranking by name; `map(items(m),
+fn([k, v]) { ... })` reads as the call it is; `from_items` and
+`zip_with` come back with the same answers now that they are written
+with patterns; a hole drops what it names nothing; and both refusals
+come back word for word — `this pattern takes 2 values, and the list
+has 3` and `this pattern takes a list apart, and the value is int`.
+
+Site audit: all ten published paths answer 200 on
+www.baghino.me/thing/, the changelog page carries v2.147.0 and the
+reference page carries "Taking a value apart".

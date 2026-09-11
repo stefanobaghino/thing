@@ -4008,14 +4008,12 @@ holds only the current milestone and the standing rules.
   examples/config.ting. BOTH timing guards (tests/selftest.rs,
   tests/lsp.rs) flaked under the parallel suite at load 8 and passed
   alone; serialize them if it repeats.
-- 950: v2.147.0 tagged (168th tag) — milestone "taking a value
-  apart". Next: verify it (cold download, sha256sum -c, both aarch64
-  archives run here with tools/smoke.sh, site audit), then a health
-  tick to close the milestone, then replenishment.
+- v2.147.0 VERIFIED (168th tag; strokes 946, 947, 948, 949; seven
+  assets, sums OK, both aarch64 archives smoke-tested here, site
+  audit clean) — milestone "taking a value apart".
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.147.0 from the API and the published assets.
   - health tick closing the milestone (bench vs BASELINE, fuzz
   sweeps in release).
   - replenishment: the next milestone.
