@@ -4145,9 +4145,12 @@ holds only the current milestone and the standing rules.
 - 982: v2.151.0 tagged (172nd tag; strokes 978, 979, 980, 981).
   Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (480
   tests), `--fmt .` 81 unchanged, corpus at fifteen, 2955 checks on
-  both engines, Windows check and clippy, wasm release build. Awaits
-  verification: both aarch64 archives executed here, sha256sum -c on
-  a fresh download, seven assets, site audit on all ten paths.
+  both engines, Windows check and clippy, wasm release build.
+- v2.151.0 VERIFIED (172nd tag; strokes 978, 979, 980, 981; both
+  aarch64 archives executed here, sha256sum -c on a fresh download,
+  seven assets). Site audit green on all ten paths; the deployed
+  wasm is dated by lib/json.ting's `let str = json_str`, the library
+  carrying no version string to ask instead.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

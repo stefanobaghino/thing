@@ -25381,3 +25381,26 @@ Cargo.toml and Cargo.lock at 2.151.0; the binary reports `ting
 Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (480
 tests), `--fmt .` 81 unchanged, corpus at fifteen, 2955 checks on
 both engines, Windows check and clippy, wasm release build.
+
+## 983 — v2.151.0 verified
+
+Release, CI and Pages all green for the tag and for b44c667.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.151.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 2955
+checks, 24 examples clean, 0 differing, both.
+
+The smoke run is the release's own evidence for 980 and 979 at once.
+Its summary carries the new `skip`, and it names every selftest file
+by the absolute path smoke.sh typed — which is the rule, not a
+regression: a path the reader typed comes back as typed.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.151.0, stdlib.html says 213 functions between them and carries the
+re-export rows, reference.html carries the paragraph that states the
+naming rule. The deployed ting.wasm holds lib/json.ting's `let str =
+json_str`, so it is this milestone's build rather than a stale one —
+there being no version string in the library to ask instead.
