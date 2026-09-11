@@ -24232,3 +24232,25 @@ Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2902 checks on both engines, Windows
 check and clippy, wasm release build. Cookbook and playground
 examples regenerated for the config change.
+
+## 950 — release v2.147.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 383c4ae from
+the API.
+
+v2.147.0, the milestone "taking a value apart". A pair used to be
+followed around by `p[0]` and `p[1]`; now `let [a, b] = pair;` names
+both halves by position, `for [k, v] in items(m)` walks a map by
+name, and `fn([k, v]) { ... }` is what a higher-order call wanted all
+along. One `eval::unpack` does the taking apart for both engines; the
+loop and the parameter forms are the `let` form, written into the
+front of the body by the parser, which is why neither engine, the
+checker nor the formatter grew a second code path for them. The
+length must match exactly, and both refusals point their carets at
+the pattern.
+
+Strokes 946, 947, 948, 949. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.147.0; the binary reports `ting
+2.147.0`. Gate re-run after the bump: 17 suites (464 tests), `--fmt
+.` 80 unchanged, corpus at fourteen, 2902 checks on both engines,
+Windows check and clippy, wasm release build.

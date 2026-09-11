@@ -5,6 +5,30 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.147.0 (2026-09-11)
+
+- **A pattern takes a value apart.** `let [a, b] = pair;` binds both
+  halves by position, so the `p[0]`/`p[1]` that follows every pair
+  around can be a pair of names instead. Patterns nest — `let [a, [b,
+  c]] = ...` — and `_` stands where a value is matched and dropped.
+- **The same brackets in a loop and in a parameter list.** `for [k,
+  v] in items(m) { ... }` walks a map's entries by name, and
+  `map(pairs, fn([k, v]) { ... })` is what makes a higher-order call
+  read. Both are the `let` form: the parser writes it into the front
+  of the body, so a loop still takes its snapshot, a closure still
+  captures per iteration, and a pattern parameter still counts as one
+  argument.
+- **Exact, or an error.** `this pattern takes 2 values, and the list
+  has 3` — nothing is trimmed and nothing is padded, because a pair
+  that arrived with three things in it is a bug rather than a shape to
+  guess at. A value that is not a list is refused by type, the carets
+  sit under the pattern, and a trace frame reads `f([k, v] = [1, 2,
+  3])`. `fn f(k, [k, v])` is a duplicate parameter.
+- The checker reads patterns in both of its unused-binding passes, so
+  a name a pattern binds and nobody reads is a warning like any other.
+- The reference and the tutorial each gain a section, and
+  `from_items`, `top` and `zip_with` are written with patterns.
+
 ## v2.146.0 (2026-09-11)
 
 - **Lists have a place in the order.** `<` and its three siblings
