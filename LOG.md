@@ -23914,3 +23914,30 @@ what that guard exists for. 47 ting programs now, 23 examples, and
 Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2875 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 941 — the last column that counted characters
+
+Maintenance: tree clean, no PRs, CI and Pages green for bb05dc5 from
+the API.
+
+lib/args.ting's `pad(text, width)` and the width it pads to both
+count COLUMNS now, so `--help` lines up whatever the option names are
+written in. This was 936's finding, and it was the last layout site
+in the tree still counting characters apart from main.rs's `rule()`,
+which no test here can see.
+
+The guard is the observable thing rather than the call: the help
+lines for an option named in Japanese, a flag and `-h, --help` must
+all put their text at the same column, which is their line's width
+less the width of the text. Counting characters gives 22, 22 and 33
+against the 20, 24 and 35 that line up — which is what the mutation
+printed, and a reader can see the shape of the bug in those numbers.
+
+The module keeps its own `pad` rather than importing lib/string: no
+embedded module imports another, and one four-line helper is a
+smaller thing to own than a dependency between modules that ship
+together.
+
+Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2877 checks on both engines, Windows
+check and clippy, wasm release build.

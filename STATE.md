@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2875 selftest checks on all four
+  nothing on its own — and 23 examples with .out; 2877 selftest checks on all four
   CI platforms, Windows included); 461 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
@@ -3965,10 +3965,12 @@ holds only the current milestone and the standing rules.
   FEEDS THREE GENERATORS: examples/*.out, tools/cookbook.ting and
   tools/playground_examples.ting — the third one has a guard, which
   is how I learnt it.
+- 941: lib/args.ting's help column counts COLUMNS (936's finding
+  closed). main.rs's rule() is now the only layout site left on
+  characters, and no test here can see it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - lib/args.ting's pad(text, width) counts columns (936's finding).
   - release v2.146.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than

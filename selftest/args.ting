@@ -69,3 +69,21 @@ assert(contains(cli["help"](bare), "usage: bare <one>"), "a spec with no options
 # path can be checked from here: the other two print and exit.
 let ran = cli["main"](spec, ["go", "-v"]);
 assert(ran["positionals"]["command"] == "go" && ran["flags"]["verbose"], "main hands back the parse");
+
+# The help columns are laid out in COLUMNS: an option name written in
+# a script a terminal draws wide would push its help text out of line
+# if the width were counted in characters.
+let wide = cli["help"]({
+  "name": "t",
+  "options": [{"long": "ファイル", "value": "P", "help": "path"}],
+  "flags": [{"long": "verbose", "help": "say more"}],
+});
+let st = import("lib/string.ting");
+let helped = [];
+for line in st["lines"](wide) {
+  if starts_with(line, "  -") { push(helped, display_width(line)); }
+}
+# Each line is its help text preceded by the same sixteen columns.
+assert(helped == [16 + display_width("path"), 16 + display_width("say more"),
+16 + display_width("show this and leave")], "the help column starts in one place");
+assert(contains(wide, "  --ファイル P  path"), "the widest name sets the column");

@@ -43,10 +43,12 @@ fn option_of(spec, name) {
   return nil;
 }
 
-# A string padded with spaces to that width, for the help columns.
+# A string padded with spaces to that width in COLUMNS, for the help
+# columns: a terminal lays them out in columns, and neither an option
+# name nor a value placeholder has to be ASCII.
 fn pad(text, width) {
   let out = text;
-  while len(out) < width { out = out + " "; }
+  while display_width(out) < width { out = out + " "; }
   return out;
 }
 
@@ -95,7 +97,7 @@ fn help(spec) {
   push(helps, "show this and leave");
   let width = 0;
   for name in names {
-    if len(name) > width { width = len(name); }
+    if display_width(name) > width { width = display_width(name); }
   }
   push(lines, "");
   push(lines, "options:");
