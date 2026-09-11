@@ -24805,3 +24805,37 @@ Cargo.toml and Cargo.lock at 2.149.0; the binary reports `ting
 Gate re-run after the bump: fmt, clippy, 17 `test result: ok` (472
 tests), `--fmt .` 80 unchanged, corpus at fourteen, 2928 checks on
 both engines, Windows check and clippy, wasm release build.
+
+## 967 — v2.149.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+27c2488 from the API, CI green for b7b0492.
+
+Six archives plus SHA256SUMS, cold-downloaded into an empty
+directory; `sha256sum -c` says OK on all six. Both aarch64 Linux
+archives unpacked and run here: `ting 2.149.0` from gnu and from
+musl, and tools/smoke.sh against each — 24 passed, 2928 checks, 23
+examples clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically. A probe directory with a two-parameter
+`lib/string.ting` and a `util.ting` beside the script draws all four
+warnings: `truncate takes 2 arguments, called with 3` against the
+copy on disk rather than the embedded one, `lib/string.ting has no
+repeat` because the disk copy is the one that counts, `./util.ting
+has no helpr (did you mean helper?)`, and `helper takes 2 arguments,
+called with 1`. With no lib/ beside it the embedded module answers
+instead. `m["new"] = 1;` followed by a read of that key stays silent.
+`truncate("abcdefghij", 8)` prints `abcde...` and `--doc truncate`
+shows the default.
+
+Site audit: all ten published paths answer 200 on
+www.baghino.me/thing/ — index, the five rendered docs pages, the
+changelog, ting.wasm and examples.js — the changelog page carries
+v2.149.0, the reference page carries the on-disk precedence rule, and
+the tutorial page says thirteen embedded modules.
+
+FOUND: tools/smoke.sh said the archive's lib/ and the embedded one
+are "the same twelve modules". They are thirteen, and the count was
+never what the sentence needed — the `diff -r` two lines below is.
+The number is gone rather than corrected.

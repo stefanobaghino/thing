@@ -4063,11 +4063,15 @@ holds only the current milestone and the standing rules.
   per line, so the local check proves the local rustfmt is happy and
   nothing more. 248ed22 writes the list as one string literal, which
   no rustfmt wraps.
+- 967: v2.149.0 VERIFIED (170th tag; strokes 962, 963, 964, 965;
+  both aarch64 archives executed here). The shipped binaries draw all
+  four warnings 961's probe wanted. Site audit green on all ten
+  paths. Found: tools/smoke.sh counted the stdlib modules in a
+  comment and had been one short since the thirteenth; the count is
+  gone, the `diff -r` under it was always the real check.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.149.0: cold asset download, checksums, both aarch64
-    archives run here with tools/smoke.sh, site audit.
   - health tick + audit; close the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
