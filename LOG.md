@@ -25961,3 +25961,28 @@ Two older tests asserted the bare form and were updated; the
 reference states the rule beside 979's.
 
 484 Rust tests in 18 suites.
+
+## 997 — release v2.153.0
+
+Maintenance: tree clean, no open PRs, CI green for 37f6478 on all six
+checks from the API.
+
+v2.153.0, the milestone "a path that isn't there". 993's probe wrote
+a tool cold — gather the TODO lines out of a tree of notes — and then
+handed it the name of a directory that does not exist. It printed an
+empty table and left with 0. Three strokes on that: the walkers
+refuse a path with nothing behind it instead of inventing a tree of
+one (994), the module and the page say what all of them answer for
+each of the three things a path can be (995), and every message that
+holds a path quotes it, the tools having been the last holdout (996).
+
+Strokes 994, 995, 996. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.153.0; the binary reports `ting
+2.153.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (484
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 2984 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.153.0 — the 174th tag — and pushed. Verification is the
+next tick.

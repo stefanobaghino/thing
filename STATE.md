@@ -4228,10 +4228,12 @@ holds only the current milestone and the standing rules.
   spelling; `file:line:col:` headers stay bare. quoted() in main.rs
   for the lists. 484 Rust tests. A mutation that passes may be
   testing a different call site than the assertion reads.
+- 997: v2.153.0 tagged (174th tag; strokes 994, 995, 996).
+  Verification next: seven assets, checksums on a cold download,
+  both aarch64 archives executed here, the ten published paths.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.153.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
