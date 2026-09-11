@@ -5,6 +5,33 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.152.0 (2026-09-11)
+
+- **A spec its author got wrong is the author's error.** `lib/args.ting`
+  read a malformed spec as far as it could and then failed somewhere
+  inside itself, so a mistake in the program's own source was read out
+  to whoever typed the command — or killed `main` while it printed a
+  help built from the same bad spec. `spec_trouble(spec)` answers what
+  is wrong with a spec, as a sentence, or `nil`; `parse` asks it
+  before reading a single argument and `main` asks it first of all, so
+  this kind of trouble stays a ting error with a trace to the line
+  that wrote the spec.
+- **The example is a whole command-line program.** `examples/report.ting`
+  wrote its command line out by hand. It calls `main(spec, args())`
+  now: `--help` prints the help and leaves with 0, a command line the
+  spec does not describe prints the trouble and the help to stderr and
+  leaves with 2, and the file it reports on is a positional you name.
+- **Every module opens with its front door.** `--doc` on a module
+  lists its members in the order the file defines them, and six
+  modules opened with a helper — `lib/args.ting` led with `flag_of`
+  and reached `main` seventh. Each now leads with what its table on
+  the stdlib page leads with.
+- **A missing module member reads the same before and during a run.**
+  `--check` says `lib/string.ting has no ends_with (ends_with is a
+  builtin)`; a run that reached the same lookup said `key "ends_with"
+  not found`, which is what a map has rather than what a module has.
+  Both surfaces build that sentence with one function now.
+
 ## v2.151.0 (2026-09-11)
 
 - **Every tool names a file the same way.** A path you typed on the
