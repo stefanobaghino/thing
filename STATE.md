@@ -69,7 +69,11 @@ current orientation.
    GETS MUTATION-TESTED: 970 found a `;` in the middle of its `&&`
    chain, so fmt, clippy and the build had been printing without
    gating. After any edit to it, make one step fail on purpose and
-   watch the script stop. Linux release builds stay on
+   watch the script stop. A TICK'S SHELL CHAIN CARRIES NO BACKTICK
+   INSIDE DOUBLE QUOTES: 972 put one in a commit-message printf, the
+   shell read it as a command substitution, and half the chain — the
+   code commit included — never ran while the half after the newline
+   did. Linux release builds stay on
    the oldest runner (22.04); the glibc-floor step in release.yml is
    the guard — never move them to -latest.
 3. Release when ~3 strokes accumulate; verify every release by cold
@@ -4087,11 +4091,15 @@ holds only the current milestone and the standing rules.
   said GATE OK. Fixed and mutation-tested against the dirty tree.
 - 971: pad_left, pad_right and center fill with a space unless told
   otherwise; `table` is the first caller to drop the argument.
+- 972: table(rows, align) — one character per column, `<`, `>` or
+  `^`. The last cell stays unpadded only where its column is
+  left-aligned, since that is the rule's whole reason. The stroke's
+  code went in under the LOG/STATE commit message: a backtick inside
+  a double-quoted printf ran as a command substitution and took the
+  first half of the tick's shell chain with it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - string.table takes an alignment per column, so a column of
-    figures lines up under its heading.
   - an example that prints a real report with all three, and the
     reference, tutorial, cookbook and playground entries for them.
   - release v2.150.0.

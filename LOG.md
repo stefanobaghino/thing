@@ -24992,3 +24992,32 @@ corpus, still at fourteen warnings.
 Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2945 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 972 — a table column can line up on the right
+
+Maintenance: tree clean, no PRs, CI and Pages green for cd79320 from
+the API.
+
+`table(rows, align)`, where align is one character per column — `<`,
+`>`, `^`, the alphabet a format spec already uses — and a column past
+its end is left-aligned, so `table(rows)` prints exactly what it
+printed before. A table of figures can now put its numbers under
+their heading, which was 969's third finding.
+
+THE ONE RULE THAT HAD TO BEND: `table` never padded the last cell of
+a row, so that no line ends in spaces. That is right for a
+left-aligned column and wrong for the other two, where the padding
+goes BEFORE the text and is the whole point. So the last cell is
+unpadded only when its column is left-aligned.
+
+An alignment character that is none of the three fails with the
+character in the message, rather than being read as left.
+
+Guards: five checks in selftest/stdlib.ting — one per alignment, one
+for a column past the end of the string, one that the no-argument
+call is unchanged — plus the refusal, and the docs/stdlib.md row
+whose guard reads the signature back from the binary.
+
+Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2950 checks on both engines, Windows
+check and clippy, wasm release build.
