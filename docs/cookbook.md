@@ -510,12 +510,13 @@ last   2026-09-06T01:23:19Z INFO db request 4999
 
 ## logs
 
-Summarising a log: tally lines by level with count_by, smooth the latencies with a sliding window, validate fields with is_digit, print the slow ones as an aligned table.
+Summarising a log: tally lines by level with count_by, smooth the latencies with a sliding window, validate fields with is_digit, print the slow ones as an aligned table. Every record comes apart by field name — `fn({ms})` — rather than by subscript.
 
 ```ting
 # Summarising a log: tally lines by level with count_by, smooth the
 # latencies with a sliding window, validate fields with is_digit,
-# print the slow ones as an aligned table.
+# print the slow ones as an aligned table. Every record comes apart
+# by field name — `fn({ms})` — rather than by subscript.
 
 let li = import("../lib/list.ting");
 let st = import("../lib/string.ting");
@@ -540,16 +541,16 @@ for line in lines {
   push(parsed, {"level": fields[0], "ms": int(fields[1]), "path": fields[3]});
 }
 
-print("by level:", li["count_by"](parsed, fn(e) { return e["level"]; }));
+print("by level:", li["count_by"](parsed, fn({level}) { return level; }));
 
-let latencies = map(parsed, fn(e) { return e["ms"]; });
+let latencies = map(parsed, fn({ms}) { return ms; });
 let smoothed = map(li["window"](latencies, 3), fn(w) { return li["mean"](w); });
 print("3-point moving average:", map(smoothed, fn(x) { return int(x); }));
 
-let slow = filter(parsed, fn(e) { return e["ms"] >= 90; });
+let slow = filter(parsed, fn({ms}) { return ms >= 90; });
 print("slow requests:");
 let rows = [["level", "ms", "path"]];
-for e in slow { push(rows, [e["level"], str(e["ms"]), e["path"]]); }
+for {level, ms, path} in slow { push(rows, [level, str(ms), path]); }
 print(st["indent"](st["table"](rows), "  "));
 ```
 

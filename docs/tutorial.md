@@ -188,6 +188,34 @@ pattern; anything else is an error rather than a silent trim. Write
 `_` where you do not care about a value: `for [_, age] in
 items(ages)` walks the ages alone.
 
+Maps come apart the same way, by key instead of by position, and
+this is where it pays off most: ting hands you record-shaped maps
+all day — `run` gives you `code`, `out` and `err` (the shape `r`
+has below), `stat` gives `size`, `modified` and `kind`, `try` gives
+`ok` or `err`.
+
+```ting
+let r = {"code": 0, "out": "hello\n", "err": ""};
+let {code, out} = r;
+print(code, trim(out));
+let people = [{"name": "ada", "age": 36}, {"name": "bo", "age": 41}];
+for {name, age} in people { print(name, age); }
+print(map(people, fn({age}) { return age + 1; }));
+```
+
+```text
+0 hello
+ada 36
+bo 41
+[37, 42]
+```
+
+A bare name asks for the key of that name; write `"key": something`
+when you want a different name or a nested pattern, as in `let
+{"out": text} = r;`. Asking for a key the map does not have is an
+error, but extra keys are fine — `fn({age})` above was handed maps
+with a name in them too and did not mind.
+
 ## Functions are values
 
 `fn name(...) { ... }` defines a function; anonymous `fn(...) { ... }`

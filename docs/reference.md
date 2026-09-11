@@ -257,6 +257,7 @@ xs[0] = 9;          # write a list slot / insert or update a map key
 x += 1;             # also -=, *=, /=, %=: read, apply, write back
 xs[i] += 1;         # base and subscript are evaluated once, not twice
 let [a, b] = pair;  # take a list apart by position into names
+let {code, out} = r;  # take a map apart by key into names
 { let y = 1; }      # block: introduces a scope; y does not leak
 if c { } else if d { } else { }
 while c { }
@@ -363,6 +364,41 @@ unchanged. A pattern parameter counts as one argument, takes no
 default, and may not repeat a name another parameter already binds —
 `fn f(k, [k, v])` is refused. What it prints in a signature or a
 trace is the pattern as it was written: `f([k, v], n)`.
+
+A map is taken apart by key rather than by position, and the pattern
+is written the way the literal it matches is: a bare name is the key
+of that name, and `"key": pattern` spells a key out and nests.
+
+```ting
+let r = {"code": 0, "out": "hi there", "err": ""};
+let {code, out} = r;
+print(code, out);
+let {"out": text} = r;
+print(len(split(text, " ")));
+for {name, n} in [{"name": "ada", "n": 1}, {"name": "bo", "n": 2}] {
+  print(name, n);
+}
+fn label({name, n}) { return name + ":" + str(n); }
+print(label({"name": "cai", "n": 3, "extra": true}));
+```
+
+```text
+0 hi there
+2
+ada 1
+bo 2
+cai:3
+```
+
+EXTRA KEYS ARE FINE — `label` above was handed a third one and said
+nothing — and that asymmetry with a list pattern is the design. A
+list's length is its shape, so a list of the wrong length is the
+wrong value; a map's keys are its contents, and asking three fields
+of a ten-field record is the ordinary thing to do. What is still a
+mistake is asking for what is not there: `this pattern asks for the
+key "nope", and the map has no such key`, and `this pattern takes a
+map apart, and the value is list` for a value of the wrong kind. A
+key may be asked for once per pattern; a repeat is a parse error.
 
 ## Functions
 

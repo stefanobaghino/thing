@@ -56,15 +56,10 @@ fn scan(st, text, sep) {
     st["begun"] = true;
     if slice(text, 0, 1) == BOM { text = slice(text, 1, len(text)); }
   }
-  let rows = st["rows"];
-  let row = st["row"];
-  let field = st["field"];
-  let quoted = st["quoted"];
-  # A quote seen inside a quoted field: the next character says
-  # whether it was an escaped quote or the end of the field.
-  let pending = st["pending"];
-  let started = st["started"];
-  let dirty = st["dirty"];
+  # `pending` is a quote seen inside a quoted field: the next
+  # character says whether it was an escaped quote or the end of the
+  # field.
+  let {rows, row, field, quoted, pending, started, dirty} = st;
   for c in text {
     if pending {
       pending = false;

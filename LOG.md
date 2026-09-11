@@ -24481,3 +24481,35 @@ read back as written.
 Gate: fmt, clippy, 17 `test result: ok` (465 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2926 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 957 — writing down what a map pattern is for
+
+Maintenance: tree clean, no PRs, CI and Pages green for 81fe722 from
+the API.
+
+The reference's "Taking a value apart" gains its second half: a
+checked block with all three forms over maps, and the paragraph that
+says why extra keys are fine and a missing one is not. The statement
+list gains `let {code, out} = r;`. The tutorial gains the same in the
+place a reader meets it — ting hands back record-shaped maps all day,
+`run` gives code/out/err, `stat` gives size/modified/kind, `try`
+gives ok/err.
+
+The tutorial block ALMOST shelled out. `let r = run("echo",
+["hello"]);` ran here and would have run on two of the four CI
+platforms; `echo` on Windows is a shell builtin with no executable
+behind it, and `cargo test` runs the docs guard there too. The block
+uses a literal of run's shape instead and names run in the prose.
+
+The stdlib reads better in the place that needed it most:
+lib/csv.ting's `scan` opened with seven `let x = st["x"];` lines, one
+per scanner field, and now opens with one `let {rows, row, field,
+quoted, pending, started, dirty} = st;`. examples/logs.ting takes
+every record apart by field name — `fn({ms}) { return ms; }` and
+`for {level, ms, path} in slow` — and its .out is unchanged, which
+is the point.
+
+Gate: fmt, clippy, 17 `test result: ok` (465 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2926 checks on both engines, Windows
+check and clippy, wasm release build. Cookbook and playground
+examples regenerated for the logs change.

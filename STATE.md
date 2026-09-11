@@ -4029,11 +4029,13 @@ holds only the current milestone and the standing rules.
   arms, the rest free from the desugar; `For` joined `Let` in
   brace_is_map. Two test fixtures used `fn broken( {` as unparseable
   source and had to change: `{` now opens a parameter pattern.
+- 957: docs and stdlib — reference and tutorial sections, csv's scan
+  prologue as one map pattern, logs.ting by field name. A tutorial
+  block nearly shelled out to `echo`, which Windows CI has no
+  executable for.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - docs, the stdlib and the examples reading better for it:
-  run/stat/try/re_find sites, reference, tutorial.
   - release v2.148.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
