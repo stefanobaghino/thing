@@ -25404,3 +25404,47 @@ re-export rows, reference.html carries the paragraph that states the
 naming rule. The deployed ting.wasm holds lib/json.ting's `let str =
 json_str`, so it is this milestone's build rather than a stale one —
 there being no version string in the library to ask instead.
+
+## 984 — health tick, milestone "one way to name a file" complete
+
+Maintenance: tree clean, no PRs, CI green for 881cfb4 from the API.
+
+Bench: eleven checksums identical to BASELINE. Every VM row landed
+between 1.2% and 16.4% above it, most around 6%, on a host at load
+2.6 to 4.5 — the shape of background noise rather than of one row
+getting slower.
+
+ONE ROW WAS WORTH CHASING. json.ting's EVAL time read +32%, and this
+milestone edited lib/json.ting, which that bench imports. Two facts
+settle it. The lines 981 changed are the two `fail()` messages in
+set_in and the key expression in flatten, and bench/json.ting calls
+neither: it never fails a set_in and never calls flatten. And timed
+on its own, away from the harness's own load, the script runs in 0.16
+to 0.17 s wall — where BASELINE records 165.6 ms for the body. The
++32% is the harness measuring itself under its own weight.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 981), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases — 18, 18, 6 and 2 tests.
+
+THE SWEEP SCRIPT WAS NOT REPORTING. Each suite was piped to `tail
+-1`, and cargo's last line is blank, so every run printed an empty
+line where the result should have been; the numbers that appeared in
+earlier ticks were the tail of a rebuild's output, not the verdict.
+The `&&` chain under `set -o pipefail` still gated on cargo's exit
+status, so SWEEPS OK never lied — but a check that cannot show its
+numbers is one step from 970's gate. It greps for `^test result` now.
+
+Coverage: 3512 of 3529 lines (99%), each of the thirteen lib modules
+listed once, 8 lines more than 976 — 981's two re-exports and the
+selftest that exercises them. The four gaps are the same old ones:
+args, fs, sh, test.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live index.html and examples.js match the
+repository's, and rendering them left the tree clean.
+
+Milestone "one way to name a file" is complete.
+
+Next tick: replenishment.

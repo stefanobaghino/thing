@@ -4151,6 +4151,18 @@ holds only the current milestone and the standing rules.
   seven assets). Site audit green on all ten paths; the deployed
   wasm is dated by lib/json.ting's `let str = json_str`, the library
   carrying no version string to ask instead.
+- 984: health tick + strong-form audit green — bench checksums
+  identical, sweeps green (18, 18, 6, 2), coverage 3512/3529 (99%),
+  the six site pages byte-identical. Milestone "one way to name a
+  file" complete. Found: the sweep script piped each suite to
+  `tail -1`, and CARGO'S LAST LINE IS BLANK, so it printed an empty
+  line instead of the verdict — the `&&` chain under pipefail still
+  gated on cargo's status, but a check has to show its numbers.
+  `grep -E "^test result" | tail -1` now. Also: a bench row read +32%
+  on eval and the milestone had edited that module — the lines it
+  edited are not on the bench's path, and timed alone the script is
+  at BASELINE. TIMINGS FROM THE HARNESS ARE WEATHER; time one script
+  alone before believing a row.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
