@@ -179,6 +179,15 @@ finds, on top of the filesystem builtins. Paths are split on both `/` and `\`, s
 a Windows tool parses, and joined with `/`, which every platform the
 binary runs on accepts.
 
+What these answer depends on what is at the path, and the three
+answers are worth knowing before reading any one row:
+
+| At the path | What they answer |
+|-------------|------------------|
+| nothing | every function that touches the filesystem raises, in the words of the builtin that had to look. Two do not: `size` answers `nil`, the way `stat` and `exists` do, because it is a question where the rest are demands; and `remove_tree` is quiet, a delete with nothing to delete having done its job. The path functions — `parts`, `base`, `dir`, `ext`, `stem`, `join_path`, `with_ext` — read the string and never look at all |
+| a file | the walkers take it as a tree of one: `walk` and `walk_ext` answer that file (`walk_ext` only if the extension matches), `facts` its facts, `total_size` its bytes. The readers read it. Only `entries` refuses, a file having no entries |
+| a directory | the walkers walk it, the directories themselves left out. The readers raise: a directory is not lines. `size` answers the directory's own bookkeeping size, which is exactly what `total_size` leaves out |
+
 | Function | Does |
 |----------|------|
 | `normal(p)` | the path with backslashes turned into forward slashes |

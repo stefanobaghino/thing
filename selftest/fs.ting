@@ -73,6 +73,23 @@ assert(try(fs["facts"], gone)["err"] == walked["err"], "and so does facts");
 assert(try(fs["total_size"], gone)["err"] == walked["err"],
 "and total_size, which used to answer 0");
 
+# The other two columns of the same table, which the module header
+# and the stdlib page both set out: a file is a tree of one, and a
+# directory is not lines.
+let one = root + "/a.ting";
+assert(fs["walk_ext"](one, "ting") == [one], "a file walks to itself by extension");
+assert(fs["walk_ext"](one, "md") == [], "and to nothing when the extension is not its");
+assert(len(fs["facts"](one)) == 1, "facts of a file is one file's facts");
+assert(fs["facts"](one)[0]["path"] == one, "and it is that file");
+assert(fs["total_size"](one) == stat(one)["size"], "total_size of a file is its size");
+assert(try(fs["entries"], one)["err"] != nil, "a file has no entries");
+assert(try(fs["count_lines"], root)["err"] != nil, "a directory is not lines");
+assert(try(fs["head"], root, 1)["err"] != nil, "nor the head of any");
+assert(try(fs["tail"], root, 1)["err"] != nil, "nor the tail");
+assert(try(fs["lines_matching"], root, "x")["err"] != nil, "nor the ones matching");
+assert(fs["size"](root) == stat(root)["size"],
+"size of a directory is what stat says, bookkeeping and all");
+
 # What a file is, besides its name. len(read_file(p)) counts
 # characters and refuses a file that is not text; stat counts bytes
 # and never opens it.
