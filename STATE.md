@@ -4016,10 +4016,22 @@ holds only the current milestone and the standing rules.
   another user's chessbot-engine and two stockfish processes held
   ~3 of 4 cores, which also explains the timing-guard flakes in 948
   and 949.
+- 953: replenishment — milestone "asking a map for its fields"
+  (v2.148), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: the next milestone.
+  - `items(m)` and `values(m)` as builtins beside `keys(m)`, so
+  walking a map costs no import; lib/map keeps its names by
+  rebinding, the way lib/list does for sort_with.
+  - `let {code, out} = run(cmd);` — Pattern::Map, mirroring the map
+  literal: a bare name is its own key, `"key": subpattern` nests. A
+  missing key is an error; extra keys are fine.
+  - the same braces in `for` and in a parameter list, which 947 and
+  948's desugaring should make free — verify rather than assume.
+  - docs, the stdlib and the examples reading better for it:
+  run/stat/try/re_find sites, reference, tutorial.
+  - release v2.148.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

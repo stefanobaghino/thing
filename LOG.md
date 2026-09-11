@@ -24322,3 +24322,47 @@ release.
 Milestone "taking a value apart" is complete.
 
 Next tick: replenishment.
+
+## 953 — replenishment: milestone "asking a map for its fields"
+
+Maintenance: tree clean, no PRs, CI green for a585e0a from the API.
+
+THE FINDING, and my own docs handed it to me. 949's reference example
+for a LANGUAGE feature opens `let ma = import("lib/map.ting");`,
+because `items(m)` lives in a module while `keys(m)` is a builtin.
+`ma["items"]` is the most-used stdlib member in the whole corpus.
+Walking a map is now the documented idiom — `for [k, v] in items(m)`
+— and it costs an import that walking a list does not.
+
+The second half is bigger. ting's own builtins hand back
+record-shaped maps everywhere: `run` gives code/out/err/signal,
+`stat` gives size/modified/kind, `try` gives ok/err/at/trace,
+`re_find` gives start/end/text/groups, `local_zone` gives
+offset/abbr/dst. Every use of one opens with a line of `r["code"]`,
+`r["out"]` bookkeeping — the same bookkeeping 945 found around pairs,
+one shape over. Patterns took lists apart; maps are the other half of
+the language and nothing takes them apart.
+
+Milestone "asking a map for its fields": `let {code, out} =
+run(cmd);`, and the same braces in a `for` and in a parameter list,
+where 947 and 948's desugaring should make them free.
+
+The shape, and it is NOT the list shape: a map pattern mirrors the
+map literal. A bare name is the key of that name bound to that name;
+`"key": subpattern` spells a key out and nests, exactly as a literal
+does, so `let {"a": [x, y]} = m;` reads as the map it matches. A key
+the map does not have is an error — asking for what is not there is
+the same mistake as a pattern of the wrong length. But EXTRA KEYS ARE
+FINE, unlike a list's extra elements, and the asymmetry is the design
+rather than an oversight: a list's length is its shape, while a map's
+keys are its contents, and asking three fields of a ten-field record
+is the normal thing to do rather than a mistake.
+
+Decisions for the strokes to make: whether `Pattern::Map` carries
+`Vec<(String, Pattern)>` with the bare form desugared at parse time
+(likely); whether the formatter, which is token-based, tells a map
+pattern from a block or a map literal; and how the checker's
+token-based unused-local pass reads names between braces, since it
+learned brackets in 946.
+
+Backlog written to STATE.md.
