@@ -26605,3 +26605,42 @@ Three mutations: nil not removing, any name accepted, and the
 environment not applied; each fails a different check.
 
 488 tests, 3003 checks.
+
+## 1017 — a child that shows its work
+
+Milestone "the program your program runs", third stroke. `run`
+captured both streams and returned at the end, so a script waiting on
+a build, a test run or a deploy watched nothing happen for however
+long it took and then got the whole story at once. That is right when
+a child's output is data; it is wrong when the output IS the
+feedback.
+
+`{"show": true}` lets the child write to ting's own stdout and
+stderr, as it goes. What comes back then has `code` and `signal` and
+NO `out` or `err` at all: an empty string would say the child said
+nothing, and it did not — it said it to the terminal. Reading one
+answers `key "out" not found` rather than handing back a convincing
+lie.
+
+lib/sh.ting gains the fourth answer beside ok, check and lines:
+`show(cmd, argv, stdin = nil)` runs it that way and fails on a
+nonzero code without quoting a reason, since the reader has just
+watched it go by. 214 module functions.
+
+The spawn is one path now for every shape: the streams are set on the
+command — inherited or piped — stdin is a pipe when there is text and
+closed when there is not, and `wait_with_output` hands back empty
+vectors for whatever was inherited.
+
+Checks in selftest/sh.ting, where the shown children print nothing on
+purpose — what they printed would land in the middle of the suite's
+own report — and a real child in tests/io.rs that prints on both
+streams and exits 3: its stdout lands in the parent's between "before"
+and "after", its stderr in the parent's stderr exactly once, and the
+same child captured gives its output back. Three mutations: reporting
+out and err anyway, leaving stderr captured while stdout is shown,
+and inheriting stdin rather than closing it — the last one hung the
+deadlock guard for its full two minutes, which is how that test says
+no.
+
+489 tests, 3007 checks.

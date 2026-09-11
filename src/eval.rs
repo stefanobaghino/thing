@@ -3885,9 +3885,9 @@ impl<W: Write> Interpreter<W> {
                 // waiting for — or a map of options, stdin among
                 // them, for the things a child needs that a string
                 // has no room for.
-                let (input, dir, env) = match args.get(2) {
-                    None | Some(Value::Nil) => (None, None, Vec::new()),
-                    Some(Value::Str(s)) => (Some(s.to_string()), None, Vec::new()),
+                let (input, dir, env, show) = match args.get(2) {
+                    None | Some(Value::Nil) => (None, None, Vec::new(), false),
+                    Some(Value::Str(s)) => (Some(s.to_string()), None, Vec::new(), false),
                     Some(Value::Map(m)) => run_options(&m.borrow(), span)?,
                     Some(other) => {
                         return Err(error(
@@ -3930,10 +3930,20 @@ impl<W: Write> Interpreter<W> {
                         None => command.env_remove(name),
                     };
                 }
-                let done = match input {
-                    None => command.output(),
-                    Some(text) => spawn_with_input(command, text),
+                // Shown means the child writes where ting is writing:
+                // the output of a build or a test run IS the feedback
+                // a script is waiting for, and captured output arrives
+                // only once there is nothing left to wait for.
+                let streams = |show: bool| match show {
+                    true => std::process::Stdio::inherit(),
+                    false => std::process::Stdio::piped(),
                 };
+                command.stdout(streams(show)).stderr(streams(show));
+                command.stdin(match input.is_some() {
+                    true => std::process::Stdio::piped(),
+                    false => std::process::Stdio::null(),
+                });
+                let done = spawn_child(command, input);
                 // A program that is not there is an error, not an exit
                 // code: "not installed" must never read as "ran and
                 // failed".
@@ -3953,14 +3963,21 @@ impl<W: Write> Interpreter<W> {
                 // without saying by what leaves the caller nothing to
                 // tell apart an interrupt from a segfault.
                 m.insert("signal".to_string(), signal_of(&done.status));
-                m.insert(
-                    "out".to_string(),
-                    Value::str(String::from_utf8_lossy(&done.stdout).into_owned()),
-                );
-                m.insert(
-                    "err".to_string(),
-                    Value::str(String::from_utf8_lossy(&done.stderr).into_owned()),
-                );
+                // A shown child's output went to the terminal, and
+                // there is no honest value to put here: an empty
+                // string would say it said nothing. The keys are left
+                // out, so reading one is answered rather than
+                // believed.
+                if !show {
+                    m.insert(
+                        "out".to_string(),
+                        Value::str(String::from_utf8_lossy(&done.stdout).into_owned()),
+                    );
+                    m.insert(
+                        "err".to_string(),
+                        Value::str(String::from_utf8_lossy(&done.stderr).into_owned()),
+                    );
+                }
                 Ok(Value::map(m))
             }
             Builtin::Import => {
@@ -4492,13 +4509,14 @@ type RunOptions = (
     Option<String>,
     Option<String>,
     Vec<(String, Option<String>)>,
+    bool,
 );
 
 fn run_options(
     m: &std::collections::BTreeMap<String, Value>,
     span: Span,
 ) -> Result<RunOptions, RuntimeError> {
-    const OPTIONS: [&str; 3] = ["dir", "env", "stdin"];
+    const OPTIONS: [&str; 4] = ["dir", "env", "show", "stdin"];
     let text = |key: &str, v: &Value| -> Result<Option<String>, RuntimeError> {
         match v {
             Value::Nil => Ok(None),
@@ -4509,12 +4527,23 @@ fn run_options(
             )),
         }
     };
-    let (mut input, mut dir, mut env) = (None, None, Vec::new());
+    let (mut input, mut dir, mut env, mut show) = (None, None, Vec::new(), false);
     for (key, v) in m {
         match key.as_str() {
             "stdin" => input = text("stdin", v)?,
             "dir" => dir = text("dir", v)?,
             "env" => env = run_env(v, span)?,
+            "show" => {
+                show = match v {
+                    Value::Bool(b) => *b,
+                    other => {
+                        return Err(error(
+                            format!("run: show must be true or false, got {}", other.type_name()),
+                            span,
+                        ));
+                    }
+                }
+            }
             other => {
                 let named: Vec<String> = OPTIONS.iter().map(|o| format!("`{o}`")).collect();
                 let known = match named.split_last() {
@@ -4531,7 +4560,7 @@ fn run_options(
             }
         }
     }
-    Ok((input, dir, env))
+    Ok((input, dir, env, show))
 }
 
 /// The `env` option: what the child's environment gets on top of the
@@ -4573,26 +4602,30 @@ fn run_env(v: &Value, span: Span) -> Result<Vec<(String, Option<String>)>, Runti
     Ok(out)
 }
 
-fn spawn_with_input(
+/// Spawn, feed the child whatever text it was given, and wait. The
+/// streams are set on the command already: a shown child inherits
+/// them, and `wait_with_output` then hands back empty vectors, which
+/// the caller knows not to report as output.
+fn spawn_child(
     mut command: std::process::Command,
-    text: String,
+    text: Option<String>,
 ) -> std::io::Result<std::process::Output> {
     use std::io::Write;
-    command
-        .stdin(std::process::Stdio::piped())
-        .stdout(std::process::Stdio::piped())
-        .stderr(std::process::Stdio::piped());
     let mut child = command.spawn()?;
-    let mut sink = child.stdin.take().expect("stdin was asked for");
-    let writer = std::thread::spawn(move || {
-        // A child that stops reading early — `head`, say — is not an
-        // error: the broken pipe is how it says it has enough.
-        // Dropping the handle closes it, which is the EOF the child
-        // is waiting for.
-        let _ = sink.write_all(text.as_bytes());
+    let writer = text.map(|text| {
+        let mut sink = child.stdin.take().expect("stdin was asked for");
+        std::thread::spawn(move || {
+            // A child that stops reading early — `head`, say — is not an
+            // error: the broken pipe is how it says it has enough.
+            // Dropping the handle closes it, which is the EOF the child
+            // is waiting for.
+            let _ = sink.write_all(text.as_bytes());
+        })
     });
     let out = child.wait_with_output();
-    let _ = writer.join();
+    if let Some(writer) = writer {
+        let _ = writer.join();
+    }
     out
 }
 

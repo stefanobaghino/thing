@@ -132,7 +132,7 @@ assert(err(fn() { return run("echo", [], 7); })
 assert(err(fn() { return run("echo", [], {"dri": "/tmp"}); })
 == "run: no option `dri` (did you mean `dir`?)", "a near miss is named");
 assert(err(fn() { return run("echo", [], {"shell": true}); })
-== "run: no option `shell` (the options are `dir`, `env` and `stdin`)",
+== "run: no option `shell` (the options are `dir`, `env`, `show` and `stdin`)",
 "and so are the options");
 assert(err(fn() { return run("echo", [], {"env": "X=y"}); })
 == "run: env must be a map, got string", "env is a map of names to values");

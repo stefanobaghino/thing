@@ -42,6 +42,18 @@ if shell != nil {
   "a nonzero code fails with the code and the reason");
   let quiet = err(fn() { return sh["check"](shell, ["-c", "exit 7"]); });
   assert(contains(quiet, "no output on stderr"), "and says so when there is no reason given");
+
+  # A shown child writes where ting writes, so nothing comes back and
+  # the map says so by having no out or err at all. These children
+  # print nothing on purpose: what they printed would land in the
+  # middle of this suite's own report.
+  let shown = run(shell, ["-c", "exit 0"], {"show": true});
+  assert(shown["code"] == 0, "a shown child still reports how it ended");
+  assert(!has(shown, "out") && !has(shown, "err"),
+  "and has no output to report, rather than an empty string");
+  assert(sh["show"](shell, ["-c", "exit 0"]) == nil, "show hands nothing back");
+  assert(err(fn() { return sh["show"](shell, ["-c", "exit 5"]); }) == shell + " exited 5",
+  "a nonzero code fails without a reason the reader has already seen");
   # Arguments arrive as written, spaces and all, because there is no
   # shell between the list and the program.
   assert(sh["lines"](shell, ["-c", "printf '%s\n' \"$0\" \"$1\"", "a b", "c"]) == ["a b", "c"],

@@ -3,10 +3,10 @@
 #   let sh = import("lib/sh.ting");
 #
 # run() is deliberately blunt: it hands back a map and lets the caller
-# decide what a nonzero code means. These are the three answers most
-# scripts want — ignore it, insist on zero, or read the output as
-# lines — plus a PATH lookup, so a script can ask whether a program is
-# there before it needs it.
+# decide what a nonzero code means. These are the four answers most
+# scripts want — ignore it, insist on zero, read the output as lines,
+# or watch it go by — plus a PATH lookup, so a script can ask whether
+# a program is there before it needs it.
 
 # Whether the program ran and said it was happy. `stdin` is what the
 # program reads there; without it it reads nothing, which is what a
@@ -32,6 +32,16 @@ fn check(cmd, argv, stdin = nil) {
     fail(cmd + " " + ended(done) + ": " + why);
   }
   return done["out"];
+}
+
+# The program run where its output can be watched: it writes to
+# ting's own stdout and stderr as it goes, rather than handing back
+# text once there is nothing left to wait for. Nothing comes back,
+# because nothing was captured, and a nonzero code fails without a
+# reason attached — the reader has just watched it.
+fn show(cmd, argv, stdin = nil) {
+  let done = run(cmd, argv, {"show": true, "stdin": stdin});
+  if done["code"] != 0 { fail(cmd + " " + ended(done)); }
 }
 
 # How a finished child is named in a message: exited with its code,

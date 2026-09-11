@@ -16,11 +16,11 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 213
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3003 selftest checks on all four
-  CI platforms, Windows included); 488 Rust tests
+  nothing on its own — and 24 examples with .out; 3007 selftest checks on all four
+  CI platforms, Windows included); 489 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4295,14 +4295,13 @@ holds only the current milestone and the standing rules.
 - 1016: `{"env": {...}}` in run's options — on top of what the child
   inherits, a name bound to nil dropped; both spawn paths build one
   Command now. 488 tests, 3003 checks.
+- 1017: `{"show": true}` lets a child write to ting's own streams as
+  it goes; the map it answers with has no out or err, and
+  lib/sh.ting's `show` is the fourth wrapper. 214 functions, 489
+  tests, 3007 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a child that shows its work: an option that lets it write to
-    ting's own stdout and stderr instead of being captured, for the
-    build or test run a script is waiting on. What `run` answers then
-    (empty strings? no keys at all?) is the stroke's real question.
-    lib/sh.ting's ok/check/lines and the docs follow.
   - release v2.156.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

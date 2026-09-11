@@ -3810,6 +3810,59 @@ fn run_gives_the_child_the_environment_it_is_told_to() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A shown child writes where the parent writes: its output lands in
+/// the parent's own streams, in order, rather than coming back as
+/// text at the end. The child is the binary under test, so there is
+/// no program to assume.
+#[test]
+fn run_lets_a_child_write_to_the_streams_ting_is_writing_to() {
+    let exe = env!("CARGO_BIN_EXE_ting").replace('\\', "/");
+    let dir = std::env::temp_dir().join(format!("ting-io-run-show-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let child = dir.join("noisy.ting");
+    std::fs::write(
+        &child,
+        "print(\"from the child\");\neprint(\"and its stderr\");\nexit(3);\n",
+    )
+    .unwrap();
+    let child_path = child.to_str().unwrap().replace('\\', "/");
+    let script = dir.join("parent.ting");
+    std::fs::write(
+        &script,
+        format!(
+            "print(\"before\");\n\
+             let shown = run(\"{exe}\", [\"{child_path}\"], {{\"show\": true}});\n\
+             print(\"after\", shown[\"code\"], has(shown, \"out\"), has(shown, \"err\"));\n\
+             let caught = run(\"{exe}\", [\"{child_path}\"]);\n\
+             print(trim(caught[\"out\"]), has(caught, \"err\"));\n"
+        ),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&script)
+        .output()
+        .expect("failed to run ting");
+    let text = String::from_utf8_lossy(&out.stdout);
+    let mut lines = text.lines();
+    // The child's stdout is in the parent's, between what the parent
+    // printed before and after it.
+    assert_eq!(lines.next().unwrap(), "before", "{text}");
+    assert_eq!(lines.next().unwrap(), "from the child", "{text}");
+    assert_eq!(lines.next().unwrap(), "after 3 false false", "{text}");
+    // The same child, captured: the output comes back instead.
+    assert_eq!(lines.next().unwrap(), "from the child true", "{text}");
+    // Its stderr went to the parent's, and only once — the captured
+    // run kept the second one to itself.
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(
+        stderr.matches("and its stderr").count(),
+        1,
+        "stderr: {stderr}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// Bytes that are not text, both ways round: a file ting is asked to
 /// read as text FAILS, in ting's words rather than std's; a child's
 /// output is decoded lossily, because there is no bytes type to hand

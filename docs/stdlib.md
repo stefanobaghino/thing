@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 213 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 214 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -353,7 +353,7 @@ thing to say — a fallback, a prefix — it comes before the arguments.
 
 Driving other programs, on top of `run()`. `run` is deliberately
 blunt — a map, and the caller decides what a nonzero code means —
-and these are the three answers most scripts want, plus a PATH
+and these are the four answers most scripts want, plus a PATH
 lookup so a script can ask whether a program is there before it
 needs it.
 
@@ -361,6 +361,7 @@ needs it.
 |----------|------|
 | `ok(cmd, argv, stdin = nil)` | whether the program ran and exited zero |
 | `check(cmd, argv, stdin = nil)` | the program's stdout, failing on a nonzero code with the code and its stderr — or, for a child a signal killed, with the signal, since "exited nil" is wrong twice over |
+| `show(cmd, argv, stdin = nil)` | runs it where its output can be watched — straight to ting's own stdout and stderr — and fails on a nonzero code; nothing comes back, because nothing was captured |
 | `ended(done)` | how a finished child is named in a message: `exited 4`, or `was killed by signal 9` |
 | `lines(cmd, argv, stdin = nil)` | `check` split into lines, without the empty one a trailing newline leaves |
 

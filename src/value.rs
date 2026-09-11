@@ -816,10 +816,12 @@ impl Builtin {
                  number where the platform has them. The child reads stdin \
                  there, and reads nothing without it. A map in that place \
                  is options instead — {\"stdin\": text, \"dir\": path, \
-                 \"env\": {\"VAR\": value}}: where the child runs, and what \
-                 its environment gets on top of the one it inherits, a name \
-                 bound to nil being one it will not have. An option nothing \
-                 knows is an error. Bytes that are not UTF-8 come back as \
+                 \"env\": {\"VAR\": value}, \"show\": true}: where the child \
+                 runs, what its environment gets on top of the one it \
+                 inherits (a name bound to nil being one it will not have), \
+                 and whether it writes to ting's own stdout and stderr as it \
+                 goes — a shown child has no out or err in the map, because \
+                 nothing was captured. An option nothing knows is an error. Bytes that are not UTF-8 come back as \
                  replacement characters, where reading a file would be an \
                  error.",
             ),
