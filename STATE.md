@@ -4245,11 +4245,12 @@ holds only the current milestone and the standing rules.
 - 1001: the prompt's echo stops at 2000 characters and says how many
   there were; print() is untouched, in the REPL as in a script.
   repl::render is the one place, so :time and :load agree. 485 tests.
+- 1002: `:vars` prints each binding's value, cut to sixty characters
+  with its real width said, rather than its type name;
+  user_bindings() hands back values now.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `:vars` says what a binding is, not just that it is a list: the
-    same bounded rendering, one line each.
   - `--doc <word>` that names something exactly answers with that and
     offers the rest as names, not as forty-four full entries (`--doc
     map` is 142 lines). `--help` already says "a word naming none of

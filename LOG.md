@@ -26115,3 +26115,36 @@ been cut with everything else.
 The reference's REPL paragraph states the rule and the number.
 
 485 Rust tests in 18 suites.
+
+## 1002 — :vars says what a binding is
+
+Milestone "the REPL as a place to look around", second stroke. After
+a session that bound a list and a function, `:vars` answered:
+
+    greet: function
+    names: list
+
+The type is the one thing the reader can already guess from the name
+they typed. What they cannot remember is what is in it. Now:
+
+    greet: <fn(who)>
+    names: ["ada", "grace", "alan"]
+    big: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 1… (688890 characters)
+
+A function's value carries its parameters, which is more than the
+word "function" said. A listing is for running an eye down, so a
+value too wide for a line is cut at sixty characters and says how
+wide it really was; typing the name then echoes the value itself, up
+to 1001's ceiling. `render_text` is the one rendering both use.
+
+`Interpreter::user_bindings` hands back values rather than type
+names now — its only callers are this listing and `:load`'s count of
+what a file added.
+
+The test binds an int, a function and `range(100000)` and reads all
+three back, including that the wide line stays under a hundred
+characters and ends with its own width. Mutation-tested: with the
+type name back, the first two fail; with the cut lifted, the third
+does.
+
+2984 checks, 485 Rust tests.
