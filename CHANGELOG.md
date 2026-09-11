@@ -5,6 +5,26 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.150.0 (2026-09-11)
+
+- **A format spec can take its width from the arguments.**
+  `format("{:<{}}", name, width)` lays a value out in a column the
+  data decided the size of; `{:>{}.{}}` does the same for the number
+  of decimal places. The value comes first, then the spec's holes
+  left to right. Every program that measured its own columns had to
+  fall back to `pad_right` before this, which is the job `format`
+  exists to do.
+- **`pad_left`, `pad_right` and `center` fill with a space** unless
+  told otherwise — the argument every caller was passing.
+- **`table` can lean a column the other way.** `table(rows, "<>>")`
+  gives one character per column, `<`, `>` or `^` as a format spec
+  spells them, so a table of figures puts its numbers under their
+  headings; a column past the end of the string is left-aligned, so
+  `table(rows)` prints what it always printed.
+- A new example, `examples/columns.ting`, is about laying a table out
+  rather than about what is in it, and the tutorial's "Lining the
+  output up" covers the same ground in two checked snippets.
+
 ## v2.149.0 (2026-09-11)
 
 - **`--check` counts the arguments of a module call.**
