@@ -1086,11 +1086,14 @@ The `ting` binary is the whole toolchain — no separate installs:
   literal that gives the
   same string key twice, where the last one silently wins; a call
   whose argument count
-  cannot match a function bound once at the top level and never
-  rebound or shadowed; a name that is bound nowhere
+  cannot match the function called, whether that function is bound
+  once at the top level of this file or offered by a module this
+  file imported once — `st["truncate"]("x")` is counted against what
+  lib/string.ting declares, defaults making a range and `...rest` a
+  floor; a name that is bound nowhere
   the checker can see — not a parameter, not a `let` in an enclosing
   block, not a builtin — with the nearest name in scope suggested;
-  an imported stdlib module
+  an imported module
   indexed with a name it does not export, naming the builtin of that
   name where there is one and the nearest export otherwise; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
@@ -1101,6 +1104,19 @@ The `ting` binary is the whole toolchain — no separate installs:
   status unless `--strict` is given, which makes any warning exit 1
   for hooks and CI that want them enforced. `--watch` (below) checks
   again on every change.
+  The module in both of those is whichever one `import` would run: a
+  file beside the script wins over an embedded module of the same
+  path, exactly as it does at run time. Either way the checker reads
+  the module's own top level, so what it says is what the module
+  declares rather than a table kept by hand. A call it cannot be sure
+  of is left to the run — a module binding that is reassigned,
+  imported twice, shadowed by a parameter or written into answers for
+  nothing — and so is a member reached any other way than
+  `name["key"](...)`, a spread call, or a member the module
+  re-exports from a builtin rather than declaring itself. Writing a
+  key into a module map (`m["extra"] = v;`) puts it there rather than
+  asking for it, so neither that line nor a later read of it is an
+  unknown member.
 - `ting --test <paths...>` runs each file (directories recurse,
   sorted; `--filter SUBSTR` keeps only matching paths; `--tap`
   emits Test Anything Protocol output for CI consumers; `-j N` runs
@@ -1239,9 +1255,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   rules as `--check`; an error on an `import` of
   a local file that has one, with the module's position; and warnings
   for a name bound nowhere, for a call that cannot match the function
-  it names, for a duplicate key in a map literal, for code that can
-  never run, for an imported
-  stdlib module indexed
+  it names — the file's own or a module's, since the document's URI
+  says which directory a module beside it lives in — for a duplicate
+  key in a map literal, for code that can
+  never run, for an imported module indexed
   with a name it does not export, for unused bindings, top-level or
   local, and unused parameters, and for a name that shadows a
   builtin),

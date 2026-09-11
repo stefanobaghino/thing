@@ -600,9 +600,13 @@ command line itself, where `--fmr` is told about `--fmt`.
 
 Errors the checker can find without running — a syntax error in a
 module, say — surface earlier: `ting --check main.ting` follows every
-`import` of a local file and reports each one under its own path.
+`import` of a local file and reports each one under its own path. It
+reads what those modules offer, too: a call through one gets its
+arguments counted (`truncate takes 2 to 3 arguments, called with 1`)
+and a key the module does not export is named, with the nearest one
+it does suggested.
 
-Six stdlib modules ship embedded in the interpreter itself — any
+Thirteen stdlib modules ship embedded in the interpreter itself — any
 path starting with `lib/` falls back to the built-in copy when no
 such file exists on disk:
 

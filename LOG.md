@@ -24743,3 +24743,33 @@ Guards: two checks in selftest/stdlib.ting, the docs/stdlib.md row
 Gate: fmt, clippy, 17 `test result: ok` (471 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2928 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 965 — writing down what the checker now knows
+
+Maintenance: tree clean, no PRs, CI and Pages green for 62ee127 from
+the API.
+
+The reference's `--check` entry says what 962 and 963 added: a call
+is counted against the function it names whether that function is
+this file's or a module's, the module is whichever one `import`
+would run (a file beside the script beats an embedded one of the
+same path), and what the checker cannot be sure of is left to the
+run — a module binding reassigned, imported twice, shadowed or
+written into, a member reached any other way than `name["key"](...)`,
+a spread call, or a member a module re-exports from a builtin. The
+write-versus-read rule is there too. The `--lsp` entry says the
+document's URI is what tells it where a module beside it lives, and
+both entries now say "imported module" rather than "imported stdlib
+module", which is what they mean.
+
+FOUND WHILE EDITING, and it had been wrong for a long time: the
+tutorial said "Six stdlib modules ship embedded in the interpreter
+itself" when there are thirteen. Prose counts go stale silently — the
+stdlib page's count has a guard and this one had none — so
+tests/docs.rs now reads the number back from `embedded_stdlib()` and
+spells it the way the sentence does. Mutation-tested by putting
+"Six" back: it fails naming both numbers.
+
+Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2928 checks on both engines, Windows
+check and clippy, wasm release build.

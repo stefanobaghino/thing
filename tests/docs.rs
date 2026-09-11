@@ -86,6 +86,28 @@ fn stdlib_page_lists_every_function_and_the_right_count() {
     );
 }
 
+/// The tutorial counts the modules that ship inside the binary, and
+/// the count is prose rather than a table, so nothing else would
+/// catch it going stale. It said six for a long time after there
+/// were thirteen.
+#[test]
+fn the_tutorial_counts_the_embedded_modules() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let page =
+        std::fs::read_to_string(root.join("docs/tutorial.md")).expect("docs/tutorial.md missing");
+    let count = ting::eval::embedded_stdlib().len();
+    let words = [
+        "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
+        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
+        "Nineteen", "Twenty",
+    ];
+    let word = words.get(count).expect("more modules than words here");
+    assert!(
+        page.contains(&format!("{word} stdlib modules ship embedded")),
+        "docs/tutorial.md does not say \"{word} stdlib modules ship embedded\"; lib/ has {count}"
+    );
+}
+
 #[test]
 fn markdown_has_no_bare_html_tags() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
