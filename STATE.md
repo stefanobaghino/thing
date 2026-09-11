@@ -4069,10 +4069,14 @@ holds only the current milestone and the standing rules.
   paths. Found: tools/smoke.sh counted the stdlib modules in a
   comment and had been one short since the thirteenth; the count is
   gone, the `diff -r` under it was always the real check.
+- 968: health tick + strong-form audit green — bench checksums
+  identical, sweeps green, coverage 3465/3482 (99%), the six site
+  pages byte-identical to what md2html renders here. Milestone "the
+  checker knows what a module offers" complete.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick + audit; close the milestone.
+  - replenishment: design the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

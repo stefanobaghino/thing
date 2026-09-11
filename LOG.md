@@ -24839,3 +24839,37 @@ FOUND: tools/smoke.sh said the archive's lib/ and the embedded one
 are "the same twelve modules". They are thirteen, and the count was
 never what the sentence needed — the `diff -r` two lines below is.
 The number is gone rather than corrected.
+
+## 968 — health tick, milestone "the checker knows what a module offers" complete
+
+Maintenance: tree clean, no PRs, CI green for a48dfc3 from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE. Timings are weather
+again — every row came in two to three times BASELINE on a host whose
+load average sat between 2.6 and 5 for the run. Nothing to add to
+what 952 established.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 967), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage: 3465 of 3482 lines (99%), each of the thirteen lib modules
+listed once, two lines more than 960 on both sides. The four gaps are
+the same old ones: args, fs, sh, test. NOTE FOR THE NEXT TICK THAT
+RUNS THIS: `--coverage selftest lib` counts every module twice, once
+as a file that was run and once as a file that was imported, and the
+total drops to 82% for no reason at all. The suite is the argument;
+lib/ arrives through the imports.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js and index.html match the
+repository's, and rendering them left the tree clean. The deployed
+ting.wasm carries `suffix marking the cut`, which is 964's doc text
+and dates the playground to this release.
+
+Milestone "the checker knows what a module offers" is complete.
+
+Next tick: replenishment.
