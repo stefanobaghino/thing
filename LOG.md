@@ -26360,7 +26360,7 @@ from the table is explained rather than merely absent:
     coverage: 29 of 29 lines (100%)
      100%     18/18     money.ting
      100%     11/11     money_test.ting
-    not counted: lib/test.ting, lib/string.ting (embedded in the binary)
+    not counted: lib/string.ting, lib/test.ting (embedded in the binary)
 
 The distinction is the marker, not the name. `import_module` resolves
 a stdlib module to `<embedded>/NAME` and strips the marker before it
