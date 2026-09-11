@@ -26667,3 +26667,25 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.156.0 — the 177th tag — and pushed. Verification is the
 next tick.
+
+## 1019 — v2.156.0 verified
+
+Release workflow green for the tag; CI and Pages green for f60dc7d
+from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.156.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3007
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive: `run("pwd", [], {"dir": "/tmp"})`
+answers /tmp; a child given `TING_PROBE` and denied `HOME` prints
+`here none`; a shown child's line lands between the parent's, the map
+it answers with has no `out`, and `sh["show"]` on a happy program
+hands back nil.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.156.0, stdlib.html says 214 functions, and reference.html carries
+the options sentence.
