@@ -25499,3 +25499,56 @@ that 2.x does not do that. The last mile gets a name of its own
 instead, leaving the mechanism where it is.
 
 Backlog for v2.152 is in STATE.md.
+
+## 986 — a spec its author got wrong is the author's error
+
+CORRECTION TO 985. The replenishment's first finding was wrong.
+lib/args.ting already has `main(spec, argv)`, which prints the help
+for --help and leaves with 0, and prints `name: trouble` plus the
+help to stderr and leaves with 2 for a bad command line — exactly
+what 985 proposed adding under the name `run`. It is on
+docs/stdlib.md. The probe never found it, and why is the part worth
+keeping: the module's header comment, which is what `--doc` prints
+first, explains the spec and `parse` and never says what to call;
+`--doc` lists `flag_of`, `option_of` and `pad` before it; and
+examples/report.ting, the only program that uses the module, calls
+`parse` with a hard-coded argv. Every path a reader takes leads to
+`parse`. The header now says to call `main` in as many words.
+
+WHAT THE PROBE REALLY FOUND, chased down with `main` in hand: a
+malformed spec is reported to the wrong person, twice, and the
+program does not even exit the way it meant to. Writing "options" as
+a map of name to description rather than a list of maps gave
+
+    badspec: cannot index string with string
+
+    lib/args.ting:77:10: error: has expects a map and a string key...
+    note: in help(spec = ...), called from lib/args.ting:195:12
+
+— the author's bug read out as the user's, then `main` dying while
+printing the help, because the help is built from the same bad spec,
+and exit 1 rather than the 2 it intended.
+
+`spec_trouble(spec)` answers what is wrong with a spec, as a
+sentence, or nil: the shape of "name", "summary", "flags", "options"
+and "positionals", every entry's required key, and that a "many"
+positional is the last one — anything after it is a positional the
+command line can never reach. `parse` asks it before reading a single
+argument, so `parse` alone says the same thing; `main` asks it FIRST,
+before the `try` that turns failures into usage messages, so this
+kind of trouble stays a ting error with a trace back to the line that
+wrote the spec.
+
+The same bad spec now reads:
+
+    lib/args.ting:246:23: error: spec: "options" must be a list of maps, got map
+    note: in main(spec = ..., argv = ["docs"]), called from badspec.ting:7:12
+
+Thirteen checks in selftest/args.ting, one per sentence the function
+can return plus the two shapes that are fine and one through `parse`.
+Mutation-tested: with `spec_trouble` returning nil at once, they fail.
+
+The three command-line paths were re-run through `main` end to end:
+--help prints the help and exits 0, `--deph` prints `outline: unknown
+option --deph` with the usage under it and exits 2, and the good run
+works.
