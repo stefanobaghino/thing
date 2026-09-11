@@ -4233,8 +4233,13 @@ holds only the current milestone and the standing rules.
   aarch64 archives executed here (2984 checks, 24 examples clean,
   each), the probe tool from 993 refusing a missing directory from
   the archive itself, and the ten published paths 200 with the wasm
-  carrying lib/fs.ting's new header. Next: health tick + audit
-  closes the milestone.
+  carrying lib/fs.ting's new header.
+- 999: health tick + audit green — eleven bench checksums identical
+  to BASELINE (every row inflated together at load 4.6; the widest
+  timed alone is at baseline), four sweeps ok, counts all standing
+  (79 builtins, 13 modules, 214 functions, 48 programs, 2984 checks,
+  484 tests in 18 suites, 81 unchanged, fifteen warnings, 174 tags).
+  Milestone "a path that isn't there" COMPLETE. Replenishment next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

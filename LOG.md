@@ -26011,3 +26011,34 @@ v2.153.0; stdlib.html carries the "At the path" table; reference.html
 carries the sentence about a path written into the middle of a
 message. The deployed ting.wasm holds lib/fs.ting's new header, so it
 is this milestone's build.
+
+## 999 — health tick, milestone "a path that isn't there" complete
+
+Maintenance: tree clean, no open PRs, CI green for b9829bb on all
+five test jobs, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE. Every row is 5 to 16 per cent slower than recorded and
+every row moved the same way, with the load average at 4.6 against
+the 1.7 to 3.1 of 992's tick — which is the shape of weather, not of
+a regression. The widest, strings.ting on the vm at 85.4 ms against
+73.3 ms, timed alone three times: 0.07, 0.07, 0.08 s wall for the
+whole script, process start included, which is where BASELINE's
+73.3 ms sits. Believed after timing it alone, as the rule says.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 214 module functions, 24
+selftest files, 24 examples each with a .out, 2984 selftest checks on
+both engines, 484 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at fifteen warnings, 174 tags all verified.
+
+The milestone is complete. It came out of one cold probe: a tool
+written the way anyone would write it, handed a directory that does
+not exist, printing an empty table and leaving happy. Three strokes
+closed it — the walkers refuse what is not there (994), the module
+and the page state all three answers instead of one (995), and every
+message that holds a path quotes it (996) — and v2.153.0 is tagged
+and verified (997, 998).
