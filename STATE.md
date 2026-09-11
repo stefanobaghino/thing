@@ -4039,10 +4039,21 @@ holds only the current milestone and the standing rules.
   checksums identical, coverage 3463/3480 (99%), sweeps and
   strong-form site audit green; milestone complete. Timings weather
   again (two stockfish on half the host).
+- 961: replenishment — milestone "the checker knows what a module
+  offers" (v2.149), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: the next milestone.
+  - arity for stdlib module members: `st["truncate"]("x", 3)` is a
+  warning, with the same rules the file's own functions get
+  (defaults make a range, `...rest` a floor, a spread is left
+  alone, a rebound module map is dropped).
+  - the same two passes for LOCAL imports: unknown member and
+  arity, read from the file --check already follows.
+  - `truncate`'s ellipsis gets a default, found by the probe that
+  started the milestone.
+  - docs: what --check catches, in the reference's tooling section.
+  - release v2.149.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

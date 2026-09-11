@@ -24588,3 +24588,54 @@ rendering them left the tree clean. The deployed ting.wasm carries
 Milestone "asking a map for its fields" is complete.
 
 Next tick: replenishment.
+
+## 961 — replenishment: milestone "the checker knows what a module offers"
+
+Maintenance: tree clean, no PRs, CI green for e9f1c21 from the API.
+
+THE FINDING came out of a probe, which is the point of writing one.
+A thirty-line script that summarises LOG.md by section ran for a
+second, did all its work, and died on its last line: `truncate
+expects 3 arguments, got 2`. `ting --check` had said nothing about
+it. The call was `st["truncate"](name, 40)` — a stdlib function whose
+signature the tool already knows, since `--doc`, the LSP's
+completions and hover all print it.
+
+Probing that boundary properly, with a local module beside a stdlib
+one:
+
+- `st["trunkate"](...)` — CAUGHT: `lib/string.ting has no
+  trunkate (did you mean truncate?)`.
+- `st["truncate"]("x", 3)` — missed. Wrong arity, right name.
+- `st["repeat"]("x", 3, 4, 5)` — missed. Four arguments to a
+  two-parameter function.
+- `u["helpr"](1, 2)` where u is `import("./util.ting")` — missed.
+  The unknown-member pass reads the EMBEDDED stdlib only, though
+  --check already follows local imports to parse them.
+- `u["helper"](1)` — missed, same reason.
+
+So the checker knows the names a stdlib module offers but not how
+many arguments they take, and knows nothing at all about a module
+next door. Meanwhile it has checked arity for the file's OWN
+functions since 498 (`add takes 2 arguments, called with 1`), with
+all the hard parts solved: defaults make a range, `...rest` makes a
+floor, a spread call is left alone, and a name that is rebound
+anywhere is dropped from the table rather than guessed at.
+
+Milestone "the checker knows what a module offers": one arity rule,
+applied to what a module exports as it already is to what the file
+declares.
+
+Decisions for the strokes: whether a module map that is passed
+around, reassigned or aliased (`let f = st["truncate"];`) is dropped
+the way a rebound function is (it should be — the existing
+collect_rebindings is the model); whether a local module's exports
+come from the same source_functions walk the stdlib uses (they
+should); and how far to follow an import chain, given that a module
+importing a module is already parsed by --check.
+
+Found on the way, and a stroke of its own: `truncate(s, width,
+ellipsis)` takes no default for the ellipsis, which is why the probe
+misspelled the call in the first place.
+
+Backlog written to STATE.md.
