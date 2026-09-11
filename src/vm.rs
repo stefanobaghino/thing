@@ -209,6 +209,12 @@ fn exec<W: Write>(
                     }
                 }
             }
+            Op::Unpack(pattern, span) => {
+                let v = stack.pop().expect("stack underflow");
+                let mut values = Vec::new();
+                eval::unpack(pattern, v, &mut values).map_err(|m| eval::error(m, *span))?;
+                stack.extend(values.into_iter().rev());
+            }
             Op::Spread(inner_span) => {
                 let v = stack.pop().expect("stack underflow");
                 stack.push(Value::list(eval::spread_values(v, *inner_span)?));

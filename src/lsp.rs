@@ -810,7 +810,11 @@ fn visit_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)
     }
     for stmt in stmts {
         match &stmt.kind {
-            S::Let(_, e) | S::Assign(_, _, e) | S::Expr(e) | S::Return(Some(e)) => expr(e, f),
+            S::Let(_, e)
+            | S::LetPattern(_, e)
+            | S::Assign(_, _, e)
+            | S::Expr(e)
+            | S::Return(Some(e)) => expr(e, f),
             S::IndexAssign(base, idx, _, value) => {
                 expr(base, f);
                 expr(idx, f);
@@ -934,6 +938,14 @@ fn collect_rebindings(
                 }
                 expr(value, out);
             }
+            S::LetPattern(pattern, value) => {
+                if !top {
+                    let mut names = Vec::new();
+                    pattern.names(&mut names);
+                    out.extend(names);
+                }
+                expr(value, out);
+            }
             S::Assign(name, _, value) => {
                 out.insert(name.clone());
                 expr(value, out);
@@ -1029,9 +1041,11 @@ fn check_calls(
     }
     for stmt in stmts {
         match &stmt.kind {
-            S::Let(_, e) | S::Assign(_, _, e) | S::Expr(e) | S::Return(Some(e)) => {
-                expr(e, arities, out)
-            }
+            S::Let(_, e)
+            | S::LetPattern(_, e)
+            | S::Assign(_, _, e)
+            | S::Expr(e)
+            | S::Return(Some(e)) => expr(e, arities, out),
             S::IndexAssign(base, idx, _, value) => {
                 expr(base, arities, out);
                 expr(idx, arities, out);
@@ -1098,8 +1112,16 @@ fn walk_block(
 ) {
     let mut names = std::collections::HashSet::new();
     for s in stmts {
-        if let crate::ast::StmtKind::Let(name, _) = &s.kind {
-            names.insert(name.clone());
+        match &s.kind {
+            crate::ast::StmtKind::Let(name, _) => {
+                names.insert(name.clone());
+            }
+            crate::ast::StmtKind::LetPattern(pattern, _) => {
+                let mut bound = Vec::new();
+                pattern.names(&mut bound);
+                names.extend(bound);
+            }
+            _ => {}
         }
     }
     scopes.push(names);
@@ -1117,7 +1139,7 @@ fn walk_stmt(
 ) {
     use crate::ast::StmtKind as S;
     match &stmt.kind {
-        S::Let(_, e) => walk_expr(e, tokens, scopes, out),
+        S::Let(_, e) | S::LetPattern(_, e) => walk_expr(e, tokens, scopes, out),
         S::Assign(name, _, e) => {
             if !bound(scopes, name) {
                 report(name, stmt.span.start, tokens, scopes, out);
@@ -1249,42 +1271,53 @@ pub fn unused_top_level_lets(src: &str) -> Vec<(usize, usize, String)> {
     };
     // A file made only of bindings is a module: its top-level names
     // are exports for importers, not unused.
-    if program
-        .iter()
-        .all(|stmt| matches!(stmt.kind, crate::ast::StmtKind::Let(..)))
-    {
+    if program.iter().all(|stmt| {
+        matches!(
+            stmt.kind,
+            crate::ast::StmtKind::Let(..) | crate::ast::StmtKind::LetPattern(..)
+        )
+    }) {
         return Vec::new();
     }
     let index = ident_index(&tokens);
     let mut out = Vec::new();
     for stmt in &program {
-        let crate::ast::StmtKind::Let(name, _) = &stmt.kind else {
-            continue;
+        // A pattern binds several names, and each answers for itself.
+        let bound: Vec<String> = match &stmt.kind {
+            crate::ast::StmtKind::Let(name, _) => vec![name.clone()],
+            crate::ast::StmtKind::LetPattern(pattern, _) => {
+                let mut names = Vec::new();
+                pattern.names(&mut names);
+                names
+            }
+            _ => continue,
         };
-        if name.starts_with('_') {
-            continue;
+        for name in &bound {
+            if name.starts_with('_') {
+                continue;
+            }
+            let Some(uses) = index.get(name.as_str()) else {
+                continue;
+            };
+            if uses.len() > 1 {
+                continue;
+            }
+            // The one occurrence left is the binding itself, unless it
+            // sits before this statement — a name bound twice, where the
+            // earlier `let` owns the token.
+            let Some(tok) = uses
+                .iter()
+                .map(|&i| &tokens[i])
+                .find(|t| t.span.start >= stmt.span.start)
+            else {
+                continue;
+            };
+            out.push((
+                tok.span.start,
+                tok.span.end,
+                format!("`{name}` is never used"),
+            ));
         }
-        let Some(uses) = index.get(name.as_str()) else {
-            continue;
-        };
-        if uses.len() > 1 {
-            continue;
-        }
-        // The one occurrence left is the binding itself, unless it
-        // sits before this statement — a name bound twice, where the
-        // earlier `let` owns the token.
-        let Some(tok) = uses
-            .iter()
-            .map(|&i| &tokens[i])
-            .find(|t| t.span.start >= stmt.span.start)
-        else {
-            continue;
-        };
-        out.push((
-            tok.span.start,
-            tok.span.end,
-            format!("`{name}` is never used"),
-        ));
     }
     out
 }
@@ -1427,31 +1460,55 @@ pub fn unused_local_lets(src: &str) -> Vec<(usize, usize, String)> {
         let Some(open) = enclosing[i] else {
             continue;
         };
-        let Some(name_tok) = tokens.get(i + 1) else {
-            continue;
-        };
-        let lexer::TokenKind::Ident(name) = &name_tok.kind else {
-            continue;
-        };
-        if name.starts_with('_') {
-            continue;
+        // `let [a, b] = ..` binds every name in the brackets, and each
+        // answers for itself; anything else binds the one name after
+        // `let`.
+        let mut bound: Vec<usize> = Vec::new();
+        match tokens.get(i + 1).map(|t| &t.kind) {
+            Some(lexer::TokenKind::LBracket) => {
+                let mut depth = 0usize;
+                for (k, t) in tokens.iter().enumerate().skip(i + 1) {
+                    match &t.kind {
+                        lexer::TokenKind::LBracket => depth += 1,
+                        lexer::TokenKind::RBracket => {
+                            depth -= 1;
+                            if depth == 0 {
+                                break;
+                            }
+                        }
+                        lexer::TokenKind::Ident(_) => bound.push(k),
+                        _ => {}
+                    }
+                }
+            }
+            Some(lexer::TokenKind::Ident(_)) => bound.push(i + 1),
+            _ => continue,
         }
         let close = closing.get(&open).copied().unwrap_or(tokens.len() - 1);
-        // The name's own tokens, narrowed to this block: the first at
-        // or after `open`, taken while still at or before `close`.
-        let used = index.get(name.as_str()).is_some_and(|at| {
-            let from = at.partition_point(|&k| k < open);
-            at[from..]
-                .iter()
-                .take_while(|&&k| k <= close)
-                .any(|&k| k != i + 1)
-        });
-        if !used {
-            out.push((
-                name_tok.span.start,
-                name_tok.span.end,
-                format!("`{name}` is never used"),
-            ));
+        for at in bound {
+            let name_tok = &tokens[at];
+            let lexer::TokenKind::Ident(name) = &name_tok.kind else {
+                continue;
+            };
+            if name.starts_with('_') {
+                continue;
+            }
+            // The name's own tokens, narrowed to this block: the first at
+            // or after `open`, taken while still at or before `close`.
+            let used = index.get(name.as_str()).is_some_and(|uses| {
+                let from = uses.partition_point(|&k| k < open);
+                uses[from..]
+                    .iter()
+                    .take_while(|&&k| k <= close)
+                    .any(|&k| k != at)
+            });
+            if !used {
+                out.push((
+                    name_tok.span.start,
+                    name_tok.span.end,
+                    format!("`{name}` is never used"),
+                ));
+            }
         }
     }
     out

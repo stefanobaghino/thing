@@ -219,3 +219,35 @@ let items = [1];
 let regrow = fn() { items = [9]; return [2]; };
 items += regrow();
 assert(items == [1, 2], "lists take the same path");
+
+# A let can take a list apart where a name goes: exact length, nesting,
+# and `_` for a value the program does not want.
+let [first, second] = [1, 2];
+assert(first == 1 && second == 2, "a pair comes apart");
+let [outer, [inner_a, inner_b]] = ["x", [1, 2]];
+assert(outer == "x" && inner_a == 1 && inner_b == 2, "and patterns nest");
+let [_, kept] = ["dropped", "kept"];
+assert(kept == "kept", "a hole matches and keeps nothing");
+let [] = [];
+let [only] = [[1, 2]];
+assert(only == [1, 2], "an element can be a list without being taken apart");
+fn sum_pair(p) {
+  let [a, b] = p;
+  return a + b;
+}
+assert(sum_pair([3, 4]) == 7, "inside a function too");
+fn closes_over(p) {
+  let [a, b] = p;
+  let f = fn() { return a * b; };
+  return f();
+}
+assert(closes_over([3, 4]) == 12, "and a closure sees what the pattern bound");
+let errmsg2 = import("lib/err.ting")["message"];
+assert(errmsg2(fn() { let [a, b] = [1, 2, 3]; return a + b; })
+== "this pattern takes 2 values, and the list has 3", "too many values is a mistake, not a trim");
+assert(errmsg2(fn() { let [a] = []; return a; })
+== "this pattern takes 1 value, and the list has 0", "and so is too few");
+assert(errmsg2(fn() { let [a, _b] = 5; return a; })
+== "this pattern takes a list apart, and the value is int", "a pattern needs a list");
+assert(errmsg2(fn() { let [a, _b] = "ab"; return a; })
+== "this pattern takes a list apart, and the value is string", "a string is not a list here");

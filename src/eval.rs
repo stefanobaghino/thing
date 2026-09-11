@@ -236,7 +236,10 @@ fn statement_offsets(stmts: &[Stmt], out: &mut std::collections::HashSet<usize>)
     for s in stmts {
         out.insert(s.span.start);
         match &s.kind {
-            StmtKind::Let(_, e) | StmtKind::Assign(_, _, e) | StmtKind::Expr(e) => expr(e, out),
+            StmtKind::Let(_, e)
+            | StmtKind::LetPattern(_, e)
+            | StmtKind::Assign(_, _, e)
+            | StmtKind::Expr(e) => expr(e, out),
             StmtKind::IndexAssign(a, b, _, c) => {
                 expr(a, out);
                 expr(b, out);
@@ -492,6 +495,11 @@ fn mentions(body: &FnBody, name: &str) -> bool {
     fn in_stmt(s: &Stmt, name: &str) -> bool {
         match &s.kind {
             StmtKind::Let(n, e) => n == name || in_expr(e, name),
+            StmtKind::LetPattern(p, e) => {
+                let mut names = Vec::new();
+                p.names(&mut names);
+                names.iter().any(|n| n == name) || in_expr(e, name)
+            }
             StmtKind::Assign(n, _, e) => n == name || in_expr(e, name),
             StmtKind::IndexAssign(a, b, _, c) => {
                 in_expr(a, name) || in_expr(b, name) || in_expr(c, name)
@@ -1567,6 +1575,20 @@ impl<W: Write> Interpreter<W> {
                     .borrow_mut()
                     .vars
                     .insert(Rc::from(name.as_str()), v);
+                Ok(Control::Normal)
+            }
+            StmtKind::LetPattern(pattern, init) => {
+                let v = self.eval(init)?;
+                let mut values = Vec::new();
+                unpack(pattern, v, &mut values).map_err(|m| error(m, stmt.span))?;
+                let mut names = Vec::new();
+                pattern.names(&mut names);
+                for (name, v) in names.into_iter().zip(values) {
+                    self.env
+                        .borrow_mut()
+                        .vars
+                        .insert(Rc::from(name.as_str()), v);
+                }
                 Ok(Control::Normal)
             }
             StmtKind::Assign(name, op, value) => {
@@ -4563,6 +4585,44 @@ fn type_error(op: BinaryOp, l: Value, r: Value, span: Span) -> RuntimeError {
 fn values_equal(l: &Value, r: &Value) -> bool {
     // Value's PartialEq handles numeric promotion at every depth.
     l == r
+}
+
+/// A value taken apart by a pattern: every name it binds, left to
+/// right, or the reason it could not be. Both engines call this, so a
+/// mismatch reads the same however the program was run.
+pub(crate) fn unpack(
+    pattern: &crate::ast::Pattern,
+    v: Value,
+    out: &mut Vec<Value>,
+) -> Result<(), String> {
+    use crate::ast::Pattern;
+    match pattern {
+        Pattern::Name(_) => {
+            out.push(v);
+            Ok(())
+        }
+        Pattern::Hole => Ok(()),
+        Pattern::List(parts) => match &v {
+            Value::List(items) => {
+                let items = items.borrow().clone();
+                if items.len() != parts.len() {
+                    return Err(format!(
+                        "this pattern takes {}, and the list has {}",
+                        crate::diag::plural(parts.len(), "value"),
+                        items.len()
+                    ));
+                }
+                for (p, item) in parts.iter().zip(items) {
+                    unpack(p, item, out)?;
+                }
+                Ok(())
+            }
+            v => Err(format!(
+                "this pattern takes a list apart, and the value is {}",
+                v.type_name()
+            )),
+        },
+    }
 }
 
 /// The two kinds a comparison could not put in order, named the way

@@ -291,6 +291,40 @@ fn check_flag_warns_about_unused_top_level_lets() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// A pattern binds several names at once, and each answers for
+/// itself: the checker warns about the ones nothing reads, at the top
+/// level and inside a block, and never about a hole.
+#[test]
+fn check_flag_warns_about_unused_pattern_bindings() {
+    let path = std::env::temp_dir().join(format!("ting-check-pattern-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let [kept, idle] = [1, 2];
+         let [_, [_deep, seen]] = [0, [1, 2]];
+         fn f() {
+  let [near, far] = [3, 4];
+  return near;
+}
+         print(kept, seen, f());
+",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stderr.contains("warning: `idle` is never used"), "{stderr}");
+    assert!(stderr.contains("warning: `far` is never used"), "{stderr}");
+    // What is read, what is deliberately named `_deep`, and the holes
+    // themselves are all left alone.
+    for quiet in ["`kept`", "`seen`", "`near`", "_deep", "`_`"] {
+        assert!(!stderr.contains(quiet), "{quiet} in {stderr}");
+    }
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--check` warns about a parameter the function body never names;
 /// `_`-prefixed parameters and used ones are silent.
 #[test]

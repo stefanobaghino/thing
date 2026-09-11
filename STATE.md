@@ -19,8 +19,8 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2877 selftest checks on all four
-  CI platforms, Windows included); 461 Rust tests
+  nothing on its own — and 23 examples with .out; 2887 selftest checks on all four
+  CI platforms, Windows included); 463 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -3988,13 +3988,15 @@ holds only the current milestone and the standing rules.
   imports are cached and canonicalised, so one file is one module
   however it is spelled; embedded-vs-tree is the only two-copies
   case, and those are two files.
+- 946: `let [a, b] = pair;` — StmtKind::LetPattern beside Let (nine
+  sites named by exhaustive matching), one eval::unpack shared by
+  both engines, and a VM `Unpack` opcode that pushes last-name-first.
+  Exact length or an error. The checker reads patterns in both
+  unused-binding passes; the formatter already did, being
+  token-based.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `let [a, b] = expr;` — list patterns with nesting and `_` holes,
-  exact length or an error, on both engines; the formatter prints
-  them and the checker warns about an unused one the way it warns
-  about any other binding.
   - `for [k, v] in items(m)` on the same pattern code.
   - `fn([k, v]) { ... }` parameters, which is what makes the
   higher-order stdlib read.

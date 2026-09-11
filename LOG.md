@@ -24076,3 +24076,44 @@ wrong type is a mistake, not something to pad with nil.
 Milestone "taking a value apart": patterns where a name goes.
 
 Backlog written to STATE.md.
+
+## 946 — let takes a list apart
+
+Maintenance: tree clean, no PRs, CI green for 55e4555 from the API.
+
+`let [a, b] = pair;` binds both names. Patterns nest, `_` is a hole
+that matches and keeps nothing, and the length must be exact: three
+values into two names is `this pattern takes 2 values, and the list
+has 3`, and a value that is not a list says so with its own type
+name. Padding with nil or trimming the extra would be guessing, and
+this language refuses instead.
+
+THE SHAPE OF THE CHANGE, since it is the first new statement form in
+a long while. `StmtKind::Let(String, Expr)` keeps its place and
+`LetPattern(Pattern, Expr)` joins it, so the common `let x = ...`
+path — including the trick where `fn f() {}` is a let of a function
+literal that learns its name — is untouched. Rust's exhaustive
+matching then named all nine places that had to learn the new shape,
+which is the argument for a new variant over a new field.
+
+Both engines share the unpacking itself: `eval::unpack` walks the
+pattern and the value together and returns the values or the reason.
+The tree-walker binds them; the VM gets one opcode, `Unpack`, which
+pushes what was bound LAST NAME FIRST so the binds that follow pop
+them left to right. Reversing that push was mutation-tested — it
+swaps the pair.
+
+The checker learned patterns in both of its unused-binding passes:
+the top-level one walks the AST and now answers per name, the
+block-level one is token-based and reads the names between the
+brackets. A hole is never named; `_deep` is exempt the way any
+underscore name is. It caught two of my own new selftest lines
+within the hour.
+
+Guards: eleven checks in selftest/compound.ting, eleven differential
+cases, an end-to-end `--check` test in tests/io.rs, and mutation
+tests for the length rule and the push order.
+
+Gate: fmt, clippy, 17 `test result: ok` (463 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2887 checks on both engines, Windows
+check and clippy, wasm release build.

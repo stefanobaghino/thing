@@ -317,29 +317,75 @@ impl<'a> Parser<'a> {
         }
     }
 
+    /// A binding pattern: a name, `_`, or a bracketed list of them.
+    /// An empty list matches only an empty list, which is a use worth
+    /// allowing — it says "this must have nothing in it".
+    fn pattern(&mut self) -> Result<crate::ast::Pattern, ParseError> {
+        use crate::ast::Pattern;
+        match self.peek().clone() {
+            TokenKind::LBracket => {
+                self.advance();
+                let mut parts = Vec::new();
+                while self.peek() != &TokenKind::RBracket {
+                    parts.push(self.pattern()?);
+                    if self.peek() == &TokenKind::Comma {
+                        self.advance();
+                    } else {
+                        break;
+                    }
+                }
+                self.expect(&TokenKind::RBracket, "']'")?;
+                Ok(Pattern::List(parts))
+            }
+            TokenKind::Ident(name) => {
+                self.advance();
+                match name.as_str() {
+                    "_" => Ok(Pattern::Hole),
+                    _ => Ok(Pattern::Name(name)),
+                }
+            }
+            k => Err(self.error(format!(
+                "expected a name, `_` or `[` in this pattern, found {}",
+                describe(&k)
+            ))),
+        }
+    }
+
     fn statement_inner(&mut self) -> Result<Stmt, ParseError> {
         let start = self.span().start;
         let first = self.pos;
         match self.peek() {
             TokenKind::Let => {
                 self.advance();
-                let name = match self.peek().clone() {
-                    TokenKind::Ident(name) => {
-                        self.advance();
-                        name
-                    }
-                    k => {
-                        return Err(
-                            self.error(format!("expected variable name, found {}", describe(&k)))
-                        );
-                    }
+                // `let [a, b] = ...` takes the value apart; anything
+                // else binds one name, which is the common shape and
+                // keeps its own statement.
+                let pattern = match self.peek() {
+                    TokenKind::LBracket => Some(self.pattern()?),
+                    _ => None,
+                };
+                let name = match pattern {
+                    Some(_) => String::new(),
+                    None => match self.peek().clone() {
+                        TokenKind::Ident(name) => {
+                            self.advance();
+                            name
+                        }
+                        k => {
+                            return Err(self
+                                .error(format!("expected variable name, found {}", describe(&k))));
+                        }
+                    },
                 };
                 self.expect(&TokenKind::Eq, "'='")?;
                 let init = self.expr_bp(0)?;
                 let end = self.span().end;
                 self.expect_semi(first)?;
                 Ok(Stmt {
-                    kind: StmtKind::Let(name, init),
+                    kind: match pattern {
+                        Some(p) => StmtKind::LetPattern(p, init),
+                        None => StmtKind::Let(name, init),
+                    },
                     span: Span::new(start, end),
                 })
             }

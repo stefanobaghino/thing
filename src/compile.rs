@@ -46,6 +46,11 @@ pub enum Op {
     /// Error unless the top of stack is a list; the span names the
     /// expression that was spread.
     Spread(Span),
+    /// Pop a value and push what the pattern binds, LAST name first,
+    /// so the binds that follow pop them left to right. The span names
+    /// the `let` for a value of the wrong shape.
+    /// stack: [v] -> [vn, .., v1]
+    Unpack(std::rc::Rc<crate::ast::Pattern>, Span),
     /// Note that the statement starting at this offset ran. Emitted
     /// only when the chunk was compiled for coverage, so a plain run
     /// never executes one.
@@ -340,6 +345,14 @@ fn captured_names(stmts: &[Stmt], out: &mut std::collections::HashSet<String>) {
             StmtKind::Let(n, e) => {
                 if in_fn {
                     out.insert(n.clone());
+                }
+                walk_expr(e, in_fn, out);
+            }
+            StmtKind::LetPattern(p, e) => {
+                if in_fn {
+                    let mut names = Vec::new();
+                    p.names(&mut names);
+                    out.extend(names);
                 }
                 walk_expr(e, in_fn, out);
             }
@@ -638,6 +651,15 @@ impl Compiler {
                 Some(ctx) => ctx.captured.contains(n),
                 None => true,
             },
+            StmtKind::LetPattern(_, _) if !self.in_function => true,
+            StmtKind::LetPattern(p, _) => match &self.fn_ctx {
+                Some(ctx) => {
+                    let mut names = Vec::new();
+                    p.names(&mut names);
+                    names.iter().any(|n| ctx.captured.contains(n))
+                }
+                None => true,
+            },
             _ => false,
         })
     }
@@ -677,6 +699,33 @@ impl Compiler {
                     None => {
                         let i = self.name(name);
                         self.emit(Op::Define(i), s.span);
+                    }
+                }
+            }
+            StmtKind::LetPattern(pattern, init) => {
+                self.expr(init)?;
+                self.emit(
+                    Op::Unpack(std::rc::Rc::new(pattern.clone()), s.span),
+                    s.span,
+                );
+                let mut names = Vec::new();
+                pattern.names(&mut names);
+                // Unpack leaves the values with the first name's on
+                // top, so binding them in order pops them in order.
+                for name in &names {
+                    match self.bind(name) {
+                        Some(slot) => {
+                            self.emit(Op::SetSlot(slot), s.span);
+                            if !self.in_function {
+                                let i = self.name(name);
+                                self.emit(Op::Nil, s.span);
+                                self.emit(Op::Define(i), s.span);
+                            }
+                        }
+                        None => {
+                            let i = self.name(name);
+                            self.emit(Op::Define(i), s.span);
+                        }
                     }
                 }
             }

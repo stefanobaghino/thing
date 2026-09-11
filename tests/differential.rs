@@ -65,6 +65,29 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
     }
 }
 
+/// A `let` with a pattern binds through a new opcode in the VM and a
+/// walk in the tree-walker, so the two have to agree about what it
+/// binds AND about every way a value can fail to match.
+#[test]
+fn let_patterns_bind_the_same_on_both_engines() {
+    let cases: &[&str] = &[
+        "let [a, b] = [1, 2]; print(a, b);",
+        "let [a, [b, c]] = [1, [2, 3]]; print(a, b, c);",
+        "let [_, b] = [1, 2]; print(b);",
+        "let [] = []; print(\"empty\");",
+        "fn f() { let [a, b] = [3, 4]; return a * b; } print(f());",
+        "fn f() { let [a, b] = [3, 4]; let g = fn() { return a + b; }; return g(); } print(f());",
+        "print(try(fn() { let [a, b] = [1, 2, 3]; return a; }));",
+        "print(try(fn() { let [a] = []; return a; }));",
+        "print(try(fn() { let [a, b] = 5; return a; }));",
+        "print(try(fn() { let [a, b] = {\"a\": 1}; return a; }));",
+        "let m = import(\"lib/map.ting\"); for p in m[\"items\"]({\"a\": 1}) { let [k, v] = p; print(k, v); }",
+    ];
+    for src in cases {
+        same(src);
+    }
+}
+
 /// Lists order lexicographically, and both engines go through the
 /// same `eval::binary` and the same `compare` to say so — including
 /// the refusals, which are the half a difference would hide.

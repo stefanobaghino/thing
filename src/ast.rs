@@ -10,10 +10,58 @@ pub struct Stmt {
     pub span: Span,
 }
 
+/// What a `let` binds to: a name, a hole that keeps nothing, or a
+/// list taken apart element by element. A bare name is `StmtKind::Let`
+/// and never reaches here, so a pattern always has a shape to match.
+#[derive(Debug, Clone, PartialEq)]
+pub enum Pattern {
+    Name(String),
+    /// `_` — the value is matched and dropped.
+    Hole,
+    List(Vec<Pattern>),
+}
+
+impl Pattern {
+    /// Every name it binds, left to right — the order the compiler
+    /// pushes values in and the order the checker reads them back.
+    pub fn names(&self, out: &mut Vec<String>) {
+        match self {
+            Pattern::Name(n) => out.push(n.clone()),
+            Pattern::Hole => {}
+            Pattern::List(parts) => {
+                for p in parts {
+                    p.names(out);
+                }
+            }
+        }
+    }
+}
+
+impl std::fmt::Display for Pattern {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        match self {
+            Pattern::Name(n) => write!(f, "{n}"),
+            Pattern::Hole => write!(f, "_"),
+            Pattern::List(parts) => {
+                write!(f, "[")?;
+                for (i, p) in parts.iter().enumerate() {
+                    if i > 0 {
+                        write!(f, ", ")?;
+                    }
+                    write!(f, "{p}")?;
+                }
+                write!(f, "]")
+            }
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum StmtKind {
     /// `let name = expr;` — defines (or shadows) in the current scope.
     Let(String, Expr),
+    /// `let [a, b] = expr;` — the same, with the value taken apart.
+    LetPattern(Pattern, Expr),
     /// `name = expr;` — rebinds an existing variable. With an operator
     /// it is the compound form, `name op= expr`, which reads the
     /// variable, applies the operator and writes the result back.
@@ -42,6 +90,7 @@ impl fmt::Display for Stmt {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match &self.kind {
             StmtKind::Let(name, e) => write!(f, "(let {name} {e})"),
+            StmtKind::LetPattern(p, e) => write!(f, "(let {p} {e})"),
             StmtKind::Assign(name, None, e) => write!(f, "(= {name} {e})"),
             StmtKind::Assign(name, Some(op), e) => write!(f, "({op}= {name} {e})"),
             StmtKind::IndexAssign(base, idx, None, e) => write!(f, "(=[] {base} {idx} {e})"),
