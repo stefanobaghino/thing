@@ -23941,3 +23941,25 @@ together.
 Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2877 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 942 — release v2.146.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 078c82c from
+the API.
+
+v2.146.0, the milestone "putting things in order". Equality went all
+the way down and order stopped at the surface: `sort(items(m))` was
+an error, and a compound key could not be written at all. One
+`order()` behind `<`, `sort`, `sort_by`, `min` and `max` gives lists
+a lexicographic place in the order; `compare(a, b)` hands that order
+to a `sort_with` comparator as a number, which is what mixed
+directions and string keys need. The refusals are the half that keeps
+it honest — a kind with no order has none inside a list either, maps
+stay unordered, and a NaN answers `nil` rather than calling itself a
+tie.
+
+Strokes 938, 939, 940, 941. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.146.0; the binary reports `ting
+2.146.0`. Gate re-run after the bump: 17 suites (461 tests), `--fmt
+.` 80 unchanged, corpus at fourteen, 2877 checks on both engines,
+Windows check and clippy, wasm release build.

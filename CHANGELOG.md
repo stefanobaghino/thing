@@ -5,6 +5,38 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.146.0 (2026-09-11)
+
+- **Lists have a place in the order.** `<` and its three siblings
+  compare lists element by element: the first difference decides, and
+  a list that is a prefix of another comes first. Equality already
+  went all the way down and order stopped at the surface, so
+  `sort(items(m))` — sorting a frequency table, the commonest thing
+  anyone does with one — answered `sort cannot order list`. It sorts
+  now, and so do `sort_by`'s keys, `min` and `max`, since they all
+  read one `order()`.
+- **A compound key is a list.** `sort_by(people, fn(p) { return
+  [p["last"], p["first"]]; })` sorts by surname and settles ties by
+  given name. The old way was a hand-written three-way comparator,
+  four lines of `if` per field.
+- **`compare(a, b)`**, the 77th builtin: `-1` when `a` comes first,
+  `1` when `b` does, `0` for a tie, by that same order. It is what a
+  `sort_with` comparator wants when the fields run in different
+  directions — most points first, fastest time breaking the tie, one
+  line each — and unlike arithmetic on a comparator it works for
+  string keys. A NaN answers `nil` rather than 0: unordered is not a
+  tie.
+- **The refusals are the design.** A kind with no order still has
+  none inside a list, so `sort([[nil], [nil]])` says it cannot order
+  `nil`, and `[1] < 1` says it cannot compare a list and an int. Maps
+  stay unordered on purpose: their keys are a set, and a set has no
+  order to read off. Two lists that each contain themselves compare
+  without recursing forever, the way `==` already did.
+- `--help` lays its option column out in terminal columns, so a spec
+  whose option names are not ASCII lines up.
+- examples/ranking.ting and a reference section on what ting orders
+  and why.
+
 ## v2.145.0 (2026-09-11)
 
 - **A terminal measures in columns, and now so does ting.**

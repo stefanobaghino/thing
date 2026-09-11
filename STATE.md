@@ -3968,10 +3968,13 @@ holds only the current milestone and the standing rules.
 - 941: lib/args.ting's help column counts COLUMNS (936's finding
   closed). main.rs's rule() is now the only layout site left on
   characters, and no test here can see it.
+- 942: v2.146.0 tagged (167th tag; strokes 938, 939, 940, 941).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.146.0.
+  - verify v2.146.0: cold download of every asset, SHA256SUMS
+  checked, both aarch64 archives executed here, tools/smoke.sh.
+  - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
