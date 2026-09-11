@@ -5,6 +5,26 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.154.0 (2026-09-11)
+
+- **An echoed value stops at a screenful.** The prompt echoed whatever
+  a value printed as, and `range(100000)` is 688890 characters: one
+  expression took the session's scrollback with it. The echo now stops
+  at 2000 characters and says how many there were. `print(x)` writes
+  the whole value, in the REPL as in a script, and a program's own
+  output never passes through that cut.
+- **`:vars` says what a binding is.** It listed `names: list` and
+  `greet: function` — the one thing you can guess from the name you
+  typed. It lists the values now, one line each, cut to sixty
+  characters with the real width said; a function shows its
+  parameters.
+- **`--doc` answers, then says where else to look.** A word that names
+  a function was answered in full and then followed by every entry
+  mentioning it: `--doc map` was 142 lines, of which two were the
+  answer. The others come back as names now, grouped by module —
+  `--doc map` is 15 lines. A word that names nothing is still searched
+  for in full.
+
 ## v2.153.0 (2026-09-11)
 
 - **A path that isn't there is not an empty tree.** `lib/fs.ting`'s
