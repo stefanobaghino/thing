@@ -836,14 +836,19 @@ fn millis(ns: u128) -> String {
 }
 
 /// How a value is laid out in one `format` placeholder: `{:>8}`,
-/// `{:<16}`, `{:^10}`, `{:0>2}`. Width counts CHARACTERS, the way
-/// `len` does, and a value already that wide is left alone — the
-/// same rule `lib/string.ting`'s pad_left and center follow.
+/// `{:<16}`, `{:^10}`, `{:0>2}`, `{:05}`. Width counts CHARACTERS,
+/// the way `len` does, and a value already that wide is left alone —
+/// the same rule `lib/string.ting`'s pad_left and center follow.
 struct Spec {
     fill: char,
     align: Option<Align>,
     width: Slot,
     precision: Option<Slot>,
+    /// Set by a zero written in front of the width, `{:05}`, which
+    /// fills with zeroes AFTER the minus sign rather than in front
+    /// of it. An explicit fill means what it says, so `{:0>5}` of
+    /// -42 is still "00-42".
+    zero: bool,
 }
 
 /// A number in a spec: written there, or `{}` and taken from the
@@ -889,6 +894,14 @@ impl Spec {
         }
         let gap = width - have;
         let fill = |n: usize| -> String { std::iter::repeat_n(self.fill, n).collect() };
+        // "-0042", not "00-42": a filled column of figures is read
+        // for its signs, and they belong at the edge.
+        if self.zero
+            && matches!(v, Value::Int(_) | Value::Float(_))
+            && let Some(digits) = text.strip_prefix('-')
+        {
+            return Ok(format!("-{}{digits}", fill(gap)));
+        }
         Ok(match self.align.unwrap_or_else(|| default_align(v)) {
             Align::Left => text + &fill(gap),
             Align::Right => fill(gap) + &text,
@@ -989,6 +1002,7 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
         align: None,
         width: Slot::Fixed(0),
         precision: None,
+        zero: false,
     };
     if spec.is_empty() {
         return Ok(out);
@@ -1009,11 +1023,13 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
     // The fill is whatever sits before the alignment, so `{:0>2}`
     // pads with zeroes and `{:>2}` with spaces. Reading the SECOND
     // character first is what tells the two apart.
+    let mut filled = false;
     if chars.len() >= 2
         && let Some(align) = align_of(chars[1])
     {
         out.fill = chars[0];
         out.align = Some(align);
+        filled = true;
         chars.drain(..2);
     } else if !chars.is_empty()
         && let Some(align) = align_of(chars[0])
@@ -1026,6 +1042,23 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
         Some((w, p)) => (w, Some(p)),
         None => (rest.as_str(), None),
     };
+    // A zero in front of the width is a fill, as it is in Rust,
+    // Python, C and Go, and it is what fingers reach for. A fill
+    // written out already means what it says, so `{:.^05}` keeps its
+    // dots and reads the zero as part of the width. A lone `0` is
+    // still a width of zero, since there is nothing to fill.
+    let width = match width.strip_prefix('0') {
+        Some(after) if !filled => {
+            out.fill = '0';
+            // Past the sign only where the zeroes were not placed by
+            // an alignment: `{:05}` of -42 is "-0042", `{:>05}`
+            // "00-42", the same as the `{:0>5}` it spells out.
+            out.zero = out.align.is_none();
+            out.align = out.align.or(Some(Align::Right));
+            after
+        }
+        _ => width,
+    };
     if width == "{}" {
         out.width = Slot::FromArgs;
     } else if !width.is_empty() {
@@ -1033,8 +1066,9 @@ fn parse_spec(spec: &str) -> Result<Spec, String> {
             return Err(format!(
                 "format: `{width}` is not a width — a spec is `{{:}}`, an alignment \
                  (`<`, `>`, `^`, optionally after a fill character), a number of \
-                 characters or `{{}}` to take one from the arguments, and `.` and \
-                 a number of decimal places"
+                 characters or `{{}}` to take one from the arguments (a zero in \
+                 front of it fills with zeroes), and `.` and a number of decimal \
+                 places"
             ));
         };
         if n > MAX_WIDTH {

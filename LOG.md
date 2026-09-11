@@ -26307,3 +26307,38 @@ which reads oddly but is honest and costs nothing. `int("5 ")` and
 usual bargain and nothing in the probe wanted otherwise.
 
 Milestone "the number you meant" (v2.155), backlog in STATE.md.
+
+## 1008 — a zero in front of the width
+
+Milestone "the number you meant", first stroke. `format("{:05}", 42)`
+answered `"   42"`. The zero was read as the first digit of the width,
+the value came out padded with spaces, and nothing said so — in Rust,
+Python, C and Go the same spelling fills with zeroes, and ting's own
+way of asking for them was the longer `{:0>5}`.
+
+A leading zero in the width position now sets the fill, and it is
+sign-aware: `{:05}` of -42 is `"-0042"`, not `"00-42"`, because a
+filled column of figures is read for its signs and they belong at the
+edge. Decimal places come along — `{:07.2}` of -3.5 is `"-003.50"` —
+and a width taken from the arguments still works, `{:0{}}`.
+
+The two spellings that already said something keep saying it. A fill
+written out wins outright, so `{:.^05}` keeps its dots and reads the
+zero as part of the width; an alignment beside the zero says where
+the zeroes go, so `{:>05}` is the `{:0>5}` it spells out, sign and
+all. Only the bare `{:05}` — the one with nowhere else to put them —
+is sign-aware. A lone `{:0}` is still a width of zero.
+
+Eleven checks in selftest/strings.ting, one per rule above. Each of
+the three guards was mutation-tested: dropping the sign-aware branch,
+letting an alignment take the sign-aware path, and letting the zero
+overrule a fill written out each failed a different check. The first
+attempt had the zero refuse to fill at all when an alignment was
+present, which the mutation of that guard PASSED — `{:0>5}` never
+reaches it, since the fill is consumed before the width is read, and
+`{:>05}` was the spelling that told the two apart.
+
+Docs: the reference's spec grammar, four new lines of examples, and
+the `format` entry a reader gets from `--doc`.
+
+2995 checks.

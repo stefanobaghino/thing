@@ -55,6 +55,19 @@ assert(format("{:^6}", "日") == "  日  ", "a centred wide value");
 assert(format("{:2}", "日本") == "日本", "a value already that wide is left alone");
 assert(format("{:}", 9) == "9", "an empty spec is just the value");
 assert(format("{:0}", 9) == "9", "width zero is just the value");
+# A zero in front of the width fills with zeroes, past the sign. An
+# explicit fill is literal, so {:0>5} keeps writing them at the edge.
+assert(format("{:05}", 42) == "00042", "a leading zero fills with zeroes");
+assert(format("{:03}", 7) == "007", "and it is the spelling fingers reach for");
+assert(format("{:05}", -42) == "-0042", "the zeroes go past the minus sign");
+assert(format("{:07.2}", -3.5) == "-003.50", "decimal places too");
+assert(format("{:0>5}", -42) == "00-42", "an explicit fill stays literal");
+assert(format("{:>05}", -42) == "00-42", "and an alignment says where the zeroes go");
+assert(format("{:<05}", -42) == "-4200", "on either side");
+assert(format("{:.^05}", 7) == "..7..", "a fill written out keeps the column");
+assert(format("{:05}", "ab") == "000ab", "a string is filled at the edge");
+assert(format("{:0{}}", 7, 4) == "0007", "the width may still come from the arguments");
+assert(format("{:00}", 9) == "9", "a zero fill of width zero is just the value");
 # A width with no alignment lays numbers right and everything else left.
 assert(format("{:5}", 42) == "   42", "a number goes right");
 assert(format("{:5}", 4.5) == "  4.5", "a float goes right too");

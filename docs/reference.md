@@ -560,7 +560,7 @@ scope).
 A `format` placeholder is `{}` on its own, or `{:spec}` where the spec
 lays the value out in a column:
 
-    {:[[fill]align][width][.places]}
+    {:[[fill]align][0][width][.places]}
 
 `align` is `<` for left, `>` for right and `^` for centred; `fill` is
 any single character placed before it, and defaults to a space;
@@ -574,6 +574,18 @@ wide is written unchanged — a spec pads, it never truncates.
     format("{:^9}", "hi")      # "   hi    "
     format("{:0>2}", 7)        # "07"
     format("{:.^10}", "mid")   # "...mid...."
+
+A zero written in front of the width fills with zeroes, as it does in
+Rust, Python, C and Go, and it is sign-aware: the zeroes go after a
+minus sign rather than in front of it. An alignment beside it says
+where they go instead, and a fill character written out wins outright
+— `{:.^05}` keeps its dots and reads the zero as part of the width.
+
+    format("{:05}", 42)        # "00042"
+    format("{:05}", -42)       # "-0042"
+    format("{:07.2}", -3.5)    # "-003.50"
+    format("{:>05}", -42)      # "00-42", as {:0>5} spells out
+    format("{:.^05}", 7)       # "..7.."
 
 A width with no alignment puts numbers to the right and everything
 else to the left, which is what a column of figures wants:

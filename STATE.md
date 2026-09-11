@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 2984 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 2995 selftest checks on all four
   CI platforms, Windows included); 485 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4266,17 +4266,12 @@ holds only the current milestone and the standing rules.
   around" COMPLETE.
 - 1007: replenishment — milestone "the number you meant" (v2.155),
   reasoning in LOG.md.
+- 1008: `{:05}` fills with zeroes, sign-aware (`-0042`), as it does in
+  Rust, Python, C and Go; a fill written out still wins and an
+  alignment beside the zero says where the zeroes go. 2995 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `{:05}` fills with zeros, the way Rust, Python, C and Go read a
-    leading zero in a width. Today it is silently a width alone:
-    `format("{:05}", 42)` is "   42" where `{:0>5}` gives "00042".
-    Sign-aware, so -42 pads to "-0042" rather than "00-42"; the
-    grammar sentence, the reference and the stdlib page follow. If the
-    stroke finds a reason not to change what a spelling means, the
-    fallback is to refuse a leading zero with a sentence naming both
-    `{:0>5}` and `{:5}` — but a program writing `{:05}` meant zeros.
   - `--coverage` counts the project, not the embedded stdlib: 29 lines
     of my own code reported "88 of 264 lines (33%)" because
     lib/string.ting and lib/test.ting came along. `Origin` keeps only
