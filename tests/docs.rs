@@ -96,12 +96,14 @@ fn the_tutorial_counts_the_embedded_modules() {
     let page =
         std::fs::read_to_string(root.join("docs/tutorial.md")).expect("docs/tutorial.md missing");
     let count = ting::eval::embedded_stdlib().len();
-    let words = [
-        "Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten",
-        "Eleven", "Twelve", "Thirteen", "Fourteen", "Fifteen", "Sixteen", "Seventeen", "Eighteen",
-        "Nineteen", "Twenty",
-    ];
-    let word = words.get(count).expect("more modules than words here");
+    // One string rather than an array of them: rustfmt versions
+    // disagree about how to wrap an array of twenty short literals,
+    // and a string literal is wrapped by nobody.
+    let words = "Zero One Two Three Four Five Six Seven Eight Nine Ten Eleven Twelve Thirteen Fourteen Fifteen Sixteen Seventeen Eighteen Nineteen Twenty";
+    let word = words
+        .split(' ')
+        .nth(count)
+        .expect("more modules than words here");
     assert!(
         page.contains(&format!("{word} stdlib modules ship embedded")),
         "docs/tutorial.md does not say \"{word} stdlib modules ship embedded\"; lib/ has {count}"
