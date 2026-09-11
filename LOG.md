@@ -24558,3 +24558,33 @@ back word for word; and lib/map.ting's re-exported `items` and
 Site audit: all ten published paths answer 200 on
 www.baghino.me/thing/, the changelog page carries v2.148.0 and the
 reference page carries the missing-key refusal.
+
+## 960 — health tick, milestone "asking a map for its fields" complete
+
+Maintenance: tree clean, no PRs, CI green for 7811361 from the API
+(no Pages run: a LOG/STATE-only push misses that workflow's path
+filter).
+
+Bench: eleven checksums identical to BASELINE. Timings are again
+weather rather than signal — two stockfish processes at 99% each held
+half a four-core host for the whole run, and every row came in two to
+three times BASELINE. 952 established what a contended host does to
+these numbers; nothing new to add until the host is quiet.
+
+Sweeps green in release: 50000 differential cases twice (the second
+on seed 960), 2000000 pattern cases, the crash fuzzer, 20000
+formatter cases.
+
+Coverage: 3463 of 3480 lines (99%), each of the thirteen lib modules
+listed once, 31 lines more than 952 on both sides. The four gaps are
+the same old ones: args, fs, sh, test.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js matches the repository's, and
+rendering them left the tree clean. The deployed ting.wasm carries
+`asks for the key`, which dates the playground to this release.
+
+Milestone "asking a map for its fields" is complete.
+
+Next tick: replenishment.

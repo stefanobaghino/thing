@@ -4035,12 +4035,13 @@ holds only the current milestone and the standing rules.
   executable for.
 - v2.148.0 VERIFIED (169th tag; strokes 954, 955, 956, 957; seven
   assets, sums OK, both aarch64 archives smoke-tested here, site
-  audit clean) — milestone "asking a map for its fields".
+  audit clean) — milestone "asking a map for its fields". 960: health tick —
+  checksums identical, coverage 3463/3480 (99%), sweeps and
+  strong-form site audit green; milestone complete. Timings weather
+  again (two stockfish on half the host).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick closing the milestone (bench vs BASELINE, fuzz
-  sweeps in release).
   - replenishment: the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
