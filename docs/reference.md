@@ -1050,7 +1050,11 @@ and `"col"` it was raised at, and `"trace"` is the list of calls it
 came out of, innermost first — each frame those same three fields
 plus `"fn"`, the function's name or `nil` for one that has none, and
 `"args"`, a map from parameter name to the value it was given. The
-trace always holds at least the call `try` itself made.
+trace always holds at least the call `try` itself made. Every
+`"file"` is named the way `--check` names it: an imported module
+resolved to an absolute path, and is written back relative to the
+directory the command ran in, so a failure a program reports and a
+diagnostic a reader sees point at the same name.
 
 The caps above are the diagnostic's, not the data's: `"args"` holds
 every parameter and the whole of each value, because a program

@@ -522,6 +522,65 @@ fn module_runtime_errors_point_into_the_module() {
     assert!(!stderr.contains("panicked"), "{stderr}");
     let _ = std::fs::remove_dir_all(&dir);
 }
+/// An import resolves to an absolute path, but the reader named the
+/// file relative to where they ran the command — and so does
+/// `--check`. Every place the error path prints that file says the
+/// same short name: the diagnostic header, each trace note, and the
+/// `file` of `try`'s `at` and of every frame in its `trace`.
+#[test]
+fn an_error_in_an_imported_file_names_it_the_way_check_does() {
+    let dir = std::env::temp_dir().join(format!("ting-shorten-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    std::fs::write(
+        dir.join("boom.ting"),
+        "fn inner() { fail(\"boom\"); }\nfn outer() { inner(); }\n",
+    )
+    .unwrap();
+    std::fs::write(
+        dir.join("main.ting"),
+        "let boom = import(\"./boom.ting\");\nlet r = try(boom[\"outer\"]);\n\
+         print(r[\"at\"][\"file\"]);\nprint(r[\"trace\"][0][\"file\"]);\n\
+         print(r[\"trace\"][1][\"file\"]);\nboom[\"outer\"]();\n",
+    )
+    .unwrap();
+    // The name `--check` gives the module, to compare the run against.
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .current_dir(&dir)
+        .args(["--check", "boom.ting"])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    for engine in ["vm", "eval"] {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .env("TING_ENGINE", engine)
+            .current_dir(&dir)
+            .arg("main.ting")
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(1), "{engine}");
+        let stdout = String::from_utf8_lossy(&out.stdout);
+        assert_eq!(stdout, "boom.ting\nboom.ting\nmain.ting\n", "{engine}");
+        let stderr = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            stderr.starts_with("boom.ting:1:14: error: boom"),
+            "{engine}: {stderr}"
+        );
+        assert!(
+            stderr.contains("note: in inner(), called from boom.ting:2:14"),
+            "{engine}: {stderr}"
+        );
+        assert!(
+            stderr.contains("note: in outer(), called from main.ting:6:1"),
+            "{engine}: {stderr}"
+        );
+        // Nowhere does the absolute path the import resolved to leak
+        // through: not into the header, a note, or the try map.
+        let abs = dir.display().to_string();
+        assert!(!stdout.contains(&abs), "{engine}: {stdout}");
+        assert!(!stderr.contains(&abs), "{engine}: {stderr}");
+    }
+    let _ = std::fs::remove_dir_all(&dir);
+}
 
 /// A terminal lays a line out in columns, not in characters: an
 /// ideograph takes two and a combining accent none. The caret row

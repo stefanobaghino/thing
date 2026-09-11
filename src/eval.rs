@@ -83,7 +83,16 @@ impl RuntimeError {
     /// otherwise.
     pub fn render(&self, path: &str, src: &str) -> String {
         let mut text = match &self.origin {
-            Some(o) => crate::diag::render(&o.path, &o.src, &self.message, self.span),
+            // An import resolves to an absolute path, which is the
+            // right identity and the wrong name to print: the reader
+            // wrote the file relative to where the command ran, and
+            // that is how `--check` names it back to them.
+            Some(o) => crate::diag::render(
+                &crate::diag::shorten(&o.path),
+                &o.src,
+                &self.message,
+                self.span,
+            ),
             None => crate::diag::render(path, src, &self.message, self.span),
         };
         let n = self.frames.len();
@@ -99,9 +108,9 @@ impl RuntimeError {
             if n > TRACE_LIMIT && i >= TRACE_EDGE && i < n - TRACE_EDGE {
                 continue;
             }
-            let (p, s): (&str, &str) = match &frame.origin {
-                Some(o) => (&o.path, &o.src),
-                None => (path, src),
+            let (p, s): (std::borrow::Cow<str>, &str) = match &frame.origin {
+                Some(o) => (crate::diag::shorten(&o.path).into(), &o.src),
+                None => (path.into(), src),
             };
             let (line, col) = frame.span.line_col(s);
             let what = match &frame.name {
@@ -1534,16 +1543,19 @@ impl<W: Write> Interpreter<W> {
         span: Span,
         origin: &Option<Rc<Origin>>,
     ) -> std::collections::BTreeMap<String, Value> {
-        let (path, src): (&str, &str) = match origin {
-            Some(o) => (&o.path, &o.src),
+        let (file, src): (String, &str) = match origin {
+            // Named the way the diagnostic names it, so a program
+            // that prints `at` and a reader who sees the error agree
+            // on which file they are talking about.
+            Some(o) => (crate::diag::shorten(&o.path), &o.src),
             None => match &self.source {
-                Some((p, s)) => (p, s),
-                None => ("", ""),
+                Some((p, s)) => (p.clone(), s),
+                None => (String::new(), ""),
             },
         };
         let (line, col) = span.line_col(src);
         let mut m = std::collections::BTreeMap::new();
-        m.insert("file".to_string(), Value::str(path.to_string()));
+        m.insert("file".to_string(), Value::str(file));
         m.insert("line".to_string(), Value::Int(line as i64));
         m.insert("col".to_string(), Value::Int(col as i64));
         m
