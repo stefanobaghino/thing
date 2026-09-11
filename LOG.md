@@ -24910,3 +24910,59 @@ csv-to-maps convenience (`entry_of` is already that); string
 interpolation (a language change to save `format`, which is fine).
 
 Backlog for v2.150 is in STATE.md.
+
+## 970 — a format spec takes its width from the arguments
+
+Maintenance: tree clean, no PRs, CI green for 1dffc32 from the API.
+
+`format("{:<{}}", name, width)` works. A `{}` where a spec's width or
+number of decimal places goes reads that number from the argument
+list: the value first, then the spec's holes left to right, which is
+how the template reads and how Python resolves the same syntax.
+
+969's probe is the whole argument for it. A program computes a width
+because the DATA decides how wide the column is, and that was the one
+case the spec could not express — every such program went back to
+`pad_right(s, width, " ")`, which is what format exists to replace.
+
+The scanner had to learn depth: a placeholder now ends at the `}`
+that matches its own `{`, not at the first one. The cost is that a
+spec can no longer pad a column with braces (`{:{>5}`), which nothing
+in this repository or its tests ever did, and the reference says so.
+
+A hole reads a non-negative int and is capped exactly as a written
+number is; wrong type, negative and over-limit each say which. When a
+spec has taken an argument, a leftover argument can no longer be
+reported as "2 placeholders but 3 value arguments" — the count would
+not add up — so that case says "the template takes 2 arguments but 3
+were given" instead.
+
+Guards: twelve checks in selftest/strings.ting (both engines), the
+builtin's own doc text, and the reference's format section.
+
+THE GATE HAS NOT BEEN GATING `cargo fmt --check`, CLIPPY OR THE
+BUILD. Its Cargo.lock line read `grep ... >/dev/null; grep ... && \`,
+and that semicolon ends the `&&` chain that starts at fmt: everything
+before it could fail, and everything after it — tests, corpus,
+selftest, the cross targets, `echo GATE OK` — still ran and still
+said GATE OK. It surfaced because this stroke's closure was formatted
+differently by rustfmt and the gate reported OK anyway. The semicolon
+is gone, and the fixed gate was mutation-tested against the same
+dirty tree: it now stops at fmt and prints nothing.
+
+A gate that cannot fail is not a gate, and this one had a shape that
+LOOKED fine in a diff. The lesson is the one 962 applied to warnings
+and this tick did not apply to itself: make the check fail on
+purpose, once, and watch it.
+
+965's lesson applied while fixing the formatting: rather than accept
+rustfmt's wrap of a long closure signature four blocks deep — exactly
+the kind of line the local and CI versions disagree about — the
+closure became a free function, `take_slot`, whose signature fits on
+one line at the top level.
+
+Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2942 checks on both engines, Windows
+check and clippy, wasm release build — and this time the run printed
+the clippy, build and `--version` lines that prove the chain reached
+them.

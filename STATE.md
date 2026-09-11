@@ -65,7 +65,11 @@ current orientation.
    LOG/STATE, rerun the docs guard and gate the push on the literal
    `test result: ok` (a grep for "test result" passed a FAILED line
    in 238 and shipped a red commit). No angle-bracket placeholders
-   anywhere in markdown, quoted or not. Linux release builds stay on
+   anywhere in markdown, quoted or not. THE GATE ITSELF IS A GUARD AND
+   GETS MUTATION-TESTED: 970 found a `;` in the middle of its `&&`
+   chain, so fmt, clippy and the build had been printing without
+   gating. After any edit to it, make one step fail on purpose and
+   watch the script stop. Linux release builds stay on
    the oldest runner (22.04); the glibc-floor step in release.yml is
    the guard — never move them to -latest.
 3. Release when ~3 strokes accumulate; verify every release by cold
@@ -4075,12 +4079,15 @@ holds only the current milestone and the standing rules.
   checker knows what a module offers" complete.
 - 969: replenishment — milestone "a column you didn't know the width
   of" (v2.150), reasoning in LOG.md.
+- 970: a format spec's width and number of decimal places may be
+  `{}` and come from the arguments, the value first. FOUND WHILE
+  DOING IT: the gate script had a `;` in the middle of its `&&`
+  chain, so `cargo fmt --check`, clippy and the build printed but
+  gated nothing — everything after the semicolon ran regardless and
+  said GATE OK. Fixed and mutation-tested against the dirty tree.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - format takes a width and a number of decimal places from the
-    argument list: `{:<{}}` and `{:>{}.{}}`. The value comes first,
-    then the spec's holes left to right, as Python reads them.
   - pad_left and pad_right default their fill to a space.
   - string.table takes an alignment per column, so a column of
     figures lines up under its heading.
