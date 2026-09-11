@@ -24152,3 +24152,46 @@ then names `k` before it exists.
 Gate: fmt, clippy, 17 `test result: ok` (463 tests), `--fmt .` 80
 unchanged, corpus at fourteen, 2893 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 948 — a parameter takes its argument apart
+
+Maintenance: tree clean, no PRs, CI and Pages green for d48b9f5 from
+the API.
+
+`fn([k, v]) { ... }` and `fn f([a, b], c = 10) { ... }`. Same
+desugaring as 947, one step further in: the parameter is parsed as a
+pattern and the `let` it implies is spliced into the front of the
+body, which is built starting from those statements rather than
+empty. `map(pairs, fn([k, v]) { ... })` is the call this was for.
+
+The holder's name is the pattern's own text — `[k, v]`, brackets,
+comma and space included. No ting program can write that as an
+identifier, so nothing shadows it, and everything that prints a
+parameter name gets the source back for free: the hover and `--doc`
+signature read `f([k, v], n)`, and a runtime trace frame reads
+`joined([k, v] = ["a", 1])`. 947's `for element` needed a name nobody
+would see; here the name is seen everywhere, so it may as well be the
+one that was typed.
+
+Duplicate parameters are now checked over the names a list binds,
+not over the parameter spellings: `fn f(k, [k, v])` is refused, and
+so is `fn f([a, a])`. Without that the second binding would quietly
+win.
+
+A pattern parameter takes no default — `fn f([a, b] = [1, 2])` is a
+parse error at the `=` — but it obeys the rule about following one,
+and it counts as exactly one argument, so arity, `...rest` and the
+defaults after it are untouched.
+
+Guards: ten checks in selftest/compound.ting, eight differential
+cases, and an lsp unit test that the hover and the arity pass both
+read the pattern back as written. Splicing the `let` at the END was
+the mutation again: `undefined variable 'k'`.
+
+Found: tests/selftest.rs's timing guard on `unique` and
+`intersection` failed once at 4.5x under the full parallel suite and
+passed alone at once. First flake since 925 wrote it; watching.
+
+Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2902 checks on both engines, Windows
+check and clippy, wasm release build.

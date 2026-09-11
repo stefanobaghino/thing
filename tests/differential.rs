@@ -91,6 +91,16 @@ fn let_patterns_bind_the_same_on_both_engines() {
         "for [x, y] in [[1, 2], [3, 4]] { if x == 3 { break; } print(y); }",
         "print(try(fn() { for [a, b] in [[1, 2, 3]] { print(a, b); } }));",
         "print(try(fn() { for [a, b] in [7] { print(a, b); } }));",
+        // And in a parameter list, which is the same `let` written
+        // into the front of the body.
+        "fn f([k, v]) { return k + v; } print(f([1, 2]));",
+        "print(map([[1, 2], [3, 4]], fn([a, b]) { return a * b; }));",
+        "fn f([a, [b, c]], d) { return a + b + c + d; } print(f([1, [2, 3]], 4));",
+        "fn f([a, b], c = 10) { return a + b + c; } print(f([1, 2]), f([1, 2], 3));",
+        "fn f([_, x]) { return x; } print(f([1, 9]));",
+        "fn f([a, b]) { return fn() { return a * b; }; } print(f([3, 4])());",
+        "print(try(fn() { let g = fn([a, b]) { return a; }; return g([1, 2, 3]); }));",
+        "print(try(fn() { let g = fn([a, b]) { return a; }; return g(7); }));",
     ];
     for src in cases {
         same(src);

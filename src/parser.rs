@@ -589,6 +589,13 @@ impl<'a> Parser<'a> {
     fn fn_params_and_body(&mut self) -> Result<FnParts, ParseError> {
         self.expect(&TokenKind::LParen, "'('")?;
         let mut params = Vec::new();
+        // `fn([k, v]) { ... }`: the parameter takes a value apart the
+        // way a `let` does, so it is parsed as one and spliced into
+        // the front of the body once the body is there.
+        let mut take_apart: Vec<Stmt> = Vec::new();
+        // Every name the list binds, patterns taken apart, so that
+        // `fn f(k, [k, v])` is caught rather than quietly rebound.
+        let mut bound: Vec<String> = Vec::new();
         if self.peek() != &TokenKind::RParen {
             loop {
                 match self.peek().clone() {
@@ -600,10 +607,11 @@ impl<'a> Parser<'a> {
                                 describe(self.peek())
                             )));
                         };
-                        if params.iter().any(|p: &crate::ast::Param| p.name == name) {
+                        if bound.contains(&name) {
                             return Err(self.error(format!("duplicate parameter '{name}'")));
                         }
                         self.advance();
+                        bound.push(name.clone());
                         params.push(crate::ast::Param {
                             name,
                             default: None,
@@ -619,7 +627,7 @@ impl<'a> Parser<'a> {
                         break;
                     }
                     TokenKind::Ident(name) => {
-                        if params.iter().any(|p: &crate::ast::Param| p.name == name) {
+                        if bound.contains(&name) {
                             return Err(self.error(format!("duplicate parameter '{name}'")));
                         }
                         self.advance();
@@ -640,9 +648,52 @@ impl<'a> Parser<'a> {
                                 "parameter '{name}' has no default but follows one that does"
                             )));
                         }
+                        bound.push(name.clone());
                         params.push(crate::ast::Param {
                             name,
                             default,
+                            rest: false,
+                        });
+                    }
+                    TokenKind::LBracket => {
+                        let start = self.span().start;
+                        let pattern = self.pattern()?;
+                        // The pattern's own span, ending at its `]`,
+                        // so a mismatch points at the parameter.
+                        let span = Span::new(start, self.tokens[self.pos - 1].span.end);
+                        // Its own text is its name: no program can
+                        // write that, so nothing can shadow it, and a
+                        // signature reads back the way it was typed.
+                        let name = pattern.to_string();
+                        let mut names = Vec::new();
+                        pattern.names(&mut names);
+                        for n in names {
+                            if bound.contains(&n) {
+                                return Err(self.error(format!("duplicate parameter '{n}'")));
+                            }
+                            bound.push(n);
+                        }
+                        if params
+                            .iter()
+                            .any(|p: &crate::ast::Param| p.default.is_some())
+                        {
+                            return Err(self.error(format!(
+                                "parameter '{name}' has no default but follows one that does"
+                            )));
+                        }
+                        take_apart.push(Stmt {
+                            kind: StmtKind::LetPattern(
+                                pattern,
+                                Expr {
+                                    kind: ExprKind::Var(name.clone()),
+                                    span,
+                                },
+                            ),
+                            span,
+                        });
+                        params.push(crate::ast::Param {
+                            name,
+                            default: None,
                             rest: false,
                         });
                     }
@@ -661,7 +712,7 @@ impl<'a> Parser<'a> {
         }
         self.expect(&TokenKind::RParen, "')'")?;
         self.expect(&TokenKind::LBrace, "'{'")?;
-        let mut body = Vec::new();
+        let mut body = take_apart;
         while self.peek() != &TokenKind::RBrace && self.peek() != &TokenKind::Eof {
             body.push(self.statement()?);
         }

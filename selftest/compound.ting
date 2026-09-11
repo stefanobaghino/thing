@@ -274,3 +274,22 @@ assert(errmsg2(fn() { for [a, b] in [[1, 2, 3]] { print(a, b); } })
 == "this pattern takes 2 values, and the list has 3", "a loop reports the mismatch the let would");
 assert(errmsg2(fn() { for [a, b] in [7] { print(a, b); } })
 == "this pattern takes a list apart, and the value is int", "and the wrong type as well");
+
+# A parameter takes its argument apart, which is what makes a
+# higher-order call read: fn([k, v]) rather than a let per body.
+fn joined([k, v]) { return k + str(v); }
+assert(joined(["a", 1]) == "a1", "a parameter takes a pair apart");
+assert(map([["a", 1], ["b", 2]], joined) == ["a1", "b2"], "which is the point of it");
+fn mixed([a, b], c = 10) { return a + b + c; }
+assert(mixed([1, 2]) == 13, "a pattern sits beside a default");
+assert(mixed([1, 2], 3) == 6, "and the default is still a default");
+fn deep([a, [b, c]]) { return a + b + c; }
+assert(deep([1, [2, 3]]) == 6, "patterns nest in a parameter too");
+fn dropped([_, x]) { return x; }
+assert(dropped([1, 9]) == 9, "and a hole drops what it names nothing");
+fn captures([a, b]) { return fn() { return a * b; }; }
+assert(captures([3, 4])() == 12, "a closure sees what the parameter bound");
+assert(errmsg2(fn() { let f = fn([a, b]) { return a + b; }; return f([1, 2, 3]); })
+== "this pattern takes 2 values, and the list has 3", "a mismatched argument reports what a let would");
+assert(errmsg2(fn() { let f = fn([a, _b]) { return a; }; return f(7); })
+== "this pattern takes a list apart, and the value is int", "and the wrong type as well");

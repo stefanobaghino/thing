@@ -2739,6 +2739,24 @@ mod tests {
         assert!(hover.contains("f(a, ...rest)"), "hover was:\n{hover}");
     }
 
+    /// A parameter that takes its argument apart is named by its own
+    /// text, so the hover and the arity pass read it back the way it
+    /// was written and still count it as one argument.
+    #[test]
+    fn a_pattern_parameter_reads_back_as_it_was_written() {
+        let src = "fn f([k, v], n) { return k + v + n; }\nf([1, 2]);\n";
+        let messages: Vec<String> = arity_mismatches(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(
+            messages,
+            vec!["`f` takes 2 arguments, called with 1".to_string()]
+        );
+        let hover = hover_result(src, 1, 0).to_string();
+        assert!(hover.contains("f([k, v], n)"), "hover was:\n{hover}");
+    }
+
     /// A spread argument makes the count a runtime fact, so the arity
     /// pass says nothing about the call either way.
     #[test]
