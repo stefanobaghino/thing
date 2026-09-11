@@ -402,6 +402,15 @@ assert(j["merge_in"]({"a": 1}, {"a": {"b": 2}}) == {"a": {"b": 2}}, "merge_in ma
 assert(j["merge_in"](5, {"a": 1}) == {"a": 1}, "merge_in non-map left is replaced");
 assert(j["merge_in"]({}, {}) == {}, "merge_in empty");
 
+# The two builtins the module re-exports, and the proof that naming
+# one of them `str` left the module's own use of the real str alone.
+assert(j["parse"]("{\"a\": [1, true]}") == {"a": [1, true]}, "json parse re-exported");
+assert(j["str"]({"a": [1, true]}) == "{\"a\":[1,true]}", "json str re-exported");
+assert(j["parse"](j["str"]([1, "b", nil])) == [1, "b", nil], "parse undoes str");
+assert(j["flatten"]({"a": [7]}) == {"a.0": 7}, "a path step is still plain text");
+let oops = try(fn() { return j["set_in"]([1], [3], 0); });
+assert(contains(oops["err"], "index 3 out of range"), "set_in names the index plainly");
+
 assert(l["zip_with"]([1, 2, 3], [10, 20], fn(p, q) { return p + q; }) == [11, 22], "zip_with trims");
 assert(l["zip_with"]([], [1], fn(p, _q) { return p; }) == [], "zip_with empty");
 assert(l["cartesian"]([1, 2], ["a", "b"]) == [[1, "a"], [1, "b"], [2, "a"], [2, "b"]], "cartesian");

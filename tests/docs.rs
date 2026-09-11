@@ -43,8 +43,11 @@ fn stdlib_page_lists_every_function_and_the_right_count() {
         let src = std::fs::read_to_string(&path).unwrap();
         for line in src.lines() {
             // A module offers a name either by defining it or, for a
-            // builtin it re-exports, by declaring `let f = f;`. Both
-            // belong on the page, so both are counted here.
+            // builtin it re-exports, by binding it to one: `let f =
+            // f;`, and `let str = json_str;` where the module offers
+            // the builtin under a shorter name. Both belong on the
+            // page, so both are counted here. A top-level `let` bound
+            // to anything but a bare name is data, not a function.
             let name = match line.strip_prefix("fn ") {
                 Some(rest) => &rest[..rest.find('(').unwrap_or(rest.len())],
                 None => {
@@ -54,7 +57,13 @@ fn stdlib_page_lists_every_function_and_the_right_count() {
                     let Some((name, init)) = rest.split_once(" = ") else {
                         continue;
                     };
-                    if init != format!("{name};") {
+                    let Some(init) = init.strip_suffix(';') else {
+                        continue;
+                    };
+                    if init.is_empty()
+                        || !init.chars().all(|c| c.is_ascii_alphanumeric() || c == '_')
+                        || init.starts_with(|c: char| c.is_ascii_digit())
+                    {
                         continue;
                     }
                     name

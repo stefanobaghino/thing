@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 211 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 213 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -157,10 +157,13 @@ Imports return a map, so functions are reached with `["name"]`.
 
 Navigation for nested values (the output of `json_parse`, or any
 maps and lists). A path is a list of steps: strings index maps, ints
-index lists.
+index lists. The two builtins the area is named for are re-exported
+here, so the module you imported answers for the whole of it.
 
 | Function | Does |
 |----------|------|
+| `parse(text)` | `json_parse`, re-exported |
+| `str(v)` | `json_str`, re-exported — inside this module `str` means this, not the builtin of that name |
 | `get_in(v, path)` | the value at `path`, or `nil` when any step misses |
 | `set_in(v, path, x)` | a fresh value with `x` at `path` (copies along the path; missing map keys created) |
 | `paths(v)` | every path to a leaf, depth first, keys sorted |

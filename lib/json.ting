@@ -2,6 +2,17 @@
 #   let j = import("lib/json.ting");
 # A path is a list of steps: strings index maps, ints index lists.
 
+# The area's two verbs are builtins, and the module you imported is
+# the first place anyone looks for them — the argument lib/map.ting
+# re-exports items and values on. These lines are what put them in
+# the module's map.
+let parse = json_parse;
+
+# json_str, which is what `str` means for the rest of this file: the
+# code below spells a path step with format() rather than reaching
+# for the builtin this name used to stand for.
+let str = json_str;
+
 # The value at path, or nil when any step misses (a missing key, an
 # index out of range, or a step into a non-container).
 fn get_in(v, path) {
@@ -38,8 +49,8 @@ fn set_in(v, path, x) {
     return out;
   }
   if type(k) == "int" {
-    if type(v) != "list" { fail("set_in: expected a list before index " + str(k)); }
-    if k < 0 || k >= len(v) { fail("set_in: index " + str(k) + " out of range"); }
+    if type(v) != "list" { fail("set_in: expected a list before index " + format("{}", k)); }
+    if k < 0 || k >= len(v) { fail("set_in: index " + format("{}", k) + " out of range"); }
     let out = slice(v, 0, len(v));
     out[k] = set_in(v[k], rest, x);
     return out;
@@ -75,7 +86,7 @@ fn paths_into(v, prefix, out) {
 fn flatten(v) {
   let out = {};
   for path in paths(v) {
-    let key = join(map(path, fn(step) { return str(step); }), ".");
+    let key = join(map(path, fn(step) { return format("{}", step); }), ".");
     out[key] = get_in(v, path);
   }
   return out;
