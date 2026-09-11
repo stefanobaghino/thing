@@ -26342,3 +26342,41 @@ Docs: the reference's spec grammar, four new lines of examples, and
 the `format` entry a reader gets from `--doc`.
 
 2995 checks.
+
+## 1009 — a coverage report is about your code
+
+Milestone "the number you meant", second stroke. In a directory
+holding 29 lines of my own, `ting --coverage money_test.ting` said
+`coverage: 88 of 264 lines (33%)`: both files I wrote were fully
+covered, and 235 of the 264 lines were lib/string.ting and
+lib/test.ting, which arrived with the binary. The number a coverage
+tool exists to give was the one it got wrong, and it got worse the
+more of the stdlib a project leaned on.
+
+A module out of the binary is now left out of the table and the
+total, and named on a last line instead, so that a module missing
+from the table is explained rather than merely absent:
+
+    coverage: 29 of 29 lines (100%)
+     100%     18/18     money.ting
+     100%     11/11     money_test.ting
+    not counted: lib/test.ting, lib/string.ting (embedded in the binary)
+
+The distinction is the marker, not the name. `import_module` resolves
+a stdlib module to `<embedded>/NAME` and strips the marker before it
+reaches `Origin`, since that is how a reader should see the file
+named; `Origin` and `FileCoverage` now carry the answer as a flag
+beside the path. A `lib/test.ting` that is a real file next to the
+script is the reader's own code and is counted like any other — the
+filesystem wins over the embedded copy at import, and coverage
+follows it.
+
+Both halves are one test: the same script, run in a temp directory
+first without a lib/ and then with one. Three mutations were tried —
+never marking anything embedded, counting the embedded rows anyway,
+and deciding by the import path (`lib/…`) rather than by what
+answered it — and each fails a different assertion; the third fails
+only the half with the file on disk, which is the half that says what
+the flag is for.
+
+486 tests.

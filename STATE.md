@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 2995 selftest checks on all four
-  CI platforms, Windows included); 485 Rust tests
+  CI platforms, Windows included); 486 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4269,14 +4269,13 @@ holds only the current milestone and the standing rules.
 - 1008: `{:05}` fills with zeroes, sign-aware (`-0042`), as it does in
   Rust, Python, C and Go; a fill written out still wins and an
   alignment beside the zero says where the zeroes go. 2995 checks.
+- 1009: `--coverage` leaves the embedded stdlib out of the table and
+  the total and names it on a last line; a lib/ module that is a real
+  file beside the script is still counted. `Origin` and
+  `FileCoverage` carry an `embedded` flag. 486 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--coverage` counts the project, not the embedded stdlib: 29 lines
-    of my own code reported "88 of 264 lines (33%)" because
-    lib/string.ting and lib/test.ting came along. `Origin` keeps only
-    the display path and `import_module` strips `<embedded>/` before
-    it lands, so this needs the marker kept (or a flag beside it).
   - lib/time.ting's private `pad(n, width)` goes: it is
     `pad_left(str(n), width, "0")` spelled again, and having two makes
     `--doc pad` answer with two different functions.

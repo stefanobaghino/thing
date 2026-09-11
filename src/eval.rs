@@ -44,6 +44,11 @@ pub struct Frame {
 pub struct Origin {
     pub path: String,
     pub src: Rc<str>,
+    /// Whether the module came out of the binary rather than off the
+    /// disk. The path is written without the `<embedded>/` marker,
+    /// because that is how a reader should see it named, so the
+    /// answer cannot be read back out of it afterwards.
+    pub embedded: bool,
 }
 
 /// Which offsets of which files ran. Offsets rather than lines: a
@@ -70,6 +75,10 @@ pub struct FileCoverage {
     /// over, by an interpreter that has no source of its own, so the
     /// answer has to be recorded while it is still known.
     pub typed: bool,
+    /// Whether the file is a stdlib module out of the binary. A
+    /// coverage report is about the code its reader wrote, and these
+    /// lines arrived with the interpreter.
+    pub embedded: bool,
 }
 
 impl Coverage {
@@ -1439,6 +1448,7 @@ impl<W: Write> Interpreter<W> {
                 None => ("", None),
             },
         };
+        let embedded = origin.as_ref().is_some_and(|o| o.embedded);
         if !coverage.files.contains_key(path) {
             coverage.files.insert(
                 Rc::from(path),
@@ -1448,6 +1458,7 @@ impl<W: Write> Interpreter<W> {
                     coverable: Default::default(),
                     hit: Default::default(),
                     typed: false,
+                    embedded,
                 },
             );
         }
@@ -1470,7 +1481,16 @@ impl<W: Write> Interpreter<W> {
         let files = coverage.files();
         let mut rows = Vec::new();
         let (mut total, mut total_hit) = (0usize, 0usize);
-        for f in &files {
+        // A stdlib module came with the binary: counting its lines
+        // answers a question about ting, in a report the reader asked
+        // about their own project. They are named at the end instead,
+        // so that a module missing from the table is explained.
+        let embedded: Vec<&str> = files
+            .iter()
+            .filter(|f| f.embedded)
+            .map(|f| f.path.as_str())
+            .collect();
+        for f in files.iter().filter(|f| !f.embedded) {
             let coverable = lines_of(&f.src, &f.coverable);
             let hit = lines_of(&f.src, &f.hit);
             let missed: Vec<usize> = coverable
@@ -1519,6 +1539,12 @@ impl<W: Write> Interpreter<W> {
                 }
             }
             out.push('\n');
+        }
+        if !embedded.is_empty() {
+            out.push_str(&format!(
+                "not counted: {} (embedded in the binary)\n",
+                embedded.join(", ")
+            ));
         }
         Some(out)
     }
@@ -4001,13 +4027,17 @@ impl<W: Write> Interpreter<W> {
         let program = crate::parser::parse_program(&tokens)
             .map_err(|e| in_module(&e.message, e.span, &src))?;
 
-        let origin_path = match resolved.to_str() {
-            Some(p) if p.starts_with("<embedded>/") => p["<embedded>/".len()..].to_string(),
-            _ => resolved.display().to_string(),
+        let marked = resolved
+            .to_str()
+            .and_then(|p| p.strip_prefix("<embedded>/"));
+        let origin_path = match marked {
+            Some(name) => name.to_string(),
+            None => resolved.display().to_string(),
         };
         self.origin_stack.push(Rc::new(Origin {
             path: origin_path,
             src: Rc::from(src.as_str()),
+            embedded: marked.is_some(),
         }));
         let saved_env = std::mem::replace(&mut self.env, global_env());
         self.importing.push(resolved.clone());

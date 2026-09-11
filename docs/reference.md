@@ -1226,7 +1226,12 @@ The `ting` binary is the whole toolchain — no separate installs:
   a closing brace is not; a `fn` definition counts as the statement
   that binds it, which runs whether or not the function is ever
   called. Imported modules are counted against their own files, and a
-  file reached by several of the scripts is one row. Each script runs
+  file reached by several of the scripts is one row. A stdlib module
+  that came out of the binary is left out of the table and the total
+  and named on a last line instead: the report is about the code its
+  reader wrote, and those lines arrived with the interpreter. A
+  `lib/` module that is a real file next to the script is that
+  reader's own code, and is counted like any other. Each script runs
   in its own interpreter, so their globals stay apart exactly as
   running them one after another would; the record does not. Both
   engines report the same lines — a differential test over the

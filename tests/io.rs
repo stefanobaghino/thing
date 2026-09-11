@@ -833,6 +833,74 @@ fn coverage_flag_reports_the_lines_that_ran() {
     let _ = std::fs::remove_file(&other);
 }
 
+/// A coverage report is about the code its reader wrote. The stdlib
+/// module the binary carries is named, not counted — and the same
+/// module as a real file beside the script is theirs, and is.
+#[test]
+fn coverage_leaves_out_the_stdlib_that_came_with_the_binary() {
+    let dir = std::env::temp_dir().join(format!("ting-coverage-lib-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&dir);
+    std::fs::create_dir_all(&dir).unwrap();
+    let script = dir.join("suite.ting");
+    std::fs::write(
+        &script,
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"kept\", true);\n",
+    )
+    .unwrap();
+    let run = |dir: &std::path::Path| -> String {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .current_dir(dir)
+            .arg("--coverage")
+            .arg("suite.ting")
+            .output()
+            .expect("failed to run ting");
+        assert_eq!(out.status.code(), Some(0));
+        String::from_utf8_lossy(&out.stderr).to_string()
+    };
+    let rows = |report: &str| -> Vec<String> {
+        report
+            .lines()
+            .filter(|l| l.starts_with(' ') && l.contains('%'))
+            .map(|l| l.to_string())
+            .collect()
+    };
+
+    let embedded = run(&dir);
+    assert_eq!(
+        rows(&embedded).len(),
+        1,
+        "only the script counts: {embedded}"
+    );
+    assert!(rows(&embedded)[0].ends_with("suite.ting"), "{embedded}");
+    assert!(
+        embedded.contains("not counted: lib/test.ting (embedded in the binary)"),
+        "{embedded}"
+    );
+    // Two lines of script, both reached.
+    assert!(
+        embedded.starts_with("coverage: 2 of 2 lines (100%)"),
+        "{embedded}"
+    );
+
+    // The same import, answered by a file the reader wrote: it is
+    // their code, so it is in the table and nothing is left out.
+    std::fs::create_dir_all(dir.join("lib")).unwrap();
+    std::fs::write(
+        dir.join("lib").join("test.ting"),
+        "fn check(name, ok) {\n  if !ok {\n    print(name);\n  }\n}\n",
+    )
+    .unwrap();
+    let theirs = run(&dir);
+    assert_eq!(
+        rows(&theirs).len(),
+        2,
+        "their lib/test.ting counts: {theirs}"
+    );
+    assert!(!theirs.contains("not counted"), "{theirs}");
+
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// The two stdlib functions that print and exit — lib/test.ting's
 /// `summary` and lib/args.ting's `main` — can only be checked from
 /// outside, in a process of their own. Coverage found them untested
