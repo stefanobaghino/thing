@@ -25448,3 +25448,54 @@ repository's, and rendering them left the tree clean.
 Milestone "one way to name a file" is complete.
 
 Next tick: replenishment.
+
+## 985 — replenishment: milestone "the command line your program shows its user"
+
+Probed the way 969 and 977 were probed: wrote a plausible program cold,
+without reading the library first, and kept every place it hurt.
+
+The program is `outline.ting` — walk a directory, list the headings of
+every markdown file under it with their line numbers, indent by level,
+honour a `--depth` option. Roughly what someone writes on their second
+day with a language.
+
+WHAT THE PROBE FOUND, and the milestone this replenishes:
+
+- `--help` DOES NOTHING UNLESS THE CALLER WRITES IT. lib/args.ting
+  builds the help text from the spec, and `parse` recognises `--help`
+  and hands back `"help": true` — and then returns, with the required
+  positional left nil and no help printed. My program, which never
+  thought to check that key, answered `outline.ting --help` with
+  `lib/fs.ting:101:7: error: is_dir expects a string path, got nil`.
+  The one example that uses the module, examples/report.ting, prints
+  the help unconditionally and parses a hard-coded argv, so the last
+  mile is demonstrated nowhere.
+- A USER'S TYPO IS PRESENTED AS A STACK TRACE. `outline.ting docs
+  --deph 3` prints three lines of ting diagnostic pointing at
+  lib/args.ting:158, plus a `note:` with the spec dumped and
+  truncated, to say `unknown option --deph`. The message is right and
+  everything around it is addressed to the wrong reader: a person who
+  mistyped a flag is shown the inside of the parser. The same for a
+  missing positional. A command-line program says `name: unknown
+  option --deph`, shows its usage line, and exits 2.
+- A MALFORMED SPEC FAILS INSIDE THE LIBRARY. My first spec wrote
+  "options" as a map of name to description rather than a list of
+  maps — a reasonable guess. The answer was `lib/args.ting:124:15:
+  error: cannot index string with string`, about the library's own
+  line, naming nothing the caller wrote. `parse` reads the spec; it
+  can say which key is the wrong shape.
+
+NOTED, NOT CHOSEN — a second theme, for a later milestone: the
+checker and the runtime disagree about module members. `--check`
+answered `st["ends_with"]` with "lib/string.ting has no `ends_with`
+(`ends_with` is a builtin)", which is exactly the help wanted, while
+the RUN of the same line said only `key "ends_with" not found`. And
+`--check` said "`repeat` is bound nowhere" where it already knew that
+lib/string.ting, imported in that file as `st`, offers `repeat`.
+
+ALSO NOT CHOSEN: changing `parse`'s own behaviour on `--help`.
+Programs that check `"help"` today would break, and the promise is
+that 2.x does not do that. The last mile gets a name of its own
+instead, leaving the mechanism where it is.
+
+Backlog for v2.152 is in STATE.md.

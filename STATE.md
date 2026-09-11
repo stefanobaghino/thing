@@ -4163,6 +4163,24 @@ holds only the current milestone and the standing rules.
   edited are not on the bench's path, and timed alone the script is
   at BASELINE. TIMINGS FROM THE HARNESS ARE WEATHER; time one script
   alone before believing a row.
+- 985: replenishment — milestone "the command line your program
+  shows its user" (v2.152), reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - lib/args.ting gains `run(spec)`: it takes args() itself, prints
+    the help the spec describes and exits 0 for --help, and returns
+    what parse returns otherwise. parse keeps its behaviour, so a
+    program that checks "help" itself still works.
+  - a mistake at the command line — an unknown option, a missing
+    value, a missing positional — comes out of `run` as the
+    program's own error: `name: unknown option --deph` and the usage
+    line on stderr, exit 2, with no ting diagnostic.
+  - `parse` refuses a malformed spec by naming the key whose shape
+    is wrong, rather than failing on the library's own line.
+  - an example that is a whole command-line program — help, error
+    path and exit status all shown — feeding the three generators.
+  - release v2.152.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
