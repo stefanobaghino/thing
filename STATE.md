@@ -3910,10 +3910,15 @@ holds only the current milestone and the standing rules.
   archives executed here). A probe run from the SCRATCHPAD reads that
   directory's own stale lib/ (copied there on 8 September), not the
   embedded stdlib: imports resolve against the importing file.
+- 929: health tick + audit green — milestone "the same value twice"
+  complete. Coverage 3294/3311 (99%). Head-to-head against v2.143.0
+  clear (stdlib +2.8%, maps -3.6%, lists +2.2%, toplevel -1.1%), and
+  it needed each binary pointed at its OWN tree: the old one cannot
+  run the new lib/list.ting, which calls fingerprint.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick, which closes the milestone.
+  - replenishment: choose the next milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only

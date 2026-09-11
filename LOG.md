@@ -23470,3 +23470,43 @@ v2.144.0, the reference carries "There is no set type", and the
 stdlib page has union.
 
 Next: health tick, which closes the milestone.
+
+## 929 — health tick, milestone "the same value twice" complete
+
+Maintenance: tree clean, CI green for 839df0d from the API (no Pages
+run: a LOG/STATE-only push misses that workflow's path filter).
+
+Bench: eleven checksums identical to BASELINE, compared mechanically.
+Timings four to six percent above BASELINE across both engines at load
+2.26, against the 0.08 the last tick enjoyed — the same weather every
+row shows together.
+
+Head-to-head anyway, since this milestone put a builtin in the
+dispatch: a binary built from v2.143.0 against HEAD, interleaved, best
+of five. stdlib +2.8%, maps -3.6%, lists +2.2%, toplevel -1.1% — noise
+in both directions, no regression.
+
+It had to be run differently than 922's, and the reason is worth
+keeping: the OLD binary cannot run the NEW lib/list.ting, which calls
+`fingerprint`. Each binary was pointed at its own tree's copy of the
+bench script, so each imported the module it shipped with. The 2.x
+promise is that the LANGUAGE is additive; a module that uses a new
+builtin needs the binary it shipped with, which is why the archive
+carries both.
+
+Sweeps green in release: 50000 differential cases twice (the second on
+seed 928), 2000000 pattern cases, the crash fuzzer, 20000 formatter
+cases.
+
+Coverage 3294 of 3311 lines (99%), up 109 lines on both sides since
+922 — the new module code and the checks that cover it. The same six
+gaps, all old and deliberate.
+
+Site audit, strong form: all six pages fetched from
+www.baghino.me/thing/ are byte-identical to what tools/md2html.ting
+renders here, the live examples.js matches the repository's, and the
+four playground paths answer 200. Rendering them left the tree clean.
+
+Milestone "the same value twice" is complete.
+
+Next tick: replenishment.
