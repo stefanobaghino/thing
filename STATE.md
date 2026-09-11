@@ -3945,10 +3945,23 @@ holds only the current milestone and the standing rules.
   200 would not. FOUND: lib/args.ting's `pad(text, width)` builds the
   --help column with `len` — the last layout site counting characters
   apart from main.rs's `rule()`.
+- 937: replenishment — milestone "putting things in order"
+  (v2.146), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone.
+  - lists order lexicographically wherever ting orders — `<` and its
+  siblings through eval::binary, and sort/sort_by/min/max/
+  binary_search through ensure_sortable. First difference decides, a
+  prefix comes first, a refusal names what it could not order. Maps
+  stay unordered: their keys are a set.
+  - compare(a, b), the 77th builtin: -1, 0 or 1 by the same rule,
+  refusing where `<` refuses, so a comparator over several fields in
+  mixed directions is one line per field.
+  - docs: what ting orders and why, the compound-key idiom, and the
+  mixed-direction comparator; reference, stdlib, cookbook.
+  - lib/args.ting's pad(text, width) counts columns (936's finding).
+  - release v2.146.0.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
