@@ -1174,7 +1174,9 @@ fn a_failing_file_still_reports_its_checks() {
 fn test_flag_fail_fast_skips_the_rest() {
     let root = std::env::temp_dir().join(format!("ting-fail-fast-{}", std::process::id()));
     std::fs::create_dir_all(&root).unwrap();
-    std::fs::write(root.join("a.ting"), "print(1);\n").unwrap();
+    // a.ting checks something, so that it is a pass rather than a
+    // skip: what this test is about is the files after the failure.
+    std::fs::write(root.join("a.ting"), "assert(true);\n").unwrap();
     std::fs::write(root.join("b.ting"), "fail(\"red\");\n").unwrap();
     let marker = root.join("c-ran");
     std::fs::write(
@@ -2965,8 +2967,9 @@ fn test_flag_runs_files_and_summarises() {
 }
 
 /// `--test` says how much each file verified: a count per file, a
-/// total in the summary, and a passing file that checked nothing
-/// named as such.
+/// total in the summary, and a file that checked nothing reported as
+/// a skip rather than a pass — it ran, but it stands behind none of
+/// the suite, which is what `--fail-fast`'s skips mean too.
 #[test]
 fn test_flag_counts_checks() {
     let dir = std::env::temp_dir().join(format!("ting-test-counts-{}", std::process::id()));
@@ -2981,11 +2984,16 @@ fn test_flag_counts_checks() {
         .expect("failed to run ting");
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert_eq!(out.status.code(), Some(0), "{stdout}");
-    assert!(stdout.contains("none.ting (no checks)"), "{stdout}");
+    let nothing = stdout
+        .lines()
+        .find(|l| l.contains("none.ting"))
+        .expect("a line for the file that checked nothing");
+    assert!(nothing.starts_with("skip "), "{stdout}");
+    assert!(nothing.ends_with("none.ting (no checks)"), "{stdout}");
     assert!(stdout.contains("one.ting (1 check)"), "{stdout}");
     assert!(stdout.contains("two.ting (2 checks)"), "{stdout}");
     assert!(
-        stdout.contains("3 passed, 0 failed, 3 checks (1 file checked nothing)"),
+        stdout.contains("2 passed, 0 failed, 1 skipped, 3 checks"),
         "{stdout}"
     );
 
@@ -3011,6 +3019,9 @@ fn test_flag_counts_checks() {
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("\n# no checks\n"), "{stdout}");
     assert!(stdout.contains("\n# 2 checks\n"), "{stdout}");
+    // A TAP skip is a pass carrying a directive, so the stream stays
+    // valid for a consumer that knows nothing about ting.
+    assert!(stdout.contains("none.ting # SKIP no checks\n"), "{stdout}");
 
     let _ = std::fs::remove_dir_all(&dir);
 }

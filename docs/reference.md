@@ -1141,12 +1141,15 @@ The `ting` binary is the whole toolchain — no separate installs:
   lists the N slowest files after the summary; `--fail-fast` stops
   after the first failing file and counts the rest as skipped) in its own
   process and
-  prints `ok` or `FAIL` per file (with the diagnostic under a
-  failure) and a summary; exit 1 if anything failed. Pair it with
+  prints `ok`, `skip` or `FAIL` per file (with the diagnostic under
+  a failure) and a summary; exit 1 if anything failed. Pair it with
   `lib/test.ting` or plain `assert` calls. Each line says how much
-  the file verified — `ok tests/list.ting (12 checks)`, one check
-  per `assert` — the summary totals them, and a file that passed
-  while checking nothing is named there, since it proves nothing.
+  the file verified — `ok   tests/list.ting (12 checks)`, one check
+  per `assert` — and the summary totals them. A file that ran and
+  checked nothing is a `skip`, not a pass: it stands behind none of
+  the suite, which is what `--fail-fast`'s skips mean too, so the
+  summary counts the two together. In TAP a skip is an `ok` line
+  carrying a `# SKIP` directive.
   A failing file's own output is repeated under the `FAIL` line,
   indented, before the error that killed it: what the file printed
   is usually the reason, and it is what `lib/test.ting`'s

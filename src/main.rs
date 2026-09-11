@@ -51,7 +51,7 @@ fn run_cli() -> ExitCode {
                  \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
                  \x20                             (--fmt-check and --fmt --diff take --watch too)\n\
                  \x20                             (tool flags accept - for stdin; dirs recurse)\n\
-                 \x20 ting --test <paths...>      run each file (dirs recurse); ok/FAIL per file, exit 1 if any fail\n\
+                 \x20 ting --test <paths...>      run each file (dirs recurse); ok/skip/FAIL per file, exit 1 if any fail\n\
                  \x20   [--filter SUBSTR]         only files whose path contains SUBSTR\n\
                  \x20   [--tap]                   Test Anything Protocol output\n\
                  \x20   [-j N]                    run up to N files at once (output stays ordered)\n\
@@ -810,7 +810,6 @@ fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
     let mut failed = 0usize;
     let mut skipped = 0usize;
     let mut total_checks = 0usize;
-    let mut unchecked = 0usize;
     let mut timings: Vec<(u128, &str)> = Vec::new();
     for (i, (f, result)) in files.iter().zip(results).enumerate() {
         let Some((ok, diag, ms, checks)) = result else {
@@ -825,25 +824,33 @@ fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
             failed += 1;
         }
         total_checks += checks;
-        // Only a file that passed while checking nothing is worth
-        // naming: a failure has already said what went wrong.
-        if ok && checks == 0 {
-            unchecked += 1;
+        // A file that ran and verified nothing is not a file that
+        // passed. It is counted with the ones `--fail-fast` never
+        // started, because the two say the same thing about the
+        // suite: this file stands behind none of it.
+        let nothing = ok && checks == 0;
+        if nothing {
+            skipped += 1;
         }
         // "(12 checks)", or "(no checks)" for a file that verified
-        // nothing — which passes, but proves nothing.
+        // nothing.
         let count = match checks {
             0 => "no checks".to_string(),
             1 => "1 check".to_string(),
             n => format!("{n} checks"),
         };
         if tap {
-            println!("{} {} - {f}", if ok { "ok" } else { "not ok" }, i + 1);
+            // TAP spells a skip as a pass carrying a SKIP directive,
+            // which is what it is: nothing went wrong here.
+            let skip = if nothing { " # SKIP no checks" } else { "" };
+            println!("{} {} - {f}{skip}", if ok { "ok" } else { "not ok" }, i + 1);
             for line in &diag {
                 println!("# {line}");
             }
             println!("# {count}");
             println!("# time: {ms}ms");
+        } else if nothing {
+            println!("skip {f} ({count})");
         } else if ok {
             println!("ok   {f} ({count})");
         } else {
@@ -859,15 +866,10 @@ fn test_pass(paths: &[String], opts: &TestRun) -> ExitCode {
         1 => ", 1 check".to_string(),
         n => format!(", {n} checks"),
     };
-    let none = match unchecked {
-        0 => String::new(),
-        1 => " (1 file checked nothing)".to_string(),
-        n => format!(" ({n} files checked nothing)"),
-    };
     if skipped > 0 {
-        println!("{prefix}{passed} passed, {failed} failed, {skipped} skipped{checks}{none}");
+        println!("{prefix}{passed} passed, {failed} failed, {skipped} skipped{checks}");
     } else {
-        println!("{prefix}{passed} passed, {failed} failed{checks}{none}");
+        println!("{prefix}{passed} passed, {failed} failed{checks}");
     }
     // `--slow N`: the N slowest files after the summary, opt-in so the
     // default output is unchanged (as a TAP comment in --tap mode).
