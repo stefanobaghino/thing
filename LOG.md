@@ -25052,3 +25052,22 @@ byte-identical to what the Pages workflow builds.
 Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 81
 unchanged, corpus at fourteen, 2950 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 974 — release v2.150.0
+
+Maintenance: tree clean, no PRs, CI and Pages green for 893b80d from
+the API.
+
+v2.150.0, the milestone "a column you didn't know the width of".
+969's probe wrote a report whose column width came from the data, and
+every part of laying it out was harder than it should have been: the
+format spec could not take a width, the padding helpers demanded a
+fill, and `table` would only lean left. All three answered.
+
+Strokes 970, 971, 972, 973. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.150.0; the binary reports `ting
+2.150.0`.
+
+Gate re-run after the bump: fmt, clippy, 17 `test result: ok` (472
+tests), `--fmt .` 81 unchanged, corpus at fourteen, 2950 checks on
+both engines, Windows check and clippy, wasm release build.

@@ -4100,10 +4100,13 @@ holds only the current milestone and the standing rules.
 - 973: examples/columns.ting, the 24th example and the first about
   layout rather than what is computed; the tutorial's "Lining the
   output up"; cookbook and playground regenerated.
+- 974: v2.150.0 released (171st tag).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.150.0.
+  - verify v2.150.0: cold asset download, checksums, both aarch64
+    archives run here with tools/smoke.sh, site audit.
+  - health tick + audit; close the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
   copied on a read, an append writes in place when it holds the only
