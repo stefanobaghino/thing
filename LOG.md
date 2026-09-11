@@ -26210,3 +26210,24 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.154.0 — the 175th tag — and pushed. Verification is the
 next tick.
+
+## 1005 — v2.154.0 verified
+
+Release workflow green for the tag; CI green for 8c0cf90 on all five
+test jobs.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.154.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 2984
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive: a session that binds `range(100000)`
+and echoes it gets 2000 characters and `(2000 of 688890 characters;
+print() writes all of it)`, `:vars` gives it one line ending
+`… (688890 characters)`, and `--doc map` is 15 lines rather than 142.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.154.0; reference.html carries both new sentences — the echo's
+ceiling and what `--doc` does after an exact hit.

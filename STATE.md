@@ -4253,7 +4253,11 @@ holds only the current milestone and the standing rules.
   doc_search and doc_mentions render one collector (doc_hits). A word
   naming nothing is still searched in full.
 - 1004: v2.154.0 tagged (175th tag; strokes 1001, 1002, 1003).
-  Verification next.
+- 1005: v2.154.0 VERIFIED — seven assets, six checksums OK cold, both
+  aarch64 archives executed here (2984 checks, 24 examples clean),
+  the echo ceiling, :vars line and 15-line `--doc map` all seen from
+  the archive, ten published paths 200. Next: health tick + audit
+  closes the milestone.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4347,7 +4351,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 174 (v2.153.0), 174 verified; v2.29.0 is publicly marked broken
+- Tags: 175 (v2.154.0), 175 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
