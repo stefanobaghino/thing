@@ -24966,3 +24966,29 @@ unchanged, corpus at fourteen, 2942 checks on both engines, Windows
 check and clippy, wasm release build — and this time the run printed
 the clippy, build and `--version` lines that prove the chain reached
 them.
+
+## 971 — the padding helpers fill with a space
+
+Maintenance: tree clean, no PRs, CI and Pages green for 627e9c6 from
+the API.
+
+`pad_left(s, width)`, `pad_right(s, width)` and `center(s, width)`.
+The fill defaults to `" "`, which is what every call in this
+repository outside selftest passed and what a column of text wants.
+964's lesson, applied to the family 969's probe tripped over:
+`pad_right(cat, width)` is a correct call now.
+
+`center` came along because it is the same argument in the same
+family, and a default on two of three would be a worse API than
+either all or none.
+
+lib/string.ting's own `table` drops the `" "` it was passing, which
+is the first caller to read the better way.
+
+Guards: three checks in selftest/stdlib.ting, the docs/stdlib.md rows
+(whose guard reads the signature back from the binary), and the
+corpus, still at fourteen warnings.
+
+Gate: fmt, clippy, 17 `test result: ok` (472 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2945 checks on both engines, Windows
+check and clippy, wasm release build.

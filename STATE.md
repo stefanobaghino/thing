@@ -4085,10 +4085,11 @@ holds only the current milestone and the standing rules.
   chain, so `cargo fmt --check`, clippy and the build printed but
   gated nothing — everything after the semicolon ran regardless and
   said GATE OK. Fixed and mutation-tested against the dirty tree.
+- 971: pad_left, pad_right and center fill with a space unless told
+  otherwise; `table` is the first caller to drop the argument.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - pad_left and pad_right default their fill to a space.
   - string.table takes an alignment per column, so a column of
     figures lines up under its heading.
   - an example that prints a real report with all three, and the
