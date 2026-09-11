@@ -26187,3 +26187,26 @@ which fails the flag's test.
 The help line and the reference paragraph say what it does now.
 
 2984 checks, 485 Rust tests.
+
+## 1004 — release v2.154.0
+
+Maintenance: tree clean, no open PRs, CI green for 9231d0b on all six
+checks from the API.
+
+v2.154.0, the milestone "the REPL as a place to look around". The
+thousandth iteration drove the REPL the way a newcomer would and
+found three things, all about how much the session says: an echoed
+value with no ceiling (1001), `:vars` answering with the one thing
+the reader could already guess (1002), and `--doc` burying a two-line
+answer under forty-four entries that merely say the word (1003).
+
+Strokes 1001, 1002, 1003. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.154.0; the binary reports `ting
+2.154.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (485
+tests), `--fmt .` 81 unchanged, corpus at fifteen, 2984 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.154.0 — the 175th tag — and pushed. Verification is the
+next tick.

@@ -4252,10 +4252,11 @@ holds only the current milestone and the standing rules.
   word instead of printing each entry — `--doc map` 142 lines to 15.
   doc_search and doc_mentions render one collector (doc_hits). A word
   naming nothing is still searched in full.
+- 1004: v2.154.0 tagged (175th tag; strokes 1001, 1002, 1003).
+  Verification next.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.154.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
