@@ -5083,3 +5083,56 @@ fn every_tool_quotes_the_path_it_could_not_read() {
     }
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+/// An expression is echoed to be read. The REPL used to echo whatever
+/// the value printed as — `range(100000)` is 688890 characters — and
+/// what the reader was looking at went up the scrollback with it. The
+/// cut belongs to the prompt alone: `print` still writes everything,
+/// in a session as in a script.
+#[test]
+fn the_repl_echo_stops_and_says_how_much_there_was() {
+    let echoed = |src: &str| -> String {
+        let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .stdin(std::process::Stdio::piped())
+            .stdout(std::process::Stdio::piped())
+            .stderr(std::process::Stdio::piped())
+            .spawn()
+            .expect("failed to run ting");
+        use std::io::Write as _;
+        child
+            .stdin
+            .take()
+            .unwrap()
+            .write_all(src.as_bytes())
+            .unwrap();
+        let out = child.wait_with_output().unwrap();
+        String::from_utf8_lossy(&out.stdout).to_string()
+    };
+
+    // Small enough to read: exactly what it was, nothing added.
+    assert_eq!(echoed("[1, 2, 3]\n"), "[1, 2, 3]\n");
+
+    let big = echoed("range(100000)\n");
+    assert!(
+        big.chars().count() < 2200,
+        "echoed {} characters",
+        big.chars().count()
+    );
+    assert!(
+        big.contains("(2000 of 688890 characters; print() writes all of it)"),
+        "{}",
+        &big[big.len().saturating_sub(200)..]
+    );
+
+    // print() is the way to see all of it, and it is not cut.
+    let printed = echoed("print(range(100000));\n");
+    assert!(
+        printed.chars().count() > 600000,
+        "print wrote {} characters",
+        printed.chars().count()
+    );
+    assert!(
+        !printed.contains("print() writes all of it"),
+        "print was cut"
+    );
+}

@@ -73,12 +73,28 @@ fn run_program<W: Write>(
     }
 }
 
-/// Echoed values quote strings, so `"a" + "b"` shows as `"ab"`.
+/// How much of a value the prompt shows before it says how much is
+/// left. A value is echoed to be looked at, and one that runs past a
+/// screenful is not being looked at — it is scrolling: `range(100000)`
+/// at the prompt is 688891 characters, and what it was is gone from
+/// the session along with everything above it.
+const ECHO_LIMIT: usize = 2000;
+
+/// Echoed values quote strings, so `"a" + "b"` shows as `"ab"`, and
+/// a value too long to read is cut with a note saying so. The cut is
+/// the prompt's alone: `print(x)` writes the whole value, here as in
+/// a script, and nothing a program prints passes through this.
 fn render(v: &Value) -> String {
-    match v {
+    let text = match v {
         Value::Str(s) => format!("{s:?}"),
         v => v.to_string(),
+    };
+    let total = text.chars().count();
+    if total <= ECHO_LIMIT {
+        return text;
     }
+    let shown: String = text.chars().take(ECHO_LIMIT).collect();
+    format!("{shown}…\n({ECHO_LIMIT} of {total} characters; print() writes all of it)")
 }
 
 pub fn run() -> ExitCode {
