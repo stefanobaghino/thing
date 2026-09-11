@@ -190,7 +190,7 @@ binary runs on accepts.
 | `join_path(pieces)` | the pieces joined with `/`, each one's separators tidied away |
 | `with_ext(p, e)` | the path with a different extension; an empty `e` removes it |
 | `entries(d)` | the direct children of a directory as paths, sorted |
-| `walk(d)` | every file at or below a directory, sorted, directories themselves left out |
+| `walk(d)` | every file at or below a directory, sorted, directories themselves left out; a file answers just that file, and a path that is not there is an error rather than an empty tree |
 | `walk_ext(d, e)` | the files `walk` finds whose extension is `e` |
 | `size(p)` | how big a file is in bytes, or `nil` when nothing readable is there — `stat`'s size without the map |
 | `facts(d)` | every file at or below a directory with what `stat` says: maps of `path`, `size`, `modified` and `kind`, sorted by path, one `stat` each |

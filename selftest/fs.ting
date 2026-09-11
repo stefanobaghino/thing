@@ -58,6 +58,21 @@ assert(contains(found, root + "/deep/deeper/d.ting"), "the deepest one too");
 assert(len(fs["walk_ext"](root, "ting")) == 3, "only the ting files");
 assert(fs["walk"](root + "/a.ting") == [root + "/a.ting"], "a file walks to itself");
 
+# A path that is nothing at all is not an empty tree: the walkers say
+# so, where once they answered [that path], [], [] and 0 and a script
+# that mistyped a directory read as having found nothing. The message
+# is the one the builtin that had to look would give, so it names the
+# path and says why.
+let gone = root + "/nowhere";
+assert(!exists(gone), "nothing is there to begin with");
+let walked = try(fs["walk"], gone);
+assert(contains(walked["err"], "nowhere"), "the walk names the path");
+assert(try(fs["walk_ext"], gone, "ting")["err"] == walked["err"],
+"walk_ext says what walk says");
+assert(try(fs["facts"], gone)["err"] == walked["err"], "and so does facts");
+assert(try(fs["total_size"], gone)["err"] == walked["err"],
+"and total_size, which used to answer 0");
+
 # What a file is, besides its name. len(read_file(p)) counts
 # characters and refuses a file that is not text; stat counts bytes
 # and never opens it.
