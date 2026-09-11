@@ -60,6 +60,7 @@ fn run_cli() -> ExitCode {
                  \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
                  \x20 ting --doc [WORDS...]       explain builtins or stdlib functions;\n\
                  \x20                             a word naming none of them is searched for;\n\
+                 \x20                             a word naming one is also told what else mentions it;\n\
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no word lists all\n\
                  \x20 ting --profile <script>     run it, then report how often each function ran\n\
@@ -136,9 +137,9 @@ fn run_cli() -> ExitCode {
                 // Only when one word was asked. Several names is a
                 // lookup of names already known; one word is a
                 // question, and the only one worth answering twice.
-                if let Some(more) = only.then(|| repl::doc_search(name, Some(name))).flatten() {
+                if let Some(more) = only.then(|| repl::doc_mentions(name, Some(name))).flatten() {
                     repl::say("");
-                    repl::say(&format!("also matching {name}:"));
+                    repl::say("also mentioned by:");
                     repl::say(&more);
                 }
                 continue;

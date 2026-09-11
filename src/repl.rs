@@ -163,9 +163,9 @@ pub fn say(text: &str) {
 fn print_doc(name: &str) {
     if let Some(text) = doc_text(name) {
         say(&text);
-        if let Some(more) = doc_search(name, Some(name)) {
+        if let Some(more) = doc_mentions(name, Some(name)) {
             say("");
-            say(&format!("also matching {name}:"));
+            say("also mentioned by:");
             say(&more);
         }
         return;
@@ -476,39 +476,71 @@ fn doc_matches(query: &str, name: &str, comment: &str) -> bool {
 /// printed in full, so an exact hit is not repeated underneath
 /// itself. None when nothing matches.
 pub fn doc_search(query: &str, skip: Option<&str>) -> Option<String> {
+    let hits = doc_hits(query, skip);
+    let mut out = Vec::new();
+    for (path, entries) in hits {
+        if !out.is_empty() {
+            out.push(String::new());
+        }
+        out.push(format!(
+            "{}:",
+            if path.is_empty() { "builtins" } else { path }
+        ));
+        out.extend(entries.into_iter().map(|(_, line)| line));
+    }
+    (!out.is_empty()).then(|| out.join("\n"))
+}
+
+/// The same search, as names rather than entries: what else mentions
+/// a word, for a reader who already has the answer to the word
+/// itself. `--doc map` spelled out forty-four entries under the two
+/// lines that answered the question; the names are the part that says
+/// where else to look, and `--doc NAME` is how to look.
+pub fn doc_mentions(query: &str, skip: Option<&str>) -> Option<String> {
+    let hits = doc_hits(query, skip);
+    let mut out = Vec::new();
+    for (path, entries) in hits {
+        let names: Vec<String> = entries.into_iter().map(|(name, _)| name).collect();
+        out.push(format!(
+            "  {}: {}",
+            if path.is_empty() { "builtins" } else { path },
+            names.join(", ")
+        ));
+    }
+    (!out.is_empty()).then(|| out.join("\n"))
+}
+
+/// Every entry a query finds, grouped by where it lives: builtins
+/// first under the empty path, then each module. Each entry is its
+/// name and the line an index would print for it, so a caller can
+/// show either.
+fn doc_hits(query: &str, skip: Option<&str>) -> Vec<(&'static str, Vec<(String, String)>)> {
     let query = query.to_lowercase();
     if query.is_empty() {
-        return None;
+        return Vec::new();
     }
-    let mut builtins = Vec::new();
-    let mut modules: Vec<(&'static str, Vec<String>)> = Vec::new();
+    let mut builtins: Vec<(String, String)> = Vec::new();
+    let mut modules: Vec<(&'static str, Vec<(String, String)>)> = Vec::new();
     for (path, name, sig, comment) in doc_entries() {
         if Some(name.as_str()) == skip || !doc_matches(&query, &name, &comment) {
             continue;
         }
-        let line = member_line(&sig, &comment);
+        let entry = (name, member_line(&sig, &comment));
         if path.is_empty() {
-            builtins.push(line);
-        } else if let Some((_, lines)) = modules.iter_mut().find(|(p, _)| *p == path) {
-            lines.push(line);
+            builtins.push(entry);
+        } else if let Some((_, entries)) = modules.iter_mut().find(|(p, _)| *p == path) {
+            entries.push(entry);
         } else {
-            modules.push((path, vec![line]));
+            modules.push((path, vec![entry]));
         }
     }
+    builtins.sort();
     let mut out = Vec::new();
     if !builtins.is_empty() {
-        builtins.sort();
-        out.push("builtins:".to_string());
-        out.extend(builtins);
+        out.push(("", builtins));
     }
-    for (path, lines) in modules {
-        if !out.is_empty() {
-            out.push(String::new());
-        }
-        out.push(format!("{path}:"));
-        out.extend(lines);
-    }
-    (!out.is_empty()).then(|| out.join("\n"))
+    out.extend(modules);
+    out
 }
 
 /// `--doc FILE.ting` — the file's own top-level functions, one line

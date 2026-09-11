@@ -1270,10 +1270,13 @@ The `ting` binary is the whole toolchain — no separate installs:
   starting with it, listed the way a module's members are — so
   `ting --doc largest` finds `max_by` and `lib/map.ting`'s
   `top`. ONE word that IS a function is answered in full and then
-  followed by whatever else that word finds, since `--doc sort`
-  should not leave `sort_with` unmentioned; several names are a
-  lookup of names you already know and are answered one entry each,
-  and a module or a file is answered with its index alone. Exit 1 when a word neither names
+  told what else mentions it — the names alone, grouped by where
+  they live, since `--doc sort` should not leave `sort_with`
+  unmentioned, and spelling out all forty-four entries that say the
+  word "map" buries the two lines that answered the question;
+  several names are a lookup of names you already know and are
+  answered one entry each, and a module or a file is answered with
+  its index alone. Exit 1 when a word neither names
   nor describes anything — the other names are still printed, and
   one close to a documented name is suggested.
 - `ting --lsp` speaks the Language Server Protocol on stdio:

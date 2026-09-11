@@ -2460,8 +2460,12 @@ fn doc_flag_searches_descriptions_when_a_word_names_nothing() {
     let (code, stdout) = doc("sort");
     assert_eq!(code, Some(0), "{stdout}");
     assert!(stdout.starts_with("sort(xs)\n"), "{stdout}");
-    assert!(stdout.contains("\nalso matching sort:\n"), "{stdout}");
-    assert!(stdout.contains("\n  sort_with(xs, cmp)"), "{stdout}");
+    // What else the word finds comes back as NAMES, grouped by where
+    // they live: the entry answered the question, and forty-four
+    // entries under it would bury the answer.
+    assert!(stdout.contains("\nalso mentioned by:\n"), "{stdout}");
+    assert!(stdout.contains("sort_with"), "{stdout}");
+    assert!(!stdout.contains("sort_with(xs, cmp)"), "{stdout}");
     // The exact entry is not repeated underneath itself.
     assert_eq!(stdout.matches("A fresh sorted list").count(), 1, "{stdout}");
 
@@ -2811,8 +2815,8 @@ fn repl_doc_searches_exactly_as_the_flag_does() {
 
     // A name that is a function: the entry, then what else it finds.
     let (flag, repl) = both("sort");
-    assert!(flag.contains("\nalso matching sort:\n"), "{flag}");
-    assert!(flag.contains("\n  sort_with(xs, cmp)"), "{flag}");
+    assert!(flag.contains("also mentioned by"), "{flag}");
+    assert!(flag.contains("sort_with"), "{flag}");
     assert_eq!(flag, repl, "the flag and the REPL disagree");
 
     // A module keeps its index in both, and `list` is the module
@@ -4968,7 +4972,7 @@ fn the_doc_for_a_shaped_value_names_every_key_it_has() {
             .output()
             .expect("failed to run ting");
         let doc = String::from_utf8_lossy(&doc.stdout).to_string();
-        let entry = doc.split("\nalso matching").next().unwrap_or(&doc);
+        let entry = doc.split("\nalso mentioned by").next().unwrap_or(&doc);
         for key in keys {
             assert!(
                 names(entry, key),
