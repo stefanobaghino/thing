@@ -1012,8 +1012,19 @@ script.ting:2:7: error: undefined variable 'totl' (did you mean 'total'?)
    |       ^^^^
 ```
 
-When the name you typed is close to one that is in scope — a binding,
-a parameter or a builtin — the error names it, as above. A suggestion
+When the name is one a stdlib module exports, the error says which
+module has it, since the module is inside this binary and an `import`
+away:
+
+```text
+script.ting:1:7: error: undefined variable 'repeat' (lib/string.ting has it)
+ 1 | print(repeat("-", 20));
+   |       ^^^^^^
+```
+
+Where several modules export the name, all of them are named.
+Otherwise, when the name you typed is close to one that is in scope —
+a binding, a parameter or a builtin — the error names it, as above. A suggestion
 is offered only when at most a third of the name is wrong (swapping two
 neighbours counts as one slip), or when one of the two names starts the
 other (`lenght` finds `len`); names under three characters get none. A key that a
@@ -1127,7 +1138,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   lib/string.ting declares, defaults making a range and `...rest` a
   floor; a name that is bound nowhere
   the checker can see — not a parameter, not a `let` in an enclosing
-  block, not a builtin — with the nearest name in scope suggested;
+  block, not a builtin — with the stdlib module that exports that
+  name, when one does, and the nearest name in scope otherwise;
   an imported module
   indexed with a name it does not export, naming the builtin of that
   name where there is one and the nearest export otherwise; a top-level binding that
@@ -1323,7 +1335,8 @@ The `ting` binary is the whole toolchain — no separate installs:
   own functions, folding ranges for multi-line braces, workspace symbols
   across open files, document links on `import(...)` paths that
   exist on disk, and quickfixes that correct a misspelt stdlib member
-  or a name bound nowhere to the nearest one.
+  or a name bound nowhere to the nearest one, or to the stdlib module
+  that has it.
 
 While a file has a syntax error in it — which, in an editor, is most
 of the time — the answers about WHERE THINGS ARE keep working from

@@ -1137,6 +1137,52 @@ pub fn embedded_stdlib() -> &'static [(&'static str, &'static str)] {
     EMBEDDED_STDLIB
 }
 
+/// Which embedded modules export `name`, in the order the stdlib
+/// lists them. A name a script uses and binds nowhere is very often
+/// one of these — the module is inside the binary, and a reader who
+/// has not met `import` yet has no way to find that out. Parsing
+/// thirteen small files is the price of a diagnostic nobody sees
+/// unless something is already wrong.
+pub fn modules_exporting(name: &str) -> Vec<&'static str> {
+    EMBEDDED_STDLIB
+        .iter()
+        .filter(|(_, src)| module_exports(src, name))
+        .map(|(module, _)| *module)
+        .collect()
+}
+
+/// Whether a module's top level binds `name`. A module that will not
+/// parse exports nothing, rather than raising here: this is a
+/// diagnostic's helper, and the parse error has its own place to be
+/// reported.
+fn module_exports(src: &str, name: &str) -> bool {
+    let Ok(tokens) = crate::lexer::lex(src) else {
+        return false;
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return false;
+    };
+    program.iter().any(|stmt| match &stmt.kind {
+        crate::ast::StmtKind::Let(bound, _) => bound == name,
+        _ => false,
+    })
+}
+
+/// "lib/string.ting has it", or the two or three that do, for the end
+/// of a sentence about a name nothing bound.
+pub fn where_it_lives(name: &str) -> Option<String> {
+    let modules = modules_exporting(name);
+    let (last, rest) = modules.split_last()?;
+    let has = match modules.len() {
+        1 => "has",
+        _ => "have",
+    };
+    Some(match rest.is_empty() {
+        true => format!("{last} {has} it"),
+        false => format!("{} and {last} {has} it", rest.join(", ")),
+    })
+}
+
 /// Checks run in this process: every `assert` call, and every
 /// `lib/test.ting` helper (which calls `assert(true)` to say so).
 /// `--test` asks the child for this count; nothing else reads it.
@@ -2062,6 +2108,11 @@ impl<W: Write> Interpreter<W> {
                 format!("{what} '{name}' (ting writes this as `{here}`)"),
                 span,
             );
+        }
+        // A name the stdlib has is not a typo either: the module is in
+        // this binary, and one `import` away.
+        if let Some(lives) = where_it_lives(name) {
+            return error(format!("{what} '{name}' ({lives})"), span);
         }
         let mut names = Vec::new();
         Env::names(&self.env, &mut names);

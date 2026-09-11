@@ -41,11 +41,11 @@ fn selftests_pass_silently() {
 /// The whole corpus under `--check`: the warnings it may print are
 /// enumerated here, so a new false positive fails the build. Every one
 /// is deliberate — three shadowed builtins, a duplicate key, a
-/// statement after a return, nine unbound names and a wrong-arity
+/// statement after a return, eleven unbound names and a wrong-arity
 /// call — and
 /// each was written to test the runtime that catches it.
 #[test]
-fn corpus_check_warnings_are_the_expected_fifteen() {
+fn corpus_check_warnings_are_the_expected_seventeen() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
@@ -56,7 +56,7 @@ fn corpus_check_warnings_are_the_expected_fifteen() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 15, "{stderr}");
+    assert_eq!(warnings.len(), 17, "{stderr}");
     // File names only: Windows prints the paths with backslashes. A
     // file's warnings come in the order its lines do.
     let expected = [
@@ -98,6 +98,16 @@ fn corpus_check_warnings_are_the_expected_fifteen() {
         (
             "errors.ting",
             "`and` is bound nowhere (ting writes this as `&&`)",
+        ),
+        // 1022: a name the stdlib exports is answered with the module
+        // that has it, ahead of any guess at a nearby name.
+        (
+            "errors.ting",
+            "`repeat` is bound nowhere (lib/string.ting has it)",
+        ),
+        (
+            "errors.ting",
+            "`parse` is bound nowhere (lib/args.ting, lib/csv.ting and lib/json.ting have it)",
         ),
         ("functions.ting", "called with 1"),
     ];

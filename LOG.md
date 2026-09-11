@@ -26765,3 +26765,37 @@ looked like. The probe hand-rolled a tally that lib/list.ting's
 discoverability story as the three above rather than a fourth thing.
 
 Milestone "the answer it already has" (v2.157), backlog in STATE.md.
+
+## 1022 — a name the stdlib has says where it lives
+
+Milestone "the answer it already has", first stroke. `repeat("#", n)`
+answered `undefined variable 'repeat'`, and `--check` said ``repeat`
+is bound nowhere`. Both were true and neither was the answer:
+lib/string.ting exports `repeat`, that module is inside the binary,
+and a reader who has not met `import` yet has no way to find that out.
+
+Both now end with the module. `undefined variable 'repeat'
+(lib/string.ting has it)` at run time, `` `repeat` is bound nowhere
+(lib/string.ting has it)`` from the checker, and where several
+modules export the name, all of them: `'parse' (lib/args.ting,
+lib/csv.ting and lib/json.ting have it)`.
+
+The module beats a guess at a nearby name — an exact export is a
+better answer than something two edits away — and loses to ting's own
+spelling of a word from another language, which 817 put first for the
+same reason.
+
+`eval::modules_exporting` parses the thirteen embedded modules and
+returns the ones whose top level binds the name; `where_it_lives`
+writes the phrase. Parsing thirteen small files is the price of a
+diagnostic nobody sees unless something is already wrong, and a
+module that will not parse exports nothing rather than raising here.
+
+selftest/errors.ting reads `repeat` and `parse`, which makes the
+corpus SEVENTEEN warnings rather than fifteen — the two new ones are
+in tests/selftest.rs's enumerated list, in line order, like every
+other deliberate warning there. Three mutations: dropping the hint at
+run time, dropping it in the checker, and naming only the last module
+when several have the name; each fails a different check.
+
+3010 checks.

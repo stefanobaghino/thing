@@ -65,6 +65,18 @@ assert(contains(still["err"], "did you mean 'total'"), "a typo is still a typo")
 let op = try(fn() { return 1 + and; });
 assert(contains(op["err"], "ting writes this as `&&`"), "and is &&");
 
+# A name the stdlib has is not a typo either: the module is inside
+# this binary, one import away, and saying which one is the whole
+# answer. Where several modules have the name, all of them are named.
+let lives = try(fn() { return repeat; });
+assert(contains(lives["err"], "undefined variable 'repeat' (lib/string.ting has it)"),
+"a name the stdlib exports says where it lives");
+let several = try(fn() { return parse; });
+assert(contains(several["err"],
+"'parse' (lib/args.ting, lib/csv.ting and lib/json.ting have it)"),
+"and every module that has it is named");
+assert(!contains(lives["err"], "did you mean"), "the module beats a guess at a nearby name");
+
 # Arity errors count in plain English and name the function called.
 let one = try(len);
 assert(contains(one["err"], "len expects 1 argument, got 0"), "one argument, singular");

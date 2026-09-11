@@ -19,7 +19,7 @@ current orientation.
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3007 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 3010 selftest checks on all four
   CI platforms, Windows included); 489 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4313,14 +4313,12 @@ holds only the current milestone and the standing rules.
   runs" COMPLETE.
 - 1021: replenishment — milestone "the answer it already has"
   (v2.157), reasoning in LOG.md.
+- 1022: a name bound nowhere that the stdlib exports is answered with
+  the module that has it, at run time and in the checker; corpus
+  warnings are SEVENTEEN now. 3010 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a name bound nowhere that a stdlib module exports says where it
-    lives: `undefined variable 'repeat' (lib/string.ting has it)`, at
-    run time and in `--check`'s warning, naming every module that has
-    it when more than one does. The mirror of 989's `sort_by` is a
-    builtin, which is the sentence to match.
   - `--doc json_str` shows the indent it takes, and a guard walks
     every builtin's documented signature against the arity its arm
     accepts. The scan written during the probe found exactly this one
@@ -4493,9 +4491,11 @@ Standing rules (each from a slip; the LOG entry named has the story):
   engines run at the same nice level in one bench invocation, so the
   eval-to-vm ratio still compares even when the absolute times drift.
 - Corpus scan (`--check lib selftest examples bench`) expects exactly
-  FIFTEEN warnings since 981 (was fourteen since 830, thirteen since
-  818, seven before 817), guarded by a test since 499, all on
-  purpose: lib/json.ting shadows `str` (981), because that is the
+  SEVENTEEN warnings since 1022 (was fifteen since 981, fourteen since
+  830, thirteen since 818, seven before 817), guarded by a test since
+  499, all on purpose: errors.ting reads `repeat` and `parse` to prove
+  a name the stdlib exports is answered with the module that has it
+  (1022); lib/json.ting shadows `str` (981), because that is the
   name the module offers json_str under;
   collections.ting shadows `range` (830), because the selftest proving
   a shadowed `range` beats the fused loop has to shadow one, and

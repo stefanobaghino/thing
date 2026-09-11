@@ -691,17 +691,24 @@ pub fn unbound_names(src: &str) -> Vec<(usize, usize, String)> {
     unbound_findings(src)
         .into_iter()
         .map(|f| {
-            let message = match (crate::diag::spelt_here_as(&f.name), &f.near) {
-                (Some(here), _) => {
+            // The stdlib is asked before the nearest name in the
+            // file: a module that exports exactly this name is a
+            // better answer than something two edits away.
+            let lives = crate::eval::where_it_lives(&f.name);
+            let message = match (crate::diag::spelt_here_as(&f.name), lives, &f.near) {
+                (Some(here), _, _) => {
                     format!(
                         "`{}` is bound nowhere (ting writes this as `{here}`)",
                         f.name
                     )
                 }
-                (None, Some(near)) => {
+                (None, Some(lives), _) => {
+                    format!("`{}` is bound nowhere ({lives})", f.name)
+                }
+                (None, None, Some(near)) => {
                     format!("`{}` is bound nowhere (did you mean `{near}`?)", f.name)
                 }
-                (None, None) => format!("`{}` is bound nowhere", f.name),
+                (None, None, None) => format!("`{}` is bound nowhere", f.name),
             };
             (f.start, f.end, message)
         })
