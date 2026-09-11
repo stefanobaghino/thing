@@ -4210,7 +4210,24 @@ holds only the current milestone and the standing rules.
   modules, 214 functions, 48 programs, 2968 checks, 483 tests in 18
   suites, 81 unchanged, fifteen warnings, 173 tags, seven assets).
   Milestone "the command line your program shows its user" COMPLETE.
-  Replenishment next.
+- 993: replenishment — milestone "a path that isn't there" (v2.153),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - `walk` tells a file from nothing: a path that is not there is an
+    error in the words its own builtins use, where today it answers
+    [that path] and walk_ext, facts and total_size turn that into an
+    empty tree and a zero. selftest/fs.ting covers the missing
+    column.
+  - the stdlib page and `--doc` say what each tree function answers
+    for a path that is missing, one that is a file and one that is a
+    directory — three answers per function, none of them inferred by
+    the reader.
+  - one way to name a path in a message: `ting: cannot read nosuch`
+    from the tools against `cannot read "nosuch"` from the runtime,
+    decided one way and guarded.
+  - release v2.153.0.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

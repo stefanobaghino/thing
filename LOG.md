@@ -25776,3 +25776,56 @@ on `main` (987), every module opening with its front door so `--doc`
 leads with it (988), and a module member that is missing reading the
 same before and during a run (989). v2.152.0 tagged and verified
 (990, 991).
+
+## 993 — replenishment: milestone "a path that isn't there"
+
+The probe: a tool I might write for myself, cold — gather the TODO
+lines out of a tree of notes and print them oldest first, from a
+command line, with `walk_ext`, `stat`, `table` and `date`. It worked
+the first time, which is the good news. Then I gave it the name of a
+directory that does not exist.
+
+It printed an empty table and left with 0.
+
+`walk(d)` opens with `if !is_dir(d) { return [d]; }` — "a path that
+is not a directory answers just that path", which is right for a
+file and wrong for nothing at all. A typo comes back as a
+one-element tree holding a name with no file under it, and
+`walk_ext` then filters it away. The matrix, for a path that is
+missing / a file / a directory:
+
+    walk            ["nosuch"]   ["a.md"]        [every file]
+    walk_ext        []           ["a.md"]        [every .md]
+    facts           []           [its facts]     [all their facts]
+    total_size      0            37              85
+    size            nil          37              4096
+    count_lines     error        4               error (is a dir)
+    head            error        ["# Monday"]    error (is a dir)
+    tail            error        [...]           error (is a dir)
+    lines_matching  error        [...]           error (is a dir)
+
+The bottom half is right and the top half is not: four functions
+answer as if the tree were empty, and `total_size` answers a number.
+Every builtin under them says so loudly — `list_dir` errors, so does
+`read_file` — and so does every tool: `--check`, `--fmt`, `--test`,
+`--coverage`, `--profile`, `--bundle` and a script path all print a
+message and leave with 1.
+
+The rule the corpus already states is the one to apply. `from_iso`'s
+doc says it plainest: "It is a question, not a demand — a timestamp
+read out of a file may be anything, so an unreadable one answers nil
+rather than raising, the way stat does for a path." `stat`, `exists`
+and `size` are questions. `walk` is a demand: it is the list a tool
+that runs over a tree wants, and there is no tree.
+
+Also found, in the same theme and smaller: the tools name a path
+bare where the runtime quotes it — `ting: cannot read nosuch: ...`
+against `cannot read "nosuch": ...` from the same failure one layer
+down.
+
+Not chosen: `remove_tree` on a path that is not there answers
+happily, and that is `rm -rf`'s bargain, taken deliberately — a
+delete that has nothing to delete has done its job. `from_iso` and
+`which` answering nil are questions and stay questions.
+
+Milestone "a path that isn't there" (v2.153), backlog in STATE.md.
