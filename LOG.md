@@ -23963,3 +23963,25 @@ Cargo.toml and Cargo.lock at 2.146.0; the binary reports `ting
 2.146.0`. Gate re-run after the bump: 17 suites (461 tests), `--fmt
 .` 80 unchanged, corpus at fourteen, 2877 checks on both engines,
 Windows check and clippy, wasm release build.
+
+## 943 — v2.146.0 verified
+
+Maintenance: tree clean, no PRs, Release, CI and Pages all green for
+8b14b5c from the API.
+
+Seven assets, cold-downloaded into an empty directory; `sha256sum -c
+SHA256SUMS` says OK on all six archives. Both aarch64 Linux archives
+unpacked and run here: `ting 2.146.0` from gnu and from musl, and
+tools/smoke.sh against each — 24 passed, 2877 checks, 23 examples
+clean, on the archive's OWN lib/.
+
+WHAT THIS RELEASE EXISTS TO ANSWER, asked of both shipped binaries
+and answered identically: `sort(items(m))` puts a frequency table in
+order; a list is a compound key for `sort_by`; `compare([1, 2], [1,
+3])` is -1, `compare(1, 1.0)` is 0 and a NaN answers nil; `sort([[nil],
+[nil]])` still says it cannot order nil; and `max` over `[count,
+name]` pairs finds the commonest without sorting.
+
+Site audit: all nine published paths answer 200 on
+www.baghino.me/thing/, the changelog page carries v2.146.0 and the
+cookbook carries the ranking example.

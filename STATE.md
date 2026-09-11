@@ -3969,11 +3969,14 @@ holds only the current milestone and the standing rules.
   closed). main.rs's rule() is now the only layout site left on
   characters, and no test here can see it.
 - 942: v2.146.0 tagged (167th tag; strokes 938, 939, 940, 941).
+- v2.146.0 VERIFIED (167th tag; strokes 938, 939, 940, 941; seven
+  assets, checksums OK, both aarch64 archives executed here, smoke
+  green on each, nine site paths 200, cookbook carries ranking). The
+  shipped binaries sort a frequency table, take a list as a compound
+  key, and still refuse nil inside a list.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.146.0: cold download of every asset, SHA256SUMS
-  checked, both aarch64 archives executed here, tools/smoke.sh.
   - health tick, which closes the milestone.
   DONE SINCE, MEASURED AGAIN AT 882: 787's two string cliffs are
   closed. `Value::Str` is `Rc<Repr>`, the text is shared rather than
