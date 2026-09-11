@@ -1,0 +1,12 @@
+12 Ada
+12 Cai
+15 Bo
+15 Dev
+
+1 Bo 15 88.2
+2 Dev 15 90.1
+3 Cai 12 87.9
+4 Ada 12 91.4
+
+[["blue", 2], ["green", 1], ["red", 3]]
+most seen: red

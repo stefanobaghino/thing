@@ -1,0 +1,45 @@
+# Putting records in order by more than one thing: a list is a
+# compound key, because lists compare element by element, and
+# compare() is that same order as a number when the directions differ.
+
+let li = import("../lib/list.ting");
+let ma = import("../lib/map.ting");
+
+let runners = [
+  { "name": "Ada", "points": 12, "time": 91.4 },
+  { "name": "Bo", "points": 15, "time": 88.2 },
+  { "name": "Cai", "points": 12, "time": 87.9 },
+  { "name": "Dev", "points": 15, "time": 90.1 },
+];
+
+# One direction: the key is a list, read left to right. Points first,
+# name second, so a tie on points is settled alphabetically.
+for r in sort_by(runners, fn(r) { return [r["points"], r["name"]]; }) {
+  print(r["points"], r["name"]);
+}
+
+print("");
+
+# Mixed directions need a comparator, and compare() makes it one line
+# per field: most points first, and the faster time breaks a tie.
+let ranked = li["sort_with"](runners, fn(x, y) {
+  let by_points = compare(y["points"], x["points"]);
+  if by_points != 0 { return by_points; }
+  return compare(x["time"], y["time"]);
+});
+for i in range(len(ranked)) {
+  print(i + 1, ranked[i]["name"], ranked[i]["points"], ranked[i]["time"]);
+}
+
+print("");
+
+# A frequency table sorts itself: items are [key, count] pairs, and a
+# pair is a list like any other.
+let tally = li["frequencies"](["red", "blue", "red", "green", "red", "blue"]);
+print(sort(ma["items"](tally)));
+
+# The busiest colour, without sorting at all: max reads the same order,
+# so a [count, name] pair puts count first.
+let pairs = [];
+for c in keys(tally) { push(pairs, [tally[c], c]); }
+print("most seen:", max(pairs)[1]);

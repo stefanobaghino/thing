@@ -271,7 +271,7 @@ fn documented_snippets_run() {
     // that quietly disappeared would fail here rather than stop being
     // checked.
     for (page, want_checked, want_run_only, want_skipped) in
-        [("tutorial", 48, 1, 0), ("reference", 0, 7, 4)]
+        [("tutorial", 48, 1, 0), ("reference", 1, 7, 5)]
     {
         let src = std::fs::read_to_string(root.join(format!("docs/{page}.md")))
             .unwrap_or_else(|_| panic!("docs/{page}.md missing"));

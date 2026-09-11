@@ -199,7 +199,7 @@ Tightest first; binary operators associate left.
 | bit and   | `&`                           | ints                                          |
 | bit xor   | `^`                           | ints                                          |
 | bit or    | `\|`                          | ints                                          |
-| compare   | `<`, `<=`, `>`, `>=`          | numbers (mixed ok) and strings                |
+| compare   | `<`, `<=`, `>`, `>=`          | numbers (mixed ok), strings, and lists element by element |
 | equality  | `==`, `!=`                    | any values; `1 == 1.0` is true                |
 | and       | `&&`                          | bools; short-circuits                         |
 | or        | `\|\|`                        | bools; short-circuits                         |
@@ -434,8 +434,8 @@ scope).
 | `remove_dir(path)` | deletes an empty directory; one with anything in it errors. `lib/fs.ting`'s `remove_tree` composes the recursive version |
 | `rename(from, to)` | gives a file or directory another name, which is what a move is: nothing is copied, so the size does not matter and the modification time comes through untouched. An existing target is replaced. Errors when the two paths are on different filesystems |
 | `copy_file(from, to)` | copies a file's bytes, whatever they are, without holding them in memory, and gives the copy the original's permission bits and modification time. An existing target is overwritten; a directory, or a target that is the same file as the source, errors |
-| `sort(xs)`     | a fresh sorted list; all numbers or all strings, else error |
-| `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules |
+| `sort(xs)`     | a fresh sorted list; all numbers, all strings or all lists, else error |
+| `sort_by(xs, f)` | a fresh list sorted by key `f(x)`, stable; keys obey `sort`'s rules, so a list is a compound key |
 | `sort_with(xs, cmp)` | a fresh list sorted by a three-way comparator: `cmp(a, b)` negative when `a` comes first, positive when `b` does, `0` for ties, which keep their input order |
 | `try(f, ...args)` | calls `f` with the arguments that follow it; `{"ok": result}` on success, and on a runtime error `{"err": message, "at": where it was raised, "trace": the calls it came out of}` |
 | `fail(msg)`    | raises a runtime error with the given string message         |
@@ -841,6 +841,55 @@ quadratic; the module's versions are one lookup per element.
 function, a NaN, a number past 2^53, or a value that contains itself.
 The module's helpers fall back to the scan for exactly those, so their
 answers always agree with `==`.
+
+### What ting puts in order
+
+`<` and its three siblings order numbers among themselves, strings by
+code point, and lists element by element: the first difference
+decides, and a list that is a prefix of another comes first. Nothing
+else has an order — `nil < nil` is an error, and so is comparing a
+string with a number — because there is no answer that would mean
+anything, and a made-up one would sort silently wrong.
+
+Order therefore goes as deep as `==` does, and agrees with it: `[1,
+2]` and `[1, 2.0]` are equal, so neither comes first.
+
+`sort`, `sort_by`, `min` and `max` read that same order, which makes
+two everyday things work. A frequency table sorts itself, since
+`items(m)` is a list of pairs:
+
+```ting
+let m = import("lib/map.ting");
+print(sort(m["items"]({"pears": 2, "apples": 5})));
+```
+
+```text
+[["apples", 5], ["pears", 2]]
+```
+
+And a compound key is a list — `sort_by(people, fn(p) { return
+[p["last"], p["first"]]; })` sorts by surname, then given name.
+
+For anything else there is `compare(a, b)`, the same order as `-1`,
+`0` or `1`, which is what `sort_with` wants. Mixed directions are one
+line per field:
+
+```ting
+# not a program: `staff` stands for a list the caller already has.
+sort_with(staff, fn(x, y) {
+  let by_name = compare(x["name"], y["name"]);
+  if by_name != 0 { return by_name; }
+  return compare(y["age"], x["age"]);
+});
+```
+
+A refusal inside a list is still a refusal: `sort([[nil], [nil]])`
+says it cannot order `nil`. A NaN is unordered wherever it sits —
+every comparison against it is `false`, and `compare` answers `nil`
+rather than calling that a tie.
+
+Maps have no order. Their keys are a set, and a set has none to read
+off; sort `items(m)` when you want one.
 
 ## Errors
 

@@ -23883,3 +23883,34 @@ returning 0, which the selftest catches.
 Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2875 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 940 — writing the order down
+
+Maintenance: tree clean, no PRs, CI and Pages green for 3a08178 from
+the API.
+
+The reference has a section on what ting puts in order and what it
+refuses: numbers among themselves, strings by code point, lists
+element by element with the first difference deciding and a prefix
+first; nothing else, because there is no answer that would mean
+anything and a made-up one sorts silently wrong. It says order agrees
+with `==` (neither `[1, 2]` nor `[1, 2.0]` comes first), shows a
+frequency table sorting itself as a CHECKED block, gives the compound
+key and the mixed-direction comparator, and says why maps have none.
+The operator table and the `sort`/`sort_by` rows say lists now.
+
+examples/ranking.ting is the milestone in a program: the same four
+runners sorted by a list key, then by points down and time up through
+`compare`, then a tally sorted as pairs, then `max` over `[count,
+name]` pairs to find the commonest without sorting at all.
+
+THREE GENERATORS, NOT TWO. A new example is not just a file: the
+cookbook is rendered from examples/ and the playground carries its
+own copy in playground/examples.js. tools/cookbook.ting I remembered;
+`playground_examples_match_examples_dir` caught the other, which is
+what that guard exists for. 47 ting programs now, 23 examples, and
+`--fmt .` says 80 unchanged.
+
+Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2875 checks on both engines, Windows
+check and clippy, wasm release build.
