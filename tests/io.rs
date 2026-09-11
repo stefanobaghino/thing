@@ -1934,15 +1934,27 @@ fn repl_vars_lists_user_bindings() {
         .stdin
         .take()
         .unwrap()
-        .write_all(b":vars\nlet total = 4;\nfn double(x) { return x * 2; }\n:vars\n")
+        .write_all(
+            b":vars\nlet total = 4;\nfn double(x) { return x * 2; }\nlet big = range(100000);\n:vars\n",
+        )
         .unwrap();
     let out = child.wait_with_output().unwrap();
     let stdout = String::from_utf8_lossy(&out.stdout);
     assert!(stdout.contains("(no bindings yet)"), "{stdout}");
-    assert!(stdout.contains("double: function"), "{stdout}");
-    assert!(stdout.contains("total: int"), "{stdout}");
+    // What a binding IS, not what kind of thing it is: the type was
+    // the one thing the reader could already guess from the name.
+    assert!(stdout.contains("double: <fn(x)>"), "{stdout}");
+    assert!(stdout.contains("total: 4"), "{stdout}");
     // Builtins stay out of the listing.
     assert!(!stdout.contains("print: "), "{stdout}");
+    // A value too wide for a line is cut to one, and says how wide it
+    // was: a listing is for running an eye down.
+    let line = stdout
+        .lines()
+        .find(|l| l.starts_with("big: "))
+        .unwrap_or_else(|| panic!("no line for big:\n{stdout}"));
+    assert!(line.chars().count() < 100, "{line}");
+    assert!(line.ends_with("… (688890 characters)"), "{line}");
     assert_eq!(out.status.code(), Some(0));
 }
 

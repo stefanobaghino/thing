@@ -80,15 +80,37 @@ fn run_program<W: Write>(
 /// the session along with everything above it.
 const ECHO_LIMIT: usize = 2000;
 
-/// Echoed values quote strings, so `"a" + "b"` shows as `"ab"`, and
-/// a value too long to read is cut with a note saying so. The cut is
-/// the prompt's alone: `print(x)` writes the whole value, here as in
-/// a script, and nothing a program prints passes through this.
-fn render(v: &Value) -> String {
-    let text = match v {
+/// A binding is one line of `:vars`, which is a list to run an eye
+/// down: a value too wide for a line is cut to fit and says how long
+/// it really is. Typing the name then shows the value itself, up to
+/// the ceiling above.
+const VARS_LIMIT: usize = 60;
+
+/// Echoed values quote strings, so `"a" + "b"` shows as `"ab"`.
+fn render_text(v: &Value) -> String {
+    match v {
         Value::Str(s) => format!("{s:?}"),
         v => v.to_string(),
-    };
+    }
+}
+
+/// What `:vars` puts after the name: the value, on one line.
+fn render_line(v: &Value) -> String {
+    let text = render_text(v);
+    let total = text.chars().count();
+    if total <= VARS_LIMIT {
+        return text;
+    }
+    let shown: String = text.chars().take(VARS_LIMIT).collect();
+    format!("{shown}… ({total} characters)")
+}
+
+/// A value as the prompt echoes it: whole while it can be read, and
+/// cut with a note when it cannot. The cut is the prompt's alone:
+/// `print(x)` writes the whole value, here as in a script, and
+/// nothing a program prints passes through this.
+fn render(v: &Value) -> String {
+    let text = render_text(v);
     let total = text.chars().count();
     if total <= ECHO_LIMIT {
         return text;
@@ -647,8 +669,8 @@ fn run_inner() -> ExitCode {
             if bindings.is_empty() {
                 say("(no bindings yet)");
             }
-            for (name, ty) in bindings {
-                say(&format!("{name}: {ty}"));
+            for (name, value) in bindings {
+                say(&format!("{name}: {}", render_line(&value)));
             }
             continue;
         }

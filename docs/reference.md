@@ -55,7 +55,8 @@ never passes through that cut. Nine meta-commands:
 `:help` lists every builtin with its doc line; `:doc NAME` explains
 one builtin or stdlib function (module, signature, comment), `:doc
 MODULE` lists a module's members and `:doc` alone the whole table of
-contents, as `--doc` does; `:vars` lists the session's own bindings;
+contents, as `--doc` does; `:vars` lists the session's own bindings
+with each one's value, a line each and cut to fit;
 `:load <file>` evaluates a file in the current session so its
 bindings stay available; `:time EXPR` evaluates a one-line chunk and
 prints the elapsed milliseconds; `:fmt` reprints the last evaluated
