@@ -150,18 +150,18 @@ fn convert(md) {
       push(out, table + "</tbody></table>");
     } else if starts_with(line, "- ") {
       flush();
-      let items = [];
+      let bullets = [];
       while i < len(lines) && (starts_with(lines[i], "- ") || starts_with(lines[i], "  ")) {
         if starts_with(lines[i], "- ") {
-          push(items, slice(lines[i], 2, len(lines[i])));
+          push(bullets, slice(lines[i], 2, len(lines[i])));
         } else {
-          items[len(items) - 1] += " " + trim(lines[i]);
+          bullets[len(bullets) - 1] += " " + trim(lines[i]);
         }
         i += 1;
       }
       i -= 1;
       let list = "<ul>";
-      for it in items {
+      for it in bullets {
         list += format("<li>{}</li>", inline(it));
       }
       push(out, list + "</ul>");

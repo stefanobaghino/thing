@@ -954,7 +954,6 @@ Putting records in order by more than one thing: a list is a compound key, becau
 # compare() is that same order as a number when the directions differ.
 
 let li = import("../lib/list.ting");
-let ma = import("../lib/map.ting");
 
 let runners = [
   { "name": "Ada", "points": 12, "time": 91.4 },
@@ -987,7 +986,7 @@ print("");
 # A frequency table sorts itself: items are [key, count] pairs, and a
 # pair is a list like any other.
 let tally = li["frequencies"](["red", "blue", "red", "green", "red", "blue"]);
-print(sort(ma["items"](tally)));
+print(sort(items(tally)));
 
 # The busiest colour, without sorting at all: max reads the same order,
 # so a [count, name] pair puts count first.
@@ -1316,22 +1315,22 @@ fn load() {
   return get(try(fn() { return json_parse(read_file(path)); }), "ok", []);
 }
 
-fn save(items) { write_file(path, json_str(items)); }
+fn save(tasks) { write_file(path, json_str(tasks)); }
 
-fn item_number(argv, items) {
+fn item_number(argv, tasks) {
   if len(argv) < 2 { fail("expected an item number"); }
   let n = int(argv[1]);
-  if n < 1 || n > len(items) { fail(format("no item #{}", n)); }
+  if n < 1 || n > len(tasks) { fail(format("no item #{}", n)); }
   return n;
 }
 
-fn show(items) {
-  if len(items) == 0 {
+fn show(tasks) {
+  if len(tasks) == 0 {
     print("nothing to do!");
     return nil;
   }
   let i = 0;
-  for item in items {
+  for item in tasks {
     i += 1;
     let mark = " ";
     if item["done"] { mark = "x"; }
@@ -1342,39 +1341,39 @@ fn show(items) {
 let argv = args();
 let cmd = "list";
 if len(argv) > 0 { cmd = argv[0]; }
-let items = load();
+let tasks = load();
 
 if cmd == "list" {
-  show(items);
+  show(tasks);
 } else if cmd == "add" {
   if len(argv) < 2 {
     print("add what?");
     exit(2);
   }
-  push(items, {"text": join(slice(argv, 1, len(argv)), " "), "done": false});
-  save(items);
-  print(format("added #{}", len(items)));
+  push(tasks, {"text": join(slice(argv, 1, len(argv)), " "), "done": false});
+  save(tasks);
+  print(format("added #{}", len(tasks)));
 } else if cmd == "done" || cmd == "rm" {
-  let r = try(item_number, argv, items);
+  let r = try(item_number, argv, tasks);
   if has(r, "err") {
     print("error:", r["err"]);
     exit(2);
   }
   let n = r["ok"];
   if cmd == "done" {
-    items[n - 1]["done"] = true;
-    print(format("done: {}", items[n - 1]["text"]));
+    tasks[n - 1]["done"] = true;
+    print(format("done: {}", tasks[n - 1]["text"]));
   } else {
     let kept = [];
     let i = 0;
-    for item in items {
+    for item in tasks {
       i += 1;
       if i != n { push(kept, item); }
     }
-    items = kept;
+    tasks = kept;
     print(format("removed #{}", n));
   }
-  save(items);
+  save(tasks);
 } else {
   print("usage: ting todo.ting [list | add <text> | done <n> | rm <n>]");
   exit(2);

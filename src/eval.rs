@@ -2077,6 +2077,34 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Values => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Map(entries) => {
+                        Ok(Value::list(entries.borrow().values().cloned().collect()))
+                    }
+                    v => Err(error(
+                        format!("values expects a map, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
+            Builtin::Items => {
+                arity(1, 1)?;
+                match &args[0] {
+                    Value::Map(entries) => Ok(Value::list(
+                        entries
+                            .borrow()
+                            .iter()
+                            .map(|(k, v)| Value::list(vec![Value::str(k.clone()), v.clone()]))
+                            .collect(),
+                    )),
+                    v => Err(error(
+                        format!("items expects a map, got {}", v.type_name()),
+                        span,
+                    )),
+                }
+            }
             Builtin::Has => {
                 arity(2, 2)?;
                 match (&args[0], &args[1]) {

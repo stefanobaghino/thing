@@ -31,12 +31,10 @@ fn merge_with(a, b, f) {
 }
 
 # The map as [key, value] pairs in sorted key order, matching keys()
-# and values().
-fn items(m) {
-  let out = [];
-  for k in m { push(out, [k, m[k]]); }
-  return out;
-}
+# and values(). The builtin of the same name does the work; this line
+# is what puts it in the module's map, so
+# `import("lib/map.ting")["items"]` still finds it.
+let items = items;
 
 # A map built from [key, value] pairs — the inverse of items(). A
 # repeated key keeps the last pair's value.
@@ -46,12 +44,9 @@ fn from_items(pairs) {
   return out;
 }
 
-# Values in sorted key order (matching keys() and items()).
-fn values(m) {
-  let out = [];
-  for k in m { push(out, m[k]); }
-  return out;
-}
+# Values in sorted key order (matching keys() and items()), the
+# builtin re-exported the way items is.
+let values = values;
 
 # A fresh map with f applied to every value.
 fn map_values(m, f) {

@@ -3,7 +3,6 @@
 # compare() is that same order as a number when the directions differ.
 
 let li = import("../lib/list.ting");
-let ma = import("../lib/map.ting");
 
 let runners = [
   { "name": "Ada", "points": 12, "time": 91.4 },
@@ -36,7 +35,7 @@ print("");
 # A frequency table sorts itself: items are [key, count] pairs, and a
 # pair is a list like any other.
 let tally = li["frequencies"](["red", "blue", "red", "green", "red", "blue"]);
-print(sort(ma["items"](tally)));
+print(sort(items(tally)));
 
 # The busiest colour, without sorting at all: max reads the same order,
 # so a [count, name] pair puts count first.

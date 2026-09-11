@@ -15,11 +15,11 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 77 builtins; thirteen embedded stdlib modules
+- 79 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 47 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 23 examples with .out; 2902 selftest checks on all four
+  nothing on its own — and 23 examples with .out; 2908 selftest checks on all four
   CI platforms, Windows included); 464 Rust tests
   in 17 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 80 unchanged; BASELINE is ELEVEN
@@ -4018,12 +4018,12 @@ holds only the current milestone and the standing rules.
   and 949.
 - 953: replenishment — milestone "asking a map for its fields"
   (v2.148), reasoning in LOG.md.
+- 954: `items` and `values` are the 78th and 79th builtins; lib/map
+  re-exports them. Taking two common words global cost six shadowing
+  warnings in the corpus, all renamed.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `items(m)` and `values(m)` as builtins beside `keys(m)`, so
-  walking a map costs no import; lib/map keeps its names by
-  rebinding, the way lib/list does for sort_with.
   - `let {code, out} = run(cmd);` — Pattern::Map, mirroring the map
   literal: a bare name is its own key, `"key": subpattern` nests. A
   missing key is an error; extra keys are fine.

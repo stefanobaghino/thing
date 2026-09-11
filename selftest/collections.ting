@@ -23,6 +23,11 @@ let m = {"b": 2, "a": 1};
 assert(len(m) == 2 && m["a"] == 1, "map basics");
 m["c"] = 3;
 assert(keys(m) == ["a", "b", "c"], "keys sorted");
+assert(values(m) == [1, 2, 3], "values follow the same key order");
+assert(items(m) == [["a", 1], ["b", 2], ["c", 3]], "and items pairs the two up");
+assert(items({}) == [] && values({}) == [], "an empty map has neither");
+let deep = {"a": {"x": 1}};
+assert(values(deep)[0]["x"] == 1, "a value comes back as it is, not as a copy");
 assert(has(m, "a") && !has(m, "z"), "has");
 assert(get(m, "a", 0) == 1 && get(m, "z", 0) == 0, "get on a map");
 assert(get([10, 20], 1, -1) == 20 && get([10, 20], 9, -1) == -1, "get on a list");
@@ -105,6 +110,10 @@ fn shadowing_range_wins() {
 assert(shadowing_range_wins() == ["a", "b"], "a shadowed range wins over the builtin");
 
 let errmsg = import("lib/err.ting")["message"];
+assert(errmsg(fn() { return items([1, 2]); }) == "items expects a map, got list",
+"items wants a map");
+assert(errmsg(fn() { return values("ab"); }) == "values expects a map, got string",
+"and so does values");
 assert(errmsg(fn() { for i in range(1, 2, 0) { print(i); } }) == "range step must not be 0",
 "fused range: step 0 errors as the builtin does");
 assert(errmsg(fn() { for i in range("a") { print(i); } }) == "range expects int arguments",

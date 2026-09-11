@@ -332,13 +332,12 @@ a list. A `for` loop and a parameter take the same brackets, and mean
 the same thing by them:
 
 ```ting
-let ma = import("lib/map.ting");
 let counts = {"ant": 2, "bee": 5};
-let [first, second] = ma["items"](counts);
+let [first, second] = items(counts);
 print(first, second);
-for [name, n] in ma["items"](counts) { print(name, n); }
+for [name, n] in items(counts) { print(name, n); }
 fn line([name, n]) { return name + ": " + str(n); }
-print(join(map(ma["items"](counts), line), ", "));
+print(join(map(items(counts), line), ", "));
 ```
 
 ```text
@@ -444,6 +443,8 @@ scope).
 | `push(xs, v)`  | appends to a list in place; returns nil                     |
 | `pop(xs)`, `pop(m, k)` | takes the last element out of a list, or key `k` out of a map, and returns it; an empty list or a missing key errors |
 | `keys(m)`      | the map's keys as a sorted list                             |
+| `values(m)`    | the map's values, in that same key order                    |
+| `items(m)`     | the map's entries as `[key, value]` pairs, in that same order — what `for [k, v] in items(m)` walks |
 | `has(m, k)`    | whether string key `k` is present                           |
 | `get(x, k, default)` | `x[k]` where it is present, otherwise `default`; reads a map by key and a list or string by index (negatives count from the end), and never errors on absence. Indexing a type that cannot take that key still errors |
 | `str(v)`       | the value rendered as a string                              |

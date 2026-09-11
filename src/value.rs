@@ -419,6 +419,8 @@ pub enum Builtin {
     Push,
     Pop,
     Keys,
+    Values,
+    Items,
     Has,
     Get,
     Str,
@@ -494,12 +496,14 @@ pub enum Builtin {
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 77] = [
+    pub const ALL: [Builtin; 79] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
         Builtin::Pop,
         Builtin::Keys,
+        Builtin::Values,
+        Builtin::Items,
         Builtin::Has,
         Builtin::Get,
         Builtin::Str,
@@ -588,6 +592,14 @@ impl Builtin {
                 "Removes and returns the last element of a list, or the value at key k of a map, deleting it from the map in place; an empty list, or a key the map does not have, errors.",
             ),
             Builtin::Keys => ("keys(m)", "The map's keys as a sorted list."),
+            Builtin::Values => (
+                "values(m)",
+                "The map's values in sorted key order, matching keys() and items().",
+            ),
+            Builtin::Items => (
+                "items(m)",
+                "The map's entries as [key, value] pairs in sorted key order — what a `for [k, v] in items(m)` loop walks.",
+            ),
             Builtin::Has => ("has(m, k)", "Whether string key k is present in the map."),
             Builtin::Get => (
                 "get(x, k, default)",
@@ -849,6 +861,8 @@ impl Builtin {
             Builtin::Push => "push",
             Builtin::Pop => "pop",
             Builtin::Keys => "keys",
+            Builtin::Values => "values",
+            Builtin::Items => "items",
             Builtin::Has => "has",
             Builtin::Get => "get",
             Builtin::Str => "str",

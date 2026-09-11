@@ -101,6 +101,11 @@ fn let_patterns_bind_the_same_on_both_engines() {
         "fn f([a, b]) { return fn() { return a * b; }; } print(f([3, 4])());",
         "print(try(fn() { let g = fn([a, b]) { return a; }; return g([1, 2, 3]); }));",
         "print(try(fn() { let g = fn([a, b]) { return a; }; return g(7); }));",
+        // items() is a builtin now, so walking a map needs no module.
+        "let m = {\"b\": 2, \"a\": 1}; for [k, v] in items(m) { print(k, v); }",
+        "print(items({\"a\": [1, 2]}), values({\"a\": [1, 2]}));",
+        "print(items({}), values({}));",
+        "print(try(items, [1]), try(values, 3));",
     ];
     for src in cases {
         same(src);

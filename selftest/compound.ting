@@ -215,10 +215,10 @@ let nested = "a";
 let appender = fn() { nested += "X"; return "!"; };
 nested += appender();
 assert(nested == "a!", "an append from inside the call is overwritten by this one");
-let items = [1];
-let regrow = fn() { items = [9]; return [2]; };
-items += regrow();
-assert(items == [1, 2], "lists take the same path");
+let grown = [1];
+let regrow = fn() { grown = [9]; return [2]; };
+grown += regrow();
+assert(grown == [1, 2], "lists take the same path");
 
 # A let can take a list apart where a name goes: exact length, nesting,
 # and `_` for a value the program does not want.

@@ -24366,3 +24366,41 @@ token-based unused-local pass reads names between braces, since it
 learned brackets in 946.
 
 Backlog written to STATE.md.
+
+## 954 — items and values are builtins
+
+Maintenance: tree clean, no PRs, CI green for 21660a6 from the API.
+
+`items(m)` and `values(m)` join `keys(m)` as the 78th and 79th
+builtins, so walking a map costs no import. lib/map.ting keeps both
+names by re-exporting them — `let items = items;`, the line
+lib/list.ting already uses for `sort_with` — which the stdlib page's
+guard counts as functions, so the page and the count are unchanged.
+The reference and the tutorial examples 949 wrote lost their
+`import("lib/map.ting")` line, and so did examples/ranking.ting: a
+language feature no longer needs a module to demonstrate it.
+
+THE COST, and it is worth writing down: taking two ordinary words
+into the global namespace turned six clean corpus lines into
+`items shadows a builtin`. examples/todo.ting called its list of
+todos `items` four times, tools/md2html.ting called a bullet list
+that, and one of my own selftest lines did too. Shadowing stays
+legal and the programs still run — this is a warning, not a break —
+but the corpus should read cleanly, so the locals were renamed. The
+trio keys/values/items is worth the collision; ting already owns
+`len`, `map`, `range`, `sort`, `type` and a dozen more common words.
+
+Found by comparing, not by trusting: renaming md2html.ting's local
+with `\bitems\b` also rewrote `align-items` inside the CSS string.
+Rendering docs/reference.md with the old script and the new one and
+comparing the bytes caught it — a diff at line 11, `align-bullets:
+baseline`. Both renders are byte-identical now.
+
+Guards: seven checks in selftest/collections.ting (both orders, the
+empty map, both refusals, and that a value comes back as itself
+rather than a copy), four differential cases, the editor grammar
+alternation, and examples/ranking.ting's .out unchanged.
+
+Gate: fmt, clippy, 17 `test result: ok` (464 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2908 checks on both engines, Windows
+check and clippy, wasm release build.
