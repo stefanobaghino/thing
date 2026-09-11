@@ -841,26 +841,18 @@ fn visit_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)
     }
 }
 
-/// Calls whose argument count cannot match the function called, for
-/// the plainest case there is: a function bound once at the top level,
-/// never reassigned, never shadowed by a parameter or an inner `let`
-/// anywhere in the file. Anything less certain is left to the run.
-pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
-    let Ok(tokens) = lexer::lex(src) else {
-        return Vec::new();
-    };
-    let Ok(program) = crate::parser::parse_program(&tokens) else {
-        return Vec::new();
-    };
+/// How many arguments a function needs and how many it can take —
+/// None where a `...rest` parameter means there is no upper bound.
+type Arity = (usize, Option<usize>);
+
+/// What a program's top-level functions can be called with, by name.
+/// A name its top level binds more than once is left out: which
+/// function a call meant is no longer a static fact.
+fn declared_arities(program: &[crate::ast::Stmt]) -> std::collections::HashMap<String, Arity> {
     use crate::ast::{ExprKind as E, StmtKind as S};
-    // Top-level `let name = fn(...)`, with the arity it was given:
-    // how many arguments it needs, and how many it can take.
-    // How many arguments the function needs, and how many it can take
-    // — None where a `...rest` parameter means there is no upper bound.
-    let mut arities: std::collections::HashMap<String, (usize, Option<usize>)> =
-        std::collections::HashMap::new();
+    let mut arities: std::collections::HashMap<String, Arity> = std::collections::HashMap::new();
     let mut seen: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
-    for stmt in &program {
+    for stmt in program {
         if let S::Let(name, value) = &stmt.kind {
             *seen.entry(name.clone()).or_insert(0) += 1;
             if let E::Fn(params, _) = &value.kind {
@@ -876,15 +868,82 @@ pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
             }
         }
     }
+    arities.retain(|name, _| seen.get(name).copied().unwrap_or(0) == 1);
+    arities
+}
+
+/// The functions a call may be checked against: the file's own, by
+/// name, and the ones a module it imported offers, by the binding the
+/// import went to and the key that reaches them.
+#[derive(Default)]
+struct Arities {
+    names: std::collections::HashMap<String, Arity>,
+    members: std::collections::HashMap<(String, String), Arity>,
+}
+
+/// Calls whose argument count cannot match the function called, for
+/// the plainest case there is: a function bound once at the top level,
+/// never reassigned, never shadowed by a parameter or an inner `let`
+/// anywhere in the file. Anything less certain is left to the run.
+/// A module a `let` imported once is the same plain case one step
+/// out: `st["truncate"]("x", 3)` is checked against the function
+/// lib/string.ting declares.
+pub fn arity_mismatches(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    let mut arities = Arities {
+        names: declared_arities(&program),
+        ..Arities::default()
+    };
     // Any name bound twice, rebound, shadowed or used as a parameter
-    // is beyond this pass: drop it rather than guess.
-    let mut unsure: std::collections::HashSet<String> = seen
-        .iter()
-        .filter(|(_, n)| **n > 1)
-        .map(|(name, _)| name.clone())
-        .collect();
+    // is beyond this pass: drop it rather than guess. A name bound
+    // twice is already out of `declared_arities`; what is left is
+    // everything the rest of the file does to it.
+    let mut unsure: std::collections::HashSet<String> = std::collections::HashSet::new();
     collect_rebindings(&program, true, &mut unsure);
-    arities.retain(|name, _| !unsure.contains(name));
+    arities.names.retain(|name, _| !unsure.contains(name));
+
+    // `let st = import("lib/string.ting");` makes every function that
+    // module declares reachable as `st["name"]`, and what it declares
+    // is read the same way this file's own functions are.
+    let mut imported: std::collections::HashMap<String, usize> = std::collections::HashMap::new();
+    for stmt in &program {
+        if let S::Let(name, value) = &stmt.kind
+            && let E::Call(callee, args) = &value.kind
+            && matches!(&callee.kind, E::Var(f) if f == "import")
+            && let [arg] = &args[..]
+            && let E::Str(path) = &arg.kind
+        {
+            *imported.entry(name.clone()).or_insert(0) += 1;
+            if unsure.contains(name) || imported[name] > 1 {
+                continue;
+            }
+            for (module, source) in crate::eval::embedded_stdlib() {
+                if !path.ends_with(module) {
+                    continue;
+                }
+                let Ok(tokens) = lexer::lex(source) else {
+                    continue;
+                };
+                let Ok(parsed) = crate::parser::parse_program(&tokens) else {
+                    continue;
+                };
+                for (key, arity) in declared_arities(&parsed) {
+                    arities.members.insert((name.clone(), key), arity);
+                }
+            }
+        }
+    }
+    // A binding the file imported twice names two modules, so neither
+    // one answers for a call through it.
+    arities
+        .members
+        .retain(|(binding, _), _| imported.get(binding).copied().unwrap_or(0) == 1);
 
     let mut out = Vec::new();
     check_calls(&program, &arities, &mut out);
@@ -951,6 +1010,11 @@ fn collect_rebindings(
                 expr(value, out);
             }
             S::IndexAssign(base, idx, _, value) => {
+                // Writing into what a name holds puts the name beyond
+                // this view as surely as reassigning it does.
+                if let E::Var(n) = &base.kind {
+                    out.insert(n.clone());
+                }
                 expr(base, out);
                 expr(idx, out);
                 expr(value, out);
@@ -981,17 +1045,13 @@ fn collect_rebindings(
 
 fn check_calls(
     stmts: &[crate::ast::Stmt],
-    arities: &std::collections::HashMap<String, (usize, Option<usize>)>,
+    arities: &Arities,
     out: &mut Vec<(usize, usize, String)>,
 ) {
     use crate::ast::{ExprKind as E, StmtKind as S};
     // By worklist; `out` is sorted by position afterwards, so the
     // order findings arrive in does not matter here.
-    fn expr(
-        root: &crate::ast::Expr,
-        arities: &std::collections::HashMap<String, (usize, Option<usize>)>,
-        out: &mut Vec<(usize, usize, String)>,
-    ) {
+    fn expr(root: &crate::ast::Expr, arities: &Arities, out: &mut Vec<(usize, usize, String)>) {
         let mut todo = vec![root];
         while let Some(e) = todo.pop() {
             match &e.kind {
@@ -999,9 +1059,26 @@ fn check_calls(
                     // A spread argument makes the count a runtime fact,
                     // so this pass has nothing to say about the call.
                     let spread = args.iter().any(|a| matches!(a.kind, E::Spread(_)));
-                    if let E::Var(name) = &callee.kind
+                    // Either a name this file declared or a key into a
+                    // module it imported; both answer the same question.
+                    let called = match &callee.kind {
+                        E::Var(name) => arities
+                            .names
+                            .get(name)
+                            .copied()
+                            .map(|arity| (name.clone(), arity)),
+                        E::Index(base, key) => match (&base.kind, &key.kind) {
+                            (E::Var(binding), E::Str(k)) => arities
+                                .members
+                                .get(&(binding.clone(), k.clone()))
+                                .copied()
+                                .map(|arity| (k.clone(), arity)),
+                            _ => None,
+                        },
+                        _ => None,
+                    };
+                    if let Some((name, (required, most))) = called
                         && !spread
-                        && let Some((required, most)) = arities.get(name).copied()
                         && (args.len() < required || most.is_some_and(|m| args.len() > m))
                     {
                         // A range only when there is one: a function with no
@@ -2760,6 +2837,48 @@ mod tests {
         );
         let hover = hover_result(src, 1, 0).to_string();
         assert!(hover.contains("f([k, v], n)"), "hover was:\n{hover}");
+    }
+
+    /// What a module offers is checked the way the file's own
+    /// functions are: a default makes a range, a correct call is
+    /// silent, and a spread call says nothing at all.
+    #[test]
+    fn a_module_member_is_checked_against_what_the_module_declares() {
+        let src = "let st = import(\"lib/string.ting\");\n\
+                   let cs = import(\"lib/csv.ting\");\n\
+                   print(st[\"truncate\"](\"x\", 3));\n\
+                   print(cs[\"parse\"](\"a,b\"));\n\
+                   print(cs[\"parse\"](\"a,b\", \";\", 9));\n\
+                   print(st[\"repeat\"](...xs));\n";
+        let messages: Vec<String> = arity_mismatches(src)
+            .into_iter()
+            .map(|(_, _, m)| m)
+            .collect();
+        assert_eq!(
+            messages,
+            vec![
+                "`truncate` takes 3 arguments, called with 2".to_string(),
+                "`parse` takes 1 to 2 arguments, called with 3".to_string(),
+            ]
+        );
+    }
+
+    /// The same certainty the name pass demands: a module binding that
+    /// is reassigned, imported twice, shadowed by a parameter or
+    /// written into answers for nothing.
+    #[test]
+    fn an_uncertain_module_binding_is_left_alone() {
+        for src in [
+            "let st = import(\"lib/string.ting\");\nst = import(\"lib/list.ting\");\nprint(st[\"truncate\"](\"x\", 3));\n",
+            "let m = import(\"lib/string.ting\");\nlet m = import(\"lib/csv.ting\");\nprint(m[\"repeat\"](\"x\"));\n",
+            "let st = import(\"lib/string.ting\");\nfn f(st) { return st[\"truncate\"](\"x\", 3); }\nprint(f(st));\n",
+            "let st = import(\"lib/string.ting\");\nst[\"truncate\"] = fn(a) { return a; };\nprint(st[\"truncate\"](\"x\", 3));\n",
+        ] {
+            assert!(
+                arity_mismatches(src).is_empty(),
+                "should have said nothing about:\n{src}"
+            );
+        }
     }
 
     /// A map pattern in a parameter list reads back the way it was

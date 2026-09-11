@@ -24639,3 +24639,38 @@ ellipsis)` takes no default for the ellipsis, which is why the probe
 misspelled the call in the first place.
 
 Backlog written to STATE.md.
+
+## 962 — the checker counts a module call's arguments
+
+Maintenance: tree clean, no PRs, CI green for d420896 from the API.
+
+`st["truncate"]("x", 3)` is now a warning — `truncate takes 3
+arguments, called with 2` — where 961's probe had to run the whole
+program to learn it. The pass that checked the file's own functions
+since 498 does the work: `declared_arities` came out of it, the
+module's source is parsed the same way the file is, and the answers
+land in the same table under `(binding, key)` instead of a name.
+
+The rules are the ones the name half already had. A default makes a
+range (`parse takes 1 to 2 arguments`), `...rest` makes a floor, a
+spread call is left alone, and anything less than certain is dropped
+rather than guessed: a binding that is reassigned, imported twice,
+shadowed by a parameter, or written into with `st["x"] = ...` answers
+for nothing. That last one needed `collect_rebindings` to mark the
+base of an index assignment, which it did not before.
+
+A module's re-exported builtin — lib/list.ting's `sort_with`, its
+`fingerprint`, lib/map.ting's new `items` — has no ting `fn` behind
+it, so no arity is recorded and no call through it is checked. Worth
+doing later against the builtin's own arity; not worth guessing now.
+
+Guards: two lsp unit tests (one for the three shapes it catches and
+the two it must not, one for the four uncertain bindings), and an
+end-to-end `--check` test. The uncertainty guard was mutation-tested
+by dropping it: the four-case test fails at once. Corpus still
+fourteen warnings, which is the other half of the evidence — the
+whole corpus calls its modules correctly.
+
+Gate: fmt, clippy, 17 `test result: ok` (468 tests), `--fmt .` 80
+unchanged, corpus at fourteen, 2926 checks on both engines, Windows
+check and clippy, wasm release build.

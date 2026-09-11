@@ -325,6 +325,40 @@ fn check_flag_warns_about_unused_pattern_bindings() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// `--check` counts the arguments of a call into an imported module
+/// against what that module declares, so a stdlib call with the wrong
+/// count is caught before it runs rather than on the line it reaches.
+#[test]
+fn check_flag_counts_arguments_of_module_calls() {
+    let path = std::env::temp_dir().join(format!("ting-check-member-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let st = import(\"lib/string.ting\");
+let cs = import(\"lib/csv.ting\");
+print(st[\"truncate\"](\"abc\", 2));
+print(cs[\"parse\"](\"a,b\"));
+print(st[\"repeat\"](\"x\", 2));
+",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--check", path.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    assert_eq!(out.status.code(), Some(0));
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(
+        stderr.contains("warning: `truncate` takes 3 arguments, called with 2"),
+        "{stderr}"
+    );
+    // The calls that are right say nothing, defaults included.
+    assert!(
+        !stderr.contains("`parse`") && !stderr.contains("`repeat`"),
+        "{stderr}"
+    );
+    let _ = std::fs::remove_file(&path);
+}
+
 /// `--check` warns about a parameter the function body never names;
 /// `_`-prefixed parameters and used ones are silent.
 #[test]
