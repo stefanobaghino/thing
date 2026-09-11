@@ -490,10 +490,11 @@ pub enum Builtin {
     ReSplit,
     Fingerprint,
     Width,
+    Compare,
 }
 
 impl Builtin {
-    pub const ALL: [Builtin; 76] = [
+    pub const ALL: [Builtin; 77] = [
         Builtin::Print,
         Builtin::Len,
         Builtin::Push,
@@ -570,6 +571,7 @@ impl Builtin {
         Builtin::ReSplit,
         Builtin::Fingerprint,
         Builtin::Width,
+        Builtin::Compare,
     ];
 
     /// Signature and one-line summary, shown by the LSP on hover.
@@ -829,6 +831,10 @@ impl Builtin {
                 "display_width(s)",
                 "How many terminal columns the string takes: an East Asian wide or fullwidth character counts two, a combining mark or a control none, everything else one — what len counts in characters and a terminal counts in columns.",
             ),
+            Builtin::Compare => (
+                "compare(a, b)",
+                "Which of two values comes first in ting's order: -1 for a, 1 for b, 0 for a tie — the three-way answer < gives one bit of, so a sort_with comparator over several fields is one line each. nil when a NaN leaves the pair unordered; the error < gives where the two have no order between them.",
+            ),
             Builtin::Fingerprint => (
                 "fingerprint(v)",
                 "A string two values share exactly when == says they are equal, so a map can stand in for a scan; nil where equality cannot be a key: a function (compared by identity), a NaN (equal to nothing), a number past 2^53 (where int and float equality stops being transitive), or a value that contains itself.",
@@ -914,6 +920,7 @@ impl Builtin {
             Builtin::ReSplit => "re_split",
             Builtin::Fingerprint => "fingerprint",
             Builtin::Width => "display_width",
+            Builtin::Compare => "compare",
         }
     }
 }

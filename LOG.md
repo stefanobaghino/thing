@@ -23854,3 +23854,32 @@ the `pop` test's doc comment, from 924.
 Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 79
 unchanged, corpus at fourteen, 2866 checks on both engines, Windows
 check and clippy, wasm release build.
+
+## 939 — compare, the order as a number
+
+Maintenance: tree clean, no PRs, CI and Pages green for 05d7329 from
+the API.
+
+`compare(a, b)`, the 77th builtin: -1 when a comes first, 1 when b
+does, 0 for a tie, by exactly the order 938 gave `<` — the same
+`order()`, so a list compares element by element here too. It is the
+three-way answer `<` gives one bit of, and it is what a `sort_with`
+comparator actually wants: name ascending then age descending is now
+one line per field instead of four `if`s, and it works for STRING
+keys, which arithmetic on a comparator cannot do at all.
+
+A NaN answers `nil`, not 0. The pair is unordered, and 0 would call
+it a tie — the same refusal-rather-than-guess `fingerprint` makes,
+and the reason `sort_with` then reports a comparator that did not
+return a number. Where `<` errors, `compare` errors, in the same
+words.
+
+Guards: ten checks in selftest/collections.ting including the
+two-field comparator spelled out, four differential cases, the
+grammar alternation and the reference table row (both guarded, both
+failed first as they should). The NaN answer was mutation-tested by
+returning 0, which the selftest catches.
+
+Gate: fmt, clippy, 17 `test result: ok` (461 tests), `--fmt .` 79
+unchanged, corpus at fourteen, 2875 checks on both engines, Windows
+check and clippy, wasm release build.

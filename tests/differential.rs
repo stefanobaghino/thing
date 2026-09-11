@@ -66,8 +66,8 @@ fn a_failed_assertion_shows_the_same_values_on_both_engines() {
 }
 
 /// Lists order lexicographically, and both engines go through the
-/// same `eval::binary` to say so — including the refusals, which are
-/// the half a difference would hide.
+/// same `eval::binary` and the same `compare` to say so — including
+/// the refusals, which are the half a difference would hide.
 #[test]
 fn lists_order_the_same_on_both_engines() {
     let cases: &[&str] = &[
@@ -83,6 +83,11 @@ fn lists_order_the_same_on_both_engines() {
         "print([0.0 / 0.0] < [1], [1] < [0.0 / 0.0]);",
         "let r = [1]; push(r, r); print(r < [1, r], r <= [1, r]);",
         "let a = [1]; push(a, a); let b = [1]; push(b, b); print(a < b, a <= b, a == b);",
+        // compare answers the same order in numbers, refusals included.
+        "print(compare(1, 2), compare(2, 1), compare(1, 1.0), compare(\"a\", \"b\"));",
+        "print(compare([1, 2], [1, 3]), compare([1], [1, 0]), compare([], []));",
+        "print(compare(0.0 / 0.0, 1), compare(1, 0.0 / 0.0));",
+        "print(try(fn() { return compare(nil, 1); }), try(compare, 1));",
     ];
     for src in cases {
         same(src);

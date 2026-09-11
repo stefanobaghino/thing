@@ -1989,6 +1989,20 @@ impl<W: Write> Interpreter<W> {
                     )),
                 }
             }
+            Builtin::Compare => {
+                arity(2, 2)?;
+                match order(&args[0], &args[1]) {
+                    // A NaN is unordered, and saying so is the only
+                    // honest answer: 0 would call it a tie.
+                    Ok(None) => Ok(Value::Nil),
+                    Ok(Some(ord)) => Ok(Value::Int(match ord {
+                        std::cmp::Ordering::Less => -1,
+                        std::cmp::Ordering::Equal => 0,
+                        std::cmp::Ordering::Greater => 1,
+                    })),
+                    Err(Mismatch(a, b)) => Err(error(format!("cannot compare {a} and {b}"), span)),
+                }
+            }
             Builtin::Fingerprint => {
                 arity(1, 1)?;
                 let mut out = String::new();

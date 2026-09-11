@@ -15,7 +15,7 @@ current orientation.
   byte-identical by differential tests incl. a grammar fuzzer
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
-- 76 builtins; thirteen embedded stdlib modules
+- 77 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 211
   functions, guarded); 46 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
@@ -3955,12 +3955,13 @@ holds only the current milestone and the standing rules.
   cannot fail. TWO DISTINCT RINGS have no bottom between them: the
   pair stack `==` keeps is load-bearing, and removing it aborts with
   a stack overflow.
+- 939: compare(a, b), the 77th builtin — the same order() as a
+  number, so a two-field sort_with comparator is one line per field
+  and works on string keys. A NaN answers nil, not 0: unordered is
+  not a tie.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - compare(a, b), the 77th builtin: -1, 0 or 1 by the same rule,
-  refusing where `<` refuses, so a comparator over several fields in
-  mixed directions is one line per field.
   - docs: what ting orders and why, the compound-key idiom, and the
   mixed-direction comparator; reference, stdlib, cookbook.
   - lib/args.ting's pad(text, width) counts columns (936's finding).
