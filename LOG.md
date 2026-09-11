@@ -26487,3 +26487,49 @@ lines (1009), and lib/time.ting's private zero-padding helper made
 1012).
 
 Replenishment next.
+
+## 1014 — replenishment: milestone "the program your program runs"
+
+The probe wrote the script a maintainer writes: release notes from
+git. `sh["check"]("git", [...])` for the tag, `sh["lines"]` for the
+subjects, group by the first word, print a table. It came out right
+on the second try, and the one thing that was wrong was mine —
+`sh["run"]`, which does not exist, answered `lib/sh.ting has no
+`run` (`run` is a builtin)`, which is the sentence I wanted.
+
+So the probe went further, into what a script that drives other
+programs needs after the first page.
+
+**A child cannot be given a directory.** `run` takes a command, an
+argv and stdin, and nothing else. Every script that visits several
+checkouts, or builds in a subdirectory, has to either use a flag the
+program happens to have (`git -C`, `make -C`) or spawn a shell —
+`run("sh", ["-c", "cd " + dir + " && ..."])` — which is the one thing
+595 built `run` to avoid: a shell string, with quoting to get wrong,
+and no `sh` on Windows. `cwd()` reads the directory; nothing sets one,
+for the process or for a child.
+
+**A child cannot be given an environment variable.** The commonest
+line in any CI script is `VAR=value program`. A ting script can only
+get there through `run("env", ["VAR=value", ...])` — POSIX only — or
+the same shell string. `env(name)` reads; nothing writes, not even
+for a child. This binary's own test suite runs `TING_ENGINE=eval`,
+and a ting script could not drive it.
+
+**A child says nothing until it is finished.** `run` captures both
+streams and returns at exit: `run("sh", ["-c", "echo one; sleep 1;
+echo two >&2; echo three"])` printed nothing for a second and then
+handed back the whole of it. That is right for a program whose output
+is data, and wrong for the one a script is waiting on — a build, a
+test run, a deploy — where the output IS the feedback. There is no
+way to let a child write to the terminal ting is already writing to.
+
+Not chosen. The map `run` hands back is good: `code` nil under a
+signal, a program that cannot be started an error rather than an exit
+code, lossy UTF-8 for messy children. `lib/sh.ting`'s three answers
+(ok, check, lines) are the right three, `which` and `path_dirs` work,
+and a string stdin goes in cleanly. The failure sentence names the
+program and its code and quotes stderr.
+
+Milestone "the program your program runs" (v2.156), backlog in
+STATE.md.

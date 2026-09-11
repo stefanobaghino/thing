@@ -4286,10 +4286,27 @@ holds only the current milestone and the standing rules.
   sweeps ok, counts all standing (79 builtins, 13 modules, 213
   functions, 48 programs, 2994 checks, 486 tests in 18 suites, 81
   unchanged, fifteen warnings, 176 tags). Milestone "the number you
-  meant" COMPLETE. Replenishment next.
+  meant" COMPLETE.
+- 1014: replenishment — milestone "the program your program runs"
+  (v2.156), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - `run` takes options in its third place: a string there is still
+    stdin, a map is `{"stdin": s, "dir": path}` and whatever the
+    later strokes add. Today `run("echo", [], {})` says "run expects
+    stdin as a string, got map", so the place is free. A key nothing
+    knows is an error, the way the rest of ting refuses a typo.
+  - `env` in those options: the variables named are added to (or
+    replace) what the child inherits, so a script can write the
+    `VAR=value program` every CI script writes without `sh -c` or
+    `env`, neither of which is on Windows.
+  - a child that shows its work: an option that lets it write to
+    ting's own stdout and stderr instead of being captured, for the
+    build or test run a script is waiting on. What `run` answers then
+    (empty strings? no keys at all?) is the stroke's real question.
+    lib/sh.ting's ok/check/lines and the docs follow.
+  - release v2.156.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
