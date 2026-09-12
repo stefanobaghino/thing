@@ -27758,3 +27758,28 @@ Three mutations, all caught after the third took a better case: the
 iterable named by its first token — that one needed `keys(m)` in the
 table, since the list literal it had starts with a bracket and came
 out as `xs` either way.
+
+## 1053 — try, catch, finally, throw
+
+The third stroke, and the one ting already had an answer for: `try`
+is a BUILTIN here, taking a function and handing back a map with
+`ok` or `err`. Written as a statement — `try { ... } catch (e) {
+... }` — it was `expected ';', found '{'`, twice, and nothing about
+the call sitting right there.
+
+`instead_of`, the table that answers `elif` and `def`, is where these
+belong: the mistake is the statement's FIRST token, which is exactly
+what that table is keyed on. `try`, `catch`, `except` and `rescue`
+all point at the one call; `finally` and `ensure` say what follows it
+runs either way; `throw` and `raise` say `fail(msg)`. A `try` written
+as the call it is never reaches any of this, because the statement
+parses.
+
+The clauses go together. `try { ... } catch e { ... } finally { ... }`
+is three statements to the parser and one mistake to the writer, so
+the block and every clause hanging off it — parenthesised name, bare
+name, or neither — are dropped whole and the writer is told once.
+
+Three mutations, all caught: the clauses left in place (two and three
+errors instead of one), `finally` folded into the `try` sentence, and
+the bare-name form of a catch clause left unskipped.

@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
-  CI platforms, Windows included); 518 Rust tests
+  CI platforms, Windows included); 520 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4401,11 +4401,12 @@ holds only the current milestone and the standing rules.
   tokens are dropped whole, so one mistake is one error. 515 tests.
 - 1052: a comprehension says `map`, and `filter` when it has a
   guard, naming the iterable when it is a single name. 518 tests.
+- 1053: `try`/`catch`/`finally` and `throw` say what ting has —
+  `try(fn() { ... })` and `fail(msg)` — and the clauses are dropped
+  whole, so the writer is told once. 520 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `try`/`catch`/`finally` and `throw` say `try(fn() { ... })` and
-    `fail(msg)`
   - a type annotation on a parameter or a return says ting has none
   - a module member with a builtin NEAR miss names the builtin —
     `fs["write"]` wants `write_file`, not twenty names

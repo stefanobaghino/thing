@@ -95,6 +95,10 @@ both.
   Python's `a if c else b` — each say so. The `{` after a condition
   is what tells a real `if` statement from a forgotten `;` in front
   of one.
+- There is no `try`/`catch`/`finally` statement and no `throw`.
+  `try(fn() { ... })` is a builtin that hands back a map with `ok` or
+  `err`, `fail(msg)` raises, and what follows the call runs either
+  way; writing any of the borrowed forms says so.
 - There are no comprehensions. `map` and `filter` are builtins, and
   `[f(x) for x in xs]` — in a list or a map literal, with or without
   a guard — says which of them to reach for, naming the iterable when

@@ -119,8 +119,29 @@ fn instead_of(name: &str) -> Option<&'static str> {
         "elif" | "elseif" | "elsif" => "ting writes this as `else if`",
         "def" | "function" | "func" | "fun" => "a function is `fn name(...) { ... }`",
         "var" | "const" | "local" => "a binding is `let name = ...;`",
+        // `try` IS a name here — the builtin — and the mistake is the
+        // block after it, which belongs to a statement ting does not
+        // have. `catch` and `finally` are nobody's names, and each
+        // says the same builtin, because the answer to all three is
+        // the one call.
+        "try" | "catch" | "except" | "rescue" => {
+            "ting's `try` is a builtin — `try(fn() { ... })` hands back a map with `ok` or `err`"
+        }
+        "finally" | "ensure" => {
+            "ting has no `finally` — what follows `try(fn() { ... })` runs either way"
+        }
+        "throw" | "raise" => "ting raises with `fail(msg)`",
         _ => return None,
     })
+}
+
+/// The borrowed statements whose shape is a block (or a block after a
+/// parenthesised name), which is what makes them worth dropping whole.
+fn borrows_a_block(name: &str) -> bool {
+    matches!(
+        name,
+        "try" | "catch" | "except" | "rescue" | "finally" | "ensure"
+    )
 }
 
 impl<'a> Parser<'a> {
@@ -165,6 +186,14 @@ impl<'a> Parser<'a> {
             && let Some(hint) = instead_of(name)
         {
             message.push_str(&format!(" ({hint})"));
+            // `try { ... } catch (e) { ... }` is three statements to
+            // this parser and one mistake to its writer: the blocks
+            // and the clauses after them go together.
+            if borrows_a_block(name) && self.peek() == &TokenKind::LBrace {
+                let err = self.error(message);
+                self.skip_borrowed_clauses();
+                return Err(err);
+            }
         } else if self.python_conditional() {
             message.push_str(&format!(" ({})", Self::CONDITIONAL));
             let err = self.error(message);
@@ -468,6 +497,80 @@ impl<'a> Parser<'a> {
         } else {
             format!("ting has no comprehensions — `map({over}, fn(x) {{ return ...; }})`")
         })
+    }
+
+    /// A borrowed `try`/`catch`/`finally` and everything hanging off
+    /// it: the block, then any clause that follows with a block of
+    /// its own, named or parenthesised. Dropped together, so the
+    /// writer is told once.
+    fn skip_borrowed_clauses(&mut self) {
+        loop {
+            self.skip_brace_group();
+            let TokenKind::Ident(name) = self.peek() else {
+                return;
+            };
+            if !borrows_a_block(name) {
+                return;
+            }
+            self.advance();
+            // `catch (e)` and `catch e` both name the error; ting's
+            // `try` hands it back in a map instead.
+            if self.peek() == &TokenKind::LParen {
+                let mut depth = 0usize;
+                loop {
+                    match self.peek() {
+                        TokenKind::Eof => return,
+                        TokenKind::LParen => {
+                            depth += 1;
+                            self.advance();
+                        }
+                        TokenKind::RParen => {
+                            self.advance();
+                            depth -= 1;
+                            if depth == 0 {
+                                break;
+                            }
+                        }
+                        _ => {
+                            self.advance();
+                        }
+                    }
+                }
+            } else if matches!(self.peek(), TokenKind::Ident(_)) {
+                self.advance();
+            }
+            if self.peek() != &TokenKind::LBrace {
+                return;
+            }
+        }
+    }
+
+    /// One balanced `{ ... }`, from the brace the parser is standing
+    /// on.
+    fn skip_brace_group(&mut self) {
+        if self.peek() != &TokenKind::LBrace {
+            return;
+        }
+        let mut depth = 0usize;
+        loop {
+            match self.peek() {
+                TokenKind::Eof => return,
+                TokenKind::LBrace => {
+                    depth += 1;
+                    self.advance();
+                }
+                TokenKind::RBrace => {
+                    self.advance();
+                    depth -= 1;
+                    if depth == 0 {
+                        return;
+                    }
+                }
+                _ => {
+                    self.advance();
+                }
+            }
+        }
     }
 
     /// The rest of a borrowed construct nobody can parse, dropped so
@@ -1541,6 +1644,48 @@ mod tests {
         ] {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// try/catch/finally and throw: all of them borrowed, and all of
+    /// them answered by the builtin ting already has.
+    #[test]
+    fn a_borrowed_try_says_ting_has_a_builtin() {
+        let builtin =
+            "(ting's `try` is a builtin — `try(fn() { ... })` hands back a map with `ok` or `err`)";
+        for (src, want) in [
+            ("try { print(1); } catch (e) { print(e); }", builtin),
+            ("try { print(1); } catch e { print(e); }", builtin),
+            ("catch (e) { print(e); }", builtin),
+            ("except e { print(e); }", builtin),
+            ("try { print(1); } finally { print(2); }", builtin),
+            (
+                "finally { print(2); }",
+                "(ting has no `finally` — what follows `try(fn() { ... })` runs either way)",
+            ),
+            ("throw \"boom\";", "(ting raises with `fail(msg)`)"),
+            ("raise \"boom\";", "(ting raises with `fail(msg)`)"),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(want), "{src}: {got}");
+        }
+        // The call it points at is a program that runs.
+        let good = "let r = try(fn() { fail(\"x\"); }); print(r[\"err\"]);";
+        assert!(parse_program(&lex(good).unwrap()).is_ok());
+    }
+
+    /// The blocks and the clauses hanging off them are one mistake,
+    /// so they cost one error and the lines after them still parse.
+    #[test]
+    fn a_borrowed_try_costs_one_error() {
+        for src in [
+            "try { print(1); } catch (e) { print(e); }\nlet y = 2;\n",
+            "try { print(1); } catch e { print(e); } finally { print(3); }\nlet y = 2;\n",
+            "try { print(1); } finally { print(2); }\nlet y = 2;\n",
+        ] {
+            let (stmts, messages) = recovered(src);
+            assert_eq!(messages.len(), 1, "{src}: {messages:?}");
+            assert_eq!(stmts, 1, "{src}: the line after it still parses");
         }
     }
 
