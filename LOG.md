@@ -27420,3 +27420,44 @@ it, every one a selftest calling a builtin wrongly on purpose — the
 checker now seeing what those tests were written to prove.
 
 Replenishment next.
+
+## 1042 — replenishment: milestone "the test that passes anyway"
+
+The probe wrote a task store, a test file for it, and a command-line
+program over the top: `ting --test` on the test file, `todo add`,
+`todo done 0`, `todo list` on the program. All three work. What they
+cost was one wrong guess after another about the test module's names,
+and a green suite that should have been red.
+
+**A failing test file reports `ok`.** `lib/test.ting`'s helpers record
+a failure in `state` and return; `summary()` is what prints the
+failures and exits 1. A file that forgets to call it reports `ok
+bad.ting (1 check)` and the run exits 0, with a failed check sitting
+in a map nobody reads. In a directory of test files one forgotten
+call hides that file's failures entirely — a_test.ting fails, no
+summary, `2 passed, 0 failed`. `--test` counts asserts, which every
+helper makes, so it sees the check and never asks whether it passed.
+The docs say to pair `--test` with lib/test.ting and never say the
+last line is load-bearing.
+
+**Nothing says the last line is missing.** The file that made this
+mistake imports the module, calls three of its checks, and ends. That
+is a shape `--check` can see whole, and it is exactly the sort of
+thing `--check` already reports.
+
+**A member a module does not have is named without its neighbours.**
+`t["eq"]` answers `lib/test.ting has no `eq``, and stops. A near miss
+gets a suggestion — `chek` finds `check`, `check_e` finds `check_eq`
+— but a name that is nobody's near miss gets nothing, though the
+module is right there with seven exports the binary can already list
+under `--doc lib/test.ting`. Three of my guesses (`test`, `eq`,
+`fails`) were in that silent class, and each cost a run to find out.
+
+NOT CHOSEN, and shelved beside 1028's `a ? b : c`: `if` as an
+expression. `if t["done"] { "x" } else { " " }` inside a call answers
+`expected expression, found 'if'`, with no word about ting having no
+conditional expression — and `if` is a keyword this parser knows, the
+same shape as the `in` that 1030 answered. A phrasebook round can
+take both.
+
+Milestone "the test that passes anyway" (v2.160): three strokes.

@@ -4368,10 +4368,21 @@ holds only the current milestone and the standing rules.
   modules, 214 functions, 48 programs, 3010 checks, 505 tests in 18
   suites, 81 unchanged, twenty-two warnings, 180 tags). Milestone
   "what the checker could have said" COMPLETE.
+- 1042: replenishment — milestone "the test that passes anyway"
+  (v2.160), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone
+  - `--test` fails a file whose lib/test.ting checks failed, whether
+    or not the file called `summary()`
+  - `--check` warns when a file uses the test module's checks and
+    never calls `summary()`
+  - a member a module does not have names what the module does have,
+    not only a near miss when there is one
+  - release v2.160.0
+  - verify v2.160.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
