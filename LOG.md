@@ -28863,3 +28863,35 @@ moved their assertion from stderr to stdout, two by
 checks that neither refusal ends the session.
 
 That empties the milestone's working backlog: v2.165.0 next.
+
+## 1090 — release v2.165.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+9dff6547278de6f4e8d5d0b6253262cdcef79ce3 from the API on all three
+platforms (full sha).
+
+v2.165.0, the milestone "the REPL's own words". The REPL answered in
+three voices that were not its own: the parser's, for a command it
+did not have; `:doc`'s, for a `:help` that printed 79 builtins before
+its own nine commands; and the binary's startup voice, for a file it
+could not open.
+
+1087 gives the nine a table in src/repl.rs and answers any fresh
+chunk that opens with a colon against it, through the same
+`diag::nearest` that already turns `:doc lenn` into `did you mean
+len?`. 1088 makes `:help` render that table — the table gained the
+one-liner column, so the two readers of it cannot drift apart. 1089
+moves four `ting: ...` lines onto the session's own output as
+parentheticals and writes the rule into the language reference.
+
+Strokes 1087, 1088, 1089 — three, where the last milestones took six.
+The table 1087 needed for its own answer is what made 1088 a dozen
+lines, which is the argument for building the seam before the second
+user of it exists.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (529
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.165.0 — the 186th tag — and pushed. Verification is the
+next tick.

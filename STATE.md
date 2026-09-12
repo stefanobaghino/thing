@@ -4505,10 +4505,11 @@ holds only the current milestone and the standing rules.
 - 1089: `:load`, `:save` and `:time` answer a file they cannot
   open, and a chunk that stops mid-way, as parentheticals on the
   session's own output — the rule is in docs/reference.md.
+- 1090: v2.165.0 tagged (186th) — milestone "the REPL's own
+  words", strokes 1087, 1088, 1089.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.165.0
   - verify v2.165.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

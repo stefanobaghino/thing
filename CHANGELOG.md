@@ -5,6 +5,27 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.165.0 (2026-09-12)
+
+- **A colon is the REPL's to answer.** `:typo` went to the parser,
+  which could only say `expected expression, found ':'` and point at
+  the colon. A line that opens a fresh chunk with a colon is now
+  answered by the session: the nearest command if there is one
+  (`:vras` finds `:vars`), what a command takes if it was given the
+  wrong thing (`:load` alone, `:help now`), and a pointer at `:help`
+  otherwise.
+- **`:help` answers with the commands.** It printed all 79 builtins
+  and left its own commands in a parenthesis a hundred lines down,
+  which is the one thing a session asks `:help` for. It now lists the
+  commands with what each takes and points at `:doc`, which has had
+  the builtins all along.
+- **The session speaks for itself.** `:load` and `:save` reported a
+  file they could not open as `ting: cannot read "x"`, the voice the
+  binary uses before a session exists; so did `:load` on a file that
+  stops mid-chunk and `:time` on a line that does not finish. All
+  four are now parentheticals on the session's own output, the rule
+  written down in the language reference.
+
 ## v2.164.0 (2026-09-12)
 
 - **A bundle that cannot run is not a bundle.** `ting --bundle`
