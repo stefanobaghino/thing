@@ -5,6 +5,30 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.168.0 (2026-09-12)
+
+- **A line that continues another one looks like it.** The formatter
+  took one level of indent for every `[` or `(` that ENDED its line,
+  and an opener with anything after it opened nothing: `print(deep,`
+  followed by `s);` put `s` in the column `print` is in, so the line
+  continuing a call was indented exactly like the statement after it.
+  The level is taken at the line break now rather than at the opener
+  — by the innermost delimiter still open, which leaves a closure or
+  a map passed as an argument indented once rather than twice, since
+  its `{` has taken a level already. Twenty-four files of the project's
+  own corpus gained the indentation.
+- **An operator at the end of a line promises another one.** Nothing
+  was open at the break in `let total = 1 +` / `2 +` / `3;`, so there
+  was no level to take and `2` read as a statement of its own. A line
+  cannot end on `+`, `&&`, `=`, `:` or the rest and be finished: the
+  next line takes one level until the statement ends. Once per
+  statement, not once per line it spans, and never where a delimiter
+  has set the level already — a list written one item per line is
+  indented by the `[` that holds it and nothing more.
+- The `--fmt` section of the reference now states what the formatter
+  does to a file's layout: line breaks are the author's (nothing is
+  joined or split), indentation is the formatter's.
+
 ## v2.167.0 (2026-09-12)
 
 - **The half you remember.** v2.166.0 taught the suggestion

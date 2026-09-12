@@ -29650,3 +29650,34 @@ that holds it.
 That is the whole of the milestone's work; what remains is the
 release. Nothing in src/ changed here, so the docs guard is the check
 that matters, and it passes.
+
+## 1112 — release v2.168.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+7dfd39b617a1baacd0bd4be74c03f79369b1cd97 from the API on all three
+platforms (full sha).
+
+v2.168.0, the milestone "the line that continues". A formatter that
+keeps the author's line breaks has to say what those lines belong to,
+and the one rule it had said it for one case only: a `[` or `(` that
+ended its line. 1109 moves the level from the opener to the line
+break, where every case looks alike, and takes it for the innermost
+delimiter open — which is what keeps a closure passed as an argument
+indented once, since its `{` has taken a level already. 1110 covers
+the break with nothing open at all: a line that ends on an operator
+is unfinished, and what follows it is indented until the statement
+ends. 1111 writes both into the reference, which had said nothing
+about layout beyond line endings.
+
+The project's own corpus is the evidence the rules were worth having:
+twenty-five files reflowed, including bench/run.ting's row printer,
+examples/report.ting's sample CSV, and fifteen selftests whose
+`assert(...)` messages sat on the left margin under the call they
+belong to.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (534
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.168.0 — the 189th tag — and pushed. Verification is the
+next tick.
