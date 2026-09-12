@@ -27909,3 +27909,50 @@ the same idea one layer up: a reader who guessed a module member
 wrong is usually reaching for a builtin, and now gets told which.
 
 Replenishment next.
+
+## 1059 — replenishment: milestone "a time that isn't ISO"
+
+This probe went after the toolchain rather than the language: a small
+project from the shipped v2.161.0 archive — a module, a test file
+beside it, a main — run through `--test`, `--check`, `--doc`,
+`--bundle` and `--profile`. Nearly all of it worked on the first
+try. A failing check names the file, the check and both values;
+`--tap` says the same in TAP; a runtime error inside a callback
+carries `in tally(path = "nope.log"), called from bad.ting:2:7`;
+`--bundle` explains itself in its own header; `--profile` costs
+nothing to read. There is no milestone in any of that.
+
+The milestone is in what the project could not do. The log it was
+counting has an Apache timestamp — `12/Sep/2026:06:00:01` — and
+lib/time.ting can only read ISO 8601. `from_iso` is generous inside
+its own shape (a space for the T, an offset, fractional seconds, a
+bare date), but a month spelled `Sep` stops it dead, and there is no
+`month_number` to turn that into 9 — nor a `month_name` to turn 9
+back into `September`, though `weekday_name` has been there all
+along. The stamp has to be taken apart by hand, with a
+twelve-entry map written by whoever needs it.
+
+The repo's own examples show the shape of the gap: logreport.ting
+BUILDS its log in ISO so it can read it back, and monthly.ting prints
+`2026-09` by slicing the ISO date, because there is no way to say
+September. The world writes `%d/%b/%Y:%H:%M:%S` in access logs, `%b
+%e %H:%M:%S` in syslog, `%m/%d/%Y` on half the forms ever printed,
+and ting can read none of them.
+
+Milestone "a time that isn't ISO" (v2.162): the month names both
+ways, a reader for a stated shape, a writer for the same shape, and
+an example that reads a real stamp end to end.
+
+WRONG, and discarded before it was written down: "there is no way to
+get capture groups out of a regex". `re_find` returns a map with
+`start`, `end`, `text` AND `groups`, and `re_replace` takes `$1` to
+`$9`. The name I guessed — `re_match` — is the only thing missing,
+and `--check` says it is bound nowhere.
+
+NOT CHOSEN: `--doc tally` finds nothing for a function in a file in
+the working directory, though `--doc log.ting` lists it — searching
+every file in the directory for a bare name would surprise more
+often than it helps. NOT CHOSEN: a profile of callback-heavy code is
+mostly rows reading `an anonymous function`, which is true, and each
+one carries its file:line; naming them after the builtin they were
+passed to would be a guess at what the writer meant.

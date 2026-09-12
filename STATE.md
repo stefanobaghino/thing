@@ -4419,10 +4419,22 @@ holds only the current milestone and the standing rules.
   modules, 215 functions, 48 programs, 3013 checks, 523 tests in 18
   suites, 81 unchanged, twenty-two warnings, 182 tags). Milestone
   "the rest of the phrasebook" COMPLETE.
+- 1059: replenishment — milestone "a time that isn't ISO" (v2.162),
+  reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone
+  - `month_name(n)` and `month_number(name)` in lib/time.ting,
+    symmetric with `weekday_name`, plus `weekday_number(name)`
+  - a reader for a stated shape — `%d/%b/%Y:%H:%M:%S` and the rest of
+    the codes the world writes
+  - a writer for the same shape vocabulary
+  - an example that reads a real access-log or syslog stamp end to
+    end, and a cookbook recipe pointing at it
+  - release v2.162.0
+  - verify v2.162.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
