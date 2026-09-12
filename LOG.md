@@ -28057,3 +28057,31 @@ zero, the twelve-hour fold dropped, noon written as AM, a short
 millisecond field, the offset ignored, and a four-digit `%y`.
 
 230 functions, 3074 checks.
+
+## 1063 — the two shapes, end to end
+
+examples/stamps.ting reads an Apache access log and a syslog line the
+way a program actually meets them: the stamp comes out of the line by
+its brackets or its first fifteen characters, `parse` reads it in the
+shape the tool writes, and what comes back is an instant the rest of
+the program can do arithmetic on — first, last, the span between
+them, and hits counted by the hour `text` writes.
+
+The line with `[whenever]` in it is there on purpose. It is how a nil
+answer is meant to be handled: the line is named and skipped, not
+turned into a number.
+
+The syslog pair is the argument for defaults. Those lines carry no
+year at all, so the reading is completed with one — `{"year": 2026}`
+— rather than left at 1970 or guessed from today's clock, which would
+make the example's own output drift.
+
+The last block writes one instant four ways, which is the pair's
+point: a stamp read out of one tool's shape can be handed to another
+tool in the shape that one expects.
+
+docs/cookbook.md and playground/examples.js are both generated, so
+both were regenerated rather than edited; the tests that hold them to
+examples/ said so, one after the other.
+
+25 examples, 49 programs, 82 files formatted.

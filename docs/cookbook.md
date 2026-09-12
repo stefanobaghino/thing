@@ -1278,6 +1278,85 @@ sorted: [1, 2, 3, 5, 7, 8, 9]
 input again: [5, 3, 8, 1, 9, 2, 7]
 ```
 
+## stamps
+
+Timestamps as other programs wrote them. An access log and a syslog line carry the same instant in two different shapes, and neither is ISO 8601: time.parse reads a shape stated in the strftime codes the world already describes these with, and time.text writes one back.  A stamp that does not match answers nil, because a line out of a file may be anything. A syslog line carries no year at all, so the year is supplied rather than guessed.
+
+```ting
+# Timestamps as other programs wrote them. An access log and a syslog
+# line carry the same instant in two different shapes, and neither is
+# ISO 8601: time.parse reads a shape stated in the strftime codes the
+# world already describes these with, and time.text writes one back.
+#
+# A stamp that does not match answers nil, because a line out of a
+# file may be anything. A syslog line carries no year at all, so the
+# year is supplied rather than guessed.
+
+let time = import("../lib/time.ting");
+let li = import("../lib/list.ting");
+
+let access = [
+  "10.0.0.7 - - [12/Sep/2026:06:00:01 +0000] \"GET / HTTP/1.1\" 200 1043",
+  "10.0.0.9 - - [12/Sep/2026:06:14:52 +0000] \"GET /docs HTTP/1.1\" 200 8122",
+  "10.0.0.7 - - [12/Sep/2026:07:02:10 +0000] \"POST /login HTTP/1.1\" 302 0",
+  "10.0.0.3 - - [whenever] \"GET /favicon.ico HTTP/1.1\" 404 209",
+  "10.0.0.9 - - [12/Sep/2026:07:41:33 +0000] \"GET /search HTTP/1.1\" 200 3310",
+];
+
+let hits = [];
+for line in access {
+  let field = split(split(line, "[")[1], "]")[0];
+  let at = time["parse"](field, "%d/%b/%Y:%H:%M:%S %z");
+  if at == nil {
+    print("not a stamp:", field);
+    continue;
+  }
+  push(hits, at);
+}
+
+print("first:", time["iso"](hits[0]));
+print("last: ", time["iso"](hits[len(hits) - 1]));
+print("span: ", time["span"](hits[len(hits) - 1] - hits[0]));
+print("hits by hour:", li["count_by"](hits, fn(ms) { return time["text"](ms, "%H:00"); }));
+
+# Syslog writes the month by name, pads the day with a space, and
+# says nothing about the year: whoever reads the file is expected to
+# know. Saying so is one argument.
+let syslog = [
+  "Sep  3 06:00:03 web-1 sshd[4123]: Accepted publickey for deploy",
+  "Sep 12 07:02:11 web-1 sudo: deploy : TTY=pts/0 ; COMMAND=/bin/systemctl",
+];
+
+print("syslog:");
+for line in syslog {
+  let at = time["parse"](slice(line, 0, 15), "%b %e %H:%M:%S", {"year": 2026});
+  print("  " + time["iso"](at), slice(line, 16, len(line)));
+}
+
+# And the other direction: one instant, in the shapes each of those
+# tools expects to be handed.
+print("the first hit, written for:");
+for pattern in ["%F %T", "%d/%b/%Y:%H:%M:%S %z", "%b %e %H:%M:%S", "%A %B %e, %Y at %I:%M %p"] {
+  print("  " + pattern + "  ->  " + time["text"](hits[0], pattern));
+}
+```
+
+```text
+not a stamp: whenever
+first: 2026-09-12T06:00:01Z
+last:  2026-09-12T07:41:33Z
+span:  1h 41m 32s
+hits by hour: {"06:00": 2, "07:00": 2}
+syslog:
+  2026-09-03T06:00:03Z web-1 sshd[4123]: Accepted publickey for deploy
+  2026-09-12T07:02:11Z web-1 sudo: deploy : TTY=pts/0 ; COMMAND=/bin/systemctl
+the first hit, written for:
+  %F %T  ->  2026-09-12 06:00:01
+  %d/%b/%Y:%H:%M:%S %z  ->  12/Sep/2026:06:00:01 +0000
+  %b %e %H:%M:%S  ->  Sep 12 06:00:01
+  %A %B %e, %Y at %I:%M %p  ->  Saturday September 12, 2026 at 06:00 AM
+```
+
 ## stats
 
 Descriptive statistics over a fixed sample, using lib/math.ting, lib/list.ting and range with a step.

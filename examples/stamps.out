@@ -1,0 +1,13 @@
+not a stamp: whenever
+first: 2026-09-12T06:00:01Z
+last:  2026-09-12T07:41:33Z
+span:  1h 41m 32s
+hits by hour: {"06:00": 2, "07:00": 2}
+syslog:
+  2026-09-03T06:00:03Z web-1 sshd[4123]: Accepted publickey for deploy
+  2026-09-12T07:02:11Z web-1 sudo: deploy : TTY=pts/0 ; COMMAND=/bin/systemctl
+the first hit, written for:
+  %F %T  ->  2026-09-12 06:00:01
+  %d/%b/%Y:%H:%M:%S %z  ->  12/Sep/2026:06:00:01 +0000
+  %b %e %H:%M:%S  ->  Sep 12 06:00:01
+  %A %B %e, %Y at %I:%M %p  ->  Saturday September 12, 2026 at 06:00 AM

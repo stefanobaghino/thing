@@ -17,12 +17,12 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 230
-  functions, guarded); 48 ting programs (24 selftest files — 23 tests
+  functions, guarded); 49 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3074 selftest checks on all four
+  nothing on its own — and 25 examples with .out; 3074 selftest checks on all four
   CI platforms, Windows included); 523 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 82 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -4430,11 +4430,12 @@ holds only the current milestone and the standing rules.
 - 1062: lib/time.ting gained `text(ms, pattern, offset)`, `parse`'s
   inverse over the same codes, named after csv's. 230 functions,
   3074 checks.
+- 1063: examples/stamps.ting reads an access log and a syslog line
+  end to end; cookbook and playground regenerated. 25 examples, 49
+  programs, 82 formatted.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - an example that reads a real access-log or syslog stamp end to
-    end, and a cookbook recipe pointing at it
   - release v2.162.0
   - verify v2.162.0 cold: seven assets, `sha256sum -c`, both aarch64
     archives executed here, the ten published paths 200
