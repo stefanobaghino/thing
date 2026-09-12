@@ -4330,10 +4330,21 @@ holds only the current milestone and the standing rules.
   modules, 214 functions, 48 programs, 3010 checks, 491 tests in 18
   suites, 81 unchanged, seventeen warnings, 178 tags). Milestone "the
   answer it already has" COMPLETE.
+- 1028: replenishment — milestone "the phrasebook" (v2.158),
+  reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone
+  - a `.` before a call hands back the map form, `m["f"](x)`, not
+    `f(x)`: a module is a map and that is how the stdlib is called
+  - `in` as an expression hands back `has(m, k)` for a map and
+    `contains(xs, v)` for a list
+  - the C counted loop: `for (let i = 0; ...)` hands back `for i in
+    range(n)`, and `i++` / `i--` hand back `i += 1` / `i -= 1`
+  - release v2.158.0
+  - verify v2.158.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

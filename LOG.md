@@ -26951,3 +26951,57 @@ the table. The work was carrying a fact the last few inches to the
 person who asked.
 
 Replenishment next.
+
+## 1028 — replenishment: milestone "the phrasebook"
+
+The probe wrote a CSV report tool: group the rows by a column, total
+another, sort, print an aligned table with a bar per group, `--json`
+for the whole thing as data, `--help` built from the spec. Fifty
+lines, and it works. Every time it stopped, it stopped on a habit
+from another language — and ting met most of those habits with the
+ting spelling, which is why the ones it did not met stand out.
+
+What it answered, without being asked twice: `//` is `#`; `elif` is
+`else if`; `and`, `or`, `not` are `&&`, `||`, `!`; `(x) => x + 1` is
+`fn(x) { return x; }`; `null` is `nil` and `True` is `true`; `m.a` is
+`m["a"]`; `argv` is a near miss for `args`; an f-string is `format`.
+That is a phrasebook, kept in src/parser.rs with its own table of
+tests, and it is the reason a first script gets written at all.
+
+**`m.f()` is sent to the wrong entry.** `str.repeat("#", n)` answers
+`ting has no methods — a call is `f(x)``, and `f(x)` is not the fix:
+a module is a map and its functions are reached as `str["repeat"](
+"#", n)`, which is what every example in this repo does. The entry
+one line above it, for `m.a` with no call after it, says
+`m["key"]` and is exactly right. The commonest way to call the stdlib
+is the one case the phrasebook misdirects.
+
+**`in` is a keyword the parser will not explain.** `if !(k in
+groups)` answers `expected ')', found 'in'` and stops there, though
+`in` is a word this parser knows (it reads it in every `for`), and
+ting has both answers to hand: `has(m, k)` for a map, `contains(xs,
+v)` for a list. A newcomer reading that error learns that `in` is
+unexpected, not that the language has the test under another name.
+
+**The C counted loop gets half an answer.** `for (let i = 0; i < 3; i
+= i + 1)` answers `expected loop variable, found '('`, which names
+what the parser wants but not the loop that is meant: `for i in
+range(3)`. Its companion `i++` answers `expected expression, found
+'+'`, with no mention of `i += 1`, which ting has. Both come from the
+same habit and both end in the same two-line rewrite.
+
+NOT CHOSEN: `a ? b : c` stops at the lexer, `unexpected character
+'?'`, and the honest answer is a statement rewrite rather than a
+spelling — ting has no conditional expression — so the entry would
+have to teach a shape, not a word. Worth a look, but not before the
+three above.
+
+NOT CHOSEN this round, and noted for the next probe: `--check` found
+five real problems in this script in one pass — two builtins shadowed
+by imports, a stdlib name used without its module, `read` for
+`read_file`, a builtin asked of a module that does not have it — and
+nothing about a failing run invites you to run it. The run and the
+checker know different things and neither borrows from the other.
+That is a milestone of its own, and a bigger one.
+
+Milestone "the phrasebook" (v2.158): three strokes, one per habit.
