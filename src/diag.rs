@@ -15,6 +15,27 @@ pub fn read_why(e: &std::io::Error) -> String {
     e.to_string()
 }
 
+/// `cannot read` about a path that came from a value rather than
+/// from the command line. Such a path can be two things a path
+/// never is: enormous, and text. A program that hands the CONTENTS
+/// of a file to something wanting its NAME is told `No such file or
+/// directory` about forty characters of its own data, which is true
+/// and reads like nonsense — so a line break, which no path a
+/// program means to open has in it, is diagnosed instead, and the
+/// quote is cut to the width the traces use. A path with no line
+/// break is named in full, however long: that is the file the reader
+/// has to go and look at.
+pub fn cannot_read(path: &str, why: &str) -> String {
+    if !path.contains('\n') {
+        return format!("cannot read {path:?}: {why}");
+    }
+    let mut shown: String = path.chars().take(30).collect();
+    if path.chars().count() > 30 {
+        shown.push_str("...");
+    }
+    format!("cannot read {shown:?}: that is text, not a path (a path cannot hold a line break)")
+}
+
 /// Bytes as text, or a message saying exactly where they stop being
 /// text. A log is a gigabyte of good lines and one byte from some
 /// older encoding; "not UTF-8 text" alone leaves nothing to search
@@ -743,6 +764,32 @@ mod tests {
         // names are, and a name with no parts is only itself.
         assert_eq!(nearest("to_x", ["to", "x"]), None);
         assert_eq!(nearest("elephant", ["print", "len"]), None);
+    }
+
+    /// A path a program computed can be text it meant to read, and
+    /// `No such file or directory` about a spreadsheet says nothing.
+    /// A real path keeps its whole name however long it is.
+    #[test]
+    fn a_path_with_a_line_break_in_it_is_text() {
+        assert_eq!(
+            cannot_read("a,b\nc,d\n", "No such file or directory"),
+            "cannot read \"a,b\\nc,d\\n\": that is text, not a path (a path cannot hold a line break)"
+        );
+        // Cut to the width the traces use, with the ellipsis inside
+        // the quotes so the message cannot be mistaken for the name.
+        let long = "date,category,amount\n2026-01-03,food,12.50\n";
+        assert!(
+            cannot_read(long, "No such file or directory")
+                .starts_with("cannot read \"date,category,amount\\n2026-01-0...\": that is text"),
+            "{}",
+            cannot_read(long, "No such file or directory")
+        );
+        // No line break: the name in full, and the reason as given.
+        let path = "/a/very/long/path/that/somebody/has/to/go/and/look/at.ting";
+        assert_eq!(
+            cannot_read(path, "No such file or directory"),
+            format!("cannot read {path:?}: No such file or directory")
+        );
     }
 
     #[test]

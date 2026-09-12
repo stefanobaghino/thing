@@ -2842,7 +2842,7 @@ impl<W: Write> Interpreter<W> {
                     }
                     Value::Str(path) => crate::diag::read_text_mode(path.as_str(), lossy)
                         .map(Value::str)
-                        .map_err(|why| error(format!("cannot read {path:?}: {why}"), span)),
+                        .map_err(|why| error(crate::diag::cannot_read(path.as_str(), &why), span)),
                     v => Err(error(
                         format!("read_file expects a string path, got {}", v.type_name()),
                         span,
@@ -2926,21 +2926,16 @@ impl<W: Write> Interpreter<W> {
                 };
                 let f = f.clone();
                 let path = path.clone();
-                let whose = if path == "-" {
-                    "stdin".to_string()
-                } else {
-                    format!("{path:?}")
+                let trouble = |why: String| match path == "-" {
+                    true => format!("cannot read stdin: {why}"),
+                    false => crate::diag::cannot_read(&path, &why),
                 };
                 use std::io::BufRead;
                 let mut reader: Box<dyn BufRead> = if path == "-" {
                     Box::new(std::io::stdin().lock())
                 } else {
-                    let file = std::fs::File::open(&path).map_err(|e| {
-                        error(
-                            format!("cannot read {whose}: {}", crate::diag::read_why(&e)),
-                            span,
-                        )
-                    })?;
+                    let file = std::fs::File::open(&path)
+                        .map_err(|e| error(trouble(crate::diag::read_why(&e)), span))?;
                     Box::new(std::io::BufReader::new(file))
                 };
                 // One buffer for the whole read, reused: the point of
@@ -2953,10 +2948,7 @@ impl<W: Write> Interpreter<W> {
                         Ok(0) => break,
                         Ok(_) => {}
                         Err(e) => {
-                            return Err(error(
-                                format!("cannot read {whose}: {}", crate::diag::read_why(&e)),
-                                span,
-                            ));
+                            return Err(error(trouble(crate::diag::read_why(&e)), span));
                         }
                     }
                     if raw.last() == Some(&b'\n') {
@@ -2970,7 +2962,7 @@ impl<W: Write> Interpreter<W> {
                         match crate::diag::line_or_lossy(&raw, &format!("line {count}"), lossy) {
                             Ok(line) => Value::str(line.into_owned()),
                             Err(why) => {
-                                return Err(error(format!("cannot read {whose}: {why}"), span));
+                                return Err(error(trouble(why), span));
                             }
                         };
                     if matches!(self.call_value(&f, vec![line], span)?, Value::Bool(false)) {
@@ -6348,6 +6340,20 @@ mod tests {
         let _ = std::fs::remove_file(&path);
 
         assert!(program_err("read_file(\"ting-no-such-file-xyz\");").starts_with("cannot read"));
+
+        // Text where a path belongs — the contents of a file handed
+        // to what wanted its name — is diagnosed, not passed on, at
+        // every surface that opens one.
+        for src in [
+            "read_file(\"a,b\\nc,d\\n\");",
+            "each_line(\"a,b\\nc,d\\n\", fn(l) { print(l); });",
+        ] {
+            assert_eq!(
+                program_err(src),
+                "cannot read \"a,b\\nc,d\\n\": that is text, not a path (a path cannot hold a line break)",
+                "{src}"
+            );
+        }
         assert_eq!(
             program_err("read_file(1);"),
             "read_file expects a string path, got int"

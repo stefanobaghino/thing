@@ -29343,3 +29343,36 @@ first part of a candidate rather than its last.
 
 That is the second time this milestone that a mutation has paid for
 itself by naming a claim the tests were only assuming.
+
+## 1104 — a path with a line break in it is text
+
+The probe's first mistake was handing CSV text to `csv["each_map"]`,
+which wants a path, and the answer was `cannot read
+"date,category,amount\n2026-01-03,food,12.50\n...": No such file or
+directory`. Every word of that is true. It also reads like nonsense,
+because the thing it calls a file is forty characters of the
+program's own data.
+
+A path that came from a VALUE can be two things a path from the
+command line never is: enormous, and text. A line break settles the
+second — no path a program means to open has one in it — so
+`crate::diag::cannot_read` now answers `that is text, not a path (a
+path cannot hold a line break)` and drops the operating system's
+reason, which explains nothing once the real trouble is named. What
+it quotes is cut to thirty characters, the width the traces use, with
+the ellipsis inside the quotes.
+
+A path with no line break keeps its whole name, however long. That is
+deliberate and pinned: a real path IS often longer than thirty
+characters, and it is the one thing the reader has to go and look at.
+`every_tool_quotes_the_path_it_could_not_read` in tests/io.rs would
+have caught a truncation there, since it uses a temp-directory path.
+
+`read_file` and `each_line` both go through it, which is every
+builtin that opens a path from a value; `stdin` keeps its own
+sentence. The command-line surfaces are left alone: a path from a
+shell is not text a program computed.
+
+Three mutations, all killed: matching a carriage return instead of a
+line break, the cut widened past the test's case, and one of the two
+call sites going back to the plain message.

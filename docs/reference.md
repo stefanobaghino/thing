@@ -1442,6 +1442,15 @@ diagnostic and the notes under it, the names `--fmt`, `--doc` and
 of `try`'s `"at"` and `"trace"`, and the message `--lsp` puts on a
 broken `import`.
 
+A path a program computed can be something a path from the command
+line never is: the text it meant to read. A line break settles it —
+no path a program means to open has one — so `read_file` and
+`each_line` say `that is text, not a path` rather than passing on
+`No such file or directory` about forty characters of a spreadsheet,
+and what they quote is cut to the width a trace uses. A path without
+one is named in full, however long: that is the file to go and look
+at.
+
 A path written into the middle of a message is quoted, wherever the
 message comes from: `ting: cannot read "notes.ting": ...` from a
 tool, `cannot read "notes.ting": ...` from a builtin that could not
