@@ -1785,6 +1785,34 @@ impl<W: Write> Interpreter<W> {
         m
     }
 
+    /// The text a callee was written as, read out of the source the
+    /// code now running belongs to — a module's own text while one of
+    /// its functions is on the stack, the file being run otherwise.
+    /// It is not filtered down to identifiers: only a builtin's name
+    /// is ever asked about, and every one of those is an identifier,
+    /// so `xs[0]` answers for itself.
+    fn callee_text(&self, span: Span) -> Option<&str> {
+        let src: &str = match self.call_origins.last() {
+            Some(Some(o)) => &o.src,
+            _ => self.source.as_ref().map(|(_, s)| s.as_ref())?,
+        };
+        src.get(span.start..span.end)
+    }
+
+    /// What to add to "map is not callable" when the name called is a
+    /// builtin the file bound to something else. `--check` has said
+    /// `\`args\` shadows a builtin` about the `let` all along, and the
+    /// run had the same fact and printed the half of it that does not
+    /// help.
+    pub(crate) fn shadow_note(&self, span: Span) -> String {
+        match self.callee_text(span) {
+            Some(name) if crate::value::Builtin::ALL.iter().any(|b| b.name() == name) => {
+                format!(" (`{name}` shadows the builtin of that name)")
+            }
+            _ => String::new(),
+        }
+    }
+
     /// Define a name in the current (global, for the VM) scope.
     pub(crate) fn define(&mut self, name: &str, v: Value) {
         self.env.borrow_mut().vars.insert(Rc::from(name), v);
@@ -4290,7 +4318,11 @@ impl<W: Write> Interpreter<W> {
             Value::Fn(func) => self.call(&Rc::clone(func), args, span),
             Value::Builtin(b) => self.call_builtin(*b, args, span),
             other => Err(error(
-                format!("{} is not callable", other.type_name()),
+                format!(
+                    "{} is not callable{}",
+                    other.type_name(),
+                    self.shadow_note(span)
+                ),
                 span,
             )),
         }
@@ -4564,7 +4596,11 @@ impl<W: Write> Interpreter<W> {
                     Value::Fn(func) => self.call(&func, arg_vals, expr.span),
                     Value::Builtin(b) => self.call_builtin(b, arg_vals, expr.span),
                     other => Err(error(
-                        format!("{} is not callable", other.type_name()),
+                        format!(
+                            "{} is not callable{}",
+                            other.type_name(),
+                            self.shadow_note(callee.span)
+                        ),
                         callee.span,
                     )),
                 }
@@ -6884,6 +6920,36 @@ mod tests {
             program_err("let print = 1; print(2);"),
             "int is not callable"
         );
+    }
+
+    /// A run that stops on a name the file bound over a builtin says
+    /// so, which is what `--check` says about the `let` (1038). The
+    /// name is read out of the source, so an interpreter that was
+    /// never given one — `program_err` above — says only the half it
+    /// can stand behind.
+    #[test]
+    fn a_shadowed_builtin_says_so_when_it_cannot_be_called() {
+        let err = |src: &str| -> String {
+            use crate::parser::parse_program;
+            let mut interp = Interpreter::new(Vec::new());
+            interp.set_source("t.ting", src);
+            interp
+                .run(&parse_program(&lex(src).unwrap()).unwrap())
+                .unwrap_err()
+                .message
+        };
+        assert_eq!(
+            err("let print = 1; print(2);"),
+            "int is not callable (`print` shadows the builtin of that name)"
+        );
+        assert_eq!(
+            err("let len = {}; len([1]);"),
+            "map is not callable (`len` shadows the builtin of that name)"
+        );
+        // A name that is nobody's builtin, and a callee that is not a
+        // name at all, keep the plain sentence.
+        assert_eq!(err("let m = {}; m();"), "map is not callable");
+        assert_eq!(err("let xs = [1]; xs[0]();"), "int is not callable");
     }
 
     #[test]

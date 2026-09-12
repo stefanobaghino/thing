@@ -203,7 +203,11 @@ fn exec<W: Write>(
                     }
                     other => {
                         return Err(eval::error(
-                            format!("{} is not callable", other.type_name()),
+                            format!(
+                                "{} is not callable{}",
+                                other.type_name(),
+                                interp.shadow_note(*callee_span)
+                            ),
                             *callee_span,
                         ));
                     }
@@ -235,7 +239,11 @@ fn exec<W: Write>(
                     }
                     other => {
                         return Err(eval::error(
-                            format!("{} is not callable", other.type_name()),
+                            format!(
+                                "{} is not callable{}",
+                                other.type_name(),
+                                interp.shadow_note(*callee_span)
+                            ),
                             *callee_span,
                         ));
                     }

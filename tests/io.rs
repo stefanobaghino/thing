@@ -5437,3 +5437,66 @@ fn a_format_template_reads_the_same_to_the_checker_and_the_run() {
     // and pass.
     assert!(checked >= 9, "only {checked} of the calls were refused");
 }
+
+/// Both engines say the same thing about a shadowed builtin that
+/// cannot be called: the VM reads the name out of the span its Call
+/// op carries, the tree-walker out of the callee expression, and the
+/// two must not drift (1038).
+#[test]
+fn both_engines_name_a_shadowed_builtin_that_is_not_callable() {
+    let dir = std::env::temp_dir().join("ting-shadow-note");
+    std::fs::create_dir_all(&dir).unwrap();
+    let script = dir.join("shadow.ting");
+    std::fs::write(&script, "let args = {};\nprint(args());\n").unwrap();
+    let said = |engine: Option<&str>| -> String {
+        let mut cmd = Command::new(env!("CARGO_BIN_EXE_ting"));
+        cmd.arg(&script);
+        if let Some(e) = engine {
+            cmd.env("TING_ENGINE", e);
+        }
+        let out = cmd.output().expect("failed to run ting");
+        String::from_utf8_lossy(&out.stderr)
+            .lines()
+            .next()
+            .unwrap_or_default()
+            .to_string()
+    };
+    let vm = said(None);
+    assert!(
+        vm.ends_with("map is not callable (`args` shadows the builtin of that name)"),
+        "the vm said: {vm}"
+    );
+    assert_eq!(vm, said(Some("eval")));
+}
+
+/// A module's own text answers for a span inside it: the note names
+/// what the MODULE wrote, not whatever stands at those offsets in the
+/// file that imported it (1038).
+#[test]
+fn a_shadowed_builtin_inside_a_module_reads_the_modules_own_source() {
+    let dir = std::env::temp_dir().join("ting-shadow-module");
+    std::fs::create_dir_all(&dir).unwrap();
+    // The `let` is far enough down that the same offsets in main.ting
+    // are a different line entirely.
+    std::fs::write(
+        dir.join("m.ting"),
+        "let len = {\"a\": 1};\nfn go() { return len([1]); }\nlet go = go;\n",
+    )
+    .unwrap();
+    let main = dir.join("main.ting");
+    std::fs::write(&main, "let m = import(\"m.ting\");\nprint(m[\"go\"]());\n").unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .arg(&main)
+        .output()
+        .expect("failed to run ting");
+    let first = String::from_utf8_lossy(&out.stderr)
+        .lines()
+        .next()
+        .unwrap_or_default()
+        .to_string();
+    assert!(
+        first.ends_with("map is not callable (`len` shadows the builtin of that name)"),
+        "ting said: {first}"
+    );
+    assert!(first.contains("m.ting"), "ting said: {first}");
+}

@@ -27303,3 +27303,38 @@ its bad templates through `try(format, ...)`, where the template is
 an argument to something else and this pass does not look.
 
 docs/reference.md has the sentence.
+
+## 1038 — the run says what the `let` did
+
+Third stroke of "what the checker could have said", and the one that
+goes the other way: not a fact the checker was missing, but a fact the
+run had and would not print. `let args = import("lib/args.ting")` then
+`args()` answered `map is not callable`, which is true and useless,
+while `--check` on the same file said `` `args` shadows a builtin ``.
+
+The call now adds the checker's half: `map is not callable (`args`
+shadows the builtin of that name)`. The name is read out of the source
+at the callee's span — the module's own text while one of its
+functions is on the stack, the file being run otherwise — and offered
+only when it is one of the 79. Both engines say it: the tree-walker
+and the VM each build the sentence at their own two call sites, and a
+test in tests/io.rs runs the same script through both and compares.
+
+Four mutations. Two were caught: the builtin test dropped (every text
+would claim to shadow), and the VM's half of the note removed. Two
+passed, and each said something.
+
+Dropping the identifier filter changed nothing, and it should not
+have: the only question ever asked of that text is whether it is a
+builtin's name, and every one of those is an identifier, so `xs[0]`
+answers for itself. The filter was dead weight and is gone rather
+than tested.
+
+Dropping the module branch changed nothing either, because every case
+was in the file being run. That one was a real hole: a span inside an
+imported module read against the importing file's text would name
+whatever stands at those offsets there. tests/io.rs has the module
+case now, and the mutation fails.
+
+docs/reference.md puts it beside the misspelt-name suggestions, which
+is the same idea from the other side.

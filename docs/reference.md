@@ -1040,6 +1040,11 @@ other (`lenght` finds `len`); names under three characters get none. A key that 
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.
 
+A name the file bound over a builtin gets the same treatment from the
+other side: calling it when it no longer holds a function reads `map
+is not callable (`args` shadows the builtin of that name)`, the
+sentence `--check` prints about the `let` itself.
+
 An error is reported against the file and line that raised it — for
 one raised inside a function an imported module defines, that
 module's own file (for an embedded stdlib module, its `lib/...`
