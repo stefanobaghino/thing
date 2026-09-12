@@ -5,6 +5,31 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.166.0 (2026-09-12)
+
+- **The name inside the name.** A guess built the way another
+  language spells names — `to_float`, `array_len`, `list_median`,
+  `string_upper` — was scored against the whole of itself and got no
+  suggestion at all, or the wrong half of one: `string_upper` was
+  answered `did you mean str?`. A guess that finds nothing whole is
+  now broken at its underscores and each part asked in turn, last
+  part first, so `to_float` finds `float`, `array_len` finds `len`
+  and `string_upper` finds `upper`.
+- **How a suggestion was found ranks before how far it is.** A name
+  that starts another matched at any distance, so `list_sort` was
+  answered `list_dir` rather than `sort`, and a module miss could
+  recommend a builtin over the module's own export sitting inside the
+  guess. The order is now: the whole guess one slip away, a part that
+  is a name outright, the whole guess on a shared start, a part near
+  a name.
+- **`as` is a habit the parser explains.** `import("x.ting") as m`
+  was answered `expected ';', found identifier 'as'`, two lines from
+  a `.` that gets a sentence teaching the language. An `as` in an
+  importing statement now answers `a module is a value: let m =
+  import(...);`, one in front of `int`, `float`, `str` or `bool`
+  answers `a conversion is a call`, and any other names the habit
+  without inventing a fix.
+
 ## v2.165.0 (2026-09-12)
 
 - **A colon is the REPL's to answer.** `:typo` went to the parser,

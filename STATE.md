@@ -4530,10 +4530,11 @@ holds only the current milestone and the standing rules.
 - 1097: `as` joins the parser hints in src/parser.rs — a module
   is a value, a conversion is a call, and anything else is only
   named.
+- 1098: v2.166.0 tagged (187th) — milestone "the half you got
+  right", strokes 1094, 1095, 1096, 1097.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.166.0
   - verify v2.166.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

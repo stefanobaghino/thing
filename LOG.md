@@ -29123,3 +29123,38 @@ has already failed.
 Four mutations, all killed: the import test forced true, the search
 run past the statement boundary, the conversion list opened to any
 name, and the word itself misspelt.
+
+## 1098 — release v2.166.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+5367dac5664d1432a9ee92919dfc4cf6179054f7 from the API on all three
+platforms (full sha).
+
+v2.166.0, the milestone "the half you got right". The suggestion
+machinery was good at typos and blind to the other way a name comes
+out wrong: not misspelt, but spelt the way another language spells
+names. `to_float` for `float`, `array_len` for `len`, `list_median`
+for `median` — every one of them holds the right name inside it, and
+every one of them got nothing.
+
+1094 breaks a guess at its underscores when the whole finds nothing.
+1095 makes how an answer was found rank before how far away it is,
+which is what stops `string_upper` being answered `str` and
+`list_sort` being answered `list_dir`, and settles the same question
+where a module miss weighs its own exports against the builtins. 1097
+puts `as` among the habits the parser already explains.
+
+1096 is not in the changelog. The ratio self-test read 2.87 on the
+same CI runner that failed it at 1081, and its bound is now what a
+scheduler-stepped clock can carry rather than what this host reads.
+
+Strokes 1094, 1095, 1096, 1097. CHANGELOG.md written from those
+entries; Cargo.toml and Cargo.lock at 2.166.0; the binary reports
+`ting 2.166.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (531
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.166.0 — the 187th tag — and pushed. Verification is the
+next tick.
