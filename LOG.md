@@ -28422,3 +28422,38 @@ archive and prints what it prints here.
 Site audit: all ten published paths 200. changelog.html carries
 v2.163.0, stdlib.html says 231 functions, and cookbook.html has the
 records recipe.
+
+## 1075 — health tick, milestone "rows and records" complete
+
+Maintenance: tree clean, no open PRs, CI green for 893d8cb from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row, and this time the timings are
+within a few per cent of it too — 1067's run was two to four times
+slow because a release build was still finishing beside it, which is
+what "timings are weather" means in practice.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 231 module functions, 24
+selftest files, 26 examples each with a .out, 3098 selftest checks on
+both engines, 523 Rust tests in 18 suites, `--fmt .` 83 unchanged,
+corpus at twenty-two warnings, 184 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+The milestone is complete. It started as one probe finding, and the
+finding was the worst kind: a file written, no error raised, and the
+data not in it. The fix is three-sided and the three sides are the
+same idea — give the shape a way out (`rows`), refuse to misread it
+(`text`, `table`), and show the whole trip once in an example over a
+file with a comma, a line break and a pair of quotes in it. What made
+it findable at all was writing a real program with the library rather
+than reading it: the probe reached for a way back out, found none,
+hand-joined the fields, and that is the bug the library was built to
+prevent.
+
+Replenishment next, and the timing guards are in the queue for it:
+1072 lost a gate run to a wall clock on a machine at load 5.

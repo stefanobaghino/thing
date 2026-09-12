@@ -4463,10 +4463,15 @@ holds only the current milestone and the standing rules.
 - 1073: v2.163.0 tagged (184th tag; strokes 1069, 1070, 1071, 1072).
 - v2.163.0 VERIFIED (184th tag; seven assets, six sums OK, both
   aarch64 archives executed here, ten paths 200).
+- 1075: health tick — eleven checksums identical to BASELINE (and
+  the timings within a few per cent this time), four sweeps ok,
+  counts all standing (79 builtins, 13 modules, 231 functions, 50
+  programs, 3098 checks, 523 tests in 18 suites, 83 unchanged,
+  twenty-two warnings, 184 tags). Milestone "rows and records"
+  COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
