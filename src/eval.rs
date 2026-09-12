@@ -3799,6 +3799,28 @@ impl<W: Write> Interpreter<W> {
                     .flush()
                     .map_err(|e| error(format!("exit: flush failed: {e}"), span))?;
                 report_checks_if_asked();
+                // A file that failed a check and then left happily is
+                // the same file 1043 was about, one line further on:
+                // `summary()` exits, so this is the other way out, and
+                // a verdict thrown away here looks exactly like a pass
+                // (1044). A code that already says "failed" is left
+                // alone; only a happy exit is overruled.
+                let mut code = code;
+                if code == 0 {
+                    let failures = self.unreported_test_failures();
+                    if !failures.is_empty() {
+                        for f in &failures {
+                            let _ = writeln!(self.out, "FAIL: {f}");
+                        }
+                        let _ = writeln!(
+                            self.out,
+                            "{} failed, and this file never called summary()",
+                            crate::diag::plural(failures.len(), "check")
+                        );
+                        let _ = self.out.flush();
+                        code = 1;
+                    }
+                }
                 std::process::exit(code.clamp(0, 255) as i32)
             }
             Builtin::TimeMs => {

@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
-  CI platforms, Windows included); 506 Rust tests
+  CI platforms, Windows included); 507 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4374,6 +4374,9 @@ holds only the current milestone and the standing rules.
   fails the run, with or without `summary()`; `reset()` is the new
   export for a file that arranged its failures. 215 functions, 506
   tests, 3013 checks.
+- 1044: and the same file calling `exit(0)` — the Exit builtin asks
+  for the unreported failures when the requested code is 0, prints
+  them and exits 1. 507 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

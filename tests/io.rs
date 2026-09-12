@@ -5556,3 +5556,44 @@ fn a_check_that_failed_unprinted_still_fails_the_file() {
     assert_eq!(out.status.code(), Some(0), "{stdout}");
     assert!(stdout.contains("1 check"), "{stdout}");
 }
+
+/// `exit()` is the other way out of a run, and 1043's verdict was not
+/// on it: a file that failed a check and then left happily reported
+/// `ok` (1044). A code that already says "failed" is left alone.
+#[test]
+fn a_happy_exit_does_not_swallow_a_failed_check() {
+    let root = std::env::temp_dir().join(format!("ting-happy-exit-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let run = |src: &str| -> (Option<i32>, String) {
+        std::fs::write(root.join("e.ting"), src).unwrap();
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--test", root.to_str().unwrap()])
+            .output()
+            .expect("failed to run ting");
+        (
+            out.status.code(),
+            String::from_utf8_lossy(&out.stdout).to_string(),
+        )
+    };
+    let failing = "let t = import(\"lib/test.ting\");\nt[\"check_eq\"](\"two is three\", 2, 3);\n";
+    let (code, stdout) = run(&format!("{failing}exit(0);\n"));
+    assert_eq!(code, Some(1), "{stdout}");
+    assert!(
+        stdout.contains("FAIL: two is three: got 2, want 3"),
+        "the failure is missing:\n{stdout}"
+    );
+    // A file that checked and passed leaves by the door it chose.
+    let (code, stdout) =
+        run("let t = import(\"lib/test.ting\");\nt[\"check_eq\"](\"fine\", 2, 2);\nexit(0);\n");
+    assert_eq!(code, Some(0), "{stdout}");
+    // And summary(), which exits 1 itself, still reports its own way
+    // rather than twice.
+    let (code, stdout) = run(&format!("{failing}t[\"summary\"]();\n"));
+    assert_eq!(code, Some(1), "{stdout}");
+    assert_eq!(
+        stdout.matches("two is three").count(),
+        1,
+        "reported twice:\n{stdout}"
+    );
+}

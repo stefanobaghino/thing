@@ -27498,3 +27498,22 @@ fails the selftest as well), and the explanatory line dropped.
 
 docs/reference.md and docs/stdlib.md both say summary() is not
 optional.
+
+## 1044 — and the same file calling exit(0)
+
+1043 made an unprinted failure fail the run, and left one way out:
+`std::process::exit` returns to nobody, so a file that failed a check
+and then called `exit(0)` still reported `ok e.ting (1 check)` and
+exited 0. Both of 1043's paths — summary()'s verdict and the
+end-of-run check in `run_source_reported` — are downstream of a call
+that never returns.
+
+The Exit builtin now asks the same question when the requested code
+is 0: the failures are printed, the "never called summary()" line
+follows, and the process exits 1. A non-zero code is left alone, so
+summary(), which exits 1 itself, is not reported twice. Probed all
+three shapes: exit(0) after a failure is rc=1 with the failure named,
+a clean exit(0) is rc=0, and summary() still says it once.
+
+Three mutations, all caught: the condition forced false, forced true
+(summary() then says it twice), and the exit code left at 0.
