@@ -1152,17 +1152,29 @@ The `ting` binary is the whole toolchain — no separate installs:
   if anything would change (use it in CI); `--fmt --diff` prints the
   changed lines instead of writing. Directories recurse. The formatter is
   idempotent, never alters program meaning, and keeps the file's line
-  endings (a CRLF file stays CRLF). It works on TOKENS rather than on
-  a parsed program, which is why it can tidy a file you are in the
-  middle of writing: a file that does not parse is still reformatted,
-  as long as it lexes. Nothing is checked on the way through — run
-  `--check` for that. Over several files every one is
-  processed — a file that cannot be read, does not lex or cannot be
-  written is reported and the run goes on — and the run ends with a
-  summary line (reformatted / unchanged / failed, or "would change"
-  under `--fmt-check`); exit 1 if anything failed or would change.
-  `--fmt-check` and `--fmt --diff` take `--watch` (below); `--fmt`
-  itself does not, since rewriting a file would set the watch off.
+  endings (a CRLF file stays CRLF). The author's line breaks are kept
+  too — nothing is joined or split, and a run of blank lines collapses
+  to one — so the shape of a file stays the author's. The indentation
+  does not: two spaces for every level of brace depth, plus one level
+  for a line that continues another. What a line continues is either
+  the innermost `[` or `(` still open where the break happened, or,
+  with none open, the operator the line before it ended on (a line
+  cannot end on `+`, `&&`, `=`, `:` and the rest and be finished).
+  Only one of the two applies to a break, and a `{` has taken its
+  level at the opener already: a closure or a map passed as an
+  argument is indented once, not twice, and a list written one item
+  per line is indented by the `[` that holds it and nothing more. It
+  works on TOKENS rather than on a parsed program, which is why it can
+  tidy a file you are in the middle of writing: a file that does not
+  parse is still reformatted, as long as it lexes. Nothing is checked
+  on the way through — run `--check` for that. Over several files
+  every one is processed — a file that cannot be read, does not lex
+  or cannot be written is reported and the run goes on — and it ends
+  with a summary line (reformatted / unchanged / failed, or "would
+  change" under `--fmt-check`); exit 1 if anything failed or would
+  change. `--fmt-check` and `--fmt --diff` take `--watch` (below);
+  `--fmt` itself does not, since rewriting a file would set the watch
+  off.
 - `ting --check <paths...>` reports lexer, parser, and compiler
   diagnostics without running anything — built for pre-commit hooks.
   Directories recurse, and files reached through `import("...")` of a

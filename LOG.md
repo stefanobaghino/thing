@@ -29627,3 +29627,26 @@ it). The third anchor had to be rewritten before it applied — `cargo
 fmt` had collapsed the match arm the script was matching on, and the
 run printed the PREVIOUS mutation's result, which is the same trap as
 1104: check the anchor, not the output.
+
+## 1111 — what --fmt does to a file's layout, written down
+
+The reference said the formatter is idempotent, preserves meaning and
+keeps a file's line endings, and said nothing whatever about the two
+things a person actually notices: that their line breaks survive and
+that their indentation does not. A reader could not tell from the
+page whether `--fmt` would rewrap a long call, and 1109 and 1110 gave
+the indentation a rule worth stating.
+
+The `--fmt` bullet of docs/reference.md now says it: line breaks are
+kept — nothing joined, nothing split, a run of blank lines collapsed
+to one — and indentation is two spaces per level of brace depth plus
+one level for a line that continues another, which is the innermost
+`[` or `(` still open at the break or, with none open, the operator
+the previous line ended on. One of the two, never both, and a `{` has
+taken its level at the opener, so a closure passed as an argument is
+indented once and a list one item per line is indented by the `[`
+that holds it.
+
+That is the whole of the milestone's work; what remains is the
+release. Nothing in src/ changed here, so the docs guard is the check
+that matters, and it passes.

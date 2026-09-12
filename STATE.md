@@ -4572,14 +4572,12 @@ holds only the current milestone and the standing rules.
 - 1110: a line an operator left unfinished takes one level until the
   statement ends, once per statement, and never where a delimiter has
   set the level already.
+- 1111: the --fmt bullet of docs/reference.md states what the
+  formatter does to a file's layout — line breaks kept, indentation
+  not.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the formatter paragraph of docs/reference.md states what --fmt
-    does to a file's layout: it says nothing about indentation or
-    about the author's line breaks today (the reflow and src/fmt.rs's
-    own header comment went with 1109, which could not leave the
-    corpus unformatted and pass the gate)
   - release v2.168.0
   - verify v2.168.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
