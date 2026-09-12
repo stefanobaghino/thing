@@ -1091,6 +1091,84 @@ print("most seen:", max(pairs)[1]);
 most seen: red
 ```
 
+## records
+
+A CSV read into records, changed, and written back out as the file it came from — the round trip a program actually does, and the one place hand-joining the fields quietly ruins the file.  ting records.ting              # a file this makes ting records.ting prices.csv   # a file of your own  Records are what a program wants to hold: a column is asked for by name, not by a number someone has to count. A map has no order, though, so the header the file arrived with is kept and handed back to rows() — otherwise the columns come out alphabetical, which is a different file. With no argument it builds a file, rewrites it, reports and removes it, so the example prints the same thing every time.
+
+```ting
+# A CSV read into records, changed, and written back out as the file
+# it came from — the round trip a program actually does, and the one
+# place hand-joining the fields quietly ruins the file.
+#
+#   ting records.ting              # a file this makes
+#   ting records.ting prices.csv   # a file of your own
+#
+# Records are what a program wants to hold: a column is asked for by
+# name, not by a number someone has to count. A map has no order,
+# though, so the header the file arrived with is kept and handed back
+# to rows() — otherwise the columns come out alphabetical, which is a
+# different file. With no argument it builds a file, rewrites it,
+# reports and removes it, so the example prints the same thing every
+# time.
+
+let csv = import("../lib/csv.ting");
+let st = import("../lib/string.ting");
+
+fn build(path) {
+  write_file(path, csv["text"]([
+    ["sku", "name", "note", "price"],
+    ["A-1", "hex bolt", "plain", "0.40"],
+    ["A-2", "wing nut", "sold in tens, see\nthe sheet", "1.25"],
+    ["B-7", "\"long\" bracket", "last of them", "3.10"],
+  ]));
+}
+
+let path = "records-demo.csv";
+let mine = len(args()) > 0;
+if mine { path = args()[0]; } else { build(path); }
+
+let parsed = csv["parse"](read_file(path));
+let header = parsed[0];
+let records = csv["maps"](parsed);
+print(path + ":", len(records), "records,", len(header), "columns:", join(header, ", "));
+
+# The change: ten per cent on, and a column added to say so. A new
+# column is why the header is rebuilt rather than reused as it is.
+for r in records {
+  r["price"] = format("{:.2}", float(r["price"]) * 1.1);
+  r["raised"] = "yes";
+}
+let columns = header + ["raised"];
+
+# On screen, a table of the columns worth looking at: stating them is
+# choosing them, which leaves out the note — it holds a line break,
+# and a cell with a line break in it is not a row of a table.
+print(st["table"](csv["rows"](records, ["sku", "name", "price", "raised"])));
+
+# Out the way it came in. The note with a comma and a line break in
+# it, and the name with quotes around part of it, survive because
+# text() quotes them — which is what a hand-rolled join(fields, ",")
+# loses, silently, on exactly these rows.
+write_file(path, csv["text"](csv["rows"](records, columns)));
+let back = csv["maps"](csv["parse"](read_file(path)));
+print("written back:", len(read_file(path)), "bytes;", "same records:", back == records);
+
+# The shape is checked now, so the way NOT to do it says so.
+print("records straight to text:", try(csv["text"], records)["err"]);
+
+if !mine { remove_file(path); }
+```
+
+```text
+records-demo.csv: 3 records, 4 columns: sku, name, note, price
+sku  name            price  raised
+A-1  hex bolt        0.44   yes
+A-2  wing nut        1.38   yes
+B-7  "long" bracket  3.41   yes
+written back: 152 bytes; same records: true
+records straight to text: text: a row is a list of fields, not a record — pass rows(records)
+```
+
 ## report
 
 A small report, and a whole command-line program: the three modules a script reaches for first — a command line, delimited input, and something to say when it goes wrong.  The front door is main(), which is parse() with the two things every program does around it: --help prints the help built from this same spec and leaves with 0, and a command line the spec does not describe prints its trouble and that help to stderr and leaves with 2. Run it for yourself:  ting examples/report.ting --help ting examples/report.ting --by rep sales.csv ting examples/report.ting --nope  Named no file — which is how it runs here, and how the .out beside it was made — it reports on the small table written below, so the example prints the same thing every time.

@@ -1,0 +1,7 @@
+records-demo.csv: 3 records, 4 columns: sku, name, note, price
+sku  name            price  raised
+A-1  hex bolt        0.44   yes
+A-2  wing nut        1.38   yes
+B-7  "long" bracket  3.41   yes
+written back: 152 bytes; same records: true
+records straight to text: text: a row is a list of fields, not a record — pass rows(records)

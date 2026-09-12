@@ -28337,3 +28337,35 @@ left a stray brace and failed as a syntax error, which proves
 nothing, so it was redone properly and the guard caught that too.
 
 3098 checks.
+
+## 1072 — the round trip, end to end
+
+examples/records.ting is the milestone with all its parts in one
+place: a CSV read into records, a column changed and a column added,
+the result shown as a table and written back to the file it came
+from, then read again and compared — same records, quoting and all.
+
+The file it builds is the file that catches a hand-rolled join: a
+note holding a comma AND a line break, a name with quotes around
+part of it. `join(fields, ",")` writes those three rows as five, two
+of them nonsense. `text(rows(records, columns))` writes them as
+three.
+
+Two things the example says by doing them. The header the file
+arrived with is carried along and handed back to rows(), because a
+map has no order and alphabetical columns are a different file; and
+the table on screen states four of the five columns, since stating
+them is choosing them and the note has a line break in it, which is
+not a cell. The last line prints what handing records straight to
+text() now says, which is the one thing a reader of this example
+might otherwise go and try.
+
+The gate died once more on the sameness timing guard — 3.0 against a
+bound of 3.0, after all eight rounds, at load 5.5 — and passed on the
+rerun. 1064 made those rounds elastic; what it cannot do is make a
+wall clock mean anything on a machine this busy. The measurement that
+would is thread CPU time, which Linux has in /proc and the other two
+platforms do differently. Noting it for the next replenishment
+rather than widening a bound that is doing its job.
+
+26 examples, 50 programs, 83 files formatted.

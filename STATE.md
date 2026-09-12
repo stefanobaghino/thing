@@ -17,12 +17,12 @@ current orientation.
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
   (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 231
-  functions, guarded); 49 ting programs (24 selftest files — 23 tests
+  functions, guarded); 50 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 25 examples with .out; 3098 selftest checks on all four
+  nothing on its own — and 26 examples with .out; 3098 selftest checks on all four
   CI platforms, Windows included); 523 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
-  stale for a while). `ting --fmt .` reports 82 unchanged; BASELINE is ELEVEN
+  stale for a while). `ting --fmt .` reports 83 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
   v2.133.0.
 - One binary is the toolchain: a script may be a path or `-`
@@ -4455,11 +4455,14 @@ holds only the current milestone and the standing rules.
   checks.
 - 1071: `table` in lib/string.ting checks rows and cells before it
   measures a width; a record row names `rows`. 3098 checks.
+- 1072: examples/records.ting reads a CSV into records, changes it
+  and writes the file back. 26 examples, 50 programs, 83 formatted.
+  FOUND: the timing guards still lose a gate run at load 5+ even
+  with 1064's elastic rounds — a wall clock is the wrong clock;
+  thread CPU time is in /proc on Linux. For a replenishment.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - an example and a cookbook recipe for the round trip: read a
-    CSV, change a field, write it back with the quoting intact
   - release v2.163.0
   - verify v2.163.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
