@@ -4342,11 +4342,11 @@ holds only the current milestone and the standing rules.
   `++i` / `i--` hand back `i += 1`; `--i` parses (it negates twice)
   and a spaced `- -` is two operators. 496 tests.
 - 1032: v2.158.0 tagged (179th tag; strokes 1029, 1030, 1031).
+- v2.158.0 VERIFIED (179th tag; strokes 1029, 1030, 1031; both
+  aarch64 archives executed here).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.158.0 cold: seven assets, `sha256sum -c`, both aarch64
-    archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
@@ -4438,7 +4438,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 179 (v2.158.0), 178 verified; v2.29.0 is publicly marked broken
+- Tags: 179 (v2.158.0), 179 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

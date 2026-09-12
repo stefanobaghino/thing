@@ -27121,3 +27121,24 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.158.0 — the 179th tag — and pushed. Verification is the
 next tick.
+
+## 1033 — v2.158.0 verified
+
+Release workflow green for the tag; CI and Pages green for 851ea8e
+from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.158.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3010
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo: `st.repeat(...)`
+after an import reads `a function in a map is `st["repeat"](...)``;
+`k in g` reads `has(g, k)` and `contains(g, k)`; a C `for` header
+reads `a counted loop is `for i in range(n)``; and `i++` reads `write
+`i += 1``.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.158.0 and reference.html the counted-loop sentence.
