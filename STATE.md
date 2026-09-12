@@ -4445,6 +4445,25 @@ holds only the current milestone and the standing rules.
   functions, 49 programs, 3074 checks, 523 tests in 18 suites, 82
   unchanged, twenty-two warnings, 183 tags). Milestone "a time that
   isn't ISO" COMPLETE.
+- 1068: replenishment — milestone "rows and records" (v2.163),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - `csv["text"]` given a list of maps writes each map's KEYS as
+    its row, silently: refuse it with a sentence naming the inverse
+  - `csv["rows"](maps, columns = nil)`, the inverse of `maps`: a
+    header plus a row per record, columns stated or taken from the
+    first one
+  - `table` in lib/string.ting answers a shape it cannot use with a
+    sentence of its own, not `cannot index map with int` from line
+    271 of the module
+  - an example and a cookbook recipe for the round trip: read a
+    CSV, change a field, write it back with the quoting intact
+  - release v2.163.0
+  - verify v2.163.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

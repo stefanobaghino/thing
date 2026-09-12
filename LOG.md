@@ -28207,3 +28207,43 @@ cries wolf on a busy machine costs more than the regression it
 watches for.
 
 Replenishment next.
+
+## 1068 — replenishment: milestone "rows and records"
+
+The probe was a report out of a real access log, written cold from
+the shipped v2.162.0 archive outside the repo: 600 lines read, the
+stamp parsed with the pattern the milestone just added, requests
+grouped by path, a 95th percentile per path, a table of the five
+slowest, a per-hour histogram, and a CSV written for someone else to
+read. It runs, and the parts the last milestone added did their job.
+
+Two things went wrong, and they are the same thing.
+
+`csv["text"]` given a list of MAPS writes each map's KEYS as its row.
+Two records come back as the header twice and no data at all, with no
+error anywhere. It happens because a row is joined by iterating it,
+and iterating a map yields its keys — so the wrong shape is not
+rejected, it is quietly misread. This is the worst failure a library
+can have: the program runs, the file is written, and the values are
+gone.
+
+`table` in lib/string.ting, handed the same list of maps, fails with
+`cannot index map with int` pointing at line 271 of the module. The
+module trace names the call, so it is findable, but the sentence is
+about the module's insides rather than about the shape it wanted.
+
+Both are the shape a record has. `csv["maps"]` reads rows into maps
+because that is what a program wants to hold, and then nothing will
+take them back: there is no inverse, so the way out is to join the
+fields by hand — which is what the probe did, and which loses the
+quoting the module exists to get right. A field with a comma in it
+silently breaks the file.
+
+So: an inverse, `rows(maps, columns = nil)`, and a refusal rather
+than a lie when `text` is handed records. Not `text` quietly doing
+the right thing with maps — one obvious way, and a sentence naming
+the other one.
+
+Discoverability was fine, for the record: `--doc percentile` finds it
+in lib/math.ting without being told where to look, and the diagnostic
+for `li["sort_by"]` said it is a builtin, which 1055 put there.
