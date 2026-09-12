@@ -29002,3 +29002,36 @@ the program still ran as far as its first real error.
 Milestone "the half you got right" (v2.166): a guess that contains
 the right name should get the right name back, and a whole part
 should outrank a shared start.
+
+## 1094 — the name inside the name
+
+`nearest` in src/diag.rs scored every candidate against the whole
+guess. `to_float` is nine characters from `float` by that measure and
+starts nothing, so it got no suggestion at all — while `sorted` got
+`sort` in the same file.
+
+It now asks the whole guess first, as before, and only when that
+finds nothing does it break the name at its underscores and ask each
+part in turn: `to_float` finds `float`, `array_len` finds `len`,
+`to_string` finds `str` (the part `string` is not a name, and `str`
+starts it), `list_median` finds `median`. Longest part first, because
+that is the part carrying the meaning; and a part that IS a name
+beats a part that is merely near one, whichever is longer.
+
+The scoring loop became `closest`, which takes one more thing: whether
+the name may be its own answer. A whole guess never is — `nearest("len",
+["len"])` has always been None and still is — but a part of a guess
+being a name outright is the whole point.
+
+Four mutations, all killed: dropping the exact-part pass, asking the
+shortest part first, admitting parts under three characters, and
+letting the whole guess be its own answer (that last one is killed by
+a test written long before this change).
+
+One test case had to be corrected before it pinned anything: I first
+wrote `nearest("fetch_records", ["fetc", "record"])` expecting
+`record`, and it answers `fetc` — because `fetch_records` STARTS with
+`fetc`, so the whole-guess pass takes it and the parts are never
+reached. That is not this stroke's bug; it is the next item in the
+backlog, where a bare shared start outranks a whole part. The case
+now uses candidates that share no start.

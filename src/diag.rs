@@ -287,6 +287,37 @@ pub fn no_member<'a>(
 }
 
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
+    let candidates: Vec<&str> = candidates.into_iter().collect();
+    if let Some(c) = closest(name, &candidates, false) {
+        return Some(c.to_string());
+    }
+    // A compound guess holds the name inside it: `to_float` is `float`
+    // with a habit from another language in front of it, `array_len` is
+    // `len`, `list_median` is `median` with the module's name repeated.
+    // Each part is tried as a name of its own — a part may BE a name,
+    // which the whole guess never is — longest part first, and a part
+    // that is a name outright beats a part that is merely near one.
+    let mut parts: Vec<&str> = name
+        .split('_')
+        .filter(|p| *p != name && p.chars().count() >= 3)
+        .collect();
+    if parts.is_empty() {
+        return None;
+    }
+    parts.sort_by_key(|p| std::cmp::Reverse(p.chars().count()));
+    let exact = parts.iter().find(|p| candidates.contains(*p));
+    let found = match exact {
+        Some(p) => Some(*p),
+        None => parts.iter().find_map(|p| closest(p, &candidates, false)),
+    };
+    found.map(|c| c.to_string())
+}
+
+/// The nearest of `candidates` to `name` by edit distance, with a name
+/// that starts the other kept however far apart they are. `itself` says
+/// whether `name` may be its own answer: a whole guess never is, but a
+/// part of one is exactly the answer wanted.
+fn closest<'a>(name: &str, candidates: &[&'a str], itself: bool) -> Option<&'a str> {
     // Under three characters every name is one edit from every other,
     // so a suggestion would be noise rather than help.
     if name.chars().count() < 3 {
@@ -294,8 +325,8 @@ pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) ->
     }
     let limit = (name.chars().count() / 3).max(1);
     let mut best: Option<(usize, usize, &str)> = None;
-    for c in candidates {
-        if c == name {
+    for c in candidates.iter().copied() {
+        if c == name && !itself {
             continue;
         }
         let d = distance(name, c);
@@ -317,7 +348,7 @@ pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) ->
             _ => best = Some((d, shared, c)),
         }
     }
-    best.map(|(_, _, c)| c.to_string())
+    best.map(|(_, _, c)| c)
 }
 
 /// Edit distance in characters: insert, delete and substitute each
@@ -543,6 +574,46 @@ mod tests {
             .parent()
             .map_or_else(|| "/".to_string(), |p| p.display().to_string());
         assert_eq!(shorten(&outside), outside);
+    }
+
+    /// A guess built out of a habit from another language holds the
+    /// name inside it: the parts are tried when the whole is nothing.
+    #[test]
+    fn nearest_looks_inside_a_compound_guess() {
+        assert_eq!(
+            nearest("to_float", ["float", "int"]),
+            Some("float".to_string())
+        );
+        assert_eq!(
+            nearest("array_len", ["len", "map"]),
+            Some("len".to_string())
+        );
+        assert_eq!(
+            nearest("list_median", ["median", "list_dir"]),
+            Some("median".to_string())
+        );
+        // A part that is near a name answers too: `string` is not a
+        // name, and `str` starts it.
+        assert_eq!(
+            nearest("to_string", ["str", "print"]),
+            Some("str".to_string())
+        );
+        // A part that IS a name beats a part that is merely near one,
+        // whichever comes first and whichever is longer.
+        assert_eq!(
+            nearest("fetch_upper", ["str", "upper"]),
+            Some("upper".to_string())
+        );
+        // With no part that is a name, the longest part is asked
+        // first: it is the part carrying the meaning.
+        assert_eq!(
+            nearest("fetch_records", ["etch", "record"]),
+            Some("record".to_string())
+        );
+        // Parts under three characters are no more help than short
+        // names are, and a name with no parts is only itself.
+        assert_eq!(nearest("to_x", ["to", "x"]), None);
+        assert_eq!(nearest("elephant", ["print", "len"]), None);
     }
 
     #[test]

@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 50 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 26 examples with .out; 3098 selftest checks on all four
-  CI platforms, Windows included); 529 Rust tests
+  CI platforms, Windows included); 530 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 83 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4517,13 +4517,12 @@ holds only the current milestone and the standing rules.
   Milestone "the REPL's own words" COMPLETE.
 - 1093: replenishment — milestone "the half you got right"
   (v2.166), reasoning in LOG.md.
+- 1094: a guess that finds nothing whole is broken at its
+  underscores and each part asked in turn — `nearest` in
+  src/diag.rs, with the scoring loop now `closest`.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a name bound nowhere that CONTAINS a name that is bound gets
-    that name back: `to_float` to `float`, `array_len` to `len`,
-    `list_median` to `median` — today `nearest` in src/diag.rs
-    scores edit distance and shared starts, and answers nothing
   - a whole part outranks a bare shared start, so `string_upper`
     stops answering `str` when `upper` is the name and
     `list_sort` stops answering `list_dir` when `sort` is

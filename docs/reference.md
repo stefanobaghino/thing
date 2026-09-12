@@ -1062,7 +1062,12 @@ Otherwise, when the name you typed is close to one that is in scope —
 a binding, a parameter or a builtin — the error names it, as above. A suggestion
 is offered only when at most a third of the name is wrong (swapping two
 neighbours counts as one slip), or when one of the two names starts the
-other (`lenght` finds `len`); names under three characters get none. A key that a
+other (`lenght` finds `len`); names under three characters get none. A
+name that finds nothing whole is broken at its underscores and each
+part asked in turn, longest first, because a guess carried over from
+another language holds the name inside it: `to_float` finds `float`,
+`array_len` finds `len`, `list_median` finds `median`. A part that is
+a name wins over a part that is merely near one. A key that a
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.
 
