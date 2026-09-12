@@ -235,6 +235,52 @@ fn check_and_fmt_flags_expand_directories() {
     let _ = std::fs::remove_dir_all(&root);
 }
 
+/// The other end of 1043 and 1044: a file whose failed check went
+/// unprinted fails the run, and `--check` says so before it is run.
+#[test]
+fn check_flag_names_a_file_that_prints_none_of_its_checks() {
+    let dir = std::env::temp_dir().join(format!("ting-check-summary-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let quiet = dir.join("quiet.ting");
+    let spoken = dir.join("spoken.ting");
+    std::fs::write(
+        &quiet,
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"one\", 1 == 1);\n",
+    )
+    .unwrap();
+    std::fs::write(
+        &spoken,
+        "let t = import(\"lib/test.ting\");\nt[\"check\"](\"one\", 1 == 1);\nt[\"summary\"]();\n",
+    )
+    .unwrap();
+    let check = |path: &std::path::Path, strict: bool| {
+        let mut args = vec!["--check"];
+        if strict {
+            args.push("--strict");
+        }
+        args.push(path.to_str().unwrap());
+        Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .output()
+            .expect("failed to run ting")
+    };
+    let out = check(&quiet, false);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(out.status.code(), Some(0), "a warning is not an error");
+    assert!(
+        stderr.contains(
+            "warning: nothing prints these checks — this file never calls `t[\"summary\"]()`"
+        ),
+        "{stderr}"
+    );
+    assert!(stderr.contains(":2:4:"), "points at the check: {stderr}");
+    assert_eq!(check(&quiet, true).status.code(), Some(1), "strict fails");
+    let out = check(&spoken, false);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert_eq!(stderr.matches("warning:").count(), 0, "{stderr}");
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 #[test]
 fn check_flag_prints_stdlib_member_warnings() {
     let path = std::env::temp_dir().join(format!("ting-check-warn-{}.ting", std::process::id()));

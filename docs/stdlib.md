@@ -403,7 +403,9 @@ t["summary"]();   # prints failures + totals; exits 1 if any failed
 Every helper counts as one check under `ting --test`, which reports
 per-file and total counts. `summary()` is not optional: a check that
 failed and was never printed is still a failure, and `--test` reports
-the file as failed with or without the last line.
+the file as failed with or without the last line. `ting --check` says
+so before the file runs: a file that records checks and calls neither
+`summary()` nor `reset()` prints nothing at all.
 
 All of this is ordinary ting — read the sources in
 [lib/](https://github.com/stefanobaghino/thing/tree/main/lib); the

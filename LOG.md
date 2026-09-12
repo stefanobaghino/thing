@@ -27517,3 +27517,29 @@ a clean exit(0) is rc=0, and summary() still says it once.
 
 Three mutations, all caught: the condition forced false, forced true
 (summary() then says it twice), and the exit code left at 0.
+
+## 1045 — and --check says so before it runs
+
+The milestone's third stroke, and the one that arrives in time: 1043
+and 1044 made an unprinted failure fail the run, but a file whose
+checks all PASS and never calls summary() still says nothing, and
+nothing was wrong to say so. `--check` now reads the file: a binding
+to lib/test.ting, a call to one of the seven recording helpers, and
+neither summary() nor reset() anywhere — reset() being the ending a
+file that arranged its failures on purpose writes instead, as
+selftest/testlib.ting does. It names the first recording call, not
+every one.
+
+Two helpers came out of member_findings to do it — module_bindings
+and member_uses, the binding scan and the `name["key"]` scan — so the
+new pass reads the file the way the member warnings already did. The
+corpus is unchanged at twenty-two: both files in it that use the test
+module end properly, one with summary() and one with reset().
+
+Four mutations, all caught: the summary/reset guard dropped, the
+module filter dropped (every module's `check` would do), the
+write-versus-read filter dropped (`t["check"] = fn ...` records
+nothing), and every recording call named instead of the first.
+
+Ten warnings now. docs/reference.md lists it among them and
+docs/stdlib.md says the checker will say so.

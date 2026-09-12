@@ -1166,7 +1166,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   only of bindings is a module and exempt; a `let` inside a block
   that nothing in the block uses, same opt-out; a function parameter
   its body never names, same opt-out; a binding or parameter named
-  after a builtin, which hides it); warnings never change the exit
+  after a builtin, which hides it; a file that records checks with
+  `lib/test.ting` and calls neither `summary()`, which prints them and
+  decides the verdict, nor `reset()`, which is what a file that
+  arranged its failures on purpose calls instead); warnings never change the exit
   status unless `--strict` is given, which makes any warning exit 1
   for hooks and CI that want them enforced. `--watch` (below) checks
   again on every change.

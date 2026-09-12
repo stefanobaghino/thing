@@ -1859,6 +1859,7 @@ pub fn warnings_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usiz
     all.extend(unbound_names(src));
     all.extend(arity_mismatches_in(src, dir));
     all.extend(format_templates(src));
+    all.extend(unsummarized_checks(src, dir));
     all.extend(duplicate_map_keys(src));
     all.extend(unreachable_code(src));
     all.extend(unused_top_level_lets(src));
@@ -1897,10 +1898,9 @@ struct MemberFinding {
     exports: Vec<String>,
 }
 
-fn member_findings(src: &str, dir: Option<&std::path::Path>) -> Vec<MemberFinding> {
-    let mut out = Vec::new();
-    // Bindings: `let <ident> = import("<path>")`, naming either a
-    // module on disk or an embedded one.
+/// Bindings: `let <ident> = import("<path>")`, naming either a module
+/// on disk or an embedded one, with what the module exports.
+fn module_bindings(src: &str, dir: Option<&std::path::Path>) -> Vec<(String, String, Vec<String>)> {
     let mut bindings: Vec<(String, String, Vec<String>)> = Vec::new();
     for line in src.lines() {
         let Some(rest) = line.trim_start().strip_prefix("let ") else {
@@ -1937,34 +1937,87 @@ fn member_findings(src: &str, dir: Option<&std::path::Path>) -> Vec<MemberFindin
             }
         }
     }
-    for (name, module, exports) in &bindings {
-        let needle = format!("{name}[\"");
-        let mut from = 0;
-        // Every `name["key"]` in the file: where the key sits, what it
-        // is, and whether this occurrence WRITES it. `m["new"] = v;`
-        // puts a key there rather than asking for one, which is how a
-        // program extends a module map; a compound assignment reads
-        // first, so it still asks.
-        let mut uses: Vec<(usize, usize, &str, bool)> = Vec::new();
-        while let Some(i) = src[from..].find(&needle) {
-            let key_start = from + i + needle.len();
-            // Must be a whole identifier: not preceded by an ident char.
-            let bounded = src[..from + i]
-                .chars()
-                .next_back()
-                .is_none_or(|c| !(c.is_ascii_alphanumeric() || c == '_'));
-            let Some(key_len) = src[key_start..].find('"') else {
-                break;
-            };
-            let key = &src[key_start..key_start + key_len];
-            let after = src[key_start + key_len..].trim_start_matches('"');
-            let after = after.strip_prefix(']').unwrap_or(after).trim_start();
-            let assigned = after.starts_with('=') && !after.starts_with("==");
-            if bounded {
-                uses.push((key_start, key_start + key_len, key, assigned));
-            }
-            from = key_start + key_len;
+    bindings
+}
+
+/// Every `name["key"]` in the file: where the key sits, what it is,
+/// and whether this occurrence WRITES it. `m["new"] = v;` puts a key
+/// there rather than asking for one, which is how a program extends a
+/// module map; a compound assignment reads first, so it still asks.
+fn member_uses<'a>(src: &'a str, name: &str) -> Vec<(usize, usize, &'a str, bool)> {
+    let needle = format!("{name}[\"");
+    let mut from = 0;
+    let mut uses: Vec<(usize, usize, &str, bool)> = Vec::new();
+    while let Some(i) = src[from..].find(&needle) {
+        let key_start = from + i + needle.len();
+        // Must be a whole identifier: not preceded by an ident char.
+        let bounded = src[..from + i]
+            .chars()
+            .next_back()
+            .is_none_or(|c| !(c.is_ascii_alphanumeric() || c == '_'));
+        let Some(key_len) = src[key_start..].find('"') else {
+            break;
+        };
+        let key = &src[key_start..key_start + key_len];
+        let after = src[key_start + key_len..].trim_start_matches('"');
+        let after = after.strip_prefix(']').unwrap_or(after).trim_start();
+        let assigned = after.starts_with('=') && !after.starts_with("==");
+        if bounded {
+            uses.push((key_start, key_start + key_len, key, assigned));
         }
+        from = key_start + key_len;
+    }
+    uses
+}
+
+/// A file that records checks with `lib/test.ting` and never prints
+/// them. `summary()` is what turns the recorded passes and failures
+/// into a verdict; without it a file that checks a hundred things
+/// says nothing at all. `reset()` is the other ending — a file that
+/// arranged its failures on purpose, to test the checks themselves,
+/// reads them and forgets them, and has nothing left to print.
+fn unsummarized_checks(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usize, String)> {
+    const RECORDS: [&str; 7] = [
+        "check",
+        "check_approx",
+        "check_eq",
+        "check_err",
+        "check_type",
+        "fail_with",
+        "pass",
+    ];
+    let mut out = Vec::new();
+    for (name, module, _) in &module_bindings(src, dir) {
+        if !module.ends_with("lib/test.ting") {
+            continue;
+        }
+        let uses = member_uses(src, name);
+        if uses
+            .iter()
+            .any(|(_, _, key, _)| *key == "summary" || *key == "reset")
+        {
+            continue;
+        }
+        if let Some((start, end, _, _)) = uses
+            .iter()
+            .find(|(_, _, key, assigned)| !assigned && RECORDS.contains(key))
+        {
+            out.push((
+                *start,
+                *end,
+                format!(
+                    "nothing prints these checks — this file never calls `{name}[\"summary\"]()`"
+                ),
+            ));
+        }
+    }
+    out
+}
+
+fn member_findings(src: &str, dir: Option<&std::path::Path>) -> Vec<MemberFinding> {
+    let mut out = Vec::new();
+    for (name, module, exports) in &module_bindings(src, dir) {
+        let uses = member_uses(src, name);
         // A key the file puts there is a key the file may read back,
         // wherever it reads it.
         let mut exports = exports.clone();
@@ -3035,6 +3088,60 @@ mod tests {
         );
         // A call inside the range says nothing at all.
         assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
+
+    /// summary() is what turns recorded checks into a verdict; a file
+    /// that records some and calls neither it nor reset() prints
+    /// nothing at all.
+    #[test]
+    fn a_file_that_records_checks_and_prints_none_is_warned_about() {
+        let messages = |src: &str| -> Vec<String> {
+            unsummarized_checks(src, None)
+                .into_iter()
+                .map(|(_, _, m)| m)
+                .collect()
+        };
+        let import = "let t = import(\"lib/test.ting\");\n";
+        assert_eq!(
+            messages(&format!("{import}t[\"check\"](\"one\", true);\n")),
+            vec![
+                "nothing prints these checks — this file never calls `t[\"summary\"]()`"
+                    .to_string()
+            ]
+        );
+        // The two endings: printing them, and forgetting them.
+        assert!(
+            messages(&format!(
+                "{import}t[\"check\"](\"one\", true);\nt[\"summary\"]();\n"
+            ))
+            .is_empty()
+        );
+        assert!(
+            messages(&format!(
+                "{import}t[\"check\"](\"one\", false);\nt[\"reset\"]();\n"
+            ))
+            .is_empty()
+        );
+        // Reading the counters records nothing, and neither does a
+        // module this file never took its checks from.
+        assert!(messages(&format!("{import}print(t[\"state\"][\"passed\"]);\n")).is_empty());
+        // Putting a check of your own in the map records nothing: the
+        // line writes the key rather than calling it.
+        assert!(
+            messages(&format!(
+                "{import}t[\"check\"] = fn(name, cond) {{ return cond; }};\n"
+            ))
+            .is_empty()
+        );
+        assert!(messages("let t = import(\"lib/list.ting\");\nt[\"check\"](1);\n").is_empty());
+        // Only one line is named, however many checks follow it.
+        assert_eq!(
+            messages(&format!(
+                "{import}t[\"check\"](\"one\", true);\nt[\"check_eq\"](\"two\", 2, 2);\n"
+            ))
+            .len(),
+            1
+        );
     }
 
     /// A template written at the call site is read at check time, with

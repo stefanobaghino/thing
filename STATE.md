@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
-  CI platforms, Windows included); 507 Rust tests
+  CI platforms, Windows included); 509 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -28,7 +28,7 @@ current orientation.
 - One binary is the toolchain: a script may be a path or `-`
   (stdin); REPL (9 meta-commands), --fmt (dirs,
   stdin, --diff, keeps CRLF), --check (dirs, stdin, follows local
-  imports, nine warnings, --strict, --watch), --doc (names, module, file, or
+  imports, ten warnings, --strict, --watch), --doc (names, module, file, or
   everything), --test (dirs, --filter, --tap, -j, --slow,
   --fail-fast, --watch, per-file check counts), --bundle (a script and
   the local modules it imports as one file, stdlib imports left alone),
@@ -4377,11 +4377,12 @@ holds only the current milestone and the standing rules.
 - 1044: and the same file calling `exit(0)` — the Exit builtin asks
   for the unreported failures when the requested code is 0, prints
   them and exits 1. 507 tests.
+- 1045: `--check` names a file that records checks with lib/test.ting
+  and calls neither `summary()` nor `reset()` — the tenth warning,
+  from `unsummarized_checks`. 509 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--check` warns when a file uses the test module's checks and
-    never calls `summary()`
   - a member a module does not have names what the module does have,
     not only a near miss when there is one
   - release v2.160.0
