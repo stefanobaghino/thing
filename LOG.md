@@ -29432,3 +29432,47 @@ cut short.
 
 Site audit: ten paths 200, ten out of ten. changelog.html carries
 v2.167.0 and reference.html the sentence about text and paths.
+
+## 1107 — health tick, milestone "the half you remember" complete
+
+Maintenance: tree clean, no open PRs, CI green for 2ef403e from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, and this time so is every timing — accum 69.5 against
+66.3, fib 585 against 568, scan 928 against 922, toplevel 503 against
+497, none of the eleven more than a few per cent out. The load was
+2.7 rather than the 4.6–6.6 of 1100, which settles that reading
+after the fact: the same binary and the same scripts, on a quiet
+host, land on BASELINE. Scatter of five and six times, on rows that
+moved between consecutive runs, was the machine.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 231 module functions, 24
+selftest files, 26 examples each with a .out, 3098 selftest checks on
+both engines, 533 Rust tests in 18 suites, `--fmt .` 83 unchanged,
+corpus at twenty-two warnings, 188 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+Two milestones, seven strokes, one subject: a name that came out
+wrong. The first half went looking for the real name inside the
+guess; this half went looking for the guess inside the real name. Put
+together they say something the individual strokes do not — a
+compound name has an informative end and an uninformative one, the
+uninformative end is the head, and every rule that reads names should
+know which end it is reading. The old `shares_start` rule was exactly
+the rule that did not know.
+
+What earned its keep twice over here was mutation testing, and both
+times against the TESTS rather than the code. In 1103 two mutations
+lived through the first pass — matching a prefix of a part instead of
+the whole part, and putting the length floor back — because no case
+distinguished those behaviours, though the code was right. The tests
+were asserting what they meant to assert only by luck. A guard that
+passes for the wrong reason is a guard that will pass through the
+change that breaks it.
+
+Replenishment next.

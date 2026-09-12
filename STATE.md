@@ -4557,10 +4557,16 @@ holds only the current milestone and the standing rules.
 - v2.167.0 VERIFIED (188th tag; strokes 1102, 1103, 1104; both
   aarch64 archives executed here, `eq`/`err`/`approx` answered
   and `er` refused from the shipped binary, ten paths 200).
+- 1107: health tick — eleven checksums identical to BASELINE and
+  every timing within a few per cent at load 2.7, which settles
+  1100's scatter as weather; four sweeps ok, counts all standing
+  (79 builtins, 13 modules, 231 functions, 50 programs, 3098
+  checks, 533 tests in 18 suites, 83 unchanged, twenty-two
+  warnings, 188 tags). Milestone "the half you remember"
+  COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
