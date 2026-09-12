@@ -5,6 +5,29 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.159.0 (2026-09-12)
+
+- **`--check` counts a call to a builtin.** It already counted a call
+  to a function the file declared, and to one a module it imported
+  offers; `len()` with no arguments went unmentioned until the run
+  refused it. The builtins are the one set of names a checker cannot
+  be wrong about, and `Builtin::arity` is now the fact their arms only
+  enforced — with a test that reads the arms back out of the source
+  and fails if the two disagree. A file that binds the name takes it
+  back: `let len = {}` means `len` is a map there.
+- **A `format` template is read before it runs.** `format("{:.1f}",
+  1.0)` was refused precisely at run time and passed `--check` in
+  silence. The checker now reads a template written at the call site —
+  braces, spec, and the arguments it asks for, counting a `{}` inside
+  a spec as one of them — and answers in the run's own words. A test
+  puts the same templates through both and compares the sentences.
+- **A shadowed builtin says so when it cannot be called.** `let args =
+  import("lib/args.ting")` then `args()` answered `map is not
+  callable`, while `--check` on the same file said `` `args` shadows a
+  builtin ``. The run now carries the second half too, from both
+  engines, reading the module's own source when the call is inside
+  one.
+
 ## v2.158.0 (2026-09-12)
 
 - **The `.` hint says how the stdlib is actually called.**

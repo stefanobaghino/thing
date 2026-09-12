@@ -27338,3 +27338,28 @@ case now, and the mutation fails.
 
 docs/reference.md puts it beside the misspelt-name suggestions, which
 is the same idea from the other side.
+
+## 1039 — release v2.159.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for c2da1d9 from the API, no stray fs tree in the root.
+
+v2.159.0, the milestone "what the checker could have said". 1028 had
+found the checker ahead of the run — five findings in one pass that
+the run gave up one at a time — and this round went the other way,
+into the three places the checker was behind a run it could have
+predicted: a builtin's arity (1036), a template written at the call
+site (1037), and, from the other side, a run that had the checker's
+sentence about a shadowed name and printed the half that does not
+help (1038).
+
+Strokes 1036, 1037, 1038. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.159.0; the binary reports `ting
+2.159.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (505
+tests), `--fmt .` 81 unchanged, corpus at twenty-two, 3010 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.159.0 — the 180th tag — and pushed. Verification is the
+next tick.
