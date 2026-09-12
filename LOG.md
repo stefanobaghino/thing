@@ -27098,3 +27098,26 @@ keeps the hint out of the way now includes a spaced pair on a line
 that fails anyway, and the mutation fails.
 
 docs/reference.md has the bullet, `--i` included.
+
+## 1032 — release v2.158.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for 1d065f6 from the API, no stray fs tree in the root.
+
+v2.158.0, the milestone "the phrasebook". The probe at 1028 wrote a
+CSV report tool cold and stopped on a habit from another language
+every time — and ting answered most of them with the ting spelling,
+which is why the three it did not answer stood out. This release is
+those three: the `.` before a call, `in` outside a `for` header, and
+the C counted loop with its `i++`.
+
+Strokes 1029, 1030, 1031. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.158.0; the binary reports `ting
+2.158.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (496
+tests), `--fmt .` 81 unchanged, corpus at seventeen, 3010 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.158.0 — the 179th tag — and pushed. Verification is the
+next tick.

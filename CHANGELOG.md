@@ -5,6 +5,27 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.158.0 (2026-09-12)
+
+- **The `.` hint says how the stdlib is actually called.**
+  `str.repeat("#", n)` used to answer ``a call is `f(x)` ``, which is
+  not the fix: a module is a map, so its functions are reached
+  through the key. The hint now carries both spellings and names the
+  two words it read for the map one — `str["repeat"](...)` — since
+  that is right whenever the receiver is a map.
+- **`in` outside a `for` header names the call ting has.** `if !(k in
+  groups)` used to stop at `expected ')', found 'in'` and say no
+  more, though `in` is a keyword this parser reads in every loop and
+  ting has both answers: `has(groups, k)` for a map key,
+  `contains(groups, k)` for a list. Both are offered, named after the
+  two words either side when each is a single token.
+- **A C counted loop and `i++` are answered too.** `for (let i = 0;
+  i < 3; i = i + 1)` adds ``a counted loop is `for i in range(n)` ``,
+  and `i++`, `++i` and `i--` all add ``write `i += 1` ``. The three
+  increment forms stop the parser in three different places, so the
+  hint looks in all of them; `--i` still parses, because it negates
+  twice, and a spaced `i - -1` is the subtraction it looks like.
+
 ## v2.157.0 (2026-09-12)
 
 - **A name the stdlib has is answered with the module that has it.**
