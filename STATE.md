@@ -4410,10 +4410,11 @@ holds only the current milestone and the standing rules.
 - 1055: a module member with no export near it takes the nearest
   BUILTIN instead — `fs["write"]` finds `write_file` — with a tie
   going to the module. 523 tests.
+- 1056: v2.161.0 tagged (182nd tag; strokes 1051, 1052, 1053, 1054,
+  1055).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.161.0
   - verify v2.161.0 cold: seven assets, `sha256sum -c`, both aarch64
     archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

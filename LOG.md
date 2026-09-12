@@ -27828,3 +27828,31 @@ Three mutations, all caught: the tie handed to the builtin, a builtin
 offered only when an export was there too, and the exact-match branch
 deleted — that last one took two tests down with it, which is what a
 first line should do.
+
+## 1056 — release v2.161.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for bf6e75f from the API (full sha).
+
+v2.161.0, the milestone "the rest of the phrasebook". 1029-1031 wrote
+the first round from a probe that kept writing another language's
+words; 1050's probe wrote another language's SHAPES, and these five
+are what it hit: a conditional value (1051), a comprehension (1052),
+try/catch/finally and throw (1053), a type annotation (1054), and the
+name that was a builtin all along (1055).
+
+Four of the five are one sentence each in the parser, and three of
+them also drop the tokens they cannot read, so a borrowed shape costs
+one error instead of two or five. The fifth is in diag, where a
+module member with no near export now takes the nearest builtin.
+
+Strokes 1051, 1052, 1053, 1054, 1055. CHANGELOG.md written from those
+entries; Cargo.toml and Cargo.lock at 2.161.0; the binary reports
+`ting 2.161.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (523
+tests), `--fmt .` 81 unchanged, corpus at twenty-two, 3013 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.161.0 — the 182nd tag — and pushed. Verification is the
+next tick.

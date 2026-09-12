@@ -5,6 +5,36 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.161.0 (2026-09-12)
+
+- **A value that depends on a condition.** ting's `if` is a statement,
+  and all three borrowed spellings of a conditional VALUE stopped
+  somewhere different without saying so: `c ? a : b` never reached the
+  parser, `let x = if c { 1 } else { 2 }` stopped where a value was
+  expected, and Python's `a if c else b` stopped wherever the value it
+  followed was meant to end. Each now names ting's own spelling — an
+  `if` statement assigning in both branches. Telling Python's form
+  from a forgotten `;` in front of a real `if` is the `{` that follows
+  a condition. The tokens are dropped whole, so what used to be five
+  errors is one.
+- **A comprehension says `map`, and `filter` when it has a guard.**
+  `[x * 2 for x in xs]` was `expected ']', found 'for'`. It now names
+  the builtin to reach for, with the iterable in it when that is a
+  single name, in list and map literals alike.
+- **A borrowed `try` says which builtin ting has.** `try { ... }
+  catch (e) { ... }` answers with `try(fn() { ... })`, which hands
+  back a map with `ok` or `err`; `finally` says what follows the call
+  runs either way, and `throw` says `fail(msg)`. The block and every
+  clause hanging off it are one mistake and one error.
+- **A type annotation says ting has none.** `fn f(a: int)`, `fn f():
+  int`, `let x: int = 1` and `fn f(a) -> int` all say so, and name
+  `type(v)` — the question the annotation was asking. A map literal's
+  `:` and a Python slice's are untouched.
+- **A missing module member can be a builtin.** `fs["write"]` listed
+  the module's twenty names when the answer was `write_file`. The
+  nearest export and the nearest builtin now compete, and the nearer
+  wins; a tie goes to the module, which is what was indexed.
+
 ## v2.160.0 (2026-09-12)
 
 - **A check that failed is a failure, printed or not.** `lib/test.ting`
