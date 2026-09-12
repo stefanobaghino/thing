@@ -28284,3 +28284,29 @@ extra column let through, the check run even when columns were
 stated, the header dropped, and the fields left unconverted.
 
 231 functions, 3088 checks.
+
+## 1070 — a file that holds neither the error nor the data
+
+`csv["text"]` given records wrote each record's KEYS as its row: two
+records came back as the header twice and no values, with nothing
+raised anywhere. A row was joined by iterating it, and iterating a
+map yields its keys, so the wrong shape was not rejected — it was
+quietly misread into a file that looks like a file.
+
+A string row did the same thing one level down: `text(["a,b"])` wrote
+one character per field, and `text("a,b\n")` wrote one character per
+LINE.
+
+Now a row has to be a list. A record says so and says what to do
+about it — pass rows(records) — and anything else is named by its
+type. `text_with` delegates to `text`, so it refuses the same things.
+
+This is the half of the milestone worth stating plainly: the library
+had a way in and no way out, and the shape a program was left holding
+was one the way in produced. Giving it back is 1069; refusing to
+pretend is this one.
+
+Three mutations, all caught: the record branch dropped, the list
+check dropped, and the argument check dropped.
+
+3093 checks.

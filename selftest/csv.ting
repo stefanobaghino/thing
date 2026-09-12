@@ -193,3 +193,17 @@ assert(errmsg(fn() { return csv["rows"]("name,n\n"); }) ==
 "rows: expects a list of records, got string", "and text is what parse takes");
 assert(errmsg(fn() { return csv["rows"]([{"a": 1}], "a"); }) ==
 "rows: columns must be a list, got string", "columns are a list of names");
+
+# And the other direction refuses what it cannot write. A record
+# iterates into its KEYS and a string into its characters, so text
+# given either used to produce a file holding neither an error nor
+# the data — the header twice over, or one character per field.
+assert(errmsg(fn() { return csv["text"]([{"name": "Sep", "n": "3"}]); }) ==
+"text: a row is a list of fields, not a record — pass rows(records)", "a record is not a row");
+assert(errmsg(fn() { return csv["text"](["a,b"]); }) ==
+"text: a row is a list of fields, got string", "nor is a line of text");
+assert(errmsg(fn() { return csv["text"]("a,b\n"); }) ==
+"text: expects rows of fields, got string", "nor is a whole document");
+assert(errmsg(fn() { return csv["text_with"]([{"a": 1}], ";"); }) ==
+"text: a row is a list of fields, not a record — pass rows(records)", "the older spelling refuses it too");
+assert(csv["text"](csv["rows"]([{"a": 1}])) == "a\n1\n", "and the sentence says what to do about it");

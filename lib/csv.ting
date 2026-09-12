@@ -77,9 +77,18 @@ fn parse_with(text, sep) { return parse(text, sep); }
 # Delimited text from rows of fields; the separator is a comma unless
 # another single character is given. The text ends in a line break, as
 # a text file's last line does.
+#
+# A row has to be a list. Anything else iterates into something — a
+# record into its KEYS, a string into its characters — and a file
+# written from it holds neither an error nor the data, which is the
+# one outcome worth a check: records go through rows() first, and it
+# says so.
 fn text(rows, sep = ",") {
+  if type(rows) != "list" { fail("text: expects rows of fields, got " + type(rows)); }
   let lines = [];
   for row in rows {
+    if type(row) == "map" { fail("text: a row is a list of fields, not a record — pass rows(records)"); }
+    if type(row) != "list" { fail("text: a row is a list of fields, got " + type(row)); }
     let fields = [];
     for field in row { push(fields, quote(str(field), sep)); }
     push(lines, join(fields, sep));

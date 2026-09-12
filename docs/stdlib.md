@@ -305,7 +305,7 @@ column from anything asking for it by name.
 | `parse(text, sep = ",")` | rows of fields from delimited text; a comma unless another single character is given |
 | `each_row(path, f, sep = ",")` | rows from a file one at a time, without holding it: `f(row)` for each. A row is not a line — a quoted field may hold line breaks — so this feeds the same scanner `parse` uses. `"-"` is stdin, `false` from `f` stops the read, and it answers how many rows `f` was given |
 | `fresh()` / `scan(st, text, sep)` / `finish(st)` | the scanner underneath both: state, one chunk of text through it, and the end of the text. Feeding a whole file or a line at a time gives the same rows, which is what makes `each_row` right rather than nearly right |
-| `text(rows, sep = ",")` | delimited text from rows of fields, ending in a line break |
+| `text(rows, sep = ",")` | delimited text from rows of fields, ending in a line break. A row has to be a list: a record iterates into its keys and a string into its characters, so either errors and the record's says to pass `rows(records)` |
 | `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
 | `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |
 | `maps(rows, extras = nil)` | the first row read as a header, the rest as maps; a short row leaves those columns nil, and a field past the end of the header is dropped unless `extras` names a key to collect such fields under |
