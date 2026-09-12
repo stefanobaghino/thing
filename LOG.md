@@ -27783,3 +27783,26 @@ name, or neither — are dropped whole and the writer is told once.
 Three mutations, all caught: the clauses left in place (two and three
 errors instead of one), `finally` folded into the `try` sentence, and
 the bare-name form of a catch clause left unskipped.
+
+## 1054 — a type written where ting wants none
+
+The fourth stroke. `fn f(a: int)`, `fn f(): int`, `let x: int = 1`
+and Rust's `fn f(a) -> int` each stopped with the parser naming the
+piece of punctuation it wanted, and nothing about ting being untyped.
+All four now end with the one sentence, which also names `type(v)` —
+the question the annotation was trying to answer, asked the way ting
+asks it.
+
+The reader is the expectation, not the token: a `:` FOUND where a
+`)`, a `{` or an `=` was expected is an annotation, and those are the
+only three places one can stand. A map literal's `:` is expected
+rather than found and never reaches this. The arrow is two adjacent
+tokens, the way the arrow-function hint already reads `=>`.
+
+Three mutations. The adjacency dropped and the arrow not read at all
+were both caught. Letting ANY expectation take the hint PASSED — and
+the case that catches it is `xs[1:2]`, a Python slice, where the `:`
+is found at a `]` and "type annotation" would be a wrong answer to a
+real question. With that in the table the mutation is caught, and the
+slice keeps the plain message it deserves until somebody writes the
+entry for it.

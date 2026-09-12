@@ -217,6 +217,10 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
         let mut message = format!("expected {what}, found {}", describe(self.peek()));
+        if self.type_annotation(kind) {
+            message.push_str(&format!(" ({})", Self::UNTYPED));
+            return Err(self.error(message));
+        }
         if self.peek() == &TokenKind::For
             && let Some(hint) = self.comprehension()
         {
@@ -436,6 +440,33 @@ impl<'a> Parser<'a> {
     /// assigned in both branches.
     const CONDITIONAL: &'static str =
         "ting has no conditional expression — an `if` statement assigns in both branches";
+
+    /// ting has no types to write down, so a name carries none.
+    const UNTYPED: &'static str =
+        "ting has no type annotations — a name is just a name, and `type(v)` says what a value is";
+
+    /// A type written where ting wants the next piece of the shape:
+    /// `fn f(a: int)` at the `)`, `fn f(): int` and Rust's `fn f(a)
+    /// -> int` at the `{`, and `let x: int = 1` at the `=`. Those
+    /// three are the only places a `:` or an arrow can stand in for a
+    /// type; a map literal's `:` is expected rather than found.
+    fn type_annotation(&self, expected: &TokenKind) -> bool {
+        if !matches!(
+            expected,
+            TokenKind::RParen | TokenKind::LBrace | TokenKind::Eq
+        ) {
+            return false;
+        }
+        if self.peek() == &TokenKind::Colon {
+            return true;
+        }
+        // `->` is two tokens with nothing between them, the way `=>`
+        // is in the arrow-function hint.
+        expected == &TokenKind::LBrace
+            && self.peek() == &TokenKind::Minus
+            && self.peek2() == &TokenKind::Gt
+            && self.tokens[self.pos + 1].span.start == self.span().end
+    }
 
     /// `a if c else b`, borrowed from Python: the `if` follows a
     /// value that was already complete. The `if` that opens a
@@ -1645,6 +1676,41 @@ mod tests {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
         }
+    }
+
+    #[test]
+    fn a_type_annotation_says_ting_has_none() {
+        let want = "(ting has no type annotations — a name is just a name, and `type(v)` says what a value is)";
+        for src in [
+            "fn f(): int { return 1; }",
+            "fn f(a: int) { print(a); }",
+            "fn f(a: int, b: string): int { return a; }",
+            "fn f(a: list[int]) { print(a); }",
+            "let x: int = 1;",
+            "fn f(a) -> int { return a; }",
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(want), "{src}: {got}");
+        }
+        // A map literal's `:` is expected rather than found, and a
+        // spaced `- >` is a subtraction the parser stopped at.
+        let good = "let m = {\"a\": 1, 2: 3}; print(m);";
+        assert!(parse_program(&lex(good).unwrap()).is_ok());
+        assert_eq!(
+            prog_err("fn f(a) - > int { return a; }"),
+            "expected '{', found '-'"
+        );
+        // Nor is a Python slice: the `:` inside an index is somebody
+        // else's borrowed shape, and saying "type annotation" about
+        // it would be a wrong answer to a real question.
+        assert_eq!(prog_err("print(xs[1:2]);"), "expected ']', found ':'");
+    }
+
+    #[test]
+    fn a_type_annotation_costs_one_error() {
+        let (stmts, messages) = recovered("fn f(a: int) { print(a); }\nlet y = 2;\n");
+        assert_eq!(messages.len(), 1, "{messages:?}");
+        assert_eq!(stmts, 1, "the line after it still parses");
     }
 
     /// try/catch/finally and throw: all of them borrowed, and all of

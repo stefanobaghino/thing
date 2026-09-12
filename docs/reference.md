@@ -95,6 +95,10 @@ both.
   Python's `a if c else b` — each say so. The `{` after a condition
   is what tells a real `if` statement from a forgotten `;` in front
   of one.
+- There are no type annotations. A parameter, a return and a `let`
+  are names alone, and writing a type after any of them — with a `:`
+  or with a `->` — says so; `type(v)` is how a program asks what a
+  value is.
 - There is no `try`/`catch`/`finally` statement and no `throw`.
   `try(fn() { ... })` is a builtin that hands back a map with `ok` or
   `err`, `fail(msg)` raises, and what follows the call runs either
