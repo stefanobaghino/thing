@@ -4523,6 +4523,10 @@ holds only the current milestone and the standing rules.
 - 1095: how an answer was found ranks before how far it is —
   `Found` in src/diag.rs, the parts asked last first, and
   `no_member` weighing export against builtin the same way.
+- 1096: `the_doubling_ratio_measures_work_and_not_the_machine`
+  asks for a ratio over 2, not over 3 — a cpu clock that steps
+  with the scheduler cannot carry more without arms ten times
+  the size, which costs eight seconds of every CI run.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

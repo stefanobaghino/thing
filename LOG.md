@@ -29069,3 +29069,30 @@ how each was found first.
 Four mutations, all killed: a slip of one edit narrowed to none,
 the parts left unreversed, the whole guess returned before an exact
 part, and `no_member` comparing raw distances again.
+
+## 1096 — the bound a coarse clock can carry
+
+CI went red on ubuntu-latest for 1095, which changed only src/diag.rs:
+`the_doubling_ratio_measures_work_and_not_the_machine` reported "four
+times the work measured 2.87". The same test on the same runner is
+what 1081 went red on and 1082 resized — 400000 spins beside 1600000
+read 2.91 there, and 2000000 beside 8000000, which reads 4.0 to 4.1
+on this host, reads 2.87 there.
+
+1082's diagnosis was right and its fix was sized against the wrong
+machine. The cpu clock advances when the scheduler runs, so a burst
+of a few ticks is quantised rather than measured, and the quantum
+belongs to the machine, not to us. Ten times the work would put the
+arms past any plausible tick — and costs eight seconds of every CI
+run on five platforms, measured here.
+
+So the claim is now the one a coarse clock can carry: four times the
+work reads more than twice what the same work twice reads. With the
+other arm bounded at 1.5 the two together still say the helper counts
+work — a ratio of 2 against a ratio of 1.5 is the gap that matters —
+and the worst reading either runner has produced, 2.87, is 44% clear
+of it.
+
+The claim this test exists for is not weakened: that the clock
+ignores a thread asleep is pinned separately, at a bound of 1.2, by
+`the_ratio_does_not_count_a_thread_asleep`.
