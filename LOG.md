@@ -29376,3 +29376,36 @@ shell is not text a program computed.
 Three mutations, all killed: matching a carriage return instead of a
 line break, the cut widened past the test's case, and one of the two
 call sites going back to the plain message.
+
+## 1105 — release v2.167.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+7430d630c5767a07402ccf35013c1e7dbc256172 from the API on all three
+platforms (full sha).
+
+v2.167.0, the milestone "the half you remember" — the mirror of the
+one before it. v2.166.0 could find a name inside a guess. This one
+finds the guess inside a name, which is the likelier direction: the
+head of a compound name carries no information and the tail is what a
+person keeps, so `check_approx` is remembered as `approx`.
+
+1102 adds the `Inside` tier, preferring a candidate that ends in the
+guess. 1103 takes the length floor off it, because a whole part of a
+name is identity and identity does not get less certain as the word
+gets shorter — `eq` finds `check_eq` and `er` finds nothing. 1104 is
+the other finding from the same probe: text handed to something
+wanting a path is diagnosed rather than reported as a missing file.
+
+Strokes 1102, 1103, 1104 — and 1104's record needed a commit of its
+own, because the scripted STATE edit missed its anchor and the push
+went out before I read the failure. The lesson is in the loop's own
+notes already: the edit and the commit are one step, and a script
+that edits by offset has to be checked before the commit that follows
+it, not after.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (533
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.167.0 — the 188th tag — and pushed. Verification is the
+next tick.

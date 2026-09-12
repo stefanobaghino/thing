@@ -5,6 +5,33 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.167.0 (2026-09-12)
+
+- **The half you remember.** v2.166.0 taught the suggestion
+  machinery to find a name inside a guess; the guess is just as often
+  inside the NAME. `lib/test.ting` exports `check_eq`, `check_err`
+  and `check_approx`, and asking it for `eq`, `err` or `approx` was
+  answered with the module's name count and no suggestion at all,
+  while `med` found `median` — the difference being that only a
+  shared START was ever looked at. A candidate one of whose
+  underscore-separated parts is the guess is now an answer, and one
+  ending in the guess is preferred: the head of a compound name is
+  `check_`, `list_`, `str_`, and the tail is what distinguishes it.
+- **Two characters are enough to be a whole word.** Every guess
+  under three characters was refused a suggestion, which is right for
+  edit distance — at that length every name is a slip from every
+  other — and wrong for a whole part of a name, which is identity
+  rather than distance. `eq` finds `check_eq`; `er`, a fragment of
+  `err` and no part of anything, still finds nothing.
+- **Text handed to something wanting a path says so.** Passing the
+  CONTENTS of a CSV to a function that wanted its NAME was answered
+  `cannot read "date,category,amount\n2026-01-03,food,12.50\n...":
+  No such file or directory`, which is true and reads like nonsense.
+  A line break proves it is text — no path a program means to open
+  has one — so `read_file` and `each_line` name that instead, and cut
+  what they quote to the width a trace uses. A path without a line
+  break is still named in full, however long.
+
 ## v2.166.0 (2026-09-12)
 
 - **The name inside the name.** A guess built the way another
