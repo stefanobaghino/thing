@@ -28399,3 +28399,26 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.163.0 — the 184th tag — and pushed. Verification is the
 next tick.
+
+## 1074 — v2.163.0 verified
+
+Release workflow, CI and Pages all green for b81f545 from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.163.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3098
+checks, 26 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo: a document read
+into records and written back with its own header is the same text;
+without the header the columns come out alphabetical; stating one
+column keeps one; records handed to text and to table each name the
+way across; a string handed to table is refused; a record adding a
+column nobody stated is named. examples/records.ting runs from the
+archive and prints what it prints here.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.163.0, stdlib.html says 231 functions, and cookbook.html has the
+records recipe.
