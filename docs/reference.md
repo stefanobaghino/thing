@@ -1063,11 +1063,14 @@ a binding, a parameter or a builtin — the error names it, as above. A suggesti
 is offered only when at most a third of the name is wrong (swapping two
 neighbours counts as one slip), or when one of the two names starts the
 other (`lenght` finds `len`); names under three characters get none. A
-name that finds nothing whole is broken at its underscores and each
-part asked in turn, longest first, because a guess carried over from
-another language holds the name inside it: `to_float` finds `float`,
-`array_len` finds `len`, `list_median` finds `median`. A part that is
-a name wins over a part that is merely near one. A key that a
+guess is also broken at its underscores and each part asked in turn,
+last part first, because a guess carried over from another language
+holds the name inside it with a qualifier in front: `to_float` finds
+`float`, `array_len` finds `len`, `string_upper` finds `upper`. How
+an answer was found ranks before how far away it is: the whole guess
+one slip away, then a part that is a name outright, then the whole
+guess on a shared start, then a part near a name. That is why
+`list_sort` finds `sort` rather than `list_dir`. A key that a
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.
 

@@ -29035,3 +29035,37 @@ wrote `nearest("fetch_records", ["fetc", "record"])` expecting
 reached. That is not this stroke's bug; it is the next item in the
 backlog, where a bare shared start outranks a whole part. The case
 now uses candidates that share no start.
+
+## 1095 — how it was found, before how far
+
+1094 left two of the probe's names still answered wrongly rather than
+not at all: `string_upper` was told `did you mean str?` and
+`list_sort` was told `did you mean list_dir?`. Both come from the
+whole-guess pass, which accepts a candidate of ANY distance when one
+name starts the other, and then never reaches the parts.
+
+So the answer now carries how it was found, and that ranks before how
+far away it is. Best first: the whole guess one slip away — which is
+what a typo is — then a part of the guess that is a name outright,
+then the whole guess on a shared start alone, then a part near a
+name. `string_upper` finds `upper`, `list_sort` finds `sort`, and
+`list_dirs` still finds `list_dir`, because one edit still beats
+everything.
+
+The parts are now asked LAST first, not longest first. Every name the
+probe produced wants the last part — `to_float`, `array_len`,
+`str_len`, `string_upper`, `list_sort`, `to_title`, `list_median` —
+because the qualifier goes in front in every language that spells
+names this way. Longest-first, which 1094 guessed at, gets `str_len`
+wrong: both parts are names and `str` is no shorter.
+
+The same rank settles the second site. `no_member` weighed the
+module's nearest export against the nearest builtin by raw distance,
+so `lib/list.ting has no list_median` recommended the builtin
+`list_dir` over the module's own `median` — a name that is IN the
+guess, losing to one that merely resembles all of it. It now compares
+how each was found first.
+
+Four mutations, all killed: a slip of one edit narrowed to none,
+the parts left unreversed, the whole guess returned before an exact
+part, and `no_member` comparing raw distances again.

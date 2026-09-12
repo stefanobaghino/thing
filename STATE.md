@@ -4520,12 +4520,12 @@ holds only the current milestone and the standing rules.
 - 1094: a guess that finds nothing whole is broken at its
   underscores and each part asked in turn — `nearest` in
   src/diag.rs, with the scoring loop now `closest`.
+- 1095: how an answer was found ranks before how far it is —
+  `Found` in src/diag.rs, the parts asked last first, and
+  `no_member` weighing export against builtin the same way.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a whole part outranks a bare shared start, so `string_upper`
-    stops answering `str` when `upper` is the name and
-    `list_sort` stops answering `list_dir` when `sort` is
   - `import("x.ting") as m` is answered the way `m.f()` already
     is — a sentence saying what ting's form is, not only
     `expected ';', found identifier 'as'`

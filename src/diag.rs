@@ -253,14 +253,14 @@ pub fn no_member<'a>(
     // stdlib leaves file IO and the rest to the builtins, so a reader
     // who goes looking in lib/fs.ting for `write` is one name away
     // from `write_file` and no distance at all from the module.
-    let export = nearest(key, names.iter().copied());
-    let builtin = nearest(key, crate::value::Builtin::ALL.iter().map(|b| b.name()));
+    let export = nearest_found(key, names.iter().copied());
+    let builtin = nearest_found(key, crate::value::Builtin::ALL.iter().map(|b| b.name()));
     match (&export, &builtin) {
-        (Some(e), Some(b)) if distance(key, b) < distance(key, e) => {
+        (Some((ef, e)), Some((bf, b))) if (bf, distance(key, b)) < (ef, distance(key, e)) => {
             return format!("{module} has no `{key}` (did you mean the builtin `{b}`?)");
         }
-        (Some(e), _) => return format!("{module} has no `{key}` (did you mean `{e}`?)"),
-        (None, Some(b)) => {
+        (Some((_, e)), _) => return format!("{module} has no `{key}` (did you mean `{e}`?)"),
+        (None, Some((_, b))) => {
             return format!("{module} has no `{key}` (did you mean the builtin `{b}`?)");
         }
         (None, None) => {}
@@ -286,38 +286,69 @@ pub fn no_member<'a>(
     }
 }
 
+/// How an answer was found, best first. A shared start alone will
+/// match a name of any distance, so `string_upper` finds `str` and
+/// `list_sort` finds `list_dir` — both of which are further from what
+/// was meant than the part sitting in the guess. How an answer was
+/// found therefore ranks before how far it is: only a single slip,
+/// which is what a typo is, beats a part that is a name outright.
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy, Debug)]
+pub enum Found {
+    /// The whole guess, one edit away or none.
+    Slip,
+    /// A part of the guess, which is a name exactly.
+    Part,
+    /// The whole guess, further off but sharing a start.
+    Whole,
+    /// A part of the guess, near a name.
+    NearPart,
+}
+
 pub fn nearest<'a>(name: &str, candidates: impl IntoIterator<Item = &'a str>) -> Option<String> {
+    nearest_found(name, candidates).map(|(_, c)| c)
+}
+
+/// The nearest name and how it was found, for a caller weighing two
+/// of these against each other.
+pub fn nearest_found<'a>(
+    name: &str,
+    candidates: impl IntoIterator<Item = &'a str>,
+) -> Option<(Found, String)> {
     let candidates: Vec<&str> = candidates.into_iter().collect();
-    if let Some(c) = closest(name, &candidates, false) {
-        return Some(c.to_string());
+    let whole = closest(name, &candidates, false);
+    if let Some((d, c)) = whole
+        && d <= 1
+    {
+        return Some((Found::Slip, c.to_string()));
     }
     // A compound guess holds the name inside it: `to_float` is `float`
     // with a habit from another language in front of it, `array_len` is
     // `len`, `list_median` is `median` with the module's name repeated.
-    // Each part is tried as a name of its own — a part may BE a name,
-    // which the whole guess never is — longest part first, and a part
-    // that is a name outright beats a part that is merely near one.
+    // The parts are asked LAST first: the qualifier goes in front in
+    // every language that spells names this way, so the name is the
+    // part at the end.
     let mut parts: Vec<&str> = name
         .split('_')
         .filter(|p| *p != name && p.chars().count() >= 3)
         .collect();
-    if parts.is_empty() {
-        return None;
+    parts.reverse();
+    if let Some(p) = parts.iter().find(|p| candidates.contains(*p)) {
+        return Some((Found::Part, (*p).to_string()));
     }
-    parts.sort_by_key(|p| std::cmp::Reverse(p.chars().count()));
-    let exact = parts.iter().find(|p| candidates.contains(*p));
-    let found = match exact {
-        Some(p) => Some(*p),
-        None => parts.iter().find_map(|p| closest(p, &candidates, false)),
-    };
-    found.map(|c| c.to_string())
+    if let Some((_, c)) = whole {
+        return Some((Found::Whole, c.to_string()));
+    }
+    parts
+        .iter()
+        .find_map(|p| closest(p, &candidates, false))
+        .map(|(_, c)| (Found::NearPart, c.to_string()))
 }
 
 /// The nearest of `candidates` to `name` by edit distance, with a name
 /// that starts the other kept however far apart they are. `itself` says
 /// whether `name` may be its own answer: a whole guess never is, but a
 /// part of one is exactly the answer wanted.
-fn closest<'a>(name: &str, candidates: &[&'a str], itself: bool) -> Option<&'a str> {
+fn closest<'a>(name: &str, candidates: &[&'a str], itself: bool) -> Option<(usize, &'a str)> {
     // Under three characters every name is one edit from every other,
     // so a suggestion would be noise rather than help.
     if name.chars().count() < 3 {
@@ -348,7 +379,7 @@ fn closest<'a>(name: &str, candidates: &[&'a str], itself: bool) -> Option<&'a s
             _ => best = Some((d, shared, c)),
         }
     }
-    best.map(|(_, _, c)| c)
+    best.map(|(d, _, c)| (d, c))
 }
 
 /// Edit distance in characters: insert, delete and substitute each
@@ -399,6 +430,13 @@ mod tests {
         assert_eq!(
             no_member("lib/x.ting", "prin", ["prinx"]),
             "lib/x.ting has no `prin` (did you mean `prinx`?)"
+        );
+        // The module's own export sits inside the guess, and the
+        // builtin `list_dir` is only near the whole of it: how the
+        // answer was found ranks before how far away it is.
+        assert_eq!(
+            no_member("lib/list.ting", "list_median", ["median", "map"]),
+            "lib/list.ting has no `list_median` (did you mean `median`?)"
         );
         // An exact builtin still beats every guess.
         assert_eq!(
@@ -604,8 +642,27 @@ mod tests {
             nearest("fetch_upper", ["str", "upper"]),
             Some("upper".to_string())
         );
-        // With no part that is a name, the longest part is asked
-        // first: it is the part carrying the meaning.
+        // And it beats a whole-guess match resting on a shared start,
+        // however far off that is: `str` starts `string_upper` and
+        // `list_dir` is three edits from `list_sort`, but `upper` and
+        // `sort` are the names sitting in the guess.
+        assert_eq!(
+            nearest("string_upper", ["str", "upper"]),
+            Some("upper".to_string())
+        );
+        assert_eq!(
+            nearest("list_sort", ["list_dir", "sort"]),
+            Some("sort".to_string())
+        );
+        assert_eq!(nearest("str_len", ["str", "len"]), Some("len".to_string()));
+        // One slip is what a typo is, and it still wins: a plural of a
+        // real name is not a compound guess.
+        assert_eq!(
+            nearest("list_dirs", ["list_dir", "list"]),
+            Some("list_dir".to_string())
+        );
+        // With no part that is a name, the last part is asked first:
+        // the qualifier goes in front, so the name is at the end.
         assert_eq!(
             nearest("fetch_records", ["etch", "record"]),
             Some("record".to_string())
