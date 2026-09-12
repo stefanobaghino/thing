@@ -27619,3 +27619,36 @@ A note for the next release tick: the CI monitor was armed with the
 SHORT sha and `gh run list --commit` matched nothing for twenty-five
 minutes. The verdict came from a second call with the full sha. Only
 full shas from here.
+
+## 1049 — health tick, milestone "the test that passes anyway" complete
+
+Maintenance: tree clean, no open PRs, CI green for f9863f6 from the
+API (full sha), no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row. A quiet host this time — load 0.3
+against 2.1 at 1041 — and every row within a couple of per cent of
+its baseline either way.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 215 module functions, 24
+selftest files, 24 examples each with a .out, 3013 selftest checks on
+both engines, 511 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at twenty-two warnings, 181 tags all verified. Distribution:
+seven assets on each of the last two tags. Site audit: ten paths 200.
+
+The milestone is complete. It began where 1042 left it: the framework
+this project tests itself with could report a pass while holding a
+failure, because recording and printing were two different acts and
+only the second one was a verdict. The fix went in four strokes and
+each one closed a door the previous had left open — the end of a run
+(1043), the `exit(0)` that never reaches it (1044), and `--check`,
+which can see the missing summary() before anything runs (1045). The
+fourth (1046) came from the same reading of the code: a message that
+stops halfway is the same bug as a test that stops halfway, and
+"lib/list.ting has no `nope`" was a sentence with nothing after it.
+
+Replenishment next.

@@ -4389,10 +4389,15 @@ holds only the current milestone and the standing rules.
 - 1047: v2.160.0 tagged (181st tag; strokes 1043, 1044, 1045, 1046).
 - v2.160.0 VERIFIED (181st tag; strokes 1043, 1044, 1045, 1046; both
   aarch64 archives executed here).
+- 1049: health tick + audit green — eleven bench checksums identical
+  to BASELINE, four sweeps ok, counts all standing (79 builtins, 13
+  modules, 215 functions, 48 programs, 3013 checks, 511 tests in 18
+  suites, 81 unchanged, twenty-two warnings, 181 tags). Milestone
+  "the test that passes anyway" COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
+  - replenishment: choose the next milestone
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
