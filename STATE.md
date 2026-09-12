@@ -4577,11 +4577,12 @@ holds only the current milestone and the standing rules.
   not.
 - 1112: v2.168.0 tagged (189th) — milestone "the line that
   continues", strokes 1109, 1110, 1111.
+- v2.168.0 VERIFIED (189th tag; strokes 1109, 1110, 1111; both
+  aarch64 archives executed here, the shipped binary reindenting a
+  map and two operator continuations cold, ten paths 200).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.168.0 cold: seven assets, `sha256sum -c`, both
-    aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

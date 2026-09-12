@@ -29681,3 +29681,23 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.168.0 — the 189th tag — and pushed. Verification is the
 next tick.
+
+## 1113 — v2.168.0 verified
+
+Downloaded cold from the release: seven assets, `sha256sum -c` OK on
+all six archives. Both aarch64 archives were extracted and executed
+here — gnu and musl both answer `ting 2.168.0` — and `tools/smoke.sh`
+against each reports 23 passed, 1 skipped, 3098 checks and 26 clean
+examples.
+
+The shipped binary was asked to do the milestone's work on a file it
+had never seen: a badly laid out `stats` function with a map spread
+over two lines, and two statements broken after a `+`. It indents the
+map's second line by the brace that holds it and the operator's
+continuations by one level each, which is 1109 and 1110 arriving in
+somebody's hands rather than in a test.
+
+Site audit: the ten published paths answer 200, and the rendered
+reference carries the new layout paragraph.
+
+Remaining for the milestone: the health tick.
