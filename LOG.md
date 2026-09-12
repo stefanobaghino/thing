@@ -28958,3 +28958,47 @@ a user — reading the source would have shown nine correct `if`s and
 no bug at all.
 
 Replenishment next.
+
+## 1093 — replenishment: milestone "the half you got right"
+
+The probe was a CLI written cold against the v2.165.0 musl archive,
+outside the repo, with only the shipped `lib/` beside it: read a CSV
+of expenses, tally by category, print the top few as a table. The
+point was to reach for names from memory rather than from the docs,
+which is what a person does.
+
+Every name I reached for that was wrong was wrong the same way. I
+wrote `to_float` and `to_int` (ting has `float` and `int`), then
+`to_string` and `array_len` (`str`, `len`), then `list_median` on the
+list module (`median`). `--check` warned that each is bound nowhere
+and suggested NOTHING for any of them, while in the same file
+`sorted` got `did you mean sort?` and `lenght` got `did you mean
+len?`. The machinery works; it simply cannot see a name it is holding
+part of.
+
+Worse than silence, twice: `string_upper` is answered with `did you
+mean str?` when `upper` is the name, and `list_sort` with `did you
+mean list_dir?` when `sort` is. `nearest` in src/diag.rs scores edit
+distance with a bonus for a shared start, so the half of a compound
+guess that happens to come first wins, and the half that is an actual
+name is never looked at.
+
+The second finding is the one that stopped the first draft of the
+program dead: I wrote `import("lib/csv.ting") as csv;` on four lines
+and got `expected ';', found identifier 'as'` four times. Two lines
+down, `csv.each_map(...)` got a sentence that teaches the language —
+"ting has no methods — a call is `f(x)`, and a function in a map is
+`csv["each_map"](...)`". The parser already knows how to explain a
+habit from another language. `as` is the same habit and gets nothing.
+
+Not findings, recorded so they are not chased: calling
+`args["parse"]` with its two arguments swapped reported `spec must be
+a map, got list` and printed the frame as `parse(spec = [...], argv =
+{...})`, which shows the swap at a glance — that is the diagnosis,
+not a gap. And `--check` warning rather than failing on a name bound
+nowhere is deliberate: it found all five of mine in one pass while
+the program still ran as far as its first real error.
+
+Milestone "the half you got right" (v2.166): a guess that contains
+the right name should get the right name back, and a whole part
+should outrank a shared start.

@@ -4515,9 +4515,25 @@ holds only the current milestone and the standing rules.
   231 functions, 50 programs, 3098 checks, 529 tests in 18
   suites, 83 unchanged, twenty-two warnings, 186 tags).
   Milestone "the REPL's own words" COMPLETE.
+- 1093: replenishment — milestone "the half you got right"
+  (v2.166), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - a name bound nowhere that CONTAINS a name that is bound gets
+    that name back: `to_float` to `float`, `array_len` to `len`,
+    `list_median` to `median` — today `nearest` in src/diag.rs
+    scores edit distance and shared starts, and answers nothing
+  - a whole part outranks a bare shared start, so `string_upper`
+    stops answering `str` when `upper` is the name and
+    `list_sort` stops answering `list_dir` when `sort` is
+  - `import("x.ting") as m` is answered the way `m.f()` already
+    is — a sentence saying what ting's form is, not only
+    `expected ';', found identifier 'as'`
+  - release v2.166.0
+  - verify v2.166.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
