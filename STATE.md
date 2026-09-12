@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 50 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 26 examples with .out; 3098 selftest checks on all four
-  CI platforms, Windows included); 525 Rust tests
+  CI platforms, Windows included); 527 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 83 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4478,11 +4478,12 @@ holds only the current milestone and the standing rules.
   backslashes. The assertion names the last component now.
 - 1080: a bundle keeps the script's shebang as its first line. 525
   tests.
+- 1081: the timing guards read thread cpu time from
+  /proc/thread-self/schedstat where it runs, wall time elsewhere,
+  and have three guards of their own. 527 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - the timing guards measure thread CPU time where the platform
-    offers it (Linux /proc), wall time elsewhere — 1072's finding
   - release v2.164.0
   - verify v2.164.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200

@@ -256,6 +256,81 @@ mod common;
 /// bound, so a busy host lengthens both sides together: doubling the
 /// input can only double linear work, while either scan quadruples
 /// it.
+/// What the cpu clock buys, stated as the difference a test can see:
+/// a thread asleep costs the wall clock and no work at all. On a
+/// kernel that keeps no scheduler statistics there is nothing to
+/// measure and nothing to prove, so the test says so and stops.
+#[cfg(target_os = "linux")]
+#[test]
+fn the_ratio_does_not_count_a_thread_asleep() {
+    fn spin(n: u64) -> u64 {
+        let mut x = 0u64;
+        for i in 0..n {
+            x = x.wrapping_add(i.wrapping_mul(i));
+        }
+        x
+    }
+    if !common::measures_cpu_time() {
+        return;
+    }
+    // The work has to be large against what WAKING costs, which is
+    // cpu time and is charged to this thread: 200000 spins measured
+    // 1.50 beside a 20 ms sleep, and ten times that measures 1.0.
+    let ratio = common::doubling_ratio_under(
+        1.2,
+        || {
+            std::hint::black_box(spin(2_000_000));
+        },
+        || {
+            std::hint::black_box(spin(2_000_000));
+            std::thread::sleep(std::time::Duration::from_millis(20));
+        },
+    );
+    assert!(
+        ratio < 1.2,
+        "sleeping is not work, but it measured {ratio:.2}"
+    );
+}
+
+/// The guard that measures needs a guard of its own, since 1072 and
+/// 1064 were both failures of the measurement rather than of the
+/// code under it. Two arms of the same size cannot double however
+/// busy the machine is, and one four times the size has to say so —
+/// both asked through the same helper the real guards use.
+#[test]
+fn the_doubling_ratio_measures_work_and_not_the_machine() {
+    fn spin(n: u64) -> u64 {
+        let mut x = 0u64;
+        for i in 0..n {
+            x = x.wrapping_add(i.wrapping_mul(i));
+        }
+        x
+    }
+    let same = common::doubling_ratio_under(
+        1.5,
+        || {
+            std::hint::black_box(spin(400_000));
+        },
+        || {
+            std::hint::black_box(spin(400_000));
+        },
+    );
+    assert!(same < 1.5, "the same work twice measured {same:.2}");
+    let quadrupled = common::doubling_ratio_under(
+        3.0,
+        || {
+            std::hint::black_box(spin(400_000));
+        },
+        || {
+            std::hint::black_box(spin(1_600_000));
+        },
+    );
+    assert!(
+        quadrupled > 3.0,
+        "four times the work measured {quadrupled:.2}"
+    );
+}
+
 #[test]
 fn the_sameness_helpers_cost_the_elements_not_the_squares() {
     fn unique_of(n: usize) -> String {

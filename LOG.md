@@ -28588,3 +28588,46 @@ shebang), and `starts_with` widened to `contains` (which would hoist
 a comment from the middle of a file).
 
 525 tests.
+
+## 1081 — the clock that means work
+
+The timing guards asked a wall clock how much a doubling costs, and
+a wall clock answers a different question on a machine with other
+work on it. 1064 gave them elastic rounds; 1072 lost a gate run
+anyway, at load 5, with nothing regressed.
+
+They now read thread cpu time where the platform keeps it: on Linux,
+field one of /proc/thread-self/schedstat is nanoseconds this thread
+spent ON a cpu. No dependency, no libc, one read of a small file per
+measurement. macOS and Windows have no such file and keep the wall
+clock, which is what they had.
+
+A file that exists and never moves is worse than no file, so the
+clock is asked whether it runs — twice, with work in between — before
+it is trusted; a kernel without CONFIG_SCHEDSTATS falls back.
+
+The guard that measures now has guards of its own. Two arms of the
+same size must not double; four times the work must say so; and a
+thread ASLEEP must cost nothing, which is the whole difference
+between the two clocks stated as something a test can see.
+
+The sleep test had to be sized. At 200000 spins beside a 20 ms sleep
+it measured 1.50, because waking from a sleep is itself cpu time
+charged to the thread — about a millisecond here. Ten times the work
+puts the wake-up back where it belongs, at 1.0, and the number and
+the reason are in the test.
+
+Mutations: forcing the wall clock fails the sleep test, and inverting
+the ratio fails the doubling test. One survives — reading schedstat's
+SECOND field (time spent waiting for a cpu) instead of its first.
+On this host, at load 5, waiting time tracks running time closely
+enough to pass; on an idle machine it would not advance at all, the
+clock check would refuse it, and the sleep test would catch the
+fallback. The field is pinned by the kernel's documented format, not
+by a test, and that is written down rather than papered over.
+
+Incidentally: the lsp suite went from 41 s to 20 s, and selftest from
+39 s to 4 s across 1064 and this. A guard that can tell work from
+weather stops after one round.
+
+527 tests.

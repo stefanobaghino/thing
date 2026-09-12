@@ -227,20 +227,69 @@ impl Gen {
 /// enough to skew a round pays another instead of failing. 1064 hit
 /// three such failures in one hour at load 7 on four cores, none of
 /// them a regression.
+///
+/// And 1072 hit another with those rounds in place, which is what
+/// moved the measurement off the wall clock where the platform
+/// offers a better one: what is being asked is how much WORK a
+/// doubling costs, not how long the machine took to get round to
+/// it.
+/// Nanoseconds this thread has spent ON a cpu, where the platform
+/// will say. Linux keeps it in /proc/thread-self/schedstat, whose
+/// first field is exactly that. It is the number these guards
+/// actually mean: a busy machine lengthens the wall clock for both
+/// sizes, and a scan that went quadratic costs cpu whoever else is
+/// running. None elsewhere — macOS and Windows have no such file —
+/// and the wall clock stands in there.
+fn cpu_nanos() -> Option<u64> {
+    let text = std::fs::read_to_string("/proc/thread-self/schedstat").ok()?;
+    text.split_whitespace().next()?.parse().ok()
+}
+
+/// Whether that clock moves. A kernel built without CONFIG_SCHEDSTATS
+/// keeps the file and leaves the number at zero, which would divide
+/// one nothing by another; asked twice with work in between, it says
+/// so in a millisecond.
+fn cpu_clock_runs() -> bool {
+    let Some(before) = cpu_nanos() else {
+        return false;
+    };
+    let mut x = 0u64;
+    for i in 0..200_000u64 {
+        x = x.wrapping_add(i * i);
+    }
+    std::hint::black_box(x);
+    cpu_nanos().is_some_and(|after| after > before)
+}
+
+/// Whether the measurement below is counting cpu time rather than
+/// the wall clock, which a test of that difference has to know.
+pub fn measures_cpu_time() -> bool {
+    cpu_clock_runs()
+}
+
 pub fn doubling_ratio_under(bound: f64, mut small: impl FnMut(), mut large: impl FnMut()) -> f64 {
+    let cpu = cpu_clock_runs();
+    // Nanoseconds either way, so the ratio means the same thing on a
+    // platform that has the cpu clock and one that does not.
+    let measure = |f: &mut dyn FnMut()| -> f64 {
+        if cpu {
+            let before = cpu_nanos().unwrap_or(0);
+            f();
+            return cpu_nanos().unwrap_or(before).saturating_sub(before) as f64;
+        }
+        let at = std::time::Instant::now();
+        f();
+        at.elapsed().as_nanos() as f64
+    };
     let mut best = f64::INFINITY;
     for _ in 0..8 {
-        let mut small_best = std::time::Duration::MAX;
-        let mut large_best = std::time::Duration::MAX;
+        let mut small_best = f64::INFINITY;
+        let mut large_best = f64::INFINITY;
         for _ in 0..5 {
-            let at = std::time::Instant::now();
-            small();
-            small_best = small_best.min(at.elapsed());
-            let at = std::time::Instant::now();
-            large();
-            large_best = large_best.min(at.elapsed());
+            small_best = small_best.min(measure(&mut small));
+            large_best = large_best.min(measure(&mut large));
         }
-        best = best.min(large_best.as_secs_f64() / small_best.as_secs_f64());
+        best = best.min(large_best / small_best);
         if best < bound {
             break;
         }
