@@ -28024,3 +28024,36 @@ four modules rather than three, which is the message doing its job.
 The expectation moved.
 
 227 functions.
+
+## 1062 — and the same shape, written
+
+The other half of the milestone: lib/time.ting can now WRITE a stamp
+in a shape stated the same way it is read. `text(ms, "%b %e
+%H:%M:%S")` is syslog, `text(ms, "%d/%b/%Y:%H:%M:%S")` is an access
+log, and `parse` reads either back.
+
+The name is `text`, which is what lib/csv.ting calls the inverse of
+its own `parse` — a module's `parse` reads its subject and its `text`
+writes one. `format` was the obvious name and is a builtin this
+module calls three times, so taking it would have meant hand-padding
+every number here to keep a name.
+
+An `offset` argument, third and defaulting to zero, shifts the
+instant east of UTC before it is written, and is what `%z` writes.
+Without it `%z` could only ever say +0000: everything in this module
+is UTC, so there is no other offset for it to know. With it a stamp
+written at +0200 reads back through `parse` to the instant it came
+from, which is the round trip that matters.
+
+The codes are `parse`'s, `expand` is shared, and where a code names
+something the reader throws away the writer computes it: `%a` and
+`%A` write the weekday the date already implies. `%e` pads with a
+space and `%d` with a zero, which is why syslog columns line up.
+`%I` folds to twelve at midnight and noon where the hour is written,
+not where it is read.
+
+Six mutations, all caught by selftest/time.ting: `%e` padded with a
+zero, the twelve-hour fold dropped, noon written as AM, a short
+millisecond field, the offset ignored, and a four-digit `%y`.
+
+230 functions, 3074 checks.

@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 227 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 230 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -248,6 +248,9 @@ builtin, and answer `nil` where it keeps no zone data.
 | `read_meridiem(s, j, f)` | `AM` or `PM` |
 | `read_offset(s, j, f)` | `+HHMM`, `+HH:MM` or `Z`, as milliseconds east of UTC |
 | `pow10(n)` | ten to the n |
+| `text(ms, pattern, offset = 0)` | an instant written in a stated shape, over the codes `parse` takes: `text(ms, "%b %e %H:%M:%S")` is syslog. `offset` shifts the instant east of UTC before it is written and is what `%z` writes; a code that is not in the list errors |
+| `write_code(code, at, offset)` | one code as the text it stands for; for `text` |
+| `offset_text(off)` | an offset as strftime writes one: `+HHMM`, no colon |
 | `name_index(names, name)` | where a name sits in a list of names, whole or first three letters, either case; nil when nowhere |
 | `MONTHS` | the twelve month names |
 | `WEEKDAYS` | the seven weekday names, Sunday first |

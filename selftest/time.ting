@@ -198,3 +198,48 @@ if local_zone(sample) == nil {
     assert(t["from_iso"](t["local_iso"](sample)) == sample, "and reads back to the same instant");
   }
 }
+
+# Writing an instant in a stated shape. text takes the codes parse
+# takes, so the two are inverses over the same vocabulary.
+let log = t["parse"]("12/Sep/2026:06:00:01", "%d/%b/%Y:%H:%M:%S");
+assert(t["text"](log, "%d/%b/%Y:%H:%M:%S") == "12/Sep/2026:06:00:01", "an access log stamp");
+assert(t["text"](log, "%b %e %H:%M:%S") == "Sep 12 06:00:01", "a syslog stamp");
+assert(t["text"](log, "%F %T") == "2026-09-12 06:00:01", "the two shorthands");
+assert(t["text"](log, "%D") == "09/12/26", "and the third");
+assert(t["text"](log, "%A, %B %d, %Y") == "Saturday, September 12, 2026", "names in full");
+assert(t["text"](log, "%a %b") == "Sat Sep", "and in three letters");
+assert(t["text"](log, "%y") == "26", "a two-digit year");
+assert(t["text"](t["from_parts"](1969, 7, 20, 20, 17, 40), "%y") == "69", "in either century");
+assert(t["text"](log, "%L") == "000", "milliseconds are three digits");
+assert(t["text"](log + 7, "%L") == "007", "padded, not printed as they are");
+assert(t["text"](log, "100%% done at %H:%M") == "100% done at 06:00", "a literal percent");
+assert(t["text"](log, "no codes here") == "no codes here", "a pattern that names nothing");
+
+# The day pads with a space, which is what %e is for: syslog columns
+# line up because "Sep  3" is as wide as "Sep 12".
+assert(t["text"](t["from_parts"](2026, 9, 3, 0, 0, 0), "%b %e") == "Sep  3", "a single-digit day");
+assert(t["text"](t["from_parts"](2026, 9, 3, 0, 0, 0), "%b %d") == "Sep 03", "which %d pads with a zero");
+
+# The twelve-hour clock, folded where it is written rather than left
+# to the reader: midnight and noon are both twelve.
+assert(t["text"](t["from_parts"](2026, 1, 2, 0, 30, 0), "%I:%M %p") == "12:30 AM", "midnight is twelve AM");
+assert(t["text"](t["from_parts"](2026, 1, 2, 12, 0, 0), "%I:%M %p") == "12:00 PM", "noon is twelve PM");
+assert(t["text"](t["from_parts"](2026, 1, 2, 11, 59, 0), "%I %p") == "11 AM", "the minute before it");
+assert(t["text"](t["from_parts"](2026, 1, 2, 13, 0, 0), "%I %p") == "01 PM", "and the hour after");
+
+# An offset shifts the instant and is what %z writes. Without one
+# everything here is UTC, so %z would only ever say +0000.
+assert(t["text"](log, "%H:%M%z") == "06:00+0000", "no offset is written, not skipped");
+assert(t["text"](log, "%H:%M%z", 7200000) == "08:00+0200", "two hours east");
+assert(t["text"](log, "%H:%M%z", -19800000) == "00:30-0530", "a half-hour zone west");
+assert(t["parse"](t["text"](log, "%FT%T%z", 7200000), "%FT%T%z") == log, "and it reads back to the instant");
+
+# The round trip, over every shape that keeps the whole instant.
+for pattern in ["%F %T", "%d/%b/%Y:%H:%M:%S", "%Y%m%d%H%M%S", "%D %T", "%B %e, %Y %I:%M:%S %p"] {
+  assert(t["parse"](t["text"](log, pattern), pattern) == log, "round trip " + pattern);
+}
+assert(t["parse"](t["text"](log + 250, "%F %T.%L"), "%F %T.%L") == log + 250, "milliseconds included");
+
+# A code nobody defined fails here too: the pattern is the program's
+# own, and a silent nothing would hide the typo.
+assert(err(fn() { return t["text"](log, "%Q"); }) == "not a pattern code: %Q", "an unknown code");

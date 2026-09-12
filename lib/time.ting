@@ -479,3 +479,74 @@ fn pow10(n) {
   for i in range(n) { out = out * 10; }
   return out;
 }
+
+# An instant written in a shape the world reads, with the same codes
+# parse takes: text(ms, "%d/%b/%Y:%H:%M:%S") is an access log,
+# text(ms, "%b %e %H:%M:%S") is syslog. This is parse's inverse, and
+# csv's text is its namesake — a module's parse reads its subject,
+# its text writes one.
+#
+# offset shifts the instant east of UTC before it is written, and is
+# what %z writes: everything else here is UTC, so without it %z would
+# only ever say +0000. A code that is not in the list FAILS, the way
+# it does in a pattern being read.
+fn text(ms, pattern, offset = 0) {
+  let p = expand(pattern);
+  let at = parts(ms + offset);
+  let out = "";
+  let i = 0;
+  while i < len(p) {
+    let c = slice(p, i, i + 1);
+    if c == "%" {
+      out = out + write_code(slice(p, i + 1, i + 2), at, offset);
+      i = i + 2;
+    } else {
+      out = out + c;
+      i = i + 1;
+    }
+  }
+  return out;
+}
+
+# One code as the text it stands for, from an already-shifted parts
+# map. The hour codes read the same field three ways: %H is the
+# twenty-four hour clock, %I the twelve, %p which half it is in.
+fn write_code(code, at, offset) {
+  if code == "Y" { return format("{:04}", at["year"]); }
+  if code == "y" { return format("{:02}", fmod(at["year"], 100)); }
+  if code == "m" { return format("{:02}", at["month"]); }
+  if code == "d" { return format("{:02}", at["day"]); }
+  if code == "e" { return format("{:2}", at["day"]); }
+  if code == "H" { return format("{:02}", at["hour"]); }
+  if code == "I" {
+    let twelve = at["hour"] % 12;
+    if twelve == 0 { twelve = 12; }
+    return format("{:02}", twelve);
+  }
+  if code == "p" {
+    if at["hour"] >= 12 { return "PM"; }
+    return "AM";
+  }
+  if code == "M" { return format("{:02}", at["minute"]); }
+  if code == "S" { return format("{:02}", at["second"]); }
+  if code == "L" { return format("{:03}", at["ms"]); }
+  if code == "b" || code == "h" { return month_name(at["month"], true); }
+  if code == "B" { return month_name(at["month"]); }
+  if code == "a" { return weekday_name(at["weekday"], true); }
+  if code == "A" { return weekday_name(at["weekday"]); }
+  if code == "z" { return offset_text(offset); }
+  if code == "%" { return "%"; }
+  fail("not a pattern code: %" + code);
+}
+
+# An offset as strftime writes one: +HHMM, no colon and no Z.
+fn offset_text(off) {
+  let sign = "+";
+  let n = off;
+  if n < 0 {
+    sign = "-";
+    n = -n;
+  }
+  let minutes = n / 60000;
+  return sign + format("{:02}{:02}", minutes / 60, minutes % 60);
+}

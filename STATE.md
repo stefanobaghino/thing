@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 227
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 230
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3045 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 3074 selftest checks on all four
   CI platforms, Windows included); 523 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4427,10 +4427,12 @@ holds only the current milestone and the standing rules.
 - 1061: lib/time.ting gained `parse(s, pattern, defaults)` — the
   strftime codes, nil on a mismatch, fail on a code nobody
   defined. 227 functions, 3045 checks.
+- 1062: lib/time.ting gained `text(ms, pattern, offset)`, `parse`'s
+  inverse over the same codes, named after csv's. 230 functions,
+  3074 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a writer for the same shape vocabulary
   - an example that reads a real access-log or syslog stamp end to
     end, and a cookbook recipe pointing at it
   - release v2.162.0
