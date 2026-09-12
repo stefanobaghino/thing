@@ -29158,3 +29158,27 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.166.0 — the 187th tag — and pushed. Verification is the
 next tick.
+
+## 1099 — v2.166.0 verified
+
+Release workflow, CI and Pages all green for cbbb380 from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.166.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3098
+checks, 26 examples clean, 0 differing, both.
+
+The milestone from the archive, outside the repo, written as the
+probe first wrote it: `import("lib/csv.ting") as csv;` is answered
+`a module is a value: let csv = import(...);`, and every name the
+probe reached for is answered with the name it was reaching for —
+`to_float` with `float`, `array_len` with `len`, `string_upper` with
+`upper`, `to_string` with `str`, `list_sort` with `sort`, and
+`l["list_median"]` with the module's own `median` rather than the
+builtin `list_dir`. Six names and one habit, all of which said
+nothing or said the wrong thing a milestone ago.
+
+Site audit: ten paths 200, none otherwise. changelog.html carries
+v2.166.0 and reference.html the sentence naming `list_sort`.
