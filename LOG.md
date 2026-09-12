@@ -27063,3 +27063,38 @@ and the branch switched off.
 
 docs/reference.md says `in` belongs to a `for` header and names both
 calls.
+
+## 1031 — the counted loop, and the increment ting has
+
+Third stroke of "the phrasebook", and one habit rather than two: a C
+counted loop and the `i++` inside it come from the same place.
+
+`for (let i = 0; i < 3; i = i + 1)` answered `expected loop variable,
+found '('`, which names what the parser wanted and not the loop that
+was meant. It now adds `a counted loop is `for i in range(n)``, on
+the paren alone — `for 1 in xs` keeps the plain message, because the
+hint is about the borrowed shape, not about the parser wanting a name.
+
+`i++` answered `expected expression, found '+'` and `i--` answered
+`expected expression, found ';'`, neither mentioning `+=`, which ting
+has. All three spellings now say so, named after the variable when
+there is one: `ting has no `++` — write `i += 1``. Where the parser
+stops depends on the form, and the hint looks in all three places:
+`++i` stops ON the first `+` for want of a prefix plus, `i++` reads
+`i +` and stops wanting an operand, and `i--` reads the second `-` AS
+a prefix minus and stops after it. `xs[0]++` has nothing to name on
+either side and keeps `x += 1`.
+
+`--i` is the one that parses: it negates twice and changes nothing,
+which is what it means anywhere the parser can see, so there is no
+error to hang a hint on. A SPACE between the two is two operators —
+`i - -1` is a subtraction of a negative, and a line that stops near
+`1 - - ` gets the plain message.
+
+Five mutations. Four were caught at once; the fifth, dropping the
+adjacency test so a spaced `- -` counted as `--`, PASSED, because
+every case in the table had the two tokens touching. The test that
+keeps the hint out of the way now includes a spaced pair on a line
+that fails anyway, and the mutation fails.
+
+docs/reference.md has the bullet, `--i` included.

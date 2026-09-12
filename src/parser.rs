@@ -206,6 +206,48 @@ impl<'a> Parser<'a> {
                 _ => {}
             }
         }
+        // `++` and `--` are two tokens with nothing between them,
+        // which an expression never is: `i++` stops at the second `+`
+        // because there is no unary plus, and `i--` reads the second
+        // `-` as one and stops at whatever follows. ting has `+=`, so
+        // the fix is a spelling, and the name is the token before the
+        // pair when there is one.
+        let doubled = |a: &Token, b: &Token| {
+            a.span.end == b.span.start
+                && matches!(a.kind, TokenKind::Plus | TokenKind::Minus)
+                && a.kind == b.kind
+        };
+        let named = |t: Option<&Token>| match t {
+            Some(Token {
+                kind: TokenKind::Ident(name),
+                ..
+            }) => name.clone(),
+            _ => "x".to_string(),
+        };
+        // The pair sits at the stopping point (`++i`, where the first
+        // `+` is not a prefix operator), one behind it (`i++`, which
+        // reads `i +` and wants an operand), or two (`i--`, whose
+        // second `-` IS read as a prefix minus).
+        for back in [0, 1, 2] {
+            if self.pos >= back
+                && let Some(pair) = self.tokens.get(self.pos - back..self.pos - back + 2)
+                && doubled(&pair[0], &pair[1])
+            {
+                let (sign, op) = match pair[0].kind {
+                    TokenKind::Plus => ("++", "+="),
+                    _ => ("--", "-="),
+                };
+                // The name is on whichever side of the pair it is.
+                let name = if back == 0 {
+                    named(self.tokens.get(self.pos + 2))
+                } else if self.pos > back {
+                    named(self.tokens.get(self.pos - back - 1))
+                } else {
+                    "x".to_string()
+                };
+                return Some(format!("ting has no `{sign}` — write `{name} {op} 1`"));
+            }
+        }
         // `in` is a keyword this parser reads in a `for` header and
         // nowhere else, so a program that writes `k in m` outside one
         // is asking a membership question ting answers with a call.
@@ -604,8 +646,16 @@ impl<'a> Parser<'a> {
                             name
                         }
                         k => {
-                            return Err(self
-                                .error(format!("expected loop variable, found {}", describe(&k))));
+                            let mut message =
+                                format!("expected loop variable, found {}", describe(&k));
+                            // `for (let i = 0; i < n; i++)` is the
+                            // commonest way to arrive here, and the
+                            // parser wanting a name says nothing about
+                            // the loop that was meant.
+                            if k == TokenKind::LParen {
+                                message.push_str(" (a counted loop is `for i in range(n)`)");
+                            }
+                            return Err(self.error(message));
                         }
                     },
                 };
@@ -1422,6 +1472,78 @@ mod tests {
         ] {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// A `for` header from C stops on the `(`, and the parser
+    /// wanting a name says nothing about the loop that was meant.
+    #[test]
+    fn a_counted_loop_says_the_for_ting_has() {
+        for src in [
+            "for (let i = 0; i < 3; i = i + 1) { print(i); }",
+            "for (i = 0; i < 3; i++) { }",
+            "for (;;) { }",
+        ] {
+            let got = prog_err(src);
+            assert_eq!(
+                got, "expected loop variable, found '(' (a counted loop is `for i in range(n)`)",
+                "{src}"
+            );
+        }
+        // Anything else in that position keeps the plain message: the
+        // hint is about the paren, not about the parser wanting a name.
+        assert_eq!(
+            prog_err("for 1 in xs { }"),
+            "expected loop variable, found integer '1'"
+        );
+    }
+
+    /// `++` and `--` are two tokens with nothing between them, and
+    /// where the parser stops depends on which: `i++` reads `i +` and
+    /// wants an operand, `++i` stops on the first `+` for want of a
+    /// prefix plus, and `i--` reads the second `-` AS a prefix minus
+    /// and stops after it.
+    #[test]
+    fn an_increment_says_the_compound_assignment_ting_has() {
+        for (src, want) in [
+            ("let i = 0; i++;", "ting has no `++` — write `i += 1`"),
+            ("let i = 0; ++i;", "ting has no `++` — write `i += 1`"),
+            ("let i = 0; i--;", "ting has no `--` — write `i -= 1`"),
+            ("print(n++);", "ting has no `++` — write `n += 1`"),
+            // Nothing to name on either side of the pair.
+            (
+                "let xs = [1]; xs[0]++;",
+                "ting has no `++` — write `x += 1`",
+            ),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// A space between the two is two operators, which ting has: `i -
+    /// -1` is a subtraction of a negative. `--i` is the same thing
+    /// with no space and parses too — it negates twice and changes
+    /// nothing, which is what it means everywhere the parser can see.
+    #[test]
+    fn the_increment_hint_stays_out_of_the_way() {
+        for src in [
+            "let i = 0; let j = i - -1; print(j);",
+            "let i = 0; --i;",
+            "let i = 0; i = i + 1; print(i);",
+            "let i = 0; i += 1; print(i);",
+        ] {
+            assert!(
+                parse_program(&lex(src).unwrap()).is_ok(),
+                "{src} should still parse"
+            );
+        }
+        // Two operators with a SPACE between them are two
+        // operators, whatever else is wrong with the line: a program
+        // that stops near them gets the plain message.
+        for src in ["print(1 - - );", "print(1 + + );"] {
+            let got = prog_err(src);
+            assert!(!got.contains("ting has no"), "{src}: {got}");
         }
     }
 
