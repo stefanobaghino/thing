@@ -28247,3 +28247,40 @@ the other one.
 Discoverability was fine, for the record: `--doc percentile` finds it
 in lib/math.ting without being told where to look, and the diagnostic
 for `li["sort_by"]` said it is a builtin, which 1055 put there.
+
+## 1069 — the way back out of a record
+
+The backlog had the refusal first and the inverse second. Swapped:
+the refusal is going to name `rows`, and a message that names a
+function nobody has written yet is a message that is wrong for a
+tick. So `rows` first.
+
+`csv["rows"](records, columns = nil)` turns what `maps` hands back
+into a header row and one row per record, which `text` then writes —
+the way out of the shape a program actually holds. Hand-joining the
+fields instead is what 1068's probe did, and it loses the quoting
+this module exists to get right: one comma inside a field and the
+file means something else.
+
+Where the columns come from is the whole design. A map has no order,
+so the header a file arrived with is gone by the time it is records;
+without `columns` they are the first record's keys, which is
+alphabetical, and the round trip that gives the file back byte for
+byte is `rows(records, parse(text)[0])`. That is in the comment, in
+the stdlib row, and in a check.
+
+Stating the columns is choosing them, so a key outside them is left
+out. NOT stating them is not choosing, so a record carrying a name
+the first one did not fails and names it — that is how a column goes
+missing from half a file, which is the same sin as the one this
+milestone is about.
+
+Every field comes out as text, nil and absent alike as an empty
+field, which also makes these rows the ones lib/string.ting's table
+wants.
+
+Five mutations, all caught: nil written as the word, the unstated
+extra column let through, the check run even when columns were
+stated, the header dropped, and the fields left unconverted.
+
+231 functions, 3088 checks.

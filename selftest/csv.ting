@@ -160,3 +160,36 @@ assert(excel == csv["maps"](csv["parse"](read_file(path))), "both readers agree,
 assert(csv["parse"](bom + bom + "a\n")[0] == [bom + "a"], "only the first is a mark");
 assert(csv["parse"]("a," + bom + "b\n")[0][1] == bom + "b", "and only at the start of the file");
 remove_file(path);
+
+# The way back out: records to rows, which text then writes. A file
+# read into maps and written back this way is the same file, quoting
+# and all, when the header it came with is kept.
+let doc = "name,note,n\nSep,\"a, comma\",3\nOct,plain,12\n";
+let read = csv["parse"](doc);
+let records = csv["maps"](read);
+assert(csv["text"](csv["rows"](records, read[0])) == doc, "the round trip is the same file");
+assert(csv["rows"](records, read[0])[0] == ["name", "note", "n"], "the header comes back in its own order");
+assert(csv["rows"](records)[0] == ["n", "name", "note"], "and alphabetical without one, a map having no order");
+assert(csv["rows"](records)[1] == ["3", "Sep", "a, comma"], "the fields follow the header they are under");
+assert(csv["rows"]([]) == [], "no records, no header: maps([]) is [] too");
+
+# Every field comes out as text, so the rows suit a table as well as
+# a file; a column a record lacks, or holds as nil, is empty rather
+# than the word nil.
+assert(csv["rows"]([{"a": 1, "b": true}])[1] == ["1", "true"], "numbers and booleans are written");
+assert(csv["rows"]([{"a": nil}])[1] == [""], "nil is an empty field");
+assert(csv["rows"]([{"a": 1}], ["a", "b"])[1] == ["1", ""], "and so is a column no record has");
+assert(csv["rows"]([{"a": 1, "b": 2}], ["a"]) == [["a"], ["1"]], "stating the columns is choosing them");
+
+# What it refuses. Stating columns is choosing; not stating them is
+# not, so a record carrying a name the first one did not is a column
+# that would go missing from half the file.
+assert(errmsg(fn() { return csv["rows"]([{"a": 1}, {"a": 2, "b": 3}]); }) ==
+"rows: record has a column the first one did not: b", "an unstated column is not dropped");
+assert(csv["rows"]([{"a": 1}, {"a": 2, "b": 3}], ["a"]) == [["a"], ["1"], ["2"]], "unless the columns were stated");
+assert(errmsg(fn() { return csv["rows"]([["a", "b"]]); }) ==
+"rows: expects a list of records, found a list", "rows of fields are what text takes");
+assert(errmsg(fn() { return csv["rows"]("name,n\n"); }) ==
+"rows: expects a list of records, got string", "and text is what parse takes");
+assert(errmsg(fn() { return csv["rows"]([{"a": 1}], "a"); }) ==
+"rows: columns must be a list, got string", "columns are a list of names");

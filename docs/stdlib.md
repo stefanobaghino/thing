@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 230 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 231 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -309,6 +309,7 @@ column from anything asking for it by name.
 | `parse_with(text, sep)` | the older spelling of `parse` with an explicit separator |
 | `text_with(rows, sep)` | the older spelling of `text` with an explicit separator |
 | `maps(rows, extras = nil)` | the first row read as a header, the rest as maps; a short row leaves those columns nil, and a field past the end of the header is dropped unless `extras` names a key to collect such fields under |
+| `rows(records, columns = nil)` | the inverse of `maps`: a header row and one row per record, ready for `text` (or for `table` — every field comes out as text). `columns` names them and their order; without it they come from the first record, which means alphabetical, since a map has no order to remember. A column a record lacks, or holds as `nil`, is empty. With `columns` stated a key outside them is left out; without, a record carrying a name the first one did not errors |
 | `each_map(path, f, sep = ",", extras = nil)` | `maps` over a file, without holding it: the first row is the header and every later row reaches `f` as a map, so a column is asked for by name rather than by a number the caller has to find and carry. Names `extras` as `maps` does — the streaming reader needs it most, since it never sees the whole file to check afterwards. Answers how many maps `f` was given — one less than the rows |
 | `entry_of(header, row, extras = nil)` | one row named by a header, the map both `maps` and `each_map` hand out |
 

@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 230
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 231
   functions, guarded); 49 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 25 examples with .out; 3074 selftest checks on all four
+  nothing on its own — and 25 examples with .out; 3088 selftest checks on all four
   CI platforms, Windows included); 523 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 82 unchanged; BASELINE is ELEVEN
@@ -4447,14 +4447,14 @@ holds only the current milestone and the standing rules.
   isn't ISO" COMPLETE.
 - 1068: replenishment — milestone "rows and records" (v2.163),
   reasoning in LOG.md.
+- 1069: `csv["rows"](records, columns)`, the inverse of `maps` —
+  taken before the refusal above it, which names it. 231 functions,
+  3088 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
   - `csv["text"]` given a list of maps writes each map's KEYS as
     its row, silently: refuse it with a sentence naming the inverse
-  - `csv["rows"](maps, columns = nil)`, the inverse of `maps`: a
-    header plus a row per record, columns stated or taken from the
-    first one
   - `table` in lib/string.ting answers a shape it cannot use with a
     sentence of its own, not `cannot index map with int` from line
     271 of the module

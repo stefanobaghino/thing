@@ -103,6 +103,51 @@ fn maps(rows, extras = nil) {
   return out;
 }
 
+# The inverse of maps: a header row and one row per record, ready for
+# text. A program reads a file into records because that is the shape
+# it wants to hold, and this is the way back out — hand-joining the
+# fields instead loses the quoting this module exists to get right.
+#
+# `columns` names the columns and their order. Without it they come
+# from the first record, which means alphabetical: a map has no order
+# to remember, so the header a file arrived with is gone by then. Keep
+# it — `rows(records, parse(text)[0])` — when the file is to be
+# written back as it came.
+#
+# A column a record does not have, or has as nil, is an empty field.
+# With `columns` stated, a key outside them is left out, since stating
+# them is choosing. Without, a record carrying a key the first one did
+# not FAILS, naming it: nothing said to drop it, and dropping it
+# silently is how a column goes missing from half a file.
+#
+# Every field comes out as text, so these rows suit lib/string.ting's
+# table as well as they suit text.
+fn rows(records, columns = nil) {
+  if type(records) != "list" { fail("rows: expects a list of records, got " + type(records)); }
+  if len(records) == 0 { return []; }
+  for r in records {
+    if type(r) != "map" { fail("rows: expects a list of records, found a " + type(r)); }
+  }
+  let header = columns;
+  if header == nil { header = keys(records[0]); }
+  if type(header) != "list" { fail("rows: columns must be a list, got " + type(header)); }
+  let out = [header + []];
+  for r in records {
+    if columns == nil {
+      for k in keys(r) {
+        if !contains(header, k) { fail("rows: record has a column the first one did not: " + str(k)); }
+      }
+    }
+    let row = [];
+    for c in header {
+      if !has(r, c) || r[c] == nil { push(row, ""); }
+      else { push(row, str(r[c])); }
+    }
+    push(out, row);
+  }
+  return out;
+}
+
 # maps() over a file, without holding it: the first row is the header
 # and every later row reaches f as a map, so a column is asked for by
 # name rather than by a number the caller has to find and carry. The
