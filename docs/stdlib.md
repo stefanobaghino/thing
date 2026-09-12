@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 219 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 227 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -240,6 +240,14 @@ builtin, and answer `nil` where it keeps no zone data.
 | `month_name(m, short = false)` | the name of a month number, 1 being January; `short` gives `Sep`; outside 1-12 errors |
 | `month_number(name)` | 9 for `September`, `Sep` or `sep`; a name nobody writes errors |
 | `weekday_number(name)` | 0 for `Sunday`, `Sun` or `sun`; as above |
+| `parse(s, pattern, defaults = nil)` | a timestamp in a stated shape: `parse("12/Sep/2026:06:00:01", "%d/%b/%Y:%H:%M:%S")`. Codes `%Y %y %m %b %B %d %e %H %I %M %S %L %p %a %A %z %%`, with `%F` for `%Y-%m-%d`, `%T` for `%H:%M:%S`, `%D` for `%m/%d/%y`; a space matches one space or several. nil when the text does not match; a code that is not in the list errors. Fields the pattern does not name come from `defaults` (a parts-shaped map) and otherwise from 1970-01-01 |
+| `expand(pattern)` | the shorthand codes written out |
+| `read_code(s, j, code, f)` | one code against the text, writing the field it names; for `parse` |
+| `read_int(s, j, width, field, f)` | up to `width` digits into a field |
+| `read_name(s, j, names, field, f)` | a month or weekday name, full or three-letter, either case |
+| `read_meridiem(s, j, f)` | `AM` or `PM` |
+| `read_offset(s, j, f)` | `+HHMM`, `+HH:MM` or `Z`, as milliseconds east of UTC |
+| `pow10(n)` | ten to the n |
 | `name_index(names, name)` | where a name sits in a list of names, whole or first three letters, either case; nil when nowhere |
 | `MONTHS` | the twelve month names |
 | `WEEKDAYS` | the seven weekday names, Sunday first |

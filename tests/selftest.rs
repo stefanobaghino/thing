@@ -119,7 +119,7 @@ fn corpus_check_warnings_are_the_expected_twenty_two() {
         ),
         (
             "errors.ting",
-            "`parse` is bound nowhere (lib/args.ting, lib/csv.ting and lib/json.ting have it)",
+            "`parse` is bound nowhere (lib/args.ting, lib/csv.ting, lib/json.ting and lib/time.ting have it)",
         ),
         ("functions.ting", "called with 1"),
         (

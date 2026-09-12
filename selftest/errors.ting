@@ -73,7 +73,7 @@ assert(contains(lives["err"], "undefined variable 'repeat' (lib/string.ting has 
 "a name the stdlib exports says where it lives");
 let several = try(fn() { return parse; });
 assert(contains(several["err"],
-"'parse' (lib/args.ting, lib/csv.ting and lib/json.ting have it)"),
+"'parse' (lib/args.ting, lib/csv.ting, lib/json.ting and lib/time.ting have it)"),
 "and every module that has it is named");
 assert(!contains(lives["err"], "did you mean"), "the module beats a guess at a nearby name");
 

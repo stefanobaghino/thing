@@ -307,3 +307,175 @@ fn fdiv(a, b) {
 
 # The remainder that goes with fdiv: always has the sign of b.
 fn fmod(a, b) { return a - fdiv(a, b) * b; }
+
+# A timestamp in a shape the world writes, read with the strftime
+# codes it is usually described by: parse("12/Sep/2026:06:00:01",
+# "%d/%b/%Y:%H:%M:%S"). The codes are %Y %y %m %b %B %d %e %H %I %M
+# %S %L %p %a %A %z and %%, plus %F for %Y-%m-%d, %T for %H:%M:%S and
+# %D for %m/%d/%y. Everything else in the pattern stands for itself,
+# and a space matches one space or several — syslog writes "Sep  3".
+#
+# nil when the text does not match the shape, the way from_iso
+# answers nil: the text comes from the world and not matching is
+# something a program handles. A code that is not in the list above
+# FAILS, because the pattern is the program's own.
+#
+# Fields the pattern does not name come from defaults, a parts-shaped
+# map, and otherwise from 1970-01-01T00:00:00Z — which is how a
+# syslog line without a year is read: parse(s, "%b %e %H:%M:%S",
+# {"year": 2026}).
+fn parse(s, pattern, defaults = nil) {
+  if type(s) != "string" || type(pattern) != "string" { return nil; }
+  let f = {"year": 1970, "month": 1, "day": 1, "hour": 0, "minute": 0,
+    "second": 0, "ms": 0, "offset": 0, "pm": nil};
+  if defaults != nil {
+    for k in keys(f) {
+      if has(defaults, k) { f[k] = defaults[k]; }
+    }
+  }
+  let p = expand(pattern);
+  let i = 0;
+  let j = 0;
+  while i < len(p) {
+    let c = slice(p, i, i + 1);
+    if c == "%" {
+      let code = slice(p, i + 1, i + 2);
+      i = i + 2;
+      if code == "%" {
+        if slice(s, j, j + 1) != "%" { return nil; }
+        j = j + 1;
+      } else {
+        let step = read_code(s, j, code, f);
+        if step == nil { return nil; }
+        j = step;
+      }
+    } else if c == " " {
+      if slice(s, j, j + 1) != " " { return nil; }
+      while slice(s, j, j + 1) == " " { j = j + 1; }
+      i = i + 1;
+    } else {
+      if slice(s, j, j + 1) != c { return nil; }
+      i = i + 1;
+      j = j + 1;
+    }
+  }
+  if j != len(s) { return nil; }
+  if f["pm"] != nil {
+    if f["hour"] < 1 || f["hour"] > 12 { return nil; }
+    f["hour"] = f["hour"] % 12;
+    if f["pm"] { f["hour"] = f["hour"] + 12; }
+  }
+  if f["month"] < 1 || f["month"] > 12 { return nil; }
+  if f["day"] < 1 || f["day"] > days_in_month(f["year"], f["month"]) { return nil; }
+  if f["hour"] > 23 || f["minute"] > 59 || f["second"] > 59 { return nil; }
+  return from_parts(f["year"], f["month"], f["day"], f["hour"], f["minute"], f["second"])
+  + f["ms"] - f["offset"];
+}
+
+# The three shorthand codes, written out before the walk.
+fn expand(pattern) {
+  let out = replace(pattern, "%F", "%Y-%m-%d");
+  out = replace(out, "%T", "%H:%M:%S");
+  return replace(out, "%D", "%m/%d/%y");
+}
+
+# One code against the text at j: the field it names is written into
+# f, and the new j comes back. nil when the text does not have it.
+fn read_code(s, j, code, f) {
+  if code == "Y" { return read_int(s, j, 4, "year", f); }
+  if code == "m" { return read_int(s, j, 2, "month", f); }
+  if code == "d" { return read_int(s, j, 2, "day", f); }
+  if code == "H" || code == "I" { return read_int(s, j, 2, "hour", f); }
+  if code == "M" { return read_int(s, j, 2, "minute", f); }
+  if code == "S" { return read_int(s, j, 2, "second", f); }
+  if code == "y" {
+    let step = read_int(s, j, 2, "year", f);
+    if step == nil { return nil; }
+    # POSIX: 69-99 is the last century, 00-68 this one.
+    if f["year"] > 68 { f["year"] = 1900 + f["year"]; } else { f["year"] = 2000 + f["year"]; }
+    return step;
+  }
+  if code == "e" {
+    let at = j;
+    while slice(s, at, at + 1) == " " { at = at + 1; }
+    return read_int(s, at, 2, "day", f);
+  }
+  if code == "L" {
+    let at = j;
+    let text = "";
+    while len(text) < 3 && digits(slice(s, at, at + 1)) {
+      text = text + slice(s, at, at + 1);
+      at = at + 1;
+    }
+    if text == "" { return nil; }
+    f["ms"] = int(text) * pow10(3 - len(text));
+    return at;
+  }
+  if code == "b" || code == "h" || code == "B" { return read_name(s, j, MONTHS, "month", f); }
+  if code == "a" || code == "A" { return read_name(s, j, WEEKDAYS, nil, f); }
+  if code == "p" { return read_meridiem(s, j, f); }
+  if code == "z" { return read_offset(s, j, f); }
+  fail("not a pattern code: %" + code);
+}
+
+# Up to width digits, as few as one, into the named field.
+fn read_int(s, j, width, field, f) {
+  let at = j;
+  let text = "";
+  while len(text) < width && digits(slice(s, at, at + 1)) {
+    text = text + slice(s, at, at + 1);
+    at = at + 1;
+  }
+  if text == "" { return nil; }
+  f[field] = int(text);
+  return at;
+}
+
+# A month or weekday name, full or three-letter, either case. field
+# of nil reads the name and throws it away, which is what a weekday
+# in a stamp is: already implied by the date.
+fn read_name(s, j, names, field, f) {
+  for i in range(len(names)) {
+    for form in [names[i], slice(names[i], 0, 3)] {
+      if lower(slice(s, j, j + len(form))) == lower(form) {
+        if field != nil { f[field] = i + 1; }
+        return j + len(form);
+      }
+    }
+  }
+  return nil;
+}
+
+# AM or PM, either case, kept until the hour is known.
+fn read_meridiem(s, j, f) {
+  let two = lower(slice(s, j, j + 2));
+  if two == "am" { f["pm"] = false; return j + 2; }
+  if two == "pm" { f["pm"] = true; return j + 2; }
+  return nil;
+}
+
+# +HHMM, +HH:MM or Z, as an offset in milliseconds east of UTC.
+fn read_offset(s, j, f) {
+  let sign = slice(s, j, j + 1);
+  if sign == "Z" || sign == "z" { f["offset"] = 0; return j + 1; }
+  if sign != "+" && sign != "-" { return nil; }
+  let at = j + 1;
+  if !digits(slice(s, at, at + 2)) { return nil; }
+  let h = int(slice(s, at, at + 2));
+  at = at + 2;
+  if slice(s, at, at + 1) == ":" { at = at + 1; }
+  if !digits(slice(s, at, at + 2)) { return nil; }
+  let mi = int(slice(s, at, at + 2));
+  at = at + 2;
+  let off = (h * 3600 + mi * 60) * 1000;
+  if sign == "-" { off = -off; }
+  f["offset"] = off;
+  return at;
+}
+
+# Ten to the n, for the three places after a decimal point.
+fn pow10(n) {
+  let out = 1;
+  for i in range(n) { out = out * 10; }
+  return out;
+}

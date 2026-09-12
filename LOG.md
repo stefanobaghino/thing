@@ -27982,3 +27982,45 @@ number reaching the loop is nil, not a failure), and the month left
 zero-based.
 
 219 functions, 3026 checks.
+
+## 1061 — a stamp in the shape the world writes it
+
+The second stroke, and the milestone's reason: lib/time.ting can now
+read a timestamp that is not ISO 8601, described by the strftime
+codes the world already describes those shapes with.
+`parse("12/Sep/2026:06:00:01", "%d/%b/%Y:%H:%M:%S")` is an access
+log; `%b %e %H:%M:%S` is syslog; `%D` is half the forms ever printed.
+
+Choices worth keeping:
+
+A mismatch answers nil, the way from_iso does — the text comes from
+the world, and not matching is something a program handles. A code
+nobody defined FAILS, because the pattern is the program's own and a
+silent nil there would hide a typo in the source.
+
+A space in the pattern matches one space or several, because syslog
+writes "Sep  3" and pads the day. %e skips the padding too.
+
+The fields a pattern does not name come from `defaults`, a
+parts-shaped map, and otherwise from 1970-01-01T00:00:00Z. That is
+the answer to the syslog line that carries no year: pass
+`{"year": 2026}` and the reading is complete; pass nothing and the
+year is visibly 1970 rather than a guess at what the writer meant.
+
+%I with %p reads the twelve-hour clock, with twelve at midnight and
+noon handled where the hour is folded rather than where it is read.
+%z applies an offset, in both spellings, and %a/%A read a weekday and
+throw it away — the date already says which day it was.
+
+Five mutations, all caught by selftest/time.ting: text left over
+accepted, a short fraction read as its digits rather than padded, the
+offset added instead of subtracted, the twelve-hour fold dropped, and
+a run of spaces read as one.
+
+The name is `parse`, which lib/args.ting, lib/csv.ting and
+lib/json.ting already use for the same job on their own subject, and
+selftest/errors.ting caught the consequence: a bare `parse` now names
+four modules rather than three, which is the message doing its job.
+The expectation moved.
+
+227 functions.
