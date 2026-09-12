@@ -64,7 +64,7 @@ fn nest(n) {
 assert(json_parse(nest(1000)) != nil, "a document at the limit is read");
 let too_deep = try(json_parse, nest(1001));
 assert(contains(too_deep["err"], "nested deeper than 1000"),
-"one level past it says so");
+  "one level past it says so");
 let far = try(json_parse, nest(50000));
 assert(contains(far["err"], "nested deeper than 1000"),
-"and so does one far past the old cliff");
+  "and so does one far past the old cliff");

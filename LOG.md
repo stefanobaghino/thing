@@ -29539,3 +29539,49 @@ anyway because it only needs it to lex.
 Milestone "the line that continues" (v2.168): indentation is the only
 thing that says which line belongs to which, and today only a
 delimiter that ends its line gets to say it.
+
+## 1109 — one level for the delimiter a line break happens inside
+
+The rule was "one level for every `[` or `(` that ends its line", and
+an opener with anything after it opened nothing, so
+
+    print(deep,
+    s);
+
+put `s` in the column `print` is in. The break after the opener and
+the break after the first argument are the same relationship with the
+content moved one character, and only one of them was indented.
+
+`src/fmt.rs` now takes the level at the LINE BREAK rather than at the
+opener: the innermost delimiter still open takes one level the first
+time a break happens inside it, and gives it back at its closer. The
+lookahead that asked whether the next piece started a line is gone.
+Two things fall out of "innermost" that a per-delimiter count would
+get wrong: `foo(bar(a,` / `b),` / `c);` indents `b` for `bar(` and
+then `c` for `foo(`, one level each rather than two for the inner
+line; and a `{` — a closure or a map passed as an argument — has
+already taken a level at its opener, so the `(` around it does not
+take a second one and `sort_by(xs, fn(a) {` / `return a;` keeps the
+two spaces it has today.
+
+`braces` and `hanging` were two stacks holding two halves of the same
+fact, and the spacing rules read one while the depth rules read the
+other. They are one stack of `Open` now: `Brace(is_map)` for the
+spacing decisions that ask whether a `{` is a map, `Delim(crossed)`
+for the level. A closer pops only a matching opener, so the unbalanced
+input the formatter still has to process — it only needs the file to
+LEX — cannot make the stacks disagree.
+
+The corpus gained the indentation in twenty-four files: bench/run.ting
+(the `format(...)` call that prints every row), four examples, two
+lib modules, fifteen selftests, tools/md2html.ting. `docs/cookbook.md`
+and `playground/examples.js` embed example sources verbatim and went
+stale with them; both are generated, and the generators put them
+right. Counts all standing: 533 tests in 18 suites, 83 unchanged,
+twenty-two warnings, 3098 checks on both engines.
+
+Three mutations, all killed: marking every open delimiter instead of
+the innermost (the closure-as-argument case catches it), a level per
+line break instead of one per delimiter (the three-line call catches
+it), and restoring the old "the opener ends its line" condition (the
+new case catches it).

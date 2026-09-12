@@ -65,11 +65,11 @@ for name in list_dir("bench") {
     }
     push(rows, {"name": name, "eval": slow["ms"], "vm": fast["ms"], "checksum": fast["checksum"]});
     print(format("{} eval {} ms   vm {} ms ({})   [{}]",
-    text["pad_right"](name, 15, " "),
-    text["pad_left"](one_decimal(slow["ms"]), 7, " "),
-    text["pad_left"](one_decimal(fast["ms"]), 7, " "),
-    percent((fast["ms"] - slow["ms"]) / slow["ms"] * 100.0),
-    fast["checksum"]));
+      text["pad_right"](name, 15, " "),
+      text["pad_left"](one_decimal(slow["ms"]), 7, " "),
+      text["pad_left"](one_decimal(fast["ms"]), 7, " "),
+      percent((fast["ms"] - slow["ms"]) / slow["ms"] * 100.0),
+      fast["checksum"]));
   }
 }
 
@@ -86,7 +86,7 @@ if contains(args(), "--write") {
   ];
   for r in rows {
     push(lines, format("| {} | {} ms | {} ms | `{}` |",
-    r["name"], one_decimal(r["eval"]), one_decimal(r["vm"]), r["checksum"]));
+      r["name"], one_decimal(r["eval"]), one_decimal(r["vm"]), r["checksum"]));
   }
   let host = "unknown";
   if sh["which"]("uname") != nil {

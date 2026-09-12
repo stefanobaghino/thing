@@ -117,36 +117,36 @@ let err = import("lib/err.ting")["message"];
 # a property of the machine, so the selftest checks only the refusals;
 # tests/io.rs drives a real child.
 assert(starts_with(err(fn() { return run("ting-no-such-program-xyz"); }), "run: cannot start "),
-"a missing program is an error, not an exit code");
+  "a missing program is an error, not an exit code");
 assert(err(fn() { return run(1); }) == "run expects a program name, got int", "the program is a string");
 assert(err(fn() { return run("echo", "hi"); }) == "run expects a list of arguments, got string",
-"argv is a list, not a shell string");
+  "argv is a list, not a shell string");
 assert(err(fn() { return run("echo", [1]); }) == "run expects a list of strings, got int in it",
-"argv holds strings");
+  "argv holds strings");
 # The third argument is stdin as a string, or a map of options. An
 # option nothing knows is refused rather than quietly ignored: a
 # misspelled one that changes nothing is a bug a script cannot see.
 assert(err(fn() { return run("echo", [], 7); })
-== "run expects stdin as a string or options as a map, got int",
-"the third argument is stdin or options");
+  == "run expects stdin as a string or options as a map, got int",
+  "the third argument is stdin or options");
 assert(err(fn() { return run("echo", [], {"dri": "/tmp"}); })
-== "run: no option `dri` (did you mean `dir`?)", "a near miss is named");
+  == "run: no option `dri` (did you mean `dir`?)", "a near miss is named");
 assert(err(fn() { return run("echo", [], {"shell": true}); })
-== "run: no option `shell` (the options are `dir`, `env`, `show` and `stdin`)",
-"and so are the options");
+  == "run: no option `shell` (the options are `dir`, `env`, `show` and `stdin`)",
+  "and so are the options");
 assert(err(fn() { return run("echo", [], {"env": "X=y"}); })
-== "run: env must be a map, got string", "env is a map of names to values");
+  == "run: env must be a map, got string", "env is a map of names to values");
 assert(err(fn() { return run("echo", [], {"env": {"X": 7}}); })
-== "run: env `X` must be a string or nil, got int", "a value is text, or nil to unset it");
+  == "run: env `X` must be a string or nil, got int", "a value is text, or nil to unset it");
 assert(err(fn() { return run("echo", [], {"env": {"A=B": "y"}}); })
-== "run: \"A=B\" is not an environment variable name", "a name with an = in it is not one");
+  == "run: \"A=B\" is not an environment variable name", "a name with an = in it is not one");
 assert(err(fn() { return run("echo", [], {"env": {"": "y"}}); })
-== "run: \"\" is not an environment variable name", "and neither is nothing");
+  == "run: \"\" is not an environment variable name", "and neither is nothing");
 assert(err(fn() { return run("echo", [], {"dir": 7}); })
-== "run: dir must be a string, got int", "an option has a type");
+  == "run: dir must be a string, got int", "an option has a type");
 assert(err(fn() { return run("echo", [], {"dir": "ting-no-such-directory-xyz"}); })
-== "run: no directory at \"ting-no-such-directory-xyz\" to run in",
-"a missing directory is not a missing program");
+  == "run: no directory at \"ting-no-such-directory-xyz\" to run in",
+  "a missing directory is not a missing program");
 
 # cwd() is a path, and a script standing in it can see itself listed.
 assert(len(cwd()) > 0, "the working directory is a string");
@@ -172,4 +172,4 @@ assert(contains(stopped, "[...]"), "past it the marker stands in for the rest");
 assert(len(stopped) == len(str(deep(50000))), "however much deeper it goes");
 let refused = try(json_str, deep(5000));
 assert(contains(refused["err"], "nested deeper than 1000"),
-"json_str refuses what json_parse would not read back");
+  "json_str refuses what json_parse would not read back");

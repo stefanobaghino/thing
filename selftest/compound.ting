@@ -244,13 +244,13 @@ fn closes_over(p) {
 assert(closes_over([3, 4]) == 12, "and a closure sees what the pattern bound");
 let errmsg2 = import("lib/err.ting")["message"];
 assert(errmsg2(fn() { let [a, b] = [1, 2, 3]; return a + b; })
-== "this pattern takes 2 values, and the list has 3", "too many values is a mistake, not a trim");
+  == "this pattern takes 2 values, and the list has 3", "too many values is a mistake, not a trim");
 assert(errmsg2(fn() { let [a] = []; return a; })
-== "this pattern takes 1 value, and the list has 0", "and so is too few");
+  == "this pattern takes 1 value, and the list has 0", "and so is too few");
 assert(errmsg2(fn() { let [a, _b] = 5; return a; })
-== "this pattern takes a list apart, and the value is int", "a pattern needs a list");
+  == "this pattern takes a list apart, and the value is int", "a pattern needs a list");
 assert(errmsg2(fn() { let [a, _b] = "ab"; return a; })
-== "this pattern takes a list apart, and the value is string", "a string is not a list here");
+  == "this pattern takes a list apart, and the value is string", "a string is not a list here");
 
 # A for loop takes each element apart the same way, which is what
 # walking a map's items is for.
@@ -271,9 +271,9 @@ for [x, y] in [[1, 2], [3, 4]] {
 }
 assert(stopped == [2], "break and continue still see the body they belong to");
 assert(errmsg2(fn() { for [a, b] in [[1, 2, 3]] { print(a, b); } })
-== "this pattern takes 2 values, and the list has 3", "a loop reports the mismatch the let would");
+  == "this pattern takes 2 values, and the list has 3", "a loop reports the mismatch the let would");
 assert(errmsg2(fn() { for [a, b] in [7] { print(a, b); } })
-== "this pattern takes a list apart, and the value is int", "and the wrong type as well");
+  == "this pattern takes a list apart, and the value is int", "and the wrong type as well");
 
 # A parameter takes its argument apart, which is what makes a
 # higher-order call read: fn([k, v]) rather than a let per body.
@@ -290,9 +290,9 @@ assert(dropped([1, 9]) == 9, "and a hole drops what it names nothing");
 fn captures([a, b]) { return fn() { return a * b; }; }
 assert(captures([3, 4])() == 12, "a closure sees what the parameter bound");
 assert(errmsg2(fn() { let f = fn([a, b]) { return a + b; }; return f([1, 2, 3]); })
-== "this pattern takes 2 values, and the list has 3", "a mismatched argument reports what a let would");
+  == "this pattern takes 2 values, and the list has 3", "a mismatched argument reports what a let would");
 assert(errmsg2(fn() { let f = fn([a, _b]) { return a; }; return f(7); })
-== "this pattern takes a list apart, and the value is int", "and the wrong type as well");
+  == "this pattern takes a list apart, and the value is int", "and the wrong type as well");
 
 # A map pattern asks for the fields it wants, written the way a map
 # literal is: a bare name is its own key, a quoted key nests.
@@ -310,14 +310,14 @@ assert(true, "an empty map pattern asks for nothing and is happy");
 let {"x": _} = {"x": 9};
 assert(true, "a hole matches a field and drops it");
 assert(errmsg2(fn() { let {nope} = {"a": 1}; return nope; })
-== "this pattern asks for the key \"nope\", and the map has no such key",
-"a key the map lacks is a mistake");
+  == "this pattern asks for the key \"nope\", and the map has no such key",
+  "a key the map lacks is a mistake");
 assert(errmsg2(fn() { let {a} = [1, 2]; return a; })
-== "this pattern takes a map apart, and the value is list",
-"a list is not a map here");
+  == "this pattern takes a map apart, and the value is list",
+  "a list is not a map here");
 assert(errmsg2(fn() { let {a} = 5; return a; })
-== "this pattern takes a map apart, and the value is int",
-"and neither is an int");
+  == "this pattern takes a map apart, and the value is int",
+  "and neither is an int");
 let big = {"a": 1, "b": 2, "c": 3};
 let {b} = big;
 assert(b == 2, "EXTRA KEYS ARE FINE: a map's keys are its contents, not its shape");
@@ -339,10 +339,10 @@ assert(map(rows, label) == ["ada:1", "bo:2"], "a parameter asks for fields by na
 assert(map(rows, fn({n}) { return n * 10; }) == [10, 20], "which is what the call wanted");
 fn greet({name}, sep = "!") { return name + sep; }
 assert(greet(rows[0]) == "ada!" && greet(rows[0], "?") == "ada?",
-"a map pattern sits beside a default like a list one");
+  "a map pattern sits beside a default like a list one");
 assert(errmsg2(fn() { for {nope} in rows { print(nope); } })
-== "this pattern asks for the key \"nope\", and the map has no such key",
-"a loop reports the missing key the let would");
+  == "this pattern asks for the key \"nope\", and the map has no such key",
+  "a loop reports the missing key the let would");
 assert(errmsg2(fn() { let f = fn({a}) { return a; }; return f([1]); })
-== "this pattern takes a map apart, and the value is list",
-"and so does a parameter");
+  == "this pattern takes a map apart, and the value is list",
+  "and so does a parameter");

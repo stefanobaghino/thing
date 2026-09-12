@@ -24,9 +24,9 @@ assert(sh["which"]("ting-definitely-no-such-program-xyz") == nil, "which misses 
 
 # A missing program is an error from run(), through every wrapper.
 assert(starts_with(err(fn() { return sh["check"]("ting-no-such-program-xyz", []); }),
-"run: cannot start "), "check reports a missing program as run does");
+  "run: cannot start "), "check reports a missing program as run does");
 assert(starts_with(err(fn() { return sh["ok"]("ting-no-such-program-xyz", []); }),
-"run: cannot start "), "so does ok");
+  "run: cannot start "), "so does ok");
 
 # Where there is a shell, drive it.
 let shell = sh["which"]("sh");
@@ -35,11 +35,11 @@ if shell != nil {
   assert(!sh["ok"](shell, ["-c", "exit 1"]), "an unhappy one is not");
   assert(sh["check"](shell, ["-c", "printf hello"]) == "hello", "check hands back stdout");
   assert(sh["lines"](shell, ["-c", "printf 'a\nb\n'"]) == ["a", "b"],
-  "the trailing newline leaves no empty line behind");
+    "the trailing newline leaves no empty line behind");
   assert(sh["lines"](shell, ["-c", "printf ''"]) == [], "no output is no lines");
   let bad = err(fn() { return sh["check"](shell, ["-c", "echo why 1>&2; exit 4"]); });
   assert(contains(bad, "exited 4") && contains(bad, "why"),
-  "a nonzero code fails with the code and the reason");
+    "a nonzero code fails with the code and the reason");
   let quiet = err(fn() { return sh["check"](shell, ["-c", "exit 7"]); });
   assert(contains(quiet, "no output on stderr"), "and says so when there is no reason given");
 
@@ -50,14 +50,14 @@ if shell != nil {
   let shown = run(shell, ["-c", "exit 0"], {"show": true});
   assert(shown["code"] == 0, "a shown child still reports how it ended");
   assert(!has(shown, "out") && !has(shown, "err"),
-  "and has no output to report, rather than an empty string");
+    "and has no output to report, rather than an empty string");
   assert(sh["show"](shell, ["-c", "exit 0"]) == nil, "show hands nothing back");
   assert(err(fn() { return sh["show"](shell, ["-c", "exit 5"]); }) == shell + " exited 5",
-  "a nonzero code fails without a reason the reader has already seen");
+    "a nonzero code fails without a reason the reader has already seen");
   # Arguments arrive as written, spaces and all, because there is no
   # shell between the list and the program.
   assert(sh["lines"](shell, ["-c", "printf '%s\n' \"$0\" \"$1\"", "a b", "c"]) == ["a b", "c"],
-  "argv is not re-split by anyone");
+    "argv is not re-split by anyone");
 
   # A child that a signal killed has no exit code at all. Which
   # signals a platform has is not this suite's business, so the two
@@ -78,22 +78,22 @@ if shell != nil {
   # platforms where the code really is nil — asserting "killed"
   # everywhere is what turned CI red at 837.
   assert(killed["code"] != nil || contains(killmsg, "killed"),
-  "where a signal ends a child the message says killed");
+    "where a signal ends a child the message says killed");
   assert(sh["ended"]({"code": 4, "signal": nil}) == "exited 4", "a code is an exit");
   assert(sh["ended"]({"code": nil, "signal": 9}) == "was killed by signal 9", "a signal is a kill");
   assert(sh["ended"]({"code": nil, "signal": nil}) == "was killed",
-  "and a kill with no number is still a kill");
+    "and a kill with no number is still a kill");
 
   # Something on the child's stdin — the half of the boundary that
   # was missing. Output has always come back; now data can go in
   # without a temp file or a string quoted into `sh -c`.
   assert(sh["check"](shell, ["-c", "cat"], "hello") == "hello", "a child reads what it is given");
   assert(sh["lines"](shell, ["-c", "sort"], "c\na\nb\n") == ["a", "b", "c"],
-  "and the wrappers pass it through");
+    "and the wrappers pass it through");
   assert(sh["ok"](shell, ["-c", "read x; test \"$x\" = go"], "go\n"),
-  "ok takes input too");
+    "ok takes input too");
   assert(sh["check"](shell, ["-c", "cat"]) == "", "no input is an immediate EOF");
   assert(sh["check"](shell, ["-c", "cat"], nil) == "", "and nil says the same thing");
   assert(run(shell, ["-c", "head -c 2"], "abcdef")["out"] == "ab",
-  "a child that stops reading early is not an error");
+    "a child that stops reading early is not an error");
 }

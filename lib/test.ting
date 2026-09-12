@@ -52,7 +52,7 @@ fn check_err(name, f, want) {
     # easier to chase with the line that raised it.
     let at = r["at"];
     fail_with("{}: error {} raised at {}:{}:{} lacks {}",
-    name, r["err"], at["file"], at["line"], at["col"], want);
+      name, r["err"], at["file"], at["line"], at["col"], want);
   } else {
     fail_with("{}: expected an error, got {}", name, r["ok"]);
   }

@@ -188,7 +188,7 @@ assert(len("日本") == 2 && display_width("日本") == 4, "an ideograph takes t
 assert(display_width("１２") == 4, "and so does a fullwidth digit");
 assert(display_width("🙂") == 2, "an emoji takes two");
 assert(display_width("é") == 1 && display_width("é") == 1,
-"a combining accent rides on the letter, however the word is spelled");
+  "a combining accent rides on the letter, however the word is spelled");
 assert(display_width("a‍b") == 2, "a zero-width joiner takes no column");
 assert(display_width("a\tb") == 2, "a control takes none either: what a tab advances to is the terminal's business");
 assert(display_width("añ日🙂") == 6, "a mixed string is the sum of its characters");

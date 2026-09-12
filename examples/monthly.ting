@@ -94,7 +94,7 @@ print("");
 print("by month");
 for month in keys(months) {
   print(format("  {}  {:>5} rows  {:>12.2}", month, counts[month],
-  float(months[month]) / 100.0));
+    float(months[month]) / 100.0));
 }
 print("");
 print(format("dates nothing could read: {}", unreadable));

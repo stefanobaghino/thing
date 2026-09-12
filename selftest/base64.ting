@@ -26,7 +26,7 @@ assert(b64["encode_url"]("🎉") == "8J-OiQ", "four-byte characters, url");
 
 # Round trips, including the lengths that pad differently.
 for s in ["", "a", "ab", "abc", "abcd", "héllo wörld", "λ→∀", "🎉 party",
-"print(1);\n", "The quick brown fox jumps over the lazy dog"] {
+  "print(1);\n", "The quick brown fox jumps over the lazy dog"] {
   assert(b64["decode"](b64["encode"](s)) == s, "round trip standard: " + s);
   assert(b64["decode"](b64["encode_url"](s)) == s, "round trip url: " + s);
 }

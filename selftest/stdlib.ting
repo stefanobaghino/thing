@@ -374,8 +374,8 @@ assert(contains(bad_align["err"], "alignment must be"), "an unknown alignment is
 # from either is not the data — and records are the shape a program
 # holds, so the sentence says where the way across lives.
 assert(try(s["table"], [{"name": "Sep", "n": "3"}])["err"] ==
-"table: a row is a list of cells, not a record — rows(records) in lib/csv.ting makes rows of records",
-"a record is not a row");
+  "table: a row is a list of cells, not a record — rows(records) in lib/csv.ting makes rows of records",
+  "a record is not a row");
 assert(try(s["table"], "a b")["err"] == "table: expects rows of cells, got string", "nor is a line of text");
 assert(try(s["table"], [["a"], 7])["err"] == "table: a row is a list of cells, got int", "nor is a number");
 assert(try(s["table"], [["a", 1]])["err"] == "table: a cell is a string, got int", "a cell is text, not a number");
@@ -477,12 +477,12 @@ assert(has(try(fn() { return ma["percentile"]([1], 101); }), "err"), "percentile
 let f1 = fn(x) { return x; };
 let f2 = fn(y) { return y; };
 assert(l["unique"]([1, 1.0, "1", true, nil, nil]) == [1, "1", true, nil],
-"unique: 1.0 is a duplicate of 1, as == says");
+  "unique: 1.0 is a duplicate of 1, as == says");
 assert(l["unique"]([f1, f2, f1]) == [f1, f2], "unique keeps functions == tells apart");
 assert(l["unique"]([f1, 1, f1, 1]) == [f1, 1], "unique mixes the two paths");
 assert(l["unique"]([[1], [1.0], [2]]) == [[1], [2]], "unique compares structures");
 assert(l["unique_by"]([1, 2, 3], fn(x) { if x == 2 { return f1; } return f2; }) == [1, 2],
-"unique_by keys that refuse a fingerprint still work");
+  "unique_by keys that refuse a fingerprint still work");
 assert(l["mode"]([f1, f2, f2]) == f2, "mode over functions");
 assert(l["mode"]([1, 1.0, 2]) == 1, "mode counts 1 and 1.0 together");
 
@@ -501,7 +501,7 @@ assert(l["intersection"]([f1, 1], [f1]) == [f1], "and kept when both lists hold 
 
 let seen = l["membership"](["a", 1, f1]);
 assert(l["holds"](seen, 1.0) && l["holds"](seen, "a") && l["holds"](seen, f1),
-"membership holds what it was given");
+  "membership holds what it was given");
 assert(!l["holds"](seen, 2) && !l["holds"](seen, f2), "and nothing else");
 assert(l["holds"](l["remember"](seen, 2), 2), "remember adds in place and answers the set");
 assert(l["holds"](seen, 2), "which the caller's own binding sees");

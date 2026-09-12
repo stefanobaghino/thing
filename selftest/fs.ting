@@ -68,10 +68,10 @@ assert(!exists(gone), "nothing is there to begin with");
 let walked = try(fs["walk"], gone);
 assert(contains(walked["err"], "nowhere"), "the walk names the path");
 assert(try(fs["walk_ext"], gone, "ting")["err"] == walked["err"],
-"walk_ext says what walk says");
+  "walk_ext says what walk says");
 assert(try(fs["facts"], gone)["err"] == walked["err"], "and so does facts");
 assert(try(fs["total_size"], gone)["err"] == walked["err"],
-"and total_size, which used to answer 0");
+  "and total_size, which used to answer 0");
 
 # The other two columns of the same table, which the module header
 # and the stdlib page both set out: a file is a tree of one, and a
@@ -88,7 +88,7 @@ assert(try(fs["head"], root, 1)["err"] != nil, "nor the head of any");
 assert(try(fs["tail"], root, 1)["err"] != nil, "nor the tail");
 assert(try(fs["lines_matching"], root, "x")["err"] != nil, "nor the ones matching");
 assert(fs["size"](root) == stat(root)["size"],
-"size of a directory is what stat says, bookkeeping and all");
+  "size of a directory is what stat says, bookkeeping and all");
 
 # What a file is, besides its name. len(read_file(p)) counts
 # characters and refuses a file that is not text; stat counts bytes
@@ -137,7 +137,7 @@ assert(is_dir(root + "/crate/inner"), "a directory moves whole, and cheaply");
 fs["remove_tree"](root + "/crate");
 assert(try(rename, root + "/nope", root + "/x")["err"] != nil, "renaming nothing errors");
 assert(try(rename, 1, "x")["err"] == "rename expects two string paths, got int and string",
-"both paths are strings");
+  "both paths are strings");
 
 # Copying: the move rename cannot make — across a filesystem, or of a
 # file read_file would refuse. The date follows the bytes, the way it
@@ -152,9 +152,9 @@ write_file(root + "/source.txt", "hello");
 copy_file(root + "/source.txt", root + "/copy.txt");
 assert(read_file(root + "/copy.txt") == "hello", "an existing target is overwritten");
 assert(try(copy_file, root + "/source.txt", root + "/source.txt")["err"] != nil,
-"copying a file onto itself errors");
+  "copying a file onto itself errors");
 assert(read_file(root + "/source.txt") == "hello",
-"rather than emptying it, which is what the copy underneath would do");
+  "rather than emptying it, which is what the copy underneath would do");
 assert(try(copy_file, root, root + "/x")["err"] != nil, "a directory is not a file to copy");
 assert(try(copy_file, "x")["err"] != nil, "and it takes two paths, not one");
 remove_file(root + "/source.txt");
@@ -180,19 +180,19 @@ assert(try(fs["move"], root + "/nope", root + "/x")["err"] != nil, "moving nothi
 write_file(root + "/lines.txt", "one\r\ntwo\nthree");
 let seen = [];
 assert(each_line(root + "/lines.txt", fn(l) { push(seen, l); return nil; }) == 3,
-"it answers how many lines it gave");
+  "it answers how many lines it gave");
 assert(seen == ["one", "two", "three"], "newline and carriage return both gone");
 let first = nil;
 assert(each_line(root + "/lines.txt", fn(l) { first = l; return false; }) == 1,
-"false stops the read");
+  "false stops the read");
 assert(first == "one", "after the first line");
 write_file(root + "/none.txt", "");
 assert(each_line(root + "/none.txt", fn(_l) { return nil; }) == 0, "an empty file has no lines");
 assert(try(each_line, root + "/nope", fn(_l) { return nil; })["err"] != nil,
-"a file that is not there errors, as read_file does");
+  "a file that is not there errors, as read_file does");
 assert(try(each_line, root + "/lines.txt", 3)["err"] ==
-"each_line expects a string path and a function, got string and int",
-"a path and a function");
+  "each_line expects a string path and a function, got string and int",
+  "a path and a function");
 remove_file(root + "/lines.txt");
 remove_file(root + "/none.txt");
 
@@ -202,19 +202,19 @@ write_file(root + "/log.txt", "alpha\nbeta\ngamma\ndelta\nepsilon\n");
 assert(fs["count_lines"](root + "/log.txt") == 5, "five lines");
 write_file(root + "/tailless.txt", "one\ntwo");
 assert(fs["count_lines"](root + "/tailless.txt") == 2,
-"a last line with no newline after it still counts");
+  "a last line with no newline after it still counts");
 assert(fs["head"](root + "/log.txt", 2) == ["alpha", "beta"], "the first two");
 assert(fs["head"](root + "/log.txt", 0) == [], "none of them");
 assert(fs["head"](root + "/log.txt", 99) == fs["head"](root + "/log.txt", 5),
-"and asking for more than there are gives what there is");
+  "and asking for more than there are gives what there is");
 assert(fs["tail"](root + "/log.txt", 2) == ["delta", "epsilon"], "the last two");
 assert(fs["tail"](root + "/log.txt", 3) == ["gamma", "delta", "epsilon"],
-"the ring unrolls in order wherever it wrapped");
+  "the ring unrolls in order wherever it wrapped");
 assert(fs["tail"](root + "/log.txt", 99) == fs["head"](root + "/log.txt", 5),
-"a window wider than the file is the file");
+  "a window wider than the file is the file");
 assert(fs["tail"](root + "/log.txt", 0) == [], "and none of them is none");
 assert(fs["lines_matching"](root + "/log.txt", "a") == ["alpha", "beta", "gamma", "delta"],
-"every line containing it, in order");
+  "every line containing it, in order");
 assert(fs["lines_matching"](root + "/log.txt", "zzz") == [], "and no lines when none do");
 remove_file(root + "/log.txt");
 remove_file(root + "/tailless.txt");

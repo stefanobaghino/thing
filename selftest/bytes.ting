@@ -22,7 +22,7 @@ let latin1 = dir + "latin1.log";
 let refused = try(read_file, latin1);
 assert(has(refused, "err"), "a byte that is not text is refused");
 assert(contains(refused["err"], "byte 0xe9 at offset 21 (line 2, byte 9)"),
-"and the refusal says exactly where: " + refused["err"]);
+  "and the refusal says exactly where: " + refused["err"]);
 
 # Asked to read it anyway, every bad byte becomes one replacement
 # character — so the 30 bytes are 30 characters, not 29.
@@ -37,7 +37,7 @@ let seen = [];
 let stopped = try(each_line, latin1, fn(l) { push(seen, len(l)); });
 assert(seen == [12], "the good line arrived before the bad one failed");
 assert(contains(stopped["err"], "byte 0xe9 at byte 9 of line 2"),
-"the line reader counts lines: " + stopped["err"]);
+  "the line reader counts lines: " + stopped["err"]);
 let widths = [];
 assert(each_line(latin1, fn(l) { push(widths, len(l)); }, "lossy") == 2, "lossily, both lines arrive");
 assert(widths == [12, 16], "the replacement character is one character wide");
@@ -46,7 +46,7 @@ assert(widths == [12, 16], "the replacement character is one character wide");
 # at the byte the character starts with, not at the end of the file.
 let cut = dir + "truncated.txt";
 assert(contains(try(read_file, cut)["err"], "byte 0xe2 at offset 6 (line 1, byte 7)"),
-"a truncated character is reported where it starts");
+  "a truncated character is reported where it starts");
 assert(len(read_file(cut, "lossy")) == 7, "the whole broken tail is one replacement character");
 
 # A NUL is not a bad byte: it is a character, and text may hold it.

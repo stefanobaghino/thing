@@ -22,7 +22,7 @@ fn build(path) {
   let start = 1788652800000;
   for i in range(5000) {
     push(lines, format("{} {} {} request {}",
-    tm["iso"](start + i * 1000), levels[i % 6], sources[i % 3], i));
+      tm["iso"](start + i * 1000), levels[i % 6], sources[i % 3], i));
   }
   write_file(path, join(lines, "\n") + "\n");
   return path;

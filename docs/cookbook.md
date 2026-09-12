@@ -444,7 +444,7 @@ for path in keys(js["flatten"](warehouse)) {
 
 # The summary reads correctly whatever the counts are.
 print(st["plural"](len(empty), "item", "items"), "to reorder,",
-st["plural"](len(stocked), "item", "items"), "on the shelf");
+  st["plural"](len(stocked), "item", "items"), "on the shelf");
 ```
 
 ```text
@@ -487,7 +487,7 @@ fn build(path) {
   let start = 1788652800000;
   for i in range(5000) {
     push(lines, format("{} {} {} request {}",
-    tm["iso"](start + i * 1000), levels[i % 6], sources[i % 3], i));
+      tm["iso"](start + i * 1000), levels[i % 6], sources[i % 3], i));
   }
   write_file(path, join(lines, "\n") + "\n");
   return path;
@@ -806,7 +806,7 @@ print("");
 print("by month");
 for month in keys(months) {
   print(format("  {}  {:>5} rows  {:>12.2}", month, counts[month],
-  float(months[month]) / 100.0));
+    float(months[month]) / 100.0));
 }
 print("");
 print(format("dates nothing could read: {}", unreadable));
@@ -1292,7 +1292,7 @@ let temps = [18, 19, 21, 24, 24, 23, 20, 17, 16, 16, 19, 22, 25, 24];
 let span = li["extent"](temps);
 print("days:", len(temps), "range:", span[0], "to", span[1]);
 print("mean:", ma["round"](li["mean"](temps)), "median:", li["median"](temps),
-"mode:", li["mode"](temps));
+  "mode:", li["mode"](temps));
 print("90th percentile:", ma["percentile"](temps, 90));
 
 # Three-day moving average, one decimal.

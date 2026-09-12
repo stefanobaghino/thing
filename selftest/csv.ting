@@ -53,22 +53,22 @@ assert(kept[0]["rest"] == ["4", "5"], "extras arrive in order under the named ke
 assert(kept[1]["rest"] == [], "a row with none gets an empty list, not a missing key");
 assert(keys(kept[0]) == keys(kept[1]), "so every entry still has the same keys");
 assert(csv["maps"](csv["parse"]("a,b,c\n1,2\n"), "rest")[0]["rest"] == [],
-"a short row has no extras either");
+  "a short row has no extras either");
 
 # The trailing separator every spreadsheet writes is one empty extra
 # field, which is why dropping is the default and an error is not.
 assert(csv["maps"](csv["parse"]("a,b,c\n1,2,3,\n"))[0] == {"a": "1", "b": "2", "c": "3"},
-"a trailing separator reads as the three named columns");
+  "a trailing separator reads as the three named columns");
 assert(csv["maps"](csv["parse"]("a,b,c\n1,2,3,\n"), "rest")[0]["rest"] == [""],
-"and the empty field is there for anyone who asks");
+  "and the empty field is there for anyone who asks");
 
 # A key that is already a column would hide that column, and a key
 # that is not a string cannot be a key at all.
 let errmsg = import("lib/err.ting")["message"];
 assert(contains(errmsg(fn() { return csv["maps"](wide, "b"); }),
-"extras key b is already a column"), "an extras key may not name a column");
+  "extras key b is already a column"), "an extras key may not name a column");
 assert(contains(errmsg(fn() { return csv["maps"](wide, 3); }),
-"extras must be a string, got int"), "and it must be a string");
+  "extras must be a string, got int"), "and it must be a string");
 
 # A row is not a line. The scanner that reads a whole string and the
 # one that reads a file a line at a time are the same scanner, so the
@@ -130,14 +130,14 @@ write_file(path, wide_doc);
 let streamed = [];
 csv["each_map"](path, fn(row) { push(streamed, row); return nil; }, ",", "rest");
 assert(streamed == csv["maps"](csv["parse"](wide_doc), "rest"),
-"streamed extras and parsed extras agree");
+  "streamed extras and parsed extras agree");
 assert(streamed[0]["rest"] == ["4"], "and the field past the header is kept");
 
 # Stopping, and the two files that have nothing to hand over.
 write_file(path, doc);
 let one = [];
 assert(csv["each_map"](path, fn(row) { push(one, row); return false; }) == 1,
-"false stops the read after the record it was given");
+  "false stops the read after the record it was given");
 assert(len(one) == 1 && one[0]["id"] == "1", "which is the first record, not the header");
 write_file(path, "just,a,header\n");
 assert(csv["each_map"](path, fn(_row) { return nil; }) == 0, "a header alone is no records");
@@ -185,25 +185,25 @@ assert(csv["rows"]([{"a": 1, "b": 2}], ["a"]) == [["a"], ["1"]], "stating the co
 # not, so a record carrying a name the first one did not is a column
 # that would go missing from half the file.
 assert(errmsg(fn() { return csv["rows"]([{"a": 1}, {"a": 2, "b": 3}]); }) ==
-"rows: record has a column the first one did not: b", "an unstated column is not dropped");
+  "rows: record has a column the first one did not: b", "an unstated column is not dropped");
 assert(csv["rows"]([{"a": 1}, {"a": 2, "b": 3}], ["a"]) == [["a"], ["1"], ["2"]], "unless the columns were stated");
 assert(errmsg(fn() { return csv["rows"]([["a", "b"]]); }) ==
-"rows: expects a list of records, found a list", "rows of fields are what text takes");
+  "rows: expects a list of records, found a list", "rows of fields are what text takes");
 assert(errmsg(fn() { return csv["rows"]("name,n\n"); }) ==
-"rows: expects a list of records, got string", "and text is what parse takes");
+  "rows: expects a list of records, got string", "and text is what parse takes");
 assert(errmsg(fn() { return csv["rows"]([{"a": 1}], "a"); }) ==
-"rows: columns must be a list, got string", "columns are a list of names");
+  "rows: columns must be a list, got string", "columns are a list of names");
 
 # And the other direction refuses what it cannot write. A record
 # iterates into its KEYS and a string into its characters, so text
 # given either used to produce a file holding neither an error nor
 # the data — the header twice over, or one character per field.
 assert(errmsg(fn() { return csv["text"]([{"name": "Sep", "n": "3"}]); }) ==
-"text: a row is a list of fields, not a record — pass rows(records)", "a record is not a row");
+  "text: a row is a list of fields, not a record — pass rows(records)", "a record is not a row");
 assert(errmsg(fn() { return csv["text"](["a,b"]); }) ==
-"text: a row is a list of fields, got string", "nor is a line of text");
+  "text: a row is a list of fields, got string", "nor is a line of text");
 assert(errmsg(fn() { return csv["text"]("a,b\n"); }) ==
-"text: expects rows of fields, got string", "nor is a whole document");
+  "text: expects rows of fields, got string", "nor is a whole document");
 assert(errmsg(fn() { return csv["text_with"]([{"a": 1}], ";"); }) ==
-"text: a row is a list of fields, not a record — pass rows(records)", "the older spelling refuses it too");
+  "text: a row is a list of fields, not a record — pass rows(records)", "the older spelling refuses it too");
 assert(csv["text"](csv["rows"]([{"a": 1}])) == "a\n1\n", "and the sentence says what to do about it");

@@ -4,12 +4,24 @@
 //! formatted program parses to the identical AST.
 //!
 //! Rules: two-space indentation from brace depth, plus one level for
-//! every `[` or `(` that ends its line (a hanging opener) until its
-//! closer; the author's line breaks are kept (runs of blank lines
+//! every `[` or `(` that a line break happens inside, counted for the
+//! innermost open delimiter only, so a `{` that already took a level
+//! does not take a second one; the author's line breaks are kept
+//! (runs of blank lines
 //! collapse to one); canonical single spaces between tokens; trailing
 //! comments get two spaces before the `#`.
 
 use crate::lexer::{self, LexError, Span, TokenKind};
+
+/// An open delimiter. A brace takes its level at the opener; a `[` or
+/// `(` takes one the first time a line break happens while it is the
+/// innermost delimiter open, and gives it back at its closer.
+enum Open {
+    /// true = map literal, false = block.
+    Brace(bool),
+    /// true = a line break happened inside it.
+    Delim(bool),
+}
 
 enum Piece {
     Token(TokenKind, Span),
@@ -155,15 +167,19 @@ fn format_lf(src: &str) -> Result<String, LexError> {
     let mut at_line_start = true;
     let mut prev: Option<TokenKind> = None;
     let mut prev2: Option<TokenKind> = None;
-    // Open braces: true = map literal, false = block. Decided from the
-    // token before `{`: expression positions mean a map.
-    let mut braces: Vec<bool> = Vec::new();
-    // Open `[`/`(`: true = hanging (last on its line, so it opened an
-    // indented continuation), false = inline.
-    let mut hanging: Vec<bool> = Vec::new();
+    // Open delimiters, innermost last. A brace's map-or-block is
+    // decided from the token before `{`: expression positions mean a map.
+    let mut opens: Vec<Open> = Vec::new();
 
-    for (i, (piece, newlines)) in pieces.iter().enumerate() {
+    for (piece, newlines) in pieces.iter() {
         if *newlines > 0 && !out.is_empty() {
+            // The line continues whatever delimiter is open around it.
+            if let Some(Open::Delim(crossed)) = opens.last_mut()
+                && !*crossed
+            {
+                *crossed = true;
+                depth += 1;
+            }
             out.push('\n');
             if *newlines >= 2 {
                 out.push('\n');
@@ -183,9 +199,9 @@ fn format_lf(src: &str) -> Result<String, LexError> {
                 out.push_str(src[span.start..span.end].trim_end());
             }
             Piece::Token(kind, span) => {
-                let closes_hanging = matches!(kind, TokenKind::RBracket | TokenKind::RParen)
-                    && hanging.last().copied().unwrap_or(false);
-                let line_depth = if matches!(kind, TokenKind::RBrace) || closes_hanging {
+                let closes_continuation = matches!(kind, TokenKind::RBracket | TokenKind::RParen)
+                    && matches!(opens.last(), Some(Open::Delim(true)));
+                let line_depth = if matches!(kind, TokenKind::RBrace) || closes_continuation {
                     depth.saturating_sub(1)
                 } else {
                     depth
@@ -194,15 +210,13 @@ fn format_lf(src: &str) -> Result<String, LexError> {
                     out.push_str(&"  ".repeat(line_depth));
                     at_line_start = false;
                 } else if let Some(p) = &prev {
-                    let space = if matches!(kind, TokenKind::RBrace) {
-                        // Blocks close with a space ("{ }"), maps tight.
-                        !braces.last().copied().unwrap_or(false)
-                    } else if matches!(p, TokenKind::LBrace) {
-                        // No space after a map literal's opening brace.
-                        !braces.last().copied().unwrap_or(false)
-                    } else {
-                        needs_space(p, prev2.as_ref(), kind)
-                    };
+                    let space =
+                        if matches!(kind, TokenKind::RBrace) || matches!(p, TokenKind::LBrace) {
+                            // A block's braces stand apart ("{ }"), a map's tight.
+                            !matches!(opens.last(), Some(Open::Brace(true)))
+                        } else {
+                            needs_space(p, prev2.as_ref(), kind)
+                        };
                     if space {
                         out.push(' ');
                     }
@@ -211,22 +225,21 @@ fn format_lf(src: &str) -> Result<String, LexError> {
                 match kind {
                     TokenKind::LBrace => {
                         depth += 1;
-                        braces.push(brace_is_map(prev.as_ref()));
+                        opens.push(Open::Brace(brace_is_map(prev.as_ref())));
                     }
                     TokenKind::RBrace => {
                         depth = depth.saturating_sub(1);
-                        braces.pop();
-                    }
-                    TokenKind::LBracket | TokenKind::LParen => {
-                        let hangs = pieces.get(i + 1).is_some_and(|(_, n)| *n > 0);
-                        if hangs {
-                            depth += 1;
+                        if matches!(opens.last(), Some(Open::Brace(_))) {
+                            opens.pop();
                         }
-                        hanging.push(hangs);
                     }
+                    TokenKind::LBracket | TokenKind::LParen => opens.push(Open::Delim(false)),
                     TokenKind::RBracket | TokenKind::RParen => {
-                        let hung = hanging.pop().unwrap_or(false);
-                        depth = depth.saturating_sub(usize::from(hung));
+                        if let Some(Open::Delim(crossed)) = opens.last() {
+                            let crossed = *crossed;
+                            opens.pop();
+                            depth = depth.saturating_sub(usize::from(crossed));
+                        }
                     }
                     _ => {}
                 }
@@ -277,17 +290,30 @@ mod tests {
     }
 
     #[test]
-    fn hanging_brackets_indent_their_continuation() {
+    fn delimiters_indent_their_continuation() {
         let src = "let xs = [\n\"a\",\n[1,\n2],\n];\nprint(\nxs,\nlen(xs)\n);";
         assert_eq!(
             format(src).unwrap(),
-            "let xs = [\n  \"a\",\n  [1,\n  2],\n];\nprint(\n  xs,\n  len(xs)\n);\n"
+            "let xs = [\n  \"a\",\n  [1,\n    2],\n];\nprint(\n  xs,\n  len(xs)\n);\n"
         );
-        // Inline openers (closure-as-argument) keep the brace-only depth.
+        // The break need not follow the opener: what continues a call is
+        // indented whether or not the opener ended its line.
+        assert_eq!(format("print(a,\nb);").unwrap(), "print(a,\n  b);\n");
+        // One level per delimiter, innermost first.
+        assert_eq!(
+            format("foo(bar(a,\nb),\nc);").unwrap(),
+            "foo(bar(a,\n  b),\n  c);\n"
+        );
+        // A `{` has taken the level already, so the `(` around it does
+        // not take a second one (closure-as-argument, map-as-argument).
         let src = "sort_by(xs, fn(a) {\nreturn a;\n});";
         assert_eq!(
             format(src).unwrap(),
             "sort_by(xs, fn(a) {\n  return a;\n});\n"
+        );
+        assert_eq!(
+            format("foo({\n\"a\": 1,\n});").unwrap(),
+            "foo({\n  \"a\": 1,\n});\n"
         );
     }
 

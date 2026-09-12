@@ -28,4 +28,4 @@ for path in keys(js["flatten"](warehouse)) {
 
 # The summary reads correctly whatever the counts are.
 print(st["plural"](len(empty), "item", "items"), "to reorder,",
-st["plural"](len(stocked), "item", "items"), "on the shelf");
+  st["plural"](len(stocked), "item", "items"), "on the shelf");

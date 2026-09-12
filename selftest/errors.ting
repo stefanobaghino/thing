@@ -70,11 +70,11 @@ assert(contains(op["err"], "ting writes this as `&&`"), "and is &&");
 # answer. Where several modules have the name, all of them are named.
 let lives = try(fn() { return repeat; });
 assert(contains(lives["err"], "undefined variable 'repeat' (lib/string.ting has it)"),
-"a name the stdlib exports says where it lives");
+  "a name the stdlib exports says where it lives");
 let several = try(fn() { return parse; });
 assert(contains(several["err"],
-"'parse' (lib/args.ting, lib/csv.ting, lib/json.ting and lib/time.ting have it)"),
-"and every module that has it is named");
+  "'parse' (lib/args.ting, lib/csv.ting, lib/json.ting and lib/time.ting have it)"),
+  "and every module that has it is named");
 assert(!contains(lives["err"], "did you mean"), "the module beats a guess at a nearby name");
 
 # Arity errors count in plain English and name the function called.

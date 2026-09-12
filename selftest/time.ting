@@ -44,9 +44,9 @@ assert(t["month_number"]("September") == 9 && t["month_number"]("Sep") == 9, "Se
 assert(t["month_number"]("sep") == 9 && t["month_number"]("SEPTEMBER") == 9, "and either case");
 assert(t["weekday_number"]("Sunday") == 0 && t["weekday_number"]("sat") == 6, "weekday numbers");
 assert(contains(try(fn() { return t["month_number"]("Smarch"); })["err"], "not a month name"),
-"a month nobody writes");
+  "a month nobody writes");
 assert(contains(try(fn() { return t["weekday_number"](7); })["err"], "not a weekday name"),
-"and a number is not a name");
+  "and a number is not a name");
 # The tables are the names themselves, for a program that wants them
 # all: a dropdown, a header row, a spelling check.
 assert(len(t["MONTHS"]) == 12 && t["MONTHS"][8] == "September", "the twelve names");
@@ -57,31 +57,31 @@ assert(t["name_index"](t["MONTHS"], "decade") == nil, "and refuses a longer word
 # A stamp in the shape the world writes it, read by the codes the
 # world describes it with.
 assert(t["iso"](t["parse"]("12/Sep/2026:06:00:01", "%d/%b/%Y:%H:%M:%S")) == "2026-09-12T06:00:01Z",
-"an access log stamp");
+  "an access log stamp");
 assert(t["parse"]("2026-09-12 06:00:01", "%F %T") == t["from_iso"]("2026-09-12T06:00:01Z"),
-"the shorthand codes are the long ones");
+  "the shorthand codes are the long ones");
 assert(t["parse"]("09/12/26", "%D") == t["from_iso"]("2026-09-12"), "and so is %D");
 assert(t["parse"]("2026-09-12T06:00:01.250Z", "%FT%T.%L%z") ==
-t["from_iso"]("2026-09-12T06:00:01.250Z"), "milliseconds and a Z");
+  t["from_iso"]("2026-09-12T06:00:01.250Z"), "milliseconds and a Z");
 assert(t["parse"]("06:00:01.25", "%T.%L") - t["parse"]("06:00:01", "%T") == 250,
-"a short fraction is padded, not read as 25");
+  "a short fraction is padded, not read as 25");
 # An offset moves the instant, and both spellings of one are read.
 assert(t["parse"]("12/Sep/2026:06:00:01 +0200", "%d/%b/%Y:%H:%M:%S %z") ==
-t["from_iso"]("2026-09-12T04:00:01Z"), "an offset without a colon");
+  t["from_iso"]("2026-09-12T04:00:01Z"), "an offset without a colon");
 assert(t["parse"]("12 Sep 2026 06:00:01 -05:30", "%d %b %Y %T %z") ==
-t["from_iso"]("2026-09-12T11:30:01Z"), "and one with");
+  t["from_iso"]("2026-09-12T11:30:01Z"), "and one with");
 # The weekday is implied by the date, so it is read and dropped.
 assert(t["parse"]("Sat, 12 September 2026 06:00:01", "%a, %d %B %Y %T") ==
-t["from_iso"]("2026-09-12T06:00:01Z"), "a full month name and a weekday");
+  t["from_iso"]("2026-09-12T06:00:01Z"), "a full month name and a weekday");
 assert(t["parse"]("2026-09-12 06:00:01 PM", "%F %T %p") ==
-t["from_iso"]("2026-09-12T18:00:01Z"), "the afternoon");
+  t["from_iso"]("2026-09-12T18:00:01Z"), "the afternoon");
 assert(t["parse"]("2026-09-12 12:00:01 AM", "%F %T %p") ==
-t["from_iso"]("2026-09-12T00:00:01Z"), "and midnight, which is twelve");
+  t["from_iso"]("2026-09-12T00:00:01Z"), "and midnight, which is twelve");
 # syslog writes no year and pads the day with a space.
 assert(t["parse"]("Sep  3 06:00:01", "%b %e %H:%M:%S", {"year": 2026}) ==
-t["from_iso"]("2026-09-03T06:00:01Z"), "a syslog line, with the year supplied");
+  t["from_iso"]("2026-09-03T06:00:01Z"), "a syslog line, with the year supplied");
 assert(t["parts"](t["parse"]("Sep  3 06:00:01", "%b %e %H:%M:%S"))["year"] == 1970,
-"and 1970 when it is not");
+  "and 1970 when it is not");
 # The text comes from the world, so a mismatch is an answer.
 assert(t["parse"]("12/Sep/2026", "%d/%b/%Y:%H:%M:%S") == nil, "text that stops early");
 assert(t["parse"]("12/Sep/2026:06:00:01 extra", "%d/%b/%Y:%H:%M:%S") == nil, "and text left over");
@@ -91,7 +91,7 @@ assert(t["parse"]("2026-09-12 13:00:01 PM", "%F %T %p") == nil, "nor a thirteent
 assert(t["parse"](12, "%F") == nil, "nor a number where the text goes");
 # The pattern is the program's own, so a code nobody defined fails.
 assert(contains(try(fn() { return t["parse"]("x", "%Q"); })["err"], "not a pattern code"),
-"a code that is not one");
+  "a code that is not one");
 
 assert(t["span"](999) == "999ms", "under a second reads in milliseconds");
 assert(t["span"](1000) == "1s" && t["span"](61000) == "1m 1s", "seconds and minutes");
@@ -112,14 +112,14 @@ assert(from_iso(t["iso"](1788652800000)) == 1788652800000, "iso and from_iso are
 assert(from_iso("2026-09-06T12:34:56Z") == 1788698096000, "the shape iso writes");
 assert(from_iso("2026-09-06") == 1788652800000, "a date on its own is midnight");
 assert(from_iso("2026-09-06 12:34:56") == from_iso("2026-09-06T12:34:56Z"),
-"a space reads like a T, which is what databases write");
+  "a space reads like a T, which is what databases write");
 assert(from_iso("2026-09-06T12:34") == 1788698040000, "seconds may be left out");
 assert(from_iso("2026-09-06T12:34:56.789Z") == 1788698096789, "fractional seconds are milliseconds");
 assert(from_iso("2026-09-06T12:34:56.1234567Z") == 1788698096123, "and longer fractions are dropped, not rounded");
 assert(from_iso("2026-09-06T14:34:56+02:00") == from_iso("2026-09-06T12:34:56Z"),
-"an offset is applied");
+  "an offset is applied");
 assert(from_iso("2026-09-06T07:34:56-0500") == from_iso("2026-09-06T12:34:56Z"),
-"in either spelling");
+  "in either spelling");
 assert(from_iso("1969-12-31T23:59:59Z") == -1000, "before the epoch counts backwards");
 assert(from_iso("2024-02-29") != nil, "a leap day exists");
 assert(from_iso("2023-02-29") == nil, "except in the years it does not");
@@ -161,8 +161,8 @@ if here != nil {
 # What it refuses. An instant is a number of milliseconds, like the
 # one time_ms and stat hand out.
 assert(err(fn() { return local_zone("2026-01-01"); }) ==
-"local_zone expects an instant in milliseconds, got string",
-"a date is not an instant");
+  "local_zone expects an instant in milliseconds, got string",
+  "a date is not an instant");
 assert(contains(err(fn() { return local_zone(1, 2); }), "local_zone"), "and it takes at most one");
 
 # Writing an instant where a zone is involved. offset_iso is pure, so
@@ -190,7 +190,7 @@ if local_zone(sample) == nil {
   assert(t["local_date"](sample) == t["date"](sample + off), "the local day is the shifted day");
   assert(t["local_clock"](sample) == t["clock"](sample + off), "and so is the time of day");
   assert(t["local_iso"](sample) == t["date"](sample + off) + "T" + t["clock"](sample + off) +
-  t["offset_iso"](off), "and the instant carries the offset");
+    t["offset_iso"](off), "and the instant carries the offset");
   # The round trip is the point of carrying it: from_iso reads back
   # the instant, not the local reading of it. Whole-minute offsets
   # only — the pre-1900 ones lose their seconds, as ISO requires.

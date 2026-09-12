@@ -252,7 +252,7 @@ fn name_index(names, name) {
 
 # The month names, read by month_name and month_number.
 let MONTHS = ["January", "February", "March", "April", "May", "June",
-"July", "August", "September", "October", "November", "December"];
+  "July", "August", "September", "October", "November", "December"];
 
 # The weekday names, 0 being Sunday, read by the pair above.
 let WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];

@@ -192,7 +192,7 @@ if title == nil {
   title = "ting";
 }
 write_file(argv[1], "<!doctype html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\">\n"
-+ "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
-+ format("<title>{}</title>\n<style>{}</style>\n</head>\n", escape_attr(title), STYLE)
-+ format("<body>\n{}\n<main>\n{}\n</main>\n</body>\n</html>\n", NAV, convert(md)));
+  + "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n"
+  + format("<title>{}</title>\n<style>{}</style>\n</head>\n", escape_attr(title), STYLE)
+  + format("<body>\n{}\n<main>\n{}\n</main>\n</body>\n</html>\n", NAV, convert(md)));
 print(format("wrote {}", argv[1]));
