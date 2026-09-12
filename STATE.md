@@ -4363,10 +4363,15 @@ holds only the current milestone and the standing rules.
 - 1039: v2.159.0 tagged (180th tag; strokes 1036, 1037, 1038).
 - v2.159.0 VERIFIED (180th tag; strokes 1036, 1037, 1038; both
   aarch64 archives executed here).
+- 1041: health tick + audit green — eleven bench checksums identical
+  to BASELINE, four sweeps ok, counts all standing (79 builtins, 13
+  modules, 214 functions, 48 programs, 3010 checks, 505 tests in 18
+  suites, 81 unchanged, twenty-two warnings, 180 tags). Milestone
+  "what the checker could have said" COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
+  - replenishment: choose the next milestone
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

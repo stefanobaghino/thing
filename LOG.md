@@ -27385,3 +27385,38 @@ engines.
 
 Site audit: all ten published paths 200. changelog.html carries
 v2.159.0 and reference.html the shadowed-builtin sentence.
+
+## 1041 — health tick, milestone "what the checker could have said" complete
+
+Maintenance: tree clean, no open PRs, CI green for b6f5321 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row. A busier host than the last tick —
+load 2.1 against 0.1 — and every row reads a few per cent slow
+against its baseline, uniformly, which is what a loaded host looks
+like and not what a change looks like. The checksums decide.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 214 module functions, 24
+selftest files, 24 examples each with a .out, 3010 selftest checks on
+both engines, 505 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at twenty-two warnings, 180 tags all verified. Site audit: ten
+paths 200.
+
+The milestone is complete. It began as the back half of a finding:
+1028's probe had stopped five times on things `--check` would have
+told it all at once, and the interesting question was not that the
+checker was ahead but where it was behind. Three places: the arities
+of the builtins, which were a guard inside each arm rather than a
+fact (1036); a format template, which is a literal at a call site and
+was read only by the run (1037); and the shadowed name, where the
+checker's sentence and the run's were about the same `let` and only
+one of them was useful (1038). The corpus is five warnings longer for
+it, every one a selftest calling a builtin wrongly on purpose — the
+checker now seeing what those tests were written to prove.
+
+Replenishment next.
