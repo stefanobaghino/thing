@@ -168,7 +168,7 @@ impl<'a> Parser<'a> {
         } else if self.python_conditional() {
             message.push_str(&format!(" ({})", Self::CONDITIONAL));
             let err = self.error(message);
-            self.skip_conditional_tail();
+            self.skip_value_tail();
             return Err(err);
         } else if let Some(hint) = self.operator_word() {
             message.push_str(&format!(" ({hint})"));
@@ -188,10 +188,18 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
         let mut message = format!("expected {what}, found {}", describe(self.peek()));
+        if self.peek() == &TokenKind::For
+            && let Some(hint) = self.comprehension()
+        {
+            message.push_str(&format!(" ({hint})"));
+            let err = self.error(message);
+            self.skip_value_tail();
+            return Err(err);
+        }
         if self.python_conditional() {
             message.push_str(&format!(" ({})", Self::CONDITIONAL));
             let err = self.error(message);
-            self.skip_conditional_tail();
+            self.skip_value_tail();
             return Err(err);
         }
         if let Some(hint) = self.operator_word() {
@@ -419,11 +427,55 @@ impl<'a> Parser<'a> {
         }
     }
 
-    /// The rest of a conditional nobody can parse, dropped so that one
-    /// mistake is one error: recovery restarting ON the `if` would
-    /// read `c else b` as a statement and fail again inside a
-    /// construct the writer never opened.
-    fn skip_conditional_tail(&mut self) {
+    /// `[f(x) for x in xs]`, and the map form of it: a `for` where a
+    /// value's container was supposed to close. ting has `map` and
+    /// `filter` for both, and the iterable is named when it is a
+    /// single name. A `for` anywhere else — one that opens a
+    /// statement — is not this, which is why the loop variable and
+    /// the `in` have to be there.
+    fn comprehension(&self) -> Option<String> {
+        let mut i = self.pos + 1;
+        if !matches!(self.tokens[i].kind, TokenKind::Ident(_)) {
+            return None;
+        }
+        i += 1;
+        if self.tokens[i].kind != TokenKind::In {
+            return None;
+        }
+        i += 1;
+        let start = i;
+        let mut guard = false;
+        loop {
+            match &self.tokens[i].kind {
+                TokenKind::RBracket | TokenKind::RBrace | TokenKind::Semi | TokenKind::Eof => {
+                    break;
+                }
+                TokenKind::If => {
+                    guard = true;
+                    break;
+                }
+                _ => i += 1,
+            }
+        }
+        let over = match (i - start, &self.tokens[start].kind) {
+            (1, TokenKind::Ident(name)) => name.clone(),
+            _ => "xs".to_string(),
+        };
+        Some(if guard {
+            format!(
+                "ting has no comprehensions — `filter({over}, fn(x) {{ return ...; }})` for the guard, `map` for the value"
+            )
+        } else {
+            format!("ting has no comprehensions — `map({over}, fn(x) {{ return ...; }})`")
+        })
+    }
+
+    /// The rest of a borrowed construct nobody can parse, dropped so
+    /// that one mistake is one error: recovery restarting ON the `if`
+    /// or the `for` would read what follows as a statement and fail
+    /// again inside a construct the writer never opened. It stops
+    /// before the closer it is inside, which the caller still wants.
+    fn skip_value_tail(&mut self) {
         let mut depth = 0usize;
         loop {
             match self.peek() {
@@ -1155,7 +1207,7 @@ impl<'a> Parser<'a> {
                     // whole, by the brace counting, instead.
                     message.push_str(&format!(" ({})", Self::CONDITIONAL));
                     let err = self.error(message);
-                    self.skip_conditional_tail();
+                    self.skip_value_tail();
                     return Err(err);
                 } else if let Some(hint) = self.operator_word() {
                     message.push_str(&format!(" ({hint})"));
@@ -1490,6 +1542,50 @@ mod tests {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
         }
+    }
+
+    #[test]
+    fn a_comprehension_says_map_and_filter() {
+        let map_over = |name: &str| {
+            format!("(ting has no comprehensions — `map({name}, fn(x) {{ return ...; }})`)")
+        };
+        for (src, want) in [
+            ("let ys = [x * 2 for x in xs];", map_over("xs")),
+            ("let ys = [f(x) for x in items];", map_over("items")),
+            ("let m = {x: 1 for x in xs};", map_over("xs")),
+            // An iterable that is not one name is `xs` in the answer,
+            // since the sentence is a shape and not a rewrite.
+            ("let ys = [x for x in [1, 2]];", map_over("xs")),
+            // Nor is a call named by the name it starts with.
+            ("let ys = [x for x in keys(m)];", map_over("xs")),
+            (
+                "let ys = [x for x in xs if x > 0];",
+                "(ting has no comprehensions — `filter(xs, fn(x) { return ...; })` for the guard, `map` for the value)"
+                    .to_string(),
+            ),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&want), "{src}: {got}");
+        }
+    }
+
+    /// The loop variable and the `in` are what make it a
+    /// comprehension; a `for` the parser meets anywhere else keeps
+    /// the plain message, and a real `for` statement parses.
+    #[test]
+    fn a_for_without_a_loop_variable_is_not_a_comprehension() {
+        for src in ["let ys = [x * 2 for y];", "let ys = [x for 1 in xs];"] {
+            assert_eq!(prog_err(src), "expected ']', found 'for'", "{src}");
+        }
+        let src = "let xs = [1, 2]; for x in xs { print(x); }";
+        assert!(parse_program(&lex(src).unwrap()).is_ok());
+    }
+
+    #[test]
+    fn a_comprehension_costs_one_error() {
+        let (stmts, messages) = recovered("let ys = [x for x in xs];\nlet y = 2;\n");
+        assert_eq!(messages.len(), 1, "{messages:?}");
+        assert_eq!(stmts, 1, "the line after it still parses");
     }
 
     /// A forgotten `;` in front of a real `if` statement is a

@@ -27732,3 +27732,29 @@ Three mutations: the tail left in place (caught), the tail run past
 its closer (caught), and the `{` dropped from the scan (PASSED — the
 `;` inside every block in the table was hiding it). A file with empty
 blocks joined the table, and the mutation is caught.
+
+## 1052 — a comprehension says map and filter
+
+`[x * 2 for x in xs]` was `expected ']', found 'for'`, and then a
+second error at the `]` when recovery restarted on the `for` and read
+it as a loop. ting has had `map` and `filter` as builtins all along.
+
+The reader is deliberately narrow: a `for` where a container was
+supposed to close, followed by a NAME and `in`. That is the shape
+every comprehension has and no statement does, so `[x * 2 for y]`
+keeps the plain message and a real `for` statement is untouched. A
+guard — `[x for x in xs if x > 0]` — names filter as well, since the
+`if` inside the brackets is the guard and not 1051's conditional; the
+scan for it stops at the closer, so an `if` outside cannot be
+mistaken for one.
+
+The iterable is named when it is a single name: `map(items, ...)` for
+`for x in items`, and the shape's own `xs` for `keys(m)` or a list
+literal, where naming the first token would be a rewrite that does
+not run. The map form, `{x: 1 for x in xs}`, reads the same.
+
+Three mutations, all caught after the third took a better case: the
+`in` no longer required, the guard never seen, and a multi-token
+iterable named by its first token — that one needed `keys(m)` in the
+table, since the list literal it had starts with a bracket and came
+out as `xs` either way.

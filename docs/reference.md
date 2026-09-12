@@ -95,6 +95,10 @@ both.
   Python's `a if c else b` — each say so. The `{` after a condition
   is what tells a real `if` statement from a forgotten `;` in front
   of one.
+- There are no comprehensions. `map` and `filter` are builtins, and
+  `[f(x) for x in xs]` — in a list or a map literal, with or without
+  a guard — says which of them to reach for, naming the iterable when
+  it is a single name.
 - There is no `++` or `--`, and no C `for` header. Counting up is
   `i += 1`, and a counted loop is `for i in range(n)`; writing either
   borrowed form says so. `--i` is the exception that parses: it
