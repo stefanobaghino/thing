@@ -4469,6 +4469,22 @@ holds only the current milestone and the standing rules.
   programs, 3098 checks, 523 tests in 18 suites, 83 unchanged,
   twenty-two warnings, 184 tags). Milestone "rows and records"
   COMPLETE.
+- 1076: replenishment — milestone "the file you hand over"
+  (v2.164), reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - `--bundle` refuses a literal import that resolves to neither a
+    file nor an embedded module, the way it already refuses a
+    circular one — today it copies it in and exits 0
+  - a bundle keeps the script's shebang as its first line, so the
+    one artifact worth chmod +x stays executable
+  - the timing guards measure thread CPU time where the platform
+    offers it (Linux /proc), wall time elsewhere — 1072's finding
+  - release v2.164.0
+  - verify v2.164.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

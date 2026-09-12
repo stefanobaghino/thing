@@ -28457,3 +28457,45 @@ prevent.
 
 Replenishment next, and the timing guards are in the queue for it:
 1072 lost a gate run to a wall clock on a machine at load 5.
+
+## 1076 — replenishment: milestone "the file you hand over"
+
+The probe was the tooling, cold from the shipped v2.163.0 archive:
+`--profile` over the 5000-row CSV example, `--check --strict` over a
+small project, `--bundle` over a program with a local module, and the
+same program's diagnostics before and after bundling.
+
+`--profile` is in good shape: fifty functions, 705082 calls, the
+scanner and the date reader at the top where they belong.
+
+Two things a bundle gets wrong, and both matter because the bundle is
+the file that leaves the machine.
+
+An import naming nothing at all is copied into the bundle unchanged,
+and `--bundle` exits 0. `import("nope.ting")` becomes a bundle that
+fails on somebody else's machine with the right sentence at the wrong
+time. The bundler resolves imports — that is its whole job — and it
+already refuses a circular one with an error and a 1; an import that
+resolves to neither a file nor an embedded module is the same kind of
+mistake and is found in the same pass.
+
+A shebang is dropped. `#!/usr/bin/env ting` at the head of a script
+runs fine, and the bundle of that script starts with the bundler's
+own comment — so the one artifact you would actually chmod +x is the
+one that stops being executable.
+
+A third thing turned out not to be a finding, and is written down so
+it is not chased again: a missing member of a local module reads
+`util/text.ting has no \`shot\`` when run from source and `key "shot"
+not found (did you mean "shout"?)` in the bundle. That looked like
+lost information, but a bundle HAS no modules — it is one file of
+maps, and naming a file that is not there would be worse. The
+suggestion, which is the actionable half, survives.
+
+Also queued, from 1072: the timing guards measure a wall clock, and
+lost a gate run at load 5 even with 1064's elastic rounds. Thread CPU
+time is what they mean; Linux has it in /proc.
+
+The bundle is checked, deterministic across runs, and refuses stdin
+with a sentence about where local imports resolve. Those stay as they
+are.
