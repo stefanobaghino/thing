@@ -165,6 +165,11 @@ impl<'a> Parser<'a> {
             && let Some(hint) = instead_of(name)
         {
             message.push_str(&format!(" ({hint})"));
+        } else if self.python_conditional() {
+            message.push_str(&format!(" ({})", Self::CONDITIONAL));
+            let err = self.error(message);
+            self.skip_conditional_tail();
+            return Err(err);
         } else if let Some(hint) = self.operator_word() {
             message.push_str(&format!(" ({hint})"));
         } else if self.peek() == &TokenKind::Eq
@@ -183,6 +188,12 @@ impl<'a> Parser<'a> {
             return Ok(());
         }
         let mut message = format!("expected {what}, found {}", describe(self.peek()));
+        if self.python_conditional() {
+            message.push_str(&format!(" ({})", Self::CONDITIONAL));
+            let err = self.error(message);
+            self.skip_conditional_tail();
+            return Err(err);
+        }
         if let Some(hint) = self.operator_word() {
             message.push_str(&format!(" ({hint})"));
         }
@@ -381,6 +392,61 @@ impl<'a> Parser<'a> {
     /// `before` is where the failed statement started: if nothing was
     /// consumed at all, one token goes anyway, which is what keeps
     /// parse_program_recovering from standing still.
+    /// One sentence for the three ways another language writes a
+    /// value that depends on a condition: `c ? a : b`, `if c { a }
+    /// else { b }` in a value's place, and Python's `a if c else b`.
+    /// ting's `if` is a statement, and the name it decides is
+    /// assigned in both branches.
+    const CONDITIONAL: &'static str =
+        "ting has no conditional expression — an `if` statement assigns in both branches";
+
+    /// `a if c else b`, borrowed from Python: the `if` follows a
+    /// value that was already complete. The `if` that opens a
+    /// STATEMENT has a block instead, so whichever of `{`, `else` and
+    /// the statement's end comes first says which one this is — and a
+    /// forgotten `;` before a real `if` keeps the plain message.
+    fn python_conditional(&self) -> bool {
+        if self.peek() != &TokenKind::If {
+            return false;
+        }
+        let mut i = self.pos + 1;
+        loop {
+            match &self.tokens[i].kind {
+                TokenKind::Else => return true,
+                TokenKind::LBrace | TokenKind::Semi | TokenKind::Eof => return false,
+                _ => i += 1,
+            }
+        }
+    }
+
+    /// The rest of a conditional nobody can parse, dropped so that one
+    /// mistake is one error: recovery restarting ON the `if` would
+    /// read `c else b` as a statement and fail again inside a
+    /// construct the writer never opened.
+    fn skip_conditional_tail(&mut self) {
+        let mut depth = 0usize;
+        loop {
+            match self.peek() {
+                TokenKind::Eof => return,
+                TokenKind::LParen | TokenKind::LBracket | TokenKind::LBrace => {
+                    depth += 1;
+                    self.advance();
+                }
+                TokenKind::RParen | TokenKind::RBracket | TokenKind::RBrace => {
+                    if depth == 0 {
+                        return;
+                    }
+                    depth -= 1;
+                    self.advance();
+                }
+                TokenKind::Semi if depth == 0 => return,
+                _ => {
+                    self.advance();
+                }
+            }
+        }
+    }
+
     fn recover(&mut self, before: usize) {
         if self.pos == before {
             self.advance();
@@ -1081,6 +1147,16 @@ impl<'a> Parser<'a> {
                 let mut message = format!("expected expression, found {}", describe(&k));
                 if hint {
                     message.push_str(" (a comment starts with `#`)");
+                } else if k == TokenKind::If {
+                    // An `if` where a value belongs: its blocks hold
+                    // values rather than statements, so reading them
+                    // as a statement fails again inside braces the
+                    // writer meant as a value. They are dropped
+                    // whole, by the brace counting, instead.
+                    message.push_str(&format!(" ({})", Self::CONDITIONAL));
+                    let err = self.error(message);
+                    self.skip_conditional_tail();
+                    return Err(err);
                 } else if let Some(hint) = self.operator_word() {
                     message.push_str(&format!(" ({hint})"));
                 }
@@ -1397,6 +1473,58 @@ mod tests {
     /// with them stops at a word the parser cannot place. `not` is
     /// the awkward one: it is read as the whole condition, so the
     /// error lands one token PAST it.
+    #[test]
+    fn a_conditional_value_says_how_ting_writes_one() {
+        let want =
+            "ting has no conditional expression — an `if` statement assigns in both branches";
+        for src in [
+            // An `if` where a value belongs, in a `let` and in a call.
+            "let x = if c { 1 } else { 2 };",
+            "let x = if c { 1 } else if d { 2 } else { 3 };",
+            "print(if c { 1 } else { 2 });",
+            // Python's, which stops after a value that was complete.
+            "print(\"a\" if true else \"b\");",
+            "let x = 1 if c else 2;",
+            "let xs = [1 if c else 2];",
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// A forgotten `;` in front of a real `if` statement is a
+    /// different mistake, and the `{` that follows the condition is
+    /// what tells the two apart.
+    #[test]
+    fn a_forgotten_semicolon_before_an_if_stays_a_forgotten_semicolon() {
+        for src in [
+            "let x = 1\nif true { print(2); }",
+            "print(1)\nif true { print(2); } else { print(3); }",
+            // No `;` inside the blocks, so the `{` is the only thing
+            // standing between this and Python's spelling.
+            "let x = 1\nif true { } else { }",
+        ] {
+            assert_eq!(prog_err(src), "expected ';', found 'if'", "{src}");
+        }
+    }
+
+    /// The blocks of a conditional hold values, not statements, so
+    /// reading them as a statement fails again inside braces nobody
+    /// meant to open. Dropped whole, the mistake costs one error and
+    /// the lines after it still parse.
+    #[test]
+    fn a_conditional_value_costs_one_error() {
+        for src in [
+            "let x = if c { 1 } else { 2 };\nlet y = 2;\n",
+            "let x = 1 if c else 2;\nlet y = 2;\n",
+            "print(if c { 1 } else { 2 });\nlet y = 2;\n",
+        ] {
+            let (stmts, messages) = recovered(src);
+            assert_eq!(messages.len(), 1, "{src}: {messages:?}");
+            assert_eq!(stmts, 1, "{src}: the line after it still parses");
+        }
+    }
+
     #[test]
     fn an_operator_word_says_what_ting_writes() {
         for (src, want) in [

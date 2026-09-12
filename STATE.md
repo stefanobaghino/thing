@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
-  CI platforms, Windows included); 511 Rust tests
+  CI platforms, Windows included); 515 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4396,12 +4396,12 @@ holds only the current milestone and the standing rules.
   "the test that passes anyway" COMPLETE.
 - 1050: replenishment — milestone "the rest of the phrasebook"
   (v2.161), reasoning in LOG.md.
+- 1051: a conditional value says how ting writes one — `?` in the
+  lexer, an `if` where a value belongs, and Python's form — and the
+  tokens are dropped whole, so one mistake is one error. 515 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a conditional value — `c ? a : b`, `let x = if c { a } else
-    { b }`, and `a if c else b` — answered with ting's spelling, and
-    one mistake reported as one error
   - a comprehension `[f(x) for x in xs]` says `map`, and `filter` for
     the guarded form
   - `try`/`catch`/`finally` and `throw` say `try(fn() { ... })` and

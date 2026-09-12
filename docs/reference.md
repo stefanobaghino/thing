@@ -89,6 +89,12 @@ both.
 - `in` belongs to a `for` header and nowhere else. Membership is a
   call: `has(m, k)` for a map key, `contains(xs, v)` for a list, and
   writing `k in m` says both, named after the two words either side.
+- `if` is a statement, never a value. A name that depends on a
+  condition is assigned in both branches, and the three borrowed
+  spellings — `c ? a : b`, an `if` where a value belongs, and
+  Python's `a if c else b` — each say so. The `{` after a condition
+  is what tells a real `if` statement from a forgotten `;` in front
+  of one.
 - There is no `++` or `--`, and no C `for` header. Counting up is
   `i += 1`, and a counted loop is `for i in range(n)`; writing either
   borrowed form says so. `--i` is the exception that parses: it

@@ -253,6 +253,11 @@ impl<'a> Lexer<'a> {
                         "`" => {
                             " (ting's strings are written with double quotes, and have no ${...})"
                         }
+                        // `c ? a : b` never reaches the parser, so
+                        // the phrasebook entry has to be here.
+                        "?" => {
+                            " (ting has no conditional expression — an `if` statement assigns in both branches)"
+                        }
                         _ => "",
                     };
                     return Err(self.error(format!("unexpected character '{ch}'{hint}"), start));
@@ -731,6 +736,17 @@ mod tests {
     /// Two characters that are how other languages quote text. The
     /// hint says where ting keeps its own quotes; every other
     /// character is still named plainly.
+    /// `c ? a : b` stops in the lexer, so the phrasebook entry for a
+    /// conditional value has to be here too.
+    #[test]
+    fn a_borrowed_question_mark_says_ting_has_no_conditional() {
+        let err = lex("let a = c ? 1 : 2;").unwrap_err();
+        assert_eq!(
+            err.message,
+            "unexpected character '?' (ting has no conditional expression — an `if` statement assigns in both branches)"
+        );
+    }
+
     #[test]
     fn a_borrowed_quote_says_where_tings_are() {
         for (src, want) in [

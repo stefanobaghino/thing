@@ -27697,3 +27697,38 @@ deliberately leaves file IO to the builtins should say so when
 someone reaches into it for one.
 
 Milestone "the rest of the phrasebook" (v2.161): five strokes.
+
+## 1051 — a value that depends on a condition
+
+The first stroke of the phrasebook's second round, and the one the
+probe hit three times in one line. ting's `if` is a statement; the
+three borrowed spellings of a conditional VALUE each stopped
+somewhere different and none of them said so:
+
+`c ? a : b` never reached the parser — `unexpected character '?'` —
+so that entry is in the lexer, beside the ones for `'` and the
+backtick. `let x = if c { 1 } else { 2 };` stopped in `primary`,
+where a value was expected. Python's `a if c else b` stopped wherever
+the value it followed was supposed to end: at the `)` of a call, at
+the `;` of a let. All three now end with the same sentence, which
+names ting's own spelling — an `if` statement assigning in both
+branches.
+
+Telling Python's form from a forgotten `;` in front of a real `if` is
+the `{`: a statement's condition is followed by a block, an
+expression's by `else`. The scan looks for whichever comes first, so
+`let x = 1` with a missing semicolon above `if true { } else { }`
+still reads as the missing semicolon it is.
+
+And the cascade. `let flag = if c { "!" } else { " " };` was FIVE
+errors: recovery restarted on the `if`, read `c { "!" }` as a
+statement, and failed inside braces that hold a value rather than
+statements. The tokens are now dropped whole by brace counting, and
+one mistake is one error — the second error, when the conditional is
+inside a block, is the one every in-block mistake gets, where
+recovery leaves the closing brace orphaned.
+
+Three mutations: the tail left in place (caught), the tail run past
+its closer (caught), and the `{` dropped from the scan (PASSED — the
+`;` inside every block in the table was hiding it). A file with empty
+blocks joined the table, and the mutation is caught.
