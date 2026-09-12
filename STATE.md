@@ -4507,11 +4507,12 @@ holds only the current milestone and the standing rules.
   session's own output — the rule is in docs/reference.md.
 - 1090: v2.165.0 tagged (186th) — milestone "the REPL's own
   words", strokes 1087, 1088, 1089.
+- v2.165.0 VERIFIED (186th tag; strokes 1087, 1088, 1089; both
+  aarch64 archives executed here, a session piped into the shipped
+  binary saying all three new answers, ten paths 200).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.165.0 cold: seven assets, `sha256sum -c`, both
-    aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

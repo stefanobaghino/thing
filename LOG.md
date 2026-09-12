@@ -28895,3 +28895,27 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.165.0 — the 186th tag — and pushed. Verification is the
 next tick.
+
+## 1091 — v2.165.0 verified
+
+Release workflow, CI and Pages all green for fe34583 from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.165.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3098
+checks, 26 examples clean, 0 differing, both.
+
+The milestone from the archive, outside the repo, fed by a pipe the
+way a person types: `:halp` answered `did you mean :help?` and
+`:hist` answered `did you mean :history?`; `:help` printed the nine
+with what each takes and pointed at `:doc`, eleven lines instead of a
+hundred; `:save` with nothing after it said what it needs; and a
+file that is not there answered `(cannot read "notes.ting": ...)`.
+Running the same session with stdout discarded left the error stream
+EMPTY — the session says what it has to say on its own output now.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.165.0 and reference.html the sentence about what goes on which
+stream.
