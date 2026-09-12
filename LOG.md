@@ -28564,3 +28564,27 @@ by that answer, so the one that resolves there is still pinned.
 The rule in STATE was rewritten rather than added to: a test must not
 match a resolved path inside a message at all. Two red CIs for one
 assertion is the evidence.
+
+## 1080 — the line that has to be first
+
+A script beginning `#!/usr/bin/env ting` runs, and a bundle of that
+script began with the bundler's own header — so the shebang ended up
+three lines down, where it is a comment and nothing else, and the one
+artifact worth `chmod +x` stopped being executable.
+
+The line now goes first and the header follows it. Only the first
+line counts: a `#!` further down is a comment the bundler leaves
+where it is, and a module's own shebang stays inside the function its
+body becomes.
+
+Checked by running it: the bundle is marked executable and started by
+its own name, and prints what the script printed. It still passes
+`--fmt-check` and `--check`, which is the promise the bundle already
+made.
+
+Three mutations, all caught: the line not moved, the newline dropped
+from what moves (which would splice the rest of the program onto the
+shebang), and `starts_with` widened to `contains` (which would hoist
+a comment from the middle of a file).
+
+525 tests.

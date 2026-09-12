@@ -4355,6 +4355,60 @@ fn bundle_refuses_an_import_that_names_nothing() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A script somebody made executable stays executable once bundled:
+/// the `#!` line means nothing anywhere but the first, and the
+/// bundle's own header used to take that place. A module's `#!` is
+/// left where it is — inside the function its body becomes, where it
+/// is a comment and nothing else — and so is a `#!` that was never
+/// first.
+#[test]
+fn bundle_keeps_the_shebang_first() {
+    let dir = tree(
+        "shebang",
+        &[
+            (
+                "util/text.ting",
+                "#!/usr/bin/env ting\nfn shout(s) { return upper(s) + \"!\"; }\n",
+            ),
+            (
+                "cli.ting",
+                "#!/usr/bin/env ting\nlet t = import(\"util/text.ting\");\nprint(t[\"shout\"](\"hi\"));\n",
+            ),
+            (
+                "plain.ting",
+                "let x = 1;\n#!not a shebang here\nprint(x);\n",
+            ),
+        ],
+    );
+    let out = ting(&[std::path::Path::new("--bundle"), &dir.join("cli.ting")]);
+    assert_eq!(out.status.code(), Some(0));
+    let text = String::from_utf8_lossy(&out.stdout).into_owned();
+    let mut lines = text.lines();
+    assert_eq!(lines.next(), Some("#!/usr/bin/env ting"));
+    assert_eq!(
+        lines.next(),
+        Some("# cli.ting, bundled by `ting --bundle`.")
+    );
+    assert_eq!(
+        text.matches("#!/usr/bin/env ting").count(),
+        2,
+        "the module keeps its own, where it is a comment: {text}"
+    );
+    let one = dir.join("one.ting");
+    std::fs::write(&one, &out.stdout).unwrap();
+    assert_eq!(String::from_utf8_lossy(&ting(&[&one]).stdout), "HI!\n");
+
+    // Only the first line is a shebang. One further down is a
+    // comment the bundler must not move.
+    let plain = ting(&[std::path::Path::new("--bundle"), &dir.join("plain.ting")]);
+    let text = String::from_utf8_lossy(&plain.stdout);
+    assert!(
+        text.starts_with("# plain.ting, bundled by"),
+        "a bundle of a script without one starts with the header: {text}"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// `--bundle` takes one file, and only a file: a script's imports
 /// resolve against its own directory, which stdin does not have.
 #[test]

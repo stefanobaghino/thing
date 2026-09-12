@@ -1314,8 +1314,11 @@ The `ting` binary is the whole toolchain — no separate installs:
   the order the interpreter resolves in, filesystem first — so
   `import("lib/list.ting")` stays, the binary answering it, which is
   what makes one file enough, while a copy of that module sitting
-  beside your script is inlined like any other. What a bundle cannot keep identical is a program that prints
-  where its own code sits: `try()` hands back a file and a line, and
+  beside your script is inlined like any other. A script whose first line is `#!/usr/bin/env ting` keeps
+  it as the bundle's first line, the header following it, so the one
+  file worth `chmod +x` stays executable; a `#!` anywhere else is a
+  comment and is left where it is. What a bundle cannot keep identical
+  is a program that prints where its own code sits: `try()` hands back a file and a line, and
   in a bundle those are the bundle's. Four things are refused rather
   than guessed at, each named at the file, line and column of the
   import that could not be followed: a cycle, an `import` whose path

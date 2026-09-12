@@ -310,7 +310,21 @@ pub fn bundle(path: &Path) -> Result<Bundle, String> {
     exports_of(&display, &src)?;
     let main = bundler.inline(&display, &src, &path)?;
 
-    let mut out = format!(
+    // A script starting `#!` is one somebody made executable, and the
+    // bundle is the file they would hand over. That line means
+    // nothing anywhere but the first, so it goes first and the
+    // header follows it — left in place it would be a comment in the
+    // middle of a file, and the bundle would not run as a program.
+    let (hashbang, main) = match main.starts_with("#!") {
+        false => (String::new(), main),
+        true => {
+            let end = main.find('\n').map_or(main.len(), |i| i + 1);
+            (main[..end].to_string(), main[end..].to_string())
+        }
+    };
+
+    let mut out = hashbang;
+    out.push_str(&format!(
         "# {display}, bundled by `ting --bundle`.\n\
          #\n\
          # Each local module became a function holding what its top\n\
@@ -318,7 +332,7 @@ pub fn bundle(path: &Path) -> Result<Bundle, String> {
          # hands back the same map ever after, which is what importing\n\
          # one file twice already gives. An import whose path is not a\n\
          # file was left as it was: the binary answers it.\n\n"
-    );
+    ));
     for text in &bundler.out {
         out.push_str(text);
         out.push('\n');
