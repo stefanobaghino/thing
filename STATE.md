@@ -4481,6 +4481,9 @@ holds only the current milestone and the standing rules.
 - 1081: the timing guards read thread cpu time from
   /proc/thread-self/schedstat where it runs, wall time elsewhere,
   and have three guards of their own. 527 tests.
+- 1082: and the self-test was measuring a millisecond, which
+  schedstat cannot divide; sized up to where it reads 4.0 every
+  time.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

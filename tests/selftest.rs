@@ -306,23 +306,32 @@ fn the_doubling_ratio_measures_work_and_not_the_machine() {
         }
         x
     }
+    // Sized where the clock is steady. A burst of a millisecond or
+    // two is accounted too coarsely to divide: 400000 spins beside
+    // 1600000 measured 4.32, then 15.26, then 2.91 on CI, where the
+    // last one failed this test. From 2000000 up it reads 4.0 to 4.1
+    // every time — and the guards this helper serves all measure tens
+    // of milliseconds, which is why they were never the ones wobbling.
     let same = common::doubling_ratio_under(
         1.5,
         || {
-            std::hint::black_box(spin(400_000));
+            std::hint::black_box(spin(2_000_000));
         },
         || {
-            std::hint::black_box(spin(400_000));
+            std::hint::black_box(spin(2_000_000));
         },
     );
     assert!(same < 1.5, "the same work twice measured {same:.2}");
+    // A bound nothing can exceed stops after one round, which is all
+    // this needs: four times the work is not a number that improves
+    // with rounds, and eight of them cost four seconds.
     let quadrupled = common::doubling_ratio_under(
-        3.0,
+        f64::INFINITY,
         || {
-            std::hint::black_box(spin(400_000));
+            std::hint::black_box(spin(2_000_000));
         },
         || {
-            std::hint::black_box(spin(1_600_000));
+            std::hint::black_box(spin(8_000_000));
         },
     );
     assert!(

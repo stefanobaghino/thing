@@ -28631,3 +28631,26 @@ Incidentally: the lsp suite went from 41 s to 20 s, and selftest from
 weather stops after one round.
 
 527 tests.
+
+## 1082 — a millisecond is not a measurement
+
+1081's own self-test failed on CI: four times the work measured 2.91
+against a bound of 3.0. The clock was not wrong; the workload was too
+small to divide. At 400000 spins — a millisecond or two — schedstat's
+accounting is coarse enough that the same pair measured 4.32, then
+15.26 here, and 2.91 there.
+
+From 2000000 spins up it reads 4.0 to 4.1 every time, so that is
+where the self-test sits now, with the three numbers and the reason
+written beside it.
+
+Worth stating because it bounds the claim 1081 made: the guards this
+helper serves measure tens of milliseconds — 1500 and 3000 warnings,
+4000 and 8000 elements — which is why they were never the ones
+wobbling for this reason. It was the new test, measuring something
+too small, that could not tell four from three.
+
+The quadrupled case now takes one round instead of eight. A bound
+nothing can exceed stops the loop immediately, and a ratio of four is
+not a number that gets better with rounds; eight of them cost four
+seconds for nothing.
