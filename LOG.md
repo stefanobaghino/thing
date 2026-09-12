@@ -27543,3 +27543,26 @@ nothing), and every recording call named instead of the first.
 
 Ten warnings now. docs/reference.md lists it among them and
 docs/stdlib.md says the checker will say so.
+
+## 1046 — what the module does have
+
+"lib/list.ting has no `nope`" was the whole sentence when no export
+was near enough to suggest, and a reader who guessed the name wrong
+has nothing to go on from it. diag::no_member now finishes the
+sentence with what the module DOES have: every name, sorted, when
+there are eight or fewer, and otherwise how many there are plus
+the `--doc` command that prints them. Eight of
+lib/list.ting's fifty-four names in declaration order would be noise;
+the count and the command are not.
+
+Sorted because the checker reads a file's `fn` lines in order and the
+run reads a map, which is sorted — the same lookup was going to come
+out in two different orders otherwise. tests/io.rs now runs `--check`
+and the file itself over the same missing member and holds the two
+sentences together.
+
+Three mutations, all caught: the eight-name boundary moved, an empty
+module made to say "0 names", and the near-miss branch dropped.
+src/lsp.rs's writable-key test asserts the shape of the sentence
+rather than lib/string.ting's export count, which moves with the
+module; src/diag.rs pins the wording against a module written for it.

@@ -247,9 +247,28 @@ pub fn no_member<'a>(
     if crate::value::Builtin::ALL.iter().any(|b| b.name() == key) {
         return format!("{module} has no `{key}` (`{key}` is a builtin)");
     }
-    match nearest(key, exports) {
-        Some(n) => format!("{module} has no `{key}` (did you mean `{n}`?)"),
-        None => format!("{module} has no `{key}`"),
+    let names: Vec<&str> = exports.into_iter().collect();
+    if let Some(n) = nearest(key, names.iter().copied()) {
+        return format!("{module} has no `{key}` (did you mean `{n}`?)");
+    }
+    // No near miss: a reader who guessed wrong has nowhere to go from
+    // the name alone, so the module says what it does have. A short
+    // module names everything; a long one names how much there is and
+    // the command that prints it, since eight of fifty-four names in
+    // the order they happen to be declared help nobody.
+    match names.len() {
+        0 => format!("{module} has no `{key}`"),
+        1..=8 => {
+            // Sorted, so the checker reading a file top to bottom and
+            // the run reading a map say the same sentence.
+            let mut names = names.clone();
+            names.sort_unstable();
+            let list: Vec<String> = names.iter().map(|n| format!("`{n}`")).collect();
+            format!("{module} has no `{key}` (it has {})", list.join(", "))
+        }
+        n => {
+            format!("{module} has no `{key}` (it has {n} names — `ting --doc {module}` lists them)")
+        }
     }
 }
 
@@ -316,6 +335,50 @@ fn distance(a: &str, b: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A key a module does not have, with no near miss to offer: what
+    /// the module DOES have is the only help left, and a long module
+    /// hands over the command that prints it rather than an arbitrary
+    /// handful of names.
+    #[test]
+    fn a_member_with_no_near_miss_says_what_the_module_has() {
+        let short = ["parse", "help", "main"];
+        assert_eq!(
+            no_member("lib/args.ting", "zzqqxx", short),
+            "lib/args.ting has no `zzqqxx` (it has `help`, `main`, `parse`)"
+        );
+        let long: Vec<String> = (0..9).map(|i| format!("name{i}")).collect();
+        assert_eq!(
+            no_member("lib/big.ting", "zzqqxx", long.iter().map(String::as_str)),
+            "lib/big.ting has no `zzqqxx` (it has 9 names — `ting --doc lib/big.ting` lists them)"
+        );
+        // Eight is still few enough to name.
+        assert!(
+            no_member(
+                "lib/big.ting",
+                "zzqqxx",
+                long[..8].iter().map(String::as_str)
+            )
+            .ends_with(
+                "(it has `name0`, `name1`, `name2`, `name3`, `name4`, `name5`, `name6`, `name7`)"
+            )
+        );
+        // A near miss is better than either, and a builtin better than
+        // that.
+        assert_eq!(
+            no_member("lib/args.ting", "pares", short),
+            "lib/args.ting has no `pares` (did you mean `parse`?)"
+        );
+        assert_eq!(
+            no_member("lib/args.ting", "print", short),
+            "lib/args.ting has no `print` (`print` is a builtin)"
+        );
+        // A module with nothing in it has nothing to say.
+        assert_eq!(
+            no_member("lib/empty.ting", "zzqqxx", Vec::<&str>::new()),
+            "lib/empty.ting has no `zzqqxx`"
+        );
+    }
 
     #[test]
     fn caret_under_mid_line_span() {

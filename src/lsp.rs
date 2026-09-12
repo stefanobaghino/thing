@@ -3317,7 +3317,15 @@ mod tests {
             .into_iter()
             .map(|(_, _, m)| m)
             .collect();
-        assert_eq!(messages, vec!["lib/string.ting has no `other`".to_string()]);
+        // The count is lib/string.ting's own and moves with it, so the
+        // sentence is asserted by its shape; src/diag.rs pins the
+        // wording against a module written for the test.
+        assert_eq!(messages.len(), 1, "{messages:?}");
+        assert!(
+            messages[0].starts_with("lib/string.ting has no `other` (it has ")
+                && messages[0].ends_with("names — `ting --doc lib/string.ting` lists them)"),
+            "{messages:?}"
+        );
     }
 
     /// What a module offers is checked the way the file's own

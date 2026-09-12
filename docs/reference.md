@@ -1161,7 +1161,10 @@ The `ting` binary is the whole toolchain — no separate installs:
   name, when one does, and the nearest name in scope otherwise;
   an imported module
   indexed with a name it does not export, naming the builtin of that
-  name where there is one and the nearest export otherwise; a top-level binding that
+  name where there is one, the nearest export where there is one of
+  those, and otherwise what the module DOES have — every name when
+  there are eight or fewer, and how many there are plus the `--doc`
+  command that prints them when there are more; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
   only of bindings is a module and exempt; a `let` inside a block
   that nothing in the block uses, same opt-out; a function parameter

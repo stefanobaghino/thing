@@ -281,6 +281,32 @@ fn check_flag_names_a_file_that_prints_none_of_its_checks() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// A member no module has: the checker and the run say the same
+/// sentence about it, down to the order the names come in.
+#[test]
+fn a_missing_member_reads_the_same_to_the_checker_and_the_run() {
+    let path = std::env::temp_dir().join(format!("ting-member-{}.ting", std::process::id()));
+    std::fs::write(
+        &path,
+        "let a = import(\"lib/args.ting\");\nprint(a[\"zzqqxx\"]);\n",
+    )
+    .unwrap();
+    let run = |args: &[&str]| {
+        let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(args)
+            .arg(path.to_str().unwrap())
+            .output()
+            .expect("failed to run ting");
+        String::from_utf8_lossy(&out.stderr).into_owned()
+    };
+    let said = "lib/args.ting has no `zzqqxx` (it has `flag_of`, `help`, `main`, `option_of`, `pad`, `parse`, `spec_trouble`)";
+    let checked = run(&["--check"]);
+    assert!(checked.contains(&format!("warning: {said}")), "{checked}");
+    let ran = run(&[]);
+    assert!(ran.contains(&format!("error: {said}")), "{ran}");
+    let _ = std::fs::remove_file(&path);
+}
+
 #[test]
 fn check_flag_prints_stdlib_member_warnings() {
     let path = std::env::temp_dir().join(format!("ting-check-warn-{}.ting", std::process::id()));

@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
-  CI platforms, Windows included); 509 Rust tests
+  CI platforms, Windows included); 511 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4380,11 +4380,13 @@ holds only the current milestone and the standing rules.
 - 1045: `--check` names a file that records checks with lib/test.ting
   and calls neither `summary()` nor `reset()` — the tenth warning,
   from `unsummarized_checks`. 509 tests.
+- 1046: a module member with no near miss says what the module does
+  have — every name sorted when there are eight or fewer, the count
+  and `--doc` when there are more, the same from the checker and the
+  run. 511 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a member a module does not have names what the module does have,
-    not only a near miss when there is one
   - release v2.160.0
   - verify v2.160.0 cold: seven assets, `sha256sum -c`, both aarch64
     archives executed here, the ten published paths 200
