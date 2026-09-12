@@ -66,7 +66,12 @@ as a script that replays the session; and `:clear` resets the
 session and the transcript. A colon that opens a chunk is the
 REPL's to answer, not the parser's: a name it does not have names the
 nearest of the nine, and one of the nine given the wrong thing says
-what it takes. It has no built-in line editing or
+what it takes. Everything the session says about itself is a
+parenthetical on its own output — the refusals included: a file it
+cannot read or write, a chunk that stops in the middle. What goes to
+the error stream is a diagnostic, which carries its own
+`file:line:col`; `ting: ...` is the voice the binary uses before
+there is a session. It has no built-in line editing or
 up-arrow recall (zero dependencies); wrap it with
 [rlwrap](https://github.com/hanslub42/rlwrap) — `rlwrap ting` — for
 both.

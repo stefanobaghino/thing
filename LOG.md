@@ -28838,3 +28838,28 @@ first bytes of `:help` to close the pipe under it, and those are now
 Three mutations, all killed: dropping the argument from a signature,
 replacing the `:doc` pointer with a bare `ctrl-d exits`, and printing
 the builtins after the commands anyway.
+
+## 1089 — the session's own voice for a file it cannot open
+
+`:load` and `:save` reported a file they could not open as `ting:
+cannot read "x": ...` on the error stream — the voice the binary uses
+when a script named on the command line is missing, which is before
+any session exists. Two neighbours said the same thing the same way:
+`:load` on a file that stops mid-chunk, and `:time` on a line that
+does not finish.
+
+All four are now parentheticals on the session's own output, next to
+`(nothing to save yet)` and `(loaded FILE: N new binding(s))`. The
+rule, now written down in docs/reference.md: everything the session
+says about itself is a parenthetical on its own output, refusals
+included; the error stream carries a diagnostic, which has its own
+`file:line:col` to identify it. Paths stay quoted mid-message, which
+is the rule that page already states for every tool.
+
+Four mutations, each putting one message back as `ting: ...` on the
+error stream, all killed — two by tests that already existed and
+moved their assertion from stderr to stdout, two by
+`repl_reports_a_file_it_cannot_open_in_its_own_voice`, which also
+checks that neither refusal ends the session.
+
+That empties the milestone's working backlog: v2.165.0 next.

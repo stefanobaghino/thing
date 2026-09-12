@@ -733,7 +733,7 @@ fn run_inner() -> ExitCode {
                 + "\n";
             match std::fs::write(path, script) {
                 Ok(()) => say(&format!("(saved {} chunk(s) to {path})", history.len())),
-                Err(e) => eprintln!("ting: cannot write {path:?}: {e}"),
+                Err(e) => say(&format!("(cannot write {path:?}: {e})")),
             }
             continue;
         }
@@ -793,7 +793,7 @@ fn run_inner() -> ExitCode {
             let outcome = eval_chunk(&mut interp, src);
             let ms = started.elapsed().as_secs_f64() * 1000.0;
             match outcome {
-                Outcome::Incomplete => eprintln!("ting: :time needs a complete expression"),
+                Outcome::Incomplete => say("(:time needs a complete expression)"),
                 Outcome::Unit => {}
                 Outcome::Value(v) => say(&v.to_string()),
                 Outcome::Error(msg) => eprintln!("{msg}"),
@@ -819,7 +819,7 @@ fn run_inner() -> ExitCode {
                     interp.set_base_dir(saved);
                     let loaded = !matches!(outcome, Outcome::Error(_) | Outcome::Incomplete);
                     match outcome {
-                        Outcome::Incomplete => eprintln!("ting: {path}: incomplete program"),
+                        Outcome::Incomplete => say(&format!("(incomplete program in {path:?})")),
                         Outcome::Unit => {}
                         Outcome::Value(v) => say(&v.to_string()),
                         Outcome::Error(msg) => eprintln!("{msg}"),
@@ -831,7 +831,7 @@ fn run_inner() -> ExitCode {
                         say(&format!("(loaded {path}: {added} new binding(s))"));
                     }
                 }
-                Err(why) => eprintln!("ting: cannot read {path:?}: {why}"),
+                Err(why) => say(&format!("(cannot read {path:?}: {why})")),
             }
             continue;
         }

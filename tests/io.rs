@@ -1979,6 +1979,53 @@ fn doc_output_fits_eighty_columns() {
     assert!(stdout.lines().count() >= 3, "{stdout}");
 }
 
+/// A file the session cannot open, and a file that stops mid-chunk,
+/// are the session's own answers: parenthetical, on stdout, where the
+/// rest of what the session says about itself goes. `ting: ...` on
+/// stderr is the voice the binary uses before a session exists.
+#[test]
+fn repl_reports_a_file_it_cannot_open_in_its_own_voice() {
+    use std::io::Write as _;
+    let dir = std::env::temp_dir();
+    let partial = dir.join(format!("ting-partial-{}.ting", std::process::id()));
+    std::fs::write(&partial, "let a = 1 +\n").unwrap();
+    let unwritable = dir.join(format!("ting-no-dir-{}/x.ting", std::process::id()));
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(
+            format!(
+                "let z = 1;\n:save {}\n:load {}\nprint(z);\n",
+                unwritable.display(),
+                partial.display()
+            )
+            .as_bytes(),
+        )
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(stdout.contains("(cannot write "), "{stdout}");
+    assert!(stdout.contains("(incomplete program in "), "{stdout}");
+    // Quoted mid-message, as every tool quotes a path it names.
+    assert!(
+        stdout.contains(&format!("{:?}", partial.display().to_string())),
+        "{stdout}"
+    );
+    assert!(!stderr.contains("ting: "), "{stderr}");
+    // Neither refusal ends the session.
+    assert!(stdout.contains("\n1\n"), "{stdout}");
+    assert_eq!(out.status.code(), Some(0));
+    let _ = std::fs::remove_file(&partial);
+}
+
 /// `:help` answers with the commands, each with what it takes: they
 /// are what a session asks `:help` for, and `:doc` has the builtins.
 #[test]
@@ -2050,8 +2097,13 @@ fn repl_load_runs_a_file_into_the_session() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     // The loaded binding is visible to later lines.
     assert!(stdout.contains("42"), "{stdout}");
-    // A bad path reports and the session survives (exit 0 on ctrl-d).
-    assert!(stderr.contains("cannot read \"/missing.ting\""), "{stderr}");
+    // A bad path reports in the session's voice, on the session's own
+    // stream, and the session survives (exit 0 on ctrl-d).
+    assert!(
+        stdout.contains("(cannot read \"/missing.ting\""),
+        "{stdout}"
+    );
+    assert!(!stderr.contains("cannot read"), "{stderr}");
     assert_eq!(out.status.code(), Some(0));
     let _ = std::fs::remove_file(&script);
 }
@@ -3120,7 +3172,11 @@ fn repl_time_reports_milliseconds() {
     let stderr = String::from_utf8_lossy(&out.stderr);
     assert!(stdout.contains("1000\n("), "value then timing: {stdout}");
     assert_eq!(stdout.matches(" ms)").count(), 3, "{stdout}");
-    assert!(stderr.contains("needs a complete expression"), "{stderr}");
+    assert!(
+        stdout.contains("(:time needs a complete expression)"),
+        "{stdout}"
+    );
+    assert!(!stderr.contains("complete expression"), "{stderr}");
     assert_eq!(out.status.code(), Some(0));
 }
 
