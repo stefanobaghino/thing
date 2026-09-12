@@ -27856,3 +27856,23 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.161.0 — the 182nd tag — and pushed. Verification is the
 next tick.
+
+## 1057 — v2.161.0 verified
+
+Release workflow, CI and Pages all green for 4b0cf0f from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.161.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3013
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo, one file per
+entry: the `if` where a value belongs and the `?` that never reaches
+the parser both name ting's spelling; `[x * 2 for x in xs]` names
+map; `try { } catch (e) { }` names the builtin; `fn f(a: int)` says
+ting has no type annotations; and `fs["write"]` finds `write_file`.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.161.0 and reference.html the new phrasebook entries.

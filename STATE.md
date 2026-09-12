@@ -4412,11 +4412,11 @@ holds only the current milestone and the standing rules.
   going to the module. 523 tests.
 - 1056: v2.161.0 tagged (182nd tag; strokes 1051, 1052, 1053, 1054,
   1055).
+- v2.161.0 VERIFIED (182nd tag; strokes 1051-1055; both aarch64
+  archives executed here).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.161.0 cold: seven assets, `sha256sum -c`, both aarch64
-    archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
