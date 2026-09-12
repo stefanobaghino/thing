@@ -28687,3 +28687,24 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.164.0 — the 185th tag — and pushed. Verification is the
 next tick.
+
+## 1084 — v2.164.0 verified
+
+Release workflow, CI and Pages all green for fe9ca3b from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.164.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3098
+checks, 26 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo, the way a
+person would use it: a script with a shebang and a local module
+bundled into one file, that file marked executable and started BY ITS
+OWN NAME, printing what the script printed; and an import naming
+nothing refused at its line and column with a 1 and nothing at all on
+stdout.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.164.0 and reference.html the sentence about chmod +x.
