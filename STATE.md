@@ -4384,10 +4384,10 @@ holds only the current milestone and the standing rules.
   have — every name sorted when there are eight or fewer, the count
   and `--doc` when there are more, the same from the checker and the
   run. 511 tests.
+- 1047: v2.160.0 tagged (181st tag; strokes 1043, 1044, 1045, 1046).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.160.0
   - verify v2.160.0 cold: seven assets, `sha256sum -c`, both aarch64
     archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

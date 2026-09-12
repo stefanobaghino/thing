@@ -27566,3 +27566,29 @@ module made to say "0 names", and the near-miss branch dropped.
 src/lsp.rs's writable-key test asserts the shape of the sentence
 rather than lib/string.ting's export count, which moves with the
 module; src/diag.rs pins the wording against a module written for it.
+
+## 1047 — release v2.160.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for d5435d4 from the API. Two leftover selftest-csv-rows-*.csv
+files from an interrupted run on Sep 8 removed from the root (they
+are gitignored; selftest/csv.ting writes one and deletes it).
+
+v2.160.0, the milestone "the test that passes anyway". The framework
+this project tests itself with had a way to report a pass while
+holding a failure: helpers record, summary() prints, and a file that
+never called it said nothing. 1043 made the run ask at the end, 1044
+made exit(0) ask too, 1045 made --check ask before the file runs, and
+1046 finished the sentence the checker says about a member no module
+has.
+
+Strokes 1043, 1044, 1045, 1046. CHANGELOG.md written from those
+entries; Cargo.toml and Cargo.lock at 2.160.0; the binary reports
+`ting 2.160.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (511
+tests), `--fmt .` 81 unchanged, corpus at twenty-two, 3013 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.160.0 — the 181st tag — and pushed. Verification is the
+next tick.

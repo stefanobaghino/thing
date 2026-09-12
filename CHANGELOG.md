@@ -5,6 +5,29 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.160.0 (2026-09-12)
+
+- **A check that failed is a failure, printed or not.** `lib/test.ting`
+  records what each helper found and `summary()` is what prints it, so
+  a file that checked a hundred things and forgot the last line
+  reported a pass — `ok tests/thing.ting (100 checks)` — with a
+  failure sitting unread in the module's state. A run now ends by
+  asking for the failures nothing printed, names them, and fails; and
+  so does `exit(0)`, which returns to nobody and got away with it a
+  tick longer. `reset()` joins the module for the file that arranges
+  failures ON PURPOSE, to test the checks themselves: it reads them
+  and forgets them, and its own verdict is its own again.
+- **`--check` says so before the file runs.** A file that binds
+  `lib/test.ting`, calls one of its recording helpers, and calls
+  neither `summary()` nor `reset()` is named at its first check:
+  nothing in it prints anything. It is the tenth warning.
+- **A module member with no near miss says what the module has.**
+  "lib/list.ting has no `nope`" was the whole sentence when nothing
+  was close enough to suggest. It now finishes: every export, sorted,
+  when the module has eight or fewer, and otherwise how many names
+  there are and the `--doc` command that prints them. The checker and
+  the run say it identically.
+
 ## v2.159.0 (2026-09-12)
 
 - **`--check` counts a call to a builtin.** It already counted a call
