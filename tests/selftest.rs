@@ -251,10 +251,11 @@ mod common;
 /// difference at all — the guard passed on the code it was written to
 /// catch. Time is the only thing that changes here.
 ///
-/// `doubling_ratio` interleaves the two sizes, takes the best of five
-/// and the best of three rounds, so a busy host lengthens both sides
-/// together: doubling the input can only double linear work, while
-/// either scan quadruples it.
+/// `doubling_ratio_under` interleaves the two sizes and takes the
+/// best of five, repeating the round while the ratio sits above the
+/// bound, so a busy host lengthens both sides together: doubling the
+/// input can only double linear work, while either scan quadruples
+/// it.
 #[test]
 fn the_sameness_helpers_cost_the_elements_not_the_squares() {
     fn unique_of(n: usize) -> String {
@@ -279,7 +280,7 @@ fn the_sameness_helpers_cost_the_elements_not_the_squares() {
         ("unique", unique_of(4000), unique_of(8000)),
         ("intersection", intersection_of(4000), intersection_of(8000)),
     ] {
-        let ratio = common::doubling_ratio(|| run(&small), || run(&large));
+        let ratio = common::doubling_ratio_under(3.0, || run(&small), || run(&large));
         assert!(
             ratio < 3.0,
             "doubling the elements multiplied {what}'s work by {ratio:.1}: the scan is back"

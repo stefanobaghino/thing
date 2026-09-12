@@ -28085,3 +28085,32 @@ both were regenerated rather than edited; the tests that hold them to
 examples/ said so, one after the other.
 
 25 examples, 49 programs, 82 files formatted.
+
+## 1064 — a guard that costs rounds instead of failing
+
+Three gate runs in one hour died on a timing guard with nothing
+regressed: the lsp pair twice, the sameness pair once, at load
+average 7 on four cores. Each cost a full gate.
+
+The measurement was already the right shape — the two sizes timed
+alternately, best of five each, best of three rounds, smallest ratio
+kept. What it could not do is spend more time when the machine is the
+problem: three rounds, then a verdict, however contended.
+
+So the bound the caller asserts against now goes INTO the helper, and
+rounds stop as soon as one lands under it — up to eight. An idle host
+pays one round where it used to pay three, which took the sameness
+guard from 39 s to 3 s and the lsp suite from 48 s to 41 s; a host
+busy enough to skew a round pays another instead of failing. A
+quadratic never lands under the bound, so it now scores four eight
+times and fails, which is the guard doing exactly what it did before,
+only more patiently.
+
+Checked both directions: with the bound at 1.0 — a ratio nothing can
+reach — the guard ran all eight rounds and took 23 s, then passed on
+its own assertion at 3.0, which is the plumbing proving it is bounded
+and that the two numbers are separate. At 3.0 it takes one round.
+
+The bound is written twice at each site, in the call and in the
+assertion. The pairing is in the helper's own comment: the number
+passed in is the number asserted against.

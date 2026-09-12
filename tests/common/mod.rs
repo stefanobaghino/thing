@@ -217,12 +217,19 @@ impl Gen {
 ///
 /// So the two sizes are timed ALTERNATELY, which puts a slow patch
 /// of the machine on both; the best of five stands for each size;
-/// and the whole measurement is repeated three times, keeping the
-/// SMALLEST ratio. A quadratic scores four in every attempt, so the
-/// minimum still catches it, while noise now has to strike all three.
-pub fn doubling_ratio(mut small: impl FnMut(), mut large: impl FnMut()) -> f64 {
+/// and the whole measurement is repeated, keeping the SMALLEST
+/// ratio. A quadratic scores four in every attempt, so the minimum
+/// still catches it, while noise has to strike every round.
+///
+/// The caller's bound is the one it asserts against, passed in here
+/// rather than compared only afterwards, so rounds stop as soon as one lands under it: an idle
+/// host pays one round where it used to pay three, and a host busy
+/// enough to skew a round pays another instead of failing. 1064 hit
+/// three such failures in one hour at load 7 on four cores, none of
+/// them a regression.
+pub fn doubling_ratio_under(bound: f64, mut small: impl FnMut(), mut large: impl FnMut()) -> f64 {
     let mut best = f64::INFINITY;
-    for _ in 0..3 {
+    for _ in 0..8 {
         let mut small_best = std::time::Duration::MAX;
         let mut large_best = std::time::Duration::MAX;
         for _ in 0..5 {
@@ -234,6 +241,9 @@ pub fn doubling_ratio(mut small: impl FnMut(), mut large: impl FnMut()) -> f64 {
             large_best = large_best.min(at.elapsed());
         }
         best = best.min(large_best.as_secs_f64() / small_best.as_secs_f64());
+        if best < bound {
+            break;
+        }
     }
     best
 }

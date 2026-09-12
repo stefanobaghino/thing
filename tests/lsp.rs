@@ -1285,7 +1285,7 @@ fn the_unused_checks_do_not_walk_the_file_once_per_name() {
         assert_eq!(ting::lsp::warnings(src).len(), n - 1, "wrong count");
     }
     let (small, large) = (source(1500), source(3000));
-    let ratio = common::doubling_ratio(|| check(&small, 1500), || check(&large, 3000));
+    let ratio = common::doubling_ratio_under(3.0, || check(&small, 1500), || check(&large, 3000));
     assert!(
         ratio < 3.0,
         "doubling the bindings multiplied the work by {ratio:.1}: \
@@ -1323,7 +1323,7 @@ fn rendering_many_diagnostics_does_not_count_from_the_top_each_time() {
         );
     }
     let (small, large) = (source(1500), source(3000));
-    let ratio = common::doubling_ratio(|| check(&small, 1500), || check(&large, 3000));
+    let ratio = common::doubling_ratio_under(3.0, || check(&small, 1500), || check(&large, 3000));
     assert!(
         ratio < 3.0,
         "doubling the warnings multiplied the work by {ratio:.1}: \

@@ -4433,6 +4433,9 @@ holds only the current milestone and the standing rules.
 - 1063: examples/stamps.ting reads an access log and a syslog line
   end to end; cookbook and playground regenerated. 25 examples, 49
   programs, 82 formatted.
+- 1064: the timing guards take their bound and stop rounding as soon
+  as one lands under it — three gate runs had died on contention,
+  none a regression.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

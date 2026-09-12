@@ -233,7 +233,8 @@ fn the_pools_are_not_searched_by_scanning_them() {
     // times the failing run, and a guard nobody waits for is not a
     // guard.
     let (small, large) = (parsed(&source(5000)), parsed(&source(10000)));
-    let ratio = common::doubling_ratio(|| compile(&small, 5000), || compile(&large, 10000));
+    let ratio =
+        common::doubling_ratio_under(3.0, || compile(&small, 5000), || compile(&large, 10000));
     assert!(
         ratio < 3.0,
         "doubling the program multiplied compilation by {ratio:.1}: \
@@ -268,7 +269,8 @@ fn the_resolver_does_not_walk_the_scope_per_name() {
         ting::parser::parse_program(&tokens).expect("parse")
     }
     let (small, large) = (parsed(&source(1500)), parsed(&source(3000)));
-    let ratio = common::doubling_ratio(|| compile(&small, 1500), || compile(&large, 3000));
+    let ratio =
+        common::doubling_ratio_under(3.0, || compile(&small, 1500), || compile(&large, 3000));
     assert!(
         ratio < 3.0,
         "doubling the program multiplied compilation by {ratio:.1}: \
