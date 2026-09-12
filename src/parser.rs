@@ -300,6 +300,31 @@ impl<'a> Parser<'a> {
                 return Some(format!("ting has no `{sign}` — write `{name} {op} 1`"));
             }
         }
+        // `as` is an identifier to this parser and nothing else, so it
+        // only reaches a parse error as a habit carried from another
+        // language: naming an import, or casting a value. Both have a
+        // ting form, and which one is being reached for is readable
+        // from the statement the error is in.
+        if let TokenKind::Ident(word) = self.peek()
+            && word == "as"
+        {
+            let imports = self.tokens[..self.pos]
+                .iter()
+                .rev()
+                .take_while(|t| !matches!(t.kind, TokenKind::Semi))
+                .any(|t| matches!(&t.kind, TokenKind::Ident(w) if w == "import"));
+            return Some(match self.peek2() {
+                TokenKind::Ident(name) if imports => {
+                    format!("ting has no `as` — a module is a value: `let {name} = import(...);`")
+                }
+                TokenKind::Ident(name)
+                    if matches!(name.as_str(), "int" | "float" | "str" | "bool") =>
+                {
+                    format!("ting has no `as` — a conversion is a call: `{name}(x)`")
+                }
+                _ => "ting has no `as`".to_string(),
+            });
+        }
         // `in` is a keyword this parser reads in a `for` header and
         // nowhere else, so a program that writes `k in m` outside one
         // is asking a membership question ting answers with a call.
@@ -1908,6 +1933,42 @@ mod tests {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
         }
+    }
+
+    /// `as` names an import in most languages and casts in some, and
+    /// it is only ever a plain identifier here — so which of the two
+    /// was meant is read off the statement the error is in.
+    #[test]
+    fn a_borrowed_as_says_what_ting_writes() {
+        for (src, want) in [
+            (
+                "import(\"lib/csv.ting\") as csv;",
+                "ting has no `as` — a module is a value: `let csv = import(...);`",
+            ),
+            // The import may be anywhere in the statement, and an
+            // earlier statement's import is not this one's.
+            (
+                "let m = import(\"a.ting\"); let n = 1 as float;",
+                "ting has no `as` — a conversion is a call: `float(x)`",
+            ),
+            (
+                "let n = 1 as int;",
+                "ting has no `as` — a conversion is a call: `int(x)`",
+            ),
+            // Neither an import nor a conversion: the habit is still
+            // named, with nothing invented about what was meant.
+            ("let y = x as thing;", "ting has no `as`"),
+            ("let y = x as 1;", "ting has no `as`"),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+        // `as` is a name like any other where a name is what is
+        // wanted, and none of this is reached.
+        assert!(
+            parse_program(&lex("let as = 1; print(as);").unwrap()).is_ok(),
+            "`as` should still be a name"
+        );
     }
 
     /// A `for` header from C stops on the `(`, and the parser

@@ -29096,3 +29096,30 @@ of it.
 The claim this test exists for is not weakened: that the clock
 ignores a thread asleep is pinned separately, at a bound of 1.2, by
 `the_ratio_does_not_count_a_thread_asleep`.
+
+## 1097 — `as`, the other habit
+
+Four lines of the probe's first draft were `import("lib/csv.ting") as
+csv;`, and all four were answered `expected ';', found identifier
+'as'`. Two lines further down, `csv.each_map(...)` was answered with a
+sentence that teaches the language. The parser already knows how to
+name a habit brought from somewhere else; `as` was simply not on the
+list.
+
+It is now, in the same place in src/parser.rs, and it reads the
+statement to decide which habit it is. An `as` in a statement that
+imports gets `a module is a value: let csv = import(...);` — named
+after the very word the writer put after `as`, so the sentence is the
+fix. An `as` in front of `int`, `float`, `str` or `bool` gets `a
+conversion is a call: float(x)`. Anything else gets `ting has no
+\`as\``, which invents nothing.
+
+The import is looked for only back to the previous `;`, so the second
+statement of `let m = import("a.ting"); let n = 1 as float;` is not
+told about a module. `as` is an ordinary identifier here, so `let as =
+1; print(as);` still parses — the hint is reached only once something
+has already failed.
+
+Four mutations, all killed: the import test forced true, the search
+run past the statement boundary, the conversion list opened to any
+name, and the word itself misspelt.
