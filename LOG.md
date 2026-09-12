@@ -29476,3 +29476,66 @@ passes for the wrong reason is a guard that will pass through the
 change that breaks it.
 
 Replenishment next.
+
+## 1108 — replenishment: milestone "the line that continues"
+
+The probe deliberately left the diagnostics alone — two milestones
+running had been suggestion machinery. It was a file written the way
+a file gets written when you are in a hurry: `ugly.ting`, valid ting
+with no layout at all, run against the v2.167.0 musl archive and then
+handed to `ting --fmt -`.
+
+The formatter put spaces around every operator and after every comma,
+and left the shape of the file exactly as it found it. Most of that
+is the documented contract: it works on tokens rather than on a
+parsed program, so that a file in the middle of being written can
+still be tidied, and a pass that never introduces or removes a line
+break follows from that. A one-line function body stays one line.
+Fine.
+
+What does not follow is where a continuation line lands. The rule in
+src/fmt.rs is one level of indent "for every `[` or `(` that ends its
+line", and an opener with anything after it opens nothing:
+
+    print(deep,
+    s);
+    let deep = [1,
+    2];
+
+`s` sits in the column `print` sits in, so the line that continues a
+call is indented exactly like the statement that follows it. The
+author's own break is kept and then made to lie about the structure.
+A break after the opener — `[` alone at the end of its line — is
+indented properly today, which is the same relationship with the
+content moved one character; there is no reason for the two to
+disagree.
+
+Second, and with no rule covering it at all, a statement continued by
+a trailing operator gets nothing:
+
+    let total = 1 +
+    2 +
+    3;
+    let cond = total > 2 &&
+    total < 10;
+
+Nothing is open at the line break, so there is no depth to add, and
+`2` reads as a statement. An operator at the end of a line is a
+promise that the line is not finished, and it is visible to a
+token-based pass.
+
+Not findings, recorded so they are not chased. `l["max"]` was
+answered `lib/list.ting has no `max` (`max` is a builtin)` by
+`--check` before the run and again at the run — the message the last
+two milestones were built to produce, arriving unprompted. `27/6`
+printed `4` because both operands are ints, which is ting's
+arithmetic doing what it documents; warning on that would warn on
+`len(sorted) / 2`, which is the line the probe wanted. And `"x" ..
+"y"` came back `"x".."y"`, which looks like a lost space until you
+remember `..` is the slice operator and `xs[0..n]` is the canonical
+spelling — that program does not parse, and the formatter tidied it
+anyway because it only needs it to lex.
+
+Milestone "the line that continues" (v2.168): indentation is the only
+thing that says which line belongs to which, and today only a
+delimiter that ends its line gets to say it.

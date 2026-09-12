@@ -4564,9 +4564,27 @@ holds only the current milestone and the standing rules.
   checks, 533 tests in 18 suites, 83 unchanged, twenty-two
   warnings, 188 tags). Milestone "the half you remember"
   COMPLETE.
+- 1108: replenishment — milestone "the line that continues"
+  (v2.168), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - a continuation line inside an unclosed `(` or `[` indents one
+    level whether or not the opener ended its line: today `print(a,`
+    then `b);` puts `b` in the column `print` is in. One rule about
+    crossing a line break, innermost delimiter only, so every file
+    that hangs its opener today keeps the layout it has
+  - a statement continued by a trailing operator indents one level
+    until its `;` — `let total = 1 +` then `2 +` then `3;` — once
+    per statement, and not a second level where a delimiter already
+    indented that line
+  - reflow what the corpus and the docs' snippets gain, and rewrite
+    the rules in src/fmt.rs's header comment and in the formatter
+    paragraph of docs/reference.md
+  - release v2.168.0
+  - verify v2.168.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
