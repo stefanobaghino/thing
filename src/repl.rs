@@ -608,6 +608,21 @@ fn two_columns(pairs: &[(&str, &str)]) -> Vec<String> {
         .collect()
 }
 
+/// The meta-commands, with what each one takes after it: an unknown
+/// `:command` is answered against this list rather than handed to the
+/// parser, which would only report that it found a `:`.
+const COMMANDS: [(&str, &str); 9] = [
+    (":doc", "NAME"),
+    (":vars", ""),
+    (":load", "FILE"),
+    (":time", "EXPR"),
+    (":fmt", ""),
+    (":history", ""),
+    (":save", "FILE"),
+    (":clear", ""),
+    (":help", ""),
+];
+
 /// `:help` — every builtin's signature and one-liner, in name order.
 fn print_help() {
     let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
@@ -787,6 +802,24 @@ fn run_inner() -> ExitCode {
                     }
                 }
                 Err(why) => eprintln!("ting: cannot read {path:?}: {why}"),
+            }
+            continue;
+        }
+        // A fresh chunk that opens with a colon is a meta-command, so the
+        // REPL answers for it: the parser would only report that it found
+        // a `:`, which is true and no help at all.
+        if buffer.is_empty()
+            && let Some(rest) = line.trim().strip_prefix(':')
+        {
+            let name = rest.split_whitespace().next().unwrap_or("");
+            let full = format!(":{name}");
+            match COMMANDS.iter().find(|(c, _)| *c == full) {
+                Some((_, "")) => say(&format!("({full} takes nothing after it)")),
+                Some((_, takes)) => say(&format!("({full} needs one: {full} {takes})")),
+                None => match diag::nearest(&full, COMMANDS.iter().map(|(c, _)| *c)) {
+                    Some(near) => say(&format!("(no command {full} — did you mean {near}?)")),
+                    None => say(&format!("(no command {full} — :help lists them)")),
+                },
             }
             continue;
         }

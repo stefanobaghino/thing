@@ -63,7 +63,10 @@ prints the elapsed milliseconds; `:fmt` reprints the last evaluated
 chunk as the formatter would write it; `:history` lists every chunk
 that ran without error, numbered; `:save <file>` writes those chunks
 as a script that replays the session; and `:clear` resets the
-session and the transcript. It has no built-in line editing or
+session and the transcript. A colon that opens a chunk is the
+REPL's to answer, not the parser's: a name it does not have names the
+nearest of the nine, and one of the nine given the wrong thing says
+what it takes. It has no built-in line editing or
 up-arrow recall (zero dependencies); wrap it with
 [rlwrap](https://github.com/hanslub42/rlwrap) — `rlwrap ting` — for
 both.

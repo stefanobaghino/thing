@@ -1457,6 +1457,43 @@ fn json_str_reports_cycles_as_errors() {
     let _ = std::fs::remove_file(&path);
 }
 
+/// A colon that opens a fresh chunk is the REPL's to answer: a name it
+/// does not have suggests the nearest command, a command given without
+/// its argument (or with one it does not take) says what it takes, and
+/// none of it reaches the parser, which would only report a `:`.
+#[test]
+fn repl_answers_a_command_it_does_not_have() {
+    use std::io::Write as _;
+    let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+        .expect("failed to spawn repl");
+    child
+        .stdin
+        .take()
+        .unwrap()
+        .write_all(b":vras\n:tim 1 + 1\n:xyzzy\n:load\n:help now\nlet x = 1;\n:vars\n")
+        .unwrap();
+    let out = child.wait_with_output().unwrap();
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    for expected in [
+        "(no command :vras — did you mean :vars?)",
+        "(no command :tim — did you mean :time?)",
+        "(no command :xyzzy — :help lists them)",
+        "(:load needs one: :load FILE)",
+        "(:help takes nothing after it)",
+        "x: 1",
+    ] {
+        assert!(stdout.contains(expected), "{expected}\n{stdout}");
+    }
+    // The parser never saw any of it.
+    let stderr = String::from_utf8_lossy(&out.stderr);
+    assert!(!stderr.contains("found ':'"), "{stderr}");
+    assert_eq!(out.status.code(), Some(0));
+}
+
 /// `:history` lists every chunk that evaluated without error, numbered,
 /// multi-line chunks indented under their number; a chunk that failed
 /// is left out, and `:clear` empties the transcript.

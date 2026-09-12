@@ -28781,3 +28781,34 @@ Not findings, recorded so they are not chased: `:fmt` after a chunk
 that did not parse reprints that chunk's error, which is the answer
 to why it cannot format it; and `:save` separating chunks with a
 blank line is what makes the saved file readable.
+
+## 1087 — a colon the REPL does not know
+
+The parser answered `:typo` because nothing else did: every
+meta-command was an exact-match `if` in `run_inner`, and a line that
+matched none of them fell through to `buffer.push_str(&line)` and got
+compiled. `expected expression, found ':'` is a true sentence about a
+program nobody wrote.
+
+The nine commands now sit in one `COMMANDS` table in src/repl.rs, each
+with what it takes after it, and a fall-through at the end of the
+chain answers any fresh chunk that opens with a colon: a name the
+table does not have goes through `diag::nearest`, the same machinery
+that already turns `:doc lenn` into `did you mean len?`; a name the
+table does have arrived with the wrong thing after it, so it says what
+it takes. `:vras` finds `:vars`, `:tim 1 + 1` finds `:time`, `:load`
+alone says it needs a file, `:help now` says it takes nothing, and
+`:xyzzy` — one edit from nothing — is told that `:help` lists them.
+All of it in the parenthetical voice the REPL already uses for
+`(nothing evaluated yet)`, on stdout, because none of it is the
+program's output.
+
+Three mutations, all killed by `repl_answers_a_command_it_does_not
+_have` in tests/io.rs: taking the whole rest of the line as the
+command name instead of the first word, folding the takes-nothing
+answer into the needs-one answer, and throwing away the suggestion.
+The test also asserts stderr never says `found ':'`, which is the
+thing that was wrong.
+
+The table is the seam for the next stroke: `:help` can lead with it
+instead of burying the nine under 79 builtins.
