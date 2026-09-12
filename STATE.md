@@ -4510,10 +4510,14 @@ holds only the current milestone and the standing rules.
 - v2.165.0 VERIFIED (186th tag; strokes 1087, 1088, 1089; both
   aarch64 archives executed here, a session piped into the shipped
   binary saying all three new answers, ten paths 200).
+- 1092: health tick — eleven checksums identical to BASELINE,
+  four sweeps ok, counts all standing (79 builtins, 13 modules,
+  231 functions, 50 programs, 3098 checks, 529 tests in 18
+  suites, 83 unchanged, twenty-two warnings, 186 tags).
+  Milestone "the REPL's own words" COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

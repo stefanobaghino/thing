@@ -28919,3 +28919,42 @@ EMPTY — the session says what it has to say on its own output now.
 Site audit: all ten published paths 200. changelog.html carries
 v2.165.0 and reference.html the sentence about what goes on which
 stream.
+
+## 1092 — health tick, milestone "the REPL's own words" complete
+
+Maintenance: tree clean, no open PRs, CI green for cf5cd79 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE. Every timing is 10–35% above it, uniformly, at load
+4.0–6.6 — which is the shape of a loaded host, not of a regression:
+a regression does not slow the tree-walker and the VM by the same
+fraction on eleven unrelated scripts at once. Checksums decide;
+timings are weather.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 231 module functions, 24
+selftest files, 26 examples each with a .out, 3098 selftest checks on
+both engines, 529 Rust tests in 18 suites, `--fmt .` 83 unchanged,
+corpus at twenty-two warnings, 186 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+Three strokes, the shortest milestone in a long while, and the reason
+is in 1087: the first stroke needed a list of the nine commands to
+answer against, so it made one — and the second stroke, which had
+been written down as its own piece of work, became a dozen lines
+rendering that list. The seam was not planned; it was the cheapest
+way to do the first job honestly.
+
+What the three had in common is that none of them changed what the
+REPL can do. Every command worked before and works the same now. What
+changed is who answers: the parser, `:doc` and the binary's startup
+were speaking for a session that was perfectly able to speak for
+itself. That is a category of finding the probe only reaches by being
+a user — reading the source would have shown nine correct `if`s and
+no bug at all.
+
+Replenishment next.
