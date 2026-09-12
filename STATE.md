@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3010 selftest checks on all four
-  CI platforms, Windows included); 490 Rust tests
+  CI platforms, Windows included); 491 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4319,12 +4319,12 @@ holds only the current milestone and the standing rules.
 - 1023: `--doc json_str` shows its indent argument, and a docs guard
   reads every builtin's arity out of src/eval.rs and checks the
   documented signature covers it. 490 tests.
+- 1024: `--doc` takes a phrase — words next to each other and in
+  order, joined with `_` against a name, so "how many" finds
+  count_lines and "sort by" finds sort_by. 491 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--doc` answers a phrase: "how many" should find lib/fs.ting's
-    count_lines, whose text begins with it. The search already
-    ignores case, so it is the space that loses it.
   - release v2.157.0
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

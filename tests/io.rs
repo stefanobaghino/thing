@@ -2897,6 +2897,15 @@ fn repl_doc_searches_exactly_as_the_flag_does() {
     assert!(!flag.contains("matching list:"), "{flag}");
     assert_eq!(flag, repl, "the flag and the REPL disagree");
 
+    // A phrase, which is how a reader asks about something they
+    // cannot name: the words must sit together and in order.
+    let (flag, repl) = both("how many");
+    assert!(flag.starts_with("matching how many:\n"), "{flag}");
+    assert!(flag.contains("count_lines(p)"), "{flag}");
+    assert_eq!(flag, repl, "the flag and the REPL disagree");
+    let (flag, _) = both("many how");
+    assert!(!flag.contains("count_lines(p)"), "{flag}");
+
     // A word that neither names nor describes anything: the REPL says
     // so on stdout and the flag on stderr, so only the suggestion is
     // comparable. 826 gave `top` the word "frequency", which used to

@@ -26834,3 +26834,36 @@ assertion, and the last is the one that makes the other three worth
 trusting.
 
 490 tests.
+
+## 1024 — a phrase is a question too
+
+Milestone "the answer it already has", third stroke. `--doc times`
+found lib/string.ting's `repeat` and lib/list.ting's `membership`
+through their text; `--doc "how many"` found nothing, though
+lib/fs.ting's `count_lines` begins "How many lines a file has". The
+search matched a query against WORDS of a comment — a word starting
+with the query — and no word of anything has a space in it, so a
+phrase could only ever miss. Case was never the problem: `KEYS` and
+`Times` both worked.
+
+Several words are now a phrase. They have to sit next to each other,
+in that order, each starting a word of the text: "how many" finds
+count_lines, display_width and each_line; "how often" finds
+lib/list.ting's `frequencies`; "many how" finds nothing, which is the
+point of a phrase. Against a NAME the words are joined with an
+underscore, since that is the same phrase in ting's spelling, so
+`--doc "sort by"` answers `sort_by`.
+
+One word behaves exactly as it did — any substring of a name, any
+word of a comment starting with it — and a query of nothing but
+spaces finds nothing rather than everything.
+
+A unit test beside the matcher covers the rules one at a time, and
+the CLI test that compares `--doc` with `:doc` asks both for a phrase
+too. Three mutations: matching the words anywhere rather than in a
+run, dropping the name's underscore spelling, and dropping the empty
+guard. The second PASSED at first — my example comment said "sorted
+by key", so the text matched and the name never had to — and the
+check now uses a comment that says nothing like the phrase.
+
+491 tests.

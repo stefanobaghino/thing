@@ -1298,7 +1298,11 @@ The `ting` binary is the whole toolchain — no separate installs:
   every entry whose name contains it, or whose comment uses a word
   starting with it, listed the way a module's members are — so
   `ting --doc largest` finds `max_by` and `lib/map.ting`'s
-  `top`. ONE word that IS a function is answered in full and then
+  `top`. Quote several words and they are a PHRASE: they must sit
+  next to each other and in that order, each starting a word, so
+  `ting --doc "how many"` finds `count_lines`, whose comment begins
+  with it. Against a name the words are joined the way ting spells a
+  phrase, so `ting --doc "sort by"` finds `sort_by`. ONE word that IS a function is answered in full and then
   told what else mentions it — the names alone, grouped by where
   they live, since `--doc sort` should not leave `sort_with`
   unmentioned, and spelling out all forty-four entries that say the

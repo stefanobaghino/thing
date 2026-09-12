@@ -460,14 +460,47 @@ fn doc_entries() -> Vec<(&'static str, String, String, String)> {
 /// so `sort` finds `sort_with`. A comment matches only where a WORD
 /// of it starts with the query, so `len` finds "length" and not
 /// "silently", and `sort` finds "sorted" and "sorting".
+///
+/// Several words are a phrase: they must sit next to each other, in
+/// that order, each starting a word — "how many" finds lib/fs.ting's
+/// count_lines, which begins with it. A phrase is how a reader asks
+/// about something they cannot name, and until 1024 it found nothing
+/// at all. Against a NAME the words are joined with an underscore,
+/// since that is the same phrase in ting's spelling: "sort by" finds
+/// `sort_by`.
 fn doc_matches(query: &str, name: &str, comment: &str) -> bool {
-    if name.to_lowercase().contains(query) {
+    let words: Vec<&str> = query.split_whitespace().collect();
+    let [word] = words[..] else {
+        return doc_phrase_matches(&words, name, comment);
+    };
+    if name.to_lowercase().contains(word) {
         return true;
     }
     comment
         .to_lowercase()
         .split(|c: char| !c.is_alphanumeric())
-        .any(|word| word.starts_with(query))
+        .any(|w| w.starts_with(word))
+}
+
+/// A phrase against one entry: the name with the words joined as it
+/// would spell them, or a run of the comment's words each starting
+/// with the query's.
+fn doc_phrase_matches(words: &[&str], name: &str, comment: &str) -> bool {
+    if words.is_empty() {
+        return false;
+    }
+    if name.to_lowercase().contains(&words.join("_")) {
+        return true;
+    }
+    let text: Vec<&str> = comment
+        .split(|c: char| !c.is_alphanumeric())
+        .filter(|w| !w.is_empty())
+        .collect();
+    text.windows(words.len()).any(|run| {
+        run.iter()
+            .zip(words)
+            .all(|(w, query)| w.to_lowercase().starts_with(query))
+    })
 }
 
 /// `--doc TEXT` and `:doc TEXT` searching for TEXT rather than
@@ -826,6 +859,39 @@ mod tests {
         // Ten words fit: 6 of indent, then ten sixes and nine spaces.
         assert_eq!(lines[0].split_whitespace().count(), 10, "{lines:?}");
         assert_eq!(crate::width::width(&lines[0]), 75, "{lines:?}");
+    }
+
+    /// A phrase is how a reader asks about something they cannot
+    /// name. The words have to sit together and in order, each
+    /// starting a word of the text, and against a name they are the
+    /// same phrase written ting's way.
+    #[test]
+    fn a_doc_query_of_several_words_is_a_phrase() {
+        let comment = "How many lines a file has, without ever holding it.";
+        assert!(doc_matches("how many", "count_lines", comment));
+        assert!(doc_matches("how man", "count_lines", comment), "prefixes");
+        assert!(!doc_matches("many how", "count_lines", comment), "in order");
+        assert!(
+            !doc_matches("how lines", "count_lines", comment),
+            "together"
+        );
+        assert!(!doc_matches("how many words", "count_lines", comment));
+        // The name, spelt the way ting spells a phrase.
+        // The comment here says nothing like the phrase: the name is
+        // what has to answer, and it spells the space as `_`.
+        assert!(doc_matches("sort by", "sort_by", "A fresh list, in order."));
+        assert!(!doc_matches(
+            "sort by",
+            "sort_with",
+            "A fresh list, in order."
+        ));
+        // One word is what it always was: any substring of the name,
+        // or a word of the text starting with it.
+        assert!(doc_matches("sort", "sort_with", "nothing to see"));
+        assert!(doc_matches("hold", "count_lines", comment));
+        assert!(!doc_matches("olding", "count_lines", comment));
+        // Nothing but spaces finds nothing rather than everything.
+        assert!(!doc_matches("   ", "count_lines", comment));
     }
 
     #[test]

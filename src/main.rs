@@ -59,7 +59,8 @@ fn run_cli() -> ExitCode {
                  \x20   [--fail-fast]             stop after the first failing file (the rest are skipped)\n\
                  \x20   [--watch]                 run again whenever a watched file changes (Ctrl-C stops)\n\
                  \x20 ting --doc [WORDS...]       explain builtins or stdlib functions;\n\
-                 \x20                             a word naming none of them is searched for;\n\
+                 \x20                             a word naming none of them is searched for,\n\
+                 \x20                             and several quoted words are a phrase;\n\
                  \x20                             a word naming one is also told what else mentions it;\n\
                  \x20                             a module or a .ting file lists its members,\n\
                  \x20                             no word lists all\n\
