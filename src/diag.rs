@@ -248,8 +248,22 @@ pub fn no_member<'a>(
         return format!("{module} has no `{key}` (`{key}` is a builtin)");
     }
     let names: Vec<&str> = exports.into_iter().collect();
-    if let Some(n) = nearest(key, names.iter().copied()) {
-        return format!("{module} has no `{key}` (did you mean `{n}`?)");
+    // A near miss inside the module wins a tie — it is the thing
+    // being indexed — but a builtin that is closer wins outright: the
+    // stdlib leaves file IO and the rest to the builtins, so a reader
+    // who goes looking in lib/fs.ting for `write` is one name away
+    // from `write_file` and no distance at all from the module.
+    let export = nearest(key, names.iter().copied());
+    let builtin = nearest(key, crate::value::Builtin::ALL.iter().map(|b| b.name()));
+    match (&export, &builtin) {
+        (Some(e), Some(b)) if distance(key, b) < distance(key, e) => {
+            return format!("{module} has no `{key}` (did you mean the builtin `{b}`?)");
+        }
+        (Some(e), _) => return format!("{module} has no `{key}` (did you mean `{e}`?)"),
+        (None, Some(b)) => {
+            return format!("{module} has no `{key}` (did you mean the builtin `{b}`?)");
+        }
+        (None, None) => {}
     }
     // No near miss: a reader who guessed wrong has nowhere to go from
     // the name alone, so the module says what it does have. A short
@@ -335,6 +349,37 @@ fn distance(a: &str, b: &str) -> usize {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The stdlib leaves whole jobs to the builtins, so the name a
+    /// reader guessed at inside a module is often one of those.
+    #[test]
+    fn a_builtin_nearer_than_any_export_is_named_as_a_builtin() {
+        let fs = ["with_ext", "base", "size"];
+        assert_eq!(
+            no_member("lib/fs.ting", "write", fs),
+            "lib/fs.ting has no `write` (did you mean the builtin `write_file`?)"
+        );
+        // An export that is nearer wins, and so does one that ties:
+        // the module is what the reader was indexing.
+        assert_eq!(
+            no_member("lib/list.ting", "medain", ["median", "map"]),
+            "lib/list.ting has no `medain` (did you mean `median`?)"
+        );
+        assert_eq!(
+            no_member("lib/x.ting", "prin", ["prinx"]),
+            "lib/x.ting has no `prin` (did you mean `prinx`?)"
+        );
+        // An exact builtin still beats every guess.
+        assert_eq!(
+            no_member("lib/list.ting", "len", ["lens"]),
+            "lib/list.ting has no `len` (`len` is a builtin)"
+        );
+        // Nothing near in either place keeps the sentence 1046 wrote.
+        assert_eq!(
+            no_member("lib/fs.ting", "zzqqxx", fs),
+            "lib/fs.ting has no `zzqqxx` (it has `base`, `size`, `with_ext`)"
+        );
+    }
 
     /// A key a module does not have, with no near miss to offer: what
     /// the module DOES have is the only help left, and a long module

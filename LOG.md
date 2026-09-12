@@ -27806,3 +27806,25 @@ is found at a `]` and "type annotation" would be a wrong answer to a
 real question. With that in the table the mutation is caught, and the
 slice keeps the plain message it deserves until somebody writes the
 entry for it.
+
+## 1055 — the name was a builtin all along
+
+The probe's other stop, and the last stroke of the milestone.
+`fs["write"]` answered with twenty names and the `--doc` command —
+1046 working exactly as written — when the answer was one name away:
+the builtin `write_file`. no_member looked in the builtins only for
+an EXACT match, so a reader off by a suffix was sent to read a module
+that was never going to have it.
+
+Both sets are now searched, and the nearer name wins. A tie goes to
+the module, which is what the reader indexed. `fs["reed_file"]` finds
+`read_file`, `l["lenght"]` finds `len`, and `l["medain"]` still finds
+`median`, because an export one edit away beats a builtin three away.
+The exact-builtin sentence stays in front of both, and the names-and-
+count sentence stays behind them for a guess that is nobody's near
+miss.
+
+Three mutations, all caught: the tie handed to the builtin, a builtin
+offered only when an export was there too, and the exact-match branch
+deleted — that last one took two tests down with it, which is what a
+first line should do.

@@ -1179,8 +1179,9 @@ The `ting` binary is the whole toolchain — no separate installs:
   name, when one does, and the nearest name in scope otherwise;
   an imported module
   indexed with a name it does not export, naming the builtin of that
-  name where there is one, the nearest export where there is one of
-  those, and otherwise what the module DOES have — every name when
+  name where there is one, then whichever is nearer of the closest
+  export and the closest builtin — a tie goes to the module, since
+  that is what was indexed — and otherwise what the module DOES have — every name when
   there are eight or fewer, and how many there are plus the `--doc`
   command that prints them when there are more; a top-level binding that
   is never used — prefix the name with `_` to opt out; a file made
