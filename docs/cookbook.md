@@ -1207,10 +1207,10 @@ let spec = {
 let opts = cli["main"](spec, args());
 
 let sample = "region,rep,amount\n" +
-"north,\"Smith, J\",120\n" +
-"south,Okafor,340\n" +
-"north,\"O\"\"Neill\",95\n" +
-"south,Tanaka,210\n";
+  "north,\"Smith, J\",120\n" +
+  "south,Okafor,340\n" +
+  "north,\"O\"\"Neill\",95\n" +
+  "south,Tanaka,210\n";
 
 let rows = [];
 let files = opts["positionals"]["file"];

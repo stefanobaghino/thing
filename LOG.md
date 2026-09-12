@@ -29585,3 +29585,45 @@ the innermost (the closure-as-argument case catches it), a level per
 line break instead of one per delimiter (the three-line call catches
 it), and restoring the old "the opener ends its line" condition (the
 new case catches it).
+
+## 1110 — the line an operator left unfinished
+
+1109 indented what a delimiter holds open. Nothing held this open:
+
+    let total = 1 +
+    2 +
+    3;
+
+so `2` read as a statement of its own. An operator at the end of a
+line is a promise that the line is not finished, and it is the last
+TOKEN of the line — visible to a pass that never parses.
+
+`unfinished` in src/fmt.rs names the tokens a line cannot end on: the
+arithmetic, comparison, logical and bitwise operators, the compound
+assignments, `=`, `!`, `.` and `:`. `,` is deliberately not among
+them — a list written one item per line ends every line on a comma,
+and the `[` that holds it has already set the level. The level is
+taken once per statement, not once per line it spans, and given back
+at the `;`, the `,`, or a brace either way.
+
+Two rules now compete for the same line break, and the loser has to
+stand down. Inside a delimiter the delimiter sets the level, so
+`print(f(a) +` / `g(b) +` / `h);` indents both continuation lines by
+one and not the second by two: the operator rule fires only where the
+innermost thing open is a brace or nothing at all. That is also what
+makes a map behave — a `{` takes its level at the opener and is not a
+delimiter that sets the level for what follows, so `"a":` alone on
+its line indents its value, and the `,` gives it back before `"b"`.
+
+One corpus file gained the indentation: examples/report.ting, whose
+sample CSV is four string literals joined by `+` down the left
+margin. docs/cookbook.md embeds it and was regenerated.
+
+Four mutations, all killed: a level per line rather than per
+statement (the three-line sum catches it), `,` counted as unfinished
+and the release at `,` removed (the map catches both), and the
+operator rule firing inside a delimiter too (the `print` case catches
+it). The third anchor had to be rewritten before it applied — `cargo
+fmt` had collapsed the match arm the script was matching on, and the
+run printed the PREVIOUS mutation's result, which is the same trap as
+1104: check the anchor, not the output.

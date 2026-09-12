@@ -149,6 +149,44 @@ fn needs_space(prev: &TokenKind, prev2: Option<&TokenKind>, cur: &TokenKind) -> 
     }
 }
 
+/// Tokens a line cannot end on. An operator promises the statement
+/// goes on, so the line after it is a continuation even with no
+/// delimiter open around it. `,` is not one of them: a list one item
+/// per line is already indented by the `[` that holds it.
+fn unfinished(kind: &TokenKind) -> bool {
+    use TokenKind::*;
+    matches!(
+        kind,
+        Plus | Minus
+            | Star
+            | Slash
+            | Percent
+            | PlusEq
+            | MinusEq
+            | StarEq
+            | SlashEq
+            | PercentEq
+            | Eq
+            | EqEq
+            | BangEq
+            | Lt
+            | LtEq
+            | Gt
+            | GtEq
+            | Bang
+            | AmpAmp
+            | PipePipe
+            | Amp
+            | Pipe
+            | Caret
+            | Tilde
+            | Shl
+            | Shr
+            | Dot
+            | Colon
+    )
+}
+
 /// Format ting source. Errors only if the source doesn't lex. A source
 /// with CRLF line endings formats to CRLF, so a Windows checkout is
 /// neither "unformatted" nor rewritten to LF by --fmt.
@@ -170,15 +208,29 @@ fn format_lf(src: &str) -> Result<String, LexError> {
     // Open delimiters, innermost last. A brace's map-or-block is
     // decided from the token before `{`: expression positions mean a map.
     let mut opens: Vec<Open> = Vec::new();
+    // Set when a line ended on an operator and the next one took a
+    // level for it: one per statement, given back where it ends.
+    let mut cont = false;
 
     for (piece, newlines) in pieces.iter() {
         if *newlines > 0 && !out.is_empty() {
-            // The line continues whatever delimiter is open around it.
-            if let Some(Open::Delim(crossed)) = opens.last_mut()
-                && !*crossed
-            {
-                *crossed = true;
-                depth += 1;
+            // The line continues whatever delimiter is open around it,
+            // or, with nothing open, the operator the last one ended on.
+            match opens.last_mut() {
+                // Inside a delimiter the delimiter sets the level, so a
+                // second line of one expression is not indented twice.
+                Some(Open::Delim(crossed)) => {
+                    if !*crossed {
+                        *crossed = true;
+                        depth += 1;
+                    }
+                }
+                _ => {
+                    if !cont && prev.as_ref().is_some_and(unfinished) {
+                        cont = true;
+                        depth += 1;
+                    }
+                }
             }
             out.push('\n');
             if *newlines >= 2 {
@@ -222,6 +274,15 @@ fn format_lf(src: &str) -> Result<String, LexError> {
                     }
                 }
                 out.push_str(&src[span.start..span.end]);
+                if cont
+                    && matches!(
+                        kind,
+                        TokenKind::Semi | TokenKind::Comma | TokenKind::LBrace | TokenKind::RBrace
+                    )
+                {
+                    cont = false;
+                    depth = depth.saturating_sub(1);
+                }
                 match kind {
                     TokenKind::LBrace => {
                         depth += 1;
@@ -314,6 +375,41 @@ mod tests {
         assert_eq!(
             format("foo({\n\"a\": 1,\n});").unwrap(),
             "foo({\n  \"a\": 1,\n});\n"
+        );
+    }
+
+    #[test]
+    fn a_line_an_operator_left_unfinished_is_indented() {
+        assert_eq!(
+            format("let total = 1 +\n2 +\n3;").unwrap(),
+            "let total = 1 +\n  2 +\n  3;\n"
+        );
+        // One level for the statement, not one per line it spans.
+        assert_eq!(
+            format("if a &&\nb {\nc();\n}").unwrap(),
+            "if a &&\n  b {\n  c();\n}\n"
+        );
+        // Inside a delimiter the delimiter has set the level already.
+        assert_eq!(
+            format("print(f(a) +\ng(b) +\nh);").unwrap(),
+            "print(f(a) +\n  g(b) +\n  h);\n"
+        );
+        // A `,` ends its own line legitimately: one item per line is
+        // indented by the `[` that holds it and nothing more.
+        assert_eq!(
+            format("let xs = [1,\n2,\n3];").unwrap(),
+            "let xs = [1,\n  2,\n  3];\n"
+        );
+        // A map's `{` is not a delimiter that sets the level, so a
+        // value on its own line is a continuation, given back at the `,`.
+        assert_eq!(
+            format("let m = {\n\"a\":\n1,\n\"b\": 2,\n};").unwrap(),
+            "let m = {\n  \"a\":\n    1,\n  \"b\": 2,\n};\n"
+        );
+        // The operator is the last TOKEN of the line, comment or not.
+        assert_eq!(
+            format("let x = 1 +  # why\n2;").unwrap(),
+            "let x = 1 +  # why\n  2;\n"
         );
     }
 
