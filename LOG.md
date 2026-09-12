@@ -27363,3 +27363,25 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.159.0 — the 180th tag — and pushed. Verification is the
 next tick.
+
+## 1040 — v2.159.0 verified
+
+Release workflow green for the tag; CI and Pages green for 717a74b
+from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.159.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3010
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo: `--check` on
+`len()` warns `` `len` takes 1 argument, called with 0 ``; on
+`format("{:.1f}", 1.0)` it prints the decimal-places sentence the run
+prints; and a shadowed `args` called as a function reads `map is not
+callable (`args` shadows the builtin of that name)` from both
+engines.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.159.0 and reference.html the shadowed-builtin sentence.

@@ -4361,11 +4361,11 @@ holds only the current milestone and the standing rules.
   callable (`args` shadows the builtin of that name)`, from both
   engines, reading the module's own source inside one. 505 tests.
 - 1039: v2.159.0 tagged (180th tag; strokes 1036, 1037, 1038).
+- v2.159.0 VERIFIED (180th tag; strokes 1036, 1037, 1038; both
+  aarch64 archives executed here).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.159.0 cold: seven assets, `sha256sum -c`, both aarch64
-    archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
@@ -4457,7 +4457,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 180 (v2.159.0), 179 verified; v2.29.0 is publicly marked broken
+- Tags: 180 (v2.159.0), 180 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):
