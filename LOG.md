@@ -26867,3 +26867,29 @@ by key", so the text matched and the name never had to — and the
 check now uses a comment that says nothing like the phrase.
 
 491 tests.
+
+## 1025 — release v2.157.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for 563c93b from the API, no stray fs tree in the root.
+
+v2.157.0, the milestone "the answer it already has". Replenishment at
+1021 went looking for questions the toolchain could answer out of what
+it already holds and was not answering. It carries thirteen stdlib
+modules and would not say which one exports the name a script had just
+used (1022). It knows every builtin's arity and printed a signature an
+argument short of it (1023). It holds every doc comment and could only
+be asked one word at a time (1024). No new fact was needed for any of
+the three — only that a fact already in the binary reach the person
+asking for it.
+
+Strokes 1022, 1023, 1024. CHANGELOG.md written from those entries;
+Cargo.toml and Cargo.lock at 2.157.0; the binary reports `ting
+2.157.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (491
+tests), `--fmt .` 81 unchanged, corpus at seventeen, 3010 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.157.0 — the 178th tag — and pushed. Verification is the
+next tick.

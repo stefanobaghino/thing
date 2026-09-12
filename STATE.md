@@ -4322,10 +4322,13 @@ holds only the current milestone and the standing rules.
 - 1024: `--doc` takes a phrase — words next to each other and in
   order, joined with `_` against a name, so "how many" finds
   count_lines and "sort by" finds sort_by. 491 tests.
+- 1025: v2.157.0 tagged (178th tag; strokes 1022, 1023, 1024).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.157.0
+  - verify v2.157.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4416,7 +4419,7 @@ holds only the current milestone and the standing rules.
   fragile — fifty thousand levels of nested list parse from JSON,
   build in a loop and print without trouble. Only call frames are
   capped.
-- Tags: 177 (v2.156.0), 177 verified; v2.29.0 is publicly marked broken
+- Tags: 178 (v2.157.0), 177 verified; v2.29.0 is publicly marked broken
   (its Linux binaries needed glibc 2.39).
 
 Standing rules (each from a slip; the LOG entry named has the story):

@@ -5,6 +5,28 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.157.0 (2026-09-12)
+
+- **A name the stdlib has is answered with the module that has it.**
+  A script that calls `frequencies` without importing anything now
+  reads `undefined variable 'frequencies' (lib/list.ting has it)` — at
+  run time, from `--check`, and in the editor. The binary carries
+  thirteen modules and knew all along which one exports the name; what
+  it offered instead was the nearest misspelling, which is no help
+  when the spelling was right and the import was missing.
+- **`--doc json_str` shows the argument it was hiding.** The entry
+  said `json_str(v)` while the builtin has taken an indent since
+  v2.2.0. A docs guard now reads every builtin's arity out of
+  src/eval.rs and fails when the documented signature covers fewer
+  arguments than the arm accepts, so no other signature can drift out
+  of date quietly.
+- **`--doc` can be asked a phrase.** Several words must sit next to
+  each other and in order, each starting a word, and are joined with
+  `_` when matched against a name: `--doc "how many"` finds
+  `count_lines` and `display_width`, `--doc "sort by"` finds
+  `sort_by`, and `--doc "many how"` finds nothing. A single word
+  searches exactly as it always did.
+
 ## v2.156.0 (2026-09-12)
 
 - **A child can be told where to run.** `run`'s third argument is
