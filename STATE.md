@@ -4349,10 +4349,22 @@ holds only the current milestone and the standing rules.
   modules, 214 functions, 48 programs, 3010 checks, 496 tests in 18
   suites, 81 unchanged, seventeen warnings, 179 tags). Milestone "the
   phrasebook" COMPLETE.
+- 1035: replenishment — milestone "what the checker could have said"
+  (v2.159), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone
+  - `--check` counts the arguments of a call to a builtin, the way it
+    already does for a script's own functions and for the stdlib it
+    follows; the arities become data both the run and the checker read
+  - `--check` reads a literal format template and says at check time
+    what `format` says at run time
+  - a run that stops on a value that is not callable says when the
+    name shadows a builtin, which the checker already warns about
+  - release v2.159.0
+  - verify v2.159.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

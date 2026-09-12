@@ -27177,3 +27177,45 @@ difference between being told the rule and being told the line.
 Replenishment next, and the shelf is not empty: 1028 left a finding
 about the run and the checker knowing different things and neither
 borrowing from the other.
+
+## 1035 — replenishment: milestone "what the checker could have said"
+
+1028 left this on the shelf and it is the right thing to pick up: the
+CSV report tool stopped five times, once per run, on things `--check`
+found all five of in one pass. That is the checker being ahead of the
+run. This round is the other direction — the three places the checker
+is behind a run it could have predicted.
+
+**The checker counts arguments for every function but the builtins.**
+`fn f(a, b)` called with one argument warns; `sum_by` from
+lib/list.ting called with one argument warns, because the checker
+follows the import and reads the declaration. `len()` with none
+warns about nothing at all, and the run then says `len expects 1
+argument, got 0`. The builtins are the one set of names a checker can
+never be wrong about — they are fixed when the binary is built — and
+they are the set it does not check. Their arities are `arity(1, 1)?`
+calls inside match arms in src/eval.rs, which is data nothing can
+read: tests/docs.rs has been scraping them out of the source with a
+regex since 1023, for want of anywhere to ask.
+
+**A literal format template is never read until it runs.**
+`format("{:.1f}", 1.0)` is refused at run time, precisely and
+helpfully — `` `1f` is not a number of decimal places `` — and
+`--check` says nothing, though the template is a string literal and
+the arguments are counted at the call site. Four different mistakes
+are decidable there: a spec that is not one, a decimal count that is
+not a number, more placeholders than arguments, and fewer.
+
+**A run that stops has no idea what the checker would have said.**
+`let args = import("lib/args.ting")` then `args()` answers `map is
+not callable`, which is true and useless; `--check` on the same file
+says `` `args` shadows a builtin ``, which is the whole story. The
+binary holds both sentences and prints the less useful one.
+
+NOT CHOSEN: making a failing run print the checker's whole report, or
+suggesting `--check` in an error. Both are a change to what running a
+program does, and the first two strokes remove the reason for it —
+the point is to move the knowledge, not to bolt the checker onto the
+runtime.
+
+Milestone "what the checker could have said" (v2.159): three strokes.
