@@ -28114,3 +28114,37 @@ and that the two numbers are separate. At 3.0 it takes one round.
 The bound is written twice at each site, in the call and in the
 assertion. The pairing is in the helper's own comment: the number
 passed in is the number asserted against.
+
+## 1065 — release v2.162.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+99aeec6 from the API (full sha).
+
+v2.162.0, the milestone "a time that isn't ISO". lib/time.ting could
+read and write ISO 8601 and nothing else, and almost nothing outside
+a database writes ISO 8601. It now reads and writes a stamp in a
+shape STATED — in the strftime codes the tools that print those
+stamps are already described by.
+
+1060 put the month and weekday names in, both directions and in the
+short form logs use. 1061 is `parse`, which answers nil when the text
+does not match and fails when the pattern names a code nobody
+defined, and takes the fields a pattern never mentions from a
+defaults map — the syslog year. 1062 is `text`, its inverse over the
+same codes, named the way csv names its own, with an offset argument
+that makes `%z` mean something. 1063 is examples/stamps.ting, where
+an access log and a syslog line go in and an instant comes out.
+
+1064 is not in the changelog: it is the timing guards learning to
+spend rounds on a busy host rather than fail on one.
+
+Strokes 1060, 1061, 1062, 1063, 1064. CHANGELOG.md written from those
+entries; Cargo.toml and Cargo.lock at 2.162.0; the binary reports
+`ting 2.162.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (523
+tests), `--fmt .` 82 unchanged, corpus at twenty-two, 3074 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.162.0 — the 183rd tag — and pushed. Verification is the
+next tick.

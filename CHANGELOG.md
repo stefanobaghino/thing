@@ -5,6 +5,33 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.162.0 (2026-09-12)
+
+- **A timestamp in the shape the world writes it.** `lib/time.ting`
+  read ISO 8601 and nothing else, and almost nothing outside a
+  database writes ISO 8601. `parse(s, pattern)` reads a stamp in a
+  shape stated with the strftime codes those tools are already
+  described by — `%d/%b/%Y:%H:%M:%S` is an access log, `%b %e
+  %H:%M:%S` is syslog — with `%F`, `%T` and `%D` as shorthands and a
+  space matching a run of them, because syslog pads the day. Text
+  that does not match answers `nil`, the way `from_iso` does; a code
+  nobody defined fails, because the pattern is the program's own.
+  Fields the pattern never names come from a `defaults` map, which is
+  how a syslog line with no year is read without guessing one.
+- **And the same shape, written.** `text(ms, pattern)` is `parse`'s
+  inverse over the same codes, named the way `lib/csv.ting` names its
+  own. Its third argument shifts the instant east of UTC before it is
+  written and is what `%z` writes, so a stamp written at an offset
+  reads back to the instant it came from.
+- **Months and weekdays by name.** `month_name`, `month_number`,
+  `weekday_number` and a `short` form for `weekday_name`: the
+  three-letter names logs and mail headers write, read back either
+  case, and the tables the pair above reads.
+- **An access log and a syslog line, end to end.**
+  `examples/stamps.ting` takes the stamp out of each, does arithmetic
+  on what comes back, and writes one instant in four shapes; the
+  unreadable line in it is named and skipped.
+
 ## v2.161.0 (2026-09-12)
 
 - **A value that depends on a condition.** ting's `if` is a statement,
