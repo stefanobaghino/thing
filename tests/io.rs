@@ -1979,8 +1979,10 @@ fn doc_output_fits_eighty_columns() {
     assert!(stdout.lines().count() >= 3, "{stdout}");
 }
 
+/// `:help` answers with the commands, each with what it takes: they
+/// are what a session asks `:help` for, and `:doc` has the builtins.
 #[test]
-fn repl_help_lists_builtins() {
+fn repl_help_leads_with_the_commands() {
     use std::io::Write as _;
     let mut child = Command::new(env!("CARGO_BIN_EXE_ting"))
         .stdin(Stdio::piped())
@@ -1995,8 +1997,24 @@ fn repl_help_lists_builtins() {
         .unwrap();
     let out = child.wait_with_output().unwrap();
     let stdout = String::from_utf8_lossy(&out.stdout);
-    assert!(stdout.contains("abs(n)"), "{stdout}");
-    assert!(stdout.contains("json_str(v)"), "{stdout}");
+    for command in [
+        ":doc NAME",
+        ":vars ",
+        ":load FILE",
+        ":time EXPR",
+        ":fmt ",
+        ":history ",
+        ":save FILE",
+        ":clear ",
+        ":help ",
+        "(:doc alone lists every builtin and stdlib function; ctrl-d exits)",
+    ] {
+        assert!(stdout.contains(command), "{command}\n{stdout}");
+    }
+    // Not the 79 builtins on top of them.
+    assert!(!stdout.contains("abs(n)"), "{stdout}");
+    assert!(!stdout.contains("json_str(v)"), "{stdout}");
+    assert!(stdout.lines().count() < 20, "{stdout}");
     // The session keeps working after :help.
     assert!(stdout.contains("\n2\n"), "{stdout}");
     assert_eq!(out.status.code(), Some(0));
@@ -2200,10 +2218,10 @@ fn broken_pipe_exits_quietly() {
         .unwrap()
         .write_all(":help\n".repeat(200).as_bytes())
         .unwrap();
-    let mut first = [0u8; 3];
+    let mut first = [0u8; 4];
     child.stdout.take().unwrap().read_exact(&mut first).unwrap();
     let out = child.wait_with_output().unwrap();
-    assert_eq!(&first, b"abs");
+    assert_eq!(&first, b":doc");
     assert!(out.status.success(), "status: {:?}", out.status);
     assert!(
         out.stderr.is_empty(),

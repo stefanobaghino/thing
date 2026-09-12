@@ -4499,12 +4499,12 @@ holds only the current milestone and the standing rules.
 - 1087: a fresh chunk that opens with a colon is answered by the
   REPL, not the parser — the COMMANDS table in src/repl.rs and
   `diag::nearest`, the machinery `:doc` already uses.
+- 1088: `:help` prints the nine and points at `:doc` for the 79
+  builtins — the COMMANDS table gained the one-liner column, so
+  the two readers of it cannot drift apart.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `:help` leads with those nine; the builtins stay where `:doc`
-    already puts them, instead of burying the commands under 79
-    entries
   - `:load` and `:save` report a file they cannot open in the
     session's voice, not the binary's startup voice
   - release v2.165.0

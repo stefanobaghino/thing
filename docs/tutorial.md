@@ -1503,7 +1503,7 @@ pipe it data — not both.
 Everything else ships in the same binary:
 
 - The REPL (`ting` with no arguments) keeps state across lines;
-  `:help` lists the builtins, `:doc median` explains one function
+  `:help` lists the commands, `:doc median` explains one function
   (builtin or stdlib), `:load somefile.ting` pulls a script's
   definitions into your session to poke at them, `:vars` shows what
   you have bound, `:time EXPR` says how long a line took, `:fmt`

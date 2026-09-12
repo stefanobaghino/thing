@@ -28812,3 +28812,29 @@ thing that was wrong.
 
 The table is the seam for the next stroke: `:help` can lead with it
 instead of burying the nine under 79 builtins.
+
+## 1088 — `:help` says what a session asks it
+
+`:help` printed all 79 builtins, then the nine commands in one
+parenthesis at the bottom. The one thing a person types `:help` in a
+REPL to learn was a hundred lines down, and everything above it was
+already `:doc`'s answer.
+
+So `:help` now prints the nine, each with what it takes after it, and
+ends by pointing at `:doc` for the builtins. The rows come from the
+same COMMANDS table 1087 added, which is what made this a small
+change: the table gained a third column, the one-liner, and the two
+readers of it — `:help` and the unknown-command answer — stay in step
+by construction. There is no separate list to drift.
+
+Two tests changed rather than broke, which is the honest shape of a
+behaviour change: `repl_help_lists_builtins` became
+`repl_help_leads_with_the_commands` and asserts the nine signatures,
+the pointer at `:doc`, that `abs(n)` and `json_str(v)` are NOT there,
+and fewer than twenty lines; `broken_pipe_exits_quietly` reads the
+first bytes of `:help` to close the pipe under it, and those are now
+`:doc` rather than `abs`.
+
+Three mutations, all killed: dropping the argument from a signature,
+replacing the `:doc` pointer with a bare `ctrl-d exits`, and printing
+the builtins after the commands anyway.

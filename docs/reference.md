@@ -52,7 +52,7 @@ echoed to be read, and `range(100000)` is 688890 characters that
 would take the session's scrollback with them. `print(x)` writes the
 whole value, in the REPL as in a script, and a program's own output
 never passes through that cut. Nine meta-commands:
-`:help` lists every builtin with its doc line; `:doc NAME` explains
+`:help` lists the nine with what each takes; `:doc NAME` explains
 one builtin or stdlib function (module, signature, comment), `:doc
 MODULE` lists a module's members and `:doc` alone the whole table of
 contents, as `--doc` does; `:vars` lists the session's own bindings

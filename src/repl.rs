@@ -611,28 +611,58 @@ fn two_columns(pairs: &[(&str, &str)]) -> Vec<String> {
 /// The meta-commands, with what each one takes after it: an unknown
 /// `:command` is answered against this list rather than handed to the
 /// parser, which would only report that it found a `:`.
-const COMMANDS: [(&str, &str); 9] = [
-    (":doc", "NAME"),
-    (":vars", ""),
-    (":load", "FILE"),
-    (":time", "EXPR"),
-    (":fmt", ""),
-    (":history", ""),
-    (":save", "FILE"),
-    (":clear", ""),
-    (":help", ""),
+const COMMANDS: [(&str, &str, &str); 9] = [
+    (
+        ":doc",
+        "NAME",
+        "one builtin or stdlib function; a module name lists its members",
+    ),
+    (":vars", "", "the session's own bindings, with their values"),
+    (":load", "FILE", "run a file here, keeping what it defines"),
+    (
+        ":time",
+        "EXPR",
+        "evaluate one line and report the milliseconds",
+    ),
+    (
+        ":fmt",
+        "",
+        "reprint the last chunk as the formatter writes it",
+    ),
+    (
+        ":history",
+        "",
+        "the chunks that ran without error, numbered",
+    ),
+    (
+        ":save",
+        "FILE",
+        "write those chunks as a script that replays this",
+    ),
+    (":clear", "", "forget the bindings and the transcript"),
+    (":help", "", "this list"),
 ];
 
-/// `:help` — every builtin's signature and one-liner, in name order.
+/// `:help` — the commands, which is what a session asks `:help` for.
+/// The 79 builtins are a hundred lines that would bury them, and
+/// `:doc` already has them.
 fn print_help() {
-    let mut docs: Vec<_> = crate::value::Builtin::ALL.iter().map(|b| b.doc()).collect();
-    docs.sort();
-    for line in two_columns(&docs) {
+    let sigs: Vec<String> = COMMANDS
+        .iter()
+        .map(|(name, takes, _)| match takes.is_empty() {
+            true => (*name).to_string(),
+            false => format!("{name} {takes}"),
+        })
+        .collect();
+    let rows: Vec<(&str, &str)> = sigs
+        .iter()
+        .zip(COMMANDS.iter())
+        .map(|(sig, (_, _, what))| (sig.as_str(), *what))
+        .collect();
+    for line in two_columns(&rows) {
         say(&line);
     }
-    say(
-        "(:doc NAME explains a builtin or stdlib function, :doc MODULE lists a module, :doc alone lists everything; :vars bindings; :load <file> runs a file here; :time EXPR evaluates and reports milliseconds; :fmt reprints the last chunk formatted; :history lists the chunks that ran without error; :save <file> writes them as a script; :clear resets; ctrl-d exits)",
-    );
+    say("(:doc alone lists every builtin and stdlib function; ctrl-d exits)");
 }
 
 fn run_inner() -> ExitCode {
@@ -813,10 +843,10 @@ fn run_inner() -> ExitCode {
         {
             let name = rest.split_whitespace().next().unwrap_or("");
             let full = format!(":{name}");
-            match COMMANDS.iter().find(|(c, _)| *c == full) {
-                Some((_, "")) => say(&format!("({full} takes nothing after it)")),
-                Some((_, takes)) => say(&format!("({full} needs one: {full} {takes})")),
-                None => match diag::nearest(&full, COMMANDS.iter().map(|(c, _)| *c)) {
+            match COMMANDS.iter().find(|(c, _, _)| *c == full) {
+                Some((_, "", _)) => say(&format!("({full} takes nothing after it)")),
+                Some((_, takes, _)) => say(&format!("({full} needs one: {full} {takes})")),
+                None => match diag::nearest(&full, COMMANDS.iter().map(|(c, _, _)| *c)) {
                     Some(near) => say(&format!("(no command {full} — did you mean {near}?)")),
                     None => say(&format!("(no command {full} — :help lists them)")),
                 },
