@@ -4494,6 +4494,23 @@ holds only the current milestone and the standing rules.
   functions, 50 programs, 3098 checks, 527 tests in 18 suites, 83
   unchanged, twenty-two warnings, 185 tags). Milestone "the file you
   hand over" COMPLETE.
+- 1086: replenishment — milestone "the REPL's own words" (v2.165),
+  reasoning in LOG.md.
+- Backlog (one per tick, in order; NEVER numbered — hand-numbering
+  left a stale "(3)" twice, in 735 and 743, when the item above it
+  was struck out):
+  - an unknown `:command` is answered by the REPL, naming the
+    nearest of the nine — today the parser says `expected
+    expression, found ':'`
+  - `:help` leads with those nine; the builtins stay where `:doc`
+    already puts them, instead of burying the commands under 79
+    entries
+  - `:load` and `:save` report a file they cannot open in the
+    session's voice, not the binary's startup voice
+  - release v2.165.0
+  - verify v2.165.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

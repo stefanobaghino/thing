@@ -28744,3 +28744,40 @@ process, not product, which is worth noticing: the tools that say
 whether the work is good are part of the work.
 
 Replenishment next.
+
+## 1086 — replenishment: milestone "the REPL's own words"
+
+The probe was the REPL, cold from the shipped v2.164.0 archive, fed
+by a pipe: bindings, a sort, `:help`, `:doc`, `:vars`, `:history`,
+`:save`, `:fmt`, `:clear`, a continuation line, an error, and a few
+typos.
+
+Most of it is in good shape and some of it is better than expected.
+A chunk ending mid-expression waits for the next line and runs the
+two together. A failed chunk leaves the session's bindings alone and
+stays out of `:history`, so `:save` writes a script that runs.
+`:doc` searches the text of every doc string, so `:doc sorted` finds
+the functions that mention sorting, and `:doc lenn` says `did you
+mean len?` — the suggestion I went looking for was already there, and
+my first probe simply asked about a name with no near match.
+
+Three things do not answer in the REPL's own voice.
+
+`:typo` is answered by the PARSER: `expected expression, found ':'`,
+pointing at the colon. A line starting with a colon is unmistakably
+somebody reaching for a command, and the REPL knows all nine of them.
+
+`:help` prints all 79 builtins and puts its own nine commands in a
+parenthesis at the bottom, a hundred lines down. The one thing a
+person types `:help` in a REPL to find out is the last thing it says.
+
+`:load` and `:save` report a file they cannot open as `ting: cannot
+read "x"` — the voice the binary uses when a script named on the
+command line is missing, before any session exists. Inside a session
+every other answer is either a diagnostic with `repl:LINE:COL` on it
+or a parenthetical, and these two are neither.
+
+Not findings, recorded so they are not chased: `:fmt` after a chunk
+that did not parse reprints that chunk's error, which is the answer
+to why it cannot format it; and `:save` separating chunks with a
+blank line is what makes the saved file readable.
