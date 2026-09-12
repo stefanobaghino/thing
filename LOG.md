@@ -28547,3 +28547,20 @@ Worth keeping: the Windows target in the gate is `cargo check` and
 `clippy`, so it sees what compiles, not what passes. A test that
 names a resolved path is exactly the kind that compiles everywhere
 and passes in one place.
+
+## 1079 — and the backslashes were doubled
+
+1078's fix was wrong in a way only Windows could show: the message
+prints the resolved path with `{:?}`, which escapes each separator,
+so folding `\` to `/` turned `lib\\nope.ting` into `lib//nope.ting`
+and the match failed a second time.
+
+The assertion no longer names a path. It matches the last component,
+which carries no separator on any platform, and asks separately —
+with the separators folded, where a doubled one is harmless — whether
+the resolved path went under `lib/`. The two cases in the loop differ
+by that answer, so the one that resolves there is still pinned.
+
+The rule in STATE was rewritten rather than added to: a test must not
+match a resolved path inside a message at all. Two red CIs for one
+assertion is the evidence.

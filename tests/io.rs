@@ -4319,7 +4319,7 @@ fn bundle_refuses_an_import_that_names_nothing() {
             ),
         ],
     );
-    for (file, path) in [("miss.ting", "nope.ting"), ("under.ting", "lib/nope.ting")] {
+    for (file, under) in [("miss.ting", false), ("under.ting", true)] {
         let out = ting(&[std::path::Path::new("--bundle"), &dir.join(file)]);
         assert_eq!(out.status.code(), Some(1), "{file}");
         assert!(out.stdout.is_empty(), "{file} wrote a bundle anyway");
@@ -4328,12 +4328,19 @@ fn bundle_refuses_an_import_that_names_nothing() {
             err.starts_with(&format!("{file}:1:9: error: cannot bundle: no file at ")),
             "{err}"
         );
-        // The path is the one the platform resolved, so Windows
-        // writes it with backslashes and a \\?\ in front of it.
+        // The path in the message is the one the PLATFORM resolved,
+        // printed with {:?} — so on Windows every separator in it is
+        // a backslash and every backslash is written twice. The last
+        // component carries none, and a directory is asked about with
+        // the separators folded rather than matched.
         assert!(
-            err.replace('\\', "/")
-                .contains(&format!("{path}\", and no embedded module of that name")),
+            err.contains("nope.ting\", and no embedded module of that name"),
             "{err}"
+        );
+        assert_eq!(
+            err.replace('\\', "/").contains("/lib/"),
+            under,
+            "the path under lib/ is the one that resolves there: {err}"
         );
     }
     let embedded = ting(&[std::path::Path::new("--bundle"), &dir.join("embedded.ting")]);

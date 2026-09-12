@@ -4474,6 +4474,8 @@ holds only the current milestone and the standing rules.
 - 1077: `--bundle` refuses an import naming neither a file nor an
   embedded module. 524 tests.
 - 1078: 1077's test asserted a path separator; Windows CI caught it.
+- 1079: and the fold was not enough — `{:?}` doubles the
+  backslashes. The assertion names the last component now.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4703,10 +4705,15 @@ Standing rules (each from a slip; the LOG entry named has the story):
   passes in no time having fuzzed nothing (700). A sweep's runtime is
   the comparison a sweep offers — 2000000 pattern cases take about
   3.0 s against 0.22 s for the default count.
-- A test that asserts a RESOLVED PATH must normalise separators
-  before matching: Windows writes `\` and a `\\?\` prefix, and the
-  gate's Windows target is `cargo check` and `clippy`, which see
-  what compiles rather than what passes (1078 cost a red CI).
+- A test must not match a RESOLVED PATH inside a message. Windows
+  writes separators as `\` with a `\\?\` prefix, and the message
+  prints the path with `{:?}`, so every one of those backslashes
+  is written TWICE — folding `\` to `/` then leaves `lib//x.ting`.
+  Match the last component instead, and fold separators only to
+  ask whether a directory is in there. The gate's Windows target
+  is `cargo check` and `clippy`, which see what compiles rather
+  than what passes, so this costs a red CI every time: 1078 and
+  1079, one after the other.
 - Periodic health ticks (bench vs bench/BASELINE.md — recorded on this
   host, eight rows since 696 — plus 50000 differential, crash and 20000 formatter
   fuzz cases in release) close every milestone.
