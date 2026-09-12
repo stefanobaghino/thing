@@ -1310,18 +1310,20 @@ The `ting` binary is the whole toolchain — no separate installs:
   holding state stays one module, a module two others import is
   inlined once and shared, and a module nothing asks for never runs
   (an `import` inside a branch not taken included). An import is inlined when its path names a
-  file and left alone when it does not — the order the interpreter
-  resolves in, filesystem first — so `import("lib/list.ting")` stays,
-  the binary answering it, which is what makes one file enough, while
-  a copy of that module sitting beside your script is inlined like any
-  other. What a bundle cannot keep identical is a program that prints
+  file and left alone when it names a module embedded in the binary —
+  the order the interpreter resolves in, filesystem first — so
+  `import("lib/list.ting")` stays, the binary answering it, which is
+  what makes one file enough, while a copy of that module sitting
+  beside your script is inlined like any other. What a bundle cannot keep identical is a program that prints
   where its own code sits: `try()` hands back a file and a line, and
-  in a bundle those are the bundle's. Three things are refused rather
+  in a bundle those are the bundle's. Four things are refused rather
   than guessed at, each named at the file, line and column of the
   import that could not be followed: a cycle, an `import` whose path
-  is not a literal string, and a module that returns from its own top
-  level — the bundle would hand back that value instead of the
-  module's map, and quietly. It takes a file and only a file: a
+  is not a literal string, an `import` whose path names neither a file
+  nor an embedded module — copying that one in would hand somebody
+  else a bundle that fails where it lands — and a module that returns
+  from its own top level, since the bundle would hand back that value
+  instead of the module's map, and quietly. It takes a file and only a file: a
   script's imports resolve against its own directory, and a script
   read from stdin has none. `-o FILE` writes the bundle there instead
   of to stdout, and refuses when FILE is one of the files that went

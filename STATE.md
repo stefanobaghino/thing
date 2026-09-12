@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 50 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 26 examples with .out; 3098 selftest checks on all four
-  CI platforms, Windows included); 523 Rust tests
+  CI platforms, Windows included); 524 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 83 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4471,12 +4471,11 @@ holds only the current milestone and the standing rules.
   COMPLETE.
 - 1076: replenishment — milestone "the file you hand over"
   (v2.164), reasoning in LOG.md.
+- 1077: `--bundle` refuses an import naming neither a file nor an
+  embedded module. 524 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--bundle` refuses a literal import that resolves to neither a
-    file nor an embedded module, the way it already refuses a
-    circular one — today it copies it in and exits 0
   - a bundle keeps the script's shebang as its first line, so the
     one artifact worth chmod +x stays executable
   - the timing guards measure thread CPU time where the platform

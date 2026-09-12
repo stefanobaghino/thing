@@ -28499,3 +28499,34 @@ time is what they mean; Linux has it in /proc.
 The bundle is checked, deterministic across runs, and refuses stdin
 with a sentence about where local imports resolve. Those stay as they
 are.
+
+## 1077 — a bundle that fails where it lands
+
+`import("nope.ting")` was copied into the bundle unchanged and
+`--bundle` exited 0. The sentence the program eventually gives is the
+right one; it arrives on somebody else's machine, hours after the
+mistake, about a file that was never there.
+
+The bundler resolves every import already — that is its whole job —
+and it refuses a cycle and a computed path at the import that caused
+them. An import naming neither a file nor a module embedded in the
+binary is the same kind of mistake, found in the same pass, and now
+refused the same way: no bundle on stdout and a 1.
+
+What had to keep working is the reason the rule is not simply "must
+be a file": `import("lib/list.ting")` is answered by the binary and
+must stay in the bundle, and `./lib/math.ting` is the same import
+spelled differently.
+
+The first mutation run left one alive: dropping the `./` strip
+changed nothing, because a path with `./` in front of an embedded
+name ends with `/name` and the suffix branch already catches it. The
+strip was dead code copied from the interpreter's version of the same
+rule. Deleting it made both branches pin — name-equality and suffix
+each fail a test now — which is a better outcome than writing a test
+for a line that did nothing.
+
+Four mutations, all caught: refusing every non-file, refusing
+nothing, and each half of the embedded rule.
+
+524 tests.

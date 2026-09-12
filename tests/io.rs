@@ -4301,6 +4301,50 @@ fn bundle_refuses_a_cycle_and_a_computed_path() {
     let _ = std::fs::remove_dir_all(&dir);
 }
 
+/// An import naming nothing at all was copied into the bundle and the
+/// bundler exited 0, so the mistake arrived on somebody else's
+/// machine as a run-time error. It is found where the other two are.
+/// What must keep working beside it: a name the binary answers, spelt
+/// plainly or with a `./` in front.
+#[test]
+fn bundle_refuses_an_import_that_names_nothing() {
+    let dir = tree(
+        "nothing",
+        &[
+            ("miss.ting", "let m = import(\"nope.ting\");\n"),
+            ("under.ting", "let m = import(\"lib/nope.ting\");\n"),
+            (
+                "embedded.ting",
+                "let a = import(\"lib/list.ting\");\nlet b = import(\"./lib/math.ting\");\nprint(a[\"sum\"]([1, 2]), b[\"gcd\"](8, 12));\n",
+            ),
+        ],
+    );
+    for (file, path) in [("miss.ting", "nope.ting"), ("under.ting", "lib/nope.ting")] {
+        let out = ting(&[std::path::Path::new("--bundle"), &dir.join(file)]);
+        assert_eq!(out.status.code(), Some(1), "{file}");
+        assert!(out.stdout.is_empty(), "{file} wrote a bundle anyway");
+        let err = String::from_utf8_lossy(&out.stderr);
+        assert!(
+            err.starts_with(&format!("{file}:1:9: error: cannot bundle: no file at ")),
+            "{err}"
+        );
+        assert!(
+            err.contains(&format!("{path}\", and no embedded module of that name")),
+            "{err}"
+        );
+    }
+    let embedded = ting(&[std::path::Path::new("--bundle"), &dir.join("embedded.ting")]);
+    assert_eq!(embedded.status.code(), Some(0));
+    let one = dir.join("one.ting");
+    std::fs::write(&one, &embedded.stdout).unwrap();
+    assert_eq!(
+        String::from_utf8_lossy(&ting(&[&one]).stdout),
+        "3 4\n",
+        "an embedded import has to survive bundling"
+    );
+    let _ = std::fs::remove_dir_all(&dir);
+}
+
 /// `--bundle` takes one file, and only a file: a script's imports
 /// resolve against its own directory, which stdin does not have.
 #[test]

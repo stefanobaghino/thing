@@ -18,13 +18,15 @@
 //! for it. Measured in iteration 722, which is why the shape changed.
 //!
 //! An import is inlined when its path names a file and left alone
-//! when it does not, which is the order the interpreter resolves in:
-//! filesystem first, and what has no file is a module embedded in the
-//! binary. So `import("lib/list.ting")` normally stays — the binary
-//! answers it, which is the whole reason one file is enough — while a
-//! copy of that module sitting beside the script is inlined like any
-//! other local module. Either way the bundle runs what the script
-//! ran.
+//! when it names an embedded module, which is the order the
+//! interpreter resolves in: filesystem first, and what has no file is
+//! a module embedded in the binary. So `import("lib/list.ting")`
+//! normally stays — the binary answers it, which is the whole reason
+//! one file is enough — while a copy of that module sitting beside
+//! the script is inlined like any other local module. Either way the
+//! bundle runs what the script ran. A path that is neither is
+//! refused, because the alternative is a bundle that fails where it
+//! lands.
 //!
 //! One difference the bundle cannot hide: a module runs in a fresh
 //! global environment, so a name it never defines is unbound there,
@@ -64,9 +66,23 @@ struct Import {
     target: Option<PathBuf>,
 }
 
+/// Whether the path names a module embedded in the binary, by the
+/// rule the interpreter follows once no file answers: the name as
+/// written, or any path ending in it. `./lib/list.ting` is the second
+/// case, not a third — which is why there is no leading `./` to strip
+/// here.
+fn is_embedded(path: &str) -> bool {
+    crate::eval::embedded_stdlib()
+        .iter()
+        .any(|(name, _)| path == *name || path.ends_with(&format!("/{name}")))
+}
+
 /// Every `import(...)` call in `src`. An import whose argument is not
 /// a literal string is refused rather than guessed at: the bundler
-/// cannot follow a path it will not see until the program runs.
+/// cannot follow a path it will not see until the program runs. One
+/// that names neither a file nor an embedded module is refused too:
+/// it would be copied into the bundle and fail on somebody else's
+/// machine, which is the right sentence at the wrong time.
 fn imports_of(display: &str, src: &str, dir: &Path) -> Result<Vec<Import>, String> {
     let tokens =
         lexer::lex(src).map_err(|e| crate::diag::render(display, src, &e.message, e.span))?;
@@ -95,8 +111,23 @@ fn imports_of(display: &str, src: &str, dir: &Path) -> Result<Vec<Import>, Strin
             ));
         };
         let target = resolve(dir, path);
+        let range = tokens[i].span.start..tokens[i + 3].span.end;
+        if !target.is_file() && !is_embedded(path) {
+            return Err(crate::diag::render(
+                display,
+                src,
+                &format!(
+                    "cannot bundle: no file at {:?}, and no embedded module of that name",
+                    target.display()
+                ),
+                lexer::Span {
+                    start: range.start,
+                    end: range.end,
+                },
+            ));
+        }
         out.push(Import {
-            range: tokens[i].span.start..tokens[i + 3].span.end,
+            range,
             target: target.is_file().then_some(target),
         });
     }
