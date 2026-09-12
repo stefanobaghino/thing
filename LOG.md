@@ -27142,3 +27142,38 @@ reads `a counted loop is `for i in range(n)``; and `i++` reads `write
 
 Site audit: all ten published paths 200. changelog.html carries
 v2.158.0 and reference.html the counted-loop sentence.
+
+## 1034 — health tick, milestone "the phrasebook" complete
+
+Maintenance: tree clean, no open PRs, CI green for 0043398 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row. A quiet host this time — load 0.12
+at the start — and every row within a few per cent of its baseline.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 214 module functions, 24
+selftest files, 24 examples each with a .out, 3010 selftest checks on
+both engines, 496 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at seventeen warnings, 179 tags all verified. Site audit: ten
+paths 200.
+
+The milestone is complete. A phrasebook was already there — a dozen
+entries in src/parser.rs that answer a habit from another language
+with the ting spelling — and the probe at 1028 found it by being
+carried through a first script on it. What this round added is the
+three places it fell silent or pointed the wrong way: the `.` before
+a call, which sent the commonest way of reaching the stdlib to a fix
+that does not work; `in`, a keyword the parser reads in every loop
+and would not explain outside one; and the C counted loop with its
+`i++`, where the parser named what it wanted instead of the loop that
+was meant. All three now name the words they read, which is the
+difference between being told the rule and being told the line.
+
+Replenishment next, and the shelf is not empty: 1028 left a finding
+about the run and the checker knowing different things and neither
+borrowing from the other.
