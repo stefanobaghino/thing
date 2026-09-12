@@ -41,11 +41,11 @@ fn selftests_pass_silently() {
 /// The whole corpus under `--check`: the warnings it may print are
 /// enumerated here, so a new false positive fails the build. Every one
 /// is deliberate — three shadowed builtins, a duplicate key, a
-/// statement after a return, eleven unbound names and a wrong-arity
-/// call — and
+/// statement after a return, eleven unbound names and six
+/// wrong-arity calls — and
 /// each was written to test the runtime that catches it.
 #[test]
-fn corpus_check_warnings_are_the_expected_seventeen() {
+fn corpus_check_warnings_are_the_expected_twenty_two() {
     let root = Path::new(env!("CARGO_MANIFEST_DIR"));
     let out = Command::new(env!("CARGO_BIN_EXE_ting"))
         .arg("--check")
@@ -56,7 +56,7 @@ fn corpus_check_warnings_are_the_expected_seventeen() {
     assert_eq!(out.status.code(), Some(0), "the corpus must check clean");
     let stderr = String::from_utf8_lossy(&out.stderr);
     let warnings: Vec<&str> = stderr.lines().filter(|l| l.contains("warning:")).collect();
-    assert_eq!(warnings.len(), 17, "{stderr}");
+    assert_eq!(warnings.len(), 22, "{stderr}");
     // File names only: Windows prints the paths with backslashes. A
     // file's warnings come in the order its lines do.
     let expected = [
@@ -67,9 +67,21 @@ fn corpus_check_warnings_are_the_expected_seventeen() {
         // 830: the selftest that proves a shadowed `range` beats the
         // fused counting loop has to shadow one to do it.
         ("collections.ting", "`range` shadows a builtin"),
+        // 1036: the checker counts a call to a builtin now, and the
+        // selftests that prove the runtime's arity errors call three
+        // of them wrongly on purpose.
+        (
+            "collections.ting",
+            "`fingerprint` takes 1 argument, called with 0",
+        ),
+        (
+            "collections.ting",
+            "`compare` takes 2 arguments, called with 1",
+        ),
         ("edge.ting", "shadows a builtin"),
         ("edge.ting", "duplicate key `a`"),
         ("edge.ting", "can never run"),
+        ("edge.ting", "`cwd` takes 0 arguments, called with 1"),
         ("errors.ting", "`totl` is bound nowhere"),
         ("errors.ting", "`amonut` is bound nowhere"),
         ("errors.ting", "`volme` is bound nowhere"),
@@ -110,6 +122,14 @@ fn corpus_check_warnings_are_the_expected_seventeen() {
             "`parse` is bound nowhere (lib/args.ting, lib/csv.ting and lib/json.ting have it)",
         ),
         ("functions.ting", "called with 1"),
+        (
+            "strings.ting",
+            "`display_width` takes 1 argument, called with 0",
+        ),
+        (
+            "time.ting",
+            "`local_zone` takes 0 to 1 arguments, called with 2",
+        ),
     ];
     for (i, (file, phrase)) in expected.iter().enumerate() {
         assert!(

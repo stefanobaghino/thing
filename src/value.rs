@@ -578,6 +578,82 @@ impl Builtin {
         Builtin::Compare,
     ];
 
+    /// How many arguments this builtin accepts: the fewest, and the
+    /// most when there is a most. The evaluator enforces the same
+    /// numbers from inside each arm, where they are a guard rather
+    /// than a fact anything else can read; here they are the fact,
+    /// so the checker can count a call to `len` the way it already
+    /// counts a call to a function the script declared. A test holds
+    /// the two together by reading the arms out of src/eval.rs.
+    pub fn arity(self) -> (usize, Option<usize>) {
+        match self {
+            Self::Args | Self::Cwd | Self::MonoMs | Self::Random | Self::TimeMs => (0, Some(0)),
+            Self::Exit | Self::Input | Self::LocalZone => (0, Some(1)),
+            Self::EPrint | Self::Print => (0, None),
+            Self::Abs
+            | Self::Bin
+            | Self::Chr
+            | Self::Env
+            | Self::Exists
+            | Self::Fail
+            | Self::Fingerprint
+            | Self::Float
+            | Self::Hex
+            | Self::Import
+            | Self::Int
+            | Self::IsDir
+            | Self::Items
+            | Self::JsonParse
+            | Self::Keys
+            | Self::Len
+            | Self::ListDir
+            | Self::Lower
+            | Self::MakeDir
+            | Self::Max
+            | Self::Min
+            | Self::Ord
+            | Self::RemoveDir
+            | Self::RemoveFile
+            | Self::Seed
+            | Self::SleepMs
+            | Self::Sort
+            | Self::Stat
+            | Self::Str
+            | Self::Trim
+            | Self::Type
+            | Self::Upper
+            | Self::Values
+            | Self::Width => (1, Some(1)),
+            Self::Assert | Self::JsonStr | Self::Pop | Self::ReadFile => (1, Some(2)),
+            Self::Range | Self::Run => (1, Some(3)),
+            Self::Format | Self::Try => (1, None),
+            Self::Compare
+            | Self::Contains
+            | Self::CopyFile
+            | Self::EndsWith
+            | Self::Filter
+            | Self::Find
+            | Self::Has
+            | Self::Join
+            | Self::Map
+            | Self::Push
+            | Self::RandomInt
+            | Self::ReFind
+            | Self::ReFindAll
+            | Self::ReSplit
+            | Self::ReTest
+            | Self::Rename
+            | Self::SortBy
+            | Self::SortWith
+            | Self::Split
+            | Self::StartsWith => (2, Some(2)),
+            Self::EachLine | Self::WriteFile => (2, Some(3)),
+            Self::Get | Self::ReReplace | Self::Reduce | Self::Replace | Self::Slice => {
+                (3, Some(3))
+            }
+        }
+    }
+
     /// Signature and one-line summary, shown by the LSP on hover.
     pub fn doc(self) -> (&'static str, &'static str) {
         match self {

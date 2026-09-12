@@ -27219,3 +27219,43 @@ the point is to move the knowledge, not to bolt the checker onto the
 runtime.
 
 Milestone "what the checker could have said" (v2.159): three strokes.
+
+## 1036 — the checker counts a call to a builtin
+
+First stroke of "what the checker could have said". `--check` counted
+the arguments of a call to a function the file declared, and of a call
+through a module it imported, and said nothing about `len()`. The
+builtins are the one set of names a checker cannot be wrong about —
+they are fixed when the binary is built — and they were the set it
+did not count.
+
+The arities were `arity(1, 1)?` calls inside match arms in
+src/eval.rs: a guard, not a fact anything could read. `Builtin::arity`
+in src/value.rs is that fact now, ten grouped arms covering all 79,
+and `arity_mismatches_in` seeds the checker's table with it. The
+evaluator still enforces its own numbers where it always did; a test
+in tests/docs.rs reads the arms out of src/eval.rs with the regex
+that has been there since 1023 and fails if the two disagree, and it
+names the five arms no `arity` call describes — print, eprint, format,
+try and range — so the table cannot quietly leave one out.
+
+A file that binds the name takes it back: `let len = {}` means `len`
+is a map here, `let len = fn(a, b)` means the file's own function
+answers, and a `let` inside anything puts the name beyond this pass
+as it always did.
+
+The corpus went from seventeen warnings to TWENTY-TWO, and every one
+of the five is a selftest calling a builtin wrongly on purpose to
+prove the runtime's own arity error: fingerprint with none, compare
+with one, cwd with one, display_width with none, local_zone with two.
+The first count I wrote was twenty — I had read the diff the test
+printed rather than the whole corpus, and two files further down the
+alphabet were not in it. Counting the output settled it.
+
+Five mutations, all caught: the seeding removed, the seeding applied
+to bound names too, top-level `let` no longer taking a name back, and
+two wrong numbers in the table (which fail both the checker's test
+and the guard against the arms).
+
+docs/reference.md says a builtin is counted too, and that a file that
+binds the name takes it back.

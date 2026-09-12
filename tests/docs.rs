@@ -723,22 +723,61 @@ fn every_module_opens_with_the_function_its_page_leads_with() {
     );
 }
 
-/// Every builtin's documented signature against the arity its arm
-/// accepts. `json_str(v, 2)` pretty-prints, and for a long time the
-/// entry the binary printed was `json_str(v)`: the reference and the
-/// tutorial both knew about the second argument, and the one place a
-/// reader asks from the terminal did not (1021). The arities are read
-/// out of the source, because that is where they are — a table beside
-/// the docs would be a second thing to keep true.
+/// `Builtin::arity` against the arity its arm enforces. The table is
+/// what the checker counts a call against (1036); the arms are what
+/// the run enforces. Two places holding the same numbers is one place
+/// too many unless something fails when they disagree.
 #[test]
-fn every_builtin_signature_covers_the_arguments_its_arm_takes() {
+fn every_builtin_arity_matches_the_arm_that_enforces_it() {
     let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
     let src = std::fs::read_to_string(root.join("src/eval.rs")).expect("src/eval.rs");
-    // `Builtin::Name => {` (or two names sharing an arm), then the
-    // first `arity(lo, hi)` before the next arm begins.
+    let arms = arities_from_arms(&src);
+    assert!(
+        arms.len() >= 70,
+        "only {} arities read out of src/eval.rs",
+        arms.len()
+    );
+    let mut checked = 0;
+    for b in ting::value::Builtin::ALL {
+        let Some(&(lo, hi)) = arms.get(&format!("{b:?}")) else {
+            continue;
+        };
+        assert_eq!(
+            b.arity(),
+            (lo, Some(hi)),
+            "{} takes {lo} to {hi} arguments in its arm",
+            b.name()
+        );
+        checked += 1;
+    }
+    assert!(checked >= 70, "only {checked} builtins checked");
+    // The five the regex cannot see take any number of arguments from
+    // a floor, or a range no `arity` call states, so they are named
+    // here with what their arms actually do.
+    for (name, want) in [
+        ("print", (0, None)),
+        ("eprint", (0, None)),
+        ("format", (1, None)),
+        ("try", (1, None)),
+        ("range", (1, Some(3))),
+    ] {
+        let b = ting::value::Builtin::ALL
+            .into_iter()
+            .find(|b| b.name() == name)
+            .expect("a builtin by that name");
+        assert_eq!(b.arity(), want, "{name}");
+        assert!(
+            !arms.contains_key(&format!("{b:?}")),
+            "{name} states arity()"
+        );
+    }
+}
+
+/// `Builtin::Name => {` (or two names sharing an arm), then the first
+/// `arity(lo, hi)` before the next arm begins.
+fn arities_from_arms(src: &str) -> std::collections::HashMap<String, (usize, usize)> {
     let mut arities: std::collections::HashMap<String, (usize, usize)> = Default::default();
-    let arms: Vec<&str> = src.split("            Builtin::").skip(1).collect();
-    for arm in arms {
+    for arm in src.split("            Builtin::").skip(1) {
         let Some(head) = arm.split(" =>").next() else {
             continue;
         };
@@ -765,6 +804,21 @@ fn every_builtin_signature_covers_the_arguments_its_arm_takes() {
             arities.insert(name, (lo, hi));
         }
     }
+    arities
+}
+
+/// Every builtin's documented signature against the arity its arm
+/// accepts. `json_str(v, 2)` pretty-prints, and for a long time the
+/// entry the binary printed was `json_str(v)`: the reference and the
+/// tutorial both knew about the second argument, and the one place a
+/// reader asks from the terminal did not (1021). The arities are read
+/// out of the source, because that is where they are — a table beside
+/// the docs would be a second thing to keep true.
+#[test]
+fn every_builtin_signature_covers_the_arguments_its_arm_takes() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let src = std::fs::read_to_string(root.join("src/eval.rs")).expect("src/eval.rs");
+    let arities = arities_from_arms(&src);
     // Every builtin that takes a fixed number of arguments is in the
     // table: a regex that quietly stopped matching would otherwise
     // make this test pass by checking nothing.

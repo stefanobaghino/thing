@@ -1141,11 +1141,13 @@ The `ting` binary is the whole toolchain — no separate installs:
   literal that gives the
   same string key twice, where the last one silently wins; a call
   whose argument count
-  cannot match the function called, whether that function is bound
-  once at the top level of this file or offered by a module this
-  file imported once — `st["truncate"]("x")` is counted against what
-  lib/string.ting declares, defaults making a range and `...rest` a
-  floor; a name that is bound nowhere
+  cannot match the function called, whether that function is a
+  builtin, bound once at the top level of this file, or offered by a
+  module this file imported once — `st["truncate"]("x")` is counted
+  against what lib/string.ting declares and `len()` against what the
+  builtin takes, defaults making a range and `...rest` a
+  floor; a file that binds the name itself takes it back, since
+  `len` is whatever that file made it; a name that is bound nowhere
   the checker can see — not a parameter, not a `let` in an enclosing
   block, not a builtin — with the stdlib module that exports that
   name, when one does, and the nearest name in scope otherwise;

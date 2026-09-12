@@ -956,6 +956,33 @@ fn arity_mismatches_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, 
     collect_rebindings(&program, true, &mut unsure);
     arities.names.retain(|name, _| !unsure.contains(name));
 
+    // The builtins are the one set of names a checker cannot be wrong
+    // about: they are fixed when the binary is built, and
+    // `Builtin::arity` is the same pair of numbers the arm enforces.
+    // A file that binds the name itself takes it back — `let len = {}`
+    // means `len` is a map here, whatever it is everywhere else —
+    // which is every top-level `let` as well as everything
+    // `collect_rebindings` already collected.
+    let mut bound: std::collections::HashSet<String> = unsure.clone();
+    for stmt in &program {
+        match &stmt.kind {
+            S::Let(name, _) => {
+                bound.insert(name.clone());
+            }
+            S::LetPattern(pattern, _) => {
+                let mut names = Vec::new();
+                pattern.names(&mut names);
+                bound.extend(names);
+            }
+            _ => {}
+        }
+    }
+    for b in crate::value::Builtin::ALL {
+        if !bound.contains(b.name()) {
+            arities.names.insert(b.name().to_string(), b.arity());
+        }
+    }
+
     // `let st = import("lib/string.ting");` makes every function that
     // module declares reachable as `st["name"]`, and what it declares
     // is read the same way this file's own functions are.
@@ -2887,6 +2914,58 @@ mod tests {
         );
         // A call inside the range says nothing at all.
         assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
+
+    /// A call to a builtin is counted against `Builtin::arity`, which
+    /// is the pair of numbers its arm enforces. These are the names a
+    /// checker can never be wrong about, and until 1036 they were the
+    /// ones it did not count.
+    #[test]
+    fn a_call_to_a_builtin_is_counted_too() {
+        let messages = |src: &str| -> Vec<String> {
+            arity_mismatches(src)
+                .into_iter()
+                .map(|(_, _, m)| m)
+                .collect()
+        };
+        assert_eq!(
+            messages("len();\n"),
+            vec!["`len` takes 1 argument, called with 0".to_string()]
+        );
+        assert_eq!(
+            messages("range(1, 2, 3, 4);\n"),
+            vec!["`range` takes 1 to 3 arguments, called with 4".to_string()]
+        );
+        // A floor and no ceiling, and a call that is simply right.
+        assert_eq!(
+            messages("format();\n"),
+            vec!["`format` takes at least 1 argument, called with 0".to_string()]
+        );
+        for src in ["print(1, 2, 3);\n", "len([1]);\n", "range(1, 5, 2);\n"] {
+            assert!(messages(src).is_empty(), "{src}");
+        }
+    }
+
+    /// A file that binds the name takes it back: `len` is whatever
+    /// that file made it, and a call is counted against that or
+    /// against nothing.
+    #[test]
+    fn a_bound_name_is_no_longer_the_builtin() {
+        let messages = |src: &str| -> Vec<String> {
+            arity_mismatches(src)
+                .into_iter()
+                .map(|(_, _, m)| m)
+                .collect()
+        };
+        // Bound to something that is not a function at all.
+        assert!(messages("let len = {};\nlen([1], 2);\n").is_empty());
+        // Bound to a function of the file's own, which answers instead.
+        assert_eq!(
+            messages("let len = fn(a, b) { return a; };\nlen(1);\n"),
+            vec!["`len` takes 2 arguments, called with 1".to_string()]
+        );
+        // Bound inside, which puts it beyond this pass entirely.
+        assert!(messages("fn f() { let len = 1; return len; }\nlen();\n").is_empty());
     }
 
     /// A rest parameter has no upper bound, and the hover says so the
