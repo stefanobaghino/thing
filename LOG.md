@@ -28708,3 +28708,39 @@ stdout.
 
 Site audit: all ten published paths 200. changelog.html carries
 v2.164.0 and reference.html the sentence about chmod +x.
+
+## 1085 — health tick, milestone "the file you hand over" complete
+
+Maintenance: tree clean, no open PRs, CI green for c79ccb8 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, and every timing within a few per cent of it at load
+4.7, which is the third reading in a row saying the same thing.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 231 module functions, 24
+selftest files, 26 examples each with a .out, 3098 selftest checks on
+both engines, 527 Rust tests in 18 suites, `--fmt .` 83 unchanged,
+corpus at twenty-two warnings, 185 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+The milestone is complete, and it is the first one in a while whose
+findings were all about the same blind spot: the bundle is the
+artifact, and everything around it was treated as output. An import
+that named nothing was copied in; a shebang was buried under a
+header. Both were found by using the tool as somebody who ships
+something would, not by reading its source.
+
+The other half of these six strokes was the loop's own instruments.
+Two red CIs for one assertion about a resolved path, and two more
+ticks moving the timing guards onto a clock that means work — the
+last of which needed a correction of its own, because a millisecond
+is below what that clock can divide. Four of six strokes were
+process, not product, which is worth noticing: the tools that say
+whether the work is good are part of the work.
+
+Replenishment next.
