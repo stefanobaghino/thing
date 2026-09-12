@@ -4535,10 +4535,16 @@ holds only the current milestone and the standing rules.
 - v2.166.0 VERIFIED (187th tag; strokes 1094, 1095, 1096, 1097;
   both aarch64 archives executed here, six names and one habit
   answered from the shipped binary, ten paths 200).
+- 1100: health tick — eleven checksums identical to BASELINE
+  (timings unusable at load 4.6–6.6: two consecutive runs put
+  the outliers on different rows), four sweeps ok, counts all
+  standing (79 builtins, 13 modules, 231 functions, 50 programs,
+  3098 checks, 531 tests in 18 suites, 83 unchanged, twenty-two
+  warnings, 187 tags). Milestone "the half you got right"
+  COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

@@ -29182,3 +29182,51 @@ nothing or said the wrong thing a milestone ago.
 
 Site audit: ten paths 200, none otherwise. changelog.html carries
 v2.166.0 and reference.html the sentence naming `list_sort`.
+
+## 1100 — health tick, milestone "the half you got right" complete
+
+Maintenance: tree clean, no open PRs, CI green for 8b65668 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE. The timings are unusable at this load — 4.6 to 6.6 on
+four cores — and the proof that they are weather rather than
+something the milestone did is that TWO consecutive runs disagree
+with each other and not with BASELINE: lists.ting read 1651 ms then
+511 ms, strings.ting 586 then 169, scan.ting 1556 then 2880, and the
+sign of the engine comparison flipped on rows where the VM is
+reliably faster. The outliers moved. Checksums decide, and nothing
+this milestone touched is reachable from a benchmark: `nearest` and
+the parser's hints run only once something has already failed.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 231 module functions, 24
+selftest files, 26 examples each with a .out, 3098 selftest checks on
+both engines, 531 Rust tests in 18 suites, `--fmt .` 83 unchanged,
+corpus at twenty-two warnings, 187 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+Four strokes, one of them a red CI to clean up after, and the
+milestone is the sharpest case yet for probing as a user rather than
+reading as an author. Every name in it — `to_float`, `array_len`,
+`to_string`, `list_median`, `string_upper`, `list_sort` — came out of
+writing a CLI from memory, and the machinery that answered them was
+not broken. It was complete for the mistake it was designed around
+(a misspelling) and blind to the one it was not (a name spelt the way
+another language spells names). Reading `nearest` would have shown a
+correct edit-distance search. Using it showed six names in one
+sitting that it had nothing to say about.
+
+The other half is the ranking: two of those six were answered WRONGLY
+rather than not at all, which is worse, and both came from a rule
+that accepted any distance as long as one name started the other.
+`Found` in src/diag.rs now says how an answer turned up, and that
+ranks before how far away it is. The lesson generalises past
+suggestions: when two rules can produce an answer, the order between
+the rules is part of the answer's meaning, and comparing their
+outputs by a number they don't share is how the wrong half wins.
+
+Replenishment next.
