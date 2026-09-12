@@ -4473,6 +4473,7 @@ holds only the current milestone and the standing rules.
   (v2.164), reasoning in LOG.md.
 - 1077: `--bundle` refuses an import naming neither a file nor an
   embedded module. 524 tests.
+- 1078: 1077's test asserted a path separator; Windows CI caught it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
@@ -4702,6 +4703,10 @@ Standing rules (each from a slip; the LOG entry named has the story):
   passes in no time having fuzzed nothing (700). A sweep's runtime is
   the comparison a sweep offers — 2000000 pattern cases take about
   3.0 s against 0.22 s for the default count.
+- A test that asserts a RESOLVED PATH must normalise separators
+  before matching: Windows writes `\` and a `\\?\` prefix, and the
+  gate's Windows target is `cargo check` and `clippy`, which see
+  what compiles rather than what passes (1078 cost a red CI).
 - Periodic health ticks (bench vs bench/BASELINE.md — recorded on this
   host, eight rows since 696 — plus 50000 differential, crash and 20000 formatter
   fuzz cases in release) close every milestone.

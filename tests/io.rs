@@ -4328,8 +4328,11 @@ fn bundle_refuses_an_import_that_names_nothing() {
             err.starts_with(&format!("{file}:1:9: error: cannot bundle: no file at ")),
             "{err}"
         );
+        // The path is the one the platform resolved, so Windows
+        // writes it with backslashes and a \\?\ in front of it.
         assert!(
-            err.contains(&format!("{path}\", and no embedded module of that name")),
+            err.replace('\\', "/")
+                .contains(&format!("{path}\", and no embedded module of that name")),
             "{err}"
         );
     }

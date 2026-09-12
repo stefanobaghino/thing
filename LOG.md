@@ -28530,3 +28530,20 @@ Four mutations, all caught: refusing every non-file, refusing
 nothing, and each half of the embedded rule.
 
 524 tests.
+
+## 1078 — the separator the gate cannot see
+
+CI failed on windows-latest for 1077, and the three gate targets did
+not catch it because the fault was in the TEST, not the code: it
+asserted that the refusal names `lib/nope.ting`, and Windows resolves
+that to `\\?\C:\...\lib\nope.ting`. The message is right on both
+platforms — it prints the path the platform resolved, which is what
+the run does too.
+
+The assertion now normalises separators before matching, with the
+reason written beside it. The message is untouched.
+
+Worth keeping: the Windows target in the gate is `cargo check` and
+`clippy`, so it sees what compiles, not what passes. A test that
+names a resolved path is exactly the kind that compiles everywhere
+and passes in one place.
