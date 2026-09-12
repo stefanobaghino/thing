@@ -54,6 +54,8 @@ current orientation.
    for it and CI stayed red from 837 for three ticks while two more
    commits went on top. A green local gate is a REASON to look at
    CI, not a substitute: four platforms run it and this host is one.
+   `gh run list --commit` wants the FULL sha: the short one matched
+   nothing for twenty-five minutes at 1047 and looked like a queue.
 2. One small verifiable stroke per tick (feature, docs, test, health
    check); before every push run what CI runs, in CI's own words —
    `cargo fmt --check`, `cargo clippy --all-targets -- -D warnings`,
@@ -4385,11 +4387,11 @@ holds only the current milestone and the standing rules.
   and `--doc` when there are more, the same from the checker and the
   run. 511 tests.
 - 1047: v2.160.0 tagged (181st tag; strokes 1043, 1044, 1045, 1046).
+- v2.160.0 VERIFIED (181st tag; strokes 1043, 1044, 1045, 1046; both
+  aarch64 archives executed here).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.160.0 cold: seven assets, `sha256sum -c`, both aarch64
-    archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it

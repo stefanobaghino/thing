@@ -27592,3 +27592,30 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.160.0 — the 181st tag — and pushed. Verification is the
 next tick.
+
+## 1048 — v2.160.0 verified
+
+Release workflow, CI and Pages all green for 494aed6 from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.160.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3013
+checks, 24 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo: `--check` on a
+file that records a check and never prints it warns `nothing prints
+these checks`; a file that failed a check and called `exit(0)` prints
+the FAIL line, says the file never called summary(), and exits 1; and
+an unknown member of lib/list.ting reads the same from the checker
+and from the run, naming the count and the --doc command.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.160.0, reference.html the summary()/reset() clause, stdlib.html
+the sentence about the checker saying so first.
+
+A note for the next release tick: the CI monitor was armed with the
+SHORT sha and `gh run list --commit` matched nothing for twenty-five
+minutes. The verdict came from a second call with the full sha. Only
+full shas from here.
