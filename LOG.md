@@ -27876,3 +27876,36 @@ ting has no type annotations; and `fs["write"]` finds `write_file`.
 
 Site audit: all ten published paths 200. changelog.html carries
 v2.161.0 and reference.html the new phrasebook entries.
+
+## 1058 — health tick, milestone "the rest of the phrasebook" complete
+
+Maintenance: tree clean, no open PRs, CI green for 0bdb608 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row. The host was coming down off a busy
+stretch — load 0.67 with a 15-minute average of 4.0 — and every row
+still reads within a few per cent of its baseline either way.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 215 module functions, 24
+selftest files, 24 examples each with a .out, 3013 selftest checks on
+both engines, 523 Rust tests in 18 suites, `--fmt .` 81 unchanged,
+corpus at twenty-two warnings, 182 tags all verified. Distribution:
+seven assets on each of the last two tags. Site audit: ten paths 200.
+
+The milestone is complete. The first phrasebook round (1029-1031)
+answered another language's WORDS — elif, def, and, not, f-strings,
+methods, `++`. This one answered its SHAPES, which is a harder thing
+for a parser to see: a value that is an `if`, a list that is a loop, a
+block that is a `try`, a name with a type after it. Four of the five
+are one sentence each and three of them drop the tokens they cannot
+read, which is the part that took the work — a borrowed shape used to
+cost two errors or five, and now costs one. The fifth, in diag, is
+the same idea one layer up: a reader who guessed a module member
+wrong is usually reaching for a builtin, and now gets told which.
+
+Replenishment next.
