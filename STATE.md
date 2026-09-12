@@ -4460,10 +4460,10 @@ holds only the current milestone and the standing rules.
   FOUND: the timing guards still lose a gate run at load 5+ even
   with 1064's elastic rounds — a wall clock is the wrong clock;
   thread CPU time is in /proc on Linux. For a replenishment.
+- 1073: v2.163.0 tagged (184th tag; strokes 1069, 1070, 1071, 1072).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.163.0
   - verify v2.163.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

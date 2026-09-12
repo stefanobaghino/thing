@@ -28369,3 +28369,33 @@ platforms do differently. Noting it for the next replenishment
 rather than widening a bound that is doing its job.
 
 26 examples, 50 programs, 83 files formatted.
+
+## 1073 — release v2.163.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI and Pages
+green for 2ae1e3b from the API (full sha).
+
+v2.163.0, the milestone "rows and records". A library that reads data
+into the shape a program wants to hold owes it a way back out, and
+this one had none: `csv["maps"]` gave you records, and `csv["text"]`
+took rows, and handed records it wrote their KEYS — a file that looks
+like a file, holding neither an error nor the data. `table` had the
+same hole with a string.
+
+1069 is the way out, `rows(records, columns)`, with the header
+question answered where it is asked: a map has no order, so the file
+that comes back as it went in is `rows(records, parse(text)[0])`.
+1070 and 1071 are the refusals, each naming the way across. 1072 is
+the whole thing in one example, over a file with a comma, a line
+break and a pair of quotes in it.
+
+Strokes 1069, 1070, 1071, 1072. CHANGELOG.md written from those
+entries; Cargo.toml and Cargo.lock at 2.163.0; the binary reports
+`ting 2.163.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (523
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.163.0 — the 184th tag — and pushed. Verification is the
+next tick.

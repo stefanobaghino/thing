@@ -5,6 +5,33 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.163.0 (2026-09-12)
+
+- **A record is not a row, and saying so beats guessing.**
+  `csv["text"]` given the records `csv["maps"]` hands back wrote each
+  record's KEYS as its row — two records came out as the header twice
+  and no data, with nothing raised. A row was joined by iterating it,
+  and iterating a map yields its keys. A row now has to be a list: a
+  record says to pass `rows(records)`, and anything else is named by
+  its type. `table` in `lib/string.ting` had the same hole and a
+  worse symptom — a string laid out one character per row — and now
+  checks rows and cells before it measures a width.
+- **The way back out of a record.** `csv["rows"](records, columns =
+  nil)` is the inverse of `maps`: a header row and one row per
+  record, ready for `text` or for `table`. `columns` names them and
+  their order; without it they come from the first record, which
+  means alphabetical, since a map has no order to remember — so a
+  file written back as it came is `rows(records, parse(text)[0])`.
+  Stating the columns is choosing them, so a key outside them is left
+  out; not stating them is not choosing, so a record carrying a name
+  the first one did not errors and names it.
+- **The round trip, as an example.** `examples/records.ting` reads a
+  CSV into records, changes a column and adds one, shows a table of
+  the columns worth looking at, and writes the file back — a note
+  holding a comma and a line break and a name with quotes in it
+  included, which is exactly what a hand-rolled `join(fields, ",")`
+  turns into a different file.
+
 ## v2.162.0 (2026-09-12)
 
 - **A timestamp in the shape the world writes it.** `lib/time.ting`
