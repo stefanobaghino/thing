@@ -35,3 +35,11 @@ assert(t["state"]["passed"] == 5, "type pass counted");
 t["check_type"]("type meant to fail", "x", "int");
 assert(t["state"]["failed"] == 6, "type failure counted");
 assert(contains(t["state"]["failures"][5], "got a string, want a int"), "type failure shape");
+
+# Every failure above was arranged, and has now been read. reset()
+# says so: without it the run itself fails, which is 1043's whole
+# point — a check that failed and was never printed is a failure.
+t["reset"]();
+assert(t["state"]["failed"] == 0, "reset forgets the failures");
+assert(t["state"]["passed"] == 0, "and the passes");
+assert(len(t["state"]["failures"]) == 0, "and the list");

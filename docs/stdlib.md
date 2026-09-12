@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 214 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 215 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -395,12 +395,15 @@ t["summary"]();   # prints failures + totals; exits 1 if any failed
 | `check_approx(name, got, want, eps)` | passes if `got` is within `eps` of `want` |
 | `check_type(name, v, type_name)` | passes if `type(v)` is `type_name`; the failure names the actual type |
 | `summary()` | prints `FAIL:` lines and totals; `exit(1)` on any failure |
+| `reset()` | forgets every pass and failure, for a file that arranged them on purpose |
 | `pass()` | records a pass, for a check of your own |
 | `fail_with(pattern, ...parts)` | records a failure, its message built the way `format` builds one |
 | `state` | the counters map (`passed`, `failed`, `failures`) for tooling |
 
 Every helper counts as one check under `ting --test`, which reports
-per-file and total counts.
+per-file and total counts. `summary()` is not optional: a check that
+failed and was never printed is still a failure, and `--test` reports
+the file as failed with or without the last line.
 
 All of this is ordinary ting — read the sources in
 [lib/](https://github.com/stefanobaghino/thing/tree/main/lib); the

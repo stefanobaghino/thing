@@ -9,6 +9,11 @@
 #   t["check_type"]("name", value, "list");
 #   t["summary"]();   # prints results; exits 1 if anything failed
 #
+# summary() is not optional: a check that failed and was never printed
+# is still a failure, and `ting --test` reports the file as failed
+# whether or not the last line is there. A file that records failures
+# on purpose calls reset() when it has read them.
+#
 # The `state` map is exported too, for tools that want the counters.
 # Every helper calls assert(true) first, which is how `ting --test`
 # counts what a file verified: one check per call, pass or fail.
@@ -83,6 +88,16 @@ fn summary() {
   for f in state["failures"] { print("FAIL:", f); }
   print(format("{} passed, {} failed", state["passed"], state["failed"]));
   if state["failed"] > 0 { exit(1); }
+}
+
+# Forgets every pass and failure recorded so far. A file that MEANT
+# to record failures — one testing the checks themselves — calls this
+# when it is done reading them, so the run's verdict is its own and
+# not the failures it arranged on purpose.
+fn reset() {
+  state["passed"] = 0;
+  state["failed"] = 0;
+  state["failures"] = [];
 }
 
 # Records a pass. Custom checks call it directly.

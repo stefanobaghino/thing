@@ -16,11 +16,11 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 214
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 215
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3010 selftest checks on all four
-  CI platforms, Windows included); 505 Rust tests
+  nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
+  CI platforms, Windows included); 506 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4370,11 +4370,13 @@ holds only the current milestone and the standing rules.
   "what the checker could have said" COMPLETE.
 - 1042: replenishment — milestone "the test that passes anyway"
   (v2.160), reasoning in LOG.md.
+- 1043: a lib/test.ting check that failed and was never printed
+  fails the run, with or without `summary()`; `reset()` is the new
+  export for a file that arranged its failures. 215 functions, 506
+  tests, 3013 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--test` fails a file whose lib/test.ting checks failed, whether
-    or not the file called `summary()`
   - `--check` warns when a file uses the test module's checks and
     never calls `summary()`
   - a member a module does not have names what the module does have,

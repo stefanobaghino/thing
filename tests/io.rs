@@ -5500,3 +5500,59 @@ fn a_shadowed_builtin_inside_a_module_reads_the_modules_own_source() {
     );
     assert!(first.contains("m.ting"), "ting said: {first}");
 }
+
+/// A file that used lib/test.ting, failed a check and never called
+/// `summary()` used to report `ok` and exit 0 — the failure sat in a
+/// map nobody read (1043). It fails now, with or without the last
+/// line, and `reset()` is how a file that arranged its failures says
+/// it has read them.
+#[test]
+fn a_check_that_failed_unprinted_still_fails_the_file() {
+    let root = std::env::temp_dir().join(format!("ting-unprinted-{}", std::process::id()));
+    let _ = std::fs::remove_dir_all(&root);
+    std::fs::create_dir_all(&root).unwrap();
+    let forgot = "let t = import(\"lib/test.ting\");\nt[\"check_eq\"](\"two is three\", 2, 3);\n";
+    std::fs::write(root.join("forgot.ting"), forgot).unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(1), "{stdout}");
+    assert!(
+        stdout.contains("FAIL: two is three: got 2, want 3"),
+        "the failure is missing:\n{stdout}"
+    );
+    assert!(
+        stdout.contains("never called summary()"),
+        "no word about the missing line:\n{stdout}"
+    );
+
+    // The same file, having read its failures and cleared them.
+    std::fs::write(
+        root.join("forgot.ting"),
+        format!("{forgot}t[\"reset\"]();\n"),
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+
+    // And a file that passes is untouched: one check, no verdict of
+    // its own, exit 0.
+    std::fs::write(
+        root.join("forgot.ting"),
+        "let t = import(\"lib/test.ting\");\nt[\"check_eq\"](\"two is two\", 2, 2);\n",
+    )
+    .unwrap();
+    let out = Command::new(env!("CARGO_BIN_EXE_ting"))
+        .args(["--test", root.to_str().unwrap()])
+        .output()
+        .expect("failed to run ting");
+    let stdout = String::from_utf8_lossy(&out.stdout);
+    assert_eq!(out.status.code(), Some(0), "{stdout}");
+    assert!(stdout.contains("1 check"), "{stdout}");
+}

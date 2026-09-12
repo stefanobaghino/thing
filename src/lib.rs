@@ -281,6 +281,22 @@ pub fn run_source_reported<W: Write>(
             Err(e) => Err(render(&e.message, e.span)),
         },
     };
+    // A test file that recorded failures and never printed them was
+    // reporting a pass (1043). `summary()` exits, so a file that
+    // called it is already gone; what is left here is a verdict
+    // nobody was going to see.
+    let result = result.and_then(|()| {
+        let failures = interp.unreported_test_failures();
+        if failures.is_empty() {
+            return Ok(());
+        }
+        let mut said: Vec<String> = failures.iter().map(|f| format!("FAIL: {f}")).collect();
+        said.push(format!(
+            "{} failed, and this file never called summary()",
+            diag::plural(failures.len(), "check")
+        ));
+        Err(said.join("\n"))
+    });
     let mut report = String::new();
     if let Some(table) = interp.profile_report() {
         report.push_str(&table);

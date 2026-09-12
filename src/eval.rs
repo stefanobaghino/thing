@@ -1785,6 +1785,38 @@ impl<W: Write> Interpreter<W> {
         m
     }
 
+    /// Failures `lib/test.ting` recorded that nothing printed. Its
+    /// helpers record and return; `summary()` is what prints them and
+    /// exits 1, and a file that forgets that line reported `ok` with a
+    /// failed check sitting in a map nobody read (1043). A file that
+    /// DOES call it never reaches here — `summary()` exits — so
+    /// anything found is a verdict that was about to be thrown away.
+    /// `reset()` is how a file that meant to record failures says so.
+    pub fn unreported_test_failures(&self) -> Vec<String> {
+        let Some(module) = self
+            .import_cache
+            .iter()
+            .find_map(|(path, v)| path.ends_with("lib/test.ting").then_some(v))
+        else {
+            return Vec::new();
+        };
+        let Value::Map(entries) = module else {
+            return Vec::new();
+        };
+        let Some(Value::Map(state)) = entries.borrow().get("state").cloned() else {
+            return Vec::new();
+        };
+        let state = state.borrow();
+        match state.get("failures") {
+            Some(Value::List(items)) => items
+                .borrow()
+                .iter()
+                .map(|v| v.to_string())
+                .collect::<Vec<_>>(),
+            _ => Vec::new(),
+        }
+    }
+
     /// The text a callee was written as, read out of the source the
     /// code now running belongs to — a module's own text while one of
     /// its functions is on the stack, the file being run otherwise.

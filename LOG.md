@@ -27461,3 +27461,40 @@ same shape as the `in` that 1030 answered. A phrasebook round can
 take both.
 
 Milestone "the test that passes anyway" (v2.160): three strokes.
+
+## 1043 — a check that failed is a failure
+
+First stroke of "the test that passes anyway". `lib/test.ting`'s
+helpers record a failure and return; `summary()` is what prints the
+failures and exits 1. A file that forgot that line reported `ok
+bad.ting (1 check)` and exited 0, with a failed check sitting in a map
+nobody read — and in a directory of test files, one forgotten call hid
+that file's failures behind `2 passed, 0 failed`.
+
+A run that ends normally now asks the module what it recorded.
+`Interpreter::unreported_test_failures` looks in the import cache for
+a module whose path ends `lib/test.ting` — on disk or embedded, the
+same lookup answers both — and reads `state["failures"]`.
+`run_source_reported` turns a non-empty list into the failure the run
+already had: the `FAIL:` lines `summary()` would have printed, and a
+line saying the file never called it. A file that DOES call
+`summary()` never reaches this, because that function exits.
+
+The verdict belongs to the run, not to `--test`: `ting bad.ting` on
+its own exits 1 now too, which is what the docs always claimed about
+a test file's exit status.
+
+`reset()` is the new export, and lib/test.ting is fifteen functions
+— 215 across the stdlib. A file that records failures ON PURPOSE
+calls it when it has read them, and selftest/testlib.ting, which
+arranges six failures to test the checks themselves, is the file that
+needed it: without it that selftest now fails, which is the whole
+point working. It asserts the counters are empty afterwards, so the
+suite is 3013 checks.
+
+Four mutations, all caught: the verdict skipped, the module looked up
+under the wrong name, `reset` leaving the failures list behind (which
+fails the selftest as well), and the explanatory line dropped.
+
+docs/reference.md and docs/stdlib.md both say summary() is not
+optional.

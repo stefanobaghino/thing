@@ -1192,7 +1192,12 @@ The `ting` binary is the whole toolchain — no separate installs:
   process and
   prints `ok`, `skip` or `FAIL` per file (with the diagnostic under
   a failure) and a summary; exit 1 if anything failed. Pair it with
-  `lib/test.ting` or plain `assert` calls. Each line says how much
+  `lib/test.ting` or plain `assert` calls. A file that used
+  `lib/test.ting` and left a failed check unprinted fails anyway —
+  its helpers record and return, and `summary()` is what prints them,
+  so forgetting that line used to report a pass. A file that records
+  failures ON PURPOSE, to test the checks themselves, calls
+  `reset()` when it has read them. Each line says how much
   the file verified — `ok   tests/list.ting (12 checks)`, one check
   per `assert` — and the summary totals them. A file that ran and
   checked nothing is a `skip`, not a pass: it stands behind none of
