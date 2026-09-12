@@ -28148,3 +28148,26 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.162.0 — the 183rd tag — and pushed. Verification is the
 next tick.
+
+## 1066 — v2.162.0 verified
+
+Release workflow, CI and Pages all green for ecb1c0f from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.162.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3074
+checks, 25 examples clean, 0 differing, both.
+
+The milestone from the archive, run outside the repo: an access-log
+stamp with `+0200` on it reads back to the instant two hours earlier
+than its own face, writing it at that offset gives the face back, a
+syslog line with a supplied year equals the parts it names, an
+unmatched shape is nil, an undefined code fails, and the name pair
+answers 9, Sat and February. examples/stamps.ting runs from the
+archive and prints what it prints here.
+
+Site audit: all ten published paths 200. changelog.html carries
+v2.162.0, stdlib.html says 230 functions, and cookbook.html has the
+stamps recipe.

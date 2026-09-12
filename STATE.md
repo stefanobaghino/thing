@@ -4438,11 +4438,11 @@ holds only the current milestone and the standing rules.
   none a regression.
 - 1065: v2.162.0 tagged (183rd tag; strokes 1060, 1061, 1062, 1063,
   1064).
+- v2.162.0 VERIFIED (183rd tag; seven assets, six sums OK, both
+  aarch64 archives executed here, ten paths 200).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.162.0 cold: seven assets, `sha256sum -c`, both aarch64
-    archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
