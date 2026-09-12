@@ -4325,10 +4325,15 @@ holds only the current milestone and the standing rules.
 - 1025: v2.157.0 tagged (178th tag; strokes 1022, 1023, 1024).
 - v2.157.0 VERIFIED (178th tag; strokes 1022, 1023, 1024; both
   aarch64 archives executed here).
+- 1027: health tick + audit green — eleven bench checksums identical
+  to BASELINE, four sweeps ok, counts all standing (79 builtins, 13
+  modules, 214 functions, 48 programs, 3010 checks, 491 tests in 18
+  suites, 81 unchanged, seventeen warnings, 178 tags). Milestone "the
+  answer it already has" COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
+  - replenishment: choose the next milestone
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

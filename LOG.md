@@ -26916,3 +26916,38 @@ how"` exits 1 having matched nothing.
 Site audit: all ten published paths 200. changelog.html carries
 v2.157.0, stdlib.html says 214 functions, and reference.html carries
 the phrase sentence.
+
+## 1027 — health tick, milestone "the answer it already has" complete
+
+Maintenance: tree clean, no open PRs, CI green for 4fbc051 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row rather than read off the screen. The
+timings landed close this time — every row within a few per cent of
+its baseline, scan.ting 901 against 922 and fib.ting 559 against 568
+— which is the same host saying the same thing it said at 1020 in a
+quieter hour. The checksums are what decide.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins (`Builtin::ALL`), thirteen modules, 214 module
+functions counted the way docs/stdlib.md is guarded, 24 selftest
+files, 24 examples each with a .out, 3010 selftest checks on both
+engines, 491 Rust tests in 18 suites, `--fmt .` 81 unchanged, corpus
+at seventeen warnings, 178 tags all verified. Site audit: ten paths
+200.
+
+The milestone is complete. Replenishment at 1021 found the binary
+holding answers it would not give: which module exports a name it
+says is bound nowhere, how many arguments a builtin it documents
+actually takes, and every doc comment it could only be asked one word
+of. Nothing new had to be learnt for any of the three — 1022 reads
+the embedded modules it already carries, 1023 reads the arities
+already written in src/eval.rs, 1024 reads the comments already in
+the table. The work was carrying a fact the last few inches to the
+person who asked.
+
+Replenishment next.
