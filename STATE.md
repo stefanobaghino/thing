@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 50 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 26 examples with .out; 3098 selftest checks on all four
-  CI platforms, Windows included); 531 Rust tests
+  CI platforms, Windows included); 532 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 83 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4544,13 +4544,11 @@ holds only the current milestone and the standing rules.
   COMPLETE.
 - 1101: replenishment — milestone "the half you remember"
   (v2.167), reasoning in LOG.md.
+- 1102: `Found::Inside` in src/diag.rs — a candidate whose part
+  is the guess exactly, preferring one that ends in it.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a guess that is a PART of a name finds that name: `approx`
-    finds `check_approx`, `err` finds `check_err` — today only a
-    shared start matches, so `med` finds `median` and the tail of
-    a compound name finds nothing
   - a guess under three characters is not noise when it is a
     whole part of a name: `eq` finds `check_eq`, where today
     every name under three gets no suggestion at all

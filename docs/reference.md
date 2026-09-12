@@ -1066,10 +1066,13 @@ other (`lenght` finds `len`); names under three characters get none. A
 guess is also broken at its underscores and each part asked in turn,
 last part first, because a guess carried over from another language
 holds the name inside it with a qualifier in front: `to_float` finds
-`float`, `array_len` finds `len`, `string_upper` finds `upper`. How
-an answer was found ranks before how far away it is: the whole guess
-one slip away, then a part that is a name outright, then the whole
-guess on a shared start, then a part near a name. That is why
+`float`, `array_len` finds `len`, `string_upper` finds `upper`. The guess
+may also be a part OF a name — the head of a compound name carries no
+information, so the tail is the half that is remembered, and `approx`
+finds `check_approx`. How an answer was found ranks before how far
+away it is: the whole guess one slip away, then a part that is a name
+outright, then the whole guess on a shared start, then a name the
+guess is part of, then a part near a name. That is why
 `list_sort` finds `sort` rather than `list_dir`. A key that a
 map does not hold is treated the same way, so a misspelled member of
 an imported module is named both by `--check` and at runtime.

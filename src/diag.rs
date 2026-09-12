@@ -300,6 +300,8 @@ pub enum Found {
     Part,
     /// The whole guess, further off but sharing a start.
     Whole,
+    /// The guess is a part of the name — the half a person keeps.
+    Inside,
     /// A part of the guess, near a name.
     NearPart,
 }
@@ -337,6 +339,25 @@ pub fn nearest_found<'a>(
     }
     if let Some((_, c)) = whole {
         return Some((Found::Whole, c.to_string()));
+    }
+    // The guess is a part OF the name, which is the way round a
+    // person usually remembers it: the head of a compound name is the
+    // part carrying no information — `check_`, `list_`, `str_` — and
+    // the tail is what distinguishes it, so `check_approx` is
+    // remembered as `approx` and `check_err` as `err`. A candidate
+    // ending in the guess is preferred over one merely holding it.
+    if name.chars().count() >= 3 {
+        let holds = |c: &str, last: bool| match last {
+            true => c.rsplit('_').next() == Some(name),
+            false => c.split('_').any(|p| p == name),
+        };
+        if let Some(c) = candidates
+            .iter()
+            .find(|c| **c != name && holds(c, true))
+            .or_else(|| candidates.iter().find(|c| **c != name && holds(c, false)))
+        {
+            return Some((Found::Inside, (*c).to_string()));
+        }
     }
     parts
         .iter()
@@ -612,6 +633,35 @@ mod tests {
             .parent()
             .map_or_else(|| "/".to_string(), |p| p.display().to_string());
         assert_eq!(shorten(&outside), outside);
+    }
+
+    /// Read the other way round: the guess is a part of the name.
+    /// The head of a compound name carries no information, so the
+    /// tail is the half a person keeps.
+    #[test]
+    fn nearest_finds_a_name_the_guess_is_part_of() {
+        assert_eq!(
+            nearest("approx", ["check_approx", "check_err"]),
+            Some("check_approx".to_string())
+        );
+        assert_eq!(
+            nearest("err", ["check_err", "check_approx"]),
+            Some("check_err".to_string())
+        );
+        // A name ENDING in the guess beats one merely holding it.
+        assert_eq!(
+            nearest("dirs", ["a_dirs_b", "x_dirs"]),
+            Some("x_dirs".to_string())
+        );
+        // A shared start still wins: `med` is the start of `median`,
+        // which is nearer than a name with `med` buried in it.
+        assert_eq!(
+            nearest("med", ["median", "check_med"]),
+            Some("median".to_string())
+        );
+        // Under three characters, still nothing — a length this short
+        // is the next question, not this one.
+        assert_eq!(nearest("eq", ["check_eq"]), None);
     }
 
     /// A guess built out of a habit from another language holds the

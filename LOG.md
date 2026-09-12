@@ -29282,3 +29282,35 @@ exactly what it says.
 
 Milestone "the half you remember" (v2.167): the tail of a name is
 what a person keeps, and the machinery only ever looked at the head.
+
+## 1102 — the name the guess is part of
+
+`nearest` could find a name inside a guess and not a guess inside a
+name. `med` found `median` — but only because `median` STARTS with
+it, which is the one rule that reaches past edit distance. `approx`
+and `err` are the TAILS of `check_approx` and `check_err`, and
+nothing looked there.
+
+There is now a `Found::Inside` tier: a candidate one of whose
+underscore-separated parts is the guess exactly. A candidate ENDING
+in the guess is preferred over one merely holding it, for the same
+reason the parts of a guess are asked last first — the head of a
+compound name is `check_`, `list_`, `str_`, which distinguishes
+nothing.
+
+It ranks below `Whole`, so `med` still answers `median` rather than a
+`check_med` sitting beside it: a shared start is a nearer thing than
+a part buried in a longer name. And a candidate equal to the guess is
+excluded, or `nearest("len", ["len"])` — None since the beginning —
+would start answering `len`.
+
+Guesses under three characters are still refused here, so `eq` still
+gets nothing. That is the next item and it is a different question:
+whether being a whole part of a name is noise at two characters. This
+stroke only moved the rule that was already there to the other end of
+the name.
+
+Four mutations, all killed: the tail preference dropped, the
+self-exclusion dropped, the length floor lowered to one (which is the
+next stroke's decision to make deliberately, not this one's to make
+by accident), and `Inside` moved above `Whole`.
