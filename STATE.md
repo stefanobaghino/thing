@@ -4332,11 +4332,12 @@ holds only the current milestone and the standing rules.
   answer it already has" COMPLETE.
 - 1028: replenishment — milestone "the phrasebook" (v2.158),
   reasoning in LOG.md.
+- 1029: the `.` hint carries the map spelling too — `str.repeat(...)`
+  reads `str["repeat"](...)`, naming the two words it read, since a
+  module is a map and `f(x)` alone was not the fix.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a `.` before a call hands back the map form, `m["f"](x)`, not
-    `f(x)`: a module is a map and that is how the stdlib is called
   - `in` as an expression hands back `has(m, k)` for a map and
     `contains(xs, v)` for a list
   - the C counted loop: `for (let i = 0; ...)` hands back `for i in

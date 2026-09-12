@@ -197,29 +197,45 @@ impl<'a> Parser<'a> {
     /// reach a program that parses; someone whose own variable is
     /// called `not` gets a suggestion that is merely unhelpful, on a
     /// program that was already wrong.
-    fn operator_word(&self) -> Option<&'static str> {
+    fn operator_word(&self) -> Option<String> {
         if let TokenKind::Ident(name) = self.peek() {
             match name.as_str() {
-                "and" => return Some("ting writes this as `&&`"),
-                "or" => return Some("ting writes this as `||`"),
-                "not" => return Some("ting writes this as `!`"),
+                "and" => return Some("ting writes this as `&&`".into()),
+                "or" => return Some("ting writes this as `||`".into()),
+                "not" => return Some("ting writes this as `!`".into()),
                 _ => {}
             }
         }
         // A `.` is never part of anything the parser accepts, so
         // saying what it was probably reaching for costs nothing.
-        // `s.len()` wants a call, `m.key` wants a key.
+        // `s.len()` wants a call, `m.key` wants a key. A call gets
+        // both spellings: a module is a map, so the stdlib is reached
+        // through the key — `f(x)` alone sends the commonest `.` in a
+        // first script to a fix that does not work. The map half can
+        // name the two words it read, since that spelling is right
+        // whenever the receiver is a map; the plain call cannot, not
+        // knowing where the other arguments went.
         if self.peek() == &TokenKind::Dot {
             return Some(
                 match (
                     self.peek2(),
                     &self.tokens[(self.pos + 2).min(self.tokens.len() - 1)].kind,
                 ) {
-                    (TokenKind::Ident(_), TokenKind::LParen) => {
-                        "ting has no methods — a call is `f(x)`"
+                    (TokenKind::Ident(member), TokenKind::LParen) => {
+                        let map = match self.tokens[self.pos.saturating_sub(1)].kind {
+                            TokenKind::Ident(ref recv) if self.pos > 0 => {
+                                format!("{recv}[\"{member}\"](...)")
+                            }
+                            _ => format!("m[\"{member}\"](...)"),
+                        };
+                        format!(
+                            "ting has no methods — a call is `f(x)`, and a function in a map is `{map}`"
+                        )
                     }
-                    (TokenKind::Ident(_), _) => "ting has no fields — a map key is `m[\"key\"]`",
-                    _ => "ting has no `.`",
+                    (TokenKind::Ident(_), _) => {
+                        "ting has no fields — a map key is `m[\"key\"]`".to_string()
+                    }
+                    _ => "ting has no `.`".to_string(),
                 },
             );
         }
@@ -230,13 +246,13 @@ impl<'a> Parser<'a> {
             && matches!(&self.tokens[self.pos - 1].kind, TokenKind::Ident(_))
             && self.tokens[self.pos - 1].span.end == self.span().start
         {
-            return Some("ting has no f-strings — build text with `format(\"{} ...\", x)`");
+            return Some("ting has no f-strings — build text with `format(\"{} ...\", x)`".into());
         }
         if self.pos > 0
             && let TokenKind::Ident(name) = &self.tokens[self.pos - 1].kind
             && name == "not"
         {
-            return Some("ting writes `not` as `!`");
+            return Some("ting writes `not` as `!`".into());
         }
         None
     }
@@ -1321,8 +1337,26 @@ mod tests {
     #[test]
     fn borrowed_access_syntax_says_what_ting_writes() {
         for (src, want) in [
-            ("print(s.len());", "ting has no methods — a call is `f(x)`"),
-            ("let n = s.len();", "ting has no methods — a call is `f(x)`"),
+            (
+                "print(s.len());",
+                "ting has no methods — a call is `f(x)`, and a function in a map is `s[\"len\"](...)`",
+            ),
+            (
+                "let n = s.len();",
+                "ting has no methods — a call is `f(x)`, and a function in a map is `s[\"len\"](...)`",
+            ),
+            // A module is a map and this is how the stdlib is called,
+            // so the spelling the hint offers is the whole fix.
+            (
+                "let st = import(\"lib/string.ting\"); print(st.repeat(\"#\", 3));",
+                "ting has no methods — a call is `f(x)`, and a function in a map is `st[\"repeat\"](...)`",
+            ),
+            // Nothing to name on the left, so the map half keeps the
+            // placeholder the field hint uses.
+            (
+                "print(f(1).g());",
+                "ting has no methods — a call is `f(x)`, and a function in a map is `m[\"g\"](...)`",
+            ),
             (
                 "print(m.a);",
                 "ting has no fields — a map key is `m[\"key\"]`",

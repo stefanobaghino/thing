@@ -83,7 +83,9 @@ both.
 - Strings are written with double quotes only. A `'` or a backtick
   says so, and there are no template literals; text is built with
   `format`. There is no `.`: a call is `f(x)` and a map key is
-  `m["key"]`, and writing `s.len()` or `m.a` says which.
+  `m["key"]`, and writing `s.len()` or `m.a` says which — with the
+  map spelling `s["len"](...)` beside it, since a module is a map and
+  that is how the stdlib is called.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types

@@ -27005,3 +27005,32 @@ checker know different things and neither borrows from the other.
 That is a milestone of its own, and a bigger one.
 
 Milestone "the phrasebook" (v2.158): three strokes, one per habit.
+
+## 1029 — the map spelling beside the call
+
+First stroke of "the phrasebook". `str.repeat("#", n)` answered `ting
+has no methods — a call is `f(x)``, and `f(x)` is not the fix: a
+module is a map, so the stdlib is called `str["repeat"]("#", n)`.
+The `.` hint in src/parser.rs now carries both spellings, and names
+the two words it read for the map one — that spelling is right
+whenever the receiver is a map, so it can be concrete, while the
+plain call cannot be: the parser stopped before the other arguments
+and does not know where they go.
+
+`s.len()` reads `a call is `f(x)`, and a function in a map is
+`s["len"](...)``; `st.repeat(...)` after `import` reads `st["repeat"]
+(...)`. With nothing to name on the left — `f(1).g()` — the map half
+keeps the placeholder the field hint uses, `m["g"](...)`. The field
+hint itself, for `m.a` with no call after it, is untouched: it was
+already exactly right.
+
+`operator_word` returns a `String` now rather than a `&'static str`,
+which is what naming anything costs; all four call sites already
+formatted it into a message.
+
+Three mutations, all caught by
+`borrowed_access_syntax_says_what_ting_writes`: the map half made
+generic again, the receiver and member swapped, and the whole hint
+put back the way it was.
+
+docs/reference.md says the map spelling beside the other two.
