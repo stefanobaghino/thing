@@ -346,18 +346,25 @@ pub fn nearest_found<'a>(
     // the tail is what distinguishes it, so `check_approx` is
     // remembered as `approx` and `check_err` as `err`. A candidate
     // ending in the guess is preferred over one merely holding it.
-    if name.chars().count() >= 3 {
-        let holds = |c: &str, last: bool| match last {
-            true => c.rsplit('_').next() == Some(name),
-            false => c.split('_').any(|p| p == name),
-        };
-        if let Some(c) = candidates
-            .iter()
-            .find(|c| **c != name && holds(c, true))
-            .or_else(|| candidates.iter().find(|c| **c != name && holds(c, false)))
-        {
-            return Some((Found::Inside, (*c).to_string()));
-        }
+    // No length floor here, unlike every rule above: those measure a
+    // distance, and under three characters a distance means nothing
+    // because every short name is a slip or two from every other.
+    // Being a whole part of a name is identity, not distance, so `eq`
+    // finds `check_eq` — and what this tier offers is a suggestion
+    // there would otherwise be none of.
+    let holds = |c: &str, last: bool| match last {
+        true => c.rsplit('_').next() == Some(name),
+        false => c.split('_').any(|p| p == name),
+    };
+    if let Some((_, c)) = whole {
+        return Some((Found::Whole, c.to_string()));
+    }
+    if let Some(c) = candidates
+        .iter()
+        .find(|c| **c != name && holds(c, true))
+        .or_else(|| candidates.iter().find(|c| **c != name && holds(c, false)))
+    {
+        return Some((Found::Inside, (*c).to_string()));
     }
     parts
         .iter()
@@ -659,9 +666,24 @@ mod tests {
             nearest("med", ["median", "check_med"]),
             Some("median".to_string())
         );
-        // Under three characters, still nothing — a length this short
-        // is the next question, not this one.
-        assert_eq!(nearest("eq", ["check_eq"]), None);
+        // No length floor on this tier: two characters are too few to
+        // measure a distance with, and being a whole part of a name
+        // is identity rather than distance.
+        assert_eq!(
+            nearest("eq", ["check_eq", "check_err"]),
+            Some("check_eq".to_string())
+        );
+        assert_eq!(nearest("eq", ["check_err"]), None);
+        // Identity, not a prefix: `er` is two characters of `err` and
+        // no part of anything, so it stays unanswered.
+        assert_eq!(nearest("er", ["check_err"]), None);
+        // The tail is preferred at this length too.
+        assert_eq!(
+            nearest("eq", ["eq_of", "check_eq"]),
+            Some("check_eq".to_string())
+        );
+        // A name is still never its own suggestion, at any length.
+        assert_eq!(nearest("eq", ["eq"]), None);
     }
 
     /// A guess built out of a habit from another language holds the

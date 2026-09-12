@@ -4546,12 +4546,12 @@ holds only the current milestone and the standing rules.
   (v2.167), reasoning in LOG.md.
 - 1102: `Found::Inside` in src/diag.rs — a candidate whose part
   is the guess exactly, preferring one that ends in it.
+- 1103: no length floor on `Found::Inside` — a whole part is
+  identity, not distance, so `eq` finds `check_eq` while `er`
+  finds nothing.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - a guess under three characters is not noise when it is a
-    whole part of a name: `eq` finds `check_eq`, where today
-    every name under three gets no suggestion at all
   - a path with a line break in it is text, and `cannot read`
     says so instead of quoting forty characters of a spreadsheet
     as a filename

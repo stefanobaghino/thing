@@ -1069,7 +1069,9 @@ holds the name inside it with a qualifier in front: `to_float` finds
 `float`, `array_len` finds `len`, `string_upper` finds `upper`. The guess
 may also be a part OF a name — the head of a compound name carries no
 information, so the tail is the half that is remembered, and `approx`
-finds `check_approx`. How an answer was found ranks before how far
+finds `check_approx`. That last rule has no length floor, since being
+a whole part of a name is identity rather than distance: `eq` finds
+`check_eq`, while `er` finds nothing, being no part of anything. How an answer was found ranks before how far
 away it is: the whole guess one slip away, then a part that is a name
 outright, then the whole guess on a shared start, then a name the
 guess is part of, then a part near a name. That is why

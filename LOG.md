@@ -29314,3 +29314,32 @@ Four mutations, all killed: the tail preference dropped, the
 self-exclusion dropped, the length floor lowered to one (which is the
 next stroke's decision to make deliberately, not this one's to make
 by accident), and `Inside` moved above `Whole`.
+
+## 1103 — two characters are enough to be a whole word
+
+`eq` was the one name from the probe still unanswered, because every
+guess under three characters is refused a suggestion. That rule is
+right for what it was written for: at two characters, edit distance
+is noise — every short name is a slip or two from every other one.
+
+Being a whole part of a name is not a distance. It is identity, and
+identity does not get less certain as the word gets shorter, so the
+`Inside` tier added in 1102 has no length floor. `eq` finds
+`check_eq`. `er` — two characters of `err`, and no part of anything —
+still finds nothing, which is the line: this tier answers a word, not
+a fragment.
+
+Two of the first three mutations SURVIVED, and both were the tests'
+fault rather than the code's. Matching a part with `starts_with`
+instead of `==` passed everything, because no case distinguished a
+whole part from a prefix of one; and putting the length floor back on
+the tail-preferred search passed too, because the search that runs
+after it found the same answer for the only short case there was. The
+cases that pin them are `nearest("er", ["check_err"])` being None and
+`nearest("eq", ["eq_of", "check_eq"])` being `check_eq` — a fragment
+answers nothing, and the tail is preferred at two characters just as
+at six. With those, all three mutations die, including reading the
+first part of a candidate rather than its last.
+
+That is the second time this milestone that a mutation has paid for
+itself by naming a claim the tests were only assuming.
