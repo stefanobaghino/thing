@@ -4394,10 +4394,25 @@ holds only the current milestone and the standing rules.
   modules, 215 functions, 48 programs, 3013 checks, 511 tests in 18
   suites, 81 unchanged, twenty-two warnings, 181 tags). Milestone
   "the test that passes anyway" COMPLETE.
+- 1050: replenishment — milestone "the rest of the phrasebook"
+  (v2.161), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - replenishment: choose the next milestone
+  - a conditional value — `c ? a : b`, `let x = if c { a } else
+    { b }`, and `a if c else b` — answered with ting's spelling, and
+    one mistake reported as one error
+  - a comprehension `[f(x) for x in xs]` says `map`, and `filter` for
+    the guarded form
+  - `try`/`catch`/`finally` and `throw` say `try(fn() { ... })` and
+    `fail(msg)`
+  - a type annotation on a parameter or a return says ting has none
+  - a module member with a builtin NEAR miss names the builtin —
+    `fs["write"]` wants `write_file`, not twenty names
+  - release v2.161.0
+  - verify v2.161.0 cold: seven assets, `sha256sum -c`, both aarch64
+    archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):

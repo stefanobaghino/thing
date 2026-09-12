@@ -27652,3 +27652,48 @@ stops halfway is the same bug as a test that stops halfway, and
 "lib/list.ting has no `nope`" was a sentence with nothing after it.
 
 Replenishment next.
+
+## 1050 — replenishment: milestone "the rest of the phrasebook"
+
+The probe wrote a report over an access log, cold, from the shipped
+v2.160.0 archive: read the file with each_line, split each line on
+quotes, count hits and errors per path, rank them, print a table,
+write a CSV. The first half ran on the first try — each_line, split,
+trim, get with a default, keys, sort_by, format with alignment — and
+the only name it had to be told about was `sum`, which the checker
+placed in lib/list.ting before the run did.
+
+The second half is where it stopped, and every stop was a sentence
+from another language that ting answers with the parser's raw
+complaint:
+
+**A conditional value.** `let flag = if c { "!" } else { " " };` is
+`expected expression, found 'if'` — and then four more errors down
+the same line and onto the `}` below it, because recovery restarts
+inside a shape that never opened. `c ? a : b` does not even reach the
+parser: `unexpected character '?'`. Python's `a if c else b` gives
+two errors and no word about ting. Three spellings of one idea, and
+ting has a fourth (assign in both branches of an `if` statement) that
+nothing points at. 1042 shelved this beside 1028's `?:`; it is the
+best-evidenced item now.
+
+**A comprehension.** `[x * 2 for x in xs]` is `expected ']', found
+'for'` plus a second error at the `]`. ting's answer is `map(xs,
+fn(x) { return x * 2; })`, and `filter` for the guarded form.
+
+**try/catch.** `try { ... } catch (e) { ... }` is `expected ';',
+found '{'`, twice. `try` IS a builtin here — `try(fn() { ... })`
+hands back a map with `ok` or `err` — and `throw` is `fail(msg)`.
+
+**A type annotation.** `fn f(): int` and `fn f(a: int)` are `expected
+'{', found ':'`. ting is untyped and nothing says so.
+
+One more, from the CSV half and not from the parser: `fs["write"]`
+answers `lib/fs.ting has no `write` (it has 20 names — ...)`, which
+is 1046 working, and still not the answer. The answer is the builtin
+`write_file`. no_member considers a builtin only on an EXACT match,
+so `write_text` gets told about `with_ext` instead. A module that
+deliberately leaves file IO to the builtins should say so when
+someone reaches into it for one.
+
+Milestone "the rest of the phrasebook" (v2.161): five strokes.
