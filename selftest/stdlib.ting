@@ -369,6 +369,18 @@ assert(s["table"]([["a", "1"], ["bb", "22"]]) == "a   1\nbb  22", "no alignment 
 let bad_align = try(s["table"], [["a"]], "x");
 assert(contains(bad_align["err"], "alignment must be"), "an unknown alignment is refused");
 
+# The shape, checked before a width is measured. A record iterates
+# into its KEYS and a string into its characters, so a table laid out
+# from either is not the data — and records are the shape a program
+# holds, so the sentence says where the way across lives.
+assert(try(s["table"], [{"name": "Sep", "n": "3"}])["err"] ==
+"table: a row is a list of cells, not a record — rows(records) in lib/csv.ting makes rows of records",
+"a record is not a row");
+assert(try(s["table"], "a b")["err"] == "table: expects rows of cells, got string", "nor is a line of text");
+assert(try(s["table"], [["a"], 7])["err"] == "table: a row is a list of cells, got int", "nor is a number");
+assert(try(s["table"], [["a", 1]])["err"] == "table: a cell is a string, got int", "a cell is text, not a number");
+assert(try(s["table"], [[nil]])["err"] == "table: a cell is a string, got nil", "and not a nil either");
+
 let j = import("../lib/json.ting");
 let doc = json_parse("{\"users\": [{\"name\": \"ann\", \"tags\": [\"a\", \"b\"]}, {\"name\": \"bob\"}], \"n\": 2}");
 assert(j["get_in"](doc, ["users", 0, "name"]) == "ann", "get_in nested");

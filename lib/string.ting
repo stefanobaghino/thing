@@ -263,7 +263,23 @@ fn is_blank(s) { return trim_start(s) == ""; }
 # since nothing follows it and no line should end in spaces; a right
 # or centred one is, because that padding is what puts its column
 # under the heading.
+#
+# Rows and cells are checked before any width is measured. A record
+# iterates into its keys and a string into its characters, so either
+# one would have laid out something that is not the data — and
+# records are what a program holds, so the sentence names the way
+# across.
 fn table(rows, align = "") {
+  if type(rows) != "list" { fail("table: expects rows of cells, got " + type(rows)); }
+  for row in rows {
+    if type(row) == "map" {
+      fail("table: a row is a list of cells, not a record — rows(records) in lib/csv.ting makes rows of records");
+    }
+    if type(row) != "list" { fail("table: a row is a list of cells, got " + type(row)); }
+    for cell in row {
+      if type(cell) != "string" { fail("table: a cell is a string, got " + type(cell)); }
+    }
+  }
   let widths = [];
   for row in rows {
     for i in range(len(row)) {

@@ -28310,3 +28310,30 @@ Three mutations, all caught: the record branch dropped, the list
 check dropped, and the argument check dropped.
 
 3093 checks.
+
+## 1071 — a table of something that is not the data
+
+`table` handed a list of records failed with `cannot index map with
+int` at line 271 of lib/string.ting. The module trace named the call,
+so it was findable, but the sentence was about the module's insides.
+
+Handed a STRING it did not fail at all: `table("a b")` laid out one
+character per row, each row one cell wide. Same shape of bug as
+csv's, one module over — iterating something that is not a list
+produces something, and something is worse than nothing here.
+
+Rows and cells are now checked before a width is measured: rows is a
+list, a row is a list, a cell is a string. A record row says where
+the way across lives — `rows(records)` in lib/csv.ting — because
+records are the shape a program is holding when it reaches for a
+table, and 1069 is the answer.
+
+The cell check replaces `display_width expects a string, got int`,
+which named a helper the caller never called.
+
+Four mutations, all caught: each of the three shape checks dropped,
+and the cell check dropped. The first attempt at the record mutation
+left a stray brace and failed as a syntax error, which proves
+nothing, so it was redone properly and the guard caught that too.
+
+3098 checks.
