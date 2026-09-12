@@ -1034,6 +1034,126 @@ fn arity_mismatches_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, 
     out
 }
 
+/// A `format` whose template is written out at the call site, judged
+/// the way the run will judge it. The template is a literal and the
+/// arguments are counted where they are written, so the braces, the
+/// specs and the argument count are all decidable here — everything
+/// `format` refuses that does not depend on a value.
+pub fn format_templates(src: &str) -> Vec<(usize, usize, String)> {
+    let Ok(tokens) = lexer::lex(src) else {
+        return Vec::new();
+    };
+    let Ok(program) = crate::parser::parse_program(&tokens) else {
+        return Vec::new();
+    };
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    let mut unsure: std::collections::HashSet<String> = std::collections::HashSet::new();
+    collect_rebindings(&program, true, &mut unsure);
+    for stmt in &program {
+        match &stmt.kind {
+            S::Let(name, _) => {
+                unsure.insert(name.clone());
+            }
+            S::LetPattern(pattern, _) => {
+                let mut names = Vec::new();
+                pattern.names(&mut names);
+                unsure.extend(names);
+            }
+            _ => {}
+        }
+    }
+    // A file that binds `format` itself means its own, as everywhere.
+    if unsure.contains("format") {
+        return Vec::new();
+    }
+    let mut out = Vec::new();
+    walk_exprs(&program, &mut |e| {
+        let E::Call(callee, args) = &e.kind else {
+            return;
+        };
+        if !matches!(&callee.kind, E::Var(name) if name == "format") {
+            return;
+        }
+        // A spread makes the count a runtime fact, as it does for arity.
+        if args.iter().any(|a| matches!(a.kind, E::Spread(_))) {
+            return;
+        }
+        let [template, values @ ..] = &args[..] else {
+            return;
+        };
+        let E::Str(text) = &template.kind else {
+            return;
+        };
+        if let Some(message) = crate::eval::format_trouble(text, values.len()) {
+            out.push((e.span.start, e.span.end, message));
+        }
+    });
+    out.sort_by_key(|(start, _, _)| *start);
+    out
+}
+
+/// Every expression in a program, callbacks included, by worklist.
+fn walk_exprs(stmts: &[crate::ast::Stmt], f: &mut impl FnMut(&crate::ast::Expr)) {
+    use crate::ast::{ExprKind as E, StmtKind as S};
+    fn expr(root: &crate::ast::Expr, f: &mut impl FnMut(&crate::ast::Expr)) {
+        let mut todo = vec![root];
+        while let Some(e) = todo.pop() {
+            f(e);
+            match &e.kind {
+                E::Call(callee, args) => {
+                    todo.push(callee);
+                    todo.extend(args.iter());
+                }
+                E::Spread(a) | E::Unary(_, a) => todo.push(a),
+                E::Binary(_, a, b) | E::Index(a, b) => {
+                    todo.push(a);
+                    todo.push(b);
+                }
+                E::List(items) => todo.extend(items.iter()),
+                E::Map(entries) => {
+                    for (k, v) in entries {
+                        todo.push(k);
+                        todo.push(v);
+                    }
+                }
+                E::Fn(_, body) => walk_exprs(body, f),
+                _ => {}
+            }
+        }
+    }
+    for stmt in stmts {
+        match &stmt.kind {
+            S::Let(_, e)
+            | S::LetPattern(_, e)
+            | S::Assign(_, _, e)
+            | S::Expr(e)
+            | S::Return(Some(e)) => expr(e, f),
+            S::IndexAssign(base, idx, _, value) => {
+                expr(base, f);
+                expr(idx, f);
+                expr(value, f);
+            }
+            S::Block(inner) => walk_exprs(inner, f),
+            S::If(cond, then, els) => {
+                expr(cond, f);
+                walk_exprs(std::slice::from_ref(then), f);
+                if let Some(e) = els {
+                    walk_exprs(std::slice::from_ref(e), f);
+                }
+            }
+            S::While(cond, body) => {
+                expr(cond, f);
+                walk_exprs(std::slice::from_ref(body), f);
+            }
+            S::For(_, iterable, body) => {
+                expr(iterable, f);
+                walk_exprs(std::slice::from_ref(body), f);
+            }
+            S::Break | S::Continue | S::Return(None) => {}
+        }
+    }
+}
+
 /// Names that a second binding, an assignment, a parameter list or an
 /// inner `let` puts beyond the top-level view.
 fn collect_rebindings(
@@ -1738,6 +1858,7 @@ pub fn warnings_in(src: &str, dir: Option<&std::path::Path>) -> Vec<(usize, usiz
     let mut all = unknown_members(src, dir);
     all.extend(unbound_names(src));
     all.extend(arity_mismatches_in(src, dir));
+    all.extend(format_templates(src));
     all.extend(duplicate_map_keys(src));
     all.extend(unreachable_code(src));
     all.extend(unused_top_level_lets(src));
@@ -2914,6 +3035,79 @@ mod tests {
         );
         // A call inside the range says nothing at all.
         assert!(arity_mismatches("let f = fn(a, b = 1) { return a; };\nf(1);\n").is_empty());
+    }
+
+    /// A template written at the call site is read at check time, with
+    /// the sentence the run would use. tests/io.rs holds the two
+    /// readings together by running both over the same templates.
+    #[test]
+    fn a_literal_format_template_is_read_at_check_time() {
+        let messages = |src: &str| -> Vec<String> {
+            format_templates(src)
+                .into_iter()
+                .map(|(_, _, m)| m)
+                .collect()
+        };
+        assert_eq!(
+            messages("format(\"{:.1f}\", 1.0);\n"),
+            vec![
+                "format: `1f` is not a number of decimal places — write `.2` for two, `.0` for none, or `.{}` to take the number from the arguments"
+                    .to_string()
+            ]
+        );
+        assert_eq!(
+            messages("format(\"{} {}\", 1);\n"),
+            vec!["format: more {} placeholders than value arguments".to_string()]
+        );
+        assert_eq!(
+            messages("format(\"{}\", 1, 2);\n"),
+            vec!["format: 1 placeholder but 2 value arguments".to_string()]
+        );
+        // A hole that reads its width from the arguments counts as an
+        // argument the template takes — in what is missing, and in
+        // what is left over, where counting placeholders against
+        // arguments would not add up.
+        assert_eq!(
+            messages("format(\"{:{}}\", 1, 4, 9);\n"),
+            vec!["format: the template takes 2 arguments but 3 were given".to_string()]
+        );
+        // A hole that reads its width from the arguments counts as an
+        // argument the template takes.
+        assert_eq!(
+            messages("format(\"{:{}}\", \"a\");\n"),
+            vec![
+                "format: this spec takes its width from the next argument, and there is none"
+                    .to_string()
+            ]
+        );
+        for src in [
+            "format(\"{:>{}.{}}\", 1.5, 8, 2);\n",
+            "format(\"{{literal}}\");\n",
+            "format(\"hello\");\n",
+        ] {
+            assert!(messages(src).is_empty(), "{src}");
+        }
+    }
+
+    /// Nothing to read: a template that is not written down, a call
+    /// with a spread in it, and a file that binds `format` itself.
+    #[test]
+    fn a_template_the_checker_cannot_see_is_left_to_the_run() {
+        let messages = |src: &str| -> Vec<String> {
+            format_templates(src)
+                .into_iter()
+                .map(|(_, _, m)| m)
+                .collect()
+        };
+        for src in [
+            "let t = \"{} {}\";\nformat(t, 1);\n",
+            "let xs = [1];\nformat(\"{} {}\", ...xs);\n",
+            "let format = fn(t) { return t; };\nformat(\"{} {}\");\n",
+        ] {
+            assert!(messages(src).is_empty(), "{src}");
+        }
+        // Inside a function body is still inside the file.
+        assert_eq!(messages("fn f() { return format(\"{}\"); }\n").len(), 1);
     }
 
     /// A call to a builtin is counted against `Builtin::arity`, which

@@ -27259,3 +27259,47 @@ and the guard against the arms).
 
 docs/reference.md says a builtin is counted too, and that a file that
 binds the name takes it back.
+
+## 1037 — the template is read before it runs
+
+Second stroke of "what the checker could have said". `format("{:.1f}",
+1.0)` was refused at run time, precisely — `` `1f` is not a number of
+decimal places `` — and `--check` said nothing, though the template is
+a string literal and the arguments are counted where they are
+written.
+
+`eval::format_trouble(template, values)` walks a template the way the
+Format arm does and answers with the same sentence: an unclosed `{`,
+a stray `}`, whatever `parse_spec` refuses, more placeholders than
+arguments, a spec whose `{}` has no argument to take its width or its
+decimal places from, and a count that does not add up at the end —
+two different sentences there, because a spec that read a number from
+the arguments makes "placeholders against arguments" the wrong sum.
+Nothing in it looks at a value: a spec a string cannot satisfy is
+still the run's business.
+
+`lsp::format_templates` is the pass, and `--check` gained it. It
+reads a call to `format` whose first argument is written down, with
+no spread in it, in a file that has not bound `format` itself; it
+descends into function bodies, since a template inside one is still
+written at a call site. A template held in a variable is left to the
+run.
+
+The two readings are held together by tests/io.rs, which runs
+`--check` and the binary over thirteen calls and asserts the warning
+and the error are the same sentence, and fails if fewer than nine of
+them are refused at all — a table that stopped producing errors would
+otherwise agree about nothing and pass.
+
+Six mutations. Five were caught; the sixth, swapping the two tail
+sentences so the placeholder count is used even where a spec took a
+number from the arguments, PASSED — every case in both tables stopped
+earlier, at a missing argument, and never reached the tail. A call
+with all its holes filled and one argument spare, `format("{:{}}", 1,
+4, 9)`, is in both tables now, and the mutation fails.
+
+The corpus is unchanged at twenty-two: selftest/strings.ting reaches
+its bad templates through `try(format, ...)`, where the template is
+an argument to something else and this pass does not look.
+
+docs/reference.md has the sentence.

@@ -5371,3 +5371,69 @@ fn the_repl_echo_stops_and_says_how_much_there_was() {
         "print was cut"
     );
 }
+
+/// The checker's sentence about a format template and the run's must
+/// be the same sentence: `--check` reads the template with
+/// `format_trouble` (1037) and the Format arm reads it again while
+/// building the string. Two walks over the same grammar drift unless
+/// something compares them, so this runs both over every shape that
+/// does not depend on a value.
+#[test]
+fn a_format_template_reads_the_same_to_the_checker_and_the_run() {
+    let dir = std::env::temp_dir().join("ting-format-template");
+    std::fs::create_dir_all(&dir).unwrap();
+    let calls = [
+        r#"format("{:.1f}", 1.0)"#,
+        r#"format("{} {}", 1)"#,
+        r#"format("{}", 1, 2)"#,
+        r#"format("{", 1)"#,
+        r#"format("}", 1)"#,
+        r#"format("{:q}", 1)"#,
+        r#"format("{:{}}", "a")"#,
+        r#"format("{:.{}}", 1.5)"#,
+        r#"format("{:>{}.{}}", 1.5, 8)"#,
+        r#"format("hello")"#,
+        r#"format("{{literal}}", 1)"#,
+        r#"format("{} and {}", 1, 2, 3)"#,
+        // A spec that read a number from the arguments makes
+        // "placeholders against arguments" the wrong sum, so the
+        // template says what it takes instead.
+        r#"format("{:{}}", 1, 4, 9)"#,
+    ];
+    let mut disagreed = Vec::new();
+    let mut checked = 0;
+    for (i, call) in calls.iter().enumerate() {
+        let script = dir.join(format!("t{i}.ting"));
+        std::fs::write(&script, format!("print({call});\n")).unwrap();
+        let run = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        let check = Command::new(env!("CARGO_BIN_EXE_ting"))
+            .args(["--check"])
+            .arg(&script)
+            .output()
+            .expect("failed to run ting");
+        let said = |out: &std::process::Output, mark: &str| -> Option<String> {
+            String::from_utf8_lossy(&out.stderr)
+                .lines()
+                .find_map(|l| l.split_once(mark).map(|(_, rest)| rest.trim().to_string()))
+        };
+        let ran = said(&run, "error: format:");
+        let checked_it = said(&check, "warning: format:");
+        if ran != checked_it {
+            disagreed.push(format!("{call}\n  run:   {ran:?}\n  check: {checked_it:?}"));
+        }
+        if ran.is_some() {
+            checked += 1;
+        }
+    }
+    assert!(
+        disagreed.is_empty(),
+        "the checker and the run disagree:\n{}",
+        disagreed.join("\n")
+    );
+    // A table that stopped producing errors would agree about nothing
+    // and pass.
+    assert!(checked >= 9, "only {checked} of the calls were refused");
+}

@@ -972,6 +972,102 @@ fn take_slot(args: &[Value], next: &mut usize, what: &str, max: usize) -> Result
     slot_from_args(v, what, max)
 }
 
+/// What `format` will refuse about a template, before it is run: the
+/// braces, the specs, and how many arguments the template asks for
+/// against how many the call passes. The sentences are the ones the
+/// Format arm raises, and a test runs both over the same templates so
+/// they cannot drift. Nothing here looks at a value — a spec that a
+/// string cannot satisfy is the run's business, not the checker's.
+pub fn format_trouble(fmt: &str, values: usize) -> Option<String> {
+    let total = values + 1;
+    let mut next = 1;
+    let mut placeholders = 0;
+    let mut from_args = 0;
+    let mut chars = fmt.chars().peekable();
+    while let Some(c) = chars.next() {
+        match c {
+            '{' if chars.peek() == Some(&'{') => {
+                chars.next();
+            }
+            '}' if chars.peek() == Some(&'}') => {
+                chars.next();
+            }
+            '{' => {
+                let mut spec = String::new();
+                let mut closed = false;
+                let mut depth = 0usize;
+                for c in chars.by_ref() {
+                    if c == '}' {
+                        if depth == 0 {
+                            closed = true;
+                            break;
+                        }
+                        depth -= 1;
+                    } else if c == '{' {
+                        depth += 1;
+                    }
+                    spec.push(c);
+                }
+                if !closed {
+                    return Some(
+                        "format: unclosed '{' (write '{{' for a literal brace)".to_string(),
+                    );
+                }
+                if next >= total {
+                    return Some("format: more {} placeholders than value arguments".to_string());
+                }
+                let spec = match parse_spec(&spec) {
+                    Ok(spec) => spec,
+                    Err(message) => return Some(message),
+                };
+                next += 1;
+                // The value first, then the spec's holes left to
+                // right: the width before the decimal places, as the
+                // template reads and as the arm consumes them.
+                let holes = [
+                    (matches!(spec.width, Slot::FromArgs), "width"),
+                    (
+                        matches!(spec.precision, Some(Slot::FromArgs)),
+                        "number of decimal places",
+                    ),
+                ];
+                for (from_arguments, what) in holes {
+                    if !from_arguments {
+                        continue;
+                    }
+                    from_args += 1;
+                    if next >= total {
+                        return Some(format!(
+                            "format: this spec takes its {what} from the next argument, and there is none"
+                        ));
+                    }
+                    next += 1;
+                }
+                placeholders += 1;
+            }
+            '}' => {
+                return Some("format: stray '}' (write '}}' for a literal brace)".to_string());
+            }
+            _ => {}
+        }
+    }
+    if next != total {
+        return Some(match from_args {
+            0 => format!(
+                "format: {} but {}",
+                crate::diag::plural(placeholders, "placeholder"),
+                crate::diag::plural(values, "value argument")
+            ),
+            _ => format!(
+                "format: the template takes {} but {} were given",
+                crate::diag::plural(next - 1, "argument"),
+                values
+            ),
+        });
+    }
+    None
+}
+
 /// A width or a number of decimal places that a spec's `{}` took from
 /// the argument list, checked the way a written one is.
 fn slot_from_args(v: &Value, what: &str, max: usize) -> Result<usize, String> {
