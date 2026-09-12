@@ -29230,3 +29230,55 @@ the rules is part of the answer's meaning, and comparing their
 outputs by a number they don't share is how the wrong half wins.
 
 Replenishment next.
+
+## 1101 — replenishment: milestone "the half you remember"
+
+The probe was a small project written cold against the v2.166.0 musl
+archive: a module that tallies a CSV by category, a test file beside
+it using lib/test.ting, and `ting --test` over the directory. The
+test runner came out of it well — an arity mistake was named by
+`--check` before the run and again at the run, a failure printed the
+whole way back with every argument bound, `--tap`, `--filter` and
+`--slow N` all did what the help says.
+
+What the probe found is the mirror image of the milestone that just
+shipped. I reached for `t["eq"]`, `t["approx"]` and `t["err"]`; the
+names are `check_eq`, `check_approx` and `check_err`. All three were
+answered "it has 10 names — `ting --doc lib/test.ting` lists them"
+and no suggestion at all. In the same file `l["med"]` found `median`
+and `l["uniq"]` found `unique`.
+
+The difference is which END of the name I remembered. `med` and
+`uniq` are the START of the real name, and the rule that carries them
+is "one name starts the other". `approx` and `err` are the TAIL of
+the real name, and nothing looks there. 1094 and 1095 taught the
+suggestion machinery to find a name inside a guess; the guess inside
+a NAME is the same relationship read the other way, and it is the
+more likely of the two — the head of a compound name is the part that
+carries no information (`check_`, `list_`, `str_`) and the tail is
+what distinguishes it, so the tail is what a person remembers.
+
+`eq` adds a second half to that: it is two characters, and every
+guess under three gets no suggestion whatever, because at that length
+edit distance is noise. Being a whole part of a name is not edit
+distance and is not noise.
+
+Third, from the first mistake the probe made: I passed CSV text to
+`csv["each_map"]`, which takes a path, and was told `cannot read
+"date,category,amount\n2026-01-03,food,12.50\n...": No such file or
+directory`. The message is true and quotes forty characters of a
+spreadsheet as a filename. A path with a line break in it is text,
+and saying so costs one sentence.
+
+Not findings, recorded so they are not chased: lib/test.ting has ten
+names and lib/json.ting nine, and a module miss lists the names only
+up to eight, so both told me a count instead. That is a tuning knob,
+not a gap — and with the first item above, the names I actually
+guessed get answered rather than counted. `--slow 0` printing nothing
+is what "the 0 slowest files" means. And `check_eq(1, 1, "one is
+one")` — the argument order most frameworks use — records a passing
+check named `1`, which is the library's documented order doing
+exactly what it says.
+
+Milestone "the half you remember" (v2.167): the tail of a name is
+what a person keeps, and the machinery only ever looked at the head.

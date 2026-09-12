@@ -4542,9 +4542,25 @@ holds only the current milestone and the standing rules.
   3098 checks, 531 tests in 18 suites, 83 unchanged, twenty-two
   warnings, 187 tags). Milestone "the half you got right"
   COMPLETE.
+- 1101: replenishment — milestone "the half you remember"
+  (v2.167), reasoning in LOG.md.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
+  - a guess that is a PART of a name finds that name: `approx`
+    finds `check_approx`, `err` finds `check_err` — today only a
+    shared start matches, so `med` finds `median` and the tail of
+    a compound name finds nothing
+  - a guess under three characters is not noise when it is a
+    whole part of a name: `eq` finds `check_eq`, where today
+    every name under three gets no suggestion at all
+  - a path with a line break in it is text, and `cannot read`
+    says so instead of quoting forty characters of a spreadsheet
+    as a filename
+  - release v2.167.0
+  - verify v2.167.0 cold: seven assets, `sha256sum -c`, both
+    aarch64 archives executed here, the ten published paths 200
+  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
