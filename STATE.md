@@ -4484,10 +4484,11 @@ holds only the current milestone and the standing rules.
 - 1082: and the self-test was measuring a millisecond, which
   schedstat cannot divide; sized up to where it reads 4.0 every
   time.
+- 1083: v2.164.0 tagged (185th tag; strokes 1077, 1078, 1079, 1080,
+  1081, 1082).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - release v2.164.0
   - verify v2.164.0 cold: seven assets, `sha256sum -c`, both
     aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits

@@ -28654,3 +28654,36 @@ The quadrupled case now takes one round instead of eight. A bound
 nothing can exceed stops the loop immediately, and a ratio of four is
 not a number that gets better with rounds; eight of them cost four
 seconds for nothing.
+
+## 1083 — release v2.164.0
+
+Maintenance: tree clean but for the bump, no open PRs, CI green for
+dca3144 from the API on all three platforms (full sha).
+
+v2.164.0, the milestone "the file you hand over". A bundle is the one
+artifact that leaves this machine, and it was treated as output
+rather than as a program: an import that named nothing was copied
+into it and left to fail wherever it landed, and a script made
+executable stopped being executable the moment it was bundled.
+
+1077 refuses the first at the import, where the cycle and the
+computed path were already refused. 1080 puts the shebang back on the
+only line where it means anything. 1078 and 1079 are two red CIs for
+one assertion, both about a resolved path in a message, and the rule
+they left behind is in STATE: do not match one.
+
+1081 and 1082 are not in the changelog. The timing guards now read
+thread cpu time from schedstat where it runs, which is what they
+always meant, and 1082 is the self-test of that learning it cannot
+divide a millisecond.
+
+Strokes 1077, 1078, 1079, 1080, 1081, 1082. CHANGELOG.md written from
+those entries; Cargo.toml and Cargo.lock at 2.164.0; the binary
+reports `ting 2.164.0`.
+
+Gate re-run after the bump: fmt, clippy, 18 `test result: ok` (527
+tests), `--fmt .` 83 unchanged, corpus at twenty-two, 3098 checks on
+both engines, Windows check and clippy, wasm release build.
+
+Tagged v2.164.0 — the 185th tag — and pushed. Verification is the
+next tick.

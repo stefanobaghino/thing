@@ -5,6 +5,22 @@ Linux (x86-64 and arm64, glibc and fully static musl), macOS and
 Windows are attached to each
 [GitHub release](https://github.com/stefanobaghino/thing/releases).
 
+## v2.164.0 (2026-09-12)
+
+- **A bundle that cannot run is not a bundle.** `ting --bundle`
+  copied an import naming nothing at all straight into its output and
+  exited 0, so `import("nope.ting")` became somebody else's run-time
+  error. A path that names neither a file nor a module embedded in
+  the binary is now refused where the cycle and the computed path
+  already were: at the import, with a line and a column, and nothing
+  on stdout.
+- **A bundled script stays executable.** A script starting
+  `#!/usr/bin/env ting` had that line buried three lines into the
+  bundle, under the bundler's own header, where it is a comment and
+  nothing else. It now goes first and the header follows it. Only the
+  first line counts: a `#!` further down, or at the head of a module,
+  stays where it is.
+
 ## v2.163.0 (2026-09-12)
 
 - **A record is not a row, and saying so beats guessing.**
