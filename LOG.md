@@ -29409,3 +29409,26 @@ both engines, Windows check and clippy, wasm release build.
 
 Tagged v2.167.0 — the 188th tag — and pushed. Verification is the
 next tick.
+
+## 1106 — v2.167.0 verified
+
+Release workflow, CI and Pages all green for 463ef8e from the API.
+
+Seven assets. `sha256sum -c SHA256SUMS` on a fresh `gh release
+download` into an empty directory: six OK, nothing else. Both aarch64
+Linux archives unpacked and executed here — glibc and musl both
+report `ting 2.167.0`, and tools/smoke.sh runs the shipped selftest
+and examples against each: 23 passed, 0 failed, 1 skipped, 3098
+checks, 26 examples clean, 0 differing, both.
+
+The milestone from the archive, outside the repo: `eq` finds
+`check_eq`, `err` finds `check_err`, `approx` finds `check_approx`,
+`med` still finds `median` — and `er`, which is two characters of
+`error` and a whole part of nothing in a module of fifty-four names,
+is told the count and offered no guess, which is the line this
+milestone drew. Text handed to `csv["each_map"]` is answered `that is
+text, not a path (a path cannot hold a line break)` with the quote
+cut short.
+
+Site audit: ten paths 200, ten out of ten. changelog.html carries
+v2.167.0 and reference.html the sentence about text and paths.

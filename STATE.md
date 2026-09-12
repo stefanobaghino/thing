@@ -4554,11 +4554,12 @@ holds only the current milestone and the standing rules.
   whole name.
 - 1105: v2.167.0 tagged (188th) — milestone "the half you
   remember", strokes 1102, 1103, 1104.
+- v2.167.0 VERIFIED (188th tag; strokes 1102, 1103, 1104; both
+  aarch64 archives executed here, `eq`/`err`/`approx` answered
+  and `er` refused from the shipped binary, ten paths 200).
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - verify v2.167.0 cold: seven assets, `sha256sum -c`, both
-    aarch64 archives executed here, the ten published paths 200
   - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
