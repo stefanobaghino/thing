@@ -28171,3 +28171,39 @@ archive and prints what it prints here.
 Site audit: all ten published paths 200. changelog.html carries
 v2.162.0, stdlib.html says 230 functions, and cookbook.html has the
 stamps recipe.
+
+## 1067 — health tick, milestone "a time that isn't ISO" complete
+
+Maintenance: tree clean, no open PRs, CI green for bd06693 from the
+API, no stray fs tree in the root.
+
+Bench, release binary, both engines: all eleven checksums identical
+to BASELINE, compared row by row. Every timing is two to four times
+its baseline — the host sat at load 3.6 with the release build still
+finishing — which is weather, and the checksums are the reading.
+
+Sweeps in release: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+`test result: ok` on every one.
+
+Counts: 79 builtins, thirteen modules, 230 module functions, 24
+selftest files, 25 examples each with a .out, 3074 selftest checks on
+both engines, 523 Rust tests in 18 suites, `--fmt .` 82 unchanged,
+corpus at twenty-two warnings, 183 tags. Distribution: seven assets
+on each of the last two tags. Site audit: ten paths 200.
+
+The milestone is complete. lib/time.ting had one shape it could read
+and one it could write, and it was the shape almost nothing outside a
+database uses. Now a program states the shape it is looking at, in
+the same codes the tool that wrote it is documented with, and the
+same statement writes one back. The pair is small — `parse` and
+`text` and the names they read — and the whole of it is that a
+timestamp out of a log is now a value, not a string to be sliced.
+
+The tick that was not planned is the one worth keeping: three gate
+runs died in an hour on timing guards with nothing regressed, and the
+answer was to let them spend rounds instead of failing. A guard that
+cries wolf on a busy machine costs more than the regression it
+watches for.
+
+Replenishment next.
