@@ -207,12 +207,55 @@ fn span(ms) {
   return out + str(s) + "s";
 }
 
-# The name of a weekday number, 0 being Sunday.
-fn weekday_name(n) {
-  let names = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+# The name of a weekday number, 0 being Sunday. With short, the
+# three-letter form the world writes in logs and mail headers.
+fn weekday_name(n, short = false) {
   if n < 0 || n > 6 { fail("weekday out of range: " + str(n)); }
-  return names[n];
+  if short { return slice(WEEKDAYS[n], 0, 3); }
+  return WEEKDAYS[n];
 }
+
+# The name of a month number, 1 being January; short as above.
+fn month_name(m, short = false) {
+  if m < 1 || m > 12 { fail("month out of range: " + str(m)); }
+  if short { return slice(MONTHS[m - 1], 0, 3); }
+  return MONTHS[m - 1];
+}
+
+# The number of a month written as a name: 9 for "September", "Sep"
+# or "sep". Anything else fails, since a name nobody writes is a
+# mistake rather than a month.
+fn month_number(name) {
+  let n = name_index(MONTHS, name);
+  if n == nil { fail("not a month name: " + str(name)); }
+  return n + 1;
+}
+
+# The same for a weekday: 0 for "Sunday", "Sun" or "sun".
+fn weekday_number(name) {
+  let n = name_index(WEEKDAYS, name);
+  if n == nil { fail("not a weekday name: " + str(name)); }
+  return n;
+}
+
+# Where a name sits in a list of names, matching the whole name or
+# its first three letters, either case. nil when it sits nowhere.
+fn name_index(names, name) {
+  if type(name) != "string" { return nil; }
+  let want = lower(name);
+  for i in range(len(names)) {
+    let full = lower(names[i]);
+    if want == full || want == slice(full, 0, 3) { return i; }
+  }
+  return nil;
+}
+
+# The month names, read by month_name and month_number.
+let MONTHS = ["January", "February", "March", "April", "May", "June",
+"July", "August", "September", "October", "November", "December"];
+
+# The weekday names, 0 being Sunday, read by the pair above.
+let WEEKDAYS = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
 
 # Whether the year has a February 29th.
 fn is_leap(y) { return y % 4 == 0 && (y % 100 != 0 || y % 400 == 0); }

@@ -34,6 +34,25 @@ assert(contains(try(fn() { return t["days_in_month"](2024, 13); })["err"], "out 
 assert(t["parts"](0)["weekday"] == 4, "the epoch was a Thursday");
 assert(t["weekday_name"](0) == "Sunday" && t["weekday_name"](4) == "Thursday", "weekday names");
 assert(contains(try(fn() { return t["weekday_name"](7); })["err"], "out of range"), "no eighth day");
+assert(t["weekday_name"](3, true) == "Wed", "the short weekday the world writes");
+assert(t["month_name"](1) == "January" && t["month_name"](12) == "December", "month names");
+assert(t["month_name"](9, true) == "Sep", "and the short one");
+assert(contains(try(fn() { return t["month_name"](0); })["err"], "out of range"), "no month zero");
+# Both spellings and either case, which is what a log or a mail
+# header hands over.
+assert(t["month_number"]("September") == 9 && t["month_number"]("Sep") == 9, "September both ways");
+assert(t["month_number"]("sep") == 9 && t["month_number"]("SEPTEMBER") == 9, "and either case");
+assert(t["weekday_number"]("Sunday") == 0 && t["weekday_number"]("sat") == 6, "weekday numbers");
+assert(contains(try(fn() { return t["month_number"]("Smarch"); })["err"], "not a month name"),
+"a month nobody writes");
+assert(contains(try(fn() { return t["weekday_number"](7); })["err"], "not a weekday name"),
+"and a number is not a name");
+# The tables are the names themselves, for a program that wants them
+# all: a dropdown, a header row, a spelling check.
+assert(len(t["MONTHS"]) == 12 && t["MONTHS"][8] == "September", "the twelve names");
+assert(len(t["WEEKDAYS"]) == 7 && t["WEEKDAYS"][0] == "Sunday", "the seven, Sunday first");
+assert(t["name_index"](t["MONTHS"], "dec") == 11, "name_index reads a prefix");
+assert(t["name_index"](t["MONTHS"], "decade") == nil, "and refuses a longer word");
 
 assert(t["span"](999) == "999ms", "under a second reads in milliseconds");
 assert(t["span"](1000) == "1s" && t["span"](61000) == "1m 1s", "seconds and minutes");

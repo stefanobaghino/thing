@@ -16,10 +16,10 @@ current orientation.
   (env-tunable seed/cases), a crash fuzzer (incl. cyclic values), a
   formatter fuzzer, and a CI job rerunning everything on eval.
 - 79 builtins; thirteen embedded stdlib modules
-  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 215
+  (list/map/string/math/json/fs/test/time/sh/args/err/csv/base64, 219
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
-  nothing on its own — and 24 examples with .out; 3013 selftest checks on all four
+  nothing on its own — and 24 examples with .out; 3026 selftest checks on all four
   CI platforms, Windows included); 523 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
@@ -4421,11 +4421,12 @@ holds only the current milestone and the standing rules.
   "the rest of the phrasebook" COMPLETE.
 - 1059: replenishment — milestone "a time that isn't ISO" (v2.162),
   reasoning in LOG.md.
+- 1060: lib/time.ting gained `month_name`, `month_number`,
+  `weekday_number` and the two name tables; `weekday_name` gained the
+  short form. 219 functions, 3026 checks.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `month_name(n)` and `month_number(name)` in lib/time.ting,
-    symmetric with `weekday_name`, plus `weekday_number(name)`
   - a reader for a stated shape — `%d/%b/%Y:%H:%M:%S` and the rest of
     the codes the world writes
   - a writer for the same shape vocabulary

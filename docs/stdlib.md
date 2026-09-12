@@ -1,7 +1,7 @@
 # The ting standard library
 
 Thirteen modules written in ting itself — list, map, string, math,
-json, fs, test, time, sh, args, err, csv and base64, 215 functions between them — living in `lib/` and also
+json, fs, test, time, sh, args, err, csv and base64, 219 functions between them — living in `lib/` and also
 embedded in the interpreter, so `import("lib/...")` works from any
 directory, in the REPL, and in the browser playground. A real file at
 the same path always wins over the embedded copy, so you can vendor
@@ -236,7 +236,13 @@ builtin, and answer `nil` where it keeps no zone data.
 | `days_in_month(y, m)` | length of that month; a month outside 1-12 errors |
 | `days_from_civil(y, m, d)` | days since 1970-01-01 for a civil date |
 | `civil_from_days(z)` | the `{"year", "month", "day"}` for a day count |
-| `weekday_name(n)` | the name of a weekday number, 0 being Sunday; outside 0-6 errors |
+| `weekday_name(n, short = false)` | the name of a weekday number, 0 being Sunday; `short` gives `Wed`; outside 0-6 errors |
+| `month_name(m, short = false)` | the name of a month number, 1 being January; `short` gives `Sep`; outside 1-12 errors |
+| `month_number(name)` | 9 for `September`, `Sep` or `sep`; a name nobody writes errors |
+| `weekday_number(name)` | 0 for `Sunday`, `Sun` or `sun`; as above |
+| `name_index(names, name)` | where a name sits in a list of names, whole or first three letters, either case; nil when nowhere |
+| `MONTHS` | the twelve month names |
+| `WEEKDAYS` | the seven weekday names, Sunday first |
 | `fdiv(a, b)` / `fmod(a, b)` | floor division and its remainder, which `/` and `%` do not do for negatives |
 | `fmod(a, b)` | see `fdiv` |
 

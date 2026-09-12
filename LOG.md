@@ -27956,3 +27956,29 @@ often than it helps. NOT CHOSEN: a profile of callback-heavy code is
 mostly rows reading `an anonymous function`, which is true, and each
 one carries its file:line; naming them after the builtin they were
 passed to would be a guess at what the writer meant.
+
+## 1060 — the months, both ways
+
+The first stroke of the milestone, and the smallest: `weekday_name`
+has been in lib/time.ting since the module was written, and there was
+never a `month_name` beside it, nor a way to read either name back.
+A log that says `Sep` could not be turned into a 9 without a
+twelve-entry map written by hand, and monthly.ting prints `2026-09`
+because there is nothing that says September.
+
+Four functions and two tables. `month_name(m, short = false)` and
+`weekday_name(n, short = false)` — the second parameter is new and
+the old call is unchanged, which is what the 2.x promise asks for —
+write the full name or the three-letter one the world puts in logs
+and mail headers. `month_number` and `weekday_number` read either
+spelling in either case, and fail on a word nobody writes, the way
+the name functions already fail outside their range. `MONTHS` and
+`WEEKDAYS` are the tables themselves, exported because a program that
+wants all twelve should not have to ask twelve times.
+
+Four mutations, all caught by selftest/time.ting: the three-letter
+form dropped, the lowercasing dropped, the type guard dropped (a
+number reaching the loop is nil, not a failure), and the month left
+zero-based.
+
+219 functions, 3026 checks.
