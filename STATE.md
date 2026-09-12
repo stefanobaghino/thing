@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3010 selftest checks on all four
-  CI platforms, Windows included); 491 Rust tests
+  CI platforms, Windows included); 493 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4335,11 +4335,12 @@ holds only the current milestone and the standing rules.
 - 1029: the `.` hint carries the map spelling too — `str.repeat(...)`
   reads `str["repeat"](...)`, naming the two words it read, since a
   module is a map and `f(x)` alone was not the fix.
+- 1030: `k in m` outside a `for` header hands back both membership
+  calls, `has(m, k)` and `contains(m, k)`, named after the two words
+  either side when each is one token. 493 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `in` as an expression hands back `has(m, k)` for a map and
-    `contains(xs, v)` for a list
   - the C counted loop: `for (let i = 0; ...)` hands back `for i in
     range(n)`, and `i++` / `i--` hand back `i += 1` / `i -= 1`
   - release v2.158.0

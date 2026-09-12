@@ -86,6 +86,9 @@ both.
   `m["key"]`, and writing `s.len()` or `m.a` says which — with the
   map spelling `s["len"](...)` beside it, since a module is a map and
   that is how the stdlib is called.
+- `in` belongs to a `for` header and nowhere else. Membership is a
+  call: `has(m, k)` for a map key, `contains(xs, v)` for a list, and
+  writing `k in m` says both, named after the two words either side.
 - Statements end with `;` — mandatory, except after a closing `}`.
 
 ## Values and types

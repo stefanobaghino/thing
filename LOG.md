@@ -27034,3 +27034,32 @@ generic again, the receiver and member swapped, and the whole hint
 put back the way it was.
 
 docs/reference.md says the map spelling beside the other two.
+
+## 1030 — the call ting has for `in`
+
+Second stroke of "the phrasebook". `if !(k in groups)` answered
+`expected ')', found 'in'` and stopped, though `in` is a keyword this
+parser reads in every `for` header and ting has both membership
+tests: `has(m, k)` for a map key, `contains(xs, v)` for a list. The
+hint offers both — the parser cannot tell a map from a list — named
+after the two words either side, so whichever one is meant, the
+sentence is the whole fix.
+
+A side is named only when it is one token with a boundary against it.
+`f(1) in xs` and `k in f(1)` are expressions the parser stopped
+before reading, and naming `f` in either would offer a fix that is
+not one; the same for `a + b in xs`, where `b` is not the operand.
+Those keep `k` and `m`. A string or an int on the left is spelt as
+written, so `"a" in groups` reads `has(groups, "a")`.
+
+The hint stays out of the one place `in` belongs: `for k in xs`
+parses, and `for in xs` keeps its own message, `expected loop
+variable, found 'in'`, because that error is raised before the
+keyword is reached.
+
+Four mutations, all caught: the right side named unconditionally, the
+left side named unconditionally, the names dropped from the message,
+and the branch switched off.
+
+docs/reference.md says `in` belongs to a `for` header and names both
+calls.

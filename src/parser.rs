@@ -206,6 +206,59 @@ impl<'a> Parser<'a> {
                 _ => {}
             }
         }
+        // `in` is a keyword this parser reads in a `for` header and
+        // nowhere else, so a program that writes `k in m` outside one
+        // is asking a membership question ting answers with a call.
+        // Which call depends on what is being searched, and the
+        // parser cannot know, so both are offered — named after the
+        // two words either side, which is the whole fix for whichever
+        // one it is.
+        if self.peek() == &TokenKind::In {
+            // Either side is spelt out only when it is ONE token with
+            // a boundary against it: `f(1) in xs` and `k in f(1)` are
+            // whole expressions the parser never read, and naming
+            // `f` in either would offer a fix that is not one.
+            let spell = |t: &TokenKind, edge: bool, fallback: &str| match t {
+                TokenKind::Ident(name) if edge => name.clone(),
+                TokenKind::Str(text) if edge => format!("{text:?}"),
+                TokenKind::Int(n) if edge => n.to_string(),
+                _ => fallback.to_string(),
+            };
+            let opens = |t: &TokenKind| {
+                matches!(
+                    t,
+                    TokenKind::LParen
+                        | TokenKind::LBracket
+                        | TokenKind::LBrace
+                        | TokenKind::Comma
+                        | TokenKind::Semi
+                        | TokenKind::Bang
+                        | TokenKind::Eq
+                )
+            };
+            let closes = |t: &TokenKind| {
+                matches!(
+                    t,
+                    TokenKind::RParen
+                        | TokenKind::RBracket
+                        | TokenKind::RBrace
+                        | TokenKind::Comma
+                        | TokenKind::Semi
+                        | TokenKind::Eof
+                )
+            };
+            let k = if self.pos > 0 {
+                let edge = self.pos < 2 || opens(&self.tokens[self.pos - 2].kind);
+                spell(&self.tokens[self.pos - 1].kind, edge, "k")
+            } else {
+                "k".to_string()
+            };
+            let after = &self.tokens[(self.pos + 2).min(self.tokens.len() - 1)].kind;
+            let m = spell(self.peek2(), closes(after), "m");
+            return Some(format!(
+                "ting has no `in` — a map key is `has({m}, {k})`, a list member `contains({m}, {k})`"
+            ));
+        }
         // A `.` is never part of anything the parser accepts, so
         // saying what it was probably reaching for costs nothing.
         // `s.len()` wants a call, `m.key` wants a key. A call gets
@@ -1370,6 +1423,59 @@ mod tests {
             let got = prog_err(src);
             assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
         }
+    }
+
+    /// `in` parses only in a `for` header, so a membership test
+    /// borrowed from another language stops at a keyword the parser
+    /// knows and cannot place. Both calls are offered, since the
+    /// parser cannot tell a map from a list, and each side is named
+    /// only when it is one token with a boundary against it.
+    #[test]
+    fn a_membership_test_says_which_call_ting_has() {
+        for (src, want) in [
+            (
+                "if !(k in g) { print(1); }",
+                "ting has no `in` — a map key is `has(g, k)`, a list member `contains(g, k)`",
+            ),
+            (
+                "print(\"a\" in groups);",
+                "ting has no `in` — a map key is `has(groups, \"a\")`, a list member `contains(groups, \"a\")`",
+            ),
+            (
+                "print(3 in xs);",
+                "ting has no `in` — a map key is `has(xs, 3)`, a list member `contains(xs, 3)`",
+            ),
+            // A call or an index either side is a whole expression
+            // the parser never read, so it keeps the placeholder.
+            (
+                "print(k in f(1));",
+                "ting has no `in` — a map key is `has(m, k)`, a list member `contains(m, k)`",
+            ),
+            (
+                "print(f(1) in xs);",
+                "ting has no `in` — a map key is `has(xs, k)`, a list member `contains(xs, k)`",
+            ),
+            (
+                "print(a + b in xs);",
+                "ting has no `in` — a map key is `has(xs, k)`, a list member `contains(xs, k)`",
+            ),
+        ] {
+            let got = prog_err(src);
+            assert!(got.ends_with(&format!("({want})")), "{src}: {got}");
+        }
+    }
+
+    /// The hint must stay out of the one place `in` belongs: a `for`
+    /// header parses, and one missing its variable stops before the
+    /// keyword with its own message.
+    #[test]
+    fn the_membership_hint_stays_out_of_a_for_header() {
+        assert!(
+            parse_program(&lex("for k in xs { print(k); }").unwrap()).is_ok(),
+            "a for header should still parse"
+        );
+        let got = prog_err("for in xs { print(1); }");
+        assert_eq!(got, "expected loop variable, found 'in'", "{got}");
     }
 
     /// A `.` inside a number is part of the number, and an
