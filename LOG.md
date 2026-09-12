@@ -29701,3 +29701,34 @@ Site audit: the ten published paths answer 200, and the rendered
 reference carries the new layout paragraph.
 
 Remaining for the milestone: the health tick.
+
+## 1114 — health tick, milestone "the line that continues" complete
+
+Eleven checksums identical to BASELINE. The timings are unusable and
+say so twice: the first run put accum's vm at +328% and strings at
+-52%, the second put accum at -94% and strings at +126%, on a host at
+load 3.9 rising to 5.4 with five sessions logged in. Different rows
+invert in the two runs, which is the signature of contention rather
+than of a regression — 1100 saw the same thing at load 4.6-6.6 and
+1107 settled it by landing exactly on BASELINE at load 2.7. The
+formatter is not on the bench path in any case.
+
+Four sweeps green: 50000 differential cases on the default seed and
+50000 on seed 981, 2000000 pattern cases, 20000 formatter cases —
+that last one being the safety net for 1109 and 1110, since it
+asserts that formatting is idempotent and preserves the AST on
+generated programs.
+
+Counts all standing: 79 builtins, 13 modules, 231 functions
+(`git diff -w v2.167.0 HEAD -- lib/` is empty, so the reflow of
+lib/test.ting and lib/time.ting changed no code), 50 ting programs
+(24 selftest + 26 examples with .out), 3098 checks on both engines,
+534 tests in 18 suites, `--fmt .` 83 unchanged, twenty-two corpus
+warnings, 189 tags. Audits: seven release assets, the ten published
+paths 200, the changelog page carrying v2.168.0.
+
+Milestone "the line that continues" COMPLETE: 1109 moved the indent
+level from the opener to the line break, 1110 covered the break with
+nothing open at all, 1111 wrote both into the reference, and the
+corpus it reflowed is twenty-five files of evidence that the rules
+were worth having.

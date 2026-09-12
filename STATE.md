@@ -4580,10 +4580,16 @@ holds only the current milestone and the standing rules.
 - v2.168.0 VERIFIED (189th tag; strokes 1109, 1110, 1111; both
   aarch64 archives executed here, the shipped binary reindenting a
   map and two operator continuations cold, ten paths 200).
+- 1114: health tick — eleven checksums identical to BASELINE, both
+  runs' timings unusable at load 3.9-5.4 with the inversions landing
+  on DIFFERENT rows each time (contention, as at 1100); four sweeps
+  ok, counts all standing (79 builtins, 13 modules, 231 functions,
+  50 programs, 3098 checks, 534 tests in 18 suites, 83 unchanged,
+  twenty-two warnings, 189 tags). Milestone "the line that
+  continues" COMPLETE.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - health tick: bench vs BASELINE, four sweeps, counts, audits
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
