@@ -26799,3 +26799,38 @@ run time, dropping it in the checker, and naming only the last module
 when several have the name; each fails a different check.
 
 3010 checks.
+
+## 1023 — the signature says what the arm takes
+
+Milestone "the answer it already has", second stroke. `json_str(v, 2)`
+pretty-prints — two spaces a level, one entry a line — and has for a
+long time. docs/reference.md says so; the tutorial prints an example.
+`--doc json_str`, which is where a reader asks from the terminal,
+said `json_str(v)  Ting value to compact JSON`. During the probe I
+went looking for a pretty printer certain there was none, and found
+`encode_pretty` in src/json.rs with one caller: the builtin I had
+just been told could not do it.
+
+The entry now reads `json_str(v) / json_str(v, indent)`, and the
+summary says what the indent is and that 0 to 16 are the numbers it
+takes.
+
+The guard is the part worth keeping. `every_builtin_signature_covers_
+the_arguments_its_arm_takes` reads the arities out of src/eval.rs —
+`Builtin::Name => { ... arity(lo, hi)` — and compares them against
+what each `doc()` signature shows, counting `...` as any number and
+`/` as another form. A signature that hides an argument fails; so
+does one that demands an argument the arm makes optional. The arities
+live where they are used rather than in a table beside the docs,
+which would be a second thing to keep true.
+
+The test refuses to pass on nothing: it asserts it read at least
+seventy arities and checked at least seventy builtins, which is what
+a quietly-stopped-matching pattern would take away. Four mutations:
+the old `json_str(v)` signature, `keys()` against an arm that takes
+one, `keys(m, extra)` against an arm that takes one at fewest, and a
+pattern that matches no arm at all — each fails a different
+assertion, and the last is the one that makes the other three worth
+trusting.
+
+490 tests.

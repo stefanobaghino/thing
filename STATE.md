@@ -20,7 +20,7 @@ current orientation.
   functions, guarded); 48 ting programs (24 selftest files — 23 tests
   plus _lib.ting, the module modules.ting imports, which checks
   nothing on its own — and 24 examples with .out; 3010 selftest checks on all four
-  CI platforms, Windows included); 489 Rust tests
+  CI platforms, Windows included); 490 Rust tests
   in 18 suites (counted at 918; the 399 written here had been
   stale for a while). `ting --fmt .` reports 81 unchanged; BASELINE is ELEVEN
   rows since bench/scan.ting joined in 794, regenerated at 832 for
@@ -4316,14 +4316,12 @@ holds only the current milestone and the standing rules.
 - 1022: a name bound nowhere that the stdlib exports is answered with
   the module that has it, at run time and in the checker; corpus
   warnings are SEVENTEEN now. 3010 checks.
+- 1023: `--doc json_str` shows its indent argument, and a docs guard
+  reads every builtin's arity out of src/eval.rs and checks the
+  documented signature covers it. 490 tests.
 - Backlog (one per tick, in order; NEVER numbered — hand-numbering
   left a stale "(3)" twice, in 735 and 743, when the item above it
   was struck out):
-  - `--doc json_str` shows the indent it takes, and a guard walks
-    every builtin's documented signature against the arity its arm
-    accepts. The scan written during the probe found exactly this one
-    mismatch (`input`'s two forms are a false positive worth keeping
-    in mind).
   - `--doc` answers a phrase: "how many" should find lib/fs.ting's
     count_lines, whose text begins with it. The search already
     ignores case, so it is the space that loses it.

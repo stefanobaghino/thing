@@ -722,3 +722,87 @@ fn every_module_opens_with_the_function_its_page_leads_with() {
         "modules checked"
     );
 }
+
+/// Every builtin's documented signature against the arity its arm
+/// accepts. `json_str(v, 2)` pretty-prints, and for a long time the
+/// entry the binary printed was `json_str(v)`: the reference and the
+/// tutorial both knew about the second argument, and the one place a
+/// reader asks from the terminal did not (1021). The arities are read
+/// out of the source, because that is where they are — a table beside
+/// the docs would be a second thing to keep true.
+#[test]
+fn every_builtin_signature_covers_the_arguments_its_arm_takes() {
+    let root = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+    let src = std::fs::read_to_string(root.join("src/eval.rs")).expect("src/eval.rs");
+    // `Builtin::Name => {` (or two names sharing an arm), then the
+    // first `arity(lo, hi)` before the next arm begins.
+    let mut arities: std::collections::HashMap<String, (usize, usize)> = Default::default();
+    let arms: Vec<&str> = src.split("            Builtin::").skip(1).collect();
+    for arm in arms {
+        let Some(head) = arm.split(" =>").next() else {
+            continue;
+        };
+        let names: Vec<String> = head
+            .split(" | ")
+            .map(|n| n.trim_start_matches("Builtin::").trim().to_string())
+            .collect();
+        if names
+            .iter()
+            .any(|n| !n.chars().all(|c| c.is_alphanumeric()))
+        {
+            continue;
+        }
+        let Some(call) = arm.split("arity(").nth(1) else {
+            continue;
+        };
+        let Some((lo, hi)) = call.split(')').next().and_then(|a| a.split_once(", ")) else {
+            continue;
+        };
+        let (Ok(lo), Ok(hi)) = (lo.trim().parse(), hi.trim().parse()) else {
+            continue;
+        };
+        for name in names {
+            arities.insert(name, (lo, hi));
+        }
+    }
+    // Every builtin that takes a fixed number of arguments is in the
+    // table: a regex that quietly stopped matching would otherwise
+    // make this test pass by checking nothing.
+    assert!(
+        arities.len() >= 70,
+        "only {} arities read out of src/eval.rs",
+        arities.len()
+    );
+    let args_of = |form: &str| -> usize {
+        let inner = &form[form.find('(').expect("a signature has a call") + 1
+            ..form.rfind(')').expect("a signature has a call")];
+        if inner.contains("...") {
+            return usize::MAX;
+        }
+        match inner.trim().is_empty() {
+            true => 0,
+            false => inner.matches(',').count() + 1,
+        }
+    };
+    let mut checked = 0;
+    for b in ting::value::Builtin::ALL {
+        let name = format!("{b:?}");
+        let Some((lo, hi)) = arities.get(&name) else {
+            continue;
+        };
+        let (sig, _) = b.doc();
+        let forms: Vec<usize> = sig.split(" / ").map(args_of).collect();
+        let most = forms.iter().copied().max().expect("a signature");
+        let fewest = forms.iter().copied().min().expect("a signature");
+        assert!(
+            most >= *hi,
+            "{sig} shows {most} arguments at most, but the arm takes up to {hi}"
+        );
+        assert!(
+            fewest <= *lo,
+            "{sig} shows {fewest} arguments at fewest, but the arm takes as few as {lo}"
+        );
+        checked += 1;
+    }
+    assert!(checked >= 70, "only {checked} builtins checked");
+}

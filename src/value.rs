@@ -776,8 +776,9 @@ impl Builtin {
                 "JSON text to ting values; malformed input errors with an offset, and so does a document nested deeper than 1000. A byte order mark at the head of the document is skipped, since another program may have written one.",
             ),
             Builtin::JsonStr => (
-                "json_str(v)",
-                "Ting value to compact JSON (map keys sorted).",
+                "json_str(v) / json_str(v, indent)",
+                "Ting value to JSON, map keys sorted: compact, or one entry a \
+                 line with that many spaces of indent (0 to 16).",
             ),
             Builtin::Env => (
                 "env(name)",
